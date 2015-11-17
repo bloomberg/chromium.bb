@@ -106,7 +106,7 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
     dst->AddIntListAttribute(attr, ids);
 }
 
-}  // Anonymous namespace
+}  // namespace
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
     : render_frame_(render_frame),
@@ -258,7 +258,32 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   dst->state = AXStateFromBlink(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
-  std::string name = src.deprecatedTitle().utf8();
+
+  blink::WebAXNameFrom nameFrom;
+  blink::WebVector<blink::WebAXObject> nameObjects;
+  blink::WebString web_name = src.name(nameFrom, nameObjects);
+  if (!web_name.isEmpty()) {
+    dst->AddStringAttribute(ui::AX_ATTR_NAME, web_name.utf8());
+    dst->AddIntAttribute(ui::AX_ATTR_NAME_FROM, AXNameFromFromBlink(nameFrom));
+    AddIntListAttributeFromWebObjects(
+        ui::AX_ATTR_LABELLEDBY_IDS, nameObjects, dst);
+  }
+
+  blink::WebAXDescriptionFrom descriptionFrom;
+  blink::WebVector<blink::WebAXObject> descriptionObjects;
+  blink::WebString web_description = src.description(
+      nameFrom, descriptionFrom, descriptionObjects);
+  if (!web_description.isEmpty()) {
+    dst->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, web_description.utf8());
+    dst->AddIntAttribute(ui::AX_ATTR_DESCRIPTION_FROM,
+        AXDescriptionFromFromBlink(descriptionFrom));
+    AddIntListAttributeFromWebObjects(
+        ui::AX_ATTR_DESCRIBEDBY_IDS, descriptionObjects, dst);
+  }
+
+  blink::WebString web_placeholder = src.placeholder(nameFrom, descriptionFrom);
+  if (!web_placeholder.isEmpty())
+    dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
 
   std::string value;
   if (src.valueDescription().length()) {
@@ -288,8 +313,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
   if (src.invalidState() == blink::WebAXInvalidStateOther) {
     dst->AddStringAttribute(
-        ui::AX_ATTR_ARIA_INVALID_VALUE,
-        src.ariaInvalidValue().utf8());
+        ui::AX_ATTR_ARIA_INVALID_VALUE, src.ariaInvalidValue().utf8());
   }
 
   if (src.textDirection()) {
@@ -344,31 +368,14 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddBoolAttribute(ui::AX_ATTR_BUTTON_MIXED, true);
   if (src.canSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
-  if (src.deprecatedAccessibilityDescription().length()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_DESCRIPTION,
-        src.deprecatedAccessibilityDescription().utf8());
-  }
   if (src.hasComputedStyle()) {
     dst->AddStringAttribute(
-        ui::AX_ATTR_DISPLAY,
-        src.computedStyleDisplay().utf8());
-  }
-  if (src.deprecatedHelpText().length())
-    dst->AddStringAttribute(ui::AX_ATTR_HELP, src.deprecatedHelpText().utf8());
-  if (src.deprecatedPlaceholder().length()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_PLACEHOLDER,
-        src.deprecatedPlaceholder().utf8());
+        ui::AX_ATTR_DISPLAY, src.computedStyleDisplay().utf8());
   }
   if (src.keyboardShortcut().length()) {
     dst->AddStringAttribute(
         ui::AX_ATTR_SHORTCUT,
         src.keyboardShortcut().utf8());
-  }
-  if (!src.deprecatedTitleUIElement().isDetached()) {
-    dst->AddIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
-                         src.deprecatedTitleUIElement().axID());
   }
   if (!src.ariaActiveDescendant().isDetached()) {
     dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
@@ -510,12 +517,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                            src.minValueForRange());
   }
 
-  if (dst->role == ui::AX_ROLE_WEB_AREA) {
+  if (dst->role == ui::AX_ROLE_WEB_AREA)
     dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
-    const WebDocument& document = src.document();
-    if (name.empty())
-      name = document.title().utf8();
-  }
 
   if (dst->role == ui::AX_ROLE_TABLE) {
     int column_count = src.columnCount();
@@ -578,8 +581,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                          AXSortDirectionFromBlink(src.sortDirection()));
   }
 
-  dst->AddStringAttribute(ui::AX_ATTR_NAME, name);
-
   // Add the ids of *indirect* children - those who are children of this node,
   // but whose parent is *not* this node. One example is a table
   // cell, which is a child of both a row and a column. Because the cell's
@@ -601,26 +602,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.ariaControls(controls))
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, controls, dst);
 
-  WebVector<WebAXObject> describedby;
-  if (src.deprecatedAriaDescribedby(describedby)) {
-    AddIntListAttributeFromWebObjects(
-        ui::AX_ATTR_DESCRIBEDBY_IDS, describedby, dst);
-  }
-
   WebVector<WebAXObject> flowTo;
   if (src.ariaFlowTo(flowTo))
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);
-
-  WebVector<WebAXObject> labelledby;
-  if (src.deprecatedAriaLabelledby(labelledby)) {
-    AddIntListAttributeFromWebObjects(
-        ui::AX_ATTR_LABELLEDBY_IDS, labelledby, dst);
-  }
-
-  WebVector<WebAXObject> owns;
-  if (src.ariaOwns(owns))
-    AddIntListAttributeFromWebObjects(ui::AX_ATTR_OWNS_IDS, owns, dst);
-
 
   if (src.isScrollableContainer()) {
     const gfx::Point& scrollOffset = src.scrollOffset();

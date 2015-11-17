@@ -992,126 +992,12 @@ WebURL WebAXObject::url() const
     return m_private->url();
 }
 
-WebString WebAXObject::deprecatedAccessibilityDescription() const
-{
-    if (isDetached())
-        return WebString();
-
-    ASSERT(isLayoutClean(m_private->document()));
-
-    return m_private->deprecatedAccessibilityDescription();
-}
-
-bool WebAXObject::deprecatedAriaDescribedby(WebVector<WebAXObject>& describedbyElements) const
-{
-    if (isDetached())
-        return false;
-
-    AXObject::AXObjectVector describedby;
-    m_private->deprecatedAriaDescribedbyElements(describedby);
-
-    WebVector<WebAXObject> result(describedby.size());
-    for (size_t i = 0; i < describedby.size(); i++)
-        result[i] = WebAXObject(describedby[i]);
-    describedbyElements.swap(result);
-
-    return true;
-}
-
-bool WebAXObject::deprecatedAriaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
-{
-    if (isDetached())
-        return false;
-
-    AXObject::AXObjectVector labelledby;
-    m_private->deprecatedAriaLabelledbyElements(labelledby);
-
-    WebVector<WebAXObject> result(labelledby.size());
-    for (size_t i = 0; i < labelledby.size(); i++)
-        result[i] = WebAXObject(labelledby[i]);
-    labelledbyElements.swap(result);
-
-    return true;
-}
-
-WebString WebAXObject::deprecatedHelpText() const
-{
-    if (isDetached())
-        return WebString();
-
-    return m_private->deprecatedHelpText();
-}
-
-WebString WebAXObject::deprecatedPlaceholder() const
-{
-    if (isDetached())
-        return WebString();
-
-    return WebString(m_private->deprecatedPlaceholder());
-}
-
-WebString WebAXObject::deprecatedTitle() const
-{
-    if (isDetached())
-        return WebString();
-
-    ASSERT(isLayoutClean(m_private->document()));
-
-    return m_private->deprecatedTitle();
-}
-
-WebAXObject WebAXObject::deprecatedTitleUIElement() const
-{
-    if (isDetached())
-        return WebAXObject();
-
-    if (!m_private->deprecatedExposesTitleUIElement())
-        return WebAXObject();
-
-    return WebAXObject(m_private->deprecatedTitleUIElement());
-}
-
-WebString WebAXObject::accessibilityDescription() const
-{
-    return deprecatedAccessibilityDescription();
-}
-
-bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const
-{
-    return deprecatedAriaDescribedby(describedbyElements);
-}
-
-bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
-{
-    return deprecatedAriaLabelledby(labelledbyElements);
-}
-
-WebString WebAXObject::helpText() const
-{
-    return deprecatedHelpText();
-}
-
-WebString WebAXObject::placeholder() const
-{
-    return deprecatedPlaceholder();
-}
-
-WebString WebAXObject::title() const
-{
-    return deprecatedTitle();
-}
-
-WebAXObject WebAXObject::titleUIElement() const
-{
-    return deprecatedTitleUIElement();
-}
-
 WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& outNameObjects) const
 {
     if (isDetached())
         return WebString();
 
-    AXNameFrom nameFrom = AXNameFromAttribute;
+    AXNameFrom nameFrom = AXNameFromUninitialized;
     HeapVector<Member<AXObject>> nameObjects;
     WebString result = m_private->name(nameFrom, &nameObjects);
     outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
@@ -1124,12 +1010,22 @@ WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& 
     return result;
 }
 
+WebString WebAXObject::name() const
+{
+    if (isDetached())
+        return WebString();
+
+    AXNameFrom nameFrom;
+    HeapVector<Member<AXObject>> nameObjects;
+    return m_private->name(nameFrom, &nameObjects);
+}
+
 WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom& outDescriptionFrom, WebVector<WebAXObject>& outDescriptionObjects) const
 {
     if (isDetached())
         return WebString();
 
-    AXDescriptionFrom descriptionFrom;
+    AXDescriptionFrom descriptionFrom = AXDescriptionFromUninitialized;
     HeapVector<Member<AXObject>> descriptionObjects;
     String result = m_private->description(static_cast<AXNameFrom>(nameFrom), descriptionFrom, &descriptionObjects);
     outDescriptionFrom = static_cast<WebAXDescriptionFrom>(descriptionFrom);

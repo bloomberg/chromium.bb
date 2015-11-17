@@ -119,9 +119,31 @@ LayoutRect AXMenuListOption::elementRect() const
     return grandparent->elementRect();
 }
 
-String AXMenuListOption::stringValue() const
+String AXMenuListOption::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const
 {
-    return m_element ? m_element->displayLabel() : String();
+    // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+    if (nameSources)
+        ASSERT(relatedObjects);
+
+    if (!node())
+        return String();
+
+    bool foundTextAlternative = false;
+    String textAlternative = ariaTextAlternative(recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
+    if (foundTextAlternative && !nameSources)
+        return textAlternative;
+
+    nameFrom = AXNameFromContents;
+    textAlternative = m_element->displayLabel();
+    if (nameSources) {
+        nameSources->append(NameSource(foundTextAlternative));
+        nameSources->last().type = nameFrom;
+        nameSources->last().text = textAlternative;
+        foundTextAlternative = true;
+    }
+
+    return textAlternative;
+
 }
 
 DEFINE_TRACE(AXMenuListOption)

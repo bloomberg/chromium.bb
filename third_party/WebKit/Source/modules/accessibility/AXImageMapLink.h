@@ -60,8 +60,6 @@ public:
     KURL url() const override;
     bool isLink() const override { return true; }
     bool isLinked() const override { return true; }
-    String deprecatedTitle(TextUnderElementMode) const override;
-    String deprecatedAccessibilityDescription() const override;
     AXObject* computeParent() const override;
 
     LayoutRect elementRect() const override;

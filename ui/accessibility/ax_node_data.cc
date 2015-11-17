@@ -389,8 +389,13 @@ std::string AXNodeData::ToString() const {
             break;
         }
         break;
-      case AX_ATTR_TITLE_UI_ELEMENT:
-        result += " title_elem=" + value;
+      case AX_ATTR_NAME_FROM:
+        result += " name_from=" + ui::ToString(
+            static_cast<ui::AXNameFrom>(int_attributes[i].second));
+        break;
+      case AX_ATTR_DESCRIPTION_FROM:
+        result += " description_from=" + ui::ToString(
+            static_cast<ui::AXDescriptionFrom>(int_attributes[i].second));
         break;
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
@@ -488,9 +493,6 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_DISPLAY:
         result += " display=" + value;
         break;
-      case AX_ATTR_HELP:
-        result += " help=" + value;
-        break;
       case AX_ATTR_HTML_TAG:
         result += " html_tag=" + value;
         break;
@@ -510,7 +512,7 @@ std::string AXNodeData::ToString() const {
         result += " container_live=" + value;
         break;
       case AX_ATTR_PLACEHOLDER:
-        result += "placeholder" + value;
+        result += " placeholder=" + value;
         break;
       case AX_ATTR_ROLE:
         result += " role=" + value;
@@ -604,9 +606,6 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_LABELLEDBY_IDS:
         result += " labelledby_ids=" + IntVectorToString(values);
-        break;
-      case AX_ATTR_OWNS_IDS:
-        result += " owns_ids=" + IntVectorToString(values);
         break;
       case AX_ATTR_LINE_BREAKS:
         result += " line_breaks=" + IntVectorToString(values);

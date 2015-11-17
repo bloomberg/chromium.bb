@@ -93,12 +93,12 @@ var allTests = [
       }
     }
     var input = textFields[0];
-    assertEq('text-input', input.description);
+    assertEq('text-input', input.name);
     assertEq(2, input.textSelStart);
     assertEq(8, input.textSelEnd);
 
     var textArea = textFields[1];
-    assertEq('textarea', textArea.description);
+    assertEq('textarea', textArea.name);
     for (var i = 0; i < EditableTextAttributes.length; i++) {
       var attribute = EditableTextAttributes[i];
       assertTrue(attribute in textArea,
@@ -108,7 +108,7 @@ var allTests = [
     assertEq(0, textArea.textSelEnd);
 
     var ariaTextbox = textFields[2];
-    assertEq('textbox-role', ariaTextbox.description);
+    assertEq('textbox-role', ariaTextbox.name);
     assertEq(0, ariaTextbox.textSelStart);
     assertEq(0, ariaTextbox.textSelEnd);
 
@@ -122,7 +122,7 @@ var allTests = [
     assertEq(1, spinButtons.length);
     var progressIndicators = rootNode.findAll({ role: 'progressIndicator' });
     assertEq(1, progressIndicators.length);
-    assertEq('progressbar-role', progressIndicators[0].description);
+    assertEq('progressbar-role', progressIndicators[0].name);
     var scrollBars = rootNode.findAll({ role: 'scrollBar' });
     assertEq(1, scrollBars.length);
 
@@ -140,13 +140,13 @@ var allTests = [
     }
 
     var inputRange = sliders[0];
-    assertEq('range-input', inputRange.description);
+    assertEq('range-input', inputRange.name);
     assertEq(4, inputRange.valueForRange);
     assertEq(0, inputRange.minValueForRange);
     assertEq(5, inputRange.maxValueForRange);
 
     var ariaSlider = sliders[1];
-    assertEq('slider-role', ariaSlider.description);
+    assertEq('slider-role', ariaSlider.name);
     assertEq(7, ariaSlider.valueForRange);
     assertEq(1, ariaSlider.minValueForRange);
     assertEq(10, ariaSlider.maxValueForRange);
@@ -221,7 +221,7 @@ var allTests = [
   },
 
   function testNoAttributes() {
-    var div = rootNode.find({ attributes: { description: 'main' } });
+    var div = rootNode.find({ attributes: { name: 'main' } });
     assertTrue(div !== undefined);
     var allAttributes = [].concat(ActiveDescendantAttribute,
                               LinkAttributes,

@@ -592,17 +592,22 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     // find out if this element is inside of a label element.
     // if so, it may be ignored because it's the label for a checkbox or radio button
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio()) {
-        if (ignoredReasons) {
-            HTMLLabelElement* label = labelElementContainer();
-            if (label && !label->isSameNode(node())) {
-                AXObject* labelAXObject = axObjectCache().getOrCreate(label);
-                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
-            }
+    if (controlObject && controlObject->isCheckboxOrRadio()) {
+        AXNameFrom controlNameFrom;
+        AXObject::AXObjectVector controlNameObjects;
+        controlObject->name(controlNameFrom, &controlNameObjects);
+        if (controlNameFrom == AXNameFromRelatedElement) {
+            if (ignoredReasons) {
+                HTMLLabelElement* label = labelElementContainer();
+                if (label && !label->isSameNode(node())) {
+                    AXObject* labelAXObject = axObjectCache().getOrCreate(label);
+                    ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
+                }
 
-            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+                ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+            }
+            return true;
         }
-        return true;
     }
 
     if (m_layoutObject->isBR())
@@ -1088,16 +1093,6 @@ String AXLayoutObject::stringValue() const
 
     LayoutBoxModelObject* cssBox = layoutBoxModelObject();
 
-    if (ariaRoleAttribute() == StaticTextRole) {
-        String staticText = text();
-        if (!staticText.length())
-            staticText = deprecatedTextUnderElement(TextUnderElementAll);
-        return staticText;
-    }
-
-    if (m_layoutObject->isText())
-        return deprecatedTextUnderElement(TextUnderElementAll);
-
     if (cssBox && cssBox->isMenuList()) {
         // LayoutMenuList will go straight to the text() of its selected item.
         // This has to be overridden in the case where the selected item has an ARIA label.
@@ -1111,9 +1106,6 @@ String AXLayoutObject::stringValue() const
         }
         return toLayoutMenuList(m_layoutObject)->text();
     }
-
-    if (m_layoutObject->isListMarker())
-        return toLayoutListMarker(m_layoutObject)->text();
 
     if (isWebArea()) {
         // FIXME: Why would a layoutObject exist when the Document isn't attached to a frame?
@@ -1143,6 +1135,42 @@ String AXLayoutObject::stringValue() const
     // this would require subclassing or making accessibilityAttributeNames do something other than return a
     // single static array.
     return String();
+}
+
+String AXLayoutObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const
+{
+    if (m_layoutObject) {
+        String textAlternative;
+        bool foundTextAlternative = false;
+
+        if (m_layoutObject->isBR()) {
+            textAlternative = String("\n");
+            foundTextAlternative = true;
+        } else if (m_layoutObject->isText() && (!recursive || !m_layoutObject->isCounter())) {
+            LayoutText* layoutText = toLayoutText(m_layoutObject);
+            String result = layoutText->plainText();
+            if (!result.isEmpty() || layoutText->isAllCollapsibleWhitespace())
+                textAlternative = result;
+            else
+                textAlternative = layoutText->text();
+            foundTextAlternative = true;
+        } else if (m_layoutObject->isListMarker() && !recursive) {
+            textAlternative = toLayoutListMarker(m_layoutObject)->text();
+            foundTextAlternative = true;
+        }
+
+        if (foundTextAlternative) {
+            nameFrom = AXNameFromContents;
+            if (nameSources) {
+                nameSources->append(NameSource(false));
+                nameSources->last().type = nameFrom;
+                nameSources->last().text = textAlternative;
+            }
+            return textAlternative;
+        }
+    }
+
+    return AXNodeObject::textAlternative(recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects, nameSources);
 }
 
 //
@@ -1188,19 +1216,19 @@ void AXLayoutObject::ariaControlsElements(AXObjectVector& controls) const
     accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
 }
 
-void AXLayoutObject::deprecatedAriaDescribedbyElements(AXObjectVector& describedby) const
+void AXLayoutObject::ariaOwnsElements(AXObjectVector& owns) const
+{
+    accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
+}
+
+void AXLayoutObject::ariaDescribedbyElements(AXObjectVector& describedby) const
 {
     accessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
 }
 
-void AXLayoutObject::deprecatedAriaLabelledbyElements(AXObjectVector& labelledby) const
+void AXLayoutObject::ariaLabelledbyElements(AXObjectVector& labelledby) const
 {
     accessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
-}
-
-void AXLayoutObject::ariaOwnsElements(AXObjectVector& owns) const
-{
-    accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
 }
 
 bool AXLayoutObject::ariaHasPopup() const
@@ -1350,75 +1378,6 @@ bool AXLayoutObject::liveRegionBusy() const
 }
 
 //
-// Accessibility Text.
-//
-
-String AXLayoutObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
-{
-    if (!m_layoutObject)
-        return String();
-
-    if (m_layoutObject->isBR())
-        return String("\n");
-
-    if (m_layoutObject->isFileUploadControl())
-        return toLayoutFileUploadControl(m_layoutObject)->buttonValue();
-
-    if (m_layoutObject->isText()) {
-        LayoutText* layoutText = toLayoutText(m_layoutObject);
-        String result = layoutText->plainText();
-        if (!result.isEmpty() || layoutText->isAllCollapsibleWhitespace())
-            return result;
-        return layoutText->text();
-    }
-
-    return AXNodeObject::deprecatedTextUnderElement(mode);
-}
-
-//
-// Accessibility Text - (To be deprecated).
-//
-
-String AXLayoutObject::deprecatedHelpText() const
-{
-    if (!m_layoutObject)
-        return String();
-
-    const AtomicString& ariaHelp = getAttribute(aria_helpAttr);
-    if (!ariaHelp.isEmpty())
-        return ariaHelp;
-
-    String describedBy = ariaDescribedByAttribute();
-    if (!describedBy.isEmpty())
-        return describedBy;
-
-    String description = deprecatedAccessibilityDescription();
-    for (LayoutObject* curr = m_layoutObject; curr; curr = curr->parent()) {
-        if (curr->node() && curr->node()->isHTMLElement()) {
-            const AtomicString& summary = toElement(curr->node())->getAttribute(summaryAttr);
-            if (!summary.isEmpty())
-                return summary;
-
-            // The title attribute should be used as help text unless it is already being used as descriptive text.
-            const AtomicString& title = toElement(curr->node())->getAttribute(titleAttr);
-            if (!title.isEmpty() && description != title)
-                return title;
-        }
-
-        // Only take help text from an ancestor element if its a group or an unknown role. If help was
-        // added to those kinds of elements, it is likely it was meant for a child element.
-        AXObject* axObj = axObjectCache().getOrCreate(curr);
-        if (axObj) {
-            AccessibilityRole role = axObj->roleValue();
-            if (role != GroupRole && role != UnknownRole)
-                break;
-        }
-    }
-
-    return String();
-}
-
-//
 // Position and size.
 //
 
@@ -1535,13 +1494,17 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
 
     // Allow the element to perform any hit-testing it might need to do to reach non-layout children.
     result = result->elementAccessibilityHitTest(point);
-
     if (result && result->accessibilityIsIgnored()) {
         // If this element is the label of a control, a hit test should return the control.
         if (result->isAXLayoutObject()) {
             AXObject* controlObject = toAXLayoutObject(result)->correspondingControlForLabelElement();
-            if (controlObject && !controlObject->deprecatedExposesTitleUIElement())
-                return controlObject;
+            if (controlObject) {
+                AXNameFrom controlNameFrom;
+                AXObject::AXObjectVector controlNameObjects;
+                controlObject->name(controlNameFrom, &controlNameObjects);
+                if (controlObject && controlNameFrom == AXNameFromRelatedElement)
+                    return controlObject;
+            }
         }
 
         result = result->parentObjectUnignored();

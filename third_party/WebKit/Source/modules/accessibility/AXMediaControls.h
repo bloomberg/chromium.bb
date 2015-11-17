@@ -45,9 +45,8 @@ public:
 
     AccessibilityRole roleValue() const override;
 
-    String deprecatedTitle(TextUnderElementMode) const final;
-    String deprecatedAccessibilityDescription() const override;
-    String deprecatedHelpText() const override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
+    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
 
 protected:
     AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
@@ -62,7 +61,7 @@ public:
     static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
     ~AccessibilityMediaTimeline() override { }
 
-    String deprecatedHelpText() const override;
+    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
     String valueDescription() const override;
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
@@ -79,8 +78,8 @@ public:
 
     AccessibilityRole roleValue() const override { return ToolbarRole; }
 
-    String deprecatedHelpText() const override;
-    String deprecatedAccessibilityDescription() const override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
+    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
 
 private:
     AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
@@ -98,7 +97,7 @@ public:
     AccessibilityRole roleValue() const override { return StaticTextRole; }
 
     String stringValue() const override;
-    String deprecatedAccessibilityDescription() const override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
 
 private:
     AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);

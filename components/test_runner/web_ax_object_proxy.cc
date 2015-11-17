@@ -299,9 +299,7 @@ std::string GetLanguage(const blink::WebAXObject& object) {
 }
 
 std::string GetAttributes(const blink::WebAXObject& object) {
-  blink::WebAXNameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  std::string attributes(object.name(nameFrom, nameObjects).utf8());
+  std::string attributes(object.name().utf8());
   attributes.append("\n");
   attributes.append(GetRole(object));
   return attributes;
@@ -315,7 +313,8 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     blink::WebAXObject inline_text_box = object.childAt(i);
     DCHECK_EQ(inline_text_box.role(), blink::WebAXRoleInlineTextBox);
     int start = end;
-    end += inline_text_box.stringValue().length();
+    blink::WebString name = inline_text_box.name();
+    end += name.length();
     if (characterIndex < start || characterIndex >= end)
       continue;
     blink::WebRect inline_text_box_rect = inline_text_box.boundingBoxRect();
@@ -323,7 +322,7 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     blink::WebVector<int> character_offsets;
     inline_text_box.characterOffsets(character_offsets);
     DCHECK(character_offsets.size() > 0 &&
-           character_offsets.size() == inline_text_box.stringValue().length());
+           character_offsets.size() == name.length());
     switch (inline_text_box.textDirection()) {
       case blink::WebAXTextDirectionLR: {
         if (localIndex) {
@@ -393,7 +392,8 @@ void GetBoundariesForOneWord(const blink::WebAXObject& object,
     blink::WebAXObject inline_text_box = object.childAt(i);
     DCHECK_EQ(inline_text_box.role(), blink::WebAXRoleInlineTextBox);
     int start = end;
-    end += inline_text_box.stringValue().length();
+    blink::WebString name = inline_text_box.name();
+    end += name.length();
     if (end <= character_index)
       continue;
     int localIndex = character_index - start;
@@ -1299,9 +1299,7 @@ v8::Local<v8::Object> WebAXObjectProxy::PreviousOnLine() {
 
 std::string WebAXObjectProxy::Name() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  blink::WebAXNameFrom nameFrom;
-  blink::WebVector<blink::WebAXObject> nameObjects;
-  return accessibility_object_.name(nameFrom, nameObjects).utf8();
+  return accessibility_object_.name().utf8();
 }
 
 std::string WebAXObjectProxy::NameFrom() {

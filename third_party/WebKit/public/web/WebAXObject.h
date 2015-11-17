@@ -162,31 +162,11 @@ public:
     BLINK_EXPORT WebAXTextStyle textStyle() const;
     BLINK_EXPORT WebURL url() const;
 
-    // Deprecated text alternative calculation API. All of these will be replaced
-    // with the new API, below (under "New text alternative calculation API".
-    BLINK_EXPORT WebString deprecatedAccessibilityDescription() const;
-    BLINK_EXPORT bool deprecatedAriaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
-    BLINK_EXPORT bool deprecatedAriaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
-    BLINK_EXPORT WebString deprecatedHelpText() const;
-    BLINK_EXPORT WebString deprecatedPlaceholder() const;
-    BLINK_EXPORT WebString deprecatedTitle() const;
-    BLINK_EXPORT WebAXObject deprecatedTitleUIElement() const;
-
-    // FIXME(dmazzoni): remove these ASAP once Chromium only calls either explicitly-deprecated
-    // functions, above, or the new APIs, below.
-    BLINK_EXPORT WebString accessibilityDescription() const;
-    BLINK_EXPORT bool ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
-    BLINK_EXPORT bool ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
-    BLINK_EXPORT WebString helpText() const;
-    BLINK_EXPORT WebString placeholder() const;
-    BLINK_EXPORT WebString title() const;
-    BLINK_EXPORT WebAXObject titleUIElement() const;
-
-    // New text alternative calculation API (under development).
-
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of related objects that were used to derive the name, if any.
     BLINK_EXPORT WebString name(WebAXNameFrom&, WebVector<WebAXObject>& nameObjects) const;
+    // Simplified version of |name| when nameFrom and nameObjects aren't needed.
+    BLINK_EXPORT WebString name() const;
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to

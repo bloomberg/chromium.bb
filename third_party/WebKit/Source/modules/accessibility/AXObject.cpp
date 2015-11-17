@@ -676,6 +676,13 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
+String AXObject::computedName() const
+{
+    AXNameFrom nameFrom;
+    AXObject::AXObjectVector nameObjects;
+    return name(nameFrom, &nameObjects);
+}
+
 String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObjects) const
 {
     HeapHashSet<Member<const AXObject>> visited;
@@ -683,7 +690,7 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
     String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
 
     if (!node() || !isHTMLBRElement(node()))
-        text = text.simplifyWhiteSpace(isHTMLSpace<UChar>);
+        text = text.simplifyWhiteSpace(isHTMLSpace<UChar>, WTF::DoNotStripWhiteSpace);
 
     if (nameObjects) {
         nameObjects->clear();
@@ -707,6 +714,154 @@ String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabe
 {
     AXNameFrom tmpNameFrom;
     return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, tmpNameFrom, nullptr, nullptr);
+}
+
+String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources, bool* foundTextAlternative) const
+{
+    String textAlternative;
+    bool alreadyVisited = visited.contains(this);
+    visited.add(this);
+
+    // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
+    if (!recursive && layoutObject()
+        && layoutObject()->style()->visibility() != VISIBLE
+        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+        return String();
+    }
+
+    // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
+    if (!inAriaLabelledByTraversal && !alreadyVisited) {
+        const QualifiedName& attr = hasAttribute(aria_labeledbyAttr) && !hasAttribute(aria_labelledbyAttr) ? aria_labeledbyAttr : aria_labelledbyAttr;
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative, attr));
+            nameSources->last().type = nameFrom;
+        }
+
+        const AtomicString& ariaLabelledby = getAttribute(attr);
+        if (!ariaLabelledby.isNull()) {
+            if (nameSources)
+                nameSources->last().attributeValue = ariaLabelledby;
+
+            textAlternative = textFromAriaLabelledby(visited, relatedObjects);
+
+            if (!textAlternative.isNull()) {
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.type = nameFrom;
+                    source.relatedObjects = *relatedObjects;
+                    source.text = textAlternative;
+                    *foundTextAlternative = true;
+                } else {
+                    *foundTextAlternative = true;
+                    return textAlternative;
+                }
+            } else if (nameSources) {
+                nameSources->last().invalid = true;
+            }
+        }
+    }
+
+    // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
+    nameFrom = AXNameFromAttribute;
+    if (nameSources) {
+        nameSources->append(NameSource(*foundTextAlternative, aria_labelAttr));
+        nameSources->last().type = nameFrom;
+    }
+    const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
+    if (!ariaLabel.isEmpty()) {
+        textAlternative = ariaLabel;
+
+        if (nameSources) {
+            NameSource& source = nameSources->last();
+            source.text = textAlternative;
+            source.attributeValue = ariaLabel;
+            *foundTextAlternative = true;
+        } else {
+            *foundTextAlternative = true;
+            return textAlternative;
+        }
+    }
+
+    return textAlternative;
+}
+
+String AXObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const
+{
+    StringBuilder accumulatedText;
+    bool foundValidElement = false;
+    AXRelatedObjectVector localRelatedObjects;
+
+    for (const auto& element : elements) {
+        AXObject* axElement = axObjectCache().getOrCreate(element);
+        if (axElement) {
+            foundValidElement = true;
+
+            String result = recursiveTextAlternative(*axElement, inAriaLabelledbyTraversal, visited);
+            localRelatedObjects.append(new NameSourceRelatedObject(axElement, result));
+            if (!result.isEmpty()) {
+                if (!accumulatedText.isEmpty())
+                    accumulatedText.append(" ");
+                accumulatedText.append(result);
+            }
+        }
+    }
+    if (!foundValidElement)
+        return String();
+    if (relatedObjects)
+        *relatedObjects = localRelatedObjects;
+    return accumulatedText.toString();
+}
+
+void AXObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedName& attribute) const
+{
+    Node* node = this->node();
+    if (!node || !node->isElementNode())
+        return;
+
+    String attributeValue = getAttribute(attribute).string();
+    if (attributeValue.isEmpty())
+        return;
+
+    attributeValue.simplifyWhiteSpace();
+    attributeValue.split(' ', tokens);
+}
+
+void AXObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
+{
+    Vector<String> ids;
+    tokenVectorFromAttribute(ids, attribute);
+    if (ids.isEmpty())
+        return;
+
+    TreeScope& scope = node()->treeScope();
+    for (const auto& id : ids) {
+        if (Element* idElement = scope.getElementById(AtomicString(id)))
+            elements.append(idElement);
+    }
+}
+
+void AXObject::ariaLabelledbyElementVector(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
+{
+    // Try both spellings, but prefer aria-labelledby, which is the official spec.
+    elementsFromAttribute(elements, aria_labelledbyAttr);
+    if (!elements.size())
+        elementsFromAttribute(elements, aria_labeledbyAttr);
+}
+
+String AXObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const
+{
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    ariaLabelledbyElementVector(elements);
+    return textFromElements(true, visited, elements, relatedObjects);
+}
+
+String AXObject::textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const
+{
+    AXObjectSet visited;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    elementsFromAttribute(elements, aria_describedbyAttr);
+    return textFromElements(true, visited, elements, relatedObjects);
 }
 
 AccessibilityOrientation AXObject::orientation() const
@@ -1480,13 +1635,13 @@ bool AXObject::nameFromContents() const
     case MenuItemCheckBoxRole:
     case MenuItemRadioRole:
     case MenuListOptionRole:
+    case PopUpButtonRole:
     case RadioButtonRole:
     case StaticTextRole:
     case StatusRole:
     case SwitchRole:
     case TabRole:
     case ToggleButtonRole:
-    case TreeItemRole:
         return true;
     default:
         return false;

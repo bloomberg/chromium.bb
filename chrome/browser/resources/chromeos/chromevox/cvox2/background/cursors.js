@@ -112,16 +112,13 @@ cursors.Cursor.prototype = {
   /**
    * Gets the accessible text of the node associated with this cursor.
    *
-   * Note that only one of |name| or |value| attribute is ever nonempty on an
-   * automation node. If either contains whitespace, we still treat it as we do
-   * for a nonempty string.
    * @param {!AutomationNode=} opt_node Use this node rather than this cursor's
    * node.
    * @return {string}
    */
   getText: function(opt_node) {
     var node = opt_node || this.node_;
-    return node.name || node.value || '';
+    return node.name || '';
   },
 
   /**

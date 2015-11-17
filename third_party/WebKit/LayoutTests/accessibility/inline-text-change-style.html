@@ -26,9 +26,9 @@
         shouldBe("axStaticText.childrenCount", "2");
 
         window.axInlineBefore0 = axStaticText.childAtIndex(0);
-        shouldBe("axInlineBefore0.stringValue",  "'AXValue: This paragraph contains '");
+        shouldBe("axInlineBefore0.name",  "'This paragraph contains '");
         window.axInlineBefore1 = axStaticText.childAtIndex(1);
-        shouldBe("axInlineBefore1.stringValue", "'AXValue: two lines of text.'");
+        shouldBe("axInlineBefore1.name", "'two lines of text.'");
 
         // Modify the text.
         document.getElementById("p").style.width = "100em";
@@ -38,7 +38,7 @@
             // Make sure the inline text boxes changed.
             shouldBe("axStaticText.childrenCount", "1");
             window.axInlineAfter0 = axStaticText.childAtIndex(0);
-            shouldBe("axInlineAfter0.stringValue",  "'AXValue: This paragraph contains two lines of text.'");
+            shouldBe("axInlineAfter0.name",  "'This paragraph contains two lines of text.'");
             finishJSTest();
         });
     }

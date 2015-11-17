@@ -35,9 +35,9 @@
         shouldBeTrue("titleUIElement != null");
         var titleUIElementText = titleUIElement;
         while (titleUIElementText && titleUIElementText.childrenCount)
-            titleUIElementText = titleUIElementText.childAtIndex(0); 
+            titleUIElementText = titleUIElementText.childAtIndex(0);
 
-        shouldBe("titleUIElementText.stringValue", "'AXValue: Choose a shipping method:'");
+        shouldBe("titleUIElementText.name", "'Choose a shipping method:'");
     }
 </script>
 

@@ -1313,34 +1313,7 @@ String AXObjectCacheImpl::computedNameForNode(Node* node)
     if (!obj)
         return "";
 
-    String title = obj->deprecatedTitle();
-
-    String titleUIText;
-    if (title.isEmpty()) {
-        AXObject* titleUIElement = obj->deprecatedTitleUIElement();
-        if (titleUIElement) {
-            titleUIText = titleUIElement->deprecatedTextUnderElement();
-            if (!titleUIText.isEmpty())
-                return titleUIText;
-        }
-    }
-
-    String description = obj->deprecatedAccessibilityDescription();
-    if (!description.isEmpty())
-        return description;
-
-    if (!title.isEmpty())
-        return title;
-
-    String placeholder;
-    if (isHTMLInputElement(node)) {
-        HTMLInputElement* element = toHTMLInputElement(node);
-        placeholder = element->strippedPlaceholder();
-        if (!placeholder.isEmpty())
-            return placeholder;
-    }
-
-    return String();
+    return obj->computedName();
 }
 
 void AXObjectCacheImpl::onTouchAccessibilityHover(const IntPoint& location)

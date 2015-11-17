@@ -34,7 +34,7 @@ one two אחתשתיים three four שלושהארבעה
             // Get the bounds from the accessibility tree.
             var axParagraph = accessibilityController.accessibleElementById(elementId);
             var axStaticText = axParagraph.childAtIndex(0);
-            var text = axStaticText.stringValue.substr(9);
+            var text = axStaticText.name;
             var wordAxIndex = text.indexOf(word);
             eval('window.axBounds = ' + axStaticText.boundsForRange(wordAxIndex, wordAxIndex + word.length) + ';');
 

@@ -721,7 +721,6 @@ BrowserAccessibilityWin
   }
   base::string16 name() const { return win_attributes_->name; }
   base::string16 description() const { return win_attributes_->description; }
-  base::string16 help() const { return win_attributes_->help; }
   base::string16 value() const { return win_attributes_->value; }
   base::string16 hypertext() const { return win_attributes_->hypertext; }
   std::map<int32, int32>& hyperlink_offset_to_index() const {
@@ -858,6 +857,11 @@ BrowserAccessibilityWin
   // Updates object attributes of IA2 with html attributes.
   void UpdateRequiredAttributes();
 
+  // Given an int list attribute containing the ids of related elements,
+  // add a new IAccessibleRelation for this object with the given type name.
+  void AddRelations(ui::AXIntListAttribute src_attr,
+                    const base::string16& iaccessiblerelation_type);
+
   // Windows-specific unique ID (unique within the browser process),
   // used for get_accChild, NotifyWinEvent, and as the unique ID for
   // IAccessible2 and ISimpleDOM.
@@ -875,7 +879,6 @@ BrowserAccessibilityWin
     // IAccessible name, description, help, value.
     base::string16 name;
     base::string16 description;
-    base::string16 help;
     base::string16 value;
 
     // IAccessible2 role and state.

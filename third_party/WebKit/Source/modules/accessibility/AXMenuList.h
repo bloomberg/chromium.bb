@@ -41,6 +41,7 @@ public:
     AccessibilityExpanded isExpanded() const final;
     bool press() const override;
     void clearChildren() override;
+    bool nameFromContents() const override;
 
     void didUpdateActiveOption(int optionIndex);
     void didShowPopup();

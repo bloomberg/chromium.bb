@@ -569,30 +569,6 @@ bool AXTable::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) cons
     return false;
 }
 
-String AXTable::deprecatedTitle(TextUnderElementMode mode) const
-{
-    if (!isAXTable())
-        return AXLayoutObject::deprecatedTitle(mode);
-
-    String title;
-    if (!m_layoutObject)
-        return title;
-
-    // see if there is a caption
-    Node* tableElement = m_layoutObject->node();
-    if (isHTMLTableElement(tableElement)) {
-        HTMLTableCaptionElement* caption = toHTMLTableElement(tableElement)->caption();
-        if (caption)
-            title = caption->innerText();
-    }
-
-    // try the standard
-    if (title.isEmpty())
-        title = AXLayoutObject::deprecatedTitle(mode);
-
-    return title;
-}
-
 DEFINE_TRACE(AXTable)
 {
     visitor->trace(m_rows);

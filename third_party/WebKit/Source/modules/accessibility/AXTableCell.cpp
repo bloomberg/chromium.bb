@@ -218,41 +218,4 @@ SortDirection AXTableCell::sortDirection() const
     return SortDirectionUndefined;
 }
 
-AXObject* AXTableCell::deprecatedTitleUIElement() const
-{
-    // Try to find if the first cell in this row is a <th>. If it is,
-    // then it can act as the title ui element. (This is only in the
-    // case when the table is not appearing as an AXTable.)
-    if (isTableCell() || !m_layoutObject || !m_layoutObject->isTableCell())
-        return 0;
-
-    // Table cells that are th cannot have title ui elements, since by definition
-    // they are title ui elements
-    if (isTableHeaderCell())
-        return 0;
-
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
-
-    // If this cell is in the first column, there is no need to continue.
-    int col = layoutCell->col();
-    if (!col)
-        return 0;
-
-    int row = layoutCell->rowIndex();
-
-    LayoutTableSection* section = layoutCell->section();
-    if (!section)
-        return 0;
-
-    LayoutTableCell* headerCell = section->primaryCellAt(row, 0);
-    if (!headerCell || headerCell == layoutCell)
-        return 0;
-
-    Node* cellElement = headerCell->node();
-    if (!cellElement || !cellElement->hasTagName(thTag))
-        return 0;
-
-    return axObjectCache().getOrCreate(headerCell);
-}
-
 } // namespace blink

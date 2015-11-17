@@ -27,7 +27,7 @@ if (window.testRunner && window.accessibilityController) {
     var result = "";
     accessibilityController.addNotificationListener(function(element, notification) {
         if (element.role == "AXRole: AXMenuListOption") {
-            debug("Got notification on option " + element.stringValue + " isSelected=" + element.isSelected);
+            debug("Got notification on option " + element.name + " isSelected=" + element.isSelected);
             if (element.isSelected)
                 finishJSTest();
         }

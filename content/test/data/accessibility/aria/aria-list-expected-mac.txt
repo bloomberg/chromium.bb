@@ -1,8 +1,8 @@
 AXWebArea
-++AXList AXSubrole=AXContentList AXSelectedChildren=[] AXVisibleChildren=["AXGroup group 1","AXGroup group 2","AXGroup group 3"]
-++++AXGroup AXTitle='Item 1'
+++AXList AXSubrole=AXContentList AXSelectedChildren=[] AXVisibleChildren=["AXGroup 1","AXGroup 2","AXGroup 3"]
+++++AXGroup AXDescription='1'
 ++++++AXStaticText AXValue='Item 1'
-++++AXGroup AXTitle='Item 2'
+++++AXGroup AXDescription='2'
 ++++++AXStaticText AXValue='Item 2'
-++++AXGroup AXTitle='Item 3'
+++++AXGroup AXDescription='3'
 ++++++AXStaticText AXValue='Item 3'

@@ -348,13 +348,13 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData static_text1;
   static_text1.id = 3;
   static_text1.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text1.AddStringAttribute(ui::AX_ATTR_VALUE, line1);
+  static_text1.AddStringAttribute(ui::AX_ATTR_NAME, line1);
   static_text1.child_ids.push_back(4);
 
   ui::AXNodeData inline_box1;
   inline_box1.id = 4;
   inline_box1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box1.AddStringAttribute(ui::AX_ATTR_VALUE, line1);
+  inline_box1.AddStringAttribute(ui::AX_ATTR_NAME, line1);
   std::vector<int32> word_start_offsets1;
   word_start_offsets1.push_back(0);
   word_start_offsets1.push_back(4);
@@ -365,18 +365,18 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData line_break;
   line_break.id = 5;
   line_break.role = ui::AX_ROLE_LINE_BREAK;
-  line_break.AddStringAttribute(ui::AX_ATTR_VALUE, "\n");
+  line_break.AddStringAttribute(ui::AX_ATTR_NAME, "\n");
 
   ui::AXNodeData static_text2;
   static_text2.id = 6;
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text2.AddStringAttribute(ui::AX_ATTR_VALUE, line2);
+  static_text2.AddStringAttribute(ui::AX_ATTR_NAME, line2);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_box2;
   inline_box2.id = 7;
   inline_box2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box2.AddStringAttribute(ui::AX_ATTR_VALUE, line2);
+  inline_box2.AddStringAttribute(ui::AX_ATTR_NAME, line2);
   std::vector<int32> word_start_offsets2;
   word_start_offsets2.push_back(0);
   word_start_offsets2.push_back(5);

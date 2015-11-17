@@ -1,4 +1,4 @@
 AXWebArea AXRoleDescription='HTML content'
 ++AXList AXRoleDescription='list'
-++++AXStaticText AXRoleDescription='text' AXTitle='option 1'
-++++AXStaticText AXRoleDescription='text' AXTitle='option 2'
+++++AXStaticText AXRoleDescription='text' AXValue='option 1'
+++++AXStaticText AXRoleDescription='text' AXValue='label 2'

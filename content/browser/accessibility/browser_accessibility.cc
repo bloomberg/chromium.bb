@@ -270,7 +270,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     }
 
     std::string child_text;
-    child->GetStringAttribute(ui::AX_ATTR_VALUE, &child_text);
+    child->GetStringAttribute(ui::AX_ATTR_NAME, &child_text);
     int child_len = static_cast<int>(child_text.size());
     child_start = child_end;
     child_end += child_len;
@@ -369,7 +369,7 @@ int BrowserAccessibility::GetWordStartBoundary(
         BrowserAccessibility* child = InternalGetChild(i);
         DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
         const std::string& child_text = child->GetStringAttribute(
-            ui::AX_ATTR_VALUE);
+            ui::AX_ATTR_NAME);
         int child_len = static_cast<int>(child_text.size());
         child_end += child_len; // End is one past the last character.
 
@@ -725,10 +725,32 @@ bool BrowserAccessibility::IsTextControl() const {
   }
 }
 
+std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {
+  std::string name;
+  for (size_t i = 0; i < InternalChildCount(); ++i) {
+    BrowserAccessibility* child = InternalGetChild(i);
+    std::string child_name;
+    if (child->GetStringAttribute(ui::AX_ATTR_NAME, &child_name)) {
+      if (!name.empty())
+        name += " ";
+      name += child_name;
+    } else if (!child->HasState(ui::AX_STATE_FOCUSABLE)) {
+      child_name = child->ComputeAccessibleNameFromDescendants();
+      if (!child_name.empty()) {
+        if (!name.empty())
+          name += " ";
+        name += child_name;
+      }
+    }
+  }
+
+  return name;
+}
+
 int BrowserAccessibility::GetStaticTextLenRecursive() const {
   if (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
       GetRole() == ui::AX_ROLE_LINE_BREAK) {
-    return static_cast<int>(GetStringAttribute(ui::AX_ATTR_VALUE).size());
+    return static_cast<int>(GetStringAttribute(ui::AX_ATTR_NAME).size());
   }
 
   int len = 0;

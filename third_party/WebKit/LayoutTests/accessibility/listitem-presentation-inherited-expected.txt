@@ -11,27 +11,27 @@ This tests that the presentation role is inherited.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-AXRole: AXWebArea AXValue: 
-    AXRole: AXListItem AXValue: 
-        AXRole: AXListMarker AXValue: •
-        AXRole: AXStaticText AXValue: Item 1
-            AXRole: AXInlineTextBox AXValue: Item 1
-    AXRole: AXListItem AXValue: 
-        AXRole: AXListMarker AXValue: •
-        AXRole: AXStaticText AXValue: Item 2
-            AXRole: AXInlineTextBox AXValue: Item 2
-    AXRole: AXListItem AXValue: 
-        AXRole: AXListMarker AXValue: •
-        AXRole: AXStaticText AXValue: Item 3
-            AXRole: AXInlineTextBox AXValue: Item 3
-    AXRole: AXStaticText AXValue: Plain Text 1
-        AXRole: AXInlineTextBox AXValue: Plain Text 1
-    AXRole: AXStaticText AXValue: Plain Text 2
-        AXRole: AXInlineTextBox AXValue: Plain Text 2
-    AXRole: AXStaticText AXValue: Plain Text 3
-        AXRole: AXInlineTextBox AXValue: Plain Text 3
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: End of test
+AXRole: AXWebArea
+    AXRole: AXListItem "Item 1"
+        AXRole: AXListMarker "•"
+        AXRole: AXStaticText "Item 1"
+            AXRole: AXInlineTextBox "Item 1"
+    AXRole: AXListItem "Item 2"
+        AXRole: AXListMarker "•"
+        AXRole: AXStaticText "Item 2"
+            AXRole: AXInlineTextBox "Item 2"
+    AXRole: AXListItem "Item 3"
+        AXRole: AXListMarker "•"
+        AXRole: AXStaticText "Item 3"
+            AXRole: AXInlineTextBox "Item 3"
+    AXRole: AXStaticText "Plain Text 1"
+        AXRole: AXInlineTextBox "Plain Text 1"
+    AXRole: AXStaticText "Plain Text 2"
+        AXRole: AXInlineTextBox "Plain Text 2"
+    AXRole: AXStaticText "Plain Text 3"
+        AXRole: AXInlineTextBox "Plain Text 3"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "End of test"
 PASS successfullyParsed is true
 
 TEST COMPLETE

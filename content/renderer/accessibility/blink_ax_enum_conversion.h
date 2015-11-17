@@ -39,6 +39,11 @@ ui::AXInvalidState AXInvalidStateFromBlink(
 ui::AXSortDirection AXSortDirectionFromBlink(
     blink::WebAXSortDirection sort_direction);
 
+ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from);
+
+ui::AXDescriptionFrom AXDescriptionFromFromBlink(
+    blink::WebAXDescriptionFrom description_from);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_ENUM_CONVERSION_H_

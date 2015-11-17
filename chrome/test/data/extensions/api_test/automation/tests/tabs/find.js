@@ -126,7 +126,7 @@ var allTests = [
     assertEq(null, rootNode.find({ attributes: { name: 'ok' }}));
 
     // Find by value attribute - regexp.
-    var query = { attributes: { value: /relationship/ }};
+    var query = { attributes: { name: /relationship/ }};
     assertEq(p2, rootNode.find(query).parent);
 
     // Find by role and hierarchicalLevel attribute.
@@ -165,12 +165,12 @@ var allTests = [
     var p2StaticText = p2.firstChild;
     assertTrue(
         p2StaticText.matches({ role: RoleType.staticText,
-                               attributes: { value: /relationship/ } }),
-        'p2StaticText should match value: /relationship/ (regex match)');
+                               attributes: { name: /relationship/ } }),
+        'p2StaticText should match name: /relationship/ (regex match)');
     assertFalse(
         p2StaticText.matches({ role: RoleType.staticText,
-                               attributes: { value: 'relationship' } }),
-      'p2 should not match value: \'relationship');
+                               attributes: { name: 'relationship' } }),
+      'p2 should not match name: \'relationship');
 
     chrome.test.succeed();
   }

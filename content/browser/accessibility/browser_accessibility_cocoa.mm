@@ -552,34 +552,69 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSString*)description {
-  std::string description;
-  if (browserAccessibility_->GetStringAttribute(
-          ui::AX_ATTR_DESCRIPTION, &description)) {
-    return base::SysUTF8ToNSString(description);
-  }
-
-  // If the role is anything other than an image, or if there's
-  // a title or title UI element, just return an empty string.
-  if (![[self role] isEqualToString:NSAccessibilityImageRole])
-    return @"";
-  if (browserAccessibility_->HasStringAttribute(
-          ui::AX_ATTR_NAME)) {
-    return @"";
-  }
-  if ([self titleUIElement])
+  // Mac OS X wants static text exposed in AXValue.
+  if ([self shouldExposeNameInAXValue])
     return @"";
 
-  // The remaining case is an image where there's no other title.
-  // Return the base part of the filename as the description.
-  std::string url;
-  if (browserAccessibility_->GetStringAttribute(
-          ui::AX_ATTR_URL, &url)) {
-    // Given a url like http://foo.com/bar/baz.png, just return the
-    // base name, e.g., "baz.png".
-    size_t leftIndex = url.rfind('/');
-    std::string basename =
-        leftIndex != std::string::npos ? url.substr(leftIndex) : url;
-    return base::SysUTF8ToNSString(basename);
+  // If the name came from a single related element and it's present in the
+  // tree, it will be exposed in AXTitleUIElement.
+  std::vector<int32> labelledby_ids =
+      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
+      labelledby_ids.size() == 1 &&
+      browserAccessibility_->manager()->GetFromID(labelledby_ids[0])) {
+    return @"";
+  }
+
+  std::string name = browserAccessibility_->GetStringAttribute(
+      ui::AX_ATTR_NAME);
+  if (!name.empty()) {
+    // On Mac OS X, the accessible name of an object is exposed as its
+    // title if it comes from visible text, and as its description
+    // otherwise, but never both.
+    if (nameFrom == ui::AX_NAME_FROM_CONTENTS ||
+        nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT ||
+        nameFrom == ui::AX_NAME_FROM_VALUE) {
+      return @"";
+    } else {
+      return base::SysUTF8ToNSString(name);
+    }
+  }
+
+  // Given an image where there's no other title, return the base part
+  // of the filename as the description.
+  if ([[self role] isEqualToString:NSAccessibilityImageRole]) {
+    if (browserAccessibility_->HasStringAttribute(ui::AX_ATTR_NAME))
+      return @"";
+    if ([self titleUIElement])
+      return @"";
+
+    std::string url;
+    if (browserAccessibility_->GetStringAttribute(
+            ui::AX_ATTR_URL, &url)) {
+      // Given a url like http://foo.com/bar/baz.png, just return the
+      // base name, e.g., "baz.png".
+      size_t leftIndex = url.rfind('/');
+      std::string basename =
+          leftIndex != std::string::npos ? url.substr(leftIndex) : url;
+      return base::SysUTF8ToNSString(basename);
+    }
+  }
+
+  // If it's focusable but didn't have any other name or value, compute a name
+  // from its descendants.
+  std::string value = browserAccessibility_->GetStringAttribute(
+      ui::AX_ATTR_VALUE);
+  if (browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE) &&
+      !browserAccessibility_->IsControl() &&
+      value.empty() &&
+      [self internalRole] != ui::AX_ROLE_DATE_TIME &&
+      [self internalRole] != ui::AX_ROLE_WEB_AREA &&
+      [self internalRole] != ui::AX_ROLE_ROOT_WEB_AREA) {
+    return base::SysUTF8ToNSString(
+        browserAccessibility_->ComputeAccessibleNameFromDescendants());
   }
 
   return @"";
@@ -679,7 +714,7 @@ bool InitializeAccessibilityTreeSearch(
 
 - (NSString*)help {
   return NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_HELP);
+      browserAccessibility_, ui::AX_ATTR_DESCRIPTION);
 }
 
 - (NSNumber*)index {
@@ -735,6 +770,20 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSString*)placeholderValue {
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+  if (nameFrom == ui::AX_NAME_FROM_PLACEHOLDER) {
+    return NSStringForStringAttribute(
+        browserAccessibility_, ui::AX_ATTR_NAME);
+  }
+
+  ui::AXDescriptionFrom descriptionFrom = static_cast<ui::AXDescriptionFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_DESCRIPTION_FROM));
+  if (descriptionFrom == ui::AX_DESCRIPTION_FROM_PLACEHOLDER) {
+    return NSStringForStringAttribute(
+        browserAccessibility_, ui::AX_ATTR_DESCRIPTION);
+  }
+
   return NSStringForStringAttribute(
       browserAccessibility_, ui::AX_ATTR_PLACEHOLDER);
 }
@@ -753,7 +802,6 @@ bool InitializeAccessibilityTreeSearch(
 
 - (NSArray*)linkedUIElements {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_OWNS_IDS addTo:ret];
   [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_CONTROLS_IDS addTo:ret];
   [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_FLOWTO_IDS addTo:ret];
   if ([ret count] == 0)
@@ -835,6 +883,19 @@ bool InitializeAccessibilityTreeSearch(
 // Returns an enum indicating the role from browserAccessibility_.
 - (ui::AXRole)internalRole {
   return static_cast<ui::AXRole>(browserAccessibility_->GetRole());
+}
+
+// Returns true if this should expose its accessible name in AXValue.
+- (bool)shouldExposeNameInAXValue {
+  switch ([self internalRole]) {
+    case ui::AX_ROLE_LIST_BOX_OPTION:
+    case ui::AX_ROLE_LIST_MARKER:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+    case ui::AX_ROLE_STATIC_TEXT:
+      return true;
+    default:
+      return false;
+  }
 }
 
 - (content::BrowserAccessibilityDelegate*)delegate {
@@ -1177,22 +1238,42 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSString*)title {
-  return NSStringForStringAttribute(
-      browserAccessibility_, ui::AX_ATTR_NAME);
+  // Mac OS X wants static text exposed in AXValue.
+  if ([self shouldExposeNameInAXValue])
+    return @"";
+
+  // If the name came from a single related element and it's present in the
+  // tree, it will be exposed in AXTitleUIElement.
+  std::vector<int32> labelledby_ids =
+      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
+      labelledby_ids.size() == 1 &&
+      browserAccessibility_->manager()->GetFromID(labelledby_ids[0])) {
+    return @"";
+  }
+
+  // On Mac OS X, the accessible name of an object is exposed as its
+  // title if it comes from visible text, and as its description
+  // otherwise, but never both.
+  if (nameFrom == ui::AX_NAME_FROM_CONTENTS ||
+      nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT ||
+      nameFrom == ui::AX_NAME_FROM_VALUE) {
+    return NSStringForStringAttribute(
+        browserAccessibility_, ui::AX_ATTR_NAME);
+  }
+
+  return nil;
 }
 
 - (id)titleUIElement {
-  int titleElementId;
-  if (browserAccessibility_->GetIntAttribute(
-          ui::AX_ATTR_TITLE_UI_ELEMENT, &titleElementId)) {
-    BrowserAccessibility* titleElement =
-        browserAccessibility_->manager()->GetFromID(titleElementId);
-    if (titleElement)
-      return titleElement->ToBrowserAccessibilityCocoa();
-  }
   std::vector<int32> labelledby_ids =
       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
-  if (labelledby_ids.size() == 1) {
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
+      labelledby_ids.size() == 1) {
     BrowserAccessibility* titleElement =
         browserAccessibility_->manager()->GetFromID(labelledby_ids[0]);
     if (titleElement)
@@ -1216,11 +1297,11 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (id)value {
-  // WebCore uses an attachmentView to get the below behavior.
-  // We do not have any native views backing this object, so need
-  // to approximate Cocoa ax behavior best as we can.
   NSString* role = [self role];
-  if ([role isEqualToString:@"AXHeading"]) {
+  if ([self shouldExposeNameInAXValue]) {
+    return NSStringForStringAttribute(
+        browserAccessibility_, ui::AX_ATTR_NAME);
+  } else if ([role isEqualToString:@"AXHeading"]) {
     int level = 0;
     if (browserAccessibility_->GetIntAttribute(
             ui::AX_ATTR_HIERARCHICAL_LEVEL, &level)) {
@@ -1835,10 +1916,9 @@ bool InitializeAccessibilityTreeSearch(
   }
 
   // Title UI Element.
-  if (browserAccessibility_->HasIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT) ||
-      (browserAccessibility_->HasIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS) &&
-       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS)
-                            .size() == 1)) {
+  if (browserAccessibility_->HasIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS) &&
+      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS)
+                            .size() > 0) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
          NSAccessibilityTitleUIElementAttribute,
          nil]];
@@ -1870,8 +1950,9 @@ bool InitializeAccessibilityTreeSearch(
     return NO;
 
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute])
-    return GetState(browserAccessibility_,
-        ui::AX_STATE_FOCUSABLE);
+    if ([self internalRole] == ui::AX_ROLE_DATE_TIME)
+      return NO;
+    return GetState(browserAccessibility_, ui::AX_STATE_FOCUSABLE);
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
     return browserAccessibility_->GetBoolAttribute(
         ui::AX_ATTR_CAN_SET_VALUE);

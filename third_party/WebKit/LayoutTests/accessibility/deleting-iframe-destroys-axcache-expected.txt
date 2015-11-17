@@ -14,32 +14,32 @@ PASS successfullyParsed is true
 TEST COMPLETE
 
 Before:
-AXRole: AXWebArea AXValue: 
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: Before
-            AXRole: AXInlineTextBox AXValue: Before
-    AXRole: AXGroup AXValue: 
-        AXRole: AXUnknown AXValue: 
-            AXRole: AXScrollArea AXValue: 
-                AXRole: AXWebArea AXValue: 
-                    AXRole: AXGroup AXValue: 
-                        AXRole: AXButton AXValue: 
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: After
-            AXRole: AXInlineTextBox AXValue: After
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: End of test
+AXRole: AXWebArea
+    AXRole: AXParagraph
+        AXRole: AXStaticText "Before"
+            AXRole: AXInlineTextBox "Before"
+    AXRole: AXGroup
+        AXRole: AXUnknown
+            AXRole: AXScrollArea
+                AXRole: AXWebArea
+                    AXRole: AXGroup
+                        AXRole: AXButton "Click me"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "After"
+            AXRole: AXInlineTextBox "After"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "End of test"
 
 After:
-AXRole: AXWebArea AXValue: 
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: Before
-            AXRole: AXInlineTextBox AXValue: Before
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: After
-            AXRole: AXInlineTextBox AXValue: After
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: End of test
+AXRole: AXWebArea
+    AXRole: AXParagraph
+        AXRole: AXStaticText "Before"
+            AXRole: AXInlineTextBox "Before"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "After"
+            AXRole: AXInlineTextBox "After"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "End of test"
 
 PASS frameBodyRole == frameBody.role is false
 PASS frameGroupRole == frameGroup.role is false

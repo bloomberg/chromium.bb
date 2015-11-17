@@ -20,8 +20,6 @@ void GetNodeStrings(BrowserAccessibility* node,
     strings->push_back(node->GetString16Attribute(ui::AX_ATTR_NAME));
   if (node->HasStringAttribute(ui::AX_ATTR_DESCRIPTION))
     strings->push_back(node->GetString16Attribute(ui::AX_ATTR_DESCRIPTION));
-  if (node->HasStringAttribute(ui::AX_ATTR_HELP))
-    strings->push_back(node->GetString16Attribute(ui::AX_ATTR_HELP));
   if (node->HasStringAttribute(ui::AX_ATTR_VALUE))
     strings->push_back(node->GetString16Attribute(ui::AX_ATTR_VALUE));
   if (node->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER))

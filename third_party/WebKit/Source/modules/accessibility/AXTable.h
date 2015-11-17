@@ -68,8 +68,6 @@ public:
     unsigned columnCount();
     unsigned rowCount();
 
-    String deprecatedTitle(TextUnderElementMode) const final;
-
     // all the cells in the table
     void cells(AXObjectVector&);
     AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);

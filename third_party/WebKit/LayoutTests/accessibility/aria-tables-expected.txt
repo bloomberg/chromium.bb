@@ -9,40 +9,40 @@ row head
 col head
 End of test
 
-AXRole: AXWebArea AXValue: 
-    AXRole: AXTable AXValue: 
-        AXRole: AXRow AXValue: 
-            AXRole: AXColumnHeader AXValue: 
-                AXRole: AXStaticText AXValue: col head
-                    AXRole: AXInlineTextBox AXValue: col head
-            AXRole: AXColumnHeader AXValue: 
-                AXRole: AXStaticText AXValue: col head
-                    AXRole: AXInlineTextBox AXValue: col head
-            AXRole: AXColumnHeader AXValue: 
-                AXRole: AXStaticText AXValue: col head
-                    AXRole: AXInlineTextBox AXValue: col head
-        AXRole: AXRow AXValue: 
-            AXRole: AXRowHeader AXValue: 
-                AXRole: AXStaticText AXValue: row head
-                    AXRole: AXInlineTextBox AXValue: row head
-            AXRole: AXCell AXValue: 
-                AXRole: AXStaticText AXValue: data
-                    AXRole: AXInlineTextBox AXValue: data
-            AXRole: AXRowHeader AXValue: 
-                AXRole: AXStaticText AXValue: row head
-                    AXRole: AXInlineTextBox AXValue: row head
-        AXRole: AXRow AXValue: 
-            AXRole: AXRowHeader AXValue: 
-                AXRole: AXStaticText AXValue: row head
-                    AXRole: AXInlineTextBox AXValue: row head
-            AXRole: AXRowHeader AXValue: 
-                AXRole: AXStaticText AXValue: row head
-                    AXRole: AXInlineTextBox AXValue: row head
-            AXRole: AXColumnHeader AXValue: 
-                AXRole: AXStaticText AXValue: col head
-                    AXRole: AXInlineTextBox AXValue: col head
-    AXRole: AXParagraph AXValue: 
-        AXRole: AXStaticText AXValue: End of test
+AXRole: AXWebArea
+    AXRole: AXTable
+        AXRole: AXRow
+            AXRole: AXColumnHeader
+                AXRole: AXStaticText "col head"
+                    AXRole: AXInlineTextBox "col head"
+            AXRole: AXColumnHeader
+                AXRole: AXStaticText "col head"
+                    AXRole: AXInlineTextBox "col head"
+            AXRole: AXColumnHeader
+                AXRole: AXStaticText "col head"
+                    AXRole: AXInlineTextBox "col head"
+        AXRole: AXRow
+            AXRole: AXRowHeader
+                AXRole: AXStaticText "row head"
+                    AXRole: AXInlineTextBox "row head"
+            AXRole: AXCell
+                AXRole: AXStaticText "data"
+                    AXRole: AXInlineTextBox "data"
+            AXRole: AXRowHeader
+                AXRole: AXStaticText "row head"
+                    AXRole: AXInlineTextBox "row head"
+        AXRole: AXRow
+            AXRole: AXRowHeader
+                AXRole: AXStaticText "row head"
+                    AXRole: AXInlineTextBox "row head"
+            AXRole: AXRowHeader
+                AXRole: AXStaticText "row head"
+                    AXRole: AXInlineTextBox "row head"
+            AXRole: AXColumnHeader
+                AXRole: AXStaticText "col head"
+                    AXRole: AXInlineTextBox "col head"
+    AXRole: AXParagraph
+        AXRole: AXStaticText "End of test"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -633,14 +633,14 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
 
   ui::AXNodeData static_text;
   static_text.id = 2;
-  static_text.SetValue("Hello, world.");
+  static_text.SetName("Hello, world.");
   static_text.role = ui::AX_ROLE_STATIC_TEXT;
   static_text.location = gfx::Rect(100, 100, 29, 18);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
-  inline_text1.SetValue("Hello, ");
+  inline_text1.SetName("Hello, ");
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 29, 9);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -659,7 +659,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 4;
-  inline_text2.SetValue("world.");
+  inline_text2.SetName("world.");
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(100, 109, 28, 9);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -728,14 +728,14 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 
   ui::AXNodeData static_text;
   static_text.id = 2;
-  static_text.SetValue("123abc");
+  static_text.SetName("123abc");
   static_text.role = ui::AX_ROLE_STATIC_TEXT;
   static_text.location = gfx::Rect(100, 100, 60, 20);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
-  inline_text1.SetValue("123");
+  inline_text1.SetName("123");
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 30, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -750,7 +750,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 4;
-  inline_text2.SetValue("abc");
+  inline_text2.SetName("abc");
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(130, 100, 30, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -803,14 +803,14 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
 
   ui::AXNodeData static_text;
   static_text.id = 2;
-  static_text.SetValue("ABC");
+  static_text.SetName("ABC");
   static_text.role = ui::AX_ROLE_STATIC_TEXT;
   static_text.location = gfx::Rect(100, 100, 16, 9);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text;
   inline_text.id = 3;
-  inline_text.SetValue("ABC");
+  inline_text.SetName("ABC");
   inline_text.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text.location = gfx::Rect(100, 100, 16, 9);
   inline_text.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -864,7 +864,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
 
   ui::AXNodeData static_text1;
   static_text1.id = 3;
-  static_text1.SetValue("AB");
+  static_text1.SetName("AB");
   static_text1.role = ui::AX_ROLE_STATIC_TEXT;
   static_text1.location = gfx::Rect(100, 100, 40, 20);
   static_text1.child_ids.push_back(6);
@@ -876,14 +876,14 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
 
   ui::AXNodeData static_text2;
   static_text2.id = 5;
-  static_text2.SetValue("CD");
+  static_text2.SetName("CD");
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;
   static_text2.location = gfx::Rect(160, 100, 40, 20);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 6;
-  inline_text1.SetValue("AB");
+  inline_text1.SetName("AB");
   inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text1.location = gfx::Rect(100, 100, 40, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
@@ -896,7 +896,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 7;
-  inline_text2.SetValue("CD");
+  inline_text2.SetName("CD");
   inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_text2.location = gfx::Rect(160, 100, 40, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,

@@ -3,12 +3,12 @@ AXWebArea
 ++++AXGroup AXTitle='grabbed-true blue' AXGrabbed='1'
 ++++++AXListMarker AXValue='•'
 ++++++AXStaticText AXValue='grabbed-true '
-++++++AXImage
+++++++AXImage AXDescription='blue'
 ++++AXGroup AXTitle='grabbed-false blue' AXGrabbed='0'
 ++++++AXListMarker AXValue='•'
 ++++++AXStaticText AXValue='grabbed-false '
-++++++AXImage
+++++++AXImage AXDescription='blue'
 ++++AXGroup AXTitle='grabbed-undefined blue'
 ++++++AXListMarker AXValue='•'
 ++++++AXStaticText AXValue='grabbed-undefined '
-++++++AXImage
+++++++AXImage AXDescription='blue'

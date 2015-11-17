@@ -58,7 +58,7 @@ private:
     void setSelected(bool) override;
     bool canSetSelectedAttribute() const override;
     LayoutRect elementRect() const override;
-    String stringValue() const override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     RawPtrWillBeMember<HTMLOptionElement> m_element;

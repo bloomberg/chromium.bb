@@ -176,7 +176,7 @@ test(function(t) {
 test(function(t) {
     var axImageInput1 = accessibilityController.accessibleElementById("image-input1");
     assert_equals(axImageInput1.name, "Submit");
-    assert_equals(axImageInput1.nameFrom, "attribute");
+    assert_equals(axImageInput1.nameFrom, "value");
 }, "Image input with no value");
 </script>
 
@@ -224,7 +224,7 @@ test(function(t) {
 test(function(t) {
     var axImageInput5 = accessibilityController.accessibleElementById("image-input5");
     assert_equals(axImageInput5.name, "Submit");
-    assert_equals(axImageInput5.nameFrom, "attribute");
+    assert_equals(axImageInput5.nameFrom, "value");
 }, "Image input with title only");
 </script>
 

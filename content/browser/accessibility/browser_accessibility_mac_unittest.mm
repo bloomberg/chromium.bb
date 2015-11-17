@@ -30,7 +30,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     root.location.set_width(500);
     root.location.set_height(100);
     root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-    root.AddStringAttribute(ui::AX_ATTR_HELP, "HelpText");
+    root.AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "HelpText");
     root.child_ids.push_back(1001);
     root.child_ids.push_back(1002);
 
@@ -66,7 +66,8 @@ TEST_F(BrowserAccessibilityTest, HitTestTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
   EXPECT_NSEQ(@"Child1",
-      [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+      [firstChild
+       accessibilityAttributeValue:NSAccessibilityDescriptionAttribute]);
 }
 
 // Test doing a hit test on the edge of a child.
@@ -74,7 +75,8 @@ TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSZeroPoint];
   EXPECT_NSEQ(@"Child1",
-      [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+      [firstChild
+       accessibilityAttributeValue:NSAccessibilityDescriptionAttribute]);
 }
 
 // This will test a hit test with invalid coordinates.  It is assumed that
@@ -105,7 +107,7 @@ TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
   BrowserAccessibilityCocoa* retainedFirstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
   EXPECT_NSEQ(@"Child1", [retainedFirstChild
-      accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+      accessibilityAttributeValue:NSAccessibilityDescriptionAttribute]);
 
   // Retain it. This simulates what the system might do with an
   // accessibility object.
@@ -116,7 +118,7 @@ TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
 
   // Now any attributes we query should return nil.
   EXPECT_EQ(nil, [retainedFirstChild
-      accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+      accessibilityAttributeValue:NSAccessibilityDescriptionAttribute]);
 
   // Don't leak memory in the test.
   [retainedFirstChild release];

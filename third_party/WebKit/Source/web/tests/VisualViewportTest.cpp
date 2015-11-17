@@ -1509,7 +1509,9 @@ TEST_P(ParameterizedVisualViewportTest, AccessibilityHitTestWhileZoomedIn)
     // Because of where the visual viewport is located, this should hit the bottom right
     // target (target 4).
     WebAXObject hitNode = webDoc.accessibilityObject().hitTest(WebPoint(154, 165));
-    EXPECT_EQ(std::string("Target4"), hitNode.title().utf8());
+    WebAXNameFrom nameFrom;
+    WebVector<WebAXObject> nameObjects;
+    EXPECT_EQ(std::string("Target4"), hitNode.name(nameFrom, nameObjects).utf8());
 }
 
 // Tests that the maximum scroll offset of the viewport can be fractional.

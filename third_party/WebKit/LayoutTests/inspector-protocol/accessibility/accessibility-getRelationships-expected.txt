@@ -86,10 +86,6 @@ Ginger Ale
             "superseded": true
           }
         ]
-      },
-      "description": {
-        "type": "computedString",
-        "value": "Lunch Options"
       }
     }
   }
@@ -156,10 +152,6 @@ Ginger Ale
             "superseded": true
           }
         ]
-      },
-      "description": {
-        "type": "computedString",
-        "value": "Drink Options"
       }
     }
   }

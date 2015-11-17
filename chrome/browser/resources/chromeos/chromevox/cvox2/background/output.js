@@ -377,84 +377,89 @@ Output.INPUT_TYPE_MESSAGE_IDS_ = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: '$name $value $help $role',
+      speak: '$name $value $role $description',
       braille: ''
     },
     abstractContainer: {
-      enter: '$name $role',
+      enter: '$name $role $description',
       leave: '@exited_container($role)'
     },
     alert: {
       speak: '!doNotInterrupt $role $descendants'
     },
     alertDialog: {
-      enter: '$name $role $descendants'
+      enter: '$name $role $description $descendants'
     },
     cell: {
       enter: '@column_granularity $tableCellColumnIndex'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-             '$name $role $checked'
+             '$name $role $checked $description'
     },
     dialog: {
-      enter: '$name $role'
+      enter: '$name $role $description'
     },
     div: {
       enter: '$name',
-      speak: '$name'
+      speak: '$name $description'
     },
     grid: {
-      enter: '$name $role'
+      enter: '$name $role $description'
     },
     heading: {
       enter: '@tag_h+$hierarchicalLevel',
       speak: '@tag_h+$hierarchicalLevel $nameOrDescendants='
     },
     inlineTextBox: {
-      speak: '$value='
+      speak: '$name='
     },
     link: {
       enter: '$name $if($visited, @visited_link, $role)',
       stay: '$name= $if($visited, @visited_link, $role)',
-      speak: '$name= $if($visited, @visited_link, $role)'
+      speak: '$name= $if($visited, @visited_link, $role) $description'
     },
     list: {
       enter: '$role @@list_with_items($countChildren(listItem))'
     },
     listBox: {
-      enter: '$name $role @@list_with_items($countChildren(listBoxOption))'
+      enter: '$name $role @@list_with_items($countChildren(listBoxOption)) ' +
+          '$description'
     },
     listBoxOption: {
-      speak: '$name $role @describe_index($indexInParent, $parentChildCount)'
+      speak: '$name $role @describe_index($indexInParent, $parentChildCount) ' +
+          '$description'
     },
     listItem: {
       enter: '$role'
     },
     menu: {
-      enter: '$name $role @@list_with_items($countChildren(menuItem))'
+      enter: '$name $role @@list_with_items($countChildren(menuItem)) ' +
+          '$description'
     },
     menuItem: {
       speak: '$name $role $if($haspopup, @has_submenu) ' +
-          '@describe_index($indexInParent, $parentChildCount)'
+          '@describe_index($indexInParent, $parentChildCount) ' +
+          '$description'
     },
     menuListOption: {
-      speak: '$name $value @role_menuitem ' +
-          '@describe_index($indexInParent, $parentChildCount)'
+      speak: '$name @role_menuitem ' +
+          '@describe_index($indexInParent, $parentChildCount) $description'
     },
     paragraph: {
       speak: '$descendants'
     },
     popUpButton: {
       speak: '$earcon(POP_UP_BUTTON) $value $name $role @aria_has_popup ' +
-          '$if($collapsed, @aria_expanded_false, @aria_expanded_true)'
+          '$if($collapsed, @aria_expanded_false, @aria_expanded_true) ' +
+          '$description'
     },
     radioButton: {
       speak: '$if($checked, @describe_radio_selected($name), ' +
-          '@describe_radio_unselected($name))'
+          '@describe_radio_unselected($name)) $description'
     },
     radioGroup: {
-      enter: '$name $role'
+      enter: '$name $role $description'
     },
     rootWebArea: {
       enter: '$name'
@@ -463,21 +468,21 @@ Output.RULES = {
       enter: '@row_granularity $tableRowIndex'
     },
     slider: {
-      speak: '$earcon(SLIDER) @describe_slider($value, $name) $help'
+      speak: '$earcon(SLIDER) @describe_slider($value, $name) $description'
     },
     staticText: {
-      speak: '$value='
+      speak: '$name='
     },
     tab: {
       speak: '@describe_tab($name)'
     },
     textField: {
       speak: '$name $value $if(' +
-          '$inputType, $inputType, $role)',
+          '$inputType, $inputType, $role) $description',
       braille: ''
     },
     toolbar: {
-      enter: '$name $role'
+      enter: '$name $role $description'
     },
     tree: {
       enter: '$name $role @@list_with_items($countChildren(treeItem))'
@@ -512,7 +517,7 @@ Output.RULES = {
   alert: {
     default: {
       speak: '!doNotInterrupt ' +
-          '@role_alert $name $earcon(ALERT_NONMODAL) $descendants'
+          '@role_alert $name $earcon(ALERT_NONMODAL) $description $descendants'
     }
   }
 };
@@ -842,11 +847,7 @@ Output.prototype = {
               earconFinder = earconFinder.parent;
             }
           }
-
-          // Pending finalization of name calculation; we must use the
-          // description property to access aria-label. See crbug.com/473220.
-          var resolvedName = node.description || node.name;
-          this.append_(buff, resolvedName, options);
+          this.append_(buff, node.name, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
           if (node.name)

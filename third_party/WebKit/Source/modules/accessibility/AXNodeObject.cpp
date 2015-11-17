@@ -156,15 +156,6 @@ String AXNodeObject::ariaAccessibilityDescription() const
     return String();
 }
 
-
-void AXNodeObject::ariaLabelledbyElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
-{
-    // Try both spellings, but prefer aria-labelledby, which is the official spec.
-    elementsFromAttribute(elements, aria_labelledbyAttr);
-    if (!elements.size())
-        elementsFromAttribute(elements, aria_labeledbyAttr);
-}
-
 bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
 #if ENABLE(ASSERT)
@@ -180,19 +171,24 @@ bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
         return true;
     }
 
-    // Ignore labels that are already referenced by a control's title UI element.
+    // Ignore labels that are already referenced by a control.
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio()) {
-        if (ignoredReasons) {
-            HTMLLabelElement* label = labelElementContainer();
-            if (label && !label->isSameNode(node())) {
-                AXObject* labelAXObject = axObjectCache().getOrCreate(label);
-                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
-            }
+    if (controlObject && controlObject->isCheckboxOrRadio()) {
+        AXNameFrom controlNameFrom;
+        AXObject::AXObjectVector controlNameObjects;
+        controlObject->name(controlNameFrom, &controlNameObjects);
+        if (controlNameFrom == AXNameFromRelatedElement) {
+            if (ignoredReasons) {
+                HTMLLabelElement* label = labelElementContainer();
+                if (label && !label->isSameNode(node())) {
+                    AXObject* labelAXObject = axObjectCache().getOrCreate(label);
+                    ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
+                }
 
-            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+                ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+            }
+            return true;
         }
-        return true;
     }
 
     Element* element = node()->isElementNode() ? toElement(node()) : node()->parentElement();
@@ -550,34 +546,6 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
         return role;
 
     return UnknownRole;
-}
-
-void AXNodeObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedName& attribute) const
-{
-    Node* node = this->node();
-    if (!node || !node->isElementNode())
-        return;
-
-    String attributeValue = getAttribute(attribute).string();
-    if (attributeValue.isEmpty())
-        return;
-
-    attributeValue.simplifyWhiteSpace();
-    attributeValue.split(' ', tokens);
-}
-
-void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
-{
-    Vector<String> ids;
-    tokenVectorFromAttribute(ids, attribute);
-    if (ids.isEmpty())
-        return;
-
-    TreeScope& scope = node()->treeScope();
-    for (const auto& id : ids) {
-        if (Element* idElement = scope.getElementById(AtomicString(id)))
-            elements.append(idElement);
-    }
 }
 
 void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AXObjectVector& children) const
@@ -1139,33 +1107,6 @@ bool AXNodeObject::canvasHasFallbackContent() const
     return ElementTraversal::firstChild(*node);
 }
 
-bool AXNodeObject::deprecatedExposesTitleUIElement() const
-{
-    if (!isControl())
-        return false;
-
-    // If this control is ignored (because it's invisible),
-    // then the label needs to be exposed so it can be visible to accessibility.
-    if (accessibilityIsIgnored())
-        return true;
-
-    // ARIA: section 2A, bullet #3 says if aria-labelledby or aria-label appears, it should
-    // override the "label" element association.
-    bool hasTextAlternative = (!ariaLabelledbyAttribute().isEmpty() || !getAttribute(aria_labelAttr).isEmpty());
-
-    // Checkboxes and radio buttons use the text of their title ui element as their own AXTitle.
-    // This code controls whether the title ui element should appear in the AX tree (usually, no).
-    // It should appear if the control already has a label (which will be used as the AXTitle instead).
-    if (isCheckboxOrRadio())
-        return hasTextAlternative;
-
-    // When controls have their own descriptions, the title element should be ignored.
-    if (hasTextAlternative)
-        return false;
-
-    return true;
-}
-
 int AXNodeObject::headingLevel() const
 {
     // headings can be in block flow and non-block flow
@@ -1246,21 +1187,6 @@ String AXNodeObject::ariaAutoComplete() const
     return String();
 }
 
-String AXNodeObject::deprecatedPlaceholder() const
-{
-    String placeholder;
-    if (node()) {
-        if (isHTMLInputElement(*node())) {
-            HTMLInputElement* inputElement = toHTMLInputElement(node());
-            placeholder = inputElement->strippedPlaceholder();
-        } else if (isHTMLTextAreaElement(*node())) {
-            HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(node());
-            placeholder = textAreaElement->strippedPlaceholder();
-        }
-    }
-    return placeholder;
-}
-
 AccessibilityOrientation AXNodeObject::orientation() const
 {
     const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
@@ -1319,21 +1245,6 @@ String AXNodeObject::text() const
         return String();
 
     return toElement(node)->innerText();
-}
-
-AXObject* AXNodeObject::deprecatedTitleUIElement() const
-{
-    if (!node() || !node()->isElementNode())
-        return 0;
-
-    if (isFieldset())
-        return axObjectCache().getOrCreate(toHTMLFieldSetElement(node())->legend());
-
-    HTMLLabelElement* label = labelForElement(toElement(node()));
-    if (label)
-        return axObjectCache().getOrCreate(label);
-
-    return 0;
 }
 
 AccessibilityButtonState AXNodeObject::checkboxOrRadioValue() const
@@ -1490,25 +1401,6 @@ String AXNodeObject::stringValue() const
     if (!node)
         return String();
 
-    if (ariaRoleAttribute() == StaticTextRole) {
-        String staticText = text();
-        if (!staticText.length())
-            staticText = deprecatedTextUnderElement(TextUnderElementAll);
-        return staticText;
-    }
-
-    if (node->isTextNode())
-        return deprecatedTextUnderElement(TextUnderElementAll);
-
-    return stringValueOfControl();
-}
-
-String AXNodeObject::stringValueOfControl() const
-{
-    Node* node = this->node();
-    if (!node)
-        return String();
-
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
         int selectedIndex = selectElement.selectedIndex();
@@ -1549,7 +1441,7 @@ String AXNodeObject::ariaDescribedByAttribute() const
 String AXNodeObject::ariaLabelledbyAttribute() const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-    ariaLabelledbyElements(elements);
+    ariaLabelledbyElementVector(elements);
 
     return accessibilityDescriptionForElements(elements);
 }
@@ -1557,47 +1449,6 @@ String AXNodeObject::ariaLabelledbyAttribute() const
 AccessibilityRole AXNodeObject::ariaRoleAttribute() const
 {
     return m_ariaRole;
-}
-
-// When building the textUnderElement for an object, determine whether or not
-// we should include the inner text of this given descendant object or skip it.
-static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
-{
-    // Consider this hypothetical example:
-    // <div tabindex=0>
-    //   <h2>
-    //     Table of contents
-    //   </h2>
-    //   <a href="#start">Jump to start of book</a>
-    //   <ul>
-    //     <li><a href="#1">Chapter 1</a></li>
-    //     <li><a href="#1">Chapter 2</a></li>
-    //   </ul>
-    // </div>
-    //
-    // The goal is to return a reasonable title for the outer container div, because
-    // it's focusable - but without making its title be the full inner text, which is
-    // quite long. As a heuristic, skip links, controls, and elements that are usually
-    // containers with lots of children.
-
-    // Skip hidden children
-    if (obj->isInertOrAriaHidden())
-        return false;
-
-    // If something doesn't expose any children, then we can always take the inner text content.
-    // This is what we want when someone puts an <a> inside a <button> for example.
-    if (obj->isDescendantOfLeafNode())
-        return true;
-
-    // Skip focusable children, so we don't include the text of links and controls.
-    if (obj->canSetFocusAttribute())
-        return false;
-
-    // Skip big container elements like lists, tables, etc.
-    if (obj->isList() || obj->isAXTable() || obj->isTree() || obj->isCanvas())
-        return false;
-
-    return true;
 }
 
 // Returns the nearest LayoutBlockFlow ancestor which does not have an
@@ -1631,49 +1482,6 @@ static bool isInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2)
     return b1 && b2 && b1 == b2;
 }
 
-String AXNodeObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
-{
-    Node* node = this->node();
-    if (node && node->isTextNode())
-        return toText(node)->wholeText();
-
-    StringBuilder builder;
-    AXObject* previous = nullptr;
-    for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (!shouldUseAccessibilityObjectInnerText(child))
-            continue;
-
-        if (child->isAXNodeObject()) {
-            HeapVector<Member<AccessibilityText>> textOrder;
-            toAXNodeObject(child)->deprecatedAlternativeText(textOrder);
-            if (textOrder.size() > 0) {
-                builder.append(textOrder[0]->text());
-                if (mode == TextUnderElementAny)
-                    break;
-                continue;
-            }
-        }
-
-        // If we're going between two layoutObjects that are in separate LayoutBoxes, add
-        // whitespace if it wasn't there already. Intuitively if you have
-        // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
-        // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
-        // strings are in separate boxes so we should return "Hello World".
-        if (previous && builder.length() && !isHTMLSpace(builder[builder.length() - 1])) {
-            if (!isInSameNonInlineBlockFlow(child->layoutObject(), previous->layoutObject()))
-                builder.append(' ');
-        }
-
-        builder.append(child->deprecatedTextUnderElement(mode));
-        previous = child;
-
-        if (mode == TextUnderElementAny && !builder.isEmpty())
-            break;
-    }
-
-    return builder.toString();
-}
-
 AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) const
 {
     for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
@@ -1682,177 +1490,6 @@ AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) c
             return child;
     }
     return 0;
-}
-
-String AXNodeObject::deprecatedAccessibilityDescription() const
-{
-    // Static text should not have a description, it should only have a stringValue.
-    if (roleValue() == StaticTextRole)
-        return String();
-
-    String ariaDescription = ariaAccessibilityDescription();
-    if (!ariaDescription.isEmpty())
-        return ariaDescription;
-
-    if (isImage() || isInputImage() || isNativeImage() || isCanvas()) {
-        // Images should use alt as long as the attribute is present, even if empty.
-        // Otherwise, it should fallback to other methods, like the title attribute.
-        const AtomicString& alt = getAttribute(altAttr);
-        if (!alt.isNull())
-            return alt;
-    }
-
-    // An element's descriptive text is comprised of deprecatedTitle() (what's visible on the screen) and deprecatedAccessibilityDescription() (other descriptive text).
-    // Both are used to generate what a screen reader speaks.
-    // If this point is reached (i.e. there's no accessibilityDescription) and there's no deprecatedTitle(), we should fallback to using the title attribute.
-    // The title attribute is normally used as help text (because it is a tooltip), but if there is nothing else available, this should be used (according to ARIA).
-    if (deprecatedTitle(TextUnderElementAny).isEmpty())
-        return getAttribute(titleAttr);
-
-    if (roleValue() == FigureRole) {
-        AXObject* figcaption = findChildWithTagName(figcaptionTag);
-        if (figcaption)
-            return figcaption->deprecatedAccessibilityDescription();
-    }
-
-    return String();
-}
-
-String AXNodeObject::deprecatedTitle(TextUnderElementMode mode) const
-{
-    Node* node = this->node();
-    if (!node)
-        return String();
-
-    bool isInputElement = isHTMLInputElement(*node);
-    if (isInputElement) {
-        HTMLInputElement& input = toHTMLInputElement(*node);
-        if (input.isTextButton())
-            return input.valueWithDefault();
-    }
-
-    if (isInputElement || AXObject::isARIAInput(ariaRoleAttribute()) || isControl()) {
-        HTMLLabelElement* label = labelForElement(toElement(node));
-        if (label && !deprecatedExposesTitleUIElement())
-            return label->innerText();
-    }
-
-    // If this node isn't laid out, there's no inner text we can extract from a select element.
-    if (!isAXLayoutObject() && isHTMLSelectElement(*node))
-        return String();
-
-    switch (roleValue()) {
-    case PopUpButtonRole:
-        // Native popup buttons should not use their button children's text as a title. That value is retrieved through stringValue().
-        if (isHTMLSelectElement(*node))
-            return String();
-    case ButtonRole:
-    case ToggleButtonRole:
-    case CheckBoxRole:
-    case LineBreakRole:
-    case ListBoxOptionRole:
-    case ListItemRole:
-    case MenuButtonRole:
-    case MenuItemRole:
-    case MenuItemCheckBoxRole:
-    case MenuItemRadioRole:
-    case RadioButtonRole:
-    case SwitchRole:
-    case TabRole:
-        return deprecatedTextUnderElement(mode);
-    // SVGRoots should not use the text under itself as a title. That could include the text of objects like <text>.
-    case SVGRootRole:
-        return String();
-    case FigureRole: {
-        AXObject* figcaption = findChildWithTagName(figcaptionTag);
-        if (figcaption)
-            return figcaption->deprecatedTextUnderElement();
-    }
-    default:
-        break;
-    }
-
-    if (isHeading() || isLink())
-        return deprecatedTextUnderElement(mode);
-
-    // If it's focusable but it's not content editable or a known control type, then it will appear to
-    // the user as a single atomic object, so we should use its text as the default title.
-    if (isGenericFocusableElement())
-        return deprecatedTextUnderElement(mode);
-
-    return String();
-}
-
-String AXNodeObject::deprecatedHelpText() const
-{
-    Node* node = this->node();
-    if (!node)
-        return String();
-
-    const AtomicString& ariaHelp = getAttribute(aria_helpAttr);
-    if (!ariaHelp.isEmpty())
-        return ariaHelp;
-
-    String describedBy = ariaDescribedByAttribute();
-    if (!describedBy.isEmpty())
-        return describedBy;
-
-    String description = deprecatedAccessibilityDescription();
-    for (Node* curr = node; curr; curr = curr->parentNode()) {
-        if (curr->isHTMLElement()) {
-            const AtomicString& summary = toElement(curr)->getAttribute(summaryAttr);
-            if (!summary.isEmpty())
-                return summary;
-
-            // The title attribute should be used as help text unless it is already being used as descriptive text.
-            const AtomicString& title = toElement(curr)->getAttribute(titleAttr);
-            if (!title.isEmpty() && description != title)
-                return title;
-        }
-
-        // Only take help text from an ancestor element if its a group or an unknown role. If help was
-        // added to those kinds of elements, it is likely it was meant for a child element.
-        AXObject* axObj = axObjectCache().getOrCreate(curr);
-        if (axObj) {
-            AccessibilityRole role = axObj->roleValue();
-            if (role != GroupRole && role != UnknownRole)
-                break;
-        }
-    }
-
-    return String();
-}
-
-String AXNodeObject::computedName() const
-{
-    String title = this->deprecatedTitle(TextUnderElementAll);
-
-    String titleUIText;
-    if (title.isEmpty()) {
-        AXObject* titleUIElement = this->deprecatedTitleUIElement();
-        if (titleUIElement) {
-            titleUIText = titleUIElement->deprecatedTextUnderElement();
-            if (!titleUIText.isEmpty())
-                return titleUIText;
-        }
-    }
-
-    String description = deprecatedAccessibilityDescription();
-    if (!description.isEmpty())
-        return description;
-
-    if (!title.isEmpty())
-        return title;
-
-    String placeholder;
-    if (isHTMLInputElement(node())) {
-        HTMLInputElement* element = toHTMLInputElement(node());
-        placeholder = element->strippedPlaceholder();
-        if (!placeholder.isEmpty())
-            return placeholder;
-    }
-
-    return String();
 }
 
 //
@@ -1865,76 +1502,18 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     if (nameSources)
         ASSERT(relatedObjects);
 
-    bool alreadyVisited = visited.contains(this);
     bool foundTextAlternative = false;
-    visited.add(this);
-    String textAlternative;
 
     if (!node() && !layoutObject())
         return String();
 
-    // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
-    if (!recursive && layoutObject()
-        && layoutObject()->style()->visibility() != VISIBLE
-        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
-        return String();
-    }
-
-    // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
-    if (!inAriaLabelledByTraversal && !alreadyVisited) {
-        const QualifiedName& attr = hasAttribute(aria_labeledbyAttr) && !hasAttribute(aria_labelledbyAttr) ? aria_labeledbyAttr : aria_labelledbyAttr;
-        nameFrom = AXNameFromRelatedElement;
-        if (nameSources) {
-            nameSources->append(NameSource(foundTextAlternative, attr));
-            nameSources->last().type = nameFrom;
-        }
-
-        const AtomicString& ariaLabelledby = getAttribute(attr);
-        if (!ariaLabelledby.isNull()) {
-            if (nameSources)
-                nameSources->last().attributeValue = ariaLabelledby;
-
-            textAlternative = textFromAriaLabelledby(visited, relatedObjects);
-
-            if (!textAlternative.isNull()) {
-                if (nameSources) {
-                    NameSource& source = nameSources->last();
-                    source.type = nameFrom;
-                    source.relatedObjects = *relatedObjects;
-                    source.text = textAlternative;
-                    foundTextAlternative = true;
-                } else {
-                    return textAlternative;
-                }
-            } else if (nameSources) {
-                nameSources->last().invalid = true;
-            }
-        }
-    }
-
-    // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
-    nameFrom = AXNameFromAttribute;
-    if (nameSources) {
-        nameSources->append(NameSource(foundTextAlternative, aria_labelAttr));
-        nameSources->last().type = nameFrom;
-    }
-    const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
-    if (!ariaLabel.isEmpty()) {
-        textAlternative = ariaLabel;
-
-        if (nameSources) {
-            NameSource& source = nameSources->last();
-            source.text = textAlternative;
-            source.attributeValue = ariaLabel;
-            foundTextAlternative = true;
-        } else {
-            return textAlternative;
-        }
-    }
+    String textAlternative = ariaTextAlternative(recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
+    if (foundTextAlternative && !nameSources)
+        return textAlternative;
 
     // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
     textAlternative = nativeTextAlternative(visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
-    if (!textAlternative.isNull() && !nameSources)
+    if (!textAlternative.isEmpty() && !nameSources)
         return textAlternative;
 
     // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
@@ -1947,7 +1526,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
             return String::number(valueForRange());
         }
 
-        return stringValueOfControl();
+        return stringValue();
     }
 
     // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
@@ -2035,48 +1614,6 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
     }
 
     return accumulatedText.toString();
-}
-
-String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const
-{
-    StringBuilder accumulatedText;
-    bool foundValidElement = false;
-    AXRelatedObjectVector localRelatedObjects;
-
-    for (const auto& element : elements) {
-        AXObject* axElement = axObjectCache().getOrCreate(element);
-        if (axElement) {
-            foundValidElement = true;
-
-            String result = recursiveTextAlternative(*axElement, inAriaLabelledbyTraversal, visited);
-            localRelatedObjects.append(new NameSourceRelatedObject(axElement, result));
-            if (!result.isEmpty()) {
-                if (!accumulatedText.isEmpty())
-                    accumulatedText.append(" ");
-                accumulatedText.append(result);
-            }
-        }
-    }
-    if (!foundValidElement)
-        return String();
-    if (relatedObjects)
-        *relatedObjects = localRelatedObjects;
-    return accumulatedText.toString();
-}
-
-String AXNodeObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const
-{
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-    ariaLabelledbyElements(elements);
-    return textFromElements(true, visited, elements, relatedObjects);
-}
-
-String AXNodeObject::textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const
-{
-    AXObjectSet visited;
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-    elementsFromAttribute(elements, aria_describedbyAttr);
-    return textFromElements(true, visited, elements, relatedObjects);
 }
 
 LayoutRect AXNodeObject::elementRect() const
@@ -2510,86 +2047,6 @@ void AXNodeObject::computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedCh
     axObjectCache().updateAriaOwns(this, idVector, ownedChildren);
 }
 
-String AXNodeObject::deprecatedAlternativeTextForWebArea() const
-{
-    // The WebArea description should follow this order:
-    //     aria-label on the <html>
-    //     title on the <html>
-    //     <title> inside the <head> (of it was set through JS)
-    //     name on the <html>
-    // For iframes:
-    //     aria-label on the <iframe>
-    //     title on the <iframe>
-    //     name on the <iframe>
-
-    Document* document = this->document();
-    if (!document)
-        return String();
-
-    // Check if the HTML element has an aria-label for the webpage.
-    if (Element* documentElement = document->documentElement()) {
-        const AtomicString& ariaLabel = documentElement->getAttribute(aria_labelAttr);
-        if (!ariaLabel.isEmpty())
-            return ariaLabel;
-    }
-
-    if (HTMLFrameOwnerElement* owner = document->ownerElement()) {
-        if (isHTMLFrameElementBase(*owner)) {
-            const AtomicString& title = owner->getAttribute(titleAttr);
-            if (!title.isEmpty())
-                return title;
-        }
-        return owner->getNameAttribute();
-    }
-
-    String documentTitle = document->title();
-    if (!documentTitle.isEmpty())
-        return documentTitle;
-
-    if (HTMLElement* body = document->body())
-        return body->getNameAttribute();
-
-    return String();
-}
-
-void AXNodeObject::deprecatedAlternativeText(HeapVector<Member<AccessibilityText>>& textOrder) const
-{
-    if (isWebArea()) {
-        String webAreaText = deprecatedAlternativeTextForWebArea();
-        if (!webAreaText.isEmpty())
-            textOrder.append(AccessibilityText::create(webAreaText, AlternativeText));
-        return;
-    }
-
-    deprecatedAriaLabelledbyText(textOrder);
-
-    const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
-    if (!ariaLabel.isEmpty())
-        textOrder.append(AccessibilityText::create(ariaLabel, AlternativeText));
-
-    if (isImage() || isInputImage() || isNativeImage() || isCanvas()) {
-        // Images should use alt as long as the attribute is present, even if empty.
-        // Otherwise, it should fallback to other methods, like the title attribute.
-        const AtomicString& alt = getAttribute(altAttr);
-        if (!alt.isNull())
-            textOrder.append(AccessibilityText::create(alt, AlternativeText));
-    }
-}
-
-void AXNodeObject::deprecatedAriaLabelledbyText(HeapVector<Member<AccessibilityText>>& textOrder) const
-{
-    String ariaLabelledby = ariaLabelledbyAttribute();
-    if (!ariaLabelledby.isEmpty()) {
-        WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-        ariaLabelledbyElements(elements);
-
-        for (const auto& element : elements) {
-            AXObject* axElement = axObjectCache().getOrCreate(element);
-            textOrder.append(AccessibilityText::create(ariaLabelledby, AlternativeText, axElement));
-        }
-    }
-}
-
 // Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources, bool* foundTextAlternative) const
 {
@@ -2710,7 +2167,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         }
 
         // localised default value ("Submit")
-        nameFrom = AXNameFromAttribute;
+        nameFrom = AXNameFromValue;
         textAlternative = inputElement->locale().queryString(WebLocalizedString::SubmitButtonDefaultLabel);
         if (nameSources) {
             nameSources->append(NameSource(*foundTextAlternative, typeAttr));
@@ -2883,6 +2340,61 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
 
                 if (relatedObjects) {
                     localRelatedObjects.append(new NameSourceRelatedObject(legendAXObject, textAlternative));
+                    *relatedObjects = localRelatedObjects;
+                    localRelatedObjects.clear();
+                }
+
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.relatedObjects = *relatedObjects;
+                    source.text = textAlternative;
+                    *foundTextAlternative = true;
+                } else {
+                    return textAlternative;
+                }
+            }
+        }
+    }
+
+    // Document.
+    if (isWebArea()) {
+        Document* document = this->document();
+        if (document) {
+            nameFrom = AXNameFromAttribute;
+            if (nameSources) {
+                nameSources->append(NameSource(foundTextAlternative, aria_labelAttr));
+                nameSources->last().type = nameFrom;
+            }
+            if (Element* documentElement = document->documentElement()) {
+                const AtomicString& ariaLabel = documentElement->getAttribute(aria_labelAttr);
+                if (!ariaLabel.isEmpty()) {
+                    textAlternative = ariaLabel;
+
+                    if (nameSources) {
+                        NameSource& source = nameSources->last();
+                        source.text = textAlternative;
+                        source.attributeValue = ariaLabel;
+                        *foundTextAlternative = true;
+                    } else {
+                        return textAlternative;
+                    }
+                }
+            }
+
+            nameFrom = AXNameFromRelatedElement;
+            if (nameSources) {
+                nameSources->append(NameSource(*foundTextAlternative));
+                nameSources->last().type = nameFrom;
+                nameSources->last().nativeSource = AXTextFromNativeHTMLTitleElement;
+            }
+
+            textAlternative = document->title();
+
+            Element* titleElement = document->titleElement();
+            AXObject* titleAXObject = axObjectCache().getOrCreate(titleElement);
+            if (titleAXObject) {
+                if (relatedObjects) {
+                    localRelatedObjects.append(new NameSourceRelatedObject(titleAXObject, textAlternative));
                     *relatedObjects = localRelatedObjects;
                     localRelatedObjects.clear();
                 }
@@ -3111,6 +2623,28 @@ String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descrip
     }
 
     return String();
+}
+
+String AXNodeObject::placeholder(AXNameFrom nameFrom, AXDescriptionFrom descriptionFrom) const
+{
+    if (nameFrom == AXNameFromPlaceholder)
+        return String();
+
+    if (descriptionFrom == AXDescriptionFromPlaceholder)
+        return String();
+
+    if (!node())
+        return String();
+
+    String placeholder;
+    if (isHTMLInputElement(*node())) {
+        HTMLInputElement* inputElement = toHTMLInputElement(node());
+        placeholder = inputElement->strippedPlaceholder();
+    } else if (isHTMLTextAreaElement(*node())) {
+        HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(node());
+        placeholder = textAreaElement->strippedPlaceholder();
+    }
+    return placeholder;
 }
 
 DEFINE_TRACE(AXNodeObject)

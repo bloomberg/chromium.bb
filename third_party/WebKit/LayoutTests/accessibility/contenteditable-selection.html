@@ -79,11 +79,11 @@
         assert_equals(mainAccessible.selectionStart, 9);
         assert_equals(mainAccessible.selectionEnd, 30);
 
-        assert_equals(rootAccessible.selectionAnchorObject.stringValue,
-            "AXValue: " + line1.textContent);
+        assert_equals(rootAccessible.selectionAnchorObject.name,
+            line1.textContent);
         assert_equals(rootAccessible.selectionAnchorOffset, 0);
-        assert_equals(rootAccessible.selectionFocusObject.stringValue,
-            "AXValue: " + line3.textContent);
+        assert_equals(rootAccessible.selectionFocusObject.name,
+            line3.textContent);
         assert_equals(rootAccessible.selectionFocusOffset, 6);
     }, "Test selectNodeContents on a contenteditable.");
 </script>
@@ -236,11 +236,11 @@
                 assert_equals(mainAccessible.selectionStart, start + 9);
                 assert_equals(mainAccessible.selectionEnd, end + 9);
 
-                assert_equals(rootAccessible.selectionAnchorObject.stringValue,
-                    "AXValue: " + contenteditableLines[i].textContent);
+                assert_equals(rootAccessible.selectionAnchorObject.name,
+                    contenteditableLines[i].textContent);
                 assert_equals(rootAccessible.selectionAnchorOffset, 0);
-                assert_equals(rootAccessible.selectionFocusObject.stringValue,
-                    "AXValue: " + contenteditableLines[i].textContent);
+                assert_equals(rootAccessible.selectionFocusObject.name,
+                    contenteditableLines[i].textContent);
                 assert_equals(rootAccessible.selectionFocusOffset, 6);
             }
 

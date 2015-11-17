@@ -8,7 +8,7 @@ Editable list item.
 ++++++AXLink AXTitle='link'
 ++++++++AXStaticText AXValue='link'
 ++++++AXStaticText AXValue=' and an '
-++++++AXImage
+++++++AXImage AXDescription='Image'
 ++++++AXStaticText AXValue=' and a '
 ++++++AXButton AXTitle='Button'
 ++++++AXStaticText AXValue='.'

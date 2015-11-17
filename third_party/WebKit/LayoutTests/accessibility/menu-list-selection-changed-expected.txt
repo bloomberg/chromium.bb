@@ -4,8 +4,8 @@ This test makes sure menu lists fire events on both the option that lost selecti
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Got notification on option AXValue: Alicia isSelected=false
-Got notification on option AXValue: Kalinda isSelected=true
+Got notification on option Alicia isSelected=false
+Got notification on option Kalinda isSelected=true
 PASS successfullyParsed is true
 
 TEST COMPLETE

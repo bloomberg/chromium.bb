@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS axInlineTextBox.role is 'AXRole: AXInlineTextBox'
-PASS axInlineTextBox.stringValue is 'AXValue: Value'
+PASS axInlineTextBox.name is 'Value'
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -54,8 +54,7 @@ public:
     bool isSelectedOptionActive() const override;
     void setSelected(bool) override;
     bool canSetSelectedAttribute() const override;
-    String stringValue() const override;
-    String deprecatedTitle(TextUnderElementMode) const override { return String(); }
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
 
 private:
     bool canHaveChildren() const override { return false; }

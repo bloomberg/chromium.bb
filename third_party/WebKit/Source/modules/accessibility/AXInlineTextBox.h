@@ -50,7 +50,7 @@ public:
     void setInlineTextBox(AbstractInlineTextBox* inlineTextBox) { m_inlineTextBox = inlineTextBox; }
 
     AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
-    String stringValue() const override;
+    String name(AXNameFrom&, AXObject::AXObjectVector* nameObjects) const override;
     void textCharacterOffsets(Vector<int>&) const override;
     void wordBoundaries(Vector<AXRange>& words) const override;
     LayoutRect elementRect() const override;

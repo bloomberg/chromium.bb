@@ -241,7 +241,6 @@
     container_live_status,
     description,
     display,
-    help,
     html_tag,
     // Only used when invalid_state == invalid_state_other.
     aria_invalid_value,
@@ -291,8 +290,15 @@
     // Tree control attributes.
     hierarchical_level,
 
+    // What information was used to compute the object's name
+    // (of type AXNameFrom).
+    name_from,
+
+    // What information was used to compute the object's description
+    // (of type AXDescriptionFrom).
+    description_from,
+
     // Relationships between this element and other elements.
-    title_ui_element,
     activedescendant_id,
 
     // Identifies a child tree which this node hosts.
@@ -304,7 +310,6 @@
 
     // In the case of AX_ROLE_COLOR_WELL, specifies the selected color.
     color_value,
-
 
     // Text attributes.
 
@@ -370,7 +375,6 @@
     describedby_ids,
     flowto_ids,
     labelledby_ids,
-    owns_ids,
 
     // Character indices where line breaks occur.
     line_breaks,
@@ -429,4 +433,20 @@
     sort_direction_other
   };
 
+  [cpp_enum_prefix_override="ax"] enum AXNameFrom {
+    name_from_uninitialized = 0,
+    name_from_attribute,
+    name_from_contents,
+    name_from_placeholder,
+    name_from_related_element,
+    name_from_value
+  };
+
+  [cpp_enum_prefix_override="ax"] enum AXDescriptionFrom {
+    description_from_uninitialized = 0,
+    description_from_attribute,
+    description_from_contents,
+    description_from_placeholder,
+    description_from_related_element
+  };
 };

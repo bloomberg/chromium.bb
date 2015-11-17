@@ -10,14 +10,17 @@ function buildAccessibilityTree(accessibilityObject, indent, allAttributesRequir
     for (var i = 0; i < indent; i++)
         str += "    ";
     str += accessibilityObject.role;
-    str += " " + accessibilityObject.stringValue;
+    if (accessibilityObject.value)
+        str += " AXValue: " + accessibilityObject.value;
+    else if (accessibilityObject.name)
+        str += " \"" + accessibilityObject.name + "\"";
     str += allAttributesRequired && accessibilityObject.role == '' ? accessibilityObject.allAttributes() : '';
     str += targetObject && accessibilityObject.isEqual(targetObject) ? "     " + targetString : '';
     str += "\n";
 
     document.getElementById("console").innerText += str;
 
-    if (accessibilityObject.stringValue.indexOf('End of test') >= 0)
+    if (accessibilityObject.name.indexOf('End of test') >= 0)
         return false;
 
     var count = accessibilityObject.childrenCount;

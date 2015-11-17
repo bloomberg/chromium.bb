@@ -25,9 +25,7 @@ A resumé, it says, is about the most massively useful thing an interstellar hit
         var axParagraph = accessibilityController.accessibleElementById('paragraph');
         var axStaticText = axParagraph.childAtIndex(0);
 
-        // The first characters of stringValue are 'AXValue: ' - use substr to get rid of those.
-        // The accessible text shouldn't have any spaces.
-        var text = axStaticText.stringValue.substr(9);
+        var text = axStaticText.name;
         shouldBe("text.length", "185");
         debug("Accessible text: \"" + text + "\"");
 
@@ -35,7 +33,7 @@ A resumé, it says, is about the most massively useful thing an interstellar hit
         var appendedInlineText = '';
         for (var i = 0; i < axStaticText.childrenCount; i++) {
             var axInlineTextBox = axStaticText.childAtIndex(i);
-            appendedInlineText += axInlineTextBox.stringValue.substr(9);
+            appendedInlineText += axInlineTextBox.name;
         }
         shouldBe("appendedInlineText", "text");
 

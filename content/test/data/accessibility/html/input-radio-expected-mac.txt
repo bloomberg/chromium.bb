@@ -3,7 +3,6 @@ AXWebArea
 ++++AXRadioButton AXValue='0'
 ++++AXStaticText AXValue='Radio1'
 ++++AXUnknown AXTitle='
-' AXValue='
 '
 ++++AXRadioButton AXValue='0'
 ++++AXStaticText AXValue='Radio2'

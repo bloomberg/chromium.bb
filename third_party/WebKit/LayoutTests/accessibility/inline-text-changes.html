@@ -26,9 +26,9 @@
         shouldBe("axStaticText.childrenCount", "2");
 
         window.axInlineBefore0 = axStaticText.childAtIndex(0);
-        shouldBe("axInlineBefore0.stringValue",  "'AXValue: This paragraph contains '");
+        shouldBe("axInlineBefore0.name",  "'This paragraph contains '");
         window.axInlineBefore1 = axStaticText.childAtIndex(1);
-        shouldBe("axInlineBefore1.stringValue", "'AXValue: two lines of text.'");
+        shouldBe("axInlineBefore1.name", "'two lines of text.'");
 
         // Modify the text.
         document.getElementById("p").innerText += ' One more sentence.';
@@ -38,14 +38,14 @@
             // Make sure the inline text boxes changed.
             shouldBe("axStaticText.childrenCount", "3");
             window.axInlineAfter0 = axStaticText.childAtIndex(0);
-            shouldBe("axInlineAfter0.stringValue",  "'AXValue: This paragraph contains '");
+            shouldBe("axInlineAfter0.name",  "'This paragraph contains '");
             window.axInlineAfter1 = axStaticText.childAtIndex(1);
-            shouldBe("axInlineAfter1.stringValue", "'AXValue: two lines of text. One '");
+            shouldBe("axInlineAfter1.name", "'two lines of text. One '");
             window.axInlineAfter2 = axStaticText.childAtIndex(2);
-            shouldBe("axInlineAfter2.stringValue", "'AXValue: more sentence.'");
+            shouldBe("axInlineAfter2.name", "'more sentence.'");
 
             // Make sure the old object pointing to the second text box is no longer valid.
-            shouldBe("axInlineBefore1.stringValue", "'AXValue: '");
+            shouldBe("axInlineBefore1.name", "''");
             finishJSTest();
         });
     }

@@ -17,7 +17,7 @@ async_test(function(t)
     accessibilityController.addNotificationListener(function listener(element, notification) {
         if (notification == "Focus") {
             assert_equals(element.role, "AXRole: AXMenuListOption");
-            assert_equals(element.stringValue, "AXValue: Alicia");
+            assert_equals(element.name, "Alicia");
             t.done();
         }
     });

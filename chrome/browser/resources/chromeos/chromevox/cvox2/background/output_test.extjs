@@ -178,16 +178,12 @@ TEST_F('OutputE2ETest', 'Headings', function() {
 
       range = cursors.Range.fromNode(el);
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 1|b|Link', 'spans_': [
-        // Link.
-        {value: 'name', start: 10, end: 11},
-        {value: {earconId: "LINK"}, start: 10, end: 11},
-        {value: 'role', start: 12, end: 16}
+      assertEqualsJSON({string_: 'Heading 1|b', 'spans_': [
+        {value: 'nameOrDescendants', start: 10, end: 11}
       ]}, o.speechOutputForTest);
       checkBrailleOutput(
-          'h1 b lnk',
-          [{value: new Output.NodeSpan(el), start: 0, end: 2},
-           {value: new Output.NodeSpan(el.firstChild), start: 3, end: 8}],
+          'h1 b',
+          [{value: new Output.NodeSpan(el), start: 0, end: 4}],
           o);
   });
 });
@@ -199,24 +195,24 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON(
-          {string_: 'audio|Tool bar|play||begin playback|Button',
+          {string_: 'audio|Tool bar|audio|play||Button|begin playback',
            spans_:
               // Entered container toolbar.
 
               // Button.
-              [{value: 'name', start: 15, end: 19},
+              [{value: 'name', start: 21, end: 25},
 
               // Button earcon.
-              {value: {earconId: "BUTTON"}, start: 15, end: 19},
+              {value: {earconId: "BUTTON"}, start: 21, end: 25},
 
-              {value: 'value', start: 20, end: 20},
-              {value: 'help', start: 21, end: 35},
-              {value: 'role', start: 36, end: 42}]
+              {value: 'value', start: 26, end: 26},
+              {value: 'role', start: 27, end: 33},
+              {value: 'description', start: 34, end: 48}],
           }, o.speechOutputForTest);
       checkBrailleOutput(
-          'audio tlbar play begin playback btn',
-          [{value: new Output.NodeSpan(el.parent), start: 0, end: 11},
-           {value: new Output.NodeSpan(el), start: 12, end: 35}],
+          'audio tlbar audio play btn begin playback',
+          [{value: new Output.NodeSpan(el.parent), start: 0, end: 17},
+           {value: new Output.NodeSpan(el), start: 18, end: 41}],
           o);
 
       el = el.nextSibling;
@@ -226,7 +222,7 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       assertEqualsJSON({string_: '|0, , slider|audio time scrubber',
           spans_:
               [{value: {'earconId': 'SLIDER'}, start: 0, end: 0},
-               {value: 'help', start: 13, end: 32}]
+               {value: 'description', start: 13, end: 32}]
           }, o.speechOutputForTest);
       // TODO(plundblad): Investigate this.
       checkBrailleOutput(
@@ -476,23 +472,23 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
     var el = root.firstChild.firstChild.firstChild;
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-    assertEqualsJSON({string_: '|List box|with 2 items||List item| 1 of 2 ',
+    assertEqualsJSON({string_: '|List box|with 2 items|1|List item| 1 of 2 ',
         spans_: [
           // ListBox.
           // Earcon.
           {value: {earconId:'LISTBOX'}, start: 0, end: 0},
 
-          {value: 'name', start: 23, end: 23},
+          {value: 'name', start: 23, end: 24},
 
           // Earcon.
-          {value: {earconId: 'LIST_ITEM'}, start: 23, end: 23},
+          {value: {earconId: 'LIST_ITEM'}, start: 23, end: 24},
 
-          {value: 'role', start:24, end: 33}
+          {value: 'role', start:25, end: 34}
     ]}, o.speechOutputForTest);
     checkBrailleOutput(
-        'lstbx +2 lstitm 1/2',
+        'lstbx +2 1 lstitm 1/2',
         [{value: new Output.NodeSpan(el.parent), start: 0, end: 8},
-         {value: new Output.NodeSpan(el), start: 9, end: 19}],
+         {value: new Output.NodeSpan(el), start: 9, end: 21}],
         o);
   });
 });

@@ -154,24 +154,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
   ASSERT_EQ(E_INVALIDARG, root_obj->get_accDescription(bad_id, d2.Receive()));
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleHelp) {
-  AXNodeData root;
-  root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
-  root.AddStringAttribute(AX_ATTR_HELP, "Help");
-  Init(root);
-
-  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
-  ScopedBstr help;
-  ASSERT_EQ(S_OK, root_obj->get_accHelp(SELF, help.Receive()));
-  EXPECT_EQ(L"Help", base::string16(help));
-
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accHelp(SELF, nullptr));
-  ScopedVariant bad_id(999);
-  ScopedBstr h2;
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accHelp(bad_id, h2.Receive()));
-}
-
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
   AXNodeData root;
   root.id = 1;

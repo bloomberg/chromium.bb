@@ -125,8 +125,8 @@ protected:
     AXObject* activeDescendant() const override;
     void ariaFlowToElements(AXObjectVector&) const override;
     void ariaControlsElements(AXObjectVector&) const override;
-    void deprecatedAriaDescribedbyElements(AXObjectVector&) const override;
-    void deprecatedAriaLabelledbyElements(AXObjectVector&) const override;
+    void ariaDescribedbyElements(AXObjectVector&) const override;
+    void ariaLabelledbyElements(AXObjectVector&) const override;
     void ariaOwnsElements(AXObjectVector&) const override;
 
     bool ariaHasPopup() const override;
@@ -144,11 +144,8 @@ protected:
     bool liveRegionAtomic() const override;
     bool liveRegionBusy() const override;
 
-    // Accessibility Text.
-    String deprecatedTextUnderElement(TextUnderElementMode) const override;
-
-    // Accessibility Text - (To be deprecated).
-    String deprecatedHelpText() const override;
+    // AX name calc.
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
 
     // Methods that retrieve or manipulate the current selection.
 

@@ -77,6 +77,11 @@ void AXMenuList::clearChildren()
     m_childrenDirty = false;
 }
 
+bool AXMenuList::nameFromContents() const
+{
+    return false;
+}
+
 void AXMenuList::addChildren()
 {
     ASSERT(!isDetached());

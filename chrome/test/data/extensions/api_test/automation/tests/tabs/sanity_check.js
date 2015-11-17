@@ -37,8 +37,7 @@ var allTests = [
     state = RemoveUntestedStates(okButton.state);
     assertEq({enabled: true, focusable: true, readOnly: true}, state);
     var userNameInput = contentChildren[1];
-    assertEq('Username',
-             userNameInput.description);
+    assertEq('Username', userNameInput.name);
     state = RemoveUntestedStates(userNameInput.state);
     assertEq({editable: true, enabled: true, focusable: true}, state);
     var cancelButton = contentChildren[2];

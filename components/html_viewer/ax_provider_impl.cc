@@ -81,10 +81,12 @@ AxNodePtr AxProviderImpl::ConvertAxNode(const WebAXObject& ax_object,
   if (ax_object.isAnchor()) {
     result->link = mojo::AxLink::New();
     result->link->url = String::From(ax_object.url().string());
-  } else if (ax_object.childCount() == 0 &&
-             !ax_object.stringValue().isEmpty()) {
-    result->text = mojo::AxText::New();
-    result->text->content = String::From(ax_object.stringValue());
+  } else if (ax_object.childCount() == 0) {
+    blink::WebString name = ax_object.name();
+    if (!name.isEmpty()) {
+      result->text = mojo::AxText::New();
+      result->text->content = String::From(name);
+    }
   }
 
   return result.Pass();

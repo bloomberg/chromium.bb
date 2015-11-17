@@ -298,6 +298,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   bool IsControl() const;
   bool IsTextControl() const;
 
+  // If an object is focusable but has no accessible name, use this
+  // to compute a name from its descendants.
+  std::string ComputeAccessibleNameFromDescendants();
+
  protected:
   BrowserAccessibility();
 

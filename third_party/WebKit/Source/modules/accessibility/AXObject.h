@@ -337,6 +337,7 @@ enum AXTextFromNativeHTML {
     AXTextFromNativeHTMLLabelWrapped,
     AXTextFromNativeHTMLLegend,
     AXTextFromNativeHTMLTableCaption,
+    AXTextFromNativeHTMLTitleElement,
 };
 
 // The source of the accessible description of an element. This is needed
@@ -668,22 +669,7 @@ public:
     bool isPresentationalChild() const;
 
     //
-    // Deprecated text alternative calculation API. All of these will be replaced
-    // with the new API, below (under "New text alternative calculation API".
-    //
-
-    virtual bool deprecatedExposesTitleUIElement() const { return true; }
-    virtual AXObject* deprecatedTitleUIElement() const { return 0; }
-    virtual String deprecatedPlaceholder() const { return String(); }
-    virtual void deprecatedAriaDescribedbyElements(AXObjectVector& describedby) const { }
-    virtual void deprecatedAriaLabelledbyElements(AXObjectVector& labelledby) const { }
-    virtual String deprecatedAccessibilityDescription() const { return String(); }
-    virtual String deprecatedTitle(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
-    virtual String deprecatedHelpText() const { return String(); }
-    virtual String deprecatedTextUnderElement(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
-
-    //
-    // New text alternative calculation API (under development).
+    // Accessible name calculation
     //
 
     // Retrieves the accessible name of the object, an enum indicating where the name
@@ -708,7 +694,7 @@ public:
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
     // exposed by one of the two functions above.
-    virtual String placeholder(AXNameFrom, AXDescriptionFrom) { return String(); }
+    virtual String placeholder(AXNameFrom, AXDescriptionFrom) const { return String(); }
 
     // Internal function used by name and description, above.
     typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
@@ -716,7 +702,7 @@ public:
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.
-    virtual String computedName() const { return String(); }
+    String computedName() const;
 
     //
     // Properties of static elements.
@@ -774,6 +760,8 @@ public:
     virtual void ariaFlowToElements(AXObjectVector&) const { }
     virtual void ariaControlsElements(AXObjectVector&) const { }
     virtual void ariaOwnsElements(AXObjectVector& owns) const { }
+    virtual void ariaDescribedbyElements(AXObjectVector&) const { }
+    virtual void ariaLabelledbyElements(AXObjectVector&) const { }
     virtual bool ariaHasPopup() const { return false; }
     virtual bool isEditable() const { return false; }
     bool isMultiline() const;
@@ -937,12 +925,19 @@ protected:
     AXObjectInclusion m_lastKnownIsIgnoredValue;
     LayoutRect m_explicitElementRect;
 
-    // Used only in recursive calls from textAlternative()
+    // Used only inside textAlternative():
     static String recursiveTextAlternative(const AXObject&, bool inAriaLabelledByTraversal, AXObjectSet& visited);
+    String ariaTextAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
+    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
+    void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
+    void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
+    void ariaLabelledbyElementVector(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
+    String textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const;
+    String textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const;
 
     virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
 
-    bool nameFromContents() const;
+    virtual bool nameFromContents() const;
 
     AccessibilityRole buttonRoleType() const;
 

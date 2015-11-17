@@ -6,19 +6,19 @@ This tests that a fieldset's title ui element is the legend.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-AXRole: AXWebArea AXValue: 
-    AXRole: AXGroup AXValue: 
-        AXRole: AXLegend AXValue:      << fieldset's titleUIElement
-            AXRole: AXStaticText AXValue: Choose a shipping method:
-                AXRole: AXInlineTextBox AXValue: Choose a shipping method:
-        AXRole: AXGroup AXValue: 
-            AXRole: AXRadioButton AXValue: 
-            AXRole: AXStaticText AXValue: Overnight
-                AXRole: AXInlineTextBox AXValue: Overnight
-    AXRole: AXDiv AXValue: 
-        AXRole: AXStaticText AXValue: End of test
+AXRole: AXWebArea
+    AXRole: AXGroup "Choose a shipping method:"
+        AXRole: AXLegend     << fieldset's titleUIElement
+            AXRole: AXStaticText "Choose a shipping method:"
+                AXRole: AXInlineTextBox "Choose a shipping method:"
+        AXRole: AXGroup
+            AXRole: AXRadioButton
+            AXRole: AXStaticText "Overnight"
+                AXRole: AXInlineTextBox "Overnight"
+    AXRole: AXDiv
+        AXRole: AXStaticText "End of test"
 PASS titleUIElement != null is true
-PASS titleUIElementText.stringValue is 'AXValue: Choose a shipping method:'
+PASS titleUIElementText.name is 'Choose a shipping method:'
 PASS successfullyParsed is true
 
 TEST COMPLETE

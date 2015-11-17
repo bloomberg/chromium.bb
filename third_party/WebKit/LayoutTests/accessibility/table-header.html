@@ -24,13 +24,13 @@
         var tableheader = table.tableHeader();
         shouldBeTrue("tableheader.isValid");
         shouldBe("tableheader.childrenCount", "2");
-        window.firstHeaderText = tableheader.childAtIndex(0).childAtIndex(0).stringValue;
-        shouldBe("firstHeaderText", "'AXValue: header 1'");
-        window.secondHeaderText = tableheader.childAtIndex(1).childAtIndex(0).stringValue;
-        shouldBe("secondHeaderText", "'AXValue: header 2'");
+        window.firstHeaderText = tableheader.childAtIndex(0).childAtIndex(0).name;
+        shouldBe("firstHeaderText", "'header 1'");
+        window.secondHeaderText = tableheader.childAtIndex(1).childAtIndex(0).name;
+        shouldBe("secondHeaderText", "'header 2'");
 
         // Clear the HTML for cleaner results.
-        document.getElementById("content").innerHTML = "";  
+        document.getElementById("content").innerHTML = "";
     }
 
 
@@ -38,4 +38,3 @@
 
 </body>
 </html>
-

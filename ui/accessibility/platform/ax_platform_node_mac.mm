@@ -42,7 +42,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_COMPLEMENTARY, NSAccessibilityGroupRole},
       {ui::AX_ROLE_CONTENT_INFO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DATE, @"AXDateField"},
-      {ui::AX_ROLE_DATE_TIME, NSAccessibilityTextFieldRole},
+      {ui::AX_ROLE_DATE_TIME, @"AXDateField"},
       {ui::AX_ROLE_DEFINITION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DESCRIPTION_LIST, NSAccessibilityListRole},

@@ -105,7 +105,8 @@ scoped_ptr<base::StringValue> StringForBrowserAccessibility(
   id roleDescription = [obj roleDescription];
   if ([role isEqualToString:NSAccessibilityGroupRole] &&
       roleDescription != nil &&
-      ![roleDescription isEqualToString:@""]) {
+      ![roleDescription isEqualToString:@""] &&
+      ![roleDescription isEqualToString:@"group"]) {
     [tokens addObject:roleDescription];
   }
 
@@ -239,6 +240,9 @@ base::string16 AccessibilityTreeFormatter::ToString(
 
   NSArray* defaultAttributes =
       [NSArray arrayWithObjects:NSAccessibilityTitleAttribute,
+                                NSAccessibilityTitleUIElementAttribute,
+                                NSAccessibilityDescriptionAttribute,
+                                NSAccessibilityHelpAttribute,
                                 NSAccessibilityValueAttribute,
                                 nil];
   string s_value;

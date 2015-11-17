@@ -113,11 +113,12 @@ void AXInlineTextBox::wordBoundaries(Vector<AXRange>& words) const
         words[i] = AXRange(wordBoundaries[i].startIndex, wordBoundaries[i].endIndex);
 }
 
-String AXInlineTextBox::stringValue() const
+String AXInlineTextBox::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObjects) const
 {
     if (!m_inlineTextBox)
         return String();
 
+    nameFrom = AXNameFromContents;
     return m_inlineTextBox->text();
 }
 

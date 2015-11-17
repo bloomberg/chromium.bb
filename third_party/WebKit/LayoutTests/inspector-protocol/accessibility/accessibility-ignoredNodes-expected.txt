@@ -74,7 +74,7 @@ Content within label refers to label container
       ],
       "name": {
         "type": "computedString",
-        "value": "non-hidden treeitem",
+        "value": "",
         "sources": [
           {
             "type": "relatedElement",
@@ -85,16 +85,8 @@ Content within label refers to label container
             "attribute": "aria-label"
           },
           {
-            "type": "contents",
-            "value": {
-              "type": "string",
-              "value": "non-hidden treeitem"
-            }
-          },
-          {
             "type": "attribute",
-            "attribute": "title",
-            "superseded": true
+            "attribute": "title"
           }
         ]
       }

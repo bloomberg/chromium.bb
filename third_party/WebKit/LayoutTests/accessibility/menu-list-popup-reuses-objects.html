@@ -33,7 +33,7 @@ if (window.testRunner && window.accessibilityController) {
     accessibilityController.accessibleElementById('foo');
 
     accessibilityController.addNotificationListener(function(element, notification) {
-        if (element.stringValue == axMenuListOption.stringValue) {
+        if (element.name == axMenuListOption.name) {
             window.element = element;
             shouldBe("element.isEqual(axMenuListOption)", "true");
             shouldBe("element.parentElement().isEqual(axMenuListPopup)", "true");

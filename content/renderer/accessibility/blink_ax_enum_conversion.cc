@@ -478,4 +478,49 @@ ui::AXSortDirection AXSortDirectionFromBlink(
   return ui::AX_SORT_DIRECTION_NONE;
 }
 
-}  // Namespace content.
+ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from) {
+  switch (name_from) {
+    case blink::WebAXNameFromUninitialized:
+      return ui::AX_NAME_FROM_UNINITIALIZED;
+    case blink::WebAXNameFromAttribute:
+      return ui::AX_NAME_FROM_ATTRIBUTE;
+    case blink::WebAXNameFromCaption:
+      return ui::AX_NAME_FROM_RELATED_ELEMENT;
+    case blink::WebAXNameFromContents:
+      return ui::AX_NAME_FROM_CONTENTS;
+    case blink::WebAXNameFromPlaceholder:
+      return ui::AX_NAME_FROM_PLACEHOLDER;
+    case blink::WebAXNameFromRelatedElement:
+      return ui::AX_NAME_FROM_RELATED_ELEMENT;
+    case blink::WebAXNameFromValue:
+      return ui::AX_NAME_FROM_VALUE;
+    case blink::WebAXNameFromTitle:
+      return ui::AX_NAME_FROM_ATTRIBUTE;
+    default:
+      NOTREACHED();
+  }
+
+  return ui::AX_NAME_FROM_UNINITIALIZED;
+}
+
+ui::AXDescriptionFrom AXDescriptionFromFromBlink(
+    blink::WebAXDescriptionFrom description_from) {
+  switch (description_from) {
+    case blink::WebAXDescriptionFromUninitialized:
+      return ui::AX_DESCRIPTION_FROM_UNINITIALIZED;
+    case blink::WebAXDescriptionFromAttribute:
+      return ui::AX_DESCRIPTION_FROM_ATTRIBUTE;
+    case blink::WebAXDescriptionFromContents:
+      return ui::AX_DESCRIPTION_FROM_CONTENTS;
+    case blink::WebAXDescriptionFromPlaceholder:
+      return ui::AX_DESCRIPTION_FROM_PLACEHOLDER;
+    case blink::WebAXDescriptionFromRelatedElement:
+      return ui::AX_DESCRIPTION_FROM_RELATED_ELEMENT;
+    default:
+      NOTREACHED();
+  }
+
+  return ui::AX_DESCRIPTION_FROM_UNINITIALIZED;
+}
+
+}  // namespace content.

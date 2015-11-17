@@ -262,12 +262,12 @@
                 assert_equals(mainAccessible.selectionEnd,
                     mainOffset + caretPosition);
 
-                assert_equals(rootAccessible.selectionAnchorObject.stringValue,
-                    "AXValue: " + contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionAnchorObject.name,
+                    contenteditableLines[lineNumber].textContent.trim());
                 assert_equals(rootAccessible.selectionAnchorOffset,
                     characterOffset);
-                assert_equals(rootAccessible.selectionFocusObject.stringValue,
-                    "AXValue: " + contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionFocusObject.name,
+                    contenteditableLines[lineNumber].textContent.trim());
                 assert_equals(rootAccessible.selectionFocusOffset,
                     characterOffset);
             }

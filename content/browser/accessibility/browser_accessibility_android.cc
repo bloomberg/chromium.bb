@@ -315,9 +315,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     return base::string16();
   }
 
-  // See comment in browser_accessibility_win.cc for details.
-  // The difference here is that we can only expose one accessible
-  // name on Android, not 2 or 3 like on Windows or Mac.
+  // We can only expose one accessible name on Android,
+  // not 2 or 3 like on Windows or Mac.
 
   // First, always return the |value| attribute if this is an
   // input field.
@@ -345,56 +344,16 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
         base::StringPrintf("#%02X%02X%02X", red, green, blue));
   }
 
-  // Always prefer visible text if this is a link. Sites sometimes add
-  // a "title" attribute to a link with more information, but we can't
-  // lose the link text.
-  base::string16 name = GetString16Attribute(ui::AX_ATTR_NAME);
-  if (!name.empty() && GetRole() == ui::AX_ROLE_LINK)
-    return name;
-
-  // If there's no text value, the basic rule is: prefer description
-  // (aria-labelledby or aria-label), then help (title), then name
-  // (inner text), then value (control value).  However, if
-  // title_elem_id is set, that means there's a label element
-  // supplying the name and then name takes precedence over help.
-  // TODO(dmazzoni): clean this up by providing more granular labels in
-  // Blink, making the platform-specific mapping to accessible text simpler.
+  base::string16 text = GetString16Attribute(ui::AX_ATTR_NAME);
   base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
-  base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
-
-  base::string16 placeholder;
-  switch (GetRole()) {
-    case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_INPUT_TIME:
-    case ui::AX_ROLE_TEXT_FIELD:
-      GetHtmlAttribute("placeholder", &placeholder);
-  }
-
-  int title_elem_id = GetIntAttribute(
-      ui::AX_ATTR_TITLE_UI_ELEMENT);
-  base::string16 text;
-  if (!description.empty())
-    text = description;
-  else if (!name.empty()) {
-    text = name;
-    if (!help.empty()) {
-      // TODO(vkuzkokov): This is not the best way to pass 2 texts but this is
-      // how Blink seems to be doing it.
+  if (!description.empty()) {
+    if (!text.empty())
       text += base::ASCIIToUTF16(" ");
-      text += help;
-    }
-  } else if (!help.empty())
-    text = help;
-  else if (!placeholder.empty())
-    text = placeholder;
-  else if (!value.empty())
-    text = value;
-  else if (title_elem_id) {
-    BrowserAccessibility* title_elem =
-          manager()->GetFromID(title_elem_id);
-    if (title_elem)
-      text = static_cast<BrowserAccessibilityAndroid*>(title_elem)->GetText();
+    text += description;
   }
+
+  if (text.empty())
+    text = value;
 
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
@@ -410,7 +369,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   if (text.empty() && (IsLink() || GetRole() == ui::AX_ROLE_IMAGE)) {
     base::string16 url = GetString16Attribute(ui::AX_ATTR_URL);
     // Given a url like http://foo.com/bar/baz.png, just return the
-    // base name, e.g., "baz".
+    // base text, e.g., "baz".
     int trailing_slashes = 0;
     while (url.size() - trailing_slashes > 0 &&
            url[url.size() - trailing_slashes - 1] == '/') {

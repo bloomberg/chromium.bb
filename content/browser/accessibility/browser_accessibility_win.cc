@@ -456,18 +456,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
   if (!help)
     return E_INVALIDARG;
 
-  BrowserAccessibilityWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  base::string16 help_str = target->help();
-  if (help_str.empty())
-    return S_FALSE;
-
-  *help = SysAllocString(help_str.c_str());
-
-  DCHECK(*help);
-  return S_OK;
+  return S_FALSE;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
@@ -498,19 +487,6 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
     return E_INVALIDARG;
 
   base::string16 name_str = target->name();
-
-  // If the name is empty, see if it's labeled by another element.
-  if (name_str.empty()) {
-    int title_elem_id;
-    if (target->GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
-                                &title_elem_id)) {
-      BrowserAccessibilityWin* title_elem =
-          manager()->GetFromID(title_elem_id)->ToBrowserAccessibilityWin();
-      if (title_elem)
-        name_str = title_elem->GetNameRecursive();
-    }
-  }
-
   if (name_str.empty())
     return S_FALSE;
 
@@ -2145,6 +2121,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
 
   base::string16 substr = text_str.substr(start_offset,
                                           end_offset - start_offset);
+
   if (substr.empty())
     return S_FALSE;
 
@@ -3404,71 +3381,10 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     }
   }
 
-  // The calculation of the accessible name of an element has been
-  // standardized in the HTML to Platform Accessibility APIs Implementation
-  // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
-  // appropriate accessible name on Windows, we need to apply some logic
-  // to the fields we get from WebKit.
-  //
-  // TODO(dmazzoni): move most of this logic into WebKit.
-  //
-  // WebKit gives us:
-  //
-  //   name: the default name, e.g. inner text
-  //   title ui element: a reference to a <label> element on the same
-  //       page that labels this node.
-  //   description: accessible labels that override the default name:
-  //       aria-label or aria-labelledby or aria-describedby
-  //   help: the value of the "title" attribute
-  //
-  // On Windows, the logic we apply lets some fields take precedence and
-  // always returns the primary name in "name" and the secondary name,
-  // if any, in "description".
+  win_attributes_->name = GetString16Attribute(ui::AX_ATTR_NAME);
+  win_attributes_->description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
 
-  int title_elem_id = GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT);
-  base::string16 name = GetString16Attribute(ui::AX_ATTR_NAME);
-  base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
-  base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
   base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
-
-  // WebKit annoyingly puts the title in the description if there's no other
-  // description, which just confuses the rest of the logic. Put it back.
-  // Now "help" is always the value of the "title" attribute, if present.
-  base::string16 title_attr;
-  if (GetHtmlAttribute("title", &title_attr) &&
-      description == title_attr &&
-      help.empty()) {
-    help = description;
-    description.clear();
-  }
-
-  // Now implement the main logic: the descripion should become the name if
-  // it's nonempty, and the help should become the description if
-  // there's no description - or the name if there's no name or description.
-  if (!description.empty()) {
-    name = description;
-    description.clear();
-  }
-  if (!help.empty() && description.empty()) {
-    description = help;
-    help.clear();
-  }
-  if (!description.empty() && name.empty() && !title_elem_id) {
-    name = description;
-    description.clear();
-  }
-
-  // If it's a text field, also consider the placeholder.
-  base::string16 placeholder;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
-      HasState(ui::AX_STATE_FOCUSABLE) &&
-      GetHtmlAttribute("placeholder", &placeholder)) {
-    if (name.empty() && !title_elem_id) {
-      name = placeholder;
-    } else if (description.empty()) {
-      description = placeholder;
-    }
-  }
 
   // On Windows, the value of a document should be its url.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
@@ -3476,26 +3392,11 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     value = base::UTF8ToUTF16(manager()->GetTreeData().url);
   }
 
-  // For certain roles (listbox option, static text, and list marker)
-  // WebKit stores the main accessible text in the "value" - swap it so
-  // that it's the "name".
-  if (name.empty() &&
-      (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
-       GetRole() == ui::AX_ROLE_LIST_MARKER ||
-       IsListBoxOptionOrMenuListOption())) {
-    base::string16 tmp = value;
-    value = name;
-    name = tmp;
-  }
-
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
   if (value.empty() && (ia_state() & STATE_SYSTEM_LINKED))
     value = GetString16Attribute(ui::AX_ATTR_URL);
 
-  win_attributes_->name = name;
-  win_attributes_->description = description;
-  win_attributes_->help = help;
   win_attributes_->value = value;
 
   // Clear any old relationships between this node and other nodes.
@@ -3504,17 +3405,10 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   relations_.clear();
 
   // Handle title UI element.
-  if (title_elem_id) {
-    // Add a labelled by relationship.
-    CComObject<BrowserAccessibilityRelation>* relation;
-    HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(
-        &relation);
-    DCHECK(SUCCEEDED(hr));
-    relation->AddRef();
-    relation->Initialize(this, IA2_RELATION_LABELLED_BY);
-    relation->AddTarget(title_elem_id);
-    relations_.push_back(relation);
-  }
+  AddRelations(ui::AX_ATTR_CONTROLS_IDS, IA2_RELATION_CONTROLLER_FOR);
+  AddRelations(ui::AX_ATTR_DESCRIBEDBY_IDS, IA2_RELATION_DESCRIBED_BY);
+  AddRelations(ui::AX_ATTR_FLOWTO_IDS, IA2_RELATION_FLOWS_TO);
+  AddRelations(ui::AX_ATTR_LABELLEDBY_IDS, IA2_RELATION_LABELLED_BY);
 
   UpdateRequiredAttributes();
   // If this is a web area for a presentational iframe, give it a role of
@@ -3581,8 +3475,6 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_NAMECHANGE, this);
     if (description() != old_win_attributes_->description)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_DESCRIPTIONCHANGE, this);
-    if (help() != old_win_attributes_->help)
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_HELPCHANGE, this);
     if (value() != old_win_attributes_->value)
       manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_VALUECHANGE, this);
     if (ia_state() != old_win_attributes_->ia_state)
@@ -4227,6 +4119,25 @@ void BrowserAccessibilityWin::UpdateRequiredAttributes() {
       GetHtmlAttribute("type", &type)) {
     SanitizeStringAttributeForIA2(type, &type);
     win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
+  }
+}
+
+void BrowserAccessibilityWin::AddRelations(
+    ui::AXIntListAttribute src_attr,
+    const base::string16& iaccessiblerelation_type) {
+  if (!HasIntListAttribute(src_attr))
+    return;
+
+  const std::vector<int32>& ids = GetIntListAttribute(src_attr);
+  for (size_t i = 0; i < ids.size(); ++i) {
+    CComObject<BrowserAccessibilityRelation>* relation;
+    HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(
+        &relation);
+    DCHECK(SUCCEEDED(hr));
+    relation->AddRef();
+    relation->Initialize(this, iaccessiblerelation_type);
+    relation->AddTarget(ids[i]);
+    relations_.push_back(relation);
   }
 }
 

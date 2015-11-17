@@ -40,11 +40,17 @@ namespace {
 
 void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
 {
-    // core properties
-    String description = axObject->deprecatedAccessibilityDescription();
+    // Description (secondary to the accessible name).
+    AXNameFrom nameFrom;
+    AXObject::AXObjectVector nameObjects;
+    axObject->name(nameFrom, &nameObjects);
+    AXDescriptionFrom descriptionFrom;
+    AXObject::AXObjectVector descriptionObjects;
+    String description = axObject->description(nameFrom, descriptionFrom, &descriptionObjects);
     if (!description.isEmpty())
         nodeObject->setDescription(createValue(description, AXValueType::ComputedString));
 
+    // Value.
     if (axObject->supportsRangeValue()) {
         nodeObject->setValue(createValue(axObject->valueForRange()));
     } else {
@@ -52,10 +58,6 @@ void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
         if (!stringValue.isEmpty())
             nodeObject->setValue(createValue(stringValue));
     }
-
-    String help = axObject->deprecatedHelpText();
-    if (!help.isEmpty())
-        nodeObject->setHelp(createValue(help, AXValueType::ComputedString));
 }
 
 void fillLiveRegionProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
@@ -272,12 +274,12 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
         properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Controls, results, aria_controlsAttr, axObject));
     results.clear();
 
-    axObject->deprecatedAriaDescribedbyElements(results);
+    axObject->ariaDescribedbyElements(results);
     if (!results.isEmpty())
         properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Describedby, results, aria_describedbyAttr, axObject));
     results.clear();
 
-    axObject->deprecatedAriaLabelledbyElements(results);
+    axObject->ariaLabelledbyElements(results);
     if (!results.isEmpty())
         properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Labelledby, results, aria_labelledbyAttr, axObject));
     results.clear();
