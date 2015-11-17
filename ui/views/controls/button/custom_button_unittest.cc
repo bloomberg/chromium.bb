@@ -43,10 +43,34 @@ class TestCustomButton : public CustomButton, public ButtonListener {
 
   void Reset() { notified_ = false; }
 
+  // CustomButton methods:
+  bool IsChildWidget() const override { return is_child_widget_; }
+  bool FocusInChildWidget() const override { return focus_in_child_widget_; }
+
+  void set_child_widget(bool b) { is_child_widget_ = b; }
+  void set_focus_in_child_widget(bool b) { focus_in_child_widget_ = b; }
+
  private:
   bool notified_ = false;
+  bool is_child_widget_ = false;
+  bool focus_in_child_widget_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
+};
+
+class TestWidget : public Widget {
+ public:
+  TestWidget() : Widget() {}
+
+  // Widget method:
+  bool IsActive() const override { return active_; }
+
+  void set_active(bool active) { active_ = active; }
+
+ private:
+  bool active_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWidget);
 };
 
 class CustomButtonTest : public ViewsTestBase {
@@ -59,7 +83,7 @@ class CustomButtonTest : public ViewsTestBase {
 
     // Create a widget so that the CustomButton can query the hover state
     // correctly.
-    widget_.reset(new Widget);
+    widget_.reset(new TestWidget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
@@ -82,11 +106,11 @@ class CustomButtonTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  Widget* widget() { return widget_.get(); }
+  TestWidget* widget() { return widget_.get(); }
   TestCustomButton* button() { return button_; }
 
  private:
-  scoped_ptr<Widget> widget_;
+  scoped_ptr<TestWidget> widget_;
   TestCustomButton* button_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButtonTest);
@@ -202,6 +226,33 @@ TEST_F(CustomButtonTest, NotifyAction) {
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
   EXPECT_FALSE(button()->notified());
+}
+
+TEST_F(CustomButtonTest, HandleAccelerator) {
+  // Child widgets shouldn't handle accelerators when they are not focused.
+  EXPECT_FALSE(button()->IsChildWidget());
+  EXPECT_FALSE(button()->FocusInChildWidget());
+  EXPECT_FALSE(widget()->IsActive());
+  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  EXPECT_FALSE(button()->notified());
+  // Child without focus.
+  button()->set_child_widget(true);
+  button()->set_focus_in_child_widget(false);
+  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  EXPECT_FALSE(button()->notified());
+  button()->Reset();
+  // Child with focus.
+  button()->set_child_widget(true);
+  button()->set_focus_in_child_widget(true);
+  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  EXPECT_TRUE(button()->notified());
+  button()->Reset();
+  // Not a child, but active.
+  button()->set_child_widget(false);
+  button()->set_focus_in_child_widget(true);
+  widget()->set_active(true);
+  button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  EXPECT_TRUE(button()->notified());
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
