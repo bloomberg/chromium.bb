@@ -1152,6 +1152,10 @@ const char kEnablePhysicalWeb[] = "enable-physical-web";
 
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
+
+// Enabled theme-color in tabbed mode of Chrome for Android.
+const char kEnableThemeColorInTabbedMode[]
+    = "enable-theme-color-in-tabbed-mode";
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
