@@ -378,13 +378,15 @@ bool SessionsSyncManager::IsValidSessionHeader(
 }
 
 void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
-  GURL virtual_url =
+  if (!modified_tab->IsBeingDestroyed()) {
+    GURL virtual_url =
       modified_tab->GetVirtualURLAtIndex(modified_tab->GetCurrentEntryIndex());
-  if (!modified_tab->IsBeingDestroyed() && virtual_url.is_valid() &&
-      virtual_url.spec() == kNTPOpenTabSyncURL) {
-    DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-    if (!datatype_refresh_callback_.is_null())
-      datatype_refresh_callback_.Run();
+    if (virtual_url.is_valid() &&
+        virtual_url.spec() == kNTPOpenTabSyncURL) {
+      DVLOG(1) << "Triggering sync refresh for sessions datatype.";
+      if (!datatype_refresh_callback_.is_null())
+        datatype_refresh_callback_.Run();
+    }
   }
 
   if (local_tab_pool_out_of_sync_) {
