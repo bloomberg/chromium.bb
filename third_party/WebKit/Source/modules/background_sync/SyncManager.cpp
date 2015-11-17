@@ -40,7 +40,7 @@ SyncManager::SyncManager(ServiceWorkerRegistration* registration)
     ASSERT(registration);
 }
 
-ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionContext* context, const SyncRegistrationOptions& options)
+ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionContext* context, const String& tag)
 {
     // TODO(jkarlin): Wait for the registration to become active instead of rejecting. See crbug.com/542437.
     if (!m_registration->active())
@@ -52,7 +52,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
     WebSyncRegistration* webSyncRegistration = new WebSyncRegistration(
         WebSyncRegistration::UNREGISTERED_SYNC_ID /* id */,
         WebSyncRegistration::PeriodicityOneShot,
-        options.tag(),
+        tag,
         0 /* minPeriod */,
         WebSyncRegistration::NetworkStateOnline /* networkState */,
         WebSyncRegistration::PowerStateAuto /* powerState */
@@ -62,32 +62,12 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
     return promise;
 }
 
-ScriptPromise SyncManager::getRegistration(ScriptState* scriptState, const String& syncRegistrationId)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    backgroundSyncProvider()->getRegistration(WebSyncRegistration::PeriodicityOneShot, syncRegistrationId, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
-
-    return promise;
-}
-
-ScriptPromise SyncManager::getRegistrations(ScriptState* scriptState)
+ScriptPromise SyncManager::getTags(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     backgroundSyncProvider()->getRegistrations(WebSyncRegistration::PeriodicityOneShot, m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
-
-    return promise;
-}
-
-ScriptPromise SyncManager::permissionState(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    backgroundSyncProvider()->getPermissionStatus(WebSyncRegistration::PeriodicityOneShot, m_registration->webRegistration(), new SyncGetPermissionStatusCallbacks(resolver, m_registration));
 
     return promise;
 }

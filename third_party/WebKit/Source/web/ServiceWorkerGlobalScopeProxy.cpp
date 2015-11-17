@@ -61,6 +61,7 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebCrossOriginServiceWorkerClient.h"
+#include "public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -177,7 +178,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSync
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Sync, eventID);
-    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, SyncRegistration::create(registration, m_workerGlobalScope->registration()), lastChance == IsLastChance, observer));
+    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, registration.tag, lastChance == IsLastChance, observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 

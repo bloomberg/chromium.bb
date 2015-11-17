@@ -14,8 +14,6 @@ enum SyncPermissionState {
     RuntimeEnabled=BackgroundSync,
     TypeChecking=Interface,
 ] interface SyncManager {
-    [CallWith=(ScriptState,ExecutionContext),ImplementedAs=registerFunction] Promise<SyncRegistration> register([RuntimeEnabled=BackgroundSyncV2] optional SyncRegistrationOptions options);
-    [CallWith=ScriptState] Promise<SyncRegistration> getRegistration(DOMString tag);
-    [CallWith=ScriptState] Promise<sequence<SyncRegistration>> getRegistrations();
-    [RuntimeEnabled=BackgroundSyncV2, CallWith=ScriptState] Promise<SyncPermissionState> permissionState();
+    [MeasureAs=BackgroundSyncRegister,CallWith=(ScriptState,ExecutionContext),ImplementedAs=registerFunction] Promise<void> register(DOMString tag);
+    [CallWith=ScriptState] Promise<sequence<DOMString>> getTags();
 };

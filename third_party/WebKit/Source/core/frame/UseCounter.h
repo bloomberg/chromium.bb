@@ -884,6 +884,7 @@ public:
         CSSFilterContrast = 1022,
         CSSFilterBlur = 1023,
         CSSFilterDropShadow = 1024,
+        BackgroundSyncRegister = 1025,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

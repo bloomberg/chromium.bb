@@ -5160,15 +5160,8 @@ interface SubtleCrypto
     method wrapKey
 interface SyncManager
     method constructor
-    method getRegistration
-    method getRegistrations
-    method permissionState
+    method getTags
     method register
-interface SyncRegistration
-    getter finished
-    getter tag
-    method constructor
-    method unregister
 interface Text : CharacterData
     getter wholeText
     method constructor

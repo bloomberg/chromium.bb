@@ -9,7 +9,6 @@
 // "delay" - Delays finishing the sync event with event.waitUntil.
 //           Send a postMessage of "completeDelayedOneShot" to finish the
 //           event.
-// "unregister" - Unregisters the sync registration from within the sync event.
 
 'use strict';
 
@@ -38,25 +37,10 @@ this.onmessage = function(event) {
     sendMessageToClients('sync', 'ok - delay rejected');
   }
 
-  if (event.data['action'] === 'notifyWhenFinished') {
-    var tag = event.data['tag'];
-    registration.sync.getRegistration(tag)
-      .then(function (syncRegistration) {
-        sendMessageToClients('sync', 'ok - ' + tag + ' finished');
-        return syncRegistration.finished;
-      })
-      .then(function() {
-        sendMessageToClients('sync', tag + " finished result: true");
-      }, function(error) {
-        sendMessageToClients('sync', tag + " finished result: false");
-      })
-      .catch(sendSyncErrorToClients);
-  }
-
   if (event.data['action'] === 'registerOneShot') {
     var tag = event.data['tag'];
-    registration.sync.register({'tag': tag})
-      .then(function (syncRegistration) {
+    registration.sync.register(tag)
+      .then(function () {
         sendMessageToClients('register', 'ok - ' + tag + ' registered in SW');
       })
       .catch(sendSyncErrorToClients);
@@ -64,23 +48,21 @@ this.onmessage = function(event) {
 
   if (event.data['action'] === 'getRegistrationOneShot') {
     var tag = event.data['tag'];
-    registration.sync.getRegistration(tag)
-      .then(function(syncRegistration) {
-        if (!syncRegistration) {
+    registration.sync.getTags(tag)
+      .then(function(tags) {
+        if (tags.indexOf(tag) >= 0) {
+          sendMessageToClients('register', 'ok - ' + tag + ' found');
+        } else {
           sendMessageToClients('register', 'error - ' + tag + ' not found');
           return;
         }
-        sendMessageToClients('register', 'ok - ' + tag + ' found');
       })
       .catch(sendSyncErrorToClients);
   }
 
   if (event.data['action'] === 'getRegistrationsOneShot') {
-    registration.sync.getRegistrations()
-      .then(function(syncRegistrations) {
-        var tags = syncRegistrations.map(function(syncRegistration) {
-          return syncRegistration.tag;
-        });
+    registration.sync.getTags()
+      .then(function(tags) {
         sendMessageToClients('register', 'ok - ' + tags.toString());
       })
       .catch(sendSyncErrorToClients);
@@ -103,17 +85,12 @@ this.onsync = function(event) {
     sendMessageToClients('sync', 'error - wrong wait until type');
   }
 
-  if (event.registration === undefined) {
-    sendMessageToClients('sync', 'error - event missing registration');
-    return;
-  }
-
-  if (event.registration.tag === undefined) {
+  if (event.tag === undefined) {
     sendMessageToClients('sync', 'error - registration missing tag');
     return;
   }
 
-  var tag = event.registration.tag;
+  var tag = event.tag;
 
   if (tag === 'delay') {
     var syncPromise = new Promise(function(resolve, reject) {
@@ -121,14 +98,6 @@ this.onsync = function(event) {
       rejectCallback = reject;
     });
     event.waitUntil(syncPromise);
-    return;
-  }
-
-  if (tag === 'unregister') {
-    event.waitUntil(event.registration.unregister()
-      .then(function() {
-        sendMessageToClients('sync', 'ok - unregister completed');
-      }));
     return;
   }
 

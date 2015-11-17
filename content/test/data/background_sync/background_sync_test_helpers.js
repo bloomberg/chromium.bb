@@ -5,7 +5,6 @@
 'use strict';
 
 var resultQueue = new ResultQueue();
-var registrationReference = null;
 
 // Sends data back to the test. This must be in response to an earlier
 // request, but it's ok to respond asynchronously. The request blocks until
@@ -35,9 +34,9 @@ function registerServiceWorker() {
 function registerOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
-      return swRegistration.sync.register({'tag': tag});
+      return swRegistration.sync.register(tag);
     })
-    .then(function(syncRegistration) {
+    .then(function() {
       sendResultToTest('ok - ' + tag + ' registered');
     })
     .catch(sendErrorToTest);
@@ -52,56 +51,18 @@ function registerOneShotFromServiceWorker(tag) {
     .catch(sendErrorToTest);
 }
 
-function unregisterOneShot(tag) {
-  navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      return swRegistration.sync.getRegistration(tag);
-    })
-    .then(function(syncRegistration) {
-      if (!syncRegistration) {
-        sendResultToTest('error - ' + tag + ' not found');
-        return;
-      }
-      return syncRegistration.unregister();
-    })
-    .then(function() {
-      sendResultToTest('ok - ' + tag + ' unregistered');
-    })
-    .catch(sendErrorToTest);
-}
-
-function unregisterOneShotTwice(tag) {
-  navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      return swRegistration.sync.getRegistration(tag);
-    })
-    .then(function(syncRegistration) {
-      if (!syncRegistration) {
-        sendResultToTest('error - ' + tag + ' not found');
-        return;
-      }
-      return syncRegistration.unregister();
-    })
-    .then(function() {
-      return syncRegistration.unregister();
-    })
-    .then(sendErrorToTest, function() {
-      sendResultToTest('ok - ' + tag + ' failed to unregister twice');
-    })
-    .catch(sendErrorToTest);
-}
-
 function getRegistrationOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
-      return swRegistration.sync.getRegistration(tag);
+      return swRegistration.sync.getTags();
     })
-    .then(function(syncRegistration) {
-      if (!syncRegistration) {
+    .then(function(tags) {
+      if (tags.indexOf(tag) >= 0) {
+        sendResultToTest('ok - ' + tag + ' found');
+      } else {
         sendResultToTest('error - ' + tag + ' not found');
         return;
       }
-      sendResultToTest('ok - ' + tag + ' found');
     })
     .catch(sendErrorToTest);
 }
@@ -119,12 +80,9 @@ function getRegistrationOneShotFromServiceWorker(tag) {
 function getRegistrationsOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
-      return swRegistration.sync.getRegistrations();
+      return swRegistration.sync.getTags();
     })
-    .then(function(syncRegistrations) {
-      var tags = syncRegistrations.map(function(syncRegistration) {
-        return syncRegistration.tag;
-      });
+    .then(function(tags) {
       sendResultToTest('ok - ' + tags.toString());
     })
     .catch(sendErrorToTest);
@@ -157,44 +115,6 @@ function rejectDelayedOneShot() {
     .catch(sendErrorToTest);
 }
 
-function notifyWhenFinishedOneShot(tag) {
-  navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      swRegistration.active.postMessage(
-          {action: 'notifyWhenFinished', tag: tag});
-    })
-    .catch(sendErrorToTest);
-}
-
-function notifyWhenFinishedImmediateOneShot(tag) {
-  if (registrationReference == null) {
-    sendResultToTest('error - must call storeRegistration first');
-    return;
-  }
-
-  registrationReference.finished
-    .then(function(success) {
-      sendResultToTest('ok - ' + registrationReference.tag +
-                       ' result: true')
-    }, function(err) {
-      sendResultToTest('ok - ' + registrationReference.tag +
-                       ' result: false')
-    })
-    .catch(sendErrorToTest)
-}
-
-
-function storeRegistration(tag) {
-  navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      return swRegistration.sync.getRegistration(tag);
-    })
-    .then(function(syncRegistration) {
-      registrationReference = syncRegistration;
-      sendResultToTest('ok - ' + tag + ' stored');
-    })
-    .catch(sendErrorToTest);
-}
 
 // Queue storing asynchronous results received from the Service Worker. Results
 // are sent to the test when requested.

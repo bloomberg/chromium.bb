@@ -27,10 +27,8 @@ public:
 
     unsigned long minAllowablePeriod();
 
-    ScriptPromise registerFunction(ScriptState*, ExecutionContext*, const SyncRegistrationOptions&);
-    ScriptPromise getRegistration(ScriptState*, const String&);
-    ScriptPromise getRegistrations(ScriptState*);
-    ScriptPromise permissionState(ScriptState*);
+    ScriptPromise registerFunction(ScriptState*, ExecutionContext*, const String&);
+    ScriptPromise getTags(ScriptState*);
 
     DECLARE_TRACE();
 

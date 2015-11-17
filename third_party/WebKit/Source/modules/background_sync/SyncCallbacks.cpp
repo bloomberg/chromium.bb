@@ -120,20 +120,14 @@ SyncGetRegistrationsCallbacks::~SyncGetRegistrationsCallbacks()
 
 void SyncGetRegistrationsCallbacks::onSuccess(const WebVector<WebSyncRegistration*>& webSyncRegistrations)
 {
-    Vector<OwnPtr<WebSyncRegistration>> registrations;
-    for (WebSyncRegistration* r : webSyncRegistrations) {
-        registrations.append(adoptPtr(r));
-    }
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
-
-    HeapVector<Member<SyncRegistration>> syncRegistrations;
-    for (auto& r : registrations) {
-        SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), r.release(), m_serviceWorkerRegistration);
-        syncRegistrations.append(reg);
+    Vector<String> tags;
+    for (const WebSyncRegistration* r : webSyncRegistrations) {
+        tags.append(r->tag);
     }
-    m_resolver->resolve(syncRegistrations);
+    m_resolver->resolve(tags);
 }
 
 void SyncGetRegistrationsCallbacks::onError(const WebSyncError& error)

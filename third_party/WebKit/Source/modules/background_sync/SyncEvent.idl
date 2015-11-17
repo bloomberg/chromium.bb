@@ -7,6 +7,6 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundSync,
 ] interface SyncEvent : ExtendableEvent {
-    readonly attribute SyncRegistration registration;
+    readonly attribute DOMString tag;
     readonly attribute boolean lastChance;
 };

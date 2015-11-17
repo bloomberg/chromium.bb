@@ -22,9 +22,9 @@ public:
     {
         return adoptRefWillBeNoop(new SyncEvent);
     }
-    static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, SyncRegistration* syncRegistration, bool lastChance, WaitUntilObserver* observer)
+    static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
     {
-        return adoptRefWillBeNoop(new SyncEvent(type, syncRegistration, lastChance, observer));
+        return adoptRefWillBeNoop(new SyncEvent(type, tag, lastChance, observer));
     }
     static PassRefPtrWillBeRawPtr<SyncEvent> create(const AtomicString& type, const SyncEventInit& init)
     {
@@ -35,17 +35,17 @@ public:
 
     const AtomicString& interfaceName() const override;
 
-    SyncRegistration* registration();
+    String tag();
     bool lastChance();
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     SyncEvent();
-    SyncEvent(const AtomicString& type, SyncRegistration*, bool, WaitUntilObserver*);
+    SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
     SyncEvent(const AtomicString& type, const SyncEventInit&);
 
-    PersistentWillBeMember<SyncRegistration> m_syncRegistration;
+    String m_tag;
     bool m_lastChance;
 };
 

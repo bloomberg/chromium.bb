@@ -17,7 +17,7 @@ async_test(function(test) {
             swRegistration = serviceWorkerRegistration;
             assert_not_equals(swRegistration.installing, null, 'The worker should be installing');
             assert_equals(swRegistration.active, null, 'The worker should not be active yet');
-            return swRegistration.sync.register();
+            return swRegistration.sync.register('abcde');
         })
         .then(function(syncRegistration) {
             assert_unreached('sync.register() must not succeed without an active service worker');
