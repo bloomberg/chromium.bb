@@ -137,10 +137,10 @@ void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
   channel_ready_ = true;
-  std::vector<IPC::Message*> messages;
-  pending_messages_.release(&messages);
-  for (size_t i = 0; i < messages.size(); ++i) {
-    BrowserMessageFilter::Send(messages[i]);
+  std::vector<scoped_ptr<IPC::Message>> messages;
+  messages.swap(pending_messages_);
+  for (auto& message : messages) {
+    BrowserMessageFilter::Send(message.release());
   }
 }
 
@@ -231,7 +231,7 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
     return true;
   }
 
-  pending_messages_.push_back(message);
+  pending_messages_.push_back(make_scoped_ptr(message));
   return true;
 }
 

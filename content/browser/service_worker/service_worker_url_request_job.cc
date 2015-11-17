@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -507,8 +507,8 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
     return false;
 
   // To ensure the blobs stick around until the end of the reading.
-  ScopedVector<storage::BlobDataHandle> handles;
-  ScopedVector<storage::BlobDataSnapshot> snapshots;
+  std::vector<scoped_ptr<storage::BlobDataHandle>> handles;
+  std::vector<scoped_ptr<storage::BlobDataSnapshot>> snapshots;
   // TODO(dmurph): Allow blobs to be added below, so that the context can
   // efficiently re-use blob items for the new blob.
   std::vector<const ResourceRequestBody::Element*> resolved_elements;
@@ -527,8 +527,8 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       DCHECK_NE(storage::DataElement::TYPE_BLOB, item->type());
       resolved_elements.push_back(item->data_element_ptr());
     }
-    handles.push_back(handle.release());
-    snapshots.push_back(snapshot.release());
+    handles.push_back(handle.Pass());
+    snapshots.push_back(snapshot.Pass());
   }
 
   const std::string uuid(base::GenerateGUID());
