@@ -29,7 +29,6 @@ namespace views {
 class InputMethodMUS;
 class NativeWidgetMus;
 class PlatformWindowMus;
-class SurfaceContextFactory;
 
 class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
@@ -51,7 +50,6 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   NativeWidgetMus* native_widget_;
   scoped_ptr<InputMethodMUS> input_method_;
-  scoped_ptr<SurfaceContextFactory> context_factory_;
   ui::PlatformWindowState show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);

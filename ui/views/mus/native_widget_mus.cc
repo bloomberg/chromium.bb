@@ -10,6 +10,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -18,6 +19,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/mus/platform_window_mus.h"
+#include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_client_area_insets.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -176,6 +178,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       surface_type_(surface_type),
       show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      context_factory_(new SurfaceContextFactory(shell, window, surface_type)),
       content_(new aura::Window(this)),
       close_widget_factory_(this) {}
 
@@ -248,9 +251,18 @@ NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  // WindowTreeHost creates the compositor using the ContextFactory from
+  // aura::Env. Install |context_factory_| there so that |context_factory_| is
+  // picked up.
+  ui::ContextFactory* default_context_factory =
+      aura::Env::GetInstance()->context_factory();
+  aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   window_tree_host_.reset(
       new WindowTreeHostMus(shell_, this, window_, surface_type_));
   window_tree_host_->InitHost();
+  aura::Env::GetInstance()->set_context_factory(default_context_factory);
+  DCHECK_EQ(context_factory_.get(),
+            window_tree_host_->compositor()->context_factory());
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
 

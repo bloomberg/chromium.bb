@@ -41,6 +41,7 @@ class FocusController;
 }
 
 namespace views {
+class SurfaceContextFactory;
 struct WindowManagerClientAreaInsets;
 class WindowTreeHostMus;
 
@@ -206,6 +207,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   Widget::InitParams::Ownership ownership_;
 
   // Aura configuration.
+  scoped_ptr<SurfaceContextFactory> context_factory_;
   scoped_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   scoped_ptr<wm::FocusController> focus_client_;
