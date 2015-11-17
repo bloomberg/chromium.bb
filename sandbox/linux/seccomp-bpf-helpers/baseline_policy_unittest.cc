@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <sched.h>
 #include <signal.h>
 #include <string.h>
@@ -35,6 +36,10 @@
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
+
+#if !defined(SO_PEEK_OFF)
+#define SO_PEEK_OFF 42
+#endif
 
 namespace sandbox {
 
@@ -328,6 +333,51 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 }
+
+#if defined(__x86_64__)
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 GetSockOptWrongLevelSigsys,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  int fds[2];
+  PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
+  int id;
+  socklen_t peek_off_size = sizeof(id);
+  getsockopt(fds[0], IPPROTO_TCP, SO_PEEK_OFF, &id, &peek_off_size);
+}
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 GetSockOptWrongOptionSigsys,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  int fds[2];
+  PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
+  int id;
+  socklen_t peek_off_size = sizeof(id);
+  getsockopt(fds[0], SOL_SOCKET, SO_DEBUG, &id, &peek_off_size);
+}
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 SetSockOptWrongLevelSigsys,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  int fds[2];
+  PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
+  int id;
+  setsockopt(fds[0], IPPROTO_TCP, SO_PEEK_OFF, &id, sizeof(id));
+}
+
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 SetSockOptWrongOptionSigsys,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  int fds[2];
+  PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
+  int id;
+  setsockopt(fds[0], SOL_SOCKET, SO_DEBUG, &id, sizeof(id));
+}
+#endif
 
 }  // namespace
 

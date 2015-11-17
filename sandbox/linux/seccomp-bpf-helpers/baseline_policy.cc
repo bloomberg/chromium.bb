@@ -21,6 +21,10 @@
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
+#if !defined(SO_PEEK_OFF)
+#define SO_PEEK_OFF 42
+#endif
+
 // Changing this implementation will have an effect on *all* policies.
 // Currently this means: Renderer/Worker, GPU, Flash and NaCl.
 
@@ -225,6 +229,16 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 #if defined(__i386__) || defined(__mips__)
   if (SyscallSets::IsSocketCall(sysno))
     return RestrictSocketcallCommand();
+#endif
+
+#if defined(__x86_64__)
+  if (sysno == __NR_getsockopt || sysno ==__NR_setsockopt) {
+    // Used by Mojo EDK to catch a message pipe being sent over itself.
+    const Arg<int> level(1);
+    const Arg<int> optname(2);
+    return If(level == SOL_SOCKET && optname == SO_PEEK_OFF,
+              Allow()).Else(CrashSIGSYS());
+  }
 #endif
 
   if (IsBaselinePolicyWatched(sysno)) {
