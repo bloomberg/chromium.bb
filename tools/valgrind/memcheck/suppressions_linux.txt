@@ -105,6 +105,6 @@
    fun:_Znw*
    obj:*
    ...
-   fun:*LoadNativeLibrary*
-   fun:*CdmAdapterTest*
+   fun:_dl_init
+   fun:dl_open_worker
 }

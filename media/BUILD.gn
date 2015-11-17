@@ -664,7 +664,7 @@ test("media_unittests") {
     "test/data/",
   ]
 
-  # TODO(wolenetz): Fix size_t to int trunctaion in win64.
+  # TODO(wolenetz): Fix size_t to int truncation in win64.
   # See http://crbug.com/171009
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -700,6 +700,12 @@ test("media_unittests") {
       "//media/base/android:media_java",
       "//ui/android:ui_java",
     ]
+  }
+
+  # If ExternalClearKey is built, we can test CdmAdapter.
+  if (enable_pepper_cdms) {
+    sources += [ "cdm/cdm_adapter_unittest.cc" ]
+    deps += [ "//media/cdm/ppapi:clearkeycdm" ]
   }
 
   if (media_use_ffmpeg) {

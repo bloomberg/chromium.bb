@@ -1399,6 +1399,15 @@
             'filters/decrypting_video_decoder_unittest.cc',
           ],
         }],
+        # If ExternalClearKey is built, we can test CdmAdapter.
+        ['enable_pepper_cdms == 1', {
+          'dependencies': [
+            'clearkeycdm',
+          ],
+          'sources': [
+            'cdm/cdm_adapter_unittest.cc',
+          ],
+        }],
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
           'sources': [
             'filters/h264_bitstream_buffer_unittest.cc',
