@@ -1863,7 +1863,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 // Verifies that the NTP page and launch ordinals are kept when updating apps.
 TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   InitializeEmptyExtensionService();
-  AppSorting* sorting = ExtensionPrefs::Get(profile())->app_sorting();
+  AppSorting* sorting = ExtensionSystem::Get(profile())->app_sorting();
   base::FilePath extensions_path = data_dir().AppendASCII("app_update");
 
   // First install v1 of a hosted app.
@@ -1899,7 +1899,7 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
       IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")));
   service()->Init();
 
-  AppSorting* sorting = ExtensionPrefs::Get(profile())->app_sorting();
+  AppSorting* sorting = ExtensionSystem::Get(profile())->app_sorting();
   EXPECT_TRUE(
       sorting->GetPageOrdinal(extensions::kWebStoreAppId).IsValid());
   EXPECT_TRUE(

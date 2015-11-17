@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 
 namespace extensions {
@@ -24,7 +25,7 @@ InstallTracker::InstallTracker(content::BrowserContext* browser_context,
 
   // Prefs may be null in tests.
   if (prefs) {
-    AppSorting* sorting = prefs->app_sorting();
+    AppSorting* sorting = ExtensionSystem::Get(browser_context)->app_sorting();
     registrar_.Add(this,
                    chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(sorting));

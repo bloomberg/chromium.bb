@@ -20,7 +20,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
+using extensions::AppSorting;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionSystem;
 
 namespace {
 
@@ -64,8 +66,9 @@ void LoadApp(content::BrowserContext* context,
              const std::string& id,
              AppState* app_state) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
-  app_state->app_launch_ordinal = prefs->app_sorting()->GetAppLaunchOrdinal(id);
-  app_state->page_ordinal = prefs->app_sorting()->GetPageOrdinal(id);
+  AppSorting* app_sorting = ExtensionSystem::Get(context)->app_sorting();
+  app_state->app_launch_ordinal = app_sorting->GetAppLaunchOrdinal(id);
+  app_state->page_ordinal = app_sorting->GetPageOrdinal(id);
   app_state->launch_type = extensions::GetLaunchTypePrefValue(prefs, id);
   ExtensionService* service =
       extensions::ExtensionSystem::Get(context)->extension_service();
@@ -184,7 +187,7 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
 syncer::StringOrdinal SyncAppHelper::GetPageOrdinalForApp(
     Profile* profile,
     const std::string& name) {
-  return ExtensionPrefs::Get(profile)->app_sorting()->GetPageOrdinal(
+  return ExtensionSystem::Get(profile)->app_sorting()->GetPageOrdinal(
       crx_file::id_util::GenerateId(name));
 }
 
@@ -192,14 +195,14 @@ void SyncAppHelper::SetPageOrdinalForApp(
     Profile* profile,
     const std::string& name,
     const syncer::StringOrdinal& page_ordinal) {
-  ExtensionPrefs::Get(profile)->app_sorting()->SetPageOrdinal(
+  ExtensionSystem::Get(profile)->app_sorting()->SetPageOrdinal(
       crx_file::id_util::GenerateId(name), page_ordinal);
 }
 
 syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name) {
-  return ExtensionPrefs::Get(profile)->app_sorting()->GetAppLaunchOrdinal(
+  return ExtensionSystem::Get(profile)->app_sorting()->GetAppLaunchOrdinal(
       crx_file::id_util::GenerateId(name));
 }
 
@@ -207,12 +210,12 @@ void SyncAppHelper::SetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name,
     const syncer::StringOrdinal& app_launch_ordinal) {
-  ExtensionPrefs::Get(profile)->app_sorting()->SetAppLaunchOrdinal(
+  ExtensionSystem::Get(profile)->app_sorting()->SetAppLaunchOrdinal(
       crx_file::id_util::GenerateId(name), app_launch_ordinal);
 }
 
 void SyncAppHelper::FixNTPOrdinalCollisions(Profile* profile) {
-  ExtensionPrefs::Get(profile)->app_sorting()->FixNTPOrdinalCollisions();
+  ExtensionSystem::Get(profile)->app_sorting()->FixNTPOrdinalCollisions();
 }
 
 SyncAppHelper::SyncAppHelper() : setup_completed_(false) {}

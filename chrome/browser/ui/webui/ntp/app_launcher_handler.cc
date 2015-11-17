@@ -73,6 +73,7 @@ using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
+using extensions::ExtensionSystem;
 
 namespace {
 
@@ -176,7 +177,7 @@ void AppLauncherHandler::CreateAppInfo(
   value->SetBoolean("is_webstore",
       extension->id() == extensions::kWebStoreAppId);
 
-  AppSorting* sorting = prefs->app_sorting();
+  AppSorting* sorting = ExtensionSystem::Get(service->profile())->app_sorting();
   syncer::StringOrdinal page_ordinal = sorting->GetPageOrdinal(extension->id());
   if (!page_ordinal.IsValid()) {
     // Make sure every app has a page ordinal (some predate the page ordinal).
@@ -439,10 +440,9 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
     ExtensionRegistry::Get(profile)->AddObserver(this);
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
+    registrar_.Add(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(
-                       ExtensionPrefs::Get(profile)->app_sorting()));
+                       ExtensionSystem::Get(profile)->app_sorting()));
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                    content::Source<CrxInstaller>(NULL));
@@ -636,14 +636,15 @@ void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
   ExtensionPrefs* extension_prefs =
       ExtensionPrefs::Get(extension_service_->GetBrowserContext());
   extension_prefs->SetAppDraggedByUser(dragged_app_id);
-  extension_prefs->app_sorting()->OnExtensionMoved(
-      dragged_app_id, predecessor_to_moved_ext, successor_to_moved_ext);
+  ExtensionSystem::Get(extension_service_->GetBrowserContext())
+      ->app_sorting()
+      ->OnExtensionMoved(dragged_app_id, predecessor_to_moved_ext,
+                         successor_to_moved_ext);
 }
 
 void AppLauncherHandler::HandleSetPageIndex(const base::ListValue* args) {
   AppSorting* app_sorting =
-      ExtensionPrefs::Get(extension_service_->profile())->app_sorting();
-
+      ExtensionSystem::Get(extension_service_->profile())->app_sorting();
   std::string extension_id;
   double page_index;
   CHECK(args->GetString(0, &extension_id));
@@ -681,7 +682,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   double page_index;
   CHECK(args->GetDouble(2, &page_index));
   AppSorting* app_sorting =
-      ExtensionPrefs::Get(extension_service_->profile())->app_sorting();
+      ExtensionSystem::Get(extension_service_->profile())->app_sorting();
   const syncer::StringOrdinal& page_ordinal =
       app_sorting->PageIntegerAsStringOrdinal(static_cast<size_t>(page_index));
 

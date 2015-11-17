@@ -104,6 +104,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using extensions::APIPermission;
+using extensions::AppSorting;
 using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
@@ -1507,13 +1508,15 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // All apps that are displayed in the launcher are ordered by their ordinals
     // so we must ensure they have valid ordinals.
     if (extension->RequiresSortOrdinal()) {
-      extension_prefs_->app_sorting()->SetExtensionVisible(
+      AppSorting* app_sorting =
+          extensions::ExtensionSystem::Get(GetBrowserContext())->app_sorting();
+      app_sorting->SetExtensionVisible(
           extension->id(),
           extension->ShouldDisplayInNewTabPage() &&
               !extension_prefs_->IsEphemeralApp(extension->id()));
       if (!extension_prefs_->IsEphemeralApp(extension->id())) {
-        extension_prefs_->app_sorting()->EnsureValidOrdinals(
-            extension->id(), syncer::StringOrdinal());
+        app_sorting->EnsureValidOrdinals(extension->id(),
+                                         syncer::StringOrdinal());
       }
     }
 
@@ -1967,17 +1970,18 @@ void ExtensionService::PromoteEphemeralApp(
          extension_prefs_->IsEphemeralApp(extension->id()));
 
   if (extension->RequiresSortOrdinal()) {
-    extension_prefs_->app_sorting()->SetExtensionVisible(
-        extension->id(), extension->ShouldDisplayInNewTabPage());
+    AppSorting* app_sorting =
+        extensions::ExtensionSystem::Get(GetBrowserContext())->app_sorting();
+    app_sorting->SetExtensionVisible(extension->id(),
+                                     extension->ShouldDisplayInNewTabPage());
 
     if (!is_from_sync) {
       // Reset the sort ordinals of the app to ensure it is added to the default
       // position, like newly installed apps would.
-      extension_prefs_->app_sorting()->ClearOrdinals(extension->id());
+      app_sorting->ClearOrdinals(extension->id());
     }
 
-    extension_prefs_->app_sorting()->EnsureValidOrdinals(
-        extension->id(), syncer::StringOrdinal());
+    app_sorting->EnsureValidOrdinals(extension->id(), syncer::StringOrdinal());
   }
 
   // Remove the ephemeral flags from the preferences.

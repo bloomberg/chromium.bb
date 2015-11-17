@@ -45,6 +45,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 
+using extensions::AppSorting;
 using extensions::Event;
 using extensions::EventRouter;
 using extensions::Extension;
@@ -376,8 +377,7 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     EXPECT_FALSE(sync_change.get());
 
     // Ephemeral apps should not be assigned ordinals.
-    extensions::AppSorting* app_sorting =
-        ExtensionPrefs::Get(profile())->app_sorting();
+    AppSorting* app_sorting = ExtensionSystem::Get(profile())->app_sorting();
     EXPECT_FALSE(app_sorting->GetAppLaunchOrdinal(app_id).IsValid());
     EXPECT_FALSE(app_sorting->GetPageOrdinal(app_id).IsValid());
   }
@@ -413,7 +413,7 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
                   Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
 
     // Check sort ordinals.
-    extensions::AppSorting* app_sorting = prefs->app_sorting();
+    AppSorting* app_sorting = ExtensionSystem::Get(profile())->app_sorting();
     EXPECT_TRUE(app_sorting->GetAppLaunchOrdinal(app_id).IsValid());
     EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).IsValid());
   }
@@ -511,8 +511,7 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     VerifyPromotedApp(app_id, expected_set);
 
     // The sort ordinals from sync should not be overridden.
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-    extensions::AppSorting* app_sorting = prefs->app_sorting();
+    AppSorting* app_sorting = ExtensionSystem::Get(profile())->app_sorting();
     EXPECT_TRUE(
         app_sorting->GetAppLaunchOrdinal(app_id).Equals(kAppLaunchOrdinal));
     EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).Equals(kPageOrdinal));

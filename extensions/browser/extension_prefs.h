@@ -514,8 +514,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   PrefService* pref_service() const { return prefs_; }
 
   // The underlying AppSorting.
-  // TODO(treib,kalman): This should be private, and all callers should go
-  // through the ExtensionSystem instead.
   AppSorting* app_sorting() const;
 
   // Schedules garbage collection of an extension's on-disk data on the next

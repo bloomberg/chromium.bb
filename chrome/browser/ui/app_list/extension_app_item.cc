@@ -19,6 +19,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -101,7 +102,7 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 };
 
 extensions::AppSorting* GetAppSorting(Profile* profile) {
-  return extensions::ExtensionPrefs::Get(profile)->app_sorting();
+  return extensions::ExtensionSystem::Get(profile)->app_sorting();
 }
 
 gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon) {

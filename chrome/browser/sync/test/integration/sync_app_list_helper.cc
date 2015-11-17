@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
@@ -173,7 +172,7 @@ void SyncAppListHelper::PrintItem(Profile* profile,
                                   AppListItem* item,
                                   const std::string& label) {
   extensions::AppSorting* s =
-      extensions::ExtensionPrefs::Get(profile)->app_sorting();
+      extensions::ExtensionSystem::Get(profile)->app_sorting();
   std::string id = item->id();
   if (item->GetItemType() == AppListFolderItem::kItemType) {
     DVLOG(1) << label << item->ToDebugString();

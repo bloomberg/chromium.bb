@@ -571,7 +571,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
   }
 
-  AppSorting* sorting = ExtensionPrefs::Get(profile())->app_sorting();
+  AppSorting* sorting = ExtensionSystem::Get(profile())->app_sorting();
   sorting->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     syncer::SyncDataList list =
@@ -623,7 +623,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
           new syncer::FakeSyncChangeProcessor),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
-  ExtensionPrefs::Get(service()->GetBrowserContext())
+  ExtensionSystem::Get(service()->GetBrowserContext())
       ->app_sorting()
       ->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
   {
