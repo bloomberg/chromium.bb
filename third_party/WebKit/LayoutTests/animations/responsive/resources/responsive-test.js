@@ -9,8 +9,8 @@ assertResponsive
 Call signature:
 assertResponsive({
   property: <CSS Property>,
-  from: ?<CSS Value>,
-  to: ?<CSS Value>,
+  ?from: <CSS Value>,
+  ?to: <CSS Value>,
   configurations: [{
     state: {
       ?underlying: <CSS Value>,
@@ -90,11 +90,25 @@ function setState(targets, property, state) {
   }
 }
 
-function createKeyframes(property, from, to) {
-  return [
-    {[property]: from},
-    {[property]: to},
-  ];
+function keyframeText(options, keyframeName) {
+  return (keyframeName in options) ? `[${options[keyframeName]}]` : 'neutral';
+}
+
+function createKeyframes(options) {
+  var keyframes = [];
+  if ('from' in options) {
+    keyframes.push({
+      offset: 0,
+      [options.property]: options.from,
+    });
+  }
+  if ('to' in options) {
+    keyframes.push({
+      offset: 1,
+      [options.property]: options.to,
+    });
+  }
+  return keyframes;
 }
 
 function startPausedAnimations(targets, keyframes, fractions) {
@@ -115,7 +129,9 @@ function runPendingResponsiveTests() {
     var property = options.property;
     var from = options.from;
     var to = options.to;
-    var keyframes = createKeyframes(property, from, to);
+    var keyframes = createKeyframes(options);
+    var fromText = keyframeText(options, 'from');
+    var toText = keyframeText(options, 'to');
 
     var stateTransitions = createStateTransitions(options.configurations);
     stateTransitions.forEach(function(stateTransition) {
@@ -137,7 +153,7 @@ function runPendingResponsiveTests() {
             var actual = getComputedStyle(target)[property];
             test(function() {
               assert_equals(actual, expectation.is);
-            }, `Animation on property <${property}> from [${from}] to [${to}] with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
+            }, `Animation on property <${property}> from ${fromText} to ${toText} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
           }
         },
       });
