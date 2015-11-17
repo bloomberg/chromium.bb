@@ -181,6 +181,8 @@
         'browser/browser_state/browser_state_otr_helper.h',
         'browser/browser_state_metrics/browser_state_metrics.cc',
         'browser/browser_state_metrics/browser_state_metrics.h',
+        'browser/browsing_data/ios_chrome_browsing_data_remover.cc',
+        'browser/browsing_data/ios_chrome_browsing_data_remover.h',
         'browser/browsing_data_change_listening.h',
         'browser/chrome_constants.cc',
         'browser/chrome_constants.h',

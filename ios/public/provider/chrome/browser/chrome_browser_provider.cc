@@ -4,7 +4,13 @@
 
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
+#include <cstddef>
+
 #include "base/logging.h"
+#include "components/metrics/metrics_provider.h"
+#include "components/sync_sessions/local_session_event_router.h"
+#include "ios/public/provider/chrome/browser/browsing_data/ios_chrome_browsing_data_remover_provider.h"
+#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
@@ -65,6 +71,10 @@ InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
   return nullptr;
 }
 
+SigninResourcesProvider* ChromeBrowserProvider::GetSigninResourcesProvider() {
+  return nullptr;
+}
+
 ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
   return nullptr;
 }
@@ -77,9 +87,19 @@ LiveTabContextProvider* ChromeBrowserProvider::GetLiveTabContextProvider() {
   return nullptr;
 }
 
+scoped_ptr<IOSChromeBrowsingDataRemoverProvider>
+ChromeBrowserProvider::GetIOSChromeBrowsingDataRemoverProvider(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
 GeolocationUpdaterProvider*
 ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;
+}
+
+std::string ChromeBrowserProvider::DataReductionProxyAvailability() {
+  return "default";
 }
 
 std::string ChromeBrowserProvider::GetDistributionBrandCode() {
@@ -126,7 +146,6 @@ void ChromeBrowserProvider::GetFaviconForURL(
     const GURL& page_url,
     const std::vector<int>& desired_sizes_in_pixel,
     const favicon_base::FaviconResultsCallback& callback) const {}
-
 
 bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
     const base::Closure& on_update_callback) {

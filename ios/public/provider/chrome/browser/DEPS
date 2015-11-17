@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/metrics",
+  "+components/sync_sessions",
+]

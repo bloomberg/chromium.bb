@@ -6,6 +6,7 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
@@ -14,6 +15,7 @@ class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
+class Time;
 }
 
 namespace syncable_prefs {
@@ -84,6 +86,15 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Returns how the last session was shutdown.
   virtual ExitType GetLastSessionExitType() = 0;
+
+  // Deletes all network related data since |time|. It deletes transport
+  // security state since |time| and it also deletes HttpServerProperties data.
+  // Works asynchronously, however if the |completion| callback is non-null, it
+  // will be posted on the UI thread once the removal process completes.
+  // Be aware that theoretically it is possible that |completion| will be
+  // invoked after the Profile instance has been destroyed.
+  virtual void ClearNetworkingHistorySince(base::Time time,
+                                           const base::Closure& completion) = 0;
 
  protected:
   ChromeBrowserState() {}
