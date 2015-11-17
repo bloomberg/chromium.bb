@@ -1415,13 +1415,21 @@ doc: $(DOXYGEN_INDICES)
 
 .SECONDEXPANSION:
 
-protocol/%-unstable-v1-protocol.c : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+define protostability
+$(shell echo $1 | sed 's/.*\(\<unstable\>\|\<stable\>\).*/\1/')
+endef
+
+define protoname
+$(shell echo $1 | sed 's/\([a-z\-]\+\)-[a-z]\+-v[0-9]\+/\1/')
+endef
+
+protocol/%-protocol.c : $(WAYLAND_PROTOCOLS_DATADIR)/$$(call protostability,$$*)/$$(call protoname,$$*)/$$*.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
 
-protocol/%-unstable-v1-server-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+protocol/%-server-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/$$(call protostability,$$*)/$$(call protoname,$$*)/$$*.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header < $< > $@
 
-protocol/%-unstable-v1-client-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+protocol/%-client-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/$$(call protostability,$$*)/$$(call protoname,$$*)/$$*.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
