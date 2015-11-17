@@ -289,6 +289,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scoped_ptr<LayerImpl> sublayer_scoped_ptr(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* sublayer = sublayer_scoped_ptr.get();
+  sublayer->SetDrawsContent(true);
   SetLayerPropertiesForTesting(sublayer, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(500, 500), true, false,
                                false);
@@ -344,6 +345,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   SetLayerPropertiesForTesting(scroll_layer, arbitrary_translate,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(10, 20),
                                true, false, false);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(
       root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
   expected_transform.MakeIdentity();
@@ -5557,7 +5559,9 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   LayerImpl* root = root_layer();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(render_surface);
+  clip_parent->SetDrawsContent(true);
   LayerImpl* intervening = AddChild<LayerImpl>(clip_parent);
+  intervening->SetDrawsContent(true);
   LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
   clip_child->SetDrawsContent(true);
   clip_child->SetClipParent(clip_parent);
@@ -5605,7 +5609,7 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
 
   // Ensure that the render surface reports a content rect that has been grown
   // to accomodate for the clip child.
-  ASSERT_EQ(gfx::Rect(5, 5, 16, 16).ToString(),
+  ASSERT_EQ(gfx::Rect(1, 1, 20, 20).ToString(),
             render_surface->render_surface()->content_rect().ToString());
 
   // The above check implies the two below, but they nicely demonstrate that
@@ -5876,9 +5880,11 @@ TEST_F(LayerTreeHostCommonTest,
   LayerImpl* root = root_layer();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  render_surface1->SetDrawsContent(true);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
   clip_child->SetDrawsContent(true);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_parent);
+  render_surface2->SetDrawsContent(true);
   LayerImpl* non_clip_child = AddChild<LayerImpl>(render_surface2);
   non_clip_child->SetDrawsContent(true);
 
@@ -5926,8 +5932,9 @@ TEST_F(LayerTreeHostCommonTest,
             render_surface1->render_surface()->clip_rect().ToString());
   EXPECT_FALSE(render_surface1->render_surface()->is_clipped());
 
-  // That said, it should have grown to accomodate the unclipped descendant.
-  EXPECT_EQ(gfx::Rect(-1, 1, 6, 4).ToString(),
+  // That said, it should have grown to accomodate the unclipped descendant and
+  // its own size.
+  EXPECT_EQ(gfx::Rect(-1, 0, 6, 5).ToString(),
             render_surface1->render_surface()->content_rect().ToString());
 
   // This render surface should clip. It has no unclipped descendants.
@@ -6590,6 +6597,10 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
 
+  root->SetDrawsContent(true);
+  container->SetDrawsContent(true);
+  scroller->SetDrawsContent(true);
+  fixed->SetDrawsContent(true);
   scroller->AddChild(fixed.Pass());
   container->AddChild(scroller.Pass());
   root->AddChild(container.Pass());
@@ -6641,8 +6652,12 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   // Scale is applied earlier in the tree.
   {
     gfx::Transform scaled_container_transform = container_transform;
-    scaled_container_transform.Scale3d(3.0, 3.0, 1.0);
+    scaled_container_transform.Scale3d(2.0, 2.0, 1.0);
     container_layer->SetTransform(scaled_container_transform);
+    root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+    root->layer_tree_impl()
+        ->property_trees()
+        ->transform_tree.set_source_to_parent_updates_allowed(true);
 
     gfx::Vector2dF scroll_delta(4.5f, 8.5f);
     scroll_layer->SetScrollDelta(scroll_delta);
@@ -6660,27 +6675,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
         container_offset);
 
     container_layer->SetTransform(container_transform);
-  }
-
-  // Scale is applied on the scroll layer itself.
-  {
-    gfx::Transform scale_transform;
-    scale_transform.Scale3d(3.0, 3.0, 1.0);
-    scroll_layer->SetTransform(scale_transform);
-
-    gfx::Vector2dF scroll_delta(4.5f, 8.5f);
-    scroll_layer->SetScrollDelta(scroll_delta);
-
-    LayerImplList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list);
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-    EXPECT_VECTOR_EQ(
-        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
-        container_offset);
-
-    scroll_layer->SetTransform(identity_transform);
   }
 }
 
@@ -7446,6 +7440,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   root->AddChild(child1.Pass());
   root->AddChild(child2.Pass());
   root->SetHasRenderSurface(true);
+  root->SetDrawsContent(true);
 
   gfx::Transform identity_matrix, scale_transform_child1,
       scale_transform_child2;
@@ -7456,11 +7451,12 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
                                gfx::PointF(), gfx::Size(1, 1), true, false,
                                true);
   SetLayerPropertiesForTesting(child1_layer, scale_transform_child1,
-                               gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
-                               false, false);
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(1, 1),
+                               true, false, false);
 
   child1_layer->SetMaskLayer(
       LayerImpl::Create(host_impl.active_tree(), 4).Pass());
+  child1_layer->SetDrawsContent(true);
 
   scoped_ptr<LayerImpl> replica_layer =
       LayerImpl::Create(host_impl.active_tree(), 5);
@@ -7476,9 +7472,11 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   AddAnimatedTransformToLayer(child2_layer, 1.0, TransformOperations(), scale);
   SetLayerPropertiesForTesting(child2_layer, scale_transform_child2,
-                               gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
-                               false, false);
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(1, 1),
+                               true, false, false);
+  child2_layer->SetDrawsContent(true);
 
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_layer);
 
   EXPECT_FLOAT_EQ(1.f, root_layer->GetIdealContentsScale());
@@ -7549,6 +7547,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   device_scale_factor = 4.0f;
   inputs.device_scale_factor = device_scale_factor;
   inputs.can_adjust_raster_scales = true;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FLOAT_EQ(12.f, root_layer->GetIdealContentsScale());

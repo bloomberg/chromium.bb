@@ -715,7 +715,7 @@ TEST_F(
   // do not accidentally clip away layers that we want to test.
   gfx::Transform rotation_about_z;
   rotation_about_z.Translate(50.0, 50.0);
-  rotation_about_z.RotateAboutZAxis(90.0);
+  rotation_about_z.RotateAboutZAxis(30.0);
   rotation_about_z.Translate(-50.0, -50.0);
   child_transform_layer_->SetTransform(rotation_about_z);
   fixed_position_child->SetTransform(rotation_about_z);

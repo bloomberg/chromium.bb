@@ -404,7 +404,8 @@ bool AddTransformNodeIfNeeded(
   layer->set_should_flatten_transform_from_property_tree(false);
 
   data_for_children->scroll_compensation_adjustment +=
-      layer->ScrollCompensationAdjustment() - node->data.scroll_snap;
+      layer->ScrollDelta() + layer->ScrollCompensationAdjustment() -
+      node->data.scroll_snap;
 
   node->owner_id = layer->id();
 

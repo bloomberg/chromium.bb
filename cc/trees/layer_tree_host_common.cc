@@ -2759,6 +2759,13 @@ void CalculateDrawPropertiesAndVerify(
             inputs->can_render_to_separate_surface, inputs->property_trees,
             &visible_layer_list);
 
+        // Property trees are normally constructed on the main thread and
+        // passed to compositor thread. Source to parent updates on them are not
+        // allowed in the compositor thread. Some tests build them on the
+        // compositor thread, so we need to explicitly disallow source to parent
+        // updates when they are built on compositor thread.
+        inputs->property_trees->transform_tree
+            .set_source_to_parent_updates_allowed(false);
         if (should_measure_property_tree_performance) {
           TRACE_EVENT_END0(
               TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
