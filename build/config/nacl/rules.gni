@@ -36,7 +36,14 @@ template("generate_nmf") {
                              "testonly",
                            ])
 
-    objdump = rebase_path("${nacl_toolprefix}objdump")
+    # TODO(phosek): Remove this conditional once
+    # https://bugs.chromium.org/p/nativeclient/issues/detail?id=4339 is
+    # resolved.
+    if (current_cpu == "pnacl") {
+      objdump = rebase_path("${nacl_toolchain_bindir}/x86_64-nacl-objdump")
+    } else {
+      objdump = rebase_path("${nacl_toolprefix}objdump")
+    }
     if (host_os == "win") {
       objdump += ".exe"
     }
