@@ -93,6 +93,11 @@ public:
     }
     static bool canReceiveTextEmphasis(UChar32);
 
+    static bool isModifier(UChar32 c)
+    {
+        return c >= 0x1F3FB && c <= 0x1F3FF;
+    }
+
     static inline UChar normalizeSpaces(UChar character)
     {
         if (treatAsSpace(character))

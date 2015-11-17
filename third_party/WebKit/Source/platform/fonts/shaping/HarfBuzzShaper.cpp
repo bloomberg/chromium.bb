@@ -107,6 +107,8 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
             character = spaceCharacter;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpaceCharacter;
+        else if (Character::isModifier(character))
+            character = zeroWidthSpaceCharacter;
 
         U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
