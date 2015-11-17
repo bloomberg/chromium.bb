@@ -56,9 +56,7 @@ unsigned GLImageEGL::GetInternalFormat() { return GL_RGBA; }
 
 bool GLImageEGL::BindTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (egl_image_ == EGL_NO_IMAGE_KHR)
-    return false;
-
+  DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
   glEGLImageTargetTexture2DOES(target, egl_image_);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   return true;

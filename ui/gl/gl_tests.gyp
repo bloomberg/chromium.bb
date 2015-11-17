@@ -54,11 +54,6 @@
             'wgl_api_unittest.cc',
           ],
         }],
-        ['use_ozone==1', {
-          'sources': [
-            'gl_image_ozone_native_pixmap_unittest.cc',
-          ],
-        }],
       ],
     }
   ],
