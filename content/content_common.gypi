@@ -326,8 +326,6 @@
       'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h',
       'common/gpu/gpu_memory_manager.cc',
       'common/gpu/gpu_memory_manager.h',
-      'common/gpu/gpu_memory_manager_client.cc',
-      'common/gpu/gpu_memory_manager_client.h',
       'common/gpu/gpu_memory_tracking.cc',
       'common/gpu/gpu_memory_tracking.h',
       'common/gpu/gpu_memory_uma_stats.h',

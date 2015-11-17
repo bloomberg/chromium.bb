@@ -66,12 +66,6 @@ GLContext::~GLContext() {
   }
 }
 
-bool GLContext::GetTotalGpuMemory(size_t* bytes) {
-  DCHECK(bytes);
-  *bytes = 0;
-  return false;
-}
-
 void GLContext::SetSafeToForceGpuSwitch() {
 }
 

@@ -91,10 +91,6 @@ std::string GLContextVirtual::GetExtensions() {
   return shared_context_->GetExtensions();
 }
 
-bool GLContextVirtual::GetTotalGpuMemory(size_t* bytes) {
-  return shared_context_->GetTotalGpuMemory(bytes);
-}
-
 void GLContextVirtual::SetSafeToForceGpuSwitch() {
   // TODO(ccameron): This will not work if two contexts that disagree
   // about whether or not forced gpu switching may be done both share

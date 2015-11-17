@@ -149,10 +149,6 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
   res->SetInteger("renderer_pid", channel->GetClientPID());
   res->SetDouble("used_bytes", channel->GetMemoryUsage());
-  res->SetDouble("limit_bytes",
-                 channel->gpu_channel_manager()
-                     ->gpu_memory_manager()
-                     ->GetMaximumClientAllocation());
   return new DevToolsChannelData(res.release());
 }
 
@@ -209,8 +205,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
       preemption_flag_(preempt_by_flag),
-      active_url_(active_url),
-      total_gpu_memory_(0) {
+      active_url_(active_url) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
   FastSetActiveURL(active_url_, active_url_hash_);
 
@@ -614,9 +609,6 @@ void GpuCommandBufferStub::OnInitialize(
     context->SetGLStateRestorer(
         new gpu::GLStateRestorerImpl(decoder_->AsWeakPtr()));
   }
-
-  if (!context->GetTotalGpuMemory(&total_gpu_memory_))
-    total_gpu_memory_ = 0;
 
   if (!context_group_->has_program_cache() &&
       !context_group_->feature_info()->workarounds().disable_program_cache) {
@@ -1203,31 +1195,12 @@ void GpuCommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-bool GpuCommandBufferStub::GetTotalGpuMemory(uint64* bytes) {
-  *bytes = total_gpu_memory_;
-  return !!total_gpu_memory_;
-}
-
-gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
-  if (!surface_.get())
-    return gfx::Size();
-  return surface_->GetSize();
-}
-
 const gpu::gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
   return context_group_->feature_info();
 }
 
 gpu::gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
-}
-
-void GpuCommandBufferStub::SuggestHaveFrontBuffer(
-    bool suggest_have_frontbuffer) {
-  // This can be called outside of OnMessageReceived, so the context needs
-  // to be made current before calling methods on the surface.
-  if (surface_.get() && MakeCurrent())
-    surface_->SetFrontbufferAllocation(suggest_have_frontbuffer);
 }
 
 bool GpuCommandBufferStub::CheckContextLost() {

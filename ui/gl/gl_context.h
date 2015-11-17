@@ -74,11 +74,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns space separated list of extensions. The context must be current.
   virtual std::string GetExtensions();
 
-  // Returns in bytes the total amount of GPU memory for the GPU which this
-  // context is currently rendering on. Returns false if no extension exists
-  // to get the exact amount of GPU memory.
-  virtual bool GetTotalGpuMemory(size_t* bytes);
-
   // Indicate that it is safe to force this context to switch GPUs, since
   // transitioning can cause corruption and hangs (OS X only).
   virtual void SetSafeToForceGpuSwitch();

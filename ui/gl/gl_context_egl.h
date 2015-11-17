@@ -33,7 +33,6 @@ class GLContextEGL : public GLContextReal {
   void OnSetSwapInterval(int interval) override;
   std::string GetExtensions() override;
   bool WasAllocatedUsingRobustnessExtension() override;
-  bool GetTotalGpuMemory(size_t* bytes) override;
   void SetUnbindFboOnMakeCurrent() override;
 
  protected:

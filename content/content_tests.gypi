@@ -649,7 +649,6 @@
       'common/gpu/gpu_channel_test_common.h',
       'common/gpu/gpu_channel_unittest.cc',
       'common/gpu/gpu_channel_manager_unittest.cc',
-      'common/gpu/gpu_memory_manager_unittest.cc',
       'common/host_discardable_shared_memory_manager_unittest.cc',
       'common/host_shared_bitmap_manager_unittest.cc',
       'common/indexed_db/indexed_db_key_unittest.cc',

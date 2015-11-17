@@ -32,7 +32,6 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
   void* GetHandle() override;
   void OnSetSwapInterval(int interval) override;
   std::string GetExtensions() override;
-  bool GetTotalGpuMemory(size_t* bytes) override;
   bool WasAllocatedUsingRobustnessExtension() override;
 
  protected:

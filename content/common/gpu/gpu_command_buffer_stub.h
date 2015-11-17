@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "content/common/gpu/gpu_memory_manager_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -55,8 +54,7 @@ class GpuWatchdog;
 struct WaitForCommandState;
 
 class GpuCommandBufferStub
-    : public GpuMemoryManagerClient,
-      public IPC::Listener,
+    : public IPC::Listener,
       public IPC::Sender,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
@@ -100,11 +98,7 @@ class GpuCommandBufferStub
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  // GpuMemoryManagerClient implementation:
-  gfx::Size GetSurfaceSize() const override;
-  gpu::gles2::MemoryTracker* GetMemoryTracker() const override;
-  void SuggestHaveFrontBuffer(bool suggest_have_frontbuffer) override;
-  bool GetTotalGpuMemory(uint64* bytes) override;
+  gpu::gles2::MemoryTracker* GetMemoryTracker() const;
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
@@ -299,7 +293,6 @@ class GpuCommandBufferStub
   GURL active_url_;
   size_t active_url_hash_;
 
-  size_t total_gpu_memory_;
   scoped_ptr<WaitForCommandState> wait_for_token_;
   scoped_ptr<WaitForCommandState> wait_for_get_offset_;
 

@@ -465,8 +465,6 @@ GpuProcessHost::~GpuProcessHost() {
                         uma_memory_stats_received_);
 
   if (uma_memory_stats_received_) {
-    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitManagedMemoryClientCount",
-                             uma_memory_stats_.client_count);
     UMA_HISTOGRAM_COUNTS_100("GPU.AtExitContextGroupCount",
                              uma_memory_stats_.context_group_count);
     UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -475,9 +473,6 @@ GpuProcessHost::~GpuProcessHost() {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "GPU.AtExitMBytesAllocatedMax",
         uma_memory_stats_.bytes_allocated_max / 1024 / 1024, 1, 2000, 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "GPU.AtExitMBytesLimit",
-        uma_memory_stats_.bytes_limit / 1024 / 1024, 1, 2000, 50);
   }
 
   std::string message;

@@ -56,9 +56,7 @@ GpuChannelManager::GpuChannelManager(
       shutdown_event_(shutdown_event),
       share_group_(new gfx::GLShareGroup),
       mailbox_manager_(gpu::gles2::MailboxManager::Create()),
-      gpu_memory_manager_(
-          this,
-          GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
+      gpu_memory_manager_(this),
       sync_point_manager_(sync_point_manager),
       sync_point_client_waiter_(new gpu::SyncPointClientWaiter),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),

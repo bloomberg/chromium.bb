@@ -274,7 +274,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)

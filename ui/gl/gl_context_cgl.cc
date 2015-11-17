@@ -259,59 +259,6 @@ void GLContextCGL::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(nullptr));
 }
 
-bool GLContextCGL::GetTotalGpuMemory(size_t* bytes) {
-  DCHECK(bytes);
-  *bytes = 0;
-
-  CGLContextObj context = reinterpret_cast<CGLContextObj>(context_);
-  if (!context)
-    return false;
-
-  // Retrieve the current renderer ID
-  GLint current_renderer_id = 0;
-  if (CGLGetParameter(context,
-                      kCGLCPCurrentRendererID,
-                      &current_renderer_id) != kCGLNoError)
-    return false;
-
-  // Iterate through the list of all renderers
-  GLuint display_mask = static_cast<GLuint>(-1);
-  CGLRendererInfoObj renderer_info = nullptr;
-  GLint num_renderers = 0;
-  if (CGLQueryRendererInfo(display_mask,
-                           &renderer_info,
-                           &num_renderers) != kCGLNoError)
-    return false;
-
-  scoped_ptr<CGLRendererInfoObj,
-      CGLRendererInfoObjDeleter> scoper(&renderer_info);
-
-  for (GLint renderer_index = 0;
-       renderer_index < num_renderers;
-       ++renderer_index) {
-    // Skip this if this renderer is not the current renderer.
-    GLint renderer_id = 0;
-    if (CGLDescribeRenderer(renderer_info,
-                            renderer_index,
-                            kCGLRPRendererID,
-                            &renderer_id) != kCGLNoError)
-        continue;
-    if (renderer_id != current_renderer_id)
-        continue;
-    // Retrieve the video memory for the renderer.
-    GLint video_memory = 0;
-    if (CGLDescribeRenderer(renderer_info,
-                            renderer_index,
-                            kCGLRPVideoMemory,
-                            &video_memory) != kCGLNoError)
-        continue;
-    *bytes = video_memory;
-    return true;
-  }
-
-  return false;
-}
-
 void GLContextCGL::SetSafeToForceGpuSwitch() {
   safe_to_force_gpu_switch_ = true;
 }

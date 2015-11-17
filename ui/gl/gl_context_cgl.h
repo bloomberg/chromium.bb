@@ -26,7 +26,6 @@ class GLContextCGL : public GLContextReal {
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
   void OnSetSwapInterval(int interval) override;
-  bool GetTotalGpuMemory(size_t* bytes) override;
   void SetSafeToForceGpuSwitch() override;
   bool ForceGpuSwitchIfNeeded() override;
 
