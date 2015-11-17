@@ -76,14 +76,13 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
   // thread pool.
   if (source_bitmap.width() <= target_thumbnail_size.width() ||
       source_bitmap.height() <= target_thumbnail_size.height()) {
-    context->SetBoringScore(color_utils::CalculateBoringScore(source_bitmap));
-    ClipResult clip_result = context->clip_result();
-    bool good_clipping =
-        (clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
-         clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
-         clip_result == CLIP_RESULT_NOT_CLIPPED ||
-         clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET);
-    context->SetGoodClipping(good_clipping);
+    context->score.boring_score =
+        color_utils::CalculateBoringScore(source_bitmap);
+    context->score.good_clipping =
+        (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
+         context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
+         context->clip_result == CLIP_RESULT_NOT_CLIPPED ||
+         context->clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET);
 
     callback.Run(*context.get(), source_bitmap);
     return;
@@ -97,13 +96,8 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
                      context,
                      callback),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {
-    LOG(WARNING) << "PostSequencedWorkerTask failed. The thumbnail will "
-                 << "will not be created.";
-    if (context->web_contents() != nullptr) {
-      LOG(WARNING) << "The URL was " << context->GetURL() << ".";
-    } else {
-      LOG(WARNING) << "No URL was specified.";
-    }
+    LOG(WARNING) << "PostSequencedWorkerTask failed. The thumbnail for "
+                 << context->url << " will not be created.";
   }
 }
 
@@ -114,20 +108,18 @@ SkBitmap ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
     ThumbnailingContext* context) {
   gfx::Size resize_target;
   SkBitmap clipped_bitmap;
-  if (context->clip_result() == CLIP_RESULT_UNPROCESSED) {
+  if (context->clip_result == CLIP_RESULT_UNPROCESSED) {
     // This case will require extracting a fragment from the retrieved bitmap.
     int scrollbar_size = gfx::scrollbar_size();
     gfx::Size scrollbarless(
         std::max(1, received_bitmap.width() - scrollbar_size),
         std::max(1, received_bitmap.height() - scrollbar_size));
 
-    ClipResult clip_result;
     gfx::Rect clipping_rect = GetClippingRect(
         scrollbarless,
         thumbnail_size,
         &resize_target,
-        &clip_result);
-    context->set_clip_result(clip_result);
+        &context->clip_result);
 
     received_bitmap.extractSubset(&clipped_bitmap,
                                   gfx::RectToSkIRect(clipping_rect));
@@ -136,7 +128,7 @@ SkBitmap ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
     // clipped. Upstream code in same cases seems opportunistic and it may
     // not perform actual resizing if copying with resize is not supported.
     // In this case we will resize to the orignally requested copy size.
-    resize_target = context->requested_copy_size();
+    resize_target = context->requested_copy_size;
     clipped_bitmap = received_bitmap;
   }
 
@@ -167,7 +159,7 @@ void ContentBasedThumbnailingAlgorithm::CreateRetargetedThumbnail(
     const ConsumerCallback& callback) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
   float kernel_sigma =
-      context->clip_result() == CLIP_RESULT_SOURCE_SAME_AS_TARGET ? 5.0f : 2.5f;
+      context->clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET ? 5.0f : 2.5f;
   SkBitmap thumbnail = thumbnailing_utils::CreateRetargetedThumbnailImage(
       source_bitmap, thumbnail_size, kernel_sigma);
   bool processing_failed = thumbnail.empty();
@@ -175,12 +167,8 @@ void ContentBasedThumbnailingAlgorithm::CreateRetargetedThumbnail(
     // Log and apply the method very much like in SimpleThumbnailCrop (except
     // that some clipping and copying is not required).
     LOG(WARNING) << "CreateRetargetedThumbnailImage failed. "
-                 << "Creating the thumbnail the old-fashioned way.";
-    if (context->web_contents()) {
-      LOG(WARNING) << "The URL was " << context->GetURL();
-    } else {
-      LOG(WARNING) << "No URL was specified.";
-    }
+                 << "The thumbnail for " << context->url
+                 << " will be created the old-fashioned way.";
 
     ClipResult clip_result;
     gfx::Rect clipping_rect = SimpleThumbnailCrop::GetClippingRect(
@@ -199,18 +187,15 @@ void ContentBasedThumbnailingAlgorithm::CreateRetargetedThumbnail(
     LOCAL_HISTOGRAM_TIMES(kThumbnailHistogramName,
                           base::TimeTicks::Now() - begin_compute_thumbnail);
   }
-  double boring_score = color_utils::CalculateBoringScore(source_bitmap);
-  if (!processing_failed) {
-    boring_score *= kScoreBoostFromSuccessfulRetargeting;
-  }
-  context->SetBoringScore(boring_score);
-  ClipResult clip_result = context->clip_result();
-  bool good_clipping =
-      (clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
-       clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
-       clip_result == CLIP_RESULT_NOT_CLIPPED ||
-       clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET);
-   context->SetGoodClipping(good_clipping);
+  context->score.boring_score =
+      color_utils::CalculateBoringScore(source_bitmap);
+  if (!processing_failed)
+    context->score.boring_score *= kScoreBoostFromSuccessfulRetargeting;
+  context->score.good_clipping =
+      (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
+       context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
+       context->clip_result == CLIP_RESULT_NOT_CLIPPED ||
+       context->clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET);
   // Post the result (the bitmap) back to the callback.
   BrowserThread::PostTask(
       BrowserThread::UI,

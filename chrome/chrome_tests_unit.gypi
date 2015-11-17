@@ -244,7 +244,6 @@
       'browser/thumbnails/content_based_thumbnailing_algorithm_unittest.cc',
       'browser/thumbnails/simple_thumbnail_crop_unittest.cc',
       'browser/thumbnails/thumbnail_service_unittest.cc',
-      'browser/thumbnails/thumbnailing_context_unittest.cc',
       'browser/translate/translate_service_unittest.cc',
       'browser/ui/android/tab_model/tab_model_list_unittest.cc',
       'browser/ui/android/tab_model/tab_model_unittest.cc',

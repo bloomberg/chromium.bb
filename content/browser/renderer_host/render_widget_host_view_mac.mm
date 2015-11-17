@@ -653,12 +653,10 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
 
   // Destroy the BrowserCompositorView to transition Suspended -> Destroyed.
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
-    if (browser_compositor_) {
-      browser_compositor_->accelerated_widget_mac()->ResetNSView();
-      browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
-      browser_compositor_->compositor()->SetRootLayer(nullptr);
-      BrowserCompositorMac::Recycle(browser_compositor_.Pass());
-    }
+    browser_compositor_->accelerated_widget_mac()->ResetNSView();
+    browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
+    browser_compositor_->compositor()->SetRootLayer(nullptr);
+    BrowserCompositorMac::Recycle(browser_compositor_.Pass());
     browser_compositor_state_ = BrowserCompositorDestroyed;
   }
 }
@@ -893,7 +891,7 @@ void RenderWidgetHostViewMac::WasOccluded() {
   // occur in this specific order. However, because thumbnail generation is
   // asychronous, that operation won't run before SuspendBrowserCompositorView()
   // completes. As a result you won't get a thumbnail for the page unless you
-  // execute these two statements in this specific order.
+  // happen to switch back to it. See http://crbug.com/530707 .
   render_widget_host_->WasHidden();
   SuspendBrowserCompositorView();
 }

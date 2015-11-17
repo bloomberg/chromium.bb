@@ -45,19 +45,16 @@ void SimpleThumbnailCrop::ProcessBitmap(
   if (bitmap.isNull() || bitmap.empty())
     return;
 
-  ClipResult clip_result = context->clip_result();
   SkBitmap thumbnail = CreateThumbnail(
       bitmap,
       ComputeTargetSizeAtMaximumScale(target_size_),
-      &clip_result);
+      &context->clip_result);
 
-  context->SetBoringScore(color_utils::CalculateBoringScore(thumbnail));
-  context->set_clip_result(clip_result);
-  bool good_clipping =
-      (clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
-       clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
-       clip_result == CLIP_RESULT_NOT_CLIPPED);
-  context->SetGoodClipping(good_clipping);
+  context->score.boring_score = color_utils::CalculateBoringScore(thumbnail);
+  context->score.good_clipping =
+      (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
+       context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
+       context->clip_result == CLIP_RESULT_NOT_CLIPPED);
 
   callback.Run(*context.get(), thumbnail);
 }
