@@ -2572,13 +2572,16 @@ def MakeMacEnv(platform=None):
   # and then only actually used on Mac.  But the find_sdk.py script
   # will barf if run on a non-Mac.
   if pynacl.platform.IsMac():
+    # mac_sdk_min must be kept in synch with mac_sdk_min in
+    # chromium/src/build/config/mac/mac_sdk.gni.
+    mac_sdk_min = '10.10'
     # Find the Mac SDK to use as sysroot.
     # This invocation matches the model in //build/config/mac/mac_sdk.gni.
     mac_sdk_sysroot, mac_sdk_version = subprocess.check_output([
         sys.executable,
         os.path.join(os.path.pardir, 'build', 'mac', 'find_sdk.py'),
         '--print_sdk_path',
-        'list lines'
+        mac_sdk_min
         ]).splitlines()
   else:
     mac_sdk_sysroot = 'ThisIsNotAMac'
