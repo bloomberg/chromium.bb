@@ -352,22 +352,34 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endif %}
     {% endfilter %}{# runtime_enabled() #}
     {% endif %}
+    {% set runtime_enabled_features = dict() %}
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
           not attribute.exposed_test %}
-    {% filter conditional(attribute.conditional_string) %}
-    if ({{attribute.runtime_enabled_function}}()) {
-        {% if attribute.is_data_type_property %}
-        const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = \
-        {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attributeConfiguration);
-        {% else %}
-        const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
-        {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
+        {% if attribute.runtime_enabled_function not in runtime_enabled_features %}
+            {% set unused = runtime_enabled_features.update({attribute.runtime_enabled_function: []}) %}
         {% endif %}
+        {% set unused = runtime_enabled_features.get(attribute.runtime_enabled_function).append(attribute) %}
+    {% endfor %}
+    {% for runtime_enabled_feature in runtime_enabled_features | sort %}
+    if ({{runtime_enabled_feature}}()) {
+        {% set distinct_attributes = [] %}
+        {% for attribute in runtime_enabled_features.get(runtime_enabled_feature) | sort
+           if attribute.name not in distinct_attributes %}
+        {% set unused = distinct_attributes.append(attribute.name) %}
+        {% filter conditional(attribute.conditional_string) %}
+        {% if attribute.is_data_type_property %}
+        const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = \
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attribute{{attribute.name}}Configuration);
+        {% else %}
+        const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = \
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessor{{attribute.name}}Configuration);
+        {% endif %}
+        {% endfilter %}
+        {% endfor %}
     }
-    {% endfilter %}
     {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}
