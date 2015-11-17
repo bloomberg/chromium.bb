@@ -233,6 +233,7 @@
     ['OS == "ios"', {
       'targets': [
         {
+          # GN version: //components/translate/ios/browser
           'target_name': 'translate_ios_browser',
           'type': 'static_library',
           'include_dirs': [
@@ -261,6 +262,7 @@
           ],
         },
         {
+          # GN version: //components/translate/ios/browser:injected_js
           'target_name': 'translate_ios_injected_js',
           'type': 'none',
           'sources': [

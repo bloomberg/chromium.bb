@@ -53,6 +53,8 @@ group("all_components") {
     "//components/pref_registry",
     "//components/omnibox/browser",
     "//components/infobars/core",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
     "//components/version_ui",
     "//components/os_crypt",
   ]
@@ -142,8 +144,6 @@ group("all_components") {
       "//components/translate/content/browser",
       "//components/translate/content/common",
       "//components/translate/content/renderer",
-      "//components/translate/core/browser",
-      "//components/translate/core/common",
       "//components/ui/zoom",
       "//components/update_client",
       "//components/upload_list",
@@ -228,6 +228,7 @@ group("all_components") {
       "//components/dom_distiller/ios",
       "//components/history/ios/browser",
       "//components/keyed_service/ios",
+      "//components/translate/ios/browser",
       "//components/webp_transcode",
     ]
   }
@@ -356,6 +357,9 @@ test("components_unittests") {
     "//components/undo:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/suggestions:unit_tests",
+    "//components/translate/core/browser:unit_tests",
+    "//components/translate/core/common:unit_tests",
+    "//components/translate/core/language_detection:unit_tests",
     "//components/omnibox/browser:unit_tests",
     "//components/os_crypt:unit_tests",
   ]
@@ -430,9 +434,6 @@ test("components_unittests") {
       "//components/sync_bookmarks:unit_tests",
       "//components/sync_driver:unit_tests",
       "//components/sync_sessions:unit_tests",
-      "//components/translate/core/browser:unit_tests",
-      "//components/translate/core/common:unit_tests",
-      "//components/translate/core/language_detection:unit_tests",
       "//components/url_formatter:unit_tests",
       "//components/url_matcher:unit_tests",
       "//components/update_client:unit_tests",
@@ -505,7 +506,10 @@ test("components_unittests") {
       ]
     }
   } else {
-    deps += [ "//components/webp_transcode:unit_tests" ]
+    deps += [
+      "//components/translate/ios/browser:unit_tests",
+      "//components/webp_transcode:unit_tests",
+    ]
   }
 
   if (toolkit_views) {
