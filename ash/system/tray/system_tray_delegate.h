@@ -106,10 +106,6 @@ class VPNDelegate;
 
 using RebootOnShutdownCallback = base::Callback<void(bool)>;
 
-namespace tray {
-class UserAccountsDelegate;
-}  // namespace tray
-
 // SystemTrayDelegate is intended for delegating tasks in the System Tray to the
 // application (e.g. Chrome). These tasks should be limited to application
 // (browser) specific tasks. For non application specific tasks, where possible,
@@ -313,10 +309,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns true when the Search key is configured to be treated as Caps Lock.
   virtual bool IsSearchKeyMappedToCapsLock();
-
-  // Returns accounts delegate for given user. May return nullptr.
-  virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
-      const AccountId& account_id);
 
   // Adding observers that are notified when supervised info is being changed.
   virtual void AddCustodianInfoTrayObserver(

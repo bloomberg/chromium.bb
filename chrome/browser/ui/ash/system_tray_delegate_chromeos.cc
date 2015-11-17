@@ -74,7 +74,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
-#include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
@@ -821,23 +820,6 @@ void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
 
 bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
   return search_key_mapped_to_ == input_method::kCapsLockKey;
-}
-
-ash::tray::UserAccountsDelegate*
-SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
-    const AccountId& account_id) {
-  auto it = accounts_delegates_.find(account_id);
-  if (it == accounts_delegates_.end()) {
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(account_id);
-    Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-    CHECK(user_profile);
-    accounts_delegates_.set(
-        account_id, scoped_ptr<ash::tray::UserAccountsDelegate>(
-                        new UserAccountsDelegateChromeOS(user_profile)));
-    it = accounts_delegates_.find(account_id);
-  }
-  return it->second;
 }
 
 void SystemTrayDelegateChromeOS::AddCustodianInfoTrayObserver(

@@ -13,7 +13,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/user/config.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
@@ -375,9 +374,6 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
         login_status == user::LOGGED_IN_GUEST
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)
             : delegate->GetUserInfo(user_index)->GetDisplayName();
-    if (user_name_string.empty() && IsMultiAccountSupportedAndUserActive())
-      user_name_string =
-          base::ASCIIToUTF16(delegate->GetUserInfo(user_index)->GetEmail());
     if (!user_name_string.empty()) {
       user_name = new views::Label(user_name_string);
       user_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -385,8 +381,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
   }
 
   views::Label* user_email = NULL;
-  if (login_status != user::LOGGED_IN_GUEST &&
-      (user_index || !IsMultiAccountSupportedAndUserActive())) {
+  if (login_status != user::LOGGED_IN_GUEST) {
     SystemTrayDelegate* tray_delegate =
         Shell::GetInstance()->system_tray_delegate();
     base::string16 user_email_string =

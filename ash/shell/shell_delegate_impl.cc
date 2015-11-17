@@ -165,10 +165,6 @@ bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }
 
-bool ShellDelegateImpl::IsMultiAccountEnabled() const {
-  return false;
-}
-
 bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }

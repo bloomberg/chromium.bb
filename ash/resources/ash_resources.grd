@@ -180,11 +180,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="cros/status/status_volume_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="cros/status/status_volume_mute.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_PROFILE" file="cros/status/status_add_profile.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_PROFILE_HOVER" file="cros/status/status_add_profile_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT" file="cros/status/status_remove_account.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT_HOVER" file="cros/status/status_remove_account_hover.png" />
-
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_H" file="common/window_control_background_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_P" file="common/window_control_background_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_BACK" file="common/window_control_icon_back.png" />

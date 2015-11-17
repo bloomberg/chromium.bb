@@ -613,8 +613,6 @@
       'browser/ui/ash/system_tray_delegate_common.h',
       'browser/ui/ash/system_tray_delegate_utils.cc',
       'browser/ui/ash/system_tray_delegate_utils.h',
-      'browser/ui/ash/user_accounts_delegate_chromeos.cc',
-      'browser/ui/ash/user_accounts_delegate_chromeos.h',
       'browser/ui/ash/volume_controller_chromeos.cc',
       'browser/ui/ash/volume_controller_chromeos.h',
       'browser/ui/ash/vpn_delegate_chromeos.cc',

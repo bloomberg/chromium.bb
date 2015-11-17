@@ -258,11 +258,6 @@ bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
   return false;
 }
 
-tray::UserAccountsDelegate* SystemTrayDelegate::GetUserAccountsDelegate(
-    const AccountId& account_id) {
-  return nullptr;
-}
-
 void SystemTrayDelegate::AddCustodianInfoTrayObserver(
     CustodianInfoTrayObserver* observer) {
 }

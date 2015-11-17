@@ -16,7 +16,6 @@
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "ash/system/tray/tray_popup_label_button_border.h"
 #include "ash/system/user/button_from_view.h"
-#include "ash/system/user/config.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -81,24 +80,11 @@ void SwitchUser(ash::UserIndex user_index) {
   delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetAccountId());
 }
 
-class LogoutButton : public TrayPopupLabelButton {
- public:
-  // If |placeholder| is true, button is used as placeholder. That means that
-  // button is inactive and is not painted, but consume the same ammount of
-  // space, as if it was painted.
-  LogoutButton(views::ButtonListener* listener,
-               const base::string16& text,
-               bool placeholder)
-      : TrayPopupLabelButton(listener, text), placeholder_(placeholder) {
-    SetVisible(!placeholder_);
-  }
-
-  ~LogoutButton() override {}
-
- private:
-  bool placeholder_;
-  DISALLOW_COPY_AND_ASSIGN(LogoutButton);
-};
+bool IsMultiProfileSupportedAndUserActive() {
+  auto* shell = Shell::GetInstance();
+  return shell->delegate()->IsMultiProfilesEnabled() &&
+         !shell->session_state_delegate()->IsUserSessionBlocked();
+}
 
 class UserViewMouseWatcherHost : public views::MouseWatcherHost {
  public:
@@ -194,15 +180,13 @@ void AddUserView::AddContent() {
 
 UserView::UserView(SystemTrayItem* owner,
                    user::LoginStatus login,
-                   UserIndex index,
-                   bool for_detailed_view)
+                   UserIndex index)
     : user_index_(index),
       user_card_view_(NULL),
       owner_(owner),
       is_user_card_button_(false),
       logout_button_(NULL),
       add_user_enabled_(true),
-      for_detailed_view_(for_detailed_view),
       focus_manager_(NULL) {
   CHECK_NE(user::LOGGED_IN_NONE, login);
   if (!index) {
@@ -273,10 +257,9 @@ void UserView::Layout() {
     // Give the remaining space to the user card.
     gfx::Rect user_card_area = contents_area;
     int remaining_width = contents_area.width() - logout_area.width();
-    if (IsMultiProfileSupportedAndUserActive() ||
-        IsMultiAccountSupportedAndUserActive()) {
-      // In multiprofile/multiaccount case |user_card_view_| and
-      // |logout_button_| have to have the same height.
+    if (IsMultiProfileSupportedAndUserActive()) {
+      // In multiprofile case |user_card_view_| and |logout_button_| have to
+      // have the same height.
       int y = std::min(user_card_area.y(), logout_area.y());
       int height = std::max(user_card_area.height(), logout_area.height());
       logout_area.set_y(y);
@@ -314,9 +297,6 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         ash::UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
     Shell::GetInstance()->system_tray_delegate()->SignOut();
-  } else if (sender == user_card_view_ && !user_index_ &&
-             IsMultiAccountSupportedAndUserActive()) {
-    owner_->TransitionDetailedView();
   } else if (sender == user_card_view_ &&
              IsMultiProfileSupportedAndUserActive()) {
     if (!user_index_) {
@@ -352,8 +332,7 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 void UserView::AddLogoutButton(user::LoginStatus login) {
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login, true);
-  TrayPopupLabelButton* logout_button =
-      new LogoutButton(this, title, for_detailed_view_);
+  auto* logout_button = new TrayPopupLabelButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;
   // In public account mode, the logout button border has a custom color.
@@ -392,11 +371,10 @@ void UserView::AddUserCard(user::LoginStatus login) {
   if (logout_button_)
     max_card_width -= logout_button_->GetPreferredSize().width();
   user_card_view_ = new UserCardView(login, max_card_width, user_index_);
-  // The entry is clickable when no system modal dialog is open and one of the
-  // multi user options is active.
+  // The entry is clickable when no system modal dialog is open and the multi
+  // profile option is active.
   bool clickable = !Shell::GetInstance()->IsSystemModalWindowOpen() &&
-                   (IsMultiProfileSupportedAndUserActive() ||
-                    IsMultiAccountSupportedAndUserActive());
+                   IsMultiProfileSupportedAndUserActive();
   if (clickable) {
     // To allow the border to start before the icon, reduce the size before and
     // add an inset to the icon to get the spacing.
@@ -411,30 +389,21 @@ void UserView::AddUserCard(user::LoginStatus login) {
     }
     gfx::Insets insets = gfx::Insets(1, 1, 1, 1);
     views::View* contents_view = user_card_view_;
-    ButtonFromView* button = NULL;
-    if (!for_detailed_view_) {
-      if (user_index_) {
-        // Since the activation border needs to be drawn around the tile, we
-        // have to put the tile into another view which fills the menu panel,
-        // but keeping the offsets of the content.
-        contents_view = new views::View();
-        contents_view->SetBorder(views::Border::CreateEmptyBorder(
-            kTrayPopupUserCardVerticalPadding,
-            kTrayPopupPaddingHorizontal,
-            kTrayPopupUserCardVerticalPadding,
-            kTrayPopupPaddingHorizontal));
-        contents_view->SetLayoutManager(new views::FillLayout());
-        SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
-        contents_view->AddChildView(user_card_view_);
-        insets = gfx::Insets(1, 1, 1, 3);
-      }
-      button = new ButtonFromView(contents_view, this, !user_index_, insets);
-    } else {
-      // We want user card for detailed view to have exactly the same look
-      // as user card for default view. That's why we wrap it in a button
-      // without click listener and special hover behavior.
-      button = new ButtonFromView(contents_view, NULL, false, insets);
+    if (user_index_) {
+      // Since the activation border needs to be drawn around the tile, we
+      // have to put the tile into another view which fills the menu panel,
+      // but keeping the offsets of the content.
+      contents_view = new views::View();
+      contents_view->SetBorder(views::Border::CreateEmptyBorder(
+          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal,
+          kTrayPopupUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
+      contents_view->SetLayoutManager(new views::FillLayout());
+      SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+      contents_view->AddChildView(user_card_view_);
+      insets = gfx::Insets(1, 1, 1, 3);
     }
+    auto* button =
+        new ButtonFromView(contents_view, this, !user_index_, insets);
     // A click on the button should not trigger a focus change.
     button->set_request_focus_on_press(false);
     user_card_view_ = button;

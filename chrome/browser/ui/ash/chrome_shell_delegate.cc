@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -100,13 +99,6 @@ bool ChromeShellDelegate::IsIncognitoAllowed() const {
 
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
-}
-
-bool ChromeShellDelegate::IsMultiAccountEnabled() const {
-#if defined(OS_CHROMEOS)
-  return switches::IsEnableAccountConsistency();
-#endif
-  return false;
 }
 
 bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
