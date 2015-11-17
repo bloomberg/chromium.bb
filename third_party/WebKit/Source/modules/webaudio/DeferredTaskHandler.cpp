@@ -37,7 +37,7 @@ namespace blink {
 void DeferredTaskHandler::lock()
 {
     // Don't allow regular lock in real-time audio thread.
-    ASSERT(isMainThread());
+    ASSERT(!isAudioThread());
     m_contextGraphMutex.lock();
 }
 
