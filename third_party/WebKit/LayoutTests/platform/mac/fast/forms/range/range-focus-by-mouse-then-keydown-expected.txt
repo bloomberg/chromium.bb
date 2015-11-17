@@ -6,14 +6,16 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [67, 10, 15, 16],
+        [10, 10, 129, 16],
+        [10, 10, 129, 16],
         [7, 7, 135, 21]
       ],
       "paintInvalidationClients": [
         "LayoutSlider INPUT",
         "LayoutFlexibleBox DIV",
         "LayoutBlockFlow DIV id='track'",
-        "LayoutBlockFlow DIV id='thumb'",
-        "LayoutSlider INPUT"
+        "LayoutBlockFlow DIV id='thumb'"
       ]
     }
   ]

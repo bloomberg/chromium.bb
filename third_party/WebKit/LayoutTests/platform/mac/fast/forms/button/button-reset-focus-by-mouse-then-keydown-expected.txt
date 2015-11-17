@@ -6,14 +6,15 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [16, 11, 29, 13],
+        [16, 11, 29, 13],
         [3, 4, 55, 29]
       ],
       "paintInvalidationClients": [
         "LayoutButton BUTTON",
         "LayoutBlockFlow (anonymous)",
         "LayoutText #text",
-        "InlineTextBox 'Reset'",
-        "LayoutButton BUTTON"
+        "InlineTextBox 'Reset'"
       ]
     }
   ]

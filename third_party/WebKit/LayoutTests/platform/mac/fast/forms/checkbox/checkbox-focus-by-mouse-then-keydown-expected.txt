@@ -9,7 +9,6 @@
         [5, 7, 23, 22]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow INPUT",
         "LayoutBlockFlow INPUT"
       ]
     }

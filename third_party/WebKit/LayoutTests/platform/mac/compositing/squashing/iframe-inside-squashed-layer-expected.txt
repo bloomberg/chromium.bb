@@ -21,14 +21,26 @@
               "bounds": [300, 654],
               "drawsContent": true,
               "repaintRects": [
-                [285, 552, 15, 98],
                 [285, 500, 15, 150],
-                [285, 500, 15, 150],
-                [285, 500, 15, 104],
-                [285, 500, 15, 52],
+                [8, 508, 284, 18],
+                [8, 508, 269, 142],
+                [0, 500, 300, 150],
+                [0, 500, 300, 34],
                 [0, 500, 285, 150],
-                [0, 500, 15, 15],
-                [0, 500, 15, 15]
+                [0, 500, 285, 150],
+                [0, 500, 285, 150]
+              ],
+              "paintInvalidationClients": [
+                "RootInlineBox",
+                "InlineTextBox 'test1'",
+                "RootInlineBox",
+                "InlineTextBox 'test1'",
+                "LayoutView #document",
+                "LayoutView #document",
+                "LayoutBlockFlow HTML",
+                "LayoutBlockFlow BODY",
+                "VerticalScrollbar",
+                "LayoutView #document"
               ]
             }
           ]

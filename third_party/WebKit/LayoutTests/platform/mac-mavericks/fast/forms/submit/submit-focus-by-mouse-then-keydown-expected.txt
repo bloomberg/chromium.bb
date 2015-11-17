@@ -6,14 +6,15 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [16, 11, 38, 13],
+        [16, 11, 38, 13],
         [3, 4, 64, 29]
       ],
       "paintInvalidationClients": [
         "LayoutButton INPUT",
         "LayoutBlockFlow (anonymous)",
         "LayoutText #text",
-        "InlineTextBox 'Submit'",
-        "LayoutButton INPUT"
+        "InlineTextBox 'Submit'"
       ]
     }
   ]

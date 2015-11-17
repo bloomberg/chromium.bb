@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [762, 8, 15, 300],
+        [10, 8, 302, 300],
+        [10, 8, 302, 300],
+        [8, 8, 769, 300],
+        [8, 8, 306, 300],
+        [8, 8, 306, 300],
+        [8, 8, 306, 300],
+        [8, 8, 306, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "VerticalScrollbar",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+
