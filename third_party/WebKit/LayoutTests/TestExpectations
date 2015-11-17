@@ -791,8 +791,6 @@ crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/554903 css2.1/t0505-c16-descendant-01-e.html [ NeedsRebaseline ]
-
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
