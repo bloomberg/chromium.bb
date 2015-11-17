@@ -169,12 +169,6 @@ class ExtensionRegistry : public KeyedService {
   // Removes all extensions from all sets.
   void ClearAll();
 
-  // Sets a callback to run when the disabled extension set is modified.
-  // TODO(jamescook): This is too specific for a generic registry; find some
-  // other way to do this.
-  void SetDisabledModificationCallback(
-      const ExtensionSet::ModificationCallback& callback);
-
   // KeyedService implementation:
   void Shutdown() override;
 

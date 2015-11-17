@@ -211,11 +211,6 @@ void ExtensionRegistry::ClearAll() {
   ready_extensions_.Clear();
 }
 
-void ExtensionRegistry::SetDisabledModificationCallback(
-    const ExtensionSet::ModificationCallback& callback) {
-  disabled_extensions_.set_modification_callback(callback);
-}
-
 void ExtensionRegistry::Shutdown() {
   // Release references to all Extension objects in the sets.
   ClearAll();
