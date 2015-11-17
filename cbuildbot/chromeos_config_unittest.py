@@ -375,6 +375,24 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
           self.assertTrue(child_config.build_packages_in_background,
                           msg % (child_config.name, build_name))
 
+  def testGroupBuildersHaveMaximumConfigs(self):
+    """Verify that release group builders don't exceed a maximum board count.
+
+    The count ignores variant boards (detected as "chrome_sdk" == False), since
+    they don't add significant build time.
+    """
+    msg = 'Group config %s has %d child configurations (maximum is %d).'
+    for build_name, config in self.all_configs.iteritems():
+      if build_name.endswith('-release-group'):
+        child_count = 0
+        for child in config.child_configs:
+          if not child.chrome_sdk:
+            continue
+          child_count += 1
+        self.assertLessEqual(child_count, constants.MAX_RELEASE_GROUP_BOARDS,
+                             msg % (build_name, child_count,
+                                    constants.MAX_RELEASE_GROUP_BOARDS))
+
   def testAFDOSameInChildConfigs(self):
     """Verify that 'afdo_use' is the same for all children in a group."""
     msg = ('Child config %s for %s should have same value for afdo_use '

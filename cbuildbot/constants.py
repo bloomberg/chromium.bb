@@ -855,3 +855,8 @@ BRILLO_LATEST_RELEASE_URL = os.path.join(BRILLO_RELEASE_MANIFESTS_URL,
 # Gmail Credentials.
 GMAIL_TOKEN_CACHE_FILE = os.path.expanduser('~/.gmail_credentials')
 GMAIL_TOKEN_JSON_FILE = '/creds/refresh_tokens/chromeos_gmail_alerts'
+
+# Maximum number of boards per release group builder. This should be
+# chosen/adjusted based on expected release build times such that successive
+# builds don't overlap and create a backlog.
+MAX_RELEASE_GROUP_BOARDS = 4
