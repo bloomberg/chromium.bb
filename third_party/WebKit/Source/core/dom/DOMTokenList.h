@@ -36,7 +36,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 
-class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable, public ValueIterable<String> {
+class CORE_EXPORT DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable, public ValueIterable<String> {
     DEFINE_WRAPPERTYPEINFO();
     USING_FAST_MALLOC_WILL_BE_REMOVED(DOMTokenList);
     WTF_MAKE_NONCOPYABLE(DOMTokenList);
