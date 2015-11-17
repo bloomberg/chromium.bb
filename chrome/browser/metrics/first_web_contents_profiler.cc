@@ -41,8 +41,7 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
       collected_paint_metric_(false),
       collected_load_metric_(false),
       collected_main_navigation_start_metric_(false),
-      collected_main_navigation_finished_metric_(false),
-      finished_(false) {}
+      collected_main_navigation_finished_metric_(false) {}
 
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (collected_paint_metric_)
@@ -53,11 +52,8 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   }
 
   collected_paint_metric_ = true;
-  const base::TimeTicks now = base::TimeTicks::Now();
-  // Record the old metric unconditionally.
-  startup_metric_utils::RecordDeprecatedFirstWebContentsNonEmptyPaint(now);
-  if (!finished_)
-    startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(now);
+  startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(
+      base::TimeTicks::Now());
 
   metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
       metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
@@ -75,11 +71,8 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   }
 
   collected_load_metric_ = true;
-  const base::TimeTicks now = base::TimeTicks::Now();
-  // Record the old metric unconditionally.
-  startup_metric_utils::RecordDeprecatedFirstWebContentsMainFrameLoad(now);
-  if (!finished_)
-    startup_metric_utils::RecordFirstWebContentsMainFrameLoad(now);
+  startup_metric_utils::RecordFirstWebContentsMainFrameLoad(
+      base::TimeTicks::Now());
 
   if (IsFinishedCollectingMetrics())
     FinishedCollectingMetrics(FinishReason::DONE);
@@ -154,28 +147,18 @@ bool FirstWebContentsProfiler::IsFinishedCollectingMetrics() {
 
 void FirstWebContentsProfiler::FinishedCollectingMetrics(
     FinishReason finish_reason) {
-  if (!finished_) {
-    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
+  UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
+                            finish_reason, FinishReason::ENUM_MAX);
+  if (!collected_paint_metric_) {
+    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
                               finish_reason, FinishReason::ENUM_MAX);
-    if (!collected_paint_metric_) {
-      UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
-                                finish_reason, FinishReason::ENUM_MAX);
-    }
-    if (!collected_load_metric_) {
-      UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
-                                finish_reason, FinishReason::ENUM_MAX);
-    }
-    finished_ = true;
+  }
+  if (!collected_load_metric_) {
+    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
+                              finish_reason, FinishReason::ENUM_MAX);
   }
 
-  // Continue recording deprecated v1 stats (see |finished_|) except in
-  // scenarios where stats collection was already being abandonned previously.
-  // TODO(gab): Delete right away when getting rid of |finished_|.
-  if (IsFinishedCollectingMetrics() ||
-      finish_reason == FinishReason::ABANDON_CONTENT_DESTROYED ||
-      finish_reason == FinishReason::ABANDON_BLOCKING_UI) {
-    delete this;
-  }
+  delete this;
 }
 
 #endif  // !defined(OS_ANDROID)

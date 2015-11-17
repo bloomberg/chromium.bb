@@ -45291,8 +45291,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
-    [Desktop] DEPRECATED. Measure the elapsed time from process launch to the
-    first main frame load of the first web contents. Deprecated in favor of
+    [Desktop] DEPRECATED (but kept as a known basis until M48 is phased out).
+    Measure the elapsed time from process launch to the first main frame load of
+    the first web contents. Deprecated in favor of
     Startup.FirstWebContents.MainFrameLoad2 which now avoids counting ill-cases
     (ref. FirstWebContentsProfiler::FinishReason).
   </summary>
@@ -45332,8 +45333,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
-    [Desktop] DEPRECATED. Measure the elapsed time from process launch to the
-    first non- empty paint of the first web contents. Deprecated in favor of
+    [Desktop] DEPRECATED (but kept as a known basis until M48 is phased out).
+    Measure the elapsed time from process launch to the first non- empty paint
+    of the first web contents. Deprecated in favor of
     Startup.FirstWebContents.NonEmptyPaint2 which now avoids counting ill-cases
     (ref. FirstWebContentsProfiler::FinishReason).
   </summary>
