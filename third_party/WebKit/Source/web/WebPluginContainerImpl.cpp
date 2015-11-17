@@ -43,6 +43,8 @@
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/ProgressEvent.h"
+#include "core/events/ResourceProgressEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -389,6 +391,17 @@ bool WebPluginContainerImpl::executeEditCommand(const WebString& name, const Web
 WebElement WebPluginContainerImpl::element()
 {
     return WebElement(m_element);
+}
+
+void WebPluginContainerImpl::dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url)
+{
+    RefPtrWillBeRawPtr<ProgressEvent> event;
+    if (url.isEmpty()) {
+        event = ProgressEvent::create(type, lengthComputable, loaded, total);
+    } else {
+        event = ResourceProgressEvent::create(type, lengthComputable, loaded, total, url);
+    }
+    m_element->dispatchEvent(event.release());
 }
 
 void WebPluginContainerImpl::invalidate()

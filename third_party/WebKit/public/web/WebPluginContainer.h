@@ -59,6 +59,8 @@ public:
     // Returns the element containing this plugin.
     virtual WebElement element() = 0;
 
+    virtual void dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url) = 0;
+
     virtual void invalidate() = 0;
     virtual void invalidateRect(const WebRect&) = 0;
     virtual void scrollRect(const WebRect&) = 0;
