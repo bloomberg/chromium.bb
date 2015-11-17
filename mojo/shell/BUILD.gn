@@ -101,6 +101,7 @@ test("mojo_shell_unittests") {
     "//mojo/package_manager",
     "//mojo/public/cpp/system",
     "//mojo/util:filename_util",
+    "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//testing/gtest",
     "//url",

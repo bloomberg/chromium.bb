@@ -18,7 +18,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"

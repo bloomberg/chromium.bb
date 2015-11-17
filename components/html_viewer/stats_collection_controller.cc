@@ -13,7 +13,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/services/tracing/public/cpp/switches.h"
+#include "mojo/application/public/cpp/switches.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -67,7 +67,7 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
   // Only make startup tracing available when running in the context of a test.
   if (!app ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          tracing::kEnableStatsCollectionBindings)) {
+          mojo::kEnableStatsCollectionBindings)) {
     return nullptr;
   }
 
@@ -105,7 +105,7 @@ StatsCollectionController::ConnectToDataCollector(mojo::ApplicationImpl* app) {
   // Only make startup tracing available when running in the context of a test.
   if (!app ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          tracing::kEnableStatsCollectionBindings)) {
+          mojo::kEnableStatsCollectionBindings)) {
     return nullptr;
   }
 
@@ -134,7 +134,7 @@ gin::ObjectTemplateBuilder StatsCollectionController::GetObjectTemplateBuilder(
 std::string StatsCollectionController::GetHistogram(
     const std::string& histogram_name) {
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      tracing::kEnableStatsCollectionBindings));
+      mojo::kEnableStatsCollectionBindings));
 
   static bool startup_histogram_initialized = false;
   if (!startup_histogram_initialized) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACE_PROVIDER_IMPL_H_
-#define MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACE_PROVIDER_IMPL_H_
+#ifndef MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACE_PROVIDER_IMPL_H_
+#define MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACE_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -48,4 +48,4 @@ class TraceProviderImpl : public tracing::TraceProvider {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACE_PROVIDER_IMPL_H_
+#endif  // MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACE_PROVIDER_IMPL_H_

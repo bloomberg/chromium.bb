@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
-#define MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
+#ifndef MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACING_IMPL_H_
+#define MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACING_IMPL_H_
 
 #include "base/macros.h"
 #include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
+#include "mojo/application/public/cpp/lib/trace_provider_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace mojo {
@@ -37,4 +37,4 @@ class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
+#endif  // MOJO_APPLICATION_PUBLIC_CPP_LIB_TRACING_IMPL_H_

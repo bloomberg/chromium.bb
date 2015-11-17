@@ -47,7 +47,6 @@ source_set("sources") {
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing:lib",
-    "//mojo/services/tracing/public/cpp",
     "//third_party/icu",
     "//url",
   ]

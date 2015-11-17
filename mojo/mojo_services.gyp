@@ -50,6 +50,27 @@
       ],
     },
     {
+      'target_name': 'tracing_service_bindings_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'services/tracing/public/interfaces/tracing.mojom',
+        ],
+        'mojom_include_path': '<(DEPTH)/mojo/services',
+      },
+      'includes': [
+        '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
+      ],
+    },
+    {
+      # GN version: //mojo/services/tracing/public/interfaces
+      'target_name': 'tracing_service_bindings_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'tracing_service_bindings_mojom',
+      ],
+    },
+    {
       'target_name': 'updater_bindings_mojom',
       'type': 'none',
       'variables': {

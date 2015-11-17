@@ -31,7 +31,6 @@ source_set("surfaces") {
     "//mojo/application/public/cpp",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
-    "//mojo/services/tracing/public/cpp",
     "//ui/gfx",
     "//ui/gl",
     "//ui/mojo/geometry:interfaces",

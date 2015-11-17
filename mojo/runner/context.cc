@@ -27,6 +27,8 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/lib/trace_provider_impl.h"
+#include "mojo/application/public/cpp/switches.h"
 #include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/runner/host/in_process_native_runner.h"
@@ -34,9 +36,6 @@
 #include "mojo/runner/register_local_aliases.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/tracer.h"
-#include "mojo/services/tracing/public/cpp/switches.h"
-#include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -193,10 +192,12 @@ bool Context::Init(const base::FilePath& shell_file_root) {
 
   bool trace_startup = command_line.HasSwitch(switches::kTraceStartup);
   if (trace_startup) {
+    std::string output_name =
+        command_line.GetSwitchValueASCII(mojo::kTraceStartupOutputName);
     tracer_.Start(
         command_line.GetSwitchValueASCII(switches::kTraceStartup),
         command_line.GetSwitchValueASCII(switches::kTraceStartupDuration),
-        "mojo_runner.trace");
+        output_name.empty() ? "mojo_runner.trace" : output_name);
   }
 
   // ICU data is a thing every part of the system needs. This here warms
@@ -249,7 +250,7 @@ bool Context::Init(const base::FilePath& shell_file_root) {
   params->set_exposed_services(tracing_exposed_services.Pass());
   application_manager_->ConnectToApplication(params.Pass());
 
-  if (command_line.HasSwitch(tracing::kTraceStartup)) {
+  if (command_line.HasSwitch(switches::kTraceStartup)) {
     tracing::TraceCollectorPtr coordinator;
     auto coordinator_request = GetProxy(&coordinator);
     tracing_services->ConnectToService(tracing::TraceCollector::Name_,
@@ -259,7 +260,7 @@ bool Context::Init(const base::FilePath& shell_file_root) {
 
   // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          tracing::kEnableStatsCollectionBindings)) {
+          mojo::kEnableStatsCollectionBindings)) {
     tracing::StartupPerformanceDataCollectorPtr collector;
     tracing_services->ConnectToService(
         tracing::StartupPerformanceDataCollector::Name_,

@@ -39,8 +39,14 @@ source_set("sources") {
     "lib/service_provider_impl.cc",
     "lib/service_registry.cc",
     "lib/service_registry.h",
+    "lib/trace_provider_impl.cc",
+    "lib/trace_provider_impl.h",
+    "lib/tracing_impl.cc",
+    "lib/tracing_impl.h",
     "service_connector.h",
     "service_provider_impl.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   deps = [
@@ -52,6 +58,7 @@ source_set("sources") {
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/services/tracing/public/interfaces",
   ]
 }
 

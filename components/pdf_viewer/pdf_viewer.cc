@@ -28,7 +28,6 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdfview.h"
 #include "ui/gfx/geometry/rect.h"
@@ -341,10 +340,6 @@ class PDFViewer : public mojo::ApplicationDelegate,
 
  private:
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    tracing_.Initialize(app);
-  }
-
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
@@ -356,8 +351,6 @@ class PDFViewer : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<mojo::ContentHandler> request) override {
     new ContentHandlerImpl(request.Pass());
   }
-
-  mojo::TracingImpl tracing_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFViewer);
 };

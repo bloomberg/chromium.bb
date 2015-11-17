@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/tracing/public/cpp/switches.h"
+#include "mojo/application/public/cpp/switches.h"
 
-namespace tracing {
+namespace mojo {
 
 // Specifies if the |StatsCollectionController| needs to be bound in html pages.
 // This binding happens on per-frame basis and hence can potentially be a
@@ -15,8 +15,11 @@ const char kEnableStatsCollectionBindings[] =
 
 const char kTraceStartup[] = "trace-startup";
 
+// Sets the name of the output file for startup tracing.
+const char kTraceStartupOutputName[] = "trace-startup-output-name";
+
 #ifdef NDEBUG
 const char kEarlyTracing[] = "early-tracing";
 #endif
 
-}  // namespace tracing
+}  // namespace mojo

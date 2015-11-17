@@ -135,7 +135,6 @@ source_set("lib") {
     "//mojo/runner/child:interfaces",
     "//mojo/runner/host:lib",
     "//mojo/services/network/public/interfaces",
-    "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//mojo/shell",
     "//mojo/util:filename_util",
