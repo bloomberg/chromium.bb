@@ -34,18 +34,18 @@
     readonly attribute float defaultValue;
 
     // Parameter automation.
-    [RaisesException, MeasureAs=AudioParamSetValueAtTime] void setValueAtTime(float value, double time);
-    [RaisesException, MeasureAs=AudioParamLinearRampToValueAtTime] void linearRampToValueAtTime(float value, double time);
-    [RaisesException, MeasureAs=AudioParamExponentialRampToValueAtTime] void exponentialRampToValueAtTime(float value, double time);
+    [RaisesException, MeasureAs=AudioParamSetValueAtTime] AudioParam setValueAtTime(float value, double time);
+    [RaisesException, MeasureAs=AudioParamLinearRampToValueAtTime] AudioParam linearRampToValueAtTime(float value, double time);
+    [RaisesException, MeasureAs=AudioParamExponentialRampToValueAtTime] AudioParam exponentialRampToValueAtTime(float value, double time);
 
     // Exponentially approach the target with a rate having the given time constant.
-    [RaisesException, MeasureAs=AudioParamSetTargetAtTime] void setTargetAtTime(float target, double time, double timeConstant);
+    [RaisesException, MeasureAs=AudioParamSetTargetAtTime] AudioParam setTargetAtTime(float target, double time, double timeConstant);
 
     // Sets an array of arbitrary parameter values starting at time for the given duration.
     // The number of values will be scaled to fit into the desired duration.
-    [RaisesException, MeasureAs=AudioParamSetValueCurveAtTime] void setValueCurveAtTime(Float32Array values, double time, double duration);
+    [RaisesException, MeasureAs=AudioParamSetValueCurveAtTime] AudioParam setValueCurveAtTime(Float32Array values, double time, double duration);
 
     // Cancels all scheduled parameter changes with times greater than or equal to startTime.
-    [RaisesException, MeasureAs=AudioParamCancelScheduledValues] void cancelScheduledValues(double startTime);
+    [RaisesException, MeasureAs=AudioParamCancelScheduledValues] AudioParam cancelScheduledValues(double startTime);
 
 };

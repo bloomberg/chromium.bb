@@ -1,0 +1,20 @@
+Test method chaining feature of AudioParam automation methods.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The return value of AudioParam.setValueAtTime() matches the source AudioParam.
+PASS The return value of AudioParam.linearRampToValueAtTime() matches the source AudioParam.
+PASS The return value of AudioParam.exponentialRampToValueAtTime() matches the source AudioParam.
+PASS The return value of AudioParam.setTargetAtTime() matches the source AudioParam.
+PASS The return value of AudioParam.setValueCurveAtTime() matches the source AudioParam.
+PASS The return value of AudioParam.cancelScheduledValues() matches the source AudioParam.
+PASS Calling setValueAtTime() with a negative end time threw InvalidAccessError: Failed to execute 'setValueAtTime' on 'AudioParam': Time must be a finite non-negative number: -1.
+PASS Calling exponentialRampToValueAtTime() with a zero target value threw InvalidAccessError: Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) is outside the range [1.40130e-45, Infinity)..
+PASS The gain value of the first gain node is equal to 1.
+PASS The gain value of the second gain node is equal to 0.5.
+PASS The rendered envelope equals [0,0.000022675736961451248,0.000045351473922902495,0.00006802721088435374,0.00009070294784580499,...] with an element-wise tolerance of 0.0000040532.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

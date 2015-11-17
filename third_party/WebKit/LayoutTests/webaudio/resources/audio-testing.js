@@ -689,10 +689,13 @@ var Should = (function () {
             ' but got ' + this.target.length + '.');
 
         var mismatches = {};
+        var maxDiff = 0.0;
         for (var i = 0; i < array.length; i++) {
             var diff = Math.abs(this.target[i] - array[i]);
             if (diff > maxAllowedError)
                 mismatches[i] = diff;
+            if (diff > maxDiff)
+                maxDiff = diff;
         }
 
         var numberOfmismatches = Object.keys(mismatches).length;
@@ -708,9 +711,9 @@ var Should = (function () {
                 '] with an element-wise tolerance of ' + maxAllowedError;
             for (var index in mismatches) {
                 failureMessage += '\n[' + index + '] : ' + mismatches[index];
-                if (++counter >= this.NUM_ERRORS_LOG) {
+                if (++counter >= this.NUM_ERRORS_LOG || counter === numberOfmismatches) {
                     failureMessage += '\nand ' + (numberOfmismatches - counter) +
-                    ' more differences...';
+                    ' more differences with the maximum error of ' + maxDiff;
                     break;
                 }
             }

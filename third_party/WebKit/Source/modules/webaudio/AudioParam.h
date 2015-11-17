@@ -143,12 +143,12 @@ public:
     float value() const;
     void setValue(float);
     float defaultValue() const;
-    void setValueAtTime(float value, double time, ExceptionState&);
-    void linearRampToValueAtTime(float value, double time, ExceptionState&);
-    void exponentialRampToValueAtTime(float value, double time, ExceptionState&);
-    void setTargetAtTime(float target, double time, double timeConstant, ExceptionState&);
-    void setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState&);
-    void cancelScheduledValues(double startTime, ExceptionState&);
+    AudioParam* setValueAtTime(float value, double time, ExceptionState&);
+    AudioParam* linearRampToValueAtTime(float value, double time, ExceptionState&);
+    AudioParam* exponentialRampToValueAtTime(float value, double time, ExceptionState&);
+    AudioParam* setTargetAtTime(float target, double time, double timeConstant, ExceptionState&);
+    AudioParam* setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState&);
+    AudioParam* cancelScheduledValues(double startTime, ExceptionState&);
 
 private:
     AudioParam(AbstractAudioContext&, double defaultValue);

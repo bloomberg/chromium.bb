@@ -232,34 +232,40 @@ float AudioParam::defaultValue() const
     return handler().defaultValue();
 }
 
-void AudioParam::setValueAtTime(float value, double time, ExceptionState& exceptionState)
+AudioParam* AudioParam::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     handler().timeline().setValueAtTime(value, time, exceptionState);
+    return this;
 }
 
-void AudioParam::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+AudioParam* AudioParam::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     handler().timeline().linearRampToValueAtTime(value, time, exceptionState);
+    return this;
 }
 
-void AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
+AudioParam* AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     handler().timeline().exponentialRampToValueAtTime(value, time, exceptionState);
+    return this;
 }
 
-void AudioParam::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
+AudioParam* AudioParam::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
 {
     handler().timeline().setTargetAtTime(target, time, timeConstant, exceptionState);
+    return this;
 }
 
-void AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
+AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
     handler().timeline().setValueCurveAtTime(curve, time, duration, exceptionState);
+    return this;
 }
 
-void AudioParam::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
+AudioParam* AudioParam::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
 {
     handler().timeline().cancelScheduledValues(startTime, exceptionState);
+    return this;
 }
 
 } // namespace blink
