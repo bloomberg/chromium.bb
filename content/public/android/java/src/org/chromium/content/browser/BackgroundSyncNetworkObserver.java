@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.RegistrationPolicyAlwaysRegister;
 
@@ -69,6 +70,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     private void registerObserver(final long nativePtr) {
         ThreadUtils.assertOnUiThread();
         if (!canCreateObserver(mContext)) {
+            RecordHistogram.recordBooleanHistogram(
+                    "BackgroundSync.NetworkObserver.HasPermission", false);
             return;
         }
 
@@ -76,6 +79,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
         if (mNotifier == null) {
             mNotifier = new NetworkChangeNotifierAutoDetect(this, mContext,
                                 new RegistrationPolicyAlwaysRegister());
+            RecordHistogram.recordBooleanHistogram(
+                    "BackgroundSync.NetworkObserver.HasPermission", true);
         }
         mNativePtrs.add(nativePtr);
 
