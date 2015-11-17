@@ -41,10 +41,6 @@ public:
 
     static inline bool isExternalURIReference(const String& uri, const Document& document)
     {
-        // Fragment-only URIs are always internal
-        if (uri.startsWith('#'))
-            return false;
-
         // If the URI matches our documents URL, we're dealing with a local reference.
         KURL url = document.completeURL(uri);
         return !equalIgnoringFragmentIdentifier(url, document.url());
