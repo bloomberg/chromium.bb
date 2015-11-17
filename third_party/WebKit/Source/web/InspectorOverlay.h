@@ -34,7 +34,6 @@
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
-#include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
@@ -106,8 +105,7 @@ private:
     void profilingStopped() override;
 
     // InspectorPageAgent::Client implementation.
-    void pageLayoutInvalidated(bool resized) override;
-    void setShowViewportSizeOnResize(bool show, bool showGrid) override;
+    void pageLayoutInvalidated() override;
     void setPausedInDebuggerMessage(const String*) override;
 
     // InspectorDOMAgent::Client implementation.
@@ -122,14 +120,12 @@ private:
     void drawNodeHighlight();
     void drawQuadHighlight();
     void drawPausedInDebuggerMessage();
-    void drawViewSize();
 
     Page* overlayPage();
     LocalFrame* overlayMainFrame();
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
-    void onTimer(Timer<InspectorOverlay>*);
     void rebuildOverlayPage();
     void invalidate();
     void scheduleUpdate();
@@ -152,11 +148,7 @@ private:
     OwnPtrWillBeMember<InspectorOverlayChromeClient> m_overlayChromeClient;
     RefPtrWillBeMember<InspectorOverlayHost> m_overlayHost;
     InspectorHighlightConfig m_quadHighlightConfig;
-    bool m_drawViewSize;
-    bool m_drawViewSizeWithGrid;
-    bool m_resizeTimerActive;
     bool m_omitTooltip;
-    Timer<InspectorOverlay> m_timer;
     int m_suspendCount;
     bool m_inLayout;
     bool m_needsUpdate;

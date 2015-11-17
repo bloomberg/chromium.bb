@@ -181,11 +181,7 @@ private:
 InspectorOverlay::InspectorOverlay(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
     , m_overlayHost(InspectorOverlayHost::create())
-    , m_drawViewSize(false)
-    , m_drawViewSizeWithGrid(false)
-    , m_resizeTimerActive(false)
     , m_omitTooltip(false)
-    , m_timer(this, &InspectorOverlay::onTimer)
     , m_suspendCount(0)
     , m_inLayout(false)
     , m_needsUpdate(false)
@@ -365,7 +361,7 @@ bool InspectorOverlay::isEmpty()
 {
     if (m_suspendCount)
         return true;
-    bool hasVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize) || !m_pausedInDebuggerMessage.isNull();
+    bool hasVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || !m_pausedInDebuggerMessage.isNull();
     return !hasVisibleElements && m_inspectMode == InspectorDOMAgent::NotSearching;
 }
 
@@ -395,7 +391,6 @@ void InspectorOverlay::rebuildOverlayPage()
     drawNodeHighlight();
     drawQuadHighlight();
     drawPausedInDebuggerMessage();
-    drawViewSize();
     if (m_layoutEditor && !m_highlightNode)
         m_layoutEditor->rebuild();
 }
@@ -450,12 +445,6 @@ void InspectorOverlay::drawPausedInDebuggerMessage()
 {
     if (m_inspectMode == InspectorDOMAgent::NotSearching && !m_pausedInDebuggerMessage.isNull())
         evaluateInOverlay("drawPausedInDebuggerMessage", m_pausedInDebuggerMessage);
-}
-
-void InspectorOverlay::drawViewSize()
-{
-    if (m_resizeTimerActive && m_drawViewSize)
-        evaluateInOverlay("drawViewSize", m_drawViewSizeWithGrid ? "true" : "false");
 }
 
 Page* InspectorOverlay::overlayPage()
@@ -564,12 +553,6 @@ String InspectorOverlay::evaluateInOverlayForTest(const String& script)
     return toCoreStringWithUndefinedOrNullCheck(string);
 }
 
-void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
-{
-    m_resizeTimerActive = false;
-    scheduleUpdate();
-}
-
 void InspectorOverlay::clear()
 {
     if (m_layoutEditor)
@@ -580,10 +563,8 @@ void InspectorOverlay::clear()
         m_overlayPage.clear();
         m_overlayChromeClient.clear();
     }
-    m_resizeTimerActive = false;
     m_pausedInDebuggerMessage = String();
     m_inspectMode = InspectorDOMAgent::NotSearching;
-    m_timer.stop();
     hideHighlight();
 }
 
@@ -664,19 +645,9 @@ void InspectorOverlay::profilingStopped()
     --m_suspendCount;
 }
 
-void InspectorOverlay::pageLayoutInvalidated(bool resized)
+void InspectorOverlay::pageLayoutInvalidated()
 {
-    if (resized && m_drawViewSize) {
-        m_resizeTimerActive = true;
-        m_timer.startOneShot(1, BLINK_FROM_HERE);
-    }
     scheduleUpdate();
-}
-
-void InspectorOverlay::setShowViewportSizeOnResize(bool show, bool showGrid)
-{
-    m_drawViewSize = show;
-    m_drawViewSizeWithGrid = showGrid;
 }
 
 bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event)

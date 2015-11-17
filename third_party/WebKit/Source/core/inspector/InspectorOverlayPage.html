@@ -598,29 +598,6 @@ function _drawGrid(context, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawViewSize(drawViewSizeWithGrid)
-{
-    var drawGridBoolean = drawViewSizeWithGrid === "true";
-    var text = viewportSize.width + "px \u00D7 " + viewportSize.height + "px";
-    context.save();
-    context.font = "20px ";
-    switch (platform) {
-    case "windows": context.font = "14px Consolas"; break;
-    case "mac": context.font = "14px Menlo"; break;
-    case "linux": context.font = "14px dejavu sans mono"; break;
-    }
-
-    var frameWidth = canvasWidth;
-    var textWidth = context.measureText(text).width;
-    context.fillStyle = gridBackgroundColor;
-    context.fillRect(frameWidth - textWidth - 12, drawGridBoolean ? 15 : 0, frameWidth, 25);
-    context.fillStyle = darkGridColor;
-    context.fillText(text, frameWidth - textWidth - 6, drawGridBoolean ? 33 : 18);
-    context.restore();
-    if (drawGridBoolean)
-        _drawGrid(context);
-}
-
 function resetCanvas(canvasElement)
 {
     canvasElement.width = deviceScaleFactor * viewportSize.width;

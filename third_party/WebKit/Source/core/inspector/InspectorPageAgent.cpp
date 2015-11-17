@@ -78,8 +78,6 @@ namespace blink {
 namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
-static const char showSizeOnResize[] = "showSizeOnResize";
-static const char showGridOnResize[] = "showGridOnResize";
 static const char screencastEnabled[] = "screencastEnabled";
 }
 
@@ -361,8 +359,6 @@ void InspectorPageAgent::restore()
     if (m_state->getBoolean(PageAgentState::pageAgentEnabled)) {
         ErrorString error;
         enable(&error);
-        if (m_client)
-            m_client->setShowViewportSizeOnResize(m_state->getBoolean(PageAgentState::showSizeOnResize), m_state->getBoolean(PageAgentState::showGridOnResize));
     }
 }
 
@@ -382,7 +378,6 @@ void InspectorPageAgent::disable(ErrorString*)
     m_pendingScriptToEvaluateOnLoadOnce = String();
     m_instrumentingAgents->setInspectorPageAgent(0);
 
-    setShowViewportSizeOnResize(0, false, 0);
     stopScreencast(0);
 
     finishReload();
@@ -678,7 +673,7 @@ void InspectorPageAgent::didRunJavaScriptDialog(bool result)
 void InspectorPageAgent::didUpdateLayout()
 {
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated(false);
+        m_client->pageLayoutInvalidated();
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -687,7 +682,7 @@ void InspectorPageAgent::didResizeMainFrame()
         return;
 #if !OS(ANDROID)
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated(true);
+        m_client->pageLayoutInvalidated();
 #endif
     frontend()->frameResized();
 }
@@ -695,7 +690,7 @@ void InspectorPageAgent::didResizeMainFrame()
 void InspectorPageAgent::didRecalculateStyle(int)
 {
     if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated(false);
+        m_client->pageLayoutInvalidated();
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
@@ -771,14 +766,6 @@ void InspectorPageAgent::startScreencast(ErrorString*, const String* format, con
 void InspectorPageAgent::stopScreencast(ErrorString*)
 {
     m_state->setBoolean(PageAgentState::screencastEnabled, false);
-}
-
-void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid)
-{
-    m_state->setBoolean(PageAgentState::showSizeOnResize, show);
-    m_state->setBoolean(PageAgentState::showGridOnResize, asBool(showGrid));
-    if (m_client)
-        m_client->setShowViewportSizeOnResize(show, asBool(showGrid));
 }
 
 void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)

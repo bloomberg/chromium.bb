@@ -61,8 +61,7 @@ public:
     class Client {
     public:
         virtual ~Client() { }
-        virtual void pageLayoutInvalidated(bool resized) { }
-        virtual void setShowViewportSizeOnResize(bool show, bool showGrid) { }
+        virtual void pageLayoutInvalidated() { }
         virtual void setPausedInDebuggerMessage(const String*) { }
     };
 
@@ -106,7 +105,6 @@ public:
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
     void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
     void stopScreencast(ErrorString*) override;
-    void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
     void setOverlayMessage(ErrorString*, const String*) override;
 
     // InspectorInstrumentation API
