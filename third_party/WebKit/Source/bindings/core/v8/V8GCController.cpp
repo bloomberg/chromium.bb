@@ -245,7 +245,6 @@ namespace {
 
 void visitWeakHandlesForMinorGC(v8::Isolate* isolate)
 {
-    ASSERT(isMainThread());
     MinorGCUnmodifiedWrapperVisitor visitor(isolate);
     isolate->VisitWeakHandles(&visitor);
 }
@@ -290,10 +289,10 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
     case v8::kGCTypeScavenge:
         TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
         if (isMainThread()) {
-            {
-                TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
-                visitWeakHandlesForMinorGC(isolate);
-            }
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
+        }
+        visitWeakHandlesForMinorGC(isolate);
+        if (isMainThread()) {
             V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
             TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");
         }
