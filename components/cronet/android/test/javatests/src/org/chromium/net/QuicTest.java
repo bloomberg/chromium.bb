@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +37,12 @@ public class QuicTest extends CronetTestBase {
         builder.enableQUIC(true);
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
-        builder.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
+
+        JSONObject quicParams =
+                new JSONObject().put("connection_options", "PACE,IW10,FOO,DEADBEEF");
+        JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
+        builder.setExperimentalOptions(experimentalOptions.toString());
+
         builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);

@@ -303,15 +303,13 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Sets experimental QUIC connection options, overwriting any pre-existing
-         * options. List of options is subject to change.
+         * Sets experimental options to be used in Cronet.
          *
-         * @param quicConnectionOptions comma-separated QUIC options (for example
-         * "PACE,IW10") to use if QUIC is enabled.
+         * @param options JSON formatted experimental options.
          * @return the builder to facilitate chaining.
          */
-        public Builder setExperimentalQuicConnectionOptions(String quicConnectionOptions) {
-            return putString(CronetEngineBuilderList.QUIC_OPTIONS, quicConnectionOptions);
+        public Builder setExperimentalOptions(String options) {
+            return putString(CronetEngineBuilderList.EXPERIMENTAL_OPTIONS, options);
         }
 
         /**

@@ -75,8 +75,13 @@ struct URLRequestContextConfig {
   std::string user_agent;
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;
-  // Comma-separated list of QUIC connection options.
-  std::string quic_connection_options;
+  // Experimental options encoded as a string in a JSON format containing
+  // experiments and their corresponding configuration options. The format
+  // is a JSON object with the name of the experiment as the key, and the
+  // configuration options as the value. An example:
+  //   {"experiment1": {"option1": "option_value1", "option2": "option_value2",
+  //    ...}, "experiment2: {"option3", "option_value3", ...}, ...}
+  std::string experimental_options;
   // Enable Data Reduction Proxy with authentication key.
   std::string data_reduction_proxy_key;
   std::string data_reduction_primary_proxy;

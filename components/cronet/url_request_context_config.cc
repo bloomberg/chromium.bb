@@ -19,6 +19,10 @@ namespace cronet {
 
 namespace {
 
+// TODO(xunjieli): Refactor constants in io_thread.cc.
+const char kQuicFieldTrialName[] = "QUIC";
+const char kQuicConnectionOptions[] = "connection_options";
+
 // Using a reference to scoped_ptr is unavoidable because of the semantics of
 // RegisterCustomField.
 // TODO(xunjieli): Remove this once crbug.com/544976 is fixed.
@@ -29,6 +33,41 @@ bool GetMockCertVerifierFromString(
   bool success = base::StringToInt64(mock_cert_verifier_string, &val);
   *result = make_scoped_ptr(reinterpret_cast<net::CertVerifier*>(val));
   return success;
+}
+
+void ParseAndSetExperimentalOptions(
+    const std::string& experimental_options,
+    net::URLRequestContextBuilder* context_builder) {
+  if (experimental_options.empty())
+    return;
+
+  scoped_ptr<base::Value> options =
+      base::JSONReader::Read(experimental_options);
+
+  if (!options) {
+    DCHECK(false) << "Parsing experimental options failed: "
+                  << experimental_options;
+    return;
+  }
+
+  scoped_ptr<base::DictionaryValue> dict =
+      base::DictionaryValue::From(options.Pass());
+
+  if (!dict) {
+    DCHECK(false) << "Experimental options string is not a dictionary: "
+                  << experimental_options;
+    return;
+  }
+
+  const base::DictionaryValue* quic_args = nullptr;
+  if (dict->GetDictionary(kQuicFieldTrialName, &quic_args)) {
+    std::string quic_connection_options;
+    if (quic_args->GetString(kQuicConnectionOptions,
+                             &quic_connection_options)) {
+      context_builder->set_quic_connection_options(
+          net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
+    }
+  }
 }
 
 }  // namespace
@@ -95,9 +134,10 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   }
   context_builder->set_user_agent(user_agent);
   context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
-  context_builder->set_quic_connection_options(
-      net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
   context_builder->set_sdch_enabled(enable_sdch);
+
+  ParseAndSetExperimentalOptions(experimental_options, context_builder);
+
   if (mock_cert_verifier)
     context_builder->SetCertVerifier(mock_cert_verifier.Pass());
   // TODO(mef): Use |config| to set cookies.
@@ -125,8 +165,8 @@ void URLRequestContextConfig::RegisterJSONConverter(
   converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,
                                      &URLRequestContextConfig::quic_hints);
   converter->RegisterStringField(
-      REQUEST_CONTEXT_CONFIG_QUIC_OPTIONS,
-      &URLRequestContextConfig::quic_connection_options);
+      REQUEST_CONTEXT_CONFIG_EXPERIMENTAL_OPTIONS,
+      &URLRequestContextConfig::experimental_options);
   converter->RegisterStringField(
       REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PRIMARY_PROXY,
       &URLRequestContextConfig::data_reduction_primary_proxy);
