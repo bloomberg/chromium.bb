@@ -13,12 +13,16 @@
 <script>
     if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
         var list = document.getElementById("list");
         list.focus();
         eventSender.keyDown("a");
         document.body.offsetTop;
         eventSender.keyDown("z");
-        var result = document.getElementById("result");
-        result.innerText = list.scrollTop > 0 ? "SUCCESS" : "FAIL";
+        setTimeout(function() {
+            var result = document.getElementById("result");
+            result.innerText = list.scrollTop > 0 ? "SUCCESS" : "FAIL";
+            testRunner.notifyDone();
+        }, 0);
     }
 </script>

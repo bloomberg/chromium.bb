@@ -19,10 +19,12 @@
 description('List boxes should be scrolled to show the selection when they are added but shouldn\'t scroll parent elements.');
 jsTestIsAsync = true;
 window.onload = function() {
-    shouldBe('document.scrollingElement.scrollTop', '0');
-    shouldBeGreaterThan('document.getElementById("test1").scrollTop', '0');
+    setTimeout(function() {
+        shouldBe('document.scrollingElement.scrollTop', '0');
+        shouldBeGreaterThan('document.getElementById("test1").scrollTop', '0');
 
-    finishJSTest();
+        finishJSTest();
+    }, 0);
 };
 </script>
 </body>

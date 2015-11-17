@@ -239,6 +239,7 @@ private:
     int nextSelectableListIndexPageAway(int startIndex, SkipDirection) const;
     int listIndexForEventTargetOption(const Event&);
     AutoscrollController* autoscrollController() const;
+    void scrollToIndexTask();
 
     void childrenChanged(const ChildrenChange&) override;
     bool areAuthorShadowsAllowed() const override { return false; }
@@ -258,6 +259,7 @@ private:
     RefPtrWillBeMember<HTMLOptionElement> m_lastOnChangeOption;
     int m_activeSelectionAnchorIndex;
     int m_activeSelectionEndIndex;
+    RefPtrWillBeMember<HTMLOptionElement> m_optionToScrollTo;
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;

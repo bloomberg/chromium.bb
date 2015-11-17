@@ -36,6 +36,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
@@ -919,10 +920,27 @@ void HTMLSelectElement::scrollToIndex(int listIndex)
     int listSize = static_cast<int>(items.size());
     if (listIndex >= listSize)
         return;
+    bool hasPendingTask = m_optionToScrollTo;
+    // We'd like to keep an HTMLOptionElement reference rather than |listIndex|
+    // because the task should work even if unselected option is inserted before
+    // |listIndex| before executing scrollToIndexTask().
+    m_optionToScrollTo = toHTMLOptionElement(items[listIndex]);
+    if (!hasPendingTask)
+        document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLSelectElement::scrollToIndexTask, PassRefPtrWillBeRawPtr<HTMLSelectElement>(this)));
+}
+
+void HTMLSelectElement::scrollToIndexTask()
+{
+    RefPtrWillBeRawPtr<HTMLOptionElement> option = m_optionToScrollTo.release();
+    if (!option || !inDocument())
+        return;
+    // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
+    // another owner.
+    ASSERT(option->ownerSelectElement() == this);
     document().updateLayoutIgnorePendingStylesheets();
     if (!layoutObject() || !layoutObject()->isListBox())
         return;
-    LayoutRect bounds = items[listIndex]->boundingBox();
+    LayoutRect bounds = option->boundingBox();
     toLayoutListBox(layoutObject())->scrollToRect(bounds);
 }
 
@@ -948,6 +966,8 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
     if (m_lastOnChangeOption == &option)
         m_lastOnChangeOption.clear();
+    if (m_optionToScrollTo == &option)
+        m_optionToScrollTo.clear();
     if (m_activeSelectionAnchorIndex < 0 && m_activeSelectionEndIndex < 0)
         return;
     int listIndex = optionToListIndex(option.index());
@@ -1788,6 +1808,7 @@ DEFINE_TRACE(HTMLSelectElement)
     visitor->trace(m_listItems);
 #endif
     visitor->trace(m_lastOnChangeOption);
+    visitor->trace(m_optionToScrollTo);
     visitor->trace(m_popup);
     HTMLFormControlElementWithState::trace(visitor);
 }
