@@ -94,6 +94,16 @@ ScreenWin::ScreenWin()
 
 ScreenWin::~ScreenWin() {}
 
+HWND ScreenWin::GetHWNDFromNativeView(NativeView window) const {
+  NOTREACHED();
+  return NULL;
+}
+
+NativeWindow ScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
+  NOTREACHED();
+  return NULL;
+}
+
 gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;
   GetCursorPos(&pt);
@@ -188,16 +198,6 @@ void ScreenWin::OnWndProc(HWND hwnd,
   displays_ = GetDisplays();
 
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
-}
-
-HWND ScreenWin::GetHWNDFromNativeView(NativeView window) const {
-  NOTREACHED();
-  return NULL;
-}
-
-NativeWindow ScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
-  NOTREACHED();
-  return NULL;
 }
 
 }  // namespace gfx

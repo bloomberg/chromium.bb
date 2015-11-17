@@ -99,6 +99,7 @@
 #include "content/common/plugin_constants_win.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/screen_win.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -2500,8 +2501,39 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
-  gfx::Point root_window_point =
-      gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(GetNativeView());
+  DCHECK(screen);
+
+  gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
+
+#if !defined(OS_CHROMEOS)
+  // Ignore cursor update messages if the window under the cursor is not us.
+  aura::Window* window_at_screen_point = screen->GetWindowAtScreenPoint(
+      cursor_screen_point);
+#if defined(OS_WIN)
+  // On Windows we may fail to retrieve the aura Window at the current cursor
+  // position. This is because the WindowFromPoint API may return the legacy
+  // window which is not associated with an aura Window. In this case we need
+  // to get the aura window for the parent of the legacy window.
+  if (!window_at_screen_point && legacy_render_widget_host_HWND_) {
+    HWND hwnd_at_point = ::WindowFromPoint(cursor_screen_point.ToPOINT());
+
+    if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
+      hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
+
+    gfx::ScreenWin* screen_win = static_cast<gfx::ScreenWin*>(screen);
+    DCHECK(screen_win);
+    window_at_screen_point = screen_win->GetNativeWindowFromHWND(
+        hwnd_at_point);
+  }
+#endif
+  if (!window_at_screen_point ||
+      (window_at_screen_point->GetRootWindow() != root_window)) {
+    return;
+  }
+#endif
+
+  gfx::Point root_window_point = cursor_screen_point;
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {

@@ -129,6 +129,8 @@ gfx::NativeWindow TestScreen::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
+  if (!host_ || !host_->window())
+    return nullptr;
   return host_->window()->GetTopWindowContainingPoint(point);
 }
 

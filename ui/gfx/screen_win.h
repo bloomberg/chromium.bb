@@ -19,6 +19,12 @@ class GFX_EXPORT ScreenWin : public Screen {
   ScreenWin();
   ~ScreenWin() override;
 
+  // Returns the HWND associated with the NativeView.
+  virtual HWND GetHWNDFromNativeView(NativeView window) const;
+
+  // Returns the NativeView associated with the HWND.
+  virtual NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
+
  protected:
   // Overridden from gfx::Screen:
   gfx::Point GetCursorScreenPoint() override;
@@ -32,12 +38,6 @@ class GFX_EXPORT ScreenWin : public Screen {
   gfx::Display GetPrimaryDisplay() const override;
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;
-
-  // Returns the HWND associated with the NativeView.
-  virtual HWND GetHWNDFromNativeView(NativeView window) const;
-
-  // Returns the NativeView associated with the HWND.
-  virtual NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
  private:
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
