@@ -35,6 +35,9 @@ static bool MaybePrintResultsForAudioReceive(
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
   perf_test::PrintResult(
       "audio_misc", modifier, "packets_lost", value, "frames", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
+  perf_test::PrintResult(
+      "audio_rx", modifier, "goog_jitter_recv", value, "ms", false);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googExpandRate", ssrc), &value));
   perf_test::PrintResult(
