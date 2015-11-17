@@ -640,7 +640,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     messages = self._GetFailedMessages(failing)
     self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
-    changes = self.sync_stage.pool.applied
+    changes = self.sync_stage.pool.changes
 
     do_partial_submission = self._ShouldSubmitPartialPool()
 

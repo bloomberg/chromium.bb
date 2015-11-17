@@ -269,7 +269,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           not config_lib.IsPFQType(self.build_type)):
         return None
 
-      self._AddPatchesToManifest(new_manifest, validation_pool.applied)
+      self._AddPatchesToManifest(new_manifest, validation_pool.changes)
 
       # Add info about the last known good version to the manifest. This will
       # be used by slaves to calculate what artifacts from old builds are safe
@@ -288,7 +288,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
         # If we don't have any valid changes to test, make sure the checkout
         # is at least different.
-        if ((not validation_pool or not validation_pool.applied) and
+        if ((not validation_pool or not validation_pool.changes) and
             not self.force and self.HasCheckoutBeenBuilt()):
           return None
 
