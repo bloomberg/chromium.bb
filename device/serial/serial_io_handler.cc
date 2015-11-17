@@ -44,6 +44,7 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK(file_thread_task_runner_.get());
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
+  port_ = port;
 
 #if defined(OS_CHROMEOS)
   chromeos::PermissionBrokerClient* client =
