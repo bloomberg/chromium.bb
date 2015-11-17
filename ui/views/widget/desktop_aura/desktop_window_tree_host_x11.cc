@@ -1084,10 +1084,11 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 
 void DesktopWindowTreeHostX11::InitX11Window(
     const Widget::InitParams& params) {
-  unsigned long attribute_mask = CWBackPixmap;
+  unsigned long attribute_mask = CWBackPixmap | CWBitGravity;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
+  swa.bit_gravity = NorthWestGravity;
 
   ::Atom window_type;
   switch (params.type) {

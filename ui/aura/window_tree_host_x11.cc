@@ -218,6 +218,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
+  swa.bit_gravity = NorthWestGravity;
   swa.override_redirect = default_override_redirect;
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
@@ -226,7 +227,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       CopyFromParent,  // depth
       InputOutput,
       CopyFromParent,  // visual
-      CWBackPixmap | CWOverrideRedirect,
+      CWBackPixmap | CWBitGravity | CWOverrideRedirect,
       &swa);
   if (ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);

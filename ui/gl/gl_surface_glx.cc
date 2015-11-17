@@ -477,9 +477,13 @@ bool NativeViewGLSurfaceGLX::Initialize() {
   // extra blits in the driver), that we can resize exactly in Resize(),
   // correctly ordered with GL, so that we don't have invalid transient states.
   // See https://crbug.com/326995.
+  XSetWindowAttributes swa;
+  memset(&swa, 0, sizeof(swa));
+  swa.background_pixmap = 0;
+  swa.bit_gravity = NorthWestGravity;
   window_ = XCreateWindow(g_display, parent_window_, 0, 0, size_.width(),
                           size_.height(), 0, CopyFromParent, InputOutput,
-                          CopyFromParent, 0, nullptr);
+                          CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
   XMapWindow(g_display, window_);
 
   ui::PlatformEventSource* event_source =
