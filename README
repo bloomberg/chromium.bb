@@ -13,7 +13,7 @@ containing detailed state and a list of maintainers.
 
 Protocol directory tree structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Protocols may be 'stable', 'unstable' or 'obsolete', and the interface
+Protocols may be 'stable', 'unstable' or 'deprecated', and the interface
 and protocol names as well as place in the directory tree will reflect
 this.
 
@@ -25,15 +25,15 @@ An unstable protocol is a protocol currently under development and this
 will be reflected in the protocol and interface names. See <<Unstable
 naming convention>>.
 
-An obsolete protocol is a protocol that has either been replaced by some
+A deprecated protocol is a protocol that has either been replaced by some
 other protocol, or declared undesirable for some other reason. No more
-changes will be made to an obsolete protocol.
+changes will be made to a deprecated protocol.
 
 Depending on which of the above state the protocol is in, the protocol
 is placed within the toplevel directory containing the protocols with the
 same state. Stable protocols are placed in the +stable/+ directory,
-unstable protocols are placed in the +unstable/+ directory, and obsolete
-protocols are placed in the +obsolete/+ directory.
+unstable protocols are placed in the +unstable/+ directory, and
+deprecated protocols are placed in the +deprecated/+ directory.
 
 Protocol development procedure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
