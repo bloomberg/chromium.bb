@@ -35,7 +35,7 @@
 #include <linux/input.h>
 #include <wayland-client.h>
 #include "window.h"
-#include "fullscreen-shell-client-protocol.h"
+#include "fullscreen-shell-unstable-v1-client-protocol.h"
 
 struct fs_output {
 	struct wl_list link;
@@ -46,8 +46,8 @@ struct fullscreen {
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
-	struct _wl_fullscreen_shell *fshell;
-	enum _wl_fullscreen_shell_present_method present_method;
+	struct zwp_fullscreen_shell_v1 *fshell;
+	enum zwp_fullscreen_shell_v1_present_method present_method;
 	int width, height;
 	int fullscreen;
 	float pointer_x, pointer_y;
@@ -293,10 +293,10 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		if (fullscreen->current_output)
 			wl_output = output_get_wl_output(fullscreen->current_output->output);
 		fullscreen->present_method = (fullscreen->present_method + 1) % 5;
-		_wl_fullscreen_shell_present_surface(fullscreen->fshell,
-						     window_get_wl_surface(fullscreen->window),
-						     fullscreen->present_method,
-						     wl_output);
+		zwp_fullscreen_shell_v1_present_surface(fullscreen->fshell,
+							window_get_wl_surface(fullscreen->window),
+							fullscreen->present_method,
+							wl_output);
 		window_schedule_redraw(window);
 		break;
 
@@ -308,8 +308,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		wl_output = fsout ? output_get_wl_output(fsout->output) : NULL;
 
 		/* Clear the current presentation */
-		_wl_fullscreen_shell_present_surface(fullscreen->fshell, NULL,
-						     0, wl_output);
+		zwp_fullscreen_shell_v1_present_surface(fullscreen->fshell, NULL,
+							0, wl_output);
 
 		if (fullscreen->current_output) {
 			if (fullscreen->current_output->link.next == &fullscreen->output_list)
@@ -324,10 +324,10 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 
 		fullscreen->current_output = fsout;
 		wl_output = fsout ? output_get_wl_output(fsout->output) : NULL;
-		_wl_fullscreen_shell_present_surface(fullscreen->fshell,
-						     window_get_wl_surface(fullscreen->window),
-						     fullscreen->present_method,
-						     wl_output);
+		zwp_fullscreen_shell_v1_present_surface(fullscreen->fshell,
+							window_get_wl_surface(fullscreen->window),
+							fullscreen->present_method,
+							wl_output);
 		window_schedule_redraw(window);
 		break;
 
@@ -338,10 +338,10 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		wl_output = NULL;
 		if (fullscreen->current_output)
 			wl_output = output_get_wl_output(fullscreen->current_output->output);
-		_wl_fullscreen_shell_mode_feedback_destroy(
-			_wl_fullscreen_shell_present_surface_for_mode(fullscreen->fshell,
-								      window_get_wl_surface(fullscreen->window),
-								      wl_output, 0));
+		zwp_fullscreen_shell_mode_feedback_v1_destroy(
+			zwp_fullscreen_shell_v1_present_surface_for_mode(fullscreen->fshell,
+									 window_get_wl_surface(fullscreen->window),
+									 wl_output, 0));
 		window_schedule_redraw(window);
 		break;
 
@@ -420,13 +420,13 @@ touch_handler(struct widget *widget, struct input *input,
 }
 
 static void
-fshell_capability_handler(void *data, struct _wl_fullscreen_shell *fshell,
+fshell_capability_handler(void *data, struct zwp_fullscreen_shell_v1 *fshell,
 			  uint32_t capability)
 {
 	struct fullscreen *fullscreen = data;
 
 	switch (capability) {
-	case _WL_FULLSCREEN_SHELL_CAPABILITY_CURSOR_PLANE:
+	case ZWP_FULLSCREEN_SHELL_V1_CAPABILITY_CURSOR_PLANE:
 		fullscreen->draw_cursor = 0;
 		break;
 	default:
@@ -434,7 +434,7 @@ fshell_capability_handler(void *data, struct _wl_fullscreen_shell *fshell,
 	}
 }
 
-struct _wl_fullscreen_shell_listener fullscreen_shell_listener = {
+struct zwp_fullscreen_shell_v1_listener fullscreen_shell_listener = {
 	fshell_capability_handler
 };
 
@@ -471,13 +471,13 @@ global_handler(struct display *display, uint32_t id, const char *interface,
 {
 	struct fullscreen *fullscreen = data;
 
-	if (strcmp(interface, "_wl_fullscreen_shell") == 0) {
+	if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		fullscreen->fshell = display_bind(display, id,
-						  &_wl_fullscreen_shell_interface,
+						  &zwp_fullscreen_shell_v1_interface,
 						  1);
-		_wl_fullscreen_shell_add_listener(fullscreen->fshell,
-						  &fullscreen_shell_listener,
-						  fullscreen);
+		zwp_fullscreen_shell_v1_add_listener(fullscreen->fshell,
+						     &fullscreen_shell_listener,
+						     fullscreen);
 	}
 }
 
@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
 	fullscreen.width = 640;
 	fullscreen.height = 480;
 	fullscreen.fullscreen = 0;
-	fullscreen.present_method = _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT;
+	fullscreen.present_method = ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT;
 	wl_list_init(&fullscreen.output_list);
 	fullscreen.current_output = NULL;
 
@@ -525,10 +525,10 @@ int main(int argc, char *argv[])
 
 	if (fullscreen.fshell) {
 		fullscreen.window = window_create_custom(d);
-		_wl_fullscreen_shell_present_surface(fullscreen.fshell,
-						     window_get_wl_surface(fullscreen.window),
-						     fullscreen.present_method,
-						     NULL);
+		zwp_fullscreen_shell_v1_present_surface(fullscreen.fshell,
+							window_get_wl_surface(fullscreen.window),
+							fullscreen.present_method,
+							NULL);
 		/* If we get the CURSOR_PLANE capability, we'll change this */
 		fullscreen.draw_cursor = 1;
 	} else {

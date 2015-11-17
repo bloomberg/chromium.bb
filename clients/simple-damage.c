@@ -38,7 +38,7 @@
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
 #include "xdg-shell-client-protocol.h"
-#include "fullscreen-shell-client-protocol.h"
+#include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "scaler-client-protocol.h"
 
 int print_debug = 0;
@@ -50,7 +50,7 @@ struct display {
 	struct wl_compositor *compositor;
 	struct wl_scaler *scaler;
 	struct xdg_shell *shell;
-	struct _wl_fullscreen_shell *fshell;
+	struct zwp_fullscreen_shell_v1 *fshell;
 	struct wl_shm *shm;
 	uint32_t formats;
 };
@@ -294,10 +294,10 @@ create_window(struct display *display, int width, int height,
 
 		xdg_surface_set_title(window->xdg_surface, "simple-damage");
 	} else if (display->fshell) {
-		_wl_fullscreen_shell_present_surface(display->fshell,
-						     window->surface,
-						     _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT,
-						     NULL);
+		zwp_fullscreen_shell_v1_present_surface(display->fshell,
+							window->surface,
+							ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT,
+							NULL);
 	} else {
 		assert(0);
 	}
@@ -677,9 +677,9 @@ registry_handle_global(void *data, struct wl_registry *registry,
 					    id, &xdg_shell_interface, 1);
 		xdg_shell_use_unstable_version(d->shell, XDG_VERSION);
 		xdg_shell_add_listener(d->shell, &xdg_shell_listener, d);
-	} else if (strcmp(interface, "_wl_fullscreen_shell") == 0) {
+	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		d->fshell = wl_registry_bind(registry,
-					     id, &_wl_fullscreen_shell_interface, 1);
+					     id, &zwp_fullscreen_shell_v1_interface, 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,
 					  id, &wl_shm_interface, 1);
@@ -742,7 +742,7 @@ destroy_display(struct display *display)
 		xdg_shell_destroy(display->shell);
 
 	if (display->fshell)
-		_wl_fullscreen_shell_release(display->fshell);
+		zwp_fullscreen_shell_v1_release(display->fshell);
 
 	if (display->scaler)
 		wl_scaler_destroy(display->scaler);

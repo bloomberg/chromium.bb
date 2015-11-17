@@ -46,7 +46,7 @@
 #include "shared/image-loader.h"
 #include "shared/os-compatibility.h"
 #include "shared/cairo-util.h"
-#include "fullscreen-shell-client-protocol.h"
+#include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "presentation_timing-server-protocol.h"
 #include "linux-dmabuf.h"
 
@@ -61,7 +61,7 @@ struct wayland_backend {
 		struct wl_registry *registry;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
-		struct _wl_fullscreen_shell *fshell;
+		struct zwp_fullscreen_shell_v1 *fshell;
 		struct wl_shm *shm;
 
 		struct wl_list output_list;
@@ -813,9 +813,9 @@ wayland_output_set_fullscreen(struct wayland_output *output,
 		wl_shell_surface_set_fullscreen(output->parent.shell_surface,
 						method, framerate, target);
 	} else if (b->parent.fshell) {
-		_wl_fullscreen_shell_present_surface(b->parent.fshell,
-						     output->parent.surface,
-						     method, target);
+		zwp_fullscreen_shell_v1_present_surface(b->parent.fshell,
+							output->parent.surface,
+							method, target);
 	}
 }
 
@@ -851,7 +851,7 @@ enum mode_status {
 
 static void
 mode_feedback_successful(void *data,
-			 struct _wl_fullscreen_shell_mode_feedback *fb)
+			 struct zwp_fullscreen_shell_mode_feedback_v1 *fb)
 {
 	enum mode_status *value = data;
 
@@ -861,7 +861,7 @@ mode_feedback_successful(void *data,
 }
 
 static void
-mode_feedback_failed(void *data, struct _wl_fullscreen_shell_mode_feedback *fb)
+mode_feedback_failed(void *data, struct zwp_fullscreen_shell_mode_feedback_v1 *fb)
 {
 	enum mode_status *value = data;
 
@@ -871,7 +871,7 @@ mode_feedback_failed(void *data, struct _wl_fullscreen_shell_mode_feedback *fb)
 }
 
 static void
-mode_feedback_cancelled(void *data, struct _wl_fullscreen_shell_mode_feedback *fb)
+mode_feedback_cancelled(void *data, struct zwp_fullscreen_shell_mode_feedback_v1 *fb)
 {
 	enum mode_status *value = data;
 
@@ -880,7 +880,7 @@ mode_feedback_cancelled(void *data, struct _wl_fullscreen_shell_mode_feedback *f
 	*value = MODE_STATUS_CANCEL;
 }
 
-struct _wl_fullscreen_shell_mode_feedback_listener mode_feedback_listener = {
+struct zwp_fullscreen_shell_mode_feedback_v1_listener mode_feedback_listener = {
 	mode_feedback_successful,
 	mode_feedback_failed,
 	mode_feedback_cancelled,
@@ -894,7 +894,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 	struct wayland_backend *b;
 	struct wl_surface *old_surface;
 	struct weston_mode *old_mode;
-	struct _wl_fullscreen_shell_mode_feedback *mode_feedback;
+	struct zwp_fullscreen_shell_mode_feedback_v1 *mode_feedback;
 	enum mode_status mode_status;
 	int ret = 0;
 
@@ -931,13 +931,13 @@ wayland_output_switch_mode(struct weston_output *output_base,
 	wayland_output_resize_surface(output);
 
 	mode_feedback =
-		_wl_fullscreen_shell_present_surface_for_mode(b->parent.fshell,
-							      output->parent.surface,
-							      output->parent.output,
-							      mode->refresh);
-	_wl_fullscreen_shell_mode_feedback_add_listener(mode_feedback,
-							&mode_feedback_listener,
-							&mode_status);
+		zwp_fullscreen_shell_v1_present_surface_for_mode(b->parent.fshell,
+								 output->parent.surface,
+								 output->parent.output,
+								 mode->refresh);
+	zwp_fullscreen_shell_mode_feedback_v1_add_listener(mode_feedback,
+							   &mode_feedback_listener,
+							   &mode_status);
 
 	/* This should kick-start things again */
 	output->parent.draw_initial_frame = 1;
@@ -947,7 +947,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 	while (mode_status == MODE_STATUS_UNKNOWN && ret >= 0)
 		ret = wl_display_dispatch(b->parent.wl_display);
 
-	_wl_fullscreen_shell_mode_feedback_destroy(mode_feedback);
+	zwp_fullscreen_shell_mode_feedback_v1_destroy(mode_feedback);
 
 	if (mode_status == MODE_STATUS_FAIL) {
 		output->base.current_mode = old_mode;
@@ -1194,15 +1194,15 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
 						mode->refresh, poutput->global);
 	} else if (b->parent.fshell) {
-		_wl_fullscreen_shell_present_surface(b->parent.fshell,
-						     output->parent.surface,
-						     _WL_FULLSCREEN_SHELL_PRESENT_METHOD_CENTER,
-						     poutput->global);
-		_wl_fullscreen_shell_mode_feedback_destroy(
-			_wl_fullscreen_shell_present_surface_for_mode(b->parent.fshell,
-								      output->parent.surface,
-								      poutput->global,
-								      mode->refresh));
+		zwp_fullscreen_shell_v1_present_surface(b->parent.fshell,
+							output->parent.surface,
+							ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_CENTER,
+							poutput->global);
+		zwp_fullscreen_shell_mode_feedback_v1_destroy(
+			zwp_fullscreen_shell_v1_present_surface_for_mode(b->parent.fshell,
+									 output->parent.surface,
+									 poutput->global,
+									 mode->refresh));
 	}
 
 	return output;
@@ -1819,10 +1819,10 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 		b->parent.shell =
 			wl_registry_bind(registry, name,
 					 &wl_shell_interface, 1);
-	} else if (strcmp(interface, "_wl_fullscreen_shell") == 0) {
+	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		b->parent.fshell =
 			wl_registry_bind(registry, name,
-					 &_wl_fullscreen_shell_interface, 1);
+					 &zwp_fullscreen_shell_v1_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		display_add_seat(b, name, version);
 	} else if (strcmp(interface, "wl_output") == 0) {

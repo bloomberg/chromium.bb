@@ -309,8 +309,8 @@ wayland_backend_la_SOURCES = 			\
 	src/compositor-wayland.c		\
 	shared/helpers.h
 nodist_wayland_backend_la_SOURCES =			\
-	protocol/fullscreen-shell-protocol.c		\
-	protocol/fullscreen-shell-client-protocol.h
+	protocol/fullscreen-shell-unstable-v1-protocol.c		\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 endif
 
 if ENABLE_RPI_COMPOSITOR
@@ -475,8 +475,8 @@ weston_simple_shm_SOURCES = clients/simple-shm.c
 nodist_weston_simple_shm_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h	\
-	protocol/fullscreen-shell-protocol.c	\
-	protocol/fullscreen-shell-client-protocol.h	\
+	protocol/fullscreen-shell-unstable-v1-protocol.c	\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -488,8 +488,8 @@ nodist_weston_simple_damage_SOURCES =		\
 	protocol/scaler-client-protocol.h	\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h	\
-	protocol/fullscreen-shell-protocol.c	\
-	protocol/fullscreen-shell-client-protocol.h
+	protocol/fullscreen-shell-unstable-v1-protocol.c	\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_simple_damage_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_damage_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
@@ -531,8 +531,8 @@ weston_simple_dmabuf_SOURCES = clients/simple-dmabuf.c
 nodist_weston_simple_dmabuf_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h	\
-	protocol/fullscreen-shell-protocol.c	\
-	protocol/fullscreen-shell-client-protocol.h \
+	protocol/fullscreen-shell-unstable-v1-protocol.c	\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
 	protocol/linux-dmabuf-protocol.c \
 	protocol/linux-dmabuf-client-protocol.h
 weston_simple_dmabuf_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_CLIENT_CFLAGS)
@@ -649,8 +649,8 @@ weston_transformed_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_fullscreen_SOURCES = clients/fullscreen.c
 nodist_weston_fullscreen_SOURCES =			\
-	protocol/fullscreen-shell-protocol.c		\
-	protocol/fullscreen-shell-client-protocol.h
+	protocol/fullscreen-shell-unstable-v1-protocol.c		\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_fullscreen_LDADD = libtoytoolkit.la
 weston_fullscreen_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -763,8 +763,8 @@ BUILT_SOURCES +=					\
 	protocol/scaler-protocol.c			\
 	protocol/workspaces-client-protocol.h		\
 	protocol/workspaces-protocol.c			\
-	protocol/fullscreen-shell-protocol.c		\
-	protocol/fullscreen-shell-client-protocol.h	\
+	protocol/fullscreen-shell-unstable-v1-protocol.c		\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
 	protocol/xdg-shell-client-protocol.h		\
 	protocol/ivi-hmi-controller-protocol.c		\
@@ -865,8 +865,8 @@ fullscreen_shell_la_SOURCES =			\
 	fullscreen-shell/fullscreen-shell.c	\
 	shared/helpers.h
 nodist_fullscreen_shell_la_SOURCES =			\
-	protocol/fullscreen-shell-protocol.c		\
-	protocol/fullscreen-shell-server-protocol.h
+	protocol/fullscreen-shell-unstable-v1-protocol.c		\
+	protocol/fullscreen-shell-unstable-v1-server-protocol.h
 
 BUILT_SOURCES += $(nodist_fullscreen_shell_la_SOURCES)
 endif
@@ -931,8 +931,8 @@ screen_share_la_SOURCES =			\
 	src/screen-share.c			\
 	shared/helpers.h
 nodist_screen_share_la_SOURCES =			\
-	protocol/fullscreen-shell-protocol.c		\
-	protocol/fullscreen-shell-client-protocol.h
+	protocol/fullscreen-shell-unstable-v1-protocol.c		\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 
 endif
 
@@ -1348,7 +1348,6 @@ EXTRA_DIST +=					\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
 	protocol/xdg-shell.xml			\
-	protocol/fullscreen-shell.xml		\
 	protocol/presentation_timing.xml	\
 	protocol/scaler.xml			\
 	protocol/ivi-application.xml		\
@@ -1416,6 +1415,17 @@ $(DOCDIRS):
 .PHONY: doc $(DOXYGEN_INDICES)
 
 doc: $(DOXYGEN_INDICES)
+
+.SECONDEXPANSION:
+
+protocol/%-unstable-v1-protocol.c : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
+
+protocol/%-unstable-v1-server-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header < $< > $@
+
+protocol/%-unstable-v1-client-protocol.h : $(WAYLAND_PROTOCOLS_DATADIR)/unstable/$$*/$$*-unstable-v1.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@

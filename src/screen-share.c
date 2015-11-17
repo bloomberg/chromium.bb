@@ -42,7 +42,7 @@
 #include "compositor.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
-#include "fullscreen-shell-client-protocol.h"
+#include "fullscreen-shell-unstable-v1-client-protocol.h"
 
 struct shared_output {
 	struct weston_output *output;
@@ -55,11 +55,11 @@ struct shared_output {
 		struct wl_compositor *compositor;
 		struct wl_shm *shm;
 		uint32_t shm_formats;
-		struct _wl_fullscreen_shell *fshell;
+		struct zwp_fullscreen_shell_v1 *fshell;
 		struct wl_output *output;
 		struct wl_surface *surface;
 		struct wl_callback *frame_cb;
-		struct _wl_fullscreen_shell_mode_feedback *mode_feedback;
+		struct zwp_fullscreen_shell_mode_feedback_v1 *mode_feedback;
 	} parent;
 
 	struct wl_event_source *event_source;
@@ -697,10 +697,12 @@ registry_handle_global(void *data, struct wl_registry *registry,
 			wl_registry_bind(registry,
 					 id, &wl_shm_interface, 1);
 		wl_shm_add_listener(so->parent.shm, &shm_listener, so);
-	} else if (strcmp(interface, "_wl_fullscreen_shell") == 0) {
+	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		so->parent.fshell =
 			wl_registry_bind(registry,
-					 id, &_wl_fullscreen_shell_interface, 1);
+					 id,
+					 &zwp_fullscreen_shell_v1_interface,
+					 1);
 	}
 }
 
@@ -750,25 +752,25 @@ output_destroyed(struct wl_listener *l, void *data)
 }
 
 static void
-mode_feedback_ok(void *data, struct _wl_fullscreen_shell_mode_feedback *fb)
+mode_feedback_ok(void *data, struct zwp_fullscreen_shell_mode_feedback_v1 *fb)
 {
 	struct shared_output *so = data;
 
-	_wl_fullscreen_shell_mode_feedback_destroy(so->parent.mode_feedback);
+	zwp_fullscreen_shell_mode_feedback_v1_destroy(so->parent.mode_feedback);
 }
 
 static void
-mode_feedback_failed(void *data, struct _wl_fullscreen_shell_mode_feedback *fb)
+mode_feedback_failed(void *data, struct zwp_fullscreen_shell_mode_feedback_v1 *fb)
 {
 	struct shared_output *so = data;
 
-	_wl_fullscreen_shell_mode_feedback_destroy(so->parent.mode_feedback);
+	zwp_fullscreen_shell_mode_feedback_v1_destroy(so->parent.mode_feedback);
 
 	weston_log("Screen share failed: present_surface_for_mode failed\n");
 	shared_output_destroy(so);
 }
 
-struct _wl_fullscreen_shell_mode_feedback_listener mode_feedback_listener = {
+struct zwp_fullscreen_shell_mode_feedback_v1_listener mode_feedback_listener = {
 	mode_feedback_ok,
 	mode_feedback_failed,
 	mode_feedback_ok,
@@ -919,17 +921,17 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	}
 
 	so->parent.mode_feedback =
-		_wl_fullscreen_shell_present_surface_for_mode(so->parent.fshell,
-							      so->parent.surface,
-							      so->parent.output,
-							      output->current_mode->refresh);
+		zwp_fullscreen_shell_v1_present_surface_for_mode(so->parent.fshell,
+								 so->parent.surface,
+								 so->parent.output,
+								 output->current_mode->refresh);
 	if (!so->parent.mode_feedback) {
 		weston_log("Screen share failed: %m\n");
 		goto err_display;
 	}
-	_wl_fullscreen_shell_mode_feedback_add_listener(so->parent.mode_feedback,
-						        &mode_feedback_listener,
-						        so);
+	zwp_fullscreen_shell_mode_feedback_v1_add_listener(so->parent.mode_feedback,
+							   &mode_feedback_listener,
+							   so);
 
 	loop = wl_display_get_event_loop(output->compositor->wl_display);
 

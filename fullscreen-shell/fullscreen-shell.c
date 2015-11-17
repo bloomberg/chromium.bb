@@ -33,7 +33,7 @@
 #include <assert.h>
 
 #include "compositor.h"
-#include "fullscreen-shell-server-protocol.h"
+#include "fullscreen-shell-unstable-v1-server-protocol.h"
 #include "shared/helpers.h"
 
 struct fullscreen_shell {
@@ -61,7 +61,7 @@ struct fs_output {
 		struct wl_resource *mode_feedback;
 
 		int presented_for_mode;
-		enum _wl_fullscreen_shell_present_method method;
+		enum zwp_fullscreen_shell_v1_present_method method;
 		int32_t framerate;
 	} pending;
 
@@ -72,7 +72,7 @@ struct fs_output {
 	struct weston_transform transform; /* matrix from x, y */
 
 	int presented_for_mode;
-	enum _wl_fullscreen_shell_present_method method;
+	enum zwp_fullscreen_shell_v1_present_method method;
 	uint32_t framerate;
 };
 
@@ -198,7 +198,7 @@ create_black_surface(struct weston_compositor *ec, struct fs_output *fsout,
 
 static void
 fs_output_set_surface(struct fs_output *fsout, struct weston_surface *surface,
-		      enum _wl_fullscreen_shell_present_method method,
+		      enum zwp_fullscreen_shell_v1_present_method method,
 		      int32_t framerate, int presented_for_mode);
 static void
 fs_output_apply_pending(struct fs_output *fsout);
@@ -405,12 +405,12 @@ fs_output_configure_simple(struct fs_output *fsout,
 	surface_aspect = (float) surf_width / (float) surf_height;
 
 	switch (fsout->method) {
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT:
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_CENTER:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_CENTER:
 		fs_output_center_view(fsout);
 		break;
 
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_ZOOM:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_ZOOM:
 		if (output_aspect < surface_aspect)
 			fs_output_scale_view(fsout,
 					     output->width,
@@ -421,7 +421,7 @@ fs_output_configure_simple(struct fs_output *fsout,
 					     output->height);
 		break;
 
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_ZOOM_CROP:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_ZOOM_CROP:
 		if (output_aspect < surface_aspect)
 			fs_output_scale_view(fsout,
 					     output->height * surface_aspect,
@@ -432,7 +432,7 @@ fs_output_configure_simple(struct fs_output *fsout,
 					     output->width / surface_aspect);
 		break;
 
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_STRETCH:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_STRETCH:
 		fs_output_scale_view(fsout, output->width, output->height);
 		break;
 	default:
@@ -498,7 +498,7 @@ fs_output_configure_for_mode(struct fs_output *fsout,
 		/* The mode switch failed.  Clear the pending and
 		 * reconfigure as per normal */
 		if (fsout->pending.mode_feedback) {
-			_wl_fullscreen_shell_mode_feedback_send_mode_failed(
+			zwp_fullscreen_shell_mode_feedback_v1_send_mode_failed(
 				fsout->pending.mode_feedback);
 			wl_resource_destroy(fsout->pending.mode_feedback);
 			fsout->pending.mode_feedback = NULL;
@@ -509,7 +509,7 @@ fs_output_configure_for_mode(struct fs_output *fsout,
 	}
 
 	if (fsout->pending.mode_feedback) {
-		_wl_fullscreen_shell_mode_feedback_send_mode_successful(
+		zwp_fullscreen_shell_mode_feedback_v1_send_mode_successful(
 			fsout->pending.mode_feedback);
 		wl_resource_destroy(fsout->pending.mode_feedback);
 		fsout->pending.mode_feedback = NULL;
@@ -605,7 +605,7 @@ fs_output_clear_pending(struct fs_output *fsout)
 		return;
 
 	if (fsout->pending.mode_feedback) {
-		_wl_fullscreen_shell_mode_feedback_send_present_cancelled(
+		zwp_fullscreen_shell_mode_feedback_v1_send_present_cancelled(
 			fsout->pending.mode_feedback);
 		wl_resource_destroy(fsout->pending.mode_feedback);
 		fsout->pending.mode_feedback = NULL;
@@ -617,7 +617,7 @@ fs_output_clear_pending(struct fs_output *fsout)
 
 static void
 fs_output_set_surface(struct fs_output *fsout, struct weston_surface *surface,
-		      enum _wl_fullscreen_shell_present_method method,
+		      enum zwp_fullscreen_shell_v1_present_method method,
 		      int32_t framerate, int presented_for_mode)
 {
 	fs_output_clear_pending(fsout);
@@ -677,15 +677,15 @@ fullscreen_shell_present_surface(struct wl_client *client,
 	surface = surface_res ? wl_resource_get_user_data(surface_res) : NULL;
 
 	switch(method) {
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT:
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_CENTER:
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_ZOOM:
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_ZOOM_CROP:
-	case _WL_FULLSCREEN_SHELL_PRESENT_METHOD_STRETCH:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_CENTER:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_ZOOM:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_ZOOM_CROP:
+	case ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_STRETCH:
 		break;
 	default:
 		wl_resource_post_error(resource,
-				       _WL_FULLSCREEN_SHELL_ERROR_INVALID_METHOD,
+				       ZWP_FULLSCREEN_SHELL_V1_ERROR_INVALID_METHOD,
 				       "Invalid presentation method");
 	}
 
@@ -745,7 +745,7 @@ fullscreen_shell_present_surface_for_mode(struct wl_client *client,
 
 	fsout->pending.mode_feedback =
 		wl_resource_create(client,
-				   &_wl_fullscreen_shell_mode_feedback_interface,
+				   &zwp_fullscreen_shell_mode_feedback_v1_interface,
 				   1, feedback_id);
 	wl_resource_set_implementation(fsout->pending.mode_feedback, NULL,
 				       fsout, mode_feedback_destroyed);
@@ -759,7 +759,7 @@ fullscreen_shell_present_surface_for_mode(struct wl_client *client,
 	}
 }
 
-struct _wl_fullscreen_shell_interface fullscreen_shell_implementation = {
+struct zwp_fullscreen_shell_v1_interface fullscreen_shell_implementation = {
 	fullscreen_shell_release,
 	fullscreen_shell_present_surface,
 	fullscreen_shell_present_surface_for_mode,
@@ -799,19 +799,20 @@ bind_fullscreen_shell(struct wl_client *client, void *data, uint32_t version,
 		wl_client_add_destroy_listener(client, &shell->client_destroyed);
 	}
 
-	resource = wl_resource_create(client, &_wl_fullscreen_shell_interface,
+	resource = wl_resource_create(client,
+				      &zwp_fullscreen_shell_v1_interface,
 				      1, id);
 	wl_resource_set_implementation(resource,
 				       &fullscreen_shell_implementation,
 				       shell, NULL);
 
 	if (shell->compositor->capabilities & WESTON_CAP_CURSOR_PLANE)
-		_wl_fullscreen_shell_send_capability(resource,
-			_WL_FULLSCREEN_SHELL_CAPABILITY_CURSOR_PLANE);
+		zwp_fullscreen_shell_v1_send_capability(resource,
+			ZWP_FULLSCREEN_SHELL_V1_CAPABILITY_CURSOR_PLANE);
 
 	if (shell->compositor->capabilities & WESTON_CAP_ARBITRARY_MODES)
-		_wl_fullscreen_shell_send_capability(resource,
-			_WL_FULLSCREEN_SHELL_CAPABILITY_ARBITRARY_MODES);
+		zwp_fullscreen_shell_v1_send_capability(resource,
+			ZWP_FULLSCREEN_SHELL_V1_CAPABILITY_ARBITRARY_MODES);
 }
 
 WL_EXPORT int
@@ -846,7 +847,7 @@ module_init(struct weston_compositor *compositor,
 		seat_created(NULL, seat);
 
 	wl_global_create(compositor->wl_display,
-			 &_wl_fullscreen_shell_interface, 1, shell,
+			 &zwp_fullscreen_shell_v1_interface, 1, shell,
 			 bind_fullscreen_shell);
 
 	return 0;
