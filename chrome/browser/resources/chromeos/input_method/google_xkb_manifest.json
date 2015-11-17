@@ -231,7 +231,7 @@
         "fr-FR"
       ],
       "layouts": [
-        "fr"
+        "fr(oss)"
       ],
       "input_view": "inputview.html#id=fr.compact.qwerty&language=fr&passwordLayout=fr.compact.qwerty&name=keyboard_french",
       "options_page": "hmm_options.html?code=xkb:fr::fra"
