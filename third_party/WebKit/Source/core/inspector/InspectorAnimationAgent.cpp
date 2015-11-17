@@ -227,6 +227,10 @@ void InspectorAnimationAgent::setPaused(ErrorString* errorString, const RefPtr<J
         if (!animation)
             return;
         Animation* clone = animationClone(animation);
+        if (!clone) {
+            *errorString = "Failed to clone detached animation";
+            return;
+        }
         if (paused && !clone->paused()) {
             // Ensure we restore a current time if the animation is limited.
             double currentTime = clone->timeline()->currentTime() - clone->startTime();
@@ -257,6 +261,8 @@ Animation* InspectorAnimationAgent::animationClone(Animation* animation)
             StringKeyframeEffectModel* newStringKeyframeModel = StringKeyframeEffectModel::create(newKeyframes);
             // TODO(samli): This shouldn't be required.
             Element* element = oldEffect->target();
+            if (!element)
+                return nullptr;
             newStringKeyframeModel->forceConversionsToAnimatableValues(*element, element->computedStyle());
             newModel = newStringKeyframeModel;
         } else if (oldModel->isAnimatableValueKeyframeEffectModel()) {
@@ -292,6 +298,10 @@ void InspectorAnimationAgent::seekAnimations(ErrorString* errorString, const Ref
         if (!animation)
             return;
         Animation* clone = animationClone(animation);
+        if (!clone) {
+            *errorString = "Failed to clone a detached animation.";
+            return;
+        }
         if (!clone->paused())
             clone->play();
         clone->setCurrentTime(currentTime);
