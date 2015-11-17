@@ -63,8 +63,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "extensions/common/features/behavior_feature.h"
-#include "extensions/common/features/feature_provider.h"
+#include "chrome/common/extensions/features/feature_util.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -627,10 +626,7 @@ void ChromeContentClient::AddSecureSchemesAndOrigins(
 void ChromeContentClient::AddServiceWorkerSchemes(
     std::set<std::string>* schemes) {
 #if defined(ENABLE_EXTENSIONS)
-  if (extensions::FeatureProvider::GetBehaviorFeature(
-          extensions::BehaviorFeature::kServiceWorker)
-          ->IsAvailableToEnvironment()
-          .is_available())
+  if (extensions::feature_util::ExtensionServiceWorkersEnabled())
     schemes->insert(extensions::kExtensionScheme);
 #endif
 }
