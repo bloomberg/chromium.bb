@@ -40,7 +40,7 @@
 #include "workspaces-server-protocol.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
-#include "xdg-shell-server-protocol.h"
+#include "xdg-shell-unstable-v5-server-protocol.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
 #define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200

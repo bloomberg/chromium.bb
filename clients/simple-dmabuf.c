@@ -40,7 +40,7 @@
 #include <libdrm/drm_fourcc.h>
 
 #include <wayland-client.h>
-#include "xdg-shell-client-protocol.h"
+#include "xdg-shell-unstable-v5-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
 

@@ -41,7 +41,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include "xdg-shell-client-protocol.h"
+#include "xdg-shell-unstable-v5-client-protocol.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include "protocol/ivi-application-client-protocol.h"

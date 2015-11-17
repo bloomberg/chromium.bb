@@ -473,8 +473,8 @@ demo_clients +=					\
 
 weston_simple_shm_SOURCES = clients/simple-shm.c
 nodist_weston_simple_shm_SOURCES =		\
-	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h	\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
@@ -486,8 +486,8 @@ weston_simple_damage_SOURCES = clients/simple-damage.c
 nodist_weston_simple_damage_SOURCES =		\
 	protocol/scaler-protocol.c		\
 	protocol/scaler-client-protocol.h	\
-	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h	\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_simple_damage_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -517,8 +517,8 @@ if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
 weston_simple_egl_SOURCES = clients/simple-egl.c
 nodist_weston_simple_egl_SOURCES =		\
-	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h		\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h
 weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
@@ -529,8 +529,8 @@ if BUILD_SIMPLE_INTEL_DMABUF_CLIENT
 demo_clients += weston-simple-dmabuf
 weston_simple_dmabuf_SOURCES = clients/simple-dmabuf.c
 nodist_weston_simple_dmabuf_SOURCES =		\
-	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h	\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
@@ -556,8 +556,8 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/workspaces-client-protocol.h		\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h	\
-	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-client-protocol.h		\
+	protocol/xdg-shell-unstable-v5-protocol.c			\
+	protocol/xdg-shell-unstable-v5-client-protocol.h		\
 	protocol/ivi-application-protocol.c		\
 	protocol/ivi-application-client-protocol.h
 
@@ -765,8 +765,8 @@ BUILT_SOURCES +=					\
 	protocol/workspaces-protocol.c			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
-	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-client-protocol.h		\
+	protocol/xdg-shell-unstable-v5-protocol.c			\
+	protocol/xdg-shell-unstable-v5-client-protocol.h		\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
@@ -841,8 +841,8 @@ desktop_shell_la_SOURCES =				\
 nodist_desktop_shell_la_SOURCES =			\
 	protocol/desktop-shell-protocol.c		\
 	protocol/desktop-shell-server-protocol.h	\
-	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-server-protocol.h
+	protocol/xdg-shell-unstable-v5-protocol.c	\
+	protocol/xdg-shell-unstable-v5-server-protocol.h
 
 BUILT_SOURCES += $(nodist_desktop_shell_la_SOURCES)
 endif
@@ -1345,7 +1345,6 @@ EXTRA_DIST +=					\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
-	protocol/xdg-shell.xml			\
 	protocol/presentation_timing.xml	\
 	protocol/scaler.xml			\
 	protocol/ivi-application.xml		\

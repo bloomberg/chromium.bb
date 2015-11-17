@@ -35,7 +35,7 @@
 
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
-#include "xdg-shell-client-protocol.h"
+#include "xdg-shell-unstable-v5-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 
 #include <sys/types.h>
