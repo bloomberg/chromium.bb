@@ -41,10 +41,8 @@ bool IsEnabled(const PerfLoggingPrefs::InspectorDomainStatus& domain_status) {
 
 // Returns whether |command| is in kRequestTraceCommands[] (case-insensitive).
 bool ShouldRequestTraceEvents(const std::string& command) {
-  for (size_t i_domain = 0; i_domain < arraysize(kRequestTraceCommands);
-       ++i_domain) {
-    if (base::EqualsCaseInsensitiveASCII(command,
-                                         kRequestTraceCommands[i_domain]))
+  for (const auto& request_command : kRequestTraceCommands) {
+    if (base::EqualsCaseInsensitiveASCII(command, request_command))
       return true;
   }
   return false;
@@ -52,9 +50,8 @@ bool ShouldRequestTraceEvents(const std::string& command) {
 
 // Returns whether the event belongs to one of kDomains.
 bool ShouldLogEvent(const std::string& method) {
-  for (size_t i_domain = 0; i_domain < arraysize(kDomains); ++i_domain) {
-    if (base::StartsWith(method, kDomains[i_domain],
-                         base::CompareCase::SENSITIVE))
+  for (const auto& domain : kDomains) {
+    if (base::StartsWith(method, domain, base::CompareCase::SENSITIVE))
       return true;
   }
   return false;
@@ -65,7 +62,7 @@ bool ShouldLogEvent(const std::string& method) {
 PerformanceLogger::PerformanceLogger(Log* log, const Session* session)
     : log_(log),
       session_(session),
-      browser_client_(NULL),
+      browser_client_(nullptr),
       trace_buffering_(false) {}
 
 PerformanceLogger::PerformanceLogger(Log* log,
@@ -74,7 +71,7 @@ PerformanceLogger::PerformanceLogger(Log* log,
     : log_(log),
       session_(session),
       prefs_(prefs),
-      browser_client_(NULL),
+      browser_client_(nullptr),
       trace_buffering_(false) {}
 
 bool PerformanceLogger::subscribes_to_browser() {
@@ -84,12 +81,9 @@ bool PerformanceLogger::subscribes_to_browser() {
 Status PerformanceLogger::OnConnected(DevToolsClient* client) {
   if (IsBrowserwideClient(client)) {
     browser_client_ = client;
-    if (!prefs_.trace_categories.empty())  {
-      Status status = StartTrace();
-      if (status.IsError())
-        return status;
-    }
-    return Status(kOk);
+    if (prefs_.trace_categories.empty())
+      return Status(kOk);
+    return StartTrace();
   }
   return EnableInspectorDomains(client);
 }
@@ -152,10 +146,9 @@ Status PerformanceLogger::EnableInspectorDomains(DevToolsClient* client) {
         PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled)
       enable_commands.push_back("Timeline.start");
   }
-  for (std::vector<std::string>::const_iterator it = enable_commands.begin();
-       it != enable_commands.end(); ++it) {
+  for (const auto& enable_command : enable_commands) {
     base::DictionaryValue params;  // All the enable commands have empty params.
-    Status status = client->SendCommand(*it, params);
+    Status status = client->SendCommand(enable_command, params);
     if (status.IsError())
       return status;
   }
@@ -187,11 +180,9 @@ Status PerformanceLogger::HandleTraceEvents(
       return Status(kUnknownError,
                     "received DevTools trace data in unexpected format");
     }
-    for (base::ListValue::const_iterator it = traces->begin();
-             it != traces->end();
-             ++it) {
+    for (base::Value* const trace : *traces) {
       base::DictionaryValue* event_dict;
-      if (!(*it)->GetAsDictionary(&event_dict))
+      if (!trace->GetAsDictionary(&event_dict))
         return Status(kUnknownError, "trace event must be a dictionary");
       AddLogEntry(client->GetId(), "Tracing.dataCollected", *event_dict);
     }
