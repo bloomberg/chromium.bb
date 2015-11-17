@@ -56,7 +56,7 @@ private:
     void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
     bool isInteractiveContent() const override;
 
-    void valueWasSet() override;
+    void valueChanged() override;
 
     ReferrerPolicy referrerPolicyAttribute() override;
 

@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 #include <ostream> // NOLINT
 
@@ -77,11 +76,6 @@ std::ostream& operator<<(std::ostream& out, const String& string)
         }
     }
     return out << '"';
-}
-
-std::ostream& operator<<(std::ostream& out, const AtomicString& s)
-{
-    return out << s.string();
 }
 
 } // namespace WTF
