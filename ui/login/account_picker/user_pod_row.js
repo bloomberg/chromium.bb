@@ -1028,6 +1028,7 @@ cr.define('login', function() {
         this.setUserPodIconType('child');
       } else if (this.user_.legacySupervisedUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('legacySupervised');
+        this.classList.add('legacy-supervised');
       } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
         // filter makes it look in disabled state.
