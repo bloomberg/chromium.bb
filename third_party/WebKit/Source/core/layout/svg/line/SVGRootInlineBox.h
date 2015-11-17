@@ -49,6 +49,8 @@ public:
 
     InlineBox* closestLeafChildForPosition(const LayoutPoint&);
 
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) final;
+
 private:
     void reorderValueLists(Vector<SVGTextLayoutAttributes*>&);
     void layoutChildBoxes(InlineFlowBox*, LayoutRect* = nullptr);
