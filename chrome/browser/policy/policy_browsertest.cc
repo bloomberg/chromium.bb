@@ -2915,9 +2915,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-// Disabled, see http://crbug.com/315308.
+// Disabled, see http://crbug.com/554728.
 IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DISABLED_PRE_WaitForInitialUserActivityUsatisfied) {
+                       DISABLED_PRE_WaitForInitialUserActivityUnsatisfied) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -2926,9 +2926,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
           .ToInternalValue());
 }
 
-// Disabled, see http://crbug.com/315308.
+// Disabled, see http://crbug.com/554728.
 IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DISABLED_WaitForInitialUserActivityUsatisfied) {
+                       DISABLED_WaitForInitialUserActivityUnsatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer,
