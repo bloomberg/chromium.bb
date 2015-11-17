@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/api/SelectionState.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
@@ -16,6 +17,11 @@
 #include "wtf/Optional.h"
 
 namespace blink {
+
+static bool shouldApplyViewportClip(const LayoutReplaced& layoutReplaced)
+{
+    return !layoutReplaced.isSVGRoot() || toLayoutSVGRoot(&layoutReplaced)->shouldApplyViewportClip();
+}
 
 void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
@@ -58,7 +64,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         if (m_layoutReplaced.style()->hasBorderRadius()) {
             if (borderRect.isEmpty()) {
                 completelyClippedOut = true;
-            } else {
+            } else if (shouldApplyViewportClip(m_layoutReplaced)) {
                 // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
                 FloatRoundedRect roundedInnerRect = m_layoutReplaced.style()->getRoundedInnerBorderFor(borderRect,
                     LayoutRectOutsets(
