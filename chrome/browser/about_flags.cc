@@ -2008,14 +2008,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
-    {"enable-theme-color-in-tabbed-mode",
-     IDS_FLAGS_THEME_COLOR_IN_TABBED_MODE_NAME,
-     IDS_FLAGS_THEME_COLOR_IN_TABBED_MODE_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableThemeColorInTabbedMode)
-    },
-#endif  // defined(OS_ANDROID)
-#if defined(OS_ANDROID)
     {"offline-pages",
      IDS_FLAGS_OFFLINE_PAGES_NAME,
      IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION,

@@ -169,11 +169,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_OFFLINE_PAGES = "enable-offline-pages";
 
     /**
-     * Enable theme-color support in ChromeTabbedActivity.
-     */
-    public static final String ENABLE_THEME_COLOR_IN_TABBED_MODE =
-            "enable-theme-color-in-tabbed-mode";
-    /**
      * Enable keyboard accessory view that shows autofill suggestions on top of the keyboard.
      * Native switch - autofill::switches::kEnableAccessorySuggestionView
      */
