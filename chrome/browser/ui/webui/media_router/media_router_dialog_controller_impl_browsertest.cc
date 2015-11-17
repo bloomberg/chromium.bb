@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
@@ -74,20 +75,45 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, ShowDialog) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, Navigate) {
+  {
+    // Wait for the dialog to initialize.
+    TestNavigationObserver nav_observer(media_router_dialog_);
+    nav_observer.Wait();
+  }
+
   // New media router dialog is a constrained window, so the number of
   // tabs is still 1.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(media_router_dialog_, dialog_controller_->GetMediaRouterDialog());
 
-  // Navigate to another URL.
-  content::WebContentsDestroyedWatcher dialog_watcher(media_router_dialog_);
+  {
+    // Navigate to another URL and block until the dialog WebContents has been
+    // destroyed.
+    content::WebContentsDestroyedWatcher dialog_watcher(media_router_dialog_);
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+    dialog_watcher.Wait();
+  }
 
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  // Verify that dialog has been removed.
+  EXPECT_FALSE(dialog_controller_->GetMediaRouterDialog());
 
-  // Blocks until the dialog WebContents has been destroyed.
-  dialog_watcher.Wait();
+  // Open the dialog again.
+  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialog());
+  media_router_dialog_ = dialog_controller_->GetMediaRouterDialog();
+  ASSERT_TRUE(media_router_dialog_);
 
-  // Entry has been removed.
+  {
+    // Wait for the dialog to initialize.
+    TestNavigationObserver nav_observer(media_router_dialog_);
+    nav_observer.Wait();
+
+    // Refresh and block until dialog WebContents has been destroyed.
+    content::WebContentsDestroyedWatcher dialog_watcher(media_router_dialog_);
+    chrome::Reload(browser(), CURRENT_TAB);
+    dialog_watcher.Wait();
+  }
+
+  // Verify that dialog has been removed again.
   EXPECT_FALSE(dialog_controller_->GetMediaRouterDialog());
 }
 

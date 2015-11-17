@@ -65,7 +65,6 @@ MediaRouterDialogController::MediaRouterDialogController(
     : initiator_(initiator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(initiator_);
-  initiator_observer_.reset(new InitiatorWebContentsObserver(initiator_, this));
 }
 
 MediaRouterDialogController::~MediaRouterDialogController() {
@@ -81,6 +80,7 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
     return false;
 
   create_connection_request_ = request.Pass();
+  initiator_observer_.reset(new InitiatorWebContentsObserver(initiator_, this));
   CreateMediaRouterDialog();
 
   // Show the initiator holding the existing media router dialog.
@@ -97,8 +97,11 @@ bool MediaRouterDialogController::ShowMediaRouterDialog() {
 
   // Don't create dialog if it already exists.
   bool dialog_needs_creation = !IsShowingMediaRouterDialog();
-  if (dialog_needs_creation)
+  if (dialog_needs_creation) {
+    initiator_observer_.reset(
+        new InitiatorWebContentsObserver(initiator_, this));
     CreateMediaRouterDialog();
+  }
 
   ActivateInitiatorWebContents();
   return dialog_needs_creation;
