@@ -10,6 +10,7 @@ import android.net.Uri;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -131,7 +132,9 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
                         return getActivity().getActivityTab() != null
                                 && !getActivity().getActivityTab().isLoading();
                     }
-                }));
+                },
+                MultiActivityTestBase.DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL));
         } catch (InterruptedException exception) {
             fail();
         }

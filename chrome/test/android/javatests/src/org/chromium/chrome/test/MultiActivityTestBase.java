@@ -37,6 +37,10 @@ import java.util.Map;
         })
 public abstract class MultiActivityTestBase extends InstrumentationTestCase
         implements Parameterizable {
+    // This extended wait is to deal with slow devices trying to start up Activities on slow debug
+    // builds (crbug.com/556902).
+    public static final long DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS = 10000;
+
     protected static final String URL_1 = createTestUrl(1);
     protected static final String URL_2 = createTestUrl(2);
     protected static final String URL_3 = createTestUrl(3);
