@@ -23,6 +23,7 @@
 
 #include "core/css/CSSFontFaceSource.h"
 #include "platform/fonts/CustomFontData.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -66,11 +67,13 @@ private:
             m_isLoading = source->isLoading();
     }
 
-    RemoteFontFaceSource* m_fontFaceSource;
+    // TODO(Oilpan): consider moving (Custom)FontFace hierarchy to the heap,
+    // thereby making this reference a Member<>.
+    RawPtrWillBeWeakPersistent<RemoteFontFaceSource> m_fontFaceSource;
     FallbackVisibility m_fallbackVisibility;
     mutable bool m_isLoading;
 };
 
-}
+} // namespace blink
 
 #endif // CSSCustomFontData_h
