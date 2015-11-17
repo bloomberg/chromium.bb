@@ -449,4 +449,93 @@ TEST(CanonicalCookieTest, FullCompare) {
   check_consistency(*cookie_different_path, *cookie_different_value);
 }
 
+TEST(CanonicalCookieTest, SecureCookiePrefix) {
+  GURL https_url("https://www.example.test");
+  GURL http_url("http://www.example.test");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  options.set_enforce_prefixes();
+
+  // A $Secure- cookie must be Secure.
+  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Secure-A=B", creation_time, options)));
+  EXPECT_EQ(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                https_url, "$Secure-A=B; httponly", creation_time, options)));
+
+  // A typoed prefix does not have to be Secure.
+  EXPECT_NE(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                https_url, "$secure-A=B; Secure", creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$secure-A=C;", creation_time, options)));
+  EXPECT_NE(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                https_url, "$SecureA=B; Secure", creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$SecureA=C;", creation_time, options)));
+
+  // A $Secure- cookie can't be set on a non-secure origin.
+  EXPECT_EQ(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                http_url, "$Secure-A=B; Secure", creation_time, options)));
+}
+
+TEST(CanonicalCookieTest, HostCookiePrefix) {
+  GURL https_url("https://www.example.test");
+  GURL http_url("http://www.example.test");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  options.set_enforce_prefixes();
+  std::string domain = https_url.host();
+
+  // A $Host- cookie must be Secure.
+  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B;", creation_time, options)));
+  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Domain=" + domain + "; Path=/;",
+                         creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Path=/; Secure;", creation_time,
+                         options)));
+
+  // A $Host- cookie must be set from a secure scheme.
+  EXPECT_EQ(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                http_url, "$Host-A=B; Domain=" + domain + "; Path=/; Secure;",
+                creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Path=/; Secure;", creation_time,
+                         options)));
+
+  // A $Host- cookie can't have a Domain.
+  EXPECT_EQ(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                https_url, "$Host-A=B; Domain=" + domain + "; Path=/; Secure;",
+                creation_time, options)));
+  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Domain=" + domain + "; Secure;",
+                         creation_time, options)));
+
+  // A $Host- cookie must have a Path of "/".
+  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Path=/foo; Secure;",
+                         creation_time, options)));
+  EXPECT_EQ(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                https_url, "$Host-A=B; Secure;", creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Secure; Path=/;", creation_time,
+                         options)));
+
+  // Rules don't apply for a typoed prefix.
+  EXPECT_NE(nullptr,
+            make_scoped_ptr(CanonicalCookie::Create(
+                http_url, "$host-A=B; Domain=" + domain + "; Path=/; Secure;",
+                creation_time, options)));
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$HostA=B; Domain=" + domain + "; Secure;",
+                         creation_time, options)));
+}
+
 }  // namespace net

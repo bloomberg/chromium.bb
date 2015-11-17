@@ -332,13 +332,6 @@ void RunAsync(scoped_refptr<base::TaskRunner> proxy,
   proxy->PostTask(FROM_HERE, base::Bind(callback, cookie, removed));
 }
 
-bool CheckCookiePrefix(CanonicalCookie* cc, const CookieOptions& options) {
-  const char kSecurePrefix[] = "$Secure-";
-  if (cc->Name().find(kSecurePrefix) == 0)
-    return cc->IsSecure() && cc->Source().SchemeIsCryptographic();
-  return true;
-}
-
 }  // namespace
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
@@ -1894,12 +1887,6 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
                                        const CookieOptions& options) {
   const std::string key(GetKey((*cc)->Domain()));
   bool already_expired = (*cc)->IsExpired(creation_time);
-
-  if (options.enforce_prefixes() && !CheckCookiePrefix(cc->get(), options)) {
-    VLOG(kVlogSetCookies) << "SetCookie() not storing cookie '" << (*cc)->Name()
-                          << "' that violates prefix rules.";
-    return false;
-  }
 
   if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
                                 already_expired)) {

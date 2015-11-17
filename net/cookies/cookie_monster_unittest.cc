@@ -2967,29 +2967,6 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
 }
 
-TEST_F(CookieMonsterTest, SecureCookiePrefix) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-  // A $Secure- cookie must be Secure.
-  EXPECT_FALSE(SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B"));
-  EXPECT_FALSE(
-      SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B; httponly"));
-
-  // A typoed prefix does not have to be Secure.
-  EXPECT_TRUE(
-      SetCookie(cm.get(), https_www_google_.url(), "$secure-A=B; Secure"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_google_.url(), "$secure-A=C;"));
-  EXPECT_TRUE(
-      SetCookie(cm.get(), https_www_google_.url(), "$SecureA=B; Secure"));
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_google_.url(), "$SecureA=C;"));
-
-  EXPECT_TRUE(
-      SetCookie(cm.get(), https_www_google_.url(), "$Secure-A=B; Secure"));
-
-  // A $Secure- cookie can't be set on a non-secure origin.
-  EXPECT_FALSE(
-      SetCookie(cm.get(), http_www_google_.url(), "$Secure-A=B; Secure"));
-}
-
 class CookieMonsterNotificationTest : public CookieMonsterTest {
  public:
   CookieMonsterNotificationTest()
