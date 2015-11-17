@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <pthread.h>
 #include <string.h>
 #include <sys/utsname.h>
 
@@ -67,4 +68,48 @@ int NaClOsIsSupported(void) {
  */
 int NaClOsIs64BitWindows(void) {
   return 0;
+}
+
+/*
+ * Returns the Darwin Major Version. Returns 0 on error.
+ */
+static int DarwinMajorVersion(void) {
+  struct utsname uname_info;
+  if (uname(&uname_info) != 0) {
+    NaClLog(LOG_ERROR, "uname error\n");
+    return 0;
+  }
+
+  if (strcmp(uname_info.sysname, "Darwin") != 0) {
+    NaClLog(LOG_ERROR, "unexpected uname sysname %s\n", uname_info.sysname);
+    return 0;
+  }
+
+  int major_version, minor_version, dot_version;
+  if (!NaClParseKernelVersion(uname_info.release, &major_version,
+                              &minor_version, &dot_version)) {
+    NaClLog(LOG_ERROR, "couldn't parse release %s\n", uname_info.release);
+    return 0;
+  }
+
+  return major_version;
+}
+
+static int g_darwin_major_version = 0;
+
+static void InitializeDarwinMajorVersion() {
+  g_darwin_major_version = DarwinMajorVersion();
+}
+
+/*
+ * Returns the OS X Major Version. Caches the result of DarwinMajorVersion().
+ */
+static int OSXMajorVersion(void) {
+  static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+  pthread_once(&once_control, InitializeDarwinMajorVersion);
+  return g_darwin_major_version - 4;
+}
+
+int NaClOSX10Dot10OrLater(void) {
+  return OSXMajorVersion() >= 10;
 }

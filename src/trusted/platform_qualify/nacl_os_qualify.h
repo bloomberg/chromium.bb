@@ -8,6 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_NACL_OS_QUALIFY_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_NACL_OS_QUALIFY_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
 EXTERN_C_BEGIN
@@ -28,6 +29,13 @@ int NaClOsIsSupported(void);
  * strewing such assumptions throughout the code.
  */
 int NaClOsIs64BitWindows(void);
+
+#if NACL_OSX
+/*
+ * Returns 1 if the operating system is OS X 10.10+.
+ */
+int NaClOSX10Dot10OrLater(void);
+#endif
 
 EXTERN_C_END
 

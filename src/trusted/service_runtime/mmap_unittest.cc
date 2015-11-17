@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
+#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -46,6 +47,14 @@ void MmapTest::SetUp() {
 void MmapTest::TearDown() {
   NaClNrdAllModulesFini();
 }
+
+#if NACL_OSX
+// OS X changes the flag used to indicate that mapped memory is shared based on
+// its version.
+static int SharedMapFlag() {
+  return NaClOSX10Dot10OrLater() ? SM_TRUESHARED : SM_SHARED;
+}
+#endif
 
 // Creates a temporary file and returns an FD for it.
 static int MakeTempFileFd() {
@@ -205,7 +214,7 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
 #elif NACL_LINUX
   CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
 #elif NACL_OSX
-  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_SHARED);
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SharedMapFlag());
 #else
 # error Unsupported platform
 #endif
@@ -307,7 +316,7 @@ TEST_F(MmapTest, TestProtectShmMapping) {
 #elif NACL_LINUX
   CheckMapping(sysaddr, size, PROT_READ | PROT_WRITE, MAP_SHARED);
 #elif NACL_OSX
-  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SM_SHARED);
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SharedMapFlag());
 #else
 # error Unsupported platform
 #endif
@@ -320,7 +329,7 @@ TEST_F(MmapTest, TestProtectShmMapping) {
 #elif NACL_LINUX
   CheckMapping(sysaddr, size, PROT_NONE, MAP_SHARED);
 #elif NACL_OSX
-  CheckMapping(sysaddr, size, VM_PROT_NONE, SM_SHARED);
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SharedMapFlag());
 #else
 # error Unsupported platform
 #endif
