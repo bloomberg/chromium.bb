@@ -99,18 +99,6 @@ template<> struct NonASCIIMask<8, wchar_t> {
 };
 #endif  // WCHAR_T_IS_UTF32
 
-// DO NOT USE. http://crbug.com/24917
-//
-// tolower() will given incorrect results for non-ASCII characters. Use the
-// ASCII version, base::i18n::ToLower, or base::i18n::FoldCase. This is here
-// for backwards-compat for StartsWith until such calls can be updated.
-struct CaseInsensitiveCompareDeprecated {
- public:
-  bool operator()(char16 x, char16 y) const {
-    return tolower(x) == tolower(y);
-  }
-};
-
 }  // namespace
 
 bool IsWprintfFormatPortable(const wchar_t* format) {
