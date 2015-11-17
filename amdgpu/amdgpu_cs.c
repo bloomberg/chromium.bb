@@ -289,12 +289,16 @@ drm_private uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout)
 
 	if (timeout != AMDGPU_TIMEOUT_INFINITE) {
 		struct timespec current;
+		uint64_t current_ns;
 		r = clock_gettime(CLOCK_MONOTONIC, &current);
 		if (r)
 			return r;
 
-		timeout += ((uint64_t)current.tv_sec) * 1000000000ull;
-		timeout += current.tv_nsec;
+		current_ns = ((uint64_t)current.tv_sec) * 1000000000ull;
+		current_ns += current.tv_nsec;
+		timeout += current_ns;
+		if (timeout < current_ns)
+			timeout = AMDGPU_TIMEOUT_INFINITE;
 	}
 	return timeout;
 }
