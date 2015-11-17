@@ -455,12 +455,14 @@ void LayoutView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* p
         return;
 
     if (LayoutBox* obj = owner->layoutBox()) {
-        // Intersect the viewport with the paint invalidation rect.
-        LayoutRect viewRectangle = viewRect();
-        rect.intersect(viewRectangle);
+        if (!state || !state->viewClippingAndScrollOffsetDisabled()) {
+            // Intersect the viewport with the paint invalidation rect.
+            LayoutRect viewRectangle = viewRect();
+            rect.intersect(viewRectangle);
 
-        // Adjust for scroll offset of the view.
-        rect.moveBy(-viewRectangle.location());
+            // Adjust for scroll offset of the view.
+            rect.moveBy(-viewRectangle.location());
+        }
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());

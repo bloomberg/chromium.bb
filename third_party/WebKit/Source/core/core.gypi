@@ -1992,6 +1992,8 @@
             'paint/ObjectPainter.h',
             'paint/PaintInfo.cpp',
             'paint/PaintInfo.h',
+            'paint/PaintInvalidationCapableScrollableArea.cpp',
+            'paint/PaintInvalidationCapableScrollableArea.h',
             'paint/PaintLayer.cpp',
             'paint/PaintLayerClipper.cpp',
             'paint/PaintLayerFilterInfo.cpp',

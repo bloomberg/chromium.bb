@@ -1038,7 +1038,7 @@ void PaintLayerCompositor::destroyRootLayer()
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_layoutView.frameView(), HorizontalScrollbar);
         if (Scrollbar* horizontalScrollbar = m_layoutView.frameView()->horizontalScrollbar())
-            m_layoutView.frameView()->invalidateScrollbar(horizontalScrollbar, IntRect(IntPoint(0, 0), horizontalScrollbar->frameRect().size()));
+            m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(horizontalScrollbar);
     }
 
     if (m_layerForVerticalScrollbar) {
@@ -1047,12 +1047,12 @@ void PaintLayerCompositor::destroyRootLayer()
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_layoutView.frameView(), VerticalScrollbar);
         if (Scrollbar* verticalScrollbar = m_layoutView.frameView()->verticalScrollbar())
-            m_layoutView.frameView()->invalidateScrollbar(verticalScrollbar, IntRect(IntPoint(0, 0), verticalScrollbar->frameRect().size()));
+            m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(verticalScrollbar);
     }
 
     if (m_layerForScrollCorner) {
         m_layerForScrollCorner = nullptr;
-        m_layoutView.frameView()->invalidateScrollCorner(m_layoutView.frameView()->scrollCornerRect());
+        m_layoutView.frameView()->setScrollCornerNeedsPaintInvalidation();
     }
 
     if (m_overflowControlsHostLayer) {

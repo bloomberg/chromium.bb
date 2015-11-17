@@ -186,8 +186,7 @@ public:
     IntRect scrollableAreaBoundingBox() const override;
     bool userInputScrollable(ScrollbarOrientation) const override { return true; }
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
-    void invalidateScrollCornerRect(const IntRect&) override { }
+    void scrollControlWasSetNeedsPaintInvalidation() override { }
     void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
     GraphicsLayer* layerForContainer() const override;

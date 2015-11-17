@@ -448,8 +448,7 @@ bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
     if (state == PressedControlState && !isEnabled(o))
         return false;
 
-    o.setShouldDoFullPaintInvalidation();
-    o.invalidateDisplayItemClientForNonCompositingDescendants();
+    o.setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     return true;
 }
 

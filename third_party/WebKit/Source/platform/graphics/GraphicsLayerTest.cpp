@@ -200,8 +200,7 @@ public:
     IntSize contentsSize() const override { return IntSize(100, 100); }
     bool scrollbarsCanBeActive() const override { return false; }
     IntRect scrollableAreaBoundingBox() const override { return IntRect(); }
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override { }
-    void invalidateScrollCornerRect(const IntRect&) override { }
+    void scrollControlWasSetNeedsPaintInvalidation() override { }
     bool userInputScrollable(ScrollbarOrientation) const override { return true; }
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
     int pageStep(ScrollbarOrientation) const override { return 0; }

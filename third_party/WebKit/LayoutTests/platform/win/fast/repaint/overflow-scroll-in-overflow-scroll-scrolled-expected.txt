@@ -12,8 +12,8 @@
         [8, 8, 300, 300]
       ],
       "paintInvalidationClients": [
-        "VerticalScrollbar",
         "LayoutBlockFlow DIV id='innerDiv'",
+        "VerticalScrollbar",
         "LayoutBlockFlow DIV",
         "LayoutBlockFlow DIV"
       ]

@@ -53,6 +53,11 @@ public:
     void pushDelayedPaintInvalidationTarget(LayoutObject& obj) { m_pendingDelayedPaintInvalidations.append(&obj); }
     Vector<LayoutObject*>& pendingDelayedPaintInvalidationTargets() { return m_pendingDelayedPaintInvalidations; }
 
+    // Disable view clipping and scroll offset adjustment for paint invalidation of FrameView scrollbars.
+    // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
+    bool viewClippingAndScrollOffsetDisabled() const { return m_viewClippingAndScrollOffsetDisabled; }
+    void setViewClippingAndScrollOffsetDisabled(bool b) { m_viewClippingAndScrollOffsetDisabled = b; }
+
 private:
     PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState);
 
@@ -65,6 +70,7 @@ private:
     mutable bool m_cachedOffsetsEnabled;
     bool m_forcedSubtreeInvalidationWithinContainer;
     bool m_forcedSubtreeInvalidationRectUpdateWithinContainer;
+    bool m_viewClippingAndScrollOffsetDisabled;
 
     LayoutRect m_clipRect;
 

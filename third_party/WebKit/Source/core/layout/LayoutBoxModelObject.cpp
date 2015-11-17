@@ -247,7 +247,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         bool newStyleIsFixedPosition = style()->position() == FixedPosition;
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
-            invalidateDisplayItemClientForNonCompositingDescendants();
+            invalidateDisplayItemClientsIncludingNonCompositingDescendants(nullptr, PaintInvalidationStyleChange, nullptr);
     }
 
     // The used style for body background may change due to computed style change

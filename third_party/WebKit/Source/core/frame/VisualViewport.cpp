@@ -543,12 +543,6 @@ IntSize VisualViewport::contentsSize() const
     return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
-void VisualViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
-{
-    // Do nothing. Visual scrollbars live on the compositor thread and will
-    // be updated when the viewport is synced to the CC.
-}
-
 void VisualViewport::setScrollOffset(const IntPoint& offset, ScrollType scrollType)
 {
     setScrollOffset(DoublePoint(offset), scrollType);

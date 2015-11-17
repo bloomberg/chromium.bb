@@ -11,8 +11,6 @@
       ],
       "paintInvalidationClients": [
         "LayoutTextControl TEXTAREA",
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutTextControl TEXTAREA",
         "LayoutBlockFlow DIV id='inner-editor'"
       ]
     }

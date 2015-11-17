@@ -1429,7 +1429,7 @@ bool LayoutBox::intersectsVisibleViewport()
     return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
 }
 
-PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     PaintInvalidationReason fullInvalidationReason = fullPaintInvalidationReason();
     // If the current paint invalidation reason is PaintInvalidationDelayedFull, then this paint invalidation can delayed if the
@@ -1443,53 +1443,18 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
         setShouldDoFullPaintInvalidation(PaintInvalidationFull);
     }
 
-    PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
 
-    bool willDoFullInvalidation = view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(reason);
-    if (!willDoFullInvalidation)
+    if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason))
         invalidatePaintForOverflowIfNeeded();
 
-    // Issue paint invalidations for any scrollbars if there is a scrollable area for this layoutObject.
-    if (ScrollableArea* area = scrollableArea()) {
-        if (area->hasVerticalBarDamage()) {
-            if (!willDoFullInvalidation)
-                invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->verticalBarDamage()));
-            // TODO(wangxianzhu): Pass current bounds of the scrollbar to PaintController. crbug.com/547119.
-            if (Scrollbar* verticalScrollbar = area->verticalScrollbar())
-                invalidateDisplayItemClient(*verticalScrollbar);
-        }
-        if (area->hasHorizontalBarDamage()) {
-            if (!willDoFullInvalidation)
-                invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->horizontalBarDamage()));
-            // TODO(wangxianzhu): Pass current bounds of the scrollbar to PaintController. crbug.com/547119.
-            if (Scrollbar* horizontalScrollbar = area->horizontalScrollbar())
-                invalidateDisplayItemClient(*horizontalScrollbar);
-        }
-    }
+    if (PaintLayerScrollableArea* area = scrollableArea())
+        area->invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState, paintInvalidationContainer);
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
     savePreviousBoxSizesIfNeeded();
     return reason;
 }
-
-void LayoutBox::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
-{
-    LayoutBoxModelObject::clearPaintInvalidationState(paintInvalidationState);
-
-    if (ScrollableArea* area = scrollableArea())
-        area->resetScrollbarDamage();
-}
-
-#if ENABLE(ASSERT)
-bool LayoutBox::paintInvalidationStateIsDirty() const
-{
-    if (ScrollableArea* area = scrollableArea()) {
-        if (area->hasVerticalBarDamage() || area->hasHorizontalBarDamage())
-            return true;
-    }
-    return LayoutBoxModelObject::paintInvalidationStateIsDirty();
-}
-#endif
 
 LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
 {

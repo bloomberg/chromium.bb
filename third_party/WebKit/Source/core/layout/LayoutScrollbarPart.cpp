@@ -31,6 +31,7 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -179,29 +180,39 @@ void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const ComputedSty
     clearPositionedState();
     setFloating(false);
     setHasOverflowClip(false);
-    if (oldStyle && m_scrollbar && m_part != NoPart && (diff.needsPaintInvalidation() || diff.needsLayout()))
-        m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
+    if (oldStyle && (diff.needsPaintInvalidation() || diff.needsLayout()))
+        setNeedsPaintInvalidation();
 }
 
 void LayoutScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rect)
 {
-    if (m_scrollbar && m_part != NoPart) {
-        m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
-    } else {
-        if (FrameView* frameView = view()->frameView()) {
-            if (frameView->isFrameViewScrollCorner(this)) {
-                frameView->invalidateScrollCorner(frameView->scrollCornerRect());
-                return;
-            }
-        }
-
-        LayoutBlock::imageChanged(image, rect);
-    }
+    setNeedsPaintInvalidation();
+    LayoutBlock::imageChanged(image, rect);
 }
 
 LayoutObject* LayoutScrollbarPart::layoutObjectOwningScrollbar() const
 {
     return (!m_scrollbar) ? nullptr : m_scrollbar->owningLayoutObject();
+}
+
+void LayoutScrollbarPart::setNeedsPaintInvalidation()
+{
+    if (m_scrollbar) {
+        m_scrollbar->setNeedsPaintInvalidation();
+        return;
+    }
+
+    // This LayoutScrollbarPart is a scroll corner or a resizer.
+    ASSERT(m_part == NoPart);
+    if (FrameView* frameView = view()->frameView()) {
+        if (frameView->isFrameViewScrollCorner(this)) {
+            frameView->setScrollCornerNeedsPaintInvalidation();
+            return;
+        }
+    }
+
+    // This LayoutScrollbarPart belongs to a PaintLayerScrollableArea.
+    toLayoutBox(parent())->scrollableArea()->setScrollCornerNeedsPaintInvalidation();
 }
 
 }

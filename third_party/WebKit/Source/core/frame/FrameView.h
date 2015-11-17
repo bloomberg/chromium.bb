@@ -31,6 +31,7 @@
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Widget.h"
@@ -39,7 +40,6 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebRect.h"
@@ -79,7 +79,7 @@ struct CompositedSelection;
 
 typedef unsigned long long DOMTimeStamp;
 
-class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
+class CORE_EXPORT FrameView final : public Widget, public PaintInvalidationCapableScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
     friend class PaintControllerPaintTestBase;
@@ -339,7 +339,7 @@ public:
         invalidatePaintForTickmarks();
     }
 
-    void invalidatePaintForTickmarks() const;
+    void invalidatePaintForTickmarks();
 
     // Since the compositor can resize the viewport due to top controls and
     // commit scroll offsets before a WebView::resize occurs, we need to adjust
@@ -350,7 +350,7 @@ public:
     IntPoint maximumScrollPosition() const override;
 
     // ScrollableArea interface
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
+    void scrollControlWasSetNeedsPaintInvalidation() override { }
     void getTickmarks(Vector<IntRect>&) const override;
     void scrollTo(const DoublePoint&);
     IntRect scrollableAreaBoundingBox() const override;
@@ -390,7 +390,7 @@ public:
     // can be used to obtain those scrollbars.
     Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
     Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
-    LayoutScrollbarPart* scrollCorner() const { return m_scrollCorner; }
+    LayoutScrollbarPart* scrollCorner() const override { return m_scrollCorner; }
 
     void positionScrollbarLayers();
 
@@ -443,8 +443,8 @@ public:
     // Scroll the actual contents of the view (either blitting or invalidating as needed).
     void scrollContents(const IntSize& scrollDelta);
 
-    // This gives us a means of blocking painting on our scrollbars until the first layout has occurred.
-    void setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppress = false);
+    // This gives us a means of blocking updating our scrollbars until the first layout has occurred.
+    void setScrollbarsSuppressed(bool suppressed) { m_scrollbarsSuppressed = suppressed; }
     bool scrollbarsSuppressed() const { return m_scrollbarsSuppressed; }
 
     // Methods for converting between this frame and other coordinate spaces.
@@ -589,7 +589,6 @@ protected:
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
 
-    void invalidateScrollCornerRect(const IntRect&) override;
     ScrollBehavior scrollBehaviorStyle() const override;
 
     void scrollContentsIfNeeded();
@@ -743,6 +742,10 @@ private:
     void updateViewportIntersectionsForSubtree();
     void updateViewportIntersectionIfNeeded();
     void notifyIntersectionObservers();
+
+    // PaintInvalidationCapableScrollableArea
+    LayoutBox& boxForScrollControlPaintInvalidation() const override;
+    LayoutScrollbarPart* resizer() const override { return nullptr; }
 
     LayoutSize m_size;
 

@@ -10,7 +10,6 @@
         [0, 0, 200, 8]
       ],
       "paintInvalidationClients": [
-        "VerticalScrollbar",
         "LayoutView #document",
         "LayoutBlockFlow HTML"
       ]
@@ -31,7 +30,6 @@
         [0, 0, 200, 8]
       ],
       "paintInvalidationClients": [
-        "HorizontalScrollbar",
         "LayoutView #document",
         "LayoutView #document",
         "LayoutBlockFlow HTML",

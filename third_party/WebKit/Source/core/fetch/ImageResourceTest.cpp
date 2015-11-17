@@ -135,7 +135,7 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_FALSE(cachedImage->image()->isNull());
     ASSERT_EQ(cachedImage->image()->width(), 1);
     ASSERT_EQ(cachedImage->image()->height(), 1);
-    ASSERT_EQ(client.imageChangedCount(), 2);
+    ASSERT_EQ(client.imageChangedCount(), 1);
     ASSERT_TRUE(client.notifyFinishedCalled());
 }
 

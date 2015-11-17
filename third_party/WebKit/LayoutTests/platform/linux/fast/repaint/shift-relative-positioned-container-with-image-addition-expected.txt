@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [723, 94, 15, 90],
         [58, 236, 489, 537],
         [58, 142, 489, 537],
         [18, 102, 712, 74],
@@ -23,7 +22,7 @@
         [0, 0, 785, 742]
       ],
       "paintInvalidationClients": [
-        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutIFrame IFRAME id='iframe'",
@@ -31,6 +30,7 @@
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
+        "LayoutView #document",
         "LayoutBlockFlow (relative positioned) DIV class='relative'",
         "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
         "LayoutImage IMG",

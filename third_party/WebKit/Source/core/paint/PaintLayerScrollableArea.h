@@ -46,9 +46,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
+#include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
 
@@ -97,7 +97,7 @@ class LayoutScrollbarPart;
 // to be painted on top of everything. Hardware accelerated overlay scrollbars
 // are painted by their associated GraphicsLayer that sets the paint flag
 // PaintLayerPaintingOverlayScrollbars.
-class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<PaintLayerScrollableArea>, public ScrollableArea {
+class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<PaintLayerScrollableArea>, public PaintInvalidationCapableScrollableArea {
     USING_FAST_MALLOC_WILL_BE_REMOVED(PaintLayerScrollableArea);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
     friend class Internals;
@@ -140,7 +140,7 @@ private:
 
     private:
         PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
-        void destroyScrollbar(ScrollbarOrientation, bool invalidate = false);
+        void destroyScrollbar(ScrollbarOrientation);
 
     private:
         RawPtrWillBeMember<PaintLayerScrollableArea> m_scrollableArea;
@@ -188,8 +188,7 @@ public:
     GraphicsLayer* layerForScrollCorner() const override;
 
     bool usesCompositedScrolling() const override;
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
-    void invalidateScrollCornerRect(const IntRect&) override;
+    void scrollControlWasSetNeedsPaintInvalidation() override;
     bool shouldUseIntegerScrollOffset() const override;
     bool isActive() const override;
     bool isScrollCornerVisible() const override;
@@ -261,7 +260,7 @@ public:
 
     bool hasScrollbar() const { return hasHorizontalScrollbar() || hasVerticalScrollbar(); }
 
-    LayoutScrollbarPart* scrollCorner() const { return m_scrollCorner; }
+    LayoutScrollbarPart* scrollCorner() const override { return m_scrollCorner; }
 
     void resize(const PlatformEvent&, const LayoutSize&);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
@@ -321,7 +320,7 @@ public:
     LayoutBox& box() const;
     PaintLayer* layer() const;
 
-    LayoutScrollbarPart* resizer() { return m_resizer; }
+    LayoutScrollbarPart* resizer() const override { return m_resizer; }
 
     const IntPoint& cachedOverlayScrollbarOffset() { return m_cachedOverlayScrollbarOffset; }
     void setCachedOverlayScrollbarOffset(const IntPoint& offset) { m_cachedOverlayScrollbarOffset = offset; }
@@ -364,6 +363,9 @@ private:
     void updateScrollableAreaSet(bool hasOverflow);
 
     void updateCompositingLayersAfterScroll();
+
+    // PaintInvalidationCapableScrollableArea
+    LayoutBox& boxForScrollControlPaintInvalidation() const { return box(); }
 
     PaintLayer& m_layer;
 

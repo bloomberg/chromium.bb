@@ -879,12 +879,7 @@ protected:
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) const override;
     void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
 
-    void clearPaintInvalidationState(const PaintInvalidationState&) override;
-#if ENABLE(ASSERT)
-    bool paintInvalidationStateIsDirty() const override;
-#endif
-
-    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
 
     bool hasNonCompositedScrollbars() const final;
     void excludeScrollbars(LayoutRect&, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;

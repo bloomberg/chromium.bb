@@ -1300,14 +1300,7 @@ public:
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
     void invalidateDisplayItemClient(const DisplayItemClientWrapper&) const;
-    void invalidateDisplayItemClientForNonCompositingDescendants() const { invalidateDisplayItemClientForNonCompositingDescendantsOf(*this); }
-    // A normal object should use invalidateDisplayItemClientForNonCompositingDescendants()
-    // to invalidate its descendants which are painted on the same backing. However, for
-    // an object (e.g. LayoutScrollbarPart, custom scroll corner, custom resizer) which is
-    // not hooked up in the layout tree and not able to find its paint backing, it should
-    // let its owning layout object call the following function.
-    // FIXME: should we hook up scrollbar parts in the layout tree? crbug.com/484263.
-    void invalidateDisplayItemClientForNonCompositingDescendantsOf(const LayoutObject&) const;
+    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(const LayoutBoxModelObject* paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
 
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }

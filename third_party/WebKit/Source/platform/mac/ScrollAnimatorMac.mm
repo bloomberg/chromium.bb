@@ -439,7 +439,7 @@ private:
         break;
     }
 
-    _scrollbar->invalidate();
+    _scrollbar->setNeedsPaintInvalidation();
 }
 
 - (void)invalidate
@@ -1077,7 +1077,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
     NSScrollerStyle newStyle = [m_scrollbarPainterController.get() scrollerStyle];
 
     if (Scrollbar* verticalScrollbar = scrollableArea()->verticalScrollbar()) {
-        verticalScrollbar->invalidate();
+        verticalScrollbar->setNeedsPaintInvalidation();
 
         ScrollbarPainter oldVerticalPainter = [m_scrollbarPainterController.get() verticalScrollerImp];
         ScrollbarPainter newVerticalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle
@@ -1095,7 +1095,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
     }
 
     if (Scrollbar* horizontalScrollbar = scrollableArea()->horizontalScrollbar()) {
-        horizontalScrollbar->invalidate();
+        horizontalScrollbar->setNeedsPaintInvalidation();
 
         ScrollbarPainter oldHorizontalPainter = [m_scrollbarPainterController.get() horizontalScrollerImp];
         ScrollbarPainter newHorizontalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle

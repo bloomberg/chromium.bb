@@ -41,8 +41,6 @@
         "InlineTextBox ''",
         "InlineTextBox ' twist itself round and look up in her'",
         "RootInlineBox",
-        "VerticalScrollbar",
-        "LayoutIFrame IFRAME id='iframe'",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
@@ -106,7 +104,8 @@
         "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
         "InlineTextBox 'me?'",
         "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
-        "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'"
+        "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+        "VerticalScrollbar"
       ]
     }
   ]

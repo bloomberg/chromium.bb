@@ -147,10 +147,10 @@ public:
 
     virtual bool isActive() const = 0;
     virtual int scrollSize(ScrollbarOrientation) const = 0;
-    virtual void invalidateScrollbar(Scrollbar*, const IntRect&);
+    void setScrollbarNeedsPaintInvalidation(Scrollbar*);
     virtual bool isScrollCornerVisible() const = 0;
     virtual IntRect scrollCornerRect() const = 0;
-    virtual void invalidateScrollCorner(const IntRect&);
+    void setScrollCornerNeedsPaintInvalidation();
     virtual void getTickmarks(Vector<IntRect>&) const { }
 
     // Convert points and rects between the scrollbar and its containing view.
@@ -235,25 +235,6 @@ public:
     int maximumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? maximumScrollPosition().x() : maximumScrollPosition().y(); }
     int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return std::max(std::min(pos, maximumScrollPosition(orientation)), minimumScrollPosition(orientation)); }
 
-    bool hasVerticalBarDamage() const { return !m_verticalBarDamage.isEmpty(); }
-    bool hasHorizontalBarDamage() const { return !m_horizontalBarDamage.isEmpty(); }
-    const IntRect& verticalBarDamage() const { return m_verticalBarDamage; }
-    const IntRect& horizontalBarDamage() const { return m_horizontalBarDamage; }
-
-    void addScrollbarDamage(Scrollbar* scrollbar, const IntRect& rect)
-    {
-        if (scrollbar == horizontalScrollbar())
-            m_horizontalBarDamage.unite(rect);
-        else
-            m_verticalBarDamage.unite(rect);
-    }
-
-    void resetScrollbarDamage()
-    {
-        m_verticalBarDamage = IntRect();
-        m_horizontalBarDamage = IntRect();
-    }
-
     virtual GraphicsLayer* layerForContainer() const;
     virtual GraphicsLayer* layerForScrolling() const { return 0; }
     virtual GraphicsLayer* layerForHorizontalScrollbar() const { return 0; }
@@ -270,8 +251,8 @@ public:
 
     virtual ~ScrollableArea();
 
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) = 0;
-    virtual void invalidateScrollCornerRect(const IntRect&) = 0;
+    // Called when any of horizontal scrollbar, vertical scrollbar and scroll corner is setNeedsPaintInvalidation.
+    virtual void scrollControlWasSetNeedsPaintInvalidation() = 0;
 
     // Returns the default scroll style this area should scroll with when not
     // explicitly specified. E.g. The scrolling behavior of an element can be
@@ -312,6 +293,16 @@ protected:
 
     void clearScrollAnimators();
 
+    bool horizontalScrollbarNeedsPaintInvalidation() const { return m_horizontalScrollbarNeedsPaintInvalidation; }
+    bool verticalScrollbarNeedsPaintInvalidation() const { return m_verticalScrollbarNeedsPaintInvalidation; }
+    bool scrollCornerNeedsPaintInvalidation() const { return m_scrollCornerNeedsPaintInvalidation; }
+    void clearNeedsPaintInvalidationForScrollControls()
+    {
+        m_horizontalScrollbarNeedsPaintInvalidation = false;
+        m_verticalScrollbarNeedsPaintInvalidation = false;
+        m_scrollCornerNeedsPaintInvalidation = false;
+    }
+
 private:
     void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
     void userScrollHelper(const DoublePoint&, ScrollBehavior);
@@ -334,10 +325,6 @@ private:
     virtual int documentStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;
 
-    // Stores the paint invalidations for the scrollbars during layout.
-    IntRect m_horizontalBarDamage;
-    IntRect m_verticalBarDamage;
-
     struct ScrollableAreaAnimators {
         OwnPtr<ScrollAnimatorBase> scrollAnimator;
         OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
@@ -350,6 +337,10 @@ private:
     unsigned m_scrollbarOverlayStyle : 2; // ScrollbarOverlayStyle
 
     unsigned m_scrollOriginChanged : 1;
+
+    unsigned m_horizontalScrollbarNeedsPaintInvalidation : 1;
+    unsigned m_verticalScrollbarNeedsPaintInvalidation : 1;
+    unsigned m_scrollCornerNeedsPaintInvalidation : 1;
 
     // There are 8 possible combinations of writing mode and direction. Scroll origin will be non-zero in the x or y axis
     // if there is any reversed direction or writing-mode. The combinations are:

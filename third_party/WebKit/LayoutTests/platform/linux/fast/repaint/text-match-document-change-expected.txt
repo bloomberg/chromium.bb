@@ -7,7 +7,6 @@
       "drawsContent": true,
       "repaintRects": [
         [295, 102, 15, 400],
-        [295, 102, 15, 400],
         [18, 170, 269, 332],
         [18, 150, 269, 352],
         [18, 130, 269, 40],
@@ -22,15 +21,12 @@
         "LayoutText #text",
         "RootInlineBox",
         "RootInlineBox",
-        "VerticalScrollbar",
-        "LayoutIFrame (positioned) IFRAME id='iframe'",
-        "VerticalScrollbar",
-        "LayoutIFrame (positioned) IFRAME id='iframe'",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='to-be-changed'",
         "LayoutText #text",
         "InlineTextBox 'After change'",
-        "LayoutBlockFlow DIV"
+        "LayoutBlockFlow DIV",
+        "VerticalScrollbar"
       ]
     }
   ]

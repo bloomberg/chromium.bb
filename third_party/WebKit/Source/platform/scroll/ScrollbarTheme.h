@@ -62,26 +62,6 @@ public:
 
     virtual bool invalidateOnMouseEnterExit() { return false; }
 
-    void invalidateParts(ScrollbarThemeClient* scrollbar, ScrollbarControlPartMask mask)
-    {
-        if (mask & BackButtonStartPart)
-            invalidatePart(scrollbar, BackButtonStartPart);
-        if (mask & ForwardButtonStartPart)
-            invalidatePart(scrollbar, ForwardButtonStartPart);
-        if (mask & BackTrackPart)
-            invalidatePart(scrollbar, BackTrackPart);
-        if (mask & ThumbPart)
-            invalidatePart(scrollbar, ThumbPart);
-        if (mask & ForwardTrackPart)
-            invalidatePart(scrollbar, ForwardTrackPart);
-        if (mask & BackButtonEndPart)
-            invalidatePart(scrollbar, BackButtonEndPart);
-        if (mask & ForwardButtonEndPart)
-            invalidatePart(scrollbar, ForwardButtonEndPart);
-    }
-
-    virtual void invalidatePart(ScrollbarThemeClient*, ScrollbarPart);
-
     virtual void paintScrollCorner(GraphicsContext*, const DisplayItemClientWrapper&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) { }
 

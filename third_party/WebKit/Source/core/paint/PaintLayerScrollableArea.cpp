@@ -199,61 +199,9 @@ GraphicsLayer* PaintLayerScrollableArea::layerForScrollCorner() const
     return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
-void PaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
+void PaintLayerScrollableArea::scrollControlWasSetNeedsPaintInvalidation()
 {
-    // See crbug.com/343132.
-    DisableCompositingQueryAsserts disabler;
-
-    ASSERT(scrollbar == horizontalScrollbar() || scrollbar == verticalScrollbar());
-    ASSERT(scrollbar == horizontalScrollbar() ? !layerForHorizontalScrollbar() : !layerForVerticalScrollbar());
-
-    IntRect scrollRect = rect;
-    // If we are not yet inserted into the tree, there is no need to issue paint invaldiations.
-    if (!box().isLayoutView() && !box().parent())
-        return;
-
-    if (scrollbar == verticalScrollbar())
-        scrollRect.move(verticalScrollbarStart(0, box().size().width()), box().borderTop());
-    else
-        scrollRect.move(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
-
-    if (scrollRect.isEmpty())
-        return;
-
-    LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
-    box().flipForWritingMode(paintInvalidationRect);
-
-    IntRect intRect = pixelSnappedIntRect(paintInvalidationRect);
-
-    if (box().frameView()->isInPerformLayout()) {
-        addScrollbarDamage(scrollbar, intRect);
-    } else {
-        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-        DisablePaintInvalidationStateAsserts disabler;
-        // We have invalidated the displayItemClient of the scrollbar, but for now we still need to
-        // invalidate the rectangles to trigger repaints.
-        box().invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(intRect));
-        box().invalidateDisplayItemClient(*scrollbar);
-    }
-}
-
-void PaintLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
-{
-    ASSERT(!layerForScrollCorner());
-
-    if (m_scrollCorner) {
-        // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-        DisablePaintInvalidationStateAsserts disabler;
-        DisableCompositingQueryAsserts compositingDisabler;
-        m_scrollCorner->invalidatePaintRectangle(LayoutRect(rect));
-        box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
-    } else {
-        box().invalidateDisplayItemClient(box());
-    }
-    if (m_resizer) {
-        m_resizer->invalidatePaintRectangle(LayoutRect(rect));
-        box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_resizer);
-    }
+    box().setMayNeedPaintInvalidation();
 }
 
 bool PaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
@@ -1036,8 +984,8 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
 
-    if (!hasScrollbar && !layerForHorizontalScrollbar())
-        horizontalScrollbar()->invalidate();
+    setScrollbarNeedsPaintInvalidation(horizontalScrollbar());
+
 
     m_scrollbarManager.setHasHorizontalScrollbar(hasScrollbar);
 
@@ -1047,10 +995,7 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
     if (hasVerticalScrollbar())
         verticalScrollbar()->styleChanged();
 
-    // These are valid because we want to invalidate display item clients on the current backing.
-    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    DisableCompositingQueryAsserts compositingAssertDisabler;
-    invalidateScrollCorner(scrollCornerRect());
+    setScrollCornerNeedsPaintInvalidation();
 
     // Force an update since we know the scrollbars have changed things.
     if (box().document().hasAnnotatedRegions())
@@ -1062,8 +1007,7 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasVerticalScrollbar())
         return;
 
-    if (!hasScrollbar && !layerForVerticalScrollbar())
-        verticalScrollbar()->invalidate();
+    setScrollbarNeedsPaintInvalidation(verticalScrollbar());
 
     m_scrollbarManager.setHasVerticalScrollbar(hasScrollbar);
 
@@ -1073,10 +1017,7 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
     if (hasVerticalScrollbar())
         verticalScrollbar()->styleChanged();
 
-    // These are valid because we want to invalidate display item clients on the current backing.
-    DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    DisableCompositingQueryAsserts compositingAssertDisabler;
-    invalidateScrollCorner(scrollCornerRect());
+    setScrollCornerNeedsPaintInvalidation();
 
     // Force an update since we know the scrollbars have changed things.
     if (box().document().hasAnnotatedRegions())
@@ -1498,9 +1439,9 @@ void PaintLayerScrollableArea::ScrollbarManager::setCanDetachScrollbars(bool det
     m_canDetachScrollbars = detach ? 1 : 0;
     if (!detach) {
         if (m_hBar && !m_hBarIsAttached)
-            destroyScrollbar(HorizontalScrollbar, true);
+            destroyScrollbar(HorizontalScrollbar);
         if (m_vBar && !m_vBarIsAttached)
-            destroyScrollbar(VerticalScrollbar, true);
+            destroyScrollbar(VerticalScrollbar);
     }
 }
 
@@ -1556,17 +1497,15 @@ PassRefPtrWillBeRawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::cr
     return widget.release();
 }
 
-void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation, bool invalidate)
+void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation)
 {
     RefPtrWillBeMember<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
     ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached: !m_vBarIsAttached);
     if (!scrollbar)
         return;
 
-    if (invalidate) {
-        m_scrollableArea->box().invalidateDisplayItemClient(*scrollbar);
-        scrollbar->invalidate();
-    }
+    m_scrollableArea->setScrollbarNeedsPaintInvalidation(scrollbar.get());
+
     if (!scrollbar->isCustomScrollbar())
         m_scrollableArea->willRemoveScrollbar(scrollbar.get(), orientation);
 

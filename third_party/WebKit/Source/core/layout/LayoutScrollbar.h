@@ -33,11 +33,13 @@
 
 namespace blink {
 
+class ComputedStyle;
+class LayoutBox;
+class LayoutBoxModelObject;
+class LayoutScrollbarPart;
 class LocalFrame;
 class Node;
-class LayoutBox;
-class LayoutScrollbarPart;
-class ComputedStyle;
+class PaintInvalidationState;
 
 class LayoutScrollbar final : public Scrollbar {
 public:
@@ -58,7 +60,7 @@ public:
     LayoutScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
     const LayoutScrollbarPart* getPart(ScrollbarPart partType) const { return m_parts.get(partType); }
 
-    void invalidateRect(const IntRect&) override;
+    void invalidateDisplayItemClientsOfScrollbarParts(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& paintInvalidationRect);
 
     DECLARE_VIRTUAL_TRACE();
 

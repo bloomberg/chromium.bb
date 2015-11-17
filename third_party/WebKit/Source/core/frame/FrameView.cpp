@@ -382,9 +382,6 @@ bool FrameView::didFirstLayout() const
 
 void FrameView::invalidateRect(const IntRect& rect)
 {
-    // For querying PaintLayer::compositingState() when invalidating scrollbars.
-    // FIXME: do all scrollbar invalidations after layout of all frames is complete. It's currently not recursively true.
-    DisableCompositingQueryAsserts disabler;
     if (!parent()) {
         if (HostWindow* window = hostWindow())
             window->invalidateRect(rect);
@@ -400,7 +397,7 @@ void FrameView::invalidateRect(const IntRect& rect)
         layoutObject->borderTop() + layoutObject->paddingTop());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    layoutObject->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
+    layoutObject->invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(paintInvalidationRect));
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -983,7 +980,7 @@ void FrameView::layout()
                     setHorizontalScrollbarMode(ScrollbarAlwaysOff); // This causes a horizontal scrollbar to disappear.
 
                 setScrollbarModes(hMode, vMode);
-                setScrollbarsSuppressed(false, true);
+                setScrollbarsSuppressed(false);
             } else if (hMode != currentHMode || vMode != currentVMode) {
                 setScrollbarModes(hMode, vMode);
             }
@@ -1057,10 +1054,6 @@ void FrameView::layout()
     frame().document()->layoutUpdated();
 }
 
-// The plan is to move to compositor-queried paint invalidation, in which case this
-// method would setNeedsRedraw on the GraphicsLayers with invalidations and
-// let the compositor pick which to actually draw.
-// See http://crbug.com/306706
 void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     if (shouldThrottleRendering())
@@ -1076,12 +1069,11 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
-    // Invalidate the paint of the frameviews scrollbars if needed
-    if (hasVerticalBarDamage())
-        invalidateRect(verticalBarDamage());
-    if (hasHorizontalBarDamage())
-        invalidateRect(horizontalBarDamage());
-    resetScrollbarDamage();
+    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls()) {
+        paintInvalidationState.setViewClippingAndScrollOffsetDisabled(true);
+        invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+        paintInvalidationState.setViewClippingAndScrollOffsetDisabled(false);
+    }
 
 #if ENABLE(ASSERT)
     layoutView()->assertSubtreeClearedPaintInvalidationState();
@@ -1509,8 +1501,7 @@ void FrameView::didUpdateElasticOverscroll()
         if (delta != 0) {
             m_horizontalScrollbar->setElasticOverscroll(elasticOverscroll.width());
             scrollAnimator()->notifyContentAreaScrolled(FloatSize(delta, 0));
-            if (!m_scrollbarsSuppressed)
-                m_horizontalScrollbar->invalidate();
+            setScrollbarNeedsPaintInvalidation(m_horizontalScrollbar.get());
         }
     }
     if (m_verticalScrollbar) {
@@ -1518,8 +1509,7 @@ void FrameView::didUpdateElasticOverscroll()
         if (delta != 0) {
             m_verticalScrollbar->setElasticOverscroll(elasticOverscroll.height());
             scrollAnimator()->notifyContentAreaScrolled(FloatSize(0, delta));
-            if (!m_scrollbarsSuppressed)
-                m_verticalScrollbar->invalidate();
+            setScrollbarNeedsPaintInvalidation(m_verticalScrollbar.get());
         }
     }
 }
@@ -2083,24 +2073,10 @@ void FrameView::scrollTo(const DoublePoint& newPosition)
     frame().loader().client()->didChangeScrollOffset();
 }
 
-void FrameView::invalidatePaintForTickmarks() const
+void FrameView::invalidatePaintForTickmarks()
 {
     if (Scrollbar* scrollbar = verticalScrollbar())
-        scrollbar->invalidate();
-}
-
-void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
-{
-    // Add in our offset within the FrameView.
-    IntRect dirtyRect = rect;
-    dirtyRect.moveBy(scrollbar->location());
-
-    layoutView()->invalidateDisplayItemClient(*scrollbar);
-
-    if (isInPerformLayout())
-        addScrollbarDamage(scrollbar, rect);
-    else
-        invalidateRect(dirtyRect);
+        setScrollbarNeedsPaintInvalidation(scrollbar);
 }
 
 void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const
@@ -2300,7 +2276,7 @@ void FrameView::updateScrollCorner()
         if (!m_scrollCorner)
             m_scrollCorner = LayoutScrollbarPart::createAnonymous(doc);
         m_scrollCorner->setStyle(cornerStyle.release());
-        invalidateScrollCorner(cornerRect);
+        setScrollCornerNeedsPaintInvalidation();
     } else if (m_scrollCorner) {
         m_scrollCorner->destroy();
         m_scrollCorner = nullptr;
@@ -3025,7 +3001,7 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
             cache->handleScrollbarUpdate(this);
     }
 
-    invalidateScrollCorner(scrollCornerRect());
+    setScrollCornerNeedsPaintInvalidation();
 }
 
 void FrameView::setHasVerticalScrollbar(bool hasBar)
@@ -3053,7 +3029,7 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
             cache->handleScrollbarUpdate(this);
     }
 
-    invalidateScrollCorner(scrollCornerRect());
+    setScrollCornerNeedsPaintInvalidation();
 }
 
 void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode,
@@ -3220,16 +3196,12 @@ void FrameView::updateScrollbarGeometry()
             width() - (m_verticalScrollbar ? m_verticalScrollbar->width() : 0),
             m_horizontalScrollbar->height());
         m_horizontalScrollbar->setFrameRect(adjustScrollbarRectForResizer(hBarRect, m_horizontalScrollbar.get()));
-        if (!m_scrollbarsSuppressed && oldRect != m_horizontalScrollbar->frameRect())
-            m_horizontalScrollbar->invalidate();
+        if (oldRect != m_horizontalScrollbar->frameRect())
+            setScrollbarNeedsPaintInvalidation(m_horizontalScrollbar.get());
 
-        if (m_scrollbarsSuppressed)
-            m_horizontalScrollbar->setSuppressInvalidation(true);
         m_horizontalScrollbar->setEnabled(contentsWidth() > clientWidth);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
         m_horizontalScrollbar->offsetDidChange();
-        if (m_scrollbarsSuppressed)
-            m_horizontalScrollbar->setSuppressInvalidation(false);
     }
 
     if (m_verticalScrollbar) {
@@ -3240,16 +3212,12 @@ void FrameView::updateScrollbarGeometry()
             m_verticalScrollbar->width(),
             height() - (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
         m_verticalScrollbar->setFrameRect(adjustScrollbarRectForResizer(vBarRect, m_verticalScrollbar.get()));
-        if (!m_scrollbarsSuppressed && oldRect != m_verticalScrollbar->frameRect())
-            m_verticalScrollbar->invalidate();
+        if (oldRect != m_verticalScrollbar->frameRect())
+            setScrollbarNeedsPaintInvalidation(m_verticalScrollbar.get());
 
-        if (m_scrollbarsSuppressed)
-            m_verticalScrollbar->setSuppressInvalidation(true);
         m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
         m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
         m_verticalScrollbar->offsetDidChange();
-        if (m_scrollbarsSuppressed)
-            m_verticalScrollbar->setSuppressInvalidation(false);
     }
 }
 
@@ -3352,8 +3320,6 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
         return;
     InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
 
-    IntSize oldVisibleSize = visibleContentSize();
-
     bool scrollbarExistenceChanged = false;
 
     if (needsScrollbarReconstruction()) {
@@ -3377,17 +3343,6 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
         positionScrollbarLayers();
         updateScrollCorner();
     }
-
-    // FIXME: We don't need to do this if we are composited.
-    IntSize newVisibleSize = visibleContentSize();
-    if (newVisibleSize.width() > oldVisibleSize.width()) {
-        if (shouldPlaceVerticalScrollbarOnLeft())
-            invalidateRect(IntRect(0, 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));
-        else
-            invalidateRect(IntRect(oldVisibleSize.width(), 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));
-    }
-    if (newVisibleSize.height() > oldVisibleSize.height())
-        invalidateRect(IntRect(0, oldVisibleSize.height(), newVisibleSize.width(), newVisibleSize.height() - oldVisibleSize.height()));
 
     setScrollOffsetFromUpdateScrollbars(desiredOffset);
 }
@@ -3569,24 +3524,6 @@ void FrameView::adjustScrollbarsAvoidingResizerCount(int overlapDelta)
     }
 }
 
-void FrameView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppress)
-{
-    if (suppressed == m_scrollbarsSuppressed)
-        return;
-
-    m_scrollbarsSuppressed = suppressed;
-
-    if (repaintOnUnsuppress && !suppressed) {
-        if (m_horizontalScrollbar)
-            m_horizontalScrollbar->invalidate();
-        if (m_verticalScrollbar)
-            m_verticalScrollbar->invalidate();
-
-        // Invalidate the scroll corner too on unsuppress.
-        invalidateScrollCorner(scrollCornerRect());
-    }
-}
-
 Scrollbar* FrameView::scrollbarAtRootFramePoint(const IntPoint& pointInRootFrame)
 {
     IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
@@ -3704,13 +3641,6 @@ IntRect FrameView::scrollCornerRect() const
 bool FrameView::isScrollCornerVisible() const
 {
     return !scrollCornerRect().isEmpty();
-}
-
-void FrameView::invalidateScrollCornerRect(const IntRect& rect)
-{
-    invalidateRect(rect);
-    if (m_scrollCorner)
-        layoutView()->invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
 }
 
 ScrollBehavior FrameView::scrollBehaviorStyle() const
@@ -4045,6 +3975,12 @@ bool FrameView::canThrottleRendering() const
     if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
         return false;
     return m_hiddenForThrottling && m_crossOriginForThrottling;
+}
+
+LayoutBox& FrameView::boxForScrollControlPaintInvalidation() const
+{
+    ASSERT(layoutView());
+    return *layoutView();
 }
 
 } // namespace blink

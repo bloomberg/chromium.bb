@@ -10,8 +10,8 @@
         [8, 93, 85, 15]
       ],
       "paintInvalidationClients": [
-        "VerticalScrollbar",
-        "HorizontalScrollbar"
+        "HorizontalScrollbar",
+        "VerticalScrollbar"
       ]
     }
   ]

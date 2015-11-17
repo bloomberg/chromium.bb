@@ -89,8 +89,7 @@ protected:
     bool scrollbarsCanBeActive() const override { return true; }
     IntRect scrollableAreaBoundingBox() const override { return IntRect(); }
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return true; }
-    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override { }
-    void invalidateScrollCornerRect(const IntRect&) override { }
+    void scrollControlWasSetNeedsPaintInvalidation() override { }
     GraphicsLayer* layerForContainer() const override { return nullptr; }
     GraphicsLayer* layerForScrolling() const override { return nullptr; }
     GraphicsLayer* layerForHorizontalScrollbar() const override { return nullptr; }

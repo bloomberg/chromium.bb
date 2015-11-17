@@ -12,8 +12,8 @@
         [1112, 1312, 454, 469]
       ],
       "paintInvalidationClients": [
-        "HorizontalScrollbar",
         "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+        "HorizontalScrollbar",
         "LayoutBlockFlow (relative positioned) DIV class='relative red'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'"
       ]

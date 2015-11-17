@@ -170,46 +170,6 @@ ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, con
     return result;
 }
 
-void ScrollbarTheme::invalidatePart(ScrollbarThemeClient* scrollbar, ScrollbarPart part)
-{
-    if (part == NoPart)
-        return;
-
-    IntRect result;
-    switch (part) {
-    case BackButtonStartPart:
-        result = backButtonRect(scrollbar, BackButtonStartPart, true);
-        break;
-    case BackButtonEndPart:
-        result = backButtonRect(scrollbar, BackButtonEndPart, true);
-        break;
-    case ForwardButtonStartPart:
-        result = forwardButtonRect(scrollbar, ForwardButtonStartPart, true);
-        break;
-    case ForwardButtonEndPart:
-        result = forwardButtonRect(scrollbar, ForwardButtonEndPart, true);
-        break;
-    case TrackBGPart:
-        result = trackRect(scrollbar, true);
-        break;
-    case ScrollbarBGPart:
-        result = scrollbar->frameRect();
-        break;
-    default: {
-        IntRect beforeThumbRect, thumbRect, afterThumbRect;
-        splitTrack(scrollbar, trackRect(scrollbar), beforeThumbRect, thumbRect, afterThumbRect);
-        if (part == BackTrackPart)
-            result = beforeThumbRect;
-        else if (part == ForwardTrackPart)
-            result = afterThumbRect;
-        else
-            result = thumbRect;
-    }
-    }
-    result.moveBy(-scrollbar->location());
-    scrollbar->invalidateRect(result);
-}
-
 void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayItemClientWrapper& displayItemClient, const IntRect& cornerRect)
 {
     if (cornerRect.isEmpty())

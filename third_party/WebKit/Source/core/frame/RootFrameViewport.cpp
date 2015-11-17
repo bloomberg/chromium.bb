@@ -210,14 +210,9 @@ bool RootFrameViewport::shouldPlaceVerticalScrollbarOnLeft() const
     return layoutViewport().shouldPlaceVerticalScrollbarOnLeft();
 }
 
-void RootFrameViewport::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
+void RootFrameViewport::scrollControlWasSetNeedsPaintInvalidation()
 {
-    layoutViewport().invalidateScrollbarRect(scrollbar, rect);
-}
-
-void RootFrameViewport::invalidateScrollCornerRect(const IntRect& rect)
-{
-    layoutViewport().invalidateScrollCornerRect(rect);
+    layoutViewport().scrollControlWasSetNeedsPaintInvalidation();
 }
 
 GraphicsLayer* RootFrameViewport::layerForContainer() const

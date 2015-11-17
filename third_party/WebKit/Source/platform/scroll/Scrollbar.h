@@ -65,9 +65,6 @@ public:
     void setFrameRect(const IntRect&) override;
     IntRect frameRect() const override { return Widget::frameRect(); }
 
-    void invalidate() override { Widget::invalidate(); }
-    void invalidateRect(const IntRect&) override;
-
     ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
     void getTickmarks(Vector<IntRect>&) const override;
     bool isScrollableAreaActive() const override;
@@ -129,9 +126,6 @@ public:
 
     ScrollbarTheme* theme() const { return m_theme; }
 
-    bool suppressInvalidation() const { return m_suppressInvalidation; }
-    void setSuppressInvalidation(bool s) { m_suppressInvalidation = s; }
-
     IntRect convertToContainingView(const IntRect&) const override;
     IntRect convertFromContainingView(const IntRect&) const override;
 
@@ -151,6 +145,8 @@ public:
 
     DisplayItemClient displayItemClient() const override { return toDisplayItemClient(this); }
     String debugName() const override { return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar" : "VerticalScrollbar"; }
+
+    void setNeedsPaintInvalidation();
 
     // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
     EAGERLY_FINALIZE();
@@ -195,14 +191,15 @@ protected:
     Timer<Scrollbar> m_scrollTimer;
     bool m_overlapsResizer;
 
-    bool m_suppressInvalidation;
-
     bool m_isAlphaLocked;
 
     float m_elasticOverscroll;
 
 private:
     bool isScrollbar() const override { return true; }
+
+    void invalidate() override { setNeedsPaintInvalidation(); }
+    void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(); }
 
     float scrollableAreaCurrentPos() const;
 };

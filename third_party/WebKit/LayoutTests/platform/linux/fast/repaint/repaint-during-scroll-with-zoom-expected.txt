@@ -17,16 +17,14 @@
         [2, 64, 52, 18]
       ],
       "paintInvalidationClients": [
-        "HorizontalScrollbar",
-        "LayoutIFrame (positioned) IFRAME",
-        "VerticalScrollbar",
-        "LayoutIFrame (positioned) IFRAME",
         "LayoutIFrame (positioned) IFRAME",
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutText #text",
-        "InlineTextBox 'scroll me'"
+        "InlineTextBox 'scroll me'",
+        "HorizontalScrollbar",
+        "VerticalScrollbar"
       ]
     }
   ]

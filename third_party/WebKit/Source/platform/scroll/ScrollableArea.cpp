@@ -51,7 +51,6 @@ namespace blink {
 
 struct SameSizeAsScrollableArea {
     virtual ~SameSizeAsScrollableArea();
-    IntRect scrollbarDamage[2];
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
     VerifyEagerFinalization verifyEager;
 #endif
@@ -82,6 +81,9 @@ ScrollableArea::ScrollableArea()
     : m_inLiveResize(false)
     , m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault)
     , m_scrollOriginChanged(false)
+    , m_horizontalScrollbarNeedsPaintInvalidation(false)
+    , m_verticalScrollbarNeedsPaintInvalidation(false)
+    , m_scrollCornerNeedsPaintInvalidation(false)
 {
 }
 
@@ -246,22 +248,13 @@ void ScrollableArea::scrollPositionChanged(const DoublePoint& position, ScrollTy
     // Tell the scrollbars to update their thumb postions.
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
         horizontalScrollbar->offsetDidChange();
-        if (horizontalScrollbar->isOverlayScrollbar() && !hasLayerForHorizontalScrollbar()) {
-            if (!verticalScrollbar)
-                horizontalScrollbar->invalidate();
-            else {
-                // If there is both a horizontalScrollbar and a verticalScrollbar,
-                // then we must also invalidate the corner between them.
-                IntRect boundsAndCorner = horizontalScrollbar->boundsRect();
-                boundsAndCorner.setWidth(boundsAndCorner.width() + verticalScrollbar->width());
-                horizontalScrollbar->invalidateRect(boundsAndCorner);
-            }
-        }
+        if (horizontalScrollbar->isOverlayScrollbar() && !hasLayerForHorizontalScrollbar())
+            setScrollbarNeedsPaintInvalidation(horizontalScrollbar);
     }
     if (verticalScrollbar) {
         verticalScrollbar->offsetDidChange();
         if (verticalScrollbar->isOverlayScrollbar() && !hasLayerForVerticalScrollbar())
-            verticalScrollbar->invalidate();
+            setScrollbarNeedsPaintInvalidation(verticalScrollbar);
     }
 
     if (scrollPositionDouble() != oldPosition) {
@@ -402,16 +395,16 @@ void ScrollableArea::setScrollbarOverlayStyle(ScrollbarOverlayStyle overlayStyle
 
     if (Scrollbar* scrollbar = horizontalScrollbar()) {
         ScrollbarTheme::theme()->updateScrollbarOverlayStyle(scrollbar);
-        scrollbar->invalidate();
+        setScrollbarNeedsPaintInvalidation(scrollbar);
     }
 
     if (Scrollbar* scrollbar = verticalScrollbar()) {
         ScrollbarTheme::theme()->updateScrollbarOverlayStyle(scrollbar);
-        scrollbar->invalidate();
+        setScrollbarNeedsPaintInvalidation(scrollbar);
     }
 }
 
-void ScrollableArea::invalidateScrollbar(Scrollbar* scrollbar, const IntRect& rect)
+void ScrollableArea::setScrollbarNeedsPaintInvalidation(Scrollbar* scrollbar)
 {
     if (scrollbar == horizontalScrollbar()) {
         if (GraphicsLayer* graphicsLayer = layerForHorizontalScrollbar()) {
@@ -419,7 +412,8 @@ void ScrollableArea::invalidateScrollbar(Scrollbar* scrollbar, const IntRect& re
             graphicsLayer->setContentsNeedsDisplay();
             return;
         }
-        invalidateScrollbarRect(scrollbar, rect);
+        m_horizontalScrollbarNeedsPaintInvalidation = true;
+        scrollControlWasSetNeedsPaintInvalidation();
         return;
     }
     if (scrollbar == verticalScrollbar()) {
@@ -428,20 +422,22 @@ void ScrollableArea::invalidateScrollbar(Scrollbar* scrollbar, const IntRect& re
             graphicsLayer->setContentsNeedsDisplay();
             return;
         }
-        invalidateScrollbarRect(scrollbar, rect);
+        m_verticalScrollbarNeedsPaintInvalidation = true;
+        scrollControlWasSetNeedsPaintInvalidation();
         return;
     }
     // Otherwise the scrollbar is just created and has not been set as either
     // horizontalScrollbar() or verticalScrollbar().
 }
 
-void ScrollableArea::invalidateScrollCorner(const IntRect& rect)
+void ScrollableArea::setScrollCornerNeedsPaintInvalidation()
 {
     if (GraphicsLayer* graphicsLayer = layerForScrollCorner()) {
         graphicsLayer->setNeedsDisplay();
         return;
     }
-    invalidateScrollCornerRect(rect);
+    m_scrollCornerNeedsPaintInvalidation = true;
+    scrollControlWasSetNeedsPaintInvalidation();
 }
 
 bool ScrollableArea::hasLayerForHorizontalScrollbar() const

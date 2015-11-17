@@ -201,7 +201,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
                 toLayoutBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();
             if (m_scrollableArea)
-                m_scrollableArea->invalidateScrollCorner(m_scrollableArea->scrollCornerRect());
+                m_scrollableArea->setScrollCornerNeedsPaintInvalidation();
         }
     }
 }
@@ -362,15 +362,10 @@ int LayoutScrollbar::minimumThumbLength() const
     return orientation() == HorizontalScrollbar ? partLayoutObject->size().width() : partLayoutObject->size().height();
 }
 
-void LayoutScrollbar::invalidateRect(const IntRect& rect)
+void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& paintInvalidationRect)
 {
-    Scrollbar::invalidateRect(rect);
-
-    // FIXME: invalidate only the changed part.
-    if (LayoutBox* owningLayoutObject = this->owningLayoutObject()) {
-        for (auto& part : m_parts)
-            owningLayoutObject->invalidateDisplayItemClientForNonCompositingDescendantsOf(*part.value);
-    }
+    for (auto& part : m_parts)
+        part.value->invalidateDisplayItemClientsIncludingNonCompositingDescendants(&paintInvalidationContainer, PaintInvalidationScroll, &paintInvalidationRect);
 }
 
 }
