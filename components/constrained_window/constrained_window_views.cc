@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/alias.h"
 #include "components/constrained_window/constrained_window_views_client.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -146,6 +147,12 @@ views::Widget* ShowWebModalDialogViews(
 
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
                                          content::WebContents* web_contents) {
+  // Temporary to track down http://crbug.com/538612
+  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
+  base::debug::Alias(delegate);
+  CHECK(
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents));
+
   DCHECK_EQ(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
   return views::DialogDelegate::CreateDialogWidget(
       dialog, nullptr,
