@@ -27,6 +27,8 @@
 
 #include "core/animation/CompositorAnimations.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositorAnimationPlayer.h"
+#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatKeyframe.h"
@@ -113,6 +115,25 @@ public:
 
 using WebFloatAnimationCurveMock = WebCompositorAnimationCurveMock<WebFloatAnimationCurve, WebCompositorAnimationCurve::AnimationCurveTypeFloat, WebFloatKeyframe>;
 
+class WebCompositorAnimationTimelineMock : public WebCompositorAnimationTimeline {
+public:
+    MOCK_METHOD1(playerAttached, void(const WebCompositorAnimationPlayerClient&));
+    MOCK_METHOD1(playerDestroyed, void(const WebCompositorAnimationPlayerClient&));
+};
+
+class WebCompositorAnimationPlayerMock : public WebCompositorAnimationPlayer {
+public:
+    MOCK_METHOD1(setAnimationDelegate, void(WebCompositorAnimationDelegate*));
+
+    MOCK_METHOD1(attachLayer, void(WebLayer*));
+    MOCK_METHOD0(detachLayer, void());
+    MOCK_CONST_METHOD0(isLayerAttached, bool());
+
+    MOCK_METHOD1(addAnimation, void(WebCompositorAnimation*));
+    MOCK_METHOD1(removeAnimation, void(int));
+    MOCK_METHOD2(pauseAnimation, void(int, double));
+};
+
 } // namespace blink
 
 namespace blink {
@@ -125,6 +146,9 @@ public:
     public:
         MOCK_METHOD4(createAnimation, WebCompositorAnimation*(const WebCompositorAnimationCurve& curve, WebCompositorAnimation::TargetProperty target, int groupId, int animationId));
         MOCK_METHOD0(createFloatAnimationCurve, WebFloatAnimationCurve*());
+
+        MOCK_METHOD0(createAnimationPlayer, WebCompositorAnimationPlayer*());
+        MOCK_METHOD0(createAnimationTimeline, WebCompositorAnimationTimeline*());
     };
 
 private:
