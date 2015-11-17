@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -413,6 +414,9 @@ void RenderWidgetHostImpl::Init() {
 
   SendScreenRects();
   WasResized();
+
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidInit();
 }
 
 void RenderWidgetHostImpl::InitForFrame() {
@@ -493,10 +497,12 @@ bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
 }
 
 void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetWillSetIsLoading(is_loading);
+
   is_loading_ = is_loading;
-  if (!view_)
-    return;
-  view_->SetIsLoading(is_loading);
+  if (view_)
+    view_->SetIsLoading(is_loading);
 }
 
 void RenderWidgetHostImpl::WasHidden() {

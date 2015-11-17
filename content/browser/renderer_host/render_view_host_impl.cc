@@ -875,7 +875,7 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
                                               files));
 }
 
-void RenderViewHostImpl::SetIsLoading(bool is_loading) {
+void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -886,7 +886,6 @@ void RenderViewHostImpl::SetIsLoading(bool is_loading) {
                    GetRoutingID(),
                    is_loading));
   }
-  RenderWidgetHostImpl::SetIsLoading(is_loading);
 }
 
 void RenderViewHostImpl::LoadStateChanged(
@@ -964,8 +963,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void RenderViewHostImpl::Init() {
-  RenderWidgetHostImpl::Init();
+void RenderViewHostImpl::RenderWidgetDidInit() {
   PostRenderViewReady();
 }
 

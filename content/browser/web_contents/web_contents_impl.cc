@@ -2831,7 +2831,7 @@ void WebContentsImpl::ResumeLoadingCreatedWebContents() {
   // TODO(brettw): It seems bogus to reach into here and initialize the host.
   if (is_resume_pending_) {
     is_resume_pending_ = false;
-    GetRenderViewHost()->Init();
+    GetRenderViewHost()->GetWidget()->Init();
     GetMainFrame()->Init();
   }
 }

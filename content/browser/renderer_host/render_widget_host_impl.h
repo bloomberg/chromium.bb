@@ -181,7 +181,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Called when a renderer object already been created for this host, and we
   // just need to be attached to it. Used for window.open, <select> dropdown
   // menus, and other times when the renderer initiates creating an object.
-  virtual void Init();
+  void Init();
 
   // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
   void InitForFrame();
@@ -205,7 +205,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool Send(IPC::Message* msg) override;
 
   // Indicates if the page has finished loading.
-  virtual void SetIsLoading(bool is_loading);
+  void SetIsLoading(bool is_loading);
 
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.

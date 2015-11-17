@@ -790,8 +790,9 @@ void BrowserPluginGuest::OnWillAttachComplete(
   // does not create a new RenderView on navigation.
   if (!use_cross_process_frames && has_render_view_) {
     // This will trigger a callback to RenderViewReady after a round-trip IPC.
-    static_cast<RenderViewHostImpl*>(
-        GetWebContents()->GetRenderViewHost())->Init();
+    static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost())
+        ->GetWidget()
+        ->Init();
     WebContentsViewGuest* web_contents_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     if (!web_contents()->GetRenderViewHost()->GetWidget()->GetView()) {
