@@ -1,6 +1,6 @@
-<protocol name="desktop">
+<protocol name="weston_desktop">
 
-  <interface name="desktop_shell" version="3">
+  <interface name="weston_desktop_shell" version="1">
     <description summary="create desktop widgets and helpers">
       Traditional user interfaces can rely on this interface to define the
       foundations of typical desktops. Currently it's possible to set up
@@ -81,9 +81,7 @@
       <entry name="busy" value="11"/>
     </enum>
 
-    <!-- Version 2 additions -->
-
-    <request name="desktop_ready" since="2">
+    <request name="desktop_ready">
       <description summary="desktop is ready to be shown">
 	Tell the server, that enough desktop elements have been drawn
 	to make the desktop look ready for use. During start-up, the
@@ -93,8 +91,6 @@
 	showing temporary garbage.
       </description>
     </request>
-
-    <!-- Version 3 additions -->
 
     <enum name="panel_position">
       <entry name="top" value="0"/>
@@ -108,7 +104,7 @@
         summary="an invalid argument was provided in a request"/>
     </enum>
 
-    <request name="set_panel_position" since="3">
+    <request name="set_panel_position">
       <arg name="position" type="uint"/>
       <description summary="set panel position">
         Tell the shell which side of the screen the panel is
@@ -119,7 +115,7 @@
 
   </interface>
 
-  <interface name="screensaver" version="1">
+  <interface name="weston_screensaver" version="1">
     <description summary="interface for implementing screensavers">
       Only one client can bind this interface at a time.
     </description>

@@ -693,9 +693,9 @@ weston_editor_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS) $(PANGO_CFLAGS)
 endif
 
 weston_keyboard_SOURCES = clients/keyboard.c
-nodist_weston_keyboard_SOURCES =			\
-	protocol/desktop-shell-client-protocol.h	\
-	protocol/desktop-shell-protocol.c		\
+nodist_weston_keyboard_SOURCES =				\
+	protocol/weston-desktop-shell-client-protocol.h		\
+	protocol/weston-desktop-shell-protocol.c		\
 	protocol/input-method-unstable-v1-protocol.c		\
 	protocol/input-method-unstable-v1-client-protocol.h
 weston_keyboard_LDADD = libtoytoolkit.la
@@ -721,8 +721,8 @@ weston_desktop_shell_SOURCES = 				\
 	clients/desktop-shell.c				\
 	shared/helpers.h
 nodist_weston_desktop_shell_SOURCES =			\
-	protocol/desktop-shell-client-protocol.h	\
-	protocol/desktop-shell-protocol.c
+	protocol/weston-desktop-shell-client-protocol.h	\
+	protocol/weston-desktop-shell-protocol.c
 weston_desktop_shell_LDADD = libtoytoolkit.la
 weston_desktop_shell_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -757,8 +757,8 @@ BUILT_SOURCES +=					\
 	protocol/text-input-unstable-v1-client-protocol.h		\
 	protocol/input-method-unstable-v1-protocol.c			\
 	protocol/input-method-unstable-v1-client-protocol.h		\
-	protocol/desktop-shell-client-protocol.h	\
-	protocol/desktop-shell-protocol.c		\
+	protocol/weston-desktop-shell-client-protocol.h			\
+	protocol/weston-desktop-shell-protocol.c			\
 	protocol/scaler-client-protocol.h		\
 	protocol/scaler-protocol.c			\
 	protocol/workspaces-client-protocol.h		\
@@ -839,8 +839,8 @@ desktop_shell_la_SOURCES =				\
 	desktop-shell/input-panel.c			\
 	shared/helpers.h
 nodist_desktop_shell_la_SOURCES =			\
-	protocol/desktop-shell-protocol.c		\
-	protocol/desktop-shell-server-protocol.h	\
+	protocol/weston-desktop-shell-protocol.c	\
+	protocol/weston-desktop-shell-server-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c	\
 	protocol/xdg-shell-unstable-v5-server-protocol.h
 
@@ -1340,7 +1340,7 @@ BUILT_SOURCES +=				\
 	protocol/text-input-unstable-v1-client-protocol.h
 
 EXTRA_DIST +=					\
-	protocol/desktop-shell.xml		\
+	protocol/weston-desktop-shell.xml	\
 	protocol/screenshooter.xml		\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\

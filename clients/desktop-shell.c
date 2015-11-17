@@ -47,14 +47,13 @@
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 
-#include "desktop-shell-client-protocol.h"
+#include "weston-desktop-shell-client-protocol.h"
 
 extern char **environ; /* defined by libc */
 
 struct desktop {
 	struct display *display;
-	struct desktop_shell *shell;
-	uint32_t interface_version;
+	struct weston_desktop_shell *shell;
 	struct unlock_dialog *unlock_dialog;
 	struct task unlock_task;
 	struct wl_list outputs;
@@ -72,7 +71,7 @@ struct desktop {
 
 struct surface {
 	void (*configure)(void *data,
-			  struct desktop_shell *desktop_shell,
+			  struct weston_desktop_shell *desktop_shell,
 			  uint32_t edges, struct window *window,
 			  int32_t width, int32_t height);
 };
@@ -174,8 +173,7 @@ check_desktop_ready(struct window *window)
 	if (!desktop->painted && is_desktop_painted(desktop)) {
 		desktop->painted = 1;
 
-		if (desktop->interface_version >= 2)
-			desktop_shell_desktop_ready(desktop->shell);
+		weston_desktop_shell_desktop_ready(desktop->shell);
 	}
 }
 
@@ -462,7 +460,7 @@ panel_resize_handler(struct widget *widget,
 
 static void
 panel_configure(void *data,
-		struct desktop_shell *desktop_shell,
+		struct weston_desktop_shell *desktop_shell,
 		uint32_t edges, struct window *window,
 		int32_t width, int32_t height)
 {
@@ -725,7 +723,7 @@ background_draw(struct widget *widget, void *data)
 
 static void
 background_configure(void *data,
-		     struct desktop_shell *desktop_shell,
+		     struct weston_desktop_shell *desktop_shell,
 		     uint32_t edges, struct window *window,
 		     int32_t width, int32_t height)
 {
@@ -860,6 +858,7 @@ unlock_dialog_create(struct desktop *desktop)
 {
 	struct display *display = desktop->display;
 	struct unlock_dialog *dialog;
+	struct wl_surface *surface;
 
 	dialog = xzalloc(sizeof *dialog);
 
@@ -884,8 +883,8 @@ unlock_dialog_create(struct desktop *desktop)
 	widget_set_touch_up_handler(dialog->button,
 				      unlock_dialog_touch_up_handler);
 
-	desktop_shell_set_lock_surface(desktop->shell,
-				       window_get_wl_surface(dialog->window));
+	surface = window_get_wl_surface(dialog->window);
+	weston_desktop_shell_set_lock_surface(desktop->shell, surface);
 
 	window_schedule_resize(dialog->window, 260, 230);
 
@@ -905,14 +904,14 @@ unlock_dialog_finish(struct task *task, uint32_t events)
 	struct desktop *desktop =
 		container_of(task, struct desktop, unlock_task);
 
-	desktop_shell_unlock(desktop->shell);
+	weston_desktop_shell_unlock(desktop->shell);
 	unlock_dialog_destroy(desktop->unlock_dialog);
 	desktop->unlock_dialog = NULL;
 }
 
 static void
 desktop_shell_configure(void *data,
-			struct desktop_shell *desktop_shell,
+			struct weston_desktop_shell *desktop_shell,
 			uint32_t edges,
 			struct wl_surface *surface,
 			int32_t width, int32_t height)
@@ -925,12 +924,12 @@ desktop_shell_configure(void *data,
 
 static void
 desktop_shell_prepare_lock_surface(void *data,
-				   struct desktop_shell *desktop_shell)
+				   struct weston_desktop_shell *desktop_shell)
 {
 	struct desktop *desktop = data;
 
 	if (!desktop->locking) {
-		desktop_shell_unlock(desktop->shell);
+		weston_desktop_shell_unlock(desktop->shell);
 		return;
 	}
 
@@ -942,52 +941,52 @@ desktop_shell_prepare_lock_surface(void *data,
 
 static void
 desktop_shell_grab_cursor(void *data,
-			  struct desktop_shell *desktop_shell,
+			  struct weston_desktop_shell *desktop_shell,
 			  uint32_t cursor)
 {
 	struct desktop *desktop = data;
 
 	switch (cursor) {
-	case DESKTOP_SHELL_CURSOR_NONE:
+	case WESTON_DESKTOP_SHELL_CURSOR_NONE:
 		desktop->grab_cursor = CURSOR_BLANK;
 		break;
-	case DESKTOP_SHELL_CURSOR_BUSY:
+	case WESTON_DESKTOP_SHELL_CURSOR_BUSY:
 		desktop->grab_cursor = CURSOR_WATCH;
 		break;
-	case DESKTOP_SHELL_CURSOR_MOVE:
+	case WESTON_DESKTOP_SHELL_CURSOR_MOVE:
 		desktop->grab_cursor = CURSOR_DRAGGING;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_TOP:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_TOP:
 		desktop->grab_cursor = CURSOR_TOP;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM:
 		desktop->grab_cursor = CURSOR_BOTTOM;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_LEFT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_LEFT:
 		desktop->grab_cursor = CURSOR_LEFT;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_RIGHT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_RIGHT:
 		desktop->grab_cursor = CURSOR_RIGHT;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_TOP_LEFT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_TOP_LEFT:
 		desktop->grab_cursor = CURSOR_TOP_LEFT;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_TOP_RIGHT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_TOP_RIGHT:
 		desktop->grab_cursor = CURSOR_TOP_RIGHT;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_LEFT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_LEFT:
 		desktop->grab_cursor = CURSOR_BOTTOM_LEFT;
 		break;
-	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_RIGHT:
+	case WESTON_DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_RIGHT:
 		desktop->grab_cursor = CURSOR_BOTTOM_RIGHT;
 		break;
-	case DESKTOP_SHELL_CURSOR_ARROW:
+	case WESTON_DESKTOP_SHELL_CURSOR_ARROW:
 	default:
 		desktop->grab_cursor = CURSOR_LEFT_PTR;
 	}
 }
 
-static const struct desktop_shell_listener listener = {
+static const struct weston_desktop_shell_listener listener = {
 	desktop_shell_configure,
 	desktop_shell_prepare_lock_surface,
 	desktop_shell_grab_cursor
@@ -1075,7 +1074,7 @@ grab_surface_create(struct desktop *desktop)
 	window_set_user_data(desktop->grab_window, desktop);
 
 	s = window_get_wl_surface(desktop->grab_window);
-	desktop_shell_set_grab_surface(desktop->shell, s);
+	weston_desktop_shell_set_grab_surface(desktop->shell, s);
 
 	desktop->grab_widget =
 		window_add_widget(desktop->grab_window, desktop);
@@ -1189,14 +1188,14 @@ output_init(struct output *output, struct desktop *desktop)
 	if (want_panel(desktop)) {
 		output->panel = panel_create(desktop);
 		surface = window_get_wl_surface(output->panel->window);
-		desktop_shell_set_panel(desktop->shell,
-					output->output, surface);
+		weston_desktop_shell_set_panel(desktop->shell,
+					       output->output, surface);
 	}
 
 	output->background = background_create(desktop);
 	surface = window_get_wl_surface(output->background->window);
-	desktop_shell_set_background(desktop->shell,
-				     output->output, surface);
+	weston_desktop_shell_set_background(desktop->shell,
+					    output->output, surface);
 }
 
 static void
@@ -1228,12 +1227,14 @@ global_handler(struct display *display, uint32_t id,
 {
 	struct desktop *desktop = data;
 
-	if (!strcmp(interface, "desktop_shell")) {
-		desktop->interface_version = (version < 2) ? version : 2;
+	if (!strcmp(interface, "weston_desktop_shell")) {
 		desktop->shell = display_bind(desktop->display,
-					      id, &desktop_shell_interface,
-					      desktop->interface_version);
-		desktop_shell_add_listener(desktop->shell, &listener, desktop);
+					      id,
+					      &weston_desktop_shell_interface,
+					      1);
+		weston_desktop_shell_add_listener(desktop->shell,
+						  &listener,
+						  desktop);
 	} else if (!strcmp(interface, "wl_output")) {
 		create_output(desktop, id);
 	}
@@ -1334,7 +1335,7 @@ int main(int argc, char *argv[])
 	desktop_destroy_outputs(&desktop);
 	if (desktop.unlock_dialog)
 		unlock_dialog_destroy(desktop.unlock_dialog);
-	desktop_shell_destroy(desktop.shell);
+	weston_desktop_shell_destroy(desktop.shell);
 	display_destroy(desktop.display);
 
 	return 0;
