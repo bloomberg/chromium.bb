@@ -143,6 +143,8 @@ template("proto_library") {
     deps = [
       protoc_label,
     ]
+
+    # The deps may have steps that have to run before runnign protobuf.
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -171,5 +173,11 @@ template("proto_library") {
     deps = [
       ":$action_name",
     ]
+
+    # This will link any libraries in the deps (the use of invoker.deps in the
+    # action won't link it).
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 }
