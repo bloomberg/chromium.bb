@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/zlib/google/zip_reader.h"
 
 namespace extensions {
 namespace image_writer {
@@ -41,7 +42,8 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
       device_path_(device_path),
 #endif
       stage_(image_writer_api::STAGE_UNKNOWN),
-      progress_(0) {
+      progress_(0),
+      zip_reader_(new zip::ZipReader) {
 }
 
 Operation::~Operation() {}
@@ -105,20 +107,20 @@ void Operation::Unzip(const base::Closure& continuation) {
 
   SetStage(image_writer_api::STAGE_UNZIP);
 
-  if (!(zip_reader_.Open(image_path_) && zip_reader_.AdvanceToNextEntry() &&
-        zip_reader_.OpenCurrentEntryInZip())) {
+  if (!(zip_reader_->Open(image_path_) && zip_reader_->AdvanceToNextEntry() &&
+        zip_reader_->OpenCurrentEntryInZip())) {
     Error(error::kUnzipGenericError);
     return;
   }
 
-  if (zip_reader_.HasMore()) {
+  if (zip_reader_->HasMore()) {
     Error(error::kUnzipInvalidArchive);
     return;
   }
 
   // Create a new target to unzip to.  The original file is opened by the
   // zip_reader_.
-  zip::ZipReader::EntryInfo* entry_info = zip_reader_.current_entry_info();
+  zip::ZipReader::EntryInfo* entry_info = zip_reader_->current_entry_info();
   if (entry_info) {
     image_path_ = temp_dir_.path().Append(entry_info->file_path().BaseName());
   } else {
@@ -126,13 +128,13 @@ void Operation::Unzip(const base::Closure& continuation) {
     return;
   }
 
-  zip_reader_.ExtractCurrentEntryToFilePathAsync(
+  zip_reader_->ExtractCurrentEntryToFilePathAsync(
       image_path_,
       base::Bind(&Operation::CompleteAndContinue, this, continuation),
       base::Bind(&Operation::OnUnzipFailure, this),
       base::Bind(&Operation::OnUnzipProgress,
                  this,
-                 zip_reader_.current_entry_info()->original_size()));
+                 zip_reader_->current_entry_info()->original_size()));
 }
 
 void Operation::Finish() {
