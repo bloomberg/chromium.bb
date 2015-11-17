@@ -57,6 +57,10 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
   // site lists.
   void AddSiteListsChangedCallback(const SiteListsChangedCallback& callback);
 
+  // Returns a map (from CRX ID to name) of whitelists to be installed,
+  // specified on the command line.
+  static std::map<std::string, std::string> GetWhitelistsFromCommandLine();
+
   // Loads an already existing whitelist on disk (i.e. without downloading it as
   // a component).
   void LoadWhitelistForTesting(const std::string& id,

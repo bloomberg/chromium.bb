@@ -24,6 +24,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -386,28 +387,41 @@ void SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady(
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
+  const std::map<std::string, std::string> command_line_whitelists =
+      SupervisedUserWhitelistService::GetWhitelistsFromCommandLine();
+
   std::set<std::string> registered_whitelists;
-  const base::DictionaryValue* whitelists =
-      local_state_->GetDictionary(prefs::kRegisteredSupervisedUserWhitelists);
+  std::set<std::string> stale_whitelists;
+  DictionaryPrefUpdate update(local_state_,
+                              prefs::kRegisteredSupervisedUserWhitelists);
+  base::DictionaryValue* whitelists = update.Get();
   for (base::DictionaryValue::Iterator it(*whitelists); !it.IsAtEnd();
        it.Advance()) {
     const base::DictionaryValue* dict = nullptr;
     it.value().GetAsDictionary(&dict);
 
+    const std::string& id = it.key();
+
     // Skip whitelists with no clients. This can happen when a whitelist was
-    // previously registered with an empty client ID.
+    // previously registered on the command line but isn't anymore.
     const base::ListValue* clients = nullptr;
-    if (!dict->GetList(kClients, &clients) || clients->empty())
+    if ((!dict->GetList(kClients, &clients) || clients->empty()) &&
+        command_line_whitelists.count(id) == 0) {
+      stale_whitelists.insert(id);
       continue;
+    }
 
     std::string name;
     bool result = dict->GetString(kName, &name);
     DCHECK(result);
-    const std::string& id = it.key();
     RegisterComponent(id, name, base::Closure());
 
     registered_whitelists.insert(id);
   }
+
+  // Clean up stale whitelists as determined above.
+  for (const std::string& id : stale_whitelists)
+    whitelists->RemoveWithoutPathExpansion(id, nullptr);
 
   cus_->GetSequencedTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&RemoveUnregisteredWhitelistsOnTaskRunner,

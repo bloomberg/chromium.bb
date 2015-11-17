@@ -67,13 +67,31 @@ void SupervisedUserWhitelistService::Init() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Register whitelists specified on the command line.
+  for (const auto& whitelist : GetWhitelistsFromCommandLine())
+    RegisterWhitelist(whitelist.first, whitelist.second, FROM_COMMAND_LINE);
+}
+
+void SupervisedUserWhitelistService::AddSiteListsChangedCallback(
+    const SiteListsChangedCallback& callback) {
+  site_lists_changed_callbacks_.push_back(callback);
+
+  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists;
+  GetLoadedWhitelists(&whitelists);
+  callback.Run(whitelists);
+}
+
+// static
+std::map<std::string, std::string>
+SupervisedUserWhitelistService::GetWhitelistsFromCommandLine() {
+  std::map<std::string, std::string> whitelists;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   std::string command_line_whitelists = command_line->GetSwitchValueASCII(
       switches::kInstallSupervisedUserWhitelists);
-  for (const base::StringPiece& whitelist : base::SplitStringPiece(
-           command_line_whitelists, ",",
-           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  std::vector<base::StringPiece> string_pieces =
+      base::SplitStringPiece(command_line_whitelists, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const base::StringPiece& whitelist : string_pieces) {
     std::string id;
     std::string name;
     size_t separator = whitelist.find(':');
@@ -84,17 +102,11 @@ void SupervisedUserWhitelistService::Init() {
       whitelist.CopyToString(&id);
     }
 
-    RegisterWhitelist(id, name, FROM_COMMAND_LINE);
+    const bool result = whitelists.insert(std::make_pair(id, name)).second;
+    DCHECK(result);
   }
-}
 
-void SupervisedUserWhitelistService::AddSiteListsChangedCallback(
-    const SiteListsChangedCallback& callback) {
-  site_lists_changed_callbacks_.push_back(callback);
-
-  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists;
-  GetLoadedWhitelists(&whitelists);
-  callback.Run(whitelists);
+  return whitelists;
 }
 
 void SupervisedUserWhitelistService::LoadWhitelistForTesting(
