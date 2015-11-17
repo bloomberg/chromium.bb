@@ -514,6 +514,19 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter protocol
 [Worker]     setter search
 [Worker]     setter username
+[Worker] interface URLSearchParams
+[Worker]     method append
+[Worker]     method constructor
+[Worker]     method delete
+[Worker]     method entries
+[Worker]     method forEach
+[Worker]     method get
+[Worker]     method getAll
+[Worker]     method has
+[Worker]     method keys
+[Worker]     method set
+[Worker]     method toString
+[Worker]     method values
 [Worker] interface WebSocket : EventTarget
 [Worker]     attribute CLOSED
 [Worker]     attribute CLOSING

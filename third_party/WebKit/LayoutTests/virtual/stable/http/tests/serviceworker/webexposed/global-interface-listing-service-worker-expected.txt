@@ -528,6 +528,19 @@ interface URL
     setter protocol
     setter search
     setter username
+interface URLSearchParams
+    method append
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method toString
+    method values
 interface WebSocket : EventTarget
     attribute CLOSED
     attribute CLOSING
