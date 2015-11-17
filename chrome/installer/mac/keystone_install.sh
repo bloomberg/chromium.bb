@@ -31,7 +31,7 @@
 # 11  ksadmin failure
 # 12  dirpatcher failed for versioned directory
 # 13  dirpatcher failed for outer .app bundle
-# 14  The update is incompatible with the system
+# 14  The update is incompatible with the system (presently unused)
 #
 # The following exit codes can be used to convey special meaning to Keystone.
 # KeystoneRegistration will present these codes to Chrome as "success."
@@ -454,14 +454,6 @@ ksadmin_supports_versionpath_versionkey() {
   # return value.
 }
 
-has_32_bit_only_cpu() {
-  local cpu_64_bit_capable="$(sysctl -n hw.cpu64bit_capable 2>/dev/null)"
-  [[ -z "${cpu_64_bit_capable}" || "${cpu_64_bit_capable}" -eq 0 ]]
-
-  # The return value of the comparison is used as this function's return
-  # value.
-}
-
 # Runs "defaults read" to obtain the value of a key in a property list. As
 # with "defaults read", an absolute path to a plist is supplied, without the
 # ".plist" extension.
@@ -493,79 +485,6 @@ has_32_bit_only_cpu() {
 # update is applied.
 infoplist_read() {
   __CFPREFERENCES_AVOID_DAEMON=1 defaults read "${@}"
-}
-
-# Adjust the tag to contain the -32bit tag suffix. This is intended to be used
-# as a last resort, if sanity checks show that a non-32-bit update is about to
-# be applied to a 32-bit-only system. If this happens, it means that the
-# server delivered a non-32-bit update to a 32-bit-only system, most likely
-# because the tag was never updated to include the -32bit tag suffix.
-#
-# This mechanism takes a heavy-handed approach, clearing --tag-path and
-# --tag-key so that the channel identity will no longer follow the installed
-# application. However, it's expected that once -32bit is added to the tag,
-# the server will deliver a 32-bit update (possibly the final 32-bit version),
-# and once installed, that update will restore the --tag-path and --tag-key.
-# In any event, channel identity in this case may be moot, if 32-bit builds
-# are no longer being produced.
-#
-# This provides some resilience in the update system for old 32-bit-only
-# systems that aren't used during the window between when the -32bit tag
-# suffix begins being used and 32-bit releases end.
-mark_32_bit_only_system() {
-  local product_id="${1}"
-
-  # This step isn't critical.
-  local set_e=
-  if [[ "${-}" =~ e ]]; then
-    set_e="y"
-    set +e
-  fi
-
-  note "marking 32-bit-only system"
-
-  if ! ksadmin_supports_tagpath_tagkey; then
-    note "couldn't mark 32-bit-only system, no ksadmin support"
-    if [[ -n "${set_e}" ]]; then
-      set -e
-    fi
-    return 0
-  fi
-
-  local current_tag="$(ksadmin --productid "${product_id}" --print-tag)"
-  note "current_tag = ${current_tag}"
-
-  if grep -Eq -- '-32bit(-|$)' <<< "${current_tag}"; then
-    note "current tag already has -32bit"
-    if [[ -n "${set_e}" ]]; then
-      set -e
-    fi
-    return 0
-  fi
-
-  # This clears any other tag suffix, but that shouldn't be a problem. The
-  # only other currently-defined tag suffix component is -full, but -full and
-  # -32bit were introduced at the same time, so if -full appears, whatever set
-  # it would have already had enough knowledge to set -32bit as well, and this
-  # codepath wouldn't be entered.
-  local current_channel="$(sed -e 's/-.*//' <<< "${current_tag}")"
-  local new_tag="${current_channel}-32bit"
-  note "new_tag = ${new_tag}"
-
-  # Using ksadmin without --register only updates specified values in the
-  # ticket, without changing other existing values. Giving empty values for
-  # --tag-path and --tag-key clears those fields.
-  if ! ksadmin --productid "${product_id}" \
-               --tag "${new_tag}" --tag-path '' --tag-key ''; then
-    err "ksadmin failed to mark 32-bit-only system"
-  else
-    note "marked 32-bit-only system"
-  fi
-
-  # Go back to how things were.
-  if [[ -n "${set_e}" ]]; then
-    set -e
-  fi
 }
 
 # When a patch update fails because the old installed copy doesn't match the
@@ -601,10 +520,6 @@ mark_failed_patch_update() {
 
   local tag="${channel}"
   local tag_key="${KS_CHANNEL_KEY}"
-  if has_32_bit_only_cpu; then
-    tag="${tag}-32bit"
-    tag_key="${tag_key}-32bit"
-  fi
 
   tag="${tag}-full"
   tag_key="${tag_key}-full"
@@ -1040,34 +955,6 @@ main() {
     note "update_versioned_dir = ${update_versioned_dir}"
   fi
 
-  if has_32_bit_only_cpu; then
-    # On a 32-bit-only system, make sure that the update contains 32-bit code.
-    note "system is 32-bit-only"
-
-    local test_binary
-    if [[ -z "${is_patch}" ]]; then
-      # For a full installer, the framework is available, so check it for
-      # 32-bit code.
-      local update_framework_dir="${update_versioned_dir}/${FRAMEWORK_DIR}"
-      test_binary="${update_framework_dir}/${FRAMEWORK_NAME}"
-    else
-      # No application code is guaranteed to be available at this point for a
-      # patch updater, but goobspatch is built alongside and will have the
-      # same bitness of the product that this updater will install, so it's a
-      # reasonable proxy.
-      test_binary="${patch_dir}/goobspatch"
-    fi
-    note "test_binary = ${test_binary}"
-
-    if ! file "${test_binary}" | grep -q 'i386$'; then
-      err "can't install non-32-bit update on 32-bit-only system"
-      mark_32_bit_only_system "${product_id}"
-      exit 14
-    else
-      note "update will run on a 32-bit-only system"
-    fi
-  fi
-
   ensure_writable_symlinks_recursive "${installed_app}"
 
   # By copying to ${installed_app}, the existing application name will be
@@ -1309,10 +1196,6 @@ main() {
 
   local tag="${channel}"
   local tag_key="${KS_CHANNEL_KEY}"
-  if has_32_bit_only_cpu; then
-    tag="${tag}-32bit"
-    tag_key="${tag_key}-32bit"
-  fi
   note "tag = ${tag}"
   note "tag_key = ${tag_key}"
 

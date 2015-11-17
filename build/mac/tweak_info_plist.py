@@ -159,7 +159,7 @@ def _RemoveBreakpadKeys(plist):
 def _TagSuffixes():
   # Keep this list sorted in the order that tag suffix components are to
   # appear in a tag value. That is to say, it should be sorted per ASCII.
-  components = ('32bit', 'full')
+  components = ('full',)
   assert tuple(sorted(components)) == components
 
   components_len = len(components)

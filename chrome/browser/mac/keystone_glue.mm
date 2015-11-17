@@ -197,12 +197,10 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // which does not depend on applying a patch to existing files.
 - (BOOL)wantsFullInstaller;
 
-// Returns an NSString* suitable for appending to a Chrome Keystone tag value
-// or tag key. If the system has a 32-bit-only CPU, the tag suffix will
-// contain the string "-32bit". If a full installer (as opposed to a binary
-// diff/delta patch) is required, the tag suffix will contain the string
-// "-full". If no special treatment is required, the tag suffix will be an
-// empty string.
+// Returns an NSString* suitable for appending to a Chrome Keystone tag value or
+// tag key.  If a full installer (as opposed to a binary diff/delta patch) is
+// required, the tag suffix will contain the string "-full". If no special
+// treatment is required, the tag suffix will be an empty string.
 - (NSString*)tagSuffix;
 
 @end  // @interface KeystoneGlue (Private)
