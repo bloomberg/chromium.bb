@@ -35,8 +35,6 @@
 
 namespace blink {
 
-// An interface to query and configure WebKit's image cache.
-//
 // Methods of this interface can be called on any thread.
 //
 // Methods of this interface can be only be used after blink::initialize()
@@ -44,18 +42,9 @@ namespace blink {
 
 class WebImageCache {
 public:
-    // Sets the capacities of the image cache, evicting objects as necessary.
-    BLINK_EXPORT static void setCacheLimitInBytes(size_t);
-
     // Clears the cache (as much as possible; some resources may not be
     // cleared if they are actively referenced).
     BLINK_EXPORT static void clear();
-
-    // Returns the number of bytes used by the cache.
-    BLINK_EXPORT static size_t memoryUsageInBytes();
-
-    // Returns the number of cached entries.
-    BLINK_EXPORT static unsigned cacheEntries();
 
 private:
     WebImageCache();  // Not intended to be instanced.
