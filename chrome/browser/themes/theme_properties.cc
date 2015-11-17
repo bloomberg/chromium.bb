@@ -10,6 +10,7 @@
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -313,7 +314,6 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
       return kDefaultColorToolbarStrokeInactive;
 #endif
     default:
-      // Return a debugging red color.
-      return SK_ColorRED;
+      return gfx::kPlaceholderColor;
   }
 }

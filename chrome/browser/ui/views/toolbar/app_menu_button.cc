@@ -157,7 +157,7 @@ void AppMenuButton::ScheduleAppMenuIconPaint() {
 
 void AppMenuButton::UpdateIcon() {
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
-  SkColor color = SK_ColorRED;
+  SkColor color = gfx::kPlaceholderColor;
   switch (severity_) {
     case AppMenuIconPainter::SEVERITY_NONE:
       color = GetThemeProvider()->GetColor(

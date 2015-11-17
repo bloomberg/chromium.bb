@@ -220,7 +220,7 @@ void DownloadItemViewMd::StopDownloadProgress() {
 SkColor DownloadItemViewMd::GetTextColorForThemeProvider(
     ui::ThemeProvider* theme) {
   return theme ? theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)
-               : SK_ColorRED;
+               : gfx::kPlaceholderColor;
 }
 
 void DownloadItemViewMd::OnExtractIconComplete(gfx::Image* icon_bitmap) {

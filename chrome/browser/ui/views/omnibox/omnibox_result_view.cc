@@ -257,7 +257,7 @@ SkColor OmniboxResultView::GetColor(
   }
 
   NOTREACHED();
-  return SK_ColorRED;
+  return gfx::kPlaceholderColor;
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {

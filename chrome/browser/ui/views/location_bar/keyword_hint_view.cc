@@ -21,6 +21,7 @@
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -48,7 +49,11 @@ class TabKeyBubbleView : public IconLabelBubbleView {
 TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list,
                                    SkColor text_color,
                                    SkColor background_color)
-    : IconLabelBubbleView(0, font_list, SK_ColorRED, background_color, false),
+    : IconLabelBubbleView(0,
+                          font_list,
+                          gfx::kPlaceholderColor,
+                          background_color,
+                          false),
       text_color_(text_color) {
   SetLabel(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY));
 }

@@ -13,6 +13,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -214,7 +215,7 @@ class NativeDialogContainer : public BaseDialogContainer {
       views::Widget* widget) override {
     FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
     scoped_ptr<views::BubbleBorder> border(new views::BubbleBorder(
-        views::BubbleBorder::FLOAT, kShadowType, SK_ColorRED));
+        views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor));
     border->set_use_theme_background_color(true);
     frame->SetBubbleBorder(border.Pass());
     return frame;

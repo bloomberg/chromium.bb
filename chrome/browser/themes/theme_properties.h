@@ -146,7 +146,7 @@ class ThemeProperties {
   static color_utils::HSL GetDefaultTint(int id);
 
   // Returns the default color for the given color |id| COLOR_* enum value.
-  // Returns SK_ColorRED if |id| is invalid.
+  // Returns gfx::kPlaceholderColor if |id| is invalid.
   static SkColor GetDefaultColor(int id);
 
  private:
