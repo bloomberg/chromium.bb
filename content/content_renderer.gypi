@@ -628,6 +628,8 @@
     'private_renderer_webrtc_sources': [
       'renderer/media/audio_repetition_detector.cc',
       'renderer/media/audio_repetition_detector.h',
+      'renderer/media/audio_track_recorder.cc',
+      'renderer/media/audio_track_recorder.h',
       'renderer/media/media_recorder_handler.cc',
       'renderer/media/media_recorder_handler.h',
       'renderer/media/media_stream.cc',
@@ -800,6 +802,8 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
+        'renderer/media/audio_track_recorder.cc',
+        'renderer/media/audio_track_recorder.h',
         'renderer/media/media_recorder_handler.cc',
         'renderer/media/media_recorder_handler.h',
         'renderer/media/video_track_recorder.cc',
