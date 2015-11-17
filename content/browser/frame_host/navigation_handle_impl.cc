@@ -99,6 +99,10 @@ bool NavigationHandleImpl::IsInMainFrame() {
   return frame_tree_node_->IsMainFrame();
 }
 
+const base::TimeTicks& NavigationHandleImpl::NavigationStart() {
+  return navigation_start_;
+}
+
 bool NavigationHandleImpl::IsPost() {
   CHECK_NE(INITIAL, state_)
       << "This accessor should not be called before the request is started.";

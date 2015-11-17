@@ -70,6 +70,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // NavigationHandle implementation:
   const GURL& GetURL() override;
   bool IsInMainFrame() override;
+  const base::TimeTicks& NavigationStart() override;
   bool IsPost() override;
   const Referrer& GetReferrer() override;
   bool HasUserGesture() override;
@@ -94,11 +95,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_method_is_post,
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
-
-  // The time the navigation started, recorded either in the renderer or browser
-  // process. Corresponds to Navigation Timing API.
-  // TODO(csharrison): Add this to the public class and mark this override.
-  const base::TimeTicks& navigation_start() { return navigation_start_; }
 
   NavigatorDelegate* GetDelegate() const;
 

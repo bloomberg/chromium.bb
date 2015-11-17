@@ -302,8 +302,7 @@ TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
   base::TimeDelta first_layout = base::TimeDelta::FromSeconds(2);
 
   PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF());
+  timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_layout = first_layout;
 
   content::WebContentsTester* web_contents_tester =
@@ -356,11 +355,11 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
 
 TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
   PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF() - 1);
-
-  timing.response_start = base::TimeDelta::FromMilliseconds(1);
-  timing.dom_content_loaded_event_start = base::TimeDelta::FromMilliseconds(1);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  // Set these events at 1 microsecond so they are definitely occur before we
+  // background the tab later in the test.
+  timing.response_start = base::TimeDelta::FromMicroseconds(1);
+  timing.dom_content_loaded_event_start = base::TimeDelta::FromMicroseconds(1);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -402,7 +401,9 @@ TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
+  // Set this event at 1 microsecond so it occurs before we foreground later in
+  // the test.
+  base::TimeDelta first_layout = base::TimeDelta::FromMicroseconds(1);
 
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -430,7 +431,7 @@ TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
       main_rfh());
   rfh_tester->SimulateNavigationStop();
 
-  // Navigate again to see if the timing updated for a subframe message.
+  // Navigate again to see if the timing updated for the foregrounded load.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
@@ -578,9 +579,7 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulFirstLayoutInForegroundEvent) {
 TEST_F(MetricsWebContentsObserverTest,
        SuccessfulFirstLayoutInBackgroundEvent) {
   PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSecondsF() - 1);
-
+  timing.navigation_start = base::Time::FromDoubleT(1);
   timing.first_layout = base::TimeDelta::FromSeconds(30);
 
   content::WebContentsTester* web_contents_tester =

@@ -77,11 +77,6 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   return true;
 }
 
-base::Time WallTimeFromTimeTicks(const base::TimeTicks& time) {
-  return base::Time::FromDoubleT(
-      (time - base::TimeTicks::UnixEpoch()).InSecondsF());
-}
-
 void RecordInternalError(InternalErrorLoadEvent event) {
   UMA_HISTOGRAM_ENUMERATION(kErrorEvents, event, ERR_LAST_ENTRY);
 }
@@ -122,8 +117,10 @@ uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
     PageLoadMetricsEmbedderInterface* embedder_interface,
+    content::NavigationHandle* navigation_handle,
     base::ObserverList<PageLoadMetricsObserver, true>* observers)
     : has_commit_(false),
+      navigation_start_(navigation_handle->NavigationStart()),
       started_in_foreground_(in_foreground),
       embedder_interface_(embedder_interface),
       observers_(observers) {}
@@ -187,14 +184,10 @@ bool PageLoadTracker::HasBackgrounded() {
 PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   base::TimeDelta first_background_time;
   base::TimeDelta first_foreground_time;
-  if (!background_time_.is_null() && started_in_foreground_) {
-    first_background_time =
-        WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
-  }
-  if (!foreground_time_.is_null() && !started_in_foreground_) {
-    first_foreground_time =
-        WallTimeFromTimeTicks(foreground_time_) - timing_.navigation_start;
-  }
+  if (!background_time_.is_null() && started_in_foreground_)
+    first_background_time = background_time_ - navigation_start_;
+  if (!foreground_time_.is_null() && !started_in_foreground_)
+    first_foreground_time = foreground_time_ - navigation_start_;
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
                            started_in_foreground_);
 }
@@ -218,9 +211,8 @@ const GURL& PageLoadTracker::GetCommittedURL() {
 //    backgrounded.
 base::TimeDelta PageLoadTracker::GetBackgroundDelta() {
   if (started_in_foreground_) {
-    if (background_time_.is_null())
-      return base::TimeDelta::Max();
-    return WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
+    return background_time_.is_null() ? base::TimeDelta::Max()
+                                      : background_time_ - navigation_start_;
   }
   return base::TimeDelta();
 }
@@ -306,9 +298,8 @@ void PageLoadTracker::RecordTimingHistograms() {
   if (!background_time_.is_null()) {
     PAGE_LOAD_HISTOGRAM(kHistogramFirstBackground, background_delta);
   } else if (!foreground_time_.is_null()) {
-    PAGE_LOAD_HISTOGRAM(
-        kHistogramFirstForeground,
-        WallTimeFromTimeTicks(foreground_time_) - timing_.navigation_start);
+    PAGE_LOAD_HISTOGRAM(kHistogramFirstForeground,
+                        foreground_time_ - navigation_start_);
   }
 }
 
@@ -427,10 +418,10 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // Passing raw pointers to observers_ and embedder_interface_ is safe because
   // the MetricsWebContentsObserver owns them both list and they are torn down
   // after the PageLoadTracker.
-  provisional_loads_.insert(
-      navigation_handle,
-      make_scoped_ptr(new PageLoadTracker(
-          in_foreground_, embedder_interface_.get(), &observers_)));
+  provisional_loads_.insert(navigation_handle,
+                            make_scoped_ptr(new PageLoadTracker(
+                                in_foreground_, embedder_interface_.get(),
+                                navigation_handle, &observers_)));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(

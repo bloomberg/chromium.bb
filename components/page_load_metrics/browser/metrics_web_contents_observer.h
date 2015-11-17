@@ -195,6 +195,7 @@ class PageLoadTracker {
   // outlives this class.
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
+                  content::NavigationHandle* navigation_handle,
                   base::ObserverList<PageLoadMetricsObserver, true>* observers);
   ~PageLoadTracker();
   void Redirect(content::NavigationHandle* navigation_handle);
@@ -218,6 +219,9 @@ class PageLoadTracker {
   void RecordRappor();
 
   bool has_commit_;
+
+  // The navigation start in TimeTicks, not the wall time reported by Blink.
+  const base::TimeTicks navigation_start_;
 
   // We record separate metrics for events that occur after a background,
   // because metrics like layout/paint are delayed artificially
