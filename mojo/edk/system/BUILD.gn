@@ -17,14 +17,6 @@ config("system_config") {
   ]
 }
 
-mojom("master") {
-  sources = [
-    "master.mojom",
-  ]
-
-  with_environment = false
-}
-
 static_library("system") {
   # TODO(use_chrome_edk): this should be a component to match third_party,
   # but since third_party includes it, we either make it a static library
@@ -56,9 +48,6 @@ static_library("system") {
     "handle_table.h",
     "mapping_table.cc",
     "mapping_table.h",
-
-    #"master_impl.cc",
-    #"master_impl.h",
     "message_in_transit.cc",
     "message_in_transit.h",
     "message_in_transit_queue.cc",
@@ -100,8 +89,6 @@ static_library("system") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-
-    #":master",
   ]
 
   if (is_win) {
@@ -152,9 +139,6 @@ test("mojo_system_unittests2") {
     "core_unittest.cc",
     "data_pipe_unittest.cc",
     "dispatcher_unittest.cc",
-
-    #"master_impl_unittest.cc",
-
     "message_in_transit_queue_unittest.cc",
     "message_in_transit_test_utils.cc",
     "message_in_transit_test_utils.h",
