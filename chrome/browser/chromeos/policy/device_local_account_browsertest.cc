@@ -121,10 +121,12 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/base/url_util.h"
@@ -371,13 +373,6 @@ void DictionaryPrefValueWaiter::QuitLoopIfExpectedValueFound() {
       actual_value == expected_value_) {
     run_loop_.Quit();
   }
-}
-
-bool DoesInstallSuccessReferToId(const std::string& id,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  return content::Details<const extensions::InstalledExtensionInfo>(details)->
-      extension->id() == id;
 }
 
 bool DoesInstallFailureReferToId(const std::string& id,
@@ -811,6 +806,71 @@ static bool IsKnownUser(const AccountId& account_id) {
   return user_manager::UserManager::Get()->IsKnownUser(account_id);
 }
 
+// Helper that listen extension installation when new profile is created.
+class ExtensionInstallObserver : public content::NotificationObserver,
+                                 public extensions::ExtensionRegistryObserver {
+ public:
+  explicit ExtensionInstallObserver(const std::string& extension_id)
+      : registry_(nullptr),
+        waiting_extension_id_(extension_id),
+        observed_(false) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
+  }
+
+  ~ExtensionInstallObserver() override {
+    if (registry_ != nullptr)
+      registry_->RemoveObserver(this);
+  }
+
+  // Wait until an extension with |extension_id| is installed.
+  void Wait() {
+    if (!observed_)
+      run_loop_.Run();
+  }
+
+ private:
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
+    if (waiting_extension_id_ == extension->id()) {
+      observed_ = true;
+      run_loop_.Quit();
+    }
+  }
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+
+    Profile* profile = content::Source<Profile>(source).ptr();
+    registry_ = extensions::ExtensionRegistry::Get(profile);
+
+    // Check if extension is already installed with newly created profile.
+    if (registry_->GetInstalledExtension(waiting_extension_id_)) {
+      observed_ = true;
+      run_loop_.Quit();
+      return;
+    }
+
+    // Start listening for extension installation.
+    registry_->AddObserver(this);
+  }
+
+  extensions::ExtensionRegistry* registry_;
+  base::RunLoop run_loop_;
+  content::NotificationRegistrar registrar_;
+  std::string waiting_extension_id_;
+  bool observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallObserver);
+};
+
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
@@ -1046,19 +1106,16 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   WaitForPolicy();
 
   // Start listening for app/extension installation results.
-  content::WindowedNotificationObserver hosted_app_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
+  ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
-
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
 
   // Wait for the hosted app installation to succeed and the extension
   // installation to fail (because hosted apps are whitelisted for use in
   // device-local accounts and extensions are not).
-  hosted_app_observer.Wait();
+  install_observer.Wait();
   extension_observer.Wait();
 
   // Verify that the hosted app was installed.
@@ -1127,9 +1184,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   WaitForPolicy();
 
   // Start listening for app/extension installation results.
-  content::WindowedNotificationObserver hosted_app_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
+  ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
@@ -1138,7 +1193,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Wait for the hosted app installation to succeed and the extension
   // installation to fail.
-  hosted_app_observer.Wait();
+  install_observer.Wait();
   extension_observer.Wait();
 
   // Verify that the hosted app was installed.
@@ -1258,9 +1313,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   WaitForPolicy();
 
   // Start listening for app/extension installation results.
-  content::WindowedNotificationObserver hosted_app_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
+  ExtensionInstallObserver install_observer(kHostedAppID);
   content::WindowedNotificationObserver extension_observer(
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
@@ -1270,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Wait for the hosted app installation to succeed and the extension
   // installation to fail (because hosted apps are whitelisted for use in
   // device-local accounts and extensions are not).
-  hosted_app_observer.Wait();
+  install_observer.Wait();
   extension_observer.Wait();
 
   // Verify that the extension was kept in the local cache.
@@ -2199,12 +2252,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   WaitForPolicy();
 
   // Observe the app installation after login.
-  content::WindowedNotificationObserver extension_observer(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      base::Bind(DoesInstallSuccessReferToId, kShowManagedStorageID));
+  ExtensionInstallObserver install_observer(kShowManagedStorageID);
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
   WaitForSessionStart();
-  extension_observer.Wait();
+  install_observer.Wait();
 
   // Verify that the app was installed.
   Profile* profile = GetProfileForTest();
