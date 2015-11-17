@@ -1483,6 +1483,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
   const char kSignature1[] = "11337937696949187602";
   const char kResponse1[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -1496,21 +1497,22 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
       " name=\"expiration_month\" type=\"text\" label=\"Expiration Date\"/>"
       "<field signature=\"4108155786\" name=\"expiration_year\" type=\"text\""
       " label=\"Expiration Year\"/></form></autofillquery>";
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  EXPECT_EQ(forms[0], queried_forms[0]);
   EXPECT_EQ(kResponse1, encoded_xml);
 
   // Add the same form, only one will be encoded, so EncodeQueryRequest() should
   // return the same data.
   forms.push_back(new FormStructure(form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  ASSERT_EQ(1U, queried_forms.size());
+  EXPECT_EQ(forms[0], queried_forms[0]);
   EXPECT_EQ(kResponse1, encoded_xml);
   // Add 5 address fields - this should be still a valid form.
   for (size_t i = 0; i < 5; ++i) {
@@ -1520,9 +1522,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   }
 
   forms.push_back(new FormStructure(form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
   const char kSignature2[] = "8308881815906226214";
@@ -1565,21 +1566,23 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   }
 
   forms.push_back(new FormStructure(malformed_form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
   EXPECT_EQ(kSignature2, encoded_signatures[1]);
+  ASSERT_EQ(2U, queried_forms.size());
+  EXPECT_EQ(forms[0], queried_forms[0]);
+  EXPECT_EQ(forms[2], queried_forms[1]);
   EXPECT_EQ(kResponse2, encoded_xml);
 
   // Check that we fail if there are only bad form(s).
   ScopedVector<FormStructure> bad_forms;
   bad_forms.push_back(new FormStructure(malformed_form));
-  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms.get(),
-                                                 &encoded_signatures,
-                                                 &encoded_xml));
+  EXPECT_FALSE(FormStructure::EncodeQueryRequest(
+      bad_forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   EXPECT_EQ(0U, encoded_signatures.size());
+  EXPECT_EQ(0U, queried_forms.size());
   EXPECT_EQ("", encoded_xml);
 }
 
@@ -2766,6 +2769,7 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
 
   const char kSignature[] = "18006745212084723782";
@@ -2776,11 +2780,11 @@ TEST_F(FormStructureTest, SkipFieldTest) {
       " label=\"username\"/>"
       "<field signature=\"420638584\" name=\"email\" type=\"text\"/>"
       "</form></autofillquery>";
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature, encoded_signatures[0]);
+  EXPECT_EQ(forms[0], queried_forms[0]);
   EXPECT_EQ(kResponse, encoded_xml);
 }
 
@@ -2809,6 +2813,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
 
   const char kRequest[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -2819,9 +2824,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
       " label=\"Enter your Email address\"/>"
       "<field signature=\"2051817934\" name=\"password\" type=\"password\""
       " label=\"Enter your Password\"/></form></autofillquery>";
-  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   EXPECT_EQ(kRequest, encoded_xml);
 }
 
@@ -2855,6 +2859,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
 
   const char kRequest[] =
@@ -2870,7 +2875,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
       "<field signature=\"2051817934\" name=\"password\" type=\"password\""
       " label=\"Enter your Password\"/></form></autofillquery>";
   EXPECT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_xml));
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   EXPECT_EQ(kRequest, encoded_xml);
 }
 
@@ -2897,6 +2902,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
 
   const char kSignature[] = "16416961345885087496";
@@ -2906,11 +2912,11 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
       "<field signature=\"239111655\" name=\"username\" type=\"text\""
       " label=\"username\"/><field signature=\"1318412689\" type=\"text\"/>"
       "</form></autofillquery>";
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature, encoded_signatures[0]);
+  EXPECT_EQ(forms[0], queried_forms[0]);
   EXPECT_EQ(kResponse, encoded_xml);
 }
 
@@ -2938,6 +2944,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
+  std::vector<FormStructure*> queried_forms;
   std::string encoded_xml;
 
   const char kSignature[] = "7635954436925888745";
@@ -2947,11 +2954,11 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
       "<field signature=\"239111655\"/>"
       "<field signature=\"3654076265\"/>"
       "</form></autofillquery>";
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &queried_forms, &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature, encoded_signatures[0]);
+  EXPECT_EQ(forms[0], queried_forms[0]);
   EXPECT_EQ(kResponse, encoded_xml);
 }
 

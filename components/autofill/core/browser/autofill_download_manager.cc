@@ -65,6 +65,7 @@ GURL GetRequestUrl(AutofillDownloadManager::RequestType request_type) {
 
 struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
+  std::vector<FormStructure*> queried_forms;
   RequestType request_type;
 };
 
@@ -107,6 +108,7 @@ bool AutofillDownloadManager::StartQueryRequest(
   std::string form_xml;
   FormRequestData request_data;
   if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
+                                         &request_data.queried_forms,
                                          &form_xml)) {
     return false;
   }
@@ -119,7 +121,8 @@ bool AutofillDownloadManager::StartQueryRequest(
     VLOG(1) << "AutofillDownloadManager: query request has been retrieved "
              << "from the cache, form signatures: "
              << GetCombinedSignature(request_data.form_signatures);
-    observer_->OnLoadedServerPredictions(query_data);
+    observer_->OnLoadedServerPredictions(query_data,
+                                         request_data.queried_forms);
     return true;
   }
 
@@ -341,7 +344,8 @@ void AutofillDownloadManager::OnURLFetchComplete(
              << " request has succeeded with response body: " << response_body;
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
-      observer_->OnLoadedServerPredictions(response_body);
+      observer_->OnLoadedServerPredictions(response_body,
+                                           it->second.queried_forms);
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;

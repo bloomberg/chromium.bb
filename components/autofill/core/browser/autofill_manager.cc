@@ -741,17 +741,18 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 }
 
 void AutofillManager::OnLoadedServerPredictions(
-    const std::string& response_xml) {
+    const std::string& response_xml,
+    const std::vector<FormStructure*>& queried_forms) {
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(response_xml, form_structures_.get(),
+  FormStructure::ParseQueryResponse(response_xml, queried_forms,
                                     client_->GetRapporService());
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
-  driver_->PropagateAutofillPredictions(form_structures_.get());
+  driver_->PropagateAutofillPredictions(queried_forms);
 
   // If the corresponding flag is set, annotate forms with the predicted types.
-  driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
+  driver_->SendAutofillTypePredictionsToRenderer(queried_forms);
 }
 
 void AutofillManager::OnUnmaskResponse(const UnmaskResponse& response) {

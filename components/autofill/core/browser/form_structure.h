@@ -69,13 +69,17 @@ class FormStructure {
   bool EncodeFieldAssignments(const ServerFieldTypeSet& available_field_types,
                               std::string* encoded_xml) const;
 
-  // Encodes the XML query request for the set of forms.
-  // All fields are returned in one XML. For example, there are three forms,
+  // Encodes the XML query request for the set of |forms| that are valid (see
+  // implementation for details on which forms are not included in the query).
+  // The forms and form signatures used in the Query request are output in
+  // |queried_forms| and |encoded_signatures|, respectively. All valid fields
+  // are encoded in |encoded_xml|. For example, there are three valid forms,
   // with 2, 4, and 3 fields. The returned XML would have type info for 9
   // fields, first two of which would be for the first form, next 4 for the
   // second, and the rest is for the third.
   static bool EncodeQueryRequest(const std::vector<FormStructure*>& forms,
                                  std::vector<std::string>* encoded_signatures,
+                                 std::vector<FormStructure*>* queried_forms,
                                  std::string* encoded_xml);
 
   // Parses the field types from the server query response. |forms| must be the
