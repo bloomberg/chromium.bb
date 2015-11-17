@@ -15,7 +15,7 @@ import android.view.MotionEvent;
  * showing/hiding UI elements). All methods are called on the main UI thread.
  */
 public interface TouchInputHandlerInterface {
-    // These constants must match those in the generated struct protoc::MouseEvent_MouseButton.
+    // These constants must match those in the generated struct protocol::MouseEvent_MouseButton.
     int BUTTON_UNDEFINED = 0;
     int BUTTON_LEFT = 1;
     int BUTTON_MIDDLE = 2;
@@ -52,4 +52,7 @@ public interface TouchInputHandlerInterface {
      * cancelled. After this method returns, the DesktopView will schedule a repaint.
      */
     void processAnimation();
+
+    /** Sets the underlying strategy to use when translating and forwarding local touch input. */
+    void setInputStrategy(InputStrategyInterface inputStrategy);
 }

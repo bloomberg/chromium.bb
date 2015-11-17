@@ -35,10 +35,13 @@ import org.chromium.chromoting.jni.JniInterface;
 /** GUI element that holds the drawing canvas. */
 public class DesktopView extends SurfaceView implements DesktopViewInterface,
         SurfaceHolder.Callback {
+    /** Used to define the animation feedback shown when a user touches the screen. */
+    public enum InputFeedbackType { NONE, SMALL_ANIMATION, LARGE_ANIMATION }
+
     private static final String TAG = "Chromoting";
 
     private final RenderData mRenderData;
-    private TouchInputHandlerInterface mInputHandler;
+    private final TouchInputHandlerInterface mInputHandler;
 
     /** The parent Desktop activity. */
     private Desktop mDesktop;
@@ -63,6 +66,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         private boolean mRunning = false;
 
+        /** Contains the size of the feedback animation for the most recent request. */
+        private float mFeedbackSizeInPixels;
+
         /** Lock to allow multithreaded access to {@link #mStartTime} and {@link #mRunning}. */
         private final Object mLock = new Object();
 
@@ -79,22 +85,29 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
          * call {@link #render(Canvas, float, float, float)} periodically whilst
          * {@link #isAnimationRunning()} returns true.
          */
-        public void startAnimation() {
+        public void startAnimation(InputFeedbackType feedbackType) {
+            if (feedbackType == InputFeedbackType.NONE) {
+                return;
+            }
+
             synchronized (mLock) {
                 mRunning = true;
                 mStartTime = SystemClock.uptimeMillis();
+                mFeedbackSizeInPixels = getInputFeedbackSizeInPixels(feedbackType);
             }
         }
 
-        public void render(Canvas canvas, float x, float y, float size) {
+        public void render(Canvas canvas, float x, float y, float scale) {
             // |progress| is 0 at the beginning, 1 at the end.
             float progress;
+            float size;
             synchronized (mLock) {
                 progress = (SystemClock.uptimeMillis() - mStartTime) / TOTAL_DURATION_MS;
                 if (progress >= 1) {
                     mRunning = false;
                     return;
                 }
+                size = mFeedbackSizeInPixels / scale;
             }
 
             // Animation grows from 0 to |size|, and goes from fully opaque to transparent for a
@@ -110,6 +123,21 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                     new int[] {transparentBlack, white, black, transparentBlack},
                     new float[] {0.0f, 0.8f, 0.9f, 1.0f}, Shader.TileMode.CLAMP));
             canvas.drawCircle(x, y, radius, mPaint);
+        }
+
+        private float getInputFeedbackSizeInPixels(InputFeedbackType feedbackType) {
+            switch (feedbackType) {
+                case SMALL_ANIMATION:
+                    return 40.0f;
+
+                case LARGE_ANIMATION:
+                    return 160.0f;
+
+                default:
+                    // Unreachable, but required by Google Java style and findbugs.
+                    assert false : "Unreached";
+                    return 0.0f;
+            }
         }
     }
 
@@ -131,6 +159,10 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         mRenderData = new RenderData();
         mInputHandler = new TouchInputHandler(this, context, mRenderData);
+        // TODO(joedow): Move this into a method which will choose the correct input strategy
+        //               based on host support and current toggle setting in the UI.
+        mInputHandler.setInputStrategy(new TrackpadInputStrategy(this, mRenderData));
+
         mRepaintPending = false;
 
         getHolder().addCallback(this);
@@ -221,7 +253,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             synchronized (mRenderData) {
                 scaleFactor = mRenderData.transform.mapRadius(1);
             }
-            mFeedbackAnimator.render(canvas, x, y, 40 / scaleFactor);
+            mFeedbackAnimator.render(canvas, x, y, scaleFactor);
         }
 
         Bitmap cursorBitmap = JniInterface.getCursorBitmap();
@@ -327,43 +359,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     @Override
-    public void injectMouseEvent(int x, int y, int button, boolean pressed) {
-        boolean cursorMoved = false;
-        synchronized (mRenderData) {
-            // Test if the cursor actually moved, which requires repainting the cursor. This
-            // requires that the TouchInputHandler doesn't mutate |mRenderData.cursorPosition|
-            // directly.
-            if (x != mRenderData.cursorPosition.x) {
-                mRenderData.cursorPosition.x = x;
-                cursorMoved = true;
-            }
-            if (y != mRenderData.cursorPosition.y) {
-                mRenderData.cursorPosition.y = y;
-                cursorMoved = true;
-            }
-        }
-
-        if (button == TouchInputHandler.BUTTON_UNDEFINED && !cursorMoved) {
-            // No need to inject anything or repaint.
-            return;
-        }
-
-        JniInterface.sendMouseEvent(x, y, button, pressed);
-        if (cursorMoved) {
-            // TODO(lambroslambrou): Optimize this by only repainting the affected areas.
+    public void showInputFeedback(InputFeedbackType feedbackToShow) {
+        if (feedbackToShow != InputFeedbackType.NONE) {
+            mFeedbackAnimator.startAnimation(feedbackToShow);
             requestRepaint();
         }
-    }
-
-    @Override
-    public void injectMouseWheelDeltaEvent(int deltaX, int deltaY) {
-        JniInterface.sendMouseWheelEvent(deltaX, deltaY);
-    }
-
-    @Override
-    public void showLongPressFeedback() {
-        mFeedbackAnimator.startAnimation();
-        requestRepaint();
     }
 
     @Override
