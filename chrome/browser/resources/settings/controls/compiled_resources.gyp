@@ -38,6 +38,8 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          '../prefs/pref_util.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'

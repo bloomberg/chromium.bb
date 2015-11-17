@@ -20,52 +20,38 @@ Polymer({
   properties: {
     /**
      * The preference object to control.
-     * @type {chrome.settingsPrivate.PrefObject|undefined}
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
      */
     pref: {
       type: Object,
       notify: true,
-      observer: 'prefChanged_'
     },
 
     /**
-     * IronSelectableBehavior selected attribute
+     * IronSelectableBehavior selected attribute.
      */
     selected: {
       type: String,
+      notify: true,
       observer: 'selectedChanged_'
     },
   },
 
+  observers: [
+    'prefChanged_(pref.*)',
+  ],
+
   /** @private */
   prefChanged_: function() {
-    if (!this.pref)
-      return;
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER ||
-        this.pref.type == chrome.settingsPrivate.PrefType.BOOLEAN) {
-      this.selected = this.pref.value.toString();
-    } else {
-      assert(this.pref.type != chrome.settingsPrivate.PrefType.LIST);
-      this.selected = /** @type {string} */(this.pref.value);
-    }
+    this.selected = Settings.PrefUtil.prefToString(
+        /** @type {!chrome.settingsPrivate.PrefObject} */(this.pref));
   },
 
   /** @private */
-  selectedChanged_: function() {
+  selectedChanged_: function(selected) {
     if (!this.pref)
       return;
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
-      var n = parseInt(this.selected, 10);
-      if (isNaN(n)) {
-        console.error('Bad selected name for numerical pref: ' + this.selected);
-        return;
-      }
-      this.set('pref.value', n);
-    } else if (this.pref.type == chrome.settingsPrivate.PrefType.BOOLEAN) {
-      this.set('pref.value', this.selected == 'true');
-    } else {
-      assert(this.pref.type != chrome.settingsPrivate.PrefType.LIST);
-      this.set('pref.value', this.selected);
-    }
+    this.set('pref.value',
+             Settings.PrefUtil.stringToPrefValue(selected, this.pref));
   },
 });

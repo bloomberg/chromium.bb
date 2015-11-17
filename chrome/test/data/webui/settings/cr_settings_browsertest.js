@@ -29,6 +29,7 @@ CrSettingsBrowserTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'checkbox_tests.js',
+    'pref_util_tests.js',
     'prefs_test_cases.js',
     'prefs_tests.js',
   ]),
@@ -48,6 +49,7 @@ GEN('#endif');
 TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   // Register mocha tests for each element.
   settings_checkbox.registerTests();
+  settings_prefUtil.registerTests();
   settings_prefs.registerTests();
 
   // Run all registered tests.
