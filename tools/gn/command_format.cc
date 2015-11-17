@@ -128,8 +128,11 @@ class Printer {
   // Flag assignments to sources, deps, etc. to make their RHSs multiline.
   void AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop);
 
-  // Alphabetically a list on the RHS if the LHS is 'sources'.
-  void SortIfSources(const BinaryOpNode* binop);
+  // Sort a list on the RHS if the LHS is 'sources', 'deps' or 'public_deps'.
+  // The 'sources' are sorted alphabetically while the 'deps' and 'public_deps'
+  // are sorted putting first the relative targets and then the global ones
+  // (both sorted alphabetically).
+  void SortIfSourcesOrDeps(const BinaryOpNode* binop);
 
   // Heuristics to decide if there should be a blank line added between two
   // items. For various "small" items, it doesn't look nice if there's too much
@@ -307,19 +310,19 @@ void Printer::AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop) {
   }
 }
 
-void Printer::SortIfSources(const BinaryOpNode* binop) {
+void Printer::SortIfSourcesOrDeps(const BinaryOpNode* binop) {
   const IdentifierNode* ident = binop->left()->AsIdentifier();
   const ListNode* list = binop->right()->AsList();
-  // TODO(scottmg): Sort more than 'sources'?
   if ((binop->op().value() == "=" || binop->op().value() == "+=" ||
        binop->op().value() == "-=") &&
       ident && list) {
     const base::StringPiece lhs = ident->value().value();
     if (lhs == "sources")
       const_cast<ListNode*>(list)->SortAsStringsList();
+    else if (lhs == "deps" || lhs == "public_deps")
+      const_cast<ListNode*>(list)->SortAsDepsList();
   }
 }
-
 
 bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
                                           const ParseNode* b) {
@@ -458,7 +461,7 @@ int Printer::Expr(const ParseNode* root,
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
     AnnotatePreferredMultilineAssignment(binop);
 
-    SortIfSources(binop);
+    SortIfSourcesOrDeps(binop);
 
     Precedence prec = precedence_[binop->op().value()];
 

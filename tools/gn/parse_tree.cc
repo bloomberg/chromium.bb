@@ -5,6 +5,7 @@
 #include "tools/gn/parse_tree.h"
 
 #include <string>
+#include <tuple>
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,6 +15,20 @@
 #include "tools/gn/string_utils.h"
 
 namespace {
+
+std::tuple<base::StringPiece, base::StringPiece> SplitAtFirst(
+    base::StringPiece str,
+    char c) {
+  if (!str.starts_with("\"") || !str.ends_with("\""))
+    return std::make_tuple(str, base::StringPiece());
+
+  str = str.substr(1, str.length() - 2);
+  size_t index_of_first = str.find(c);
+  return std::make_tuple(str.substr(0, index_of_first),
+                         index_of_first != base::StringPiece::npos
+                             ? str.substr(index_of_first + 1)
+                             : base::StringPiece());
+}
 
 std::string IndentFor(int value) {
   return std::string(value, ' ');
@@ -502,10 +517,21 @@ void ListNode::Print(std::ostream& out, int indent) const {
     end_->Print(out, indent + 1);
 }
 
-void ListNode::SortAsStringsList() {
-  // Sorts alphabetically. Partitions first on BlockCommentNodes and sorts each
-  // partition separately.
+template <typename Comparator>
+void ListNode::SortList(Comparator comparator) {
+  // Partitions first on BlockCommentNodes and sorts each partition separately.
   for (auto sr : GetSortRanges()) {
+    bool skip = false;
+    for (size_t i = sr.begin; i != sr.end; ++i) {
+      // Bails out if any of the nodes are unsupported.
+      const ParseNode* node = contents_[i];
+      if (!node->AsLiteral() && !node->AsIdentifier() && !node->AsAccessor()) {
+        skip = true;
+        continue;
+      }
+    }
+    if (skip)
+      continue;
     // Save the original line number so that we can re-assign ranges. We assume
     // they're contiguous lines because GetSortRanges() does so above. We need
     // to re-assign these line numbers primiarily because `gn format` uses them
@@ -514,11 +540,7 @@ void ListNode::SortAsStringsList() {
     int start_line = contents_[sr.begin]->GetRange().begin().line_number();
     const ParseNode* original_first = contents_[sr.begin];
     std::sort(contents_.begin() + sr.begin, contents_.begin() + sr.end,
-              [](const ParseNode* a, const ParseNode* b) {
-                base::StringPiece astr = GetStringRepresentation(a);
-                base::StringPiece bstr = GetStringRepresentation(b);
-                return astr < bstr;
-              });
+              comparator);
     // If the beginning of the range had before comments, and the first node
     // moved during the sort, then move its comments to the new head of the
     // range.
@@ -551,6 +573,25 @@ void ListNode::SortAsStringsList() {
       prev = node;
     }
   }
+}
+
+void ListNode::SortAsStringsList() {
+  // Sorts alphabetically.
+  SortList([](const ParseNode* a, const ParseNode* b) {
+    base::StringPiece astr = GetStringRepresentation(a);
+    base::StringPiece bstr = GetStringRepresentation(b);
+    return astr < bstr;
+  });
+}
+
+void ListNode::SortAsDepsList() {
+  // Sorts first relative targets, then absolute, each group is sorted
+  // alphabetically.
+  SortList([](const ParseNode* a, const ParseNode* b) {
+    base::StringPiece astr = GetStringRepresentation(a);
+    base::StringPiece bstr = GetStringRepresentation(b);
+    return SplitAtFirst(astr, ':') < SplitAtFirst(bstr, ':');
+  });
 }
 
 // Breaks the ParseNodes of |contents| up by ranges that should be separately

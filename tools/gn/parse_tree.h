@@ -372,6 +372,7 @@ class ListNode : public ParseNode {
   const std::vector<const ParseNode*>& contents() const { return contents_; }
 
   void SortAsStringsList();
+  void SortAsDepsList();
 
   // During formatting, do we want this list to always be multliline? This is
   // used to make assignments to deps, sources, etc. always be multiline lists,
@@ -390,6 +391,9 @@ class ListNode : public ParseNode {
   std::vector<SortRange> GetSortRanges() const;
 
  private:
+  template <typename Comparator>
+  void SortList(Comparator comparator);
+
   // Tokens corresponding to the [ and ]. The end token is stored in inside an
   // custom parse node so that it can have comments hung off of it.
   Token begin_token_;

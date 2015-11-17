@@ -1,0 +1,18 @@
+source_set("test") {
+  deps = [
+    "//c",
+    "//a",
+    ":b",
+    "../d",
+  ]
+
+  public_deps = []
+  if (condition) {
+    public_deps += [
+      "//y",
+      "//w",
+      ":x",
+      "../z",
+    ]
+  }
+}
