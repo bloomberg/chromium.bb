@@ -28,25 +28,24 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebNonCopyable.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace blink {
 
 class GeolocationController;
+class GeolocationControllerPrivate;
 class WebGeolocationPosition;
 class WebGeolocationError;
 
 class WebGeolocationController : public WebNonCopyable {
 public:
+    ~WebGeolocationController() { reset(); }
+
     BLINK_EXPORT void positionChanged(const WebGeolocationPosition&);
     BLINK_EXPORT void errorOccurred(const WebGeolocationError&);
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationController(GeolocationController* c)
-        : m_private(c)
-    {
-    }
-
-    GeolocationController* controller() const { return m_private; }
+    WebGeolocationController(GeolocationController*);
 #endif
 
 private:
@@ -54,9 +53,9 @@ private:
     // can be created by the consumers of Chromium WebKit.
     WebGeolocationController();
 
-    // This bare pointer is owned and kept alive by the frame of the
-    // WebLocalFrame which creates this controller object.
-    GeolocationController* m_private;
+    BLINK_EXPORT void reset();
+
+    WebPrivatePtr<GeolocationControllerPrivate> m_private;
 };
 
 } // namespace blink
