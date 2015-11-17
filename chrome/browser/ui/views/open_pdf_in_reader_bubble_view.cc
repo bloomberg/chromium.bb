@@ -44,7 +44,6 @@ void OpenPDFInReaderBubbleView::Init() {
 
   base::string16 accept_text = model_->GetAcceptButtonText();
   open_in_reader_link_ = new views::Link(accept_text);
-  open_in_reader_link_->SetEnabled(true);
   open_in_reader_link_->set_listener(this);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(open_in_reader_link_);
