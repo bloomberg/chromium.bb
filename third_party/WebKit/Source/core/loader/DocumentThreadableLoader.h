@@ -147,9 +147,10 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         StoredCredentials effectiveAllowCredentials() const;
 
         SecurityOrigin* securityOrigin() const;
+        Document& document() const;
 
         ThreadableLoaderClient* m_client;
-        Document& m_document;
+        RawPtrWillBeWeakPersistent<Document> m_document;
 
         const ThreadableLoaderOptions m_options;
         // Some items may be overridden by m_forceDoNotAllowStoredCredentials
