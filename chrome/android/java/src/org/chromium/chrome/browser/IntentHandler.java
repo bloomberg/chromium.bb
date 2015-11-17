@@ -442,7 +442,7 @@ public class IntentHandler {
         return url;
     }
 
-    boolean handleWebSearchIntent(Intent intent) {
+    public boolean handleWebSearchIntent(Intent intent) {
         if (intent == null) return false;
 
         String query = null;

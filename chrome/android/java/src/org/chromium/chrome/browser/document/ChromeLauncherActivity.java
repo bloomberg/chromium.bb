@@ -13,6 +13,7 @@ import android.app.ActivityManager.RecentTaskInfo;
 import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -159,13 +160,23 @@ public class ChromeLauncherActivity extends Activity
 
         mIsCustomTabIntent = isCustomTabIntent();
 
+        Intent intent = getIntent();
         // Check if a LIVE WebappActivity has to be brought back to the foreground.  We can't
         // check for a dead WebappActivity because we don't have that information without a global
         // TabManager.  If that ever lands, code to bring back any Tab could be consolidated
         // here instead of being spread between ChromeTabbedActivity and ChromeLauncherActivity.
         // https://crbug.com/443772, https://crbug.com/522918
-        int tabId = IntentUtils.safeGetIntExtra(getIntent(),
+        int tabId = IntentUtils.safeGetIntExtra(intent,
                 TabOpenType.BRING_TAB_TO_FRONT.name(), Tab.INVALID_TAB_ID);
+        boolean incognito = intent.getBooleanExtra(
+                IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
+        String url = IntentHandler.getUrlFromIntent(intent);
+        if (url == null && tabId == Tab.INVALID_TAB_ID
+                && !incognito && mIntentHandler.handleWebSearchIntent(intent)) {
+            finish();
+            return;
+        }
+
         if (WebappLauncherActivity.bringWebappToFront(tabId)) {
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
@@ -173,7 +184,7 @@ public class ChromeLauncherActivity extends Activity
 
         // The notification settings cog on the flipped side of Notifications and in the Android
         // Settings "App Notifications" view will open us with a specific category.
-        if (getIntent().hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
+        if (intent.hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
             NotificationUIManager.launchNotificationPreferences(this, getIntent());
             finish();
             return;
@@ -187,7 +198,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // Check if we're just closing all of the Incognito tabs.
-        if (TextUtils.equals(getIntent().getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
+        if (TextUtils.equals(intent.getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
             ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
@@ -252,7 +263,9 @@ public class ChromeLauncherActivity extends Activity
 
     @Override
     public void processWebSearchIntent(String query) {
-        assert false;
+        Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+        searchIntent.putExtra(SearchManager.QUERY, query);
+        startActivity(searchIntent);
     }
 
     @Override

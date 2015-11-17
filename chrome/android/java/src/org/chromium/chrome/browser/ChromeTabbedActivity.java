@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -721,9 +720,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         @Override
         public void processWebSearchIntent(String query) {
-            Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
-            searchIntent.putExtra(SearchManager.QUERY, query);
-            startActivity(searchIntent);
+            assert false;
         }
     }
 
