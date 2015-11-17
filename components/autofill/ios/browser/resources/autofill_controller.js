@@ -2021,22 +2021,21 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
     __gCrWeb.autofill.getOptionStringsFromElement(element, field);
   }
 
-  if (!extractMask & __gCrWeb.autofill.EXTRACT_MASK_VALUE) {
+  if (!(extractMask & __gCrWeb.autofill.EXTRACT_MASK_VALUE)) {
     return;
   }
 
   var value = __gCrWeb.autofill.value(element);
 
-  if (!__gCrWeb.autofill.isAutofillableInputElement(element)) {
+  if (__gCrWeb.autofill.isSelectElement(element) &&
+      (extractMask & __gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT)) {
     // Convert the |select_element| value to text if requested.
-    if (extractMask & __gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT) {
-      var options = element.options;
-      for (var index = 0; index < options.length; ++index) {
-        var optionElement = options[index];
-        if (__gCrWeb.autofill.value(optionElement) === value) {
-          value = optionElement.text;
-          break;
-        }
+    var options = element.options;
+    for (var index = 0; index < options.length; ++index) {
+      var optionElement = options[index];
+      if (__gCrWeb.autofill.value(optionElement) === value) {
+        value = optionElement.text;
+        break;
       }
     }
   }
