@@ -1925,6 +1925,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
     Disabled
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_PROHIBITED" desc="Message displayed when a type of network connection is prohibited">
+    Disabled by administrator
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
     Join other...
   </message>

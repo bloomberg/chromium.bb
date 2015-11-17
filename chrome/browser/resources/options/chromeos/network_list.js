@@ -1283,6 +1283,9 @@ cr.define('options.network', function() {
 
       if (wifiDeviceState_ == 'Enabled')
         loadData_('WiFi', networkStates);
+      else if (wifiDeviceState_ ==
+          chrome.networkingPrivate.DeviceStateType.PROHIBITED)
+        setTechnologiesProhibited_(chrome.networkingPrivate.NetworkType.WI_FI);
       else
         addEnableNetworkButton_(chrome.networkingPrivate.NetworkType.WI_FI);
 
@@ -1292,6 +1295,10 @@ cr.define('options.network', function() {
             !isCellularSimAbsent(cellularDevice_) &&
             !isCellularSimLocked(cellularDevice_)) {
           loadData_('Cellular', networkStates);
+        } else if (cellularDevice_.State ==
+            chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
+          setTechnologiesProhibited_(
+              chrome.networkingPrivate.NetworkType.CELLULAR);
         } else {
           addEnableNetworkButton_(
               chrome.networkingPrivate.NetworkType.CELLULAR);
@@ -1302,10 +1309,15 @@ cr.define('options.network', function() {
 
       // Only show wimax control if available. Uses cellular icons.
       if (wimaxDeviceState_) {
-        if (wimaxDeviceState_ == 'Enabled')
+        if (wimaxDeviceState_ == 'Enabled') {
           loadData_('WiMAX', networkStates);
-        else
+        } else if (wimaxDeviceState_ ==
+            chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
+          setTechnologiesProhibited_(
+              chrome.networkingPrivate.NetworkType.WI_MAX);
+        } else {
           addEnableNetworkButton_(chrome.networkingPrivate.NetworkType.WI_MAX);
+        }
       } else {
         this.deleteItem('WiMAX');
       }
@@ -1343,6 +1355,24 @@ cr.define('options.network', function() {
                               subtitle: subtitle,
                               iconType: type,
                               command: enableNetwork});
+  }
+
+  /**
+   * Replaces a network menu with a button with nothing to do.
+   * @param {!chrome.networkingPrivate.NetworkType} type
+   * @private
+   */
+  function setTechnologiesProhibited_(type) {
+    var subtitle = loadTimeData.getString('networkProhibited');
+    var doNothingButRemoveClickShadow = function() {
+      this.removeAttribute('lead');
+      this.removeAttribute('selected');
+      this.parentNode.removeAttribute('has-element-focus');
+    };
+    $('network-list').update({key: type,
+                              subtitle: subtitle,
+                              iconType: type,
+                              command: doNothingButRemoveClickShadow});
   }
 
   /**

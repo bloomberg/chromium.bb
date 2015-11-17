@@ -143,6 +143,11 @@ bool ShillPropertyHandler::IsTechnologyEnabling(
   return enabling_technologies_.count(technology) != 0;
 }
 
+bool ShillPropertyHandler::IsTechnologyProhibited(
+    const std::string& technology) const {
+  return prohibited_technologies_.count(technology) != 0;
+}
+
 bool ShillPropertyHandler::IsTechnologyUninitialized(
     const std::string& technology) const {
   return uninitialized_technologies_.count(technology) != 0;

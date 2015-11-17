@@ -114,6 +114,8 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
     state = TECHNOLOGY_ENABLED;
   else if (shill_property_handler_->IsTechnologyEnabling(technology))
     state = TECHNOLOGY_ENABLING;
+  else if (shill_property_handler_->IsTechnologyProhibited(technology))
+    state = TECHNOLOGY_PROHIBITED;
   else if (shill_property_handler_->IsTechnologyUninitialized(technology))
     state = TECHNOLOGY_UNINITIALIZED;
   else if (shill_property_handler_->IsTechnologyAvailable(technology))

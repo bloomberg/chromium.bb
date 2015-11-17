@@ -389,6 +389,8 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
   CreateSpecialRow(IDS_ASH_STATUS_TRAY_NETWORK, this);
 
   if (list_type_ != LIST_TYPE_VPN) {
+    NetworkStateHandler* network_state_handler =
+        NetworkHandler::Get()->network_state_handler();
     button_wifi_ = new TrayPopupHeaderButton(
         this, IDR_AURA_UBER_TRAY_WIFI_ENABLED, IDR_AURA_UBER_TRAY_WIFI_DISABLED,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
@@ -398,6 +400,12 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
     button_wifi_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
     footer()->AddButton(button_wifi_);
+    if (network_state_handler->IsTechnologyProhibited(
+            NetworkTypePattern::WiFi())) {
+      button_wifi_->SetState(views::Button::STATE_DISABLED);
+      button_wifi_->SetToggledTooltipText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
+    }
 
     button_mobile_ =
         new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
@@ -409,6 +417,12 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_MOBILE));
     button_mobile_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
+    if (network_state_handler->IsTechnologyProhibited(
+            NetworkTypePattern::Cellular())) {
+      button_mobile_->SetState(views::Button::STATE_DISABLED);
+      button_mobile_->SetToggledTooltipText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
+    }
     footer()->AddButton(button_mobile_);
   }
 
@@ -448,6 +462,12 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
 
     turn_on_wifi_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
+    if (NetworkHandler::Get()->network_state_handler()->IsTechnologyProhibited(
+            NetworkTypePattern::WiFi())) {
+      turn_on_wifi_->SetState(views::Button::STATE_DISABLED);
+      turn_on_wifi_->SetTooltipText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
+    }
     bottom_row->AddChildView(turn_on_wifi_);
 
     other_mobile_ = new TrayPopupLabelButton(

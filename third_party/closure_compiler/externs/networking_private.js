@@ -58,6 +58,7 @@ chrome.networkingPrivate.DeviceStateType = {
   DISABLED: 'Disabled',
   ENABLING: 'Enabling',
   ENABLED: 'Enabled',
+  PROHIBITED: 'Prohibited',
 };
 
 /**

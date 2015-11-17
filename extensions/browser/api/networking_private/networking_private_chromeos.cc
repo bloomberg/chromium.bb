@@ -121,6 +121,9 @@ void AppendDeviceState(
     case NetworkStateHandler::TECHNOLOGY_ENABLED:
       state = private_api::DEVICE_STATE_TYPE_ENABLED;
       break;
+    case NetworkStateHandler::TECHNOLOGY_PROHIBITED:
+      state = private_api::DEVICE_STATE_TYPE_PROHIBITED;
+      break;
   }
   DCHECK_NE(private_api::DEVICE_STATE_TYPE_NONE, state);
   scoped_ptr<private_api::DeviceStateProperties> properties(

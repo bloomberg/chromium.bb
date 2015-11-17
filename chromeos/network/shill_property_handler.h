@@ -114,6 +114,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   bool IsTechnologyAvailable(const std::string& technology) const;
   bool IsTechnologyEnabled(const std::string& technology) const;
   bool IsTechnologyEnabling(const std::string& technology) const;
+  bool IsTechnologyProhibited(const std::string& technology) const;
   bool IsTechnologyUninitialized(const std::string& technology) const;
 
   // Asynchronously sets the enabled state for |technology|.

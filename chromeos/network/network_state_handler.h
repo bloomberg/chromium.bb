@@ -74,7 +74,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
     TECHNOLOGY_AVAILABLE,
     TECHNOLOGY_UNINITIALIZED,
     TECHNOLOGY_ENABLING,
-    TECHNOLOGY_ENABLED
+    TECHNOLOGY_ENABLED,
+    TECHNOLOGY_PROHIBITED
   };
 
   ~NetworkStateHandler() override;
@@ -93,6 +94,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   }
   bool IsTechnologyEnabled(const NetworkTypePattern& type) const {
     return GetTechnologyState(type) == TECHNOLOGY_ENABLED;
+  }
+  bool IsTechnologyProhibited(const NetworkTypePattern& type) const {
+    return GetTechnologyState(type) == TECHNOLOGY_PROHIBITED;
   }
 
   // Asynchronously sets the technology enabled property for |type|. Only
