@@ -13,6 +13,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -152,8 +153,12 @@ void AddRoundedBorderShadow(UIView* view, CGFloat radius, UIColor* color) {
 UIImage* CaptureView(UIView* view, CGFloat scale) {
   UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES /* opaque */,
                                          scale);
-  CGContext* context = UIGraphicsGetCurrentContext();
-  [view.layer renderInContext:context];
+  if (experimental_flags::IsWKWebViewEnabled()) {
+    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+  } else {
+    CGContext* context = UIGraphicsGetCurrentContext();
+    [view.layer renderInContext:context];
+  }
   UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
   return image;
