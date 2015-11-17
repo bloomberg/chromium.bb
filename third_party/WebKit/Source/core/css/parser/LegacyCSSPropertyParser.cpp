@@ -1167,6 +1167,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTextStrokeWidth:
     case CSSPropertyTransform:
+    case CSSPropertyFill:
+    case CSSPropertyStroke:
+    case CSSPropertyStopColor:
+    case CSSPropertyFloodColor:
+    case CSSPropertyLightingColor:
         validPrimitive = false;
         break;
 
@@ -5495,44 +5500,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     /* Start of supported CSS properties with validation. This is needed for parseShortHand to work
      * correctly and allows optimization in applyRule(..)
      */
-
-    case CSSPropertyFill: // <paint> | inherit
-    case CSSPropertyStroke: // <paint> | inherit
-        {
-            if (id == CSSValueNone) {
-                parsedValue = cssValuePool().createIdentifierValue(id);
-            } else if (value->m_unit == CSSParserValue::URI) {
-                if (m_valueList->next()) {
-                    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-                    values->append(CSSURIValue::create(value->string));
-                    if (m_valueList->current()->id == CSSValueNone)
-                        parsedValue = cssValuePool().createIdentifierValue(m_valueList->current()->id);
-                    else
-                        parsedValue = parseColor(m_valueList->current());
-                    if (parsedValue) {
-                        values->append(parsedValue);
-                        parsedValue = values;
-                    }
-                }
-                if (!parsedValue)
-                    parsedValue = CSSURIValue::create(value->string);
-            } else {
-                parsedValue = parseColor(m_valueList->current());
-            }
-
-            if (parsedValue)
-                m_valueList->next();
-        }
-        break;
-
-    case CSSPropertyStopColor: // TODO : icccolor
-    case CSSPropertyFloodColor:
-    case CSSPropertyLightingColor:
-        parsedValue = parseColor(m_valueList->current());
-        if (parsedValue)
-            m_valueList->next();
-
-        break;
 
     case CSSPropertyPaintOrder:
         if (m_valueList->size() == 1 && id == CSSValueNormal)

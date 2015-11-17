@@ -1753,6 +1753,28 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransform(CSSParserTokenRange& ra
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range, CSSParserContext context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    String url = consumeUrl(range);
+    if (!url.isNull()) {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+        if (range.peek().id() == CSSValueNone)
+            parsedValue = consumeIdent(range);
+        else
+            parsedValue = consumeColor(range, context);
+        if (parsedValue) {
+            RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+            values->append(CSSURIValue::create(url));
+            values->append(parsedValue);
+            return values.release();
+        }
+        return CSSURIValue::create(url);
+    }
+    return consumeColor(range, context);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1863,6 +1885,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyWebkitTextStrokeColor:
+    case CSSPropertyStopColor:
+    case CSSPropertyFloodColor:
+    case CSSPropertyLightingColor:
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
@@ -1901,6 +1926,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLineWidth(m_range, m_context.mode());
     case CSSPropertyTransform:
         return consumeTransform(m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitTransform);
+    case CSSPropertyFill:
+    case CSSPropertyStroke:
+        return consumePaint(m_range, m_context);
     default:
         return nullptr;
     }
