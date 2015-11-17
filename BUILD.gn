@@ -205,6 +205,7 @@ group("both_gn_and_gyp") {
   } else {
     deps += [
       "//ios/net:ios_net_unittests",
+      "//ios/public/provider/chrome/browser",
       "//ios/public/provider/web",
       "//ios/testing:ocmock_support_unittest",
       "//ios/web/shell:ios_web_shell",

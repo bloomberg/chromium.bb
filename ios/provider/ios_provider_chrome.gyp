@@ -7,6 +7,7 @@
    },
   'targets': [
     {
+      # GN version: //ios/public/provider/chrome/browser
       'target_name': 'ios_provider_chrome_browser',
       'type': 'static_library',
       'sources': [

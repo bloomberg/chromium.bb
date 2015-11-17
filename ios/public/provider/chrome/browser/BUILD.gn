@@ -1,0 +1,35 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("browser") {
+  sources = [
+    "browser_state/chrome_browser_state.cc",
+    "browser_state/chrome_browser_state.h",
+    "browser_state/chrome_browser_state_manager.h",
+    "chrome_browser_provider.cc",
+    "chrome_browser_provider.h",
+    "geolocation_updater_provider.h",
+    "geolocation_updater_provider.mm",
+    "keyed_service_provider.cc",
+    "keyed_service_provider.h",
+    "signin/chrome_identity.h",
+    "signin/chrome_identity.mm",
+    "signin/chrome_identity_service.h",
+    "signin/chrome_identity_service.mm",
+    "signin/signin_error_provider.h",
+    "signin/signin_error_provider.mm",
+    "string_provider.h",
+    "ui/infobar_view_delegate.h",
+    "ui/infobar_view_protocol.h",
+    "updatable_resource_provider.h",
+    "updatable_resource_provider.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/browser",
+    "//ios/public/provider/web",
+    "//ios/web",
+  ]
+}
