@@ -328,8 +328,8 @@ gfx::Size OmniboxViewViews::GetMinimumSize() const {
 void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   views::Textfield::OnNativeThemeChanged(theme);
   if (location_bar_view_) {
-    SetBackgroundColor(location_bar_view_->GetColor(
-        SecurityStateModel::NONE, LocationBarView::BACKGROUND));
+    SetBackgroundColor(
+        location_bar_view_->GetColor(LocationBarView::BACKGROUND));
   }
   EmphasizeURLComponents();
 }
@@ -633,12 +633,10 @@ void OmniboxViewViews::EmphasizeURLComponents() {
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   bool grey_base = text_is_url && (host.is_nonempty() || grey_out_url);
   SetColor(location_bar_view_->GetColor(
-      security_level_,
       grey_base ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
   if (grey_base && !grey_out_url) {
-    ApplyColor(
-        location_bar_view_->GetColor(security_level_, LocationBarView::TEXT),
-        gfx::Range(host.begin, host.end()));
+    ApplyColor(location_bar_view_->GetColor(LocationBarView::TEXT),
+               gfx::Range(host.begin, host.end()));
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
@@ -649,8 +647,8 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   SetStyle(gfx::DIAGONAL_STRIKE, false);
   if (!model()->user_input_in_progress() && text_is_url &&
       scheme.is_nonempty() && (security_level_ != SecurityStateModel::NONE)) {
-    SkColor security_color = location_bar_view_->GetColor(
-        security_level_, LocationBarView::SECURITY_TEXT);
+    SkColor security_color =
+        location_bar_view_->GetSecureTextColor(security_level_);
     const bool strike = (security_level_ == SecurityStateModel::SECURITY_ERROR);
     const gfx::Range scheme_range(scheme.begin, scheme.end());
     ApplyColor(security_color, scheme_range);

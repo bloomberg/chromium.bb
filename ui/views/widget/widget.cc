@@ -111,7 +111,7 @@ class DefaultWidgetDelegate : public WidgetDelegate {
 
 Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
-      delegate(NULL),
+      delegate(nullptr),
       child(false),
       opacity(INFER_OPACITY),
       accept_events(true),
@@ -124,18 +124,19 @@ Widget::InitParams::InitParams()
       remove_standard_frame(false),
       use_system_default_icon(false),
       show_state(ui::SHOW_STATE_DEFAULT),
-      parent(NULL),
-      native_widget(NULL),
-      desktop_window_tree_host(NULL),
+      parent(nullptr),
+      native_widget(nullptr),
+      native_theme(nullptr),
+      desktop_window_tree_host(nullptr),
       layer_type(ui::LAYER_TEXTURED),
-      context(NULL),
+      context(nullptr),
       force_show_in_taskbar(false),
       force_software_compositing(false) {
 }
 
 Widget::InitParams::InitParams(Type type)
     : type(type),
-      delegate(NULL),
+      delegate(nullptr),
       child(false),
       opacity(INFER_OPACITY),
       accept_events(true),
@@ -148,11 +149,12 @@ Widget::InitParams::InitParams(Type type)
       remove_standard_frame(false),
       use_system_default_icon(false),
       show_state(ui::SHOW_STATE_DEFAULT),
-      parent(NULL),
-      native_widget(NULL),
-      desktop_window_tree_host(NULL),
+      parent(nullptr),
+      native_widget(nullptr),
+      native_theme(nullptr),
+      desktop_window_tree_host(nullptr),
       layer_type(ui::LAYER_TEXTURED),
-      context(NULL),
+      context(nullptr),
       force_show_in_taskbar(false),
       force_software_compositing(false) {
 }
@@ -164,10 +166,11 @@ Widget::InitParams::~InitParams() {
 // Widget, public:
 
 Widget::Widget()
-    : native_widget_(NULL),
-      widget_delegate_(NULL),
-      non_client_view_(NULL),
-      dragged_view_(NULL),
+    : native_widget_(nullptr),
+      native_theme_(nullptr),
+      widget_delegate_(nullptr),
+      non_client_view_(nullptr),
+      dragged_view_(nullptr),
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true),
       frame_type_(FRAME_TYPE_DEFAULT),
@@ -365,6 +368,7 @@ void Widget::Init(const InitParams& in_params) {
         internal::NativeWidgetPrivate::IsMouseButtonDown();
   }
   native_widget_->InitNativeWidget(params);
+  native_theme_ = params.native_theme;
   if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
@@ -766,7 +770,7 @@ ui::ThemeProvider* Widget::GetThemeProvider() const {
 }
 
 const ui::NativeTheme* Widget::GetNativeTheme() const {
-  return native_widget_->GetNativeTheme();
+  return native_theme_? native_theme_ : native_widget_->GetNativeTheme();
 }
 
 FocusManager* Widget::GetFocusManager() {

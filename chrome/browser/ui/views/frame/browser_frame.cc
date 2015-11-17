@@ -31,10 +31,15 @@
 #if defined(OS_CHROMEOS)
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
+#endif
+
+#if defined(OS_WIN)
+#include "ui/native_theme/native_theme_dark_win.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +80,15 @@ void BrowserFrame::InitBrowserFrame() {
                                              &params.bounds,
                                              &params.show_state);
   }
+
+  if (browser_view_->browser()->profile()->IsOffTheRecord()) {
+#if defined(OS_WIN)
+    params.native_theme = ui::NativeThemeDarkWin::instance();
+#elif defined(OS_CHROMEOS)
+    params.native_theme = ui::NativeThemeDarkAura::instance();
+#endif
+  }
+
   Init(params);
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {

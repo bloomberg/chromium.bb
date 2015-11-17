@@ -26,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
@@ -56,8 +57,10 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
         window->GetNativeWindowProperty(Profile::kProfileKey));
   }
 
-  if (profile && !profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme))
-    return ui::NativeThemeAura::instance();
+  if (profile && !profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
+    return profile->IsOffTheRecord() ? ui::NativeThemeDarkAura::instance()
+                                     : ui::NativeThemeAura::instance();
+  }
 
   return nullptr;
 }

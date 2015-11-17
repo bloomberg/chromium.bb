@@ -14,6 +14,8 @@ component("native_theme") {
     "native_theme_android.h",
     "native_theme_base.cc",
     "native_theme_base.h",
+    "native_theme_dark_win.cc",
+    "native_theme_dark_win.h",
     "native_theme_mac.h",
     "native_theme_mac.mm",
     "native_theme_observer.cc",
@@ -28,6 +30,8 @@ component("native_theme") {
     sources += [
       "native_theme_aura.cc",
       "native_theme_aura.h",
+      "native_theme_dark_aura.cc",
+      "native_theme_dark_aura.h",
     ]
 
     if (is_win) {

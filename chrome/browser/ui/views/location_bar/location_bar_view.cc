@@ -156,12 +156,6 @@ LocationBarView::LocationBarView(Browser* browser,
 
   ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    set_background(new BackgroundWith1PxBorder(
-        GetColor(SecurityStateModel::NONE, BACKGROUND),
-        SkColorSetARGB(0x4D, 0x00, 0x00, 0x00), is_popup_mode_));
-  }
 }
 
 LocationBarView::~LocationBarView() {
@@ -222,10 +216,8 @@ void LocationBarView::Init() {
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
 
-  const SkColor background_color =
-      GetColor(SecurityStateModel::NONE, LocationBarView::BACKGROUND);
-  const SkColor ev_text_color =
-      GetColor(SecurityStateModel::EV_SECURE, SECURITY_TEXT);
+  const SkColor background_color = GetColor(LocationBarView::BACKGROUND);
+  const SkColor ev_text_color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
   ev_bubble_view_ =
       new EVBubbleView(bubble_font_list, ev_text_color, background_color, this);
   ev_bubble_view_->set_drag_controller(this);
@@ -252,7 +244,7 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  const SkColor selected_text_color = GetColor(SecurityStateModel::NONE, TEXT);
+  const SkColor selected_text_color = GetColor(TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
       bubble_font_list, selected_text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
@@ -261,18 +253,17 @@ void LocationBarView::Init() {
   suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   suggested_text_view_->SetAutoColorReadabilityEnabled(false);
   suggested_text_view_->SetEnabledColor(
-      GetColor(SecurityStateModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
+      GetColor(LocationBarView::DEEMPHASIZED_TEXT));
   suggested_text_view_->SetVisible(false);
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
       profile(), font_list, bubble_font_list,
       bubble_height + 2 * kBubbleInteriorVerticalPadding,
-      GetColor(SecurityStateModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
-      background_color);
+      GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
   AddChildView(keyword_hint_view_);
 
-  const SkColor text_color = GetColor(SecurityStateModel::NONE, TEXT);
+  const SkColor text_color = GetColor(TEXT);
   ScopedVector<ContentSettingImageModel> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (ContentSettingImageModel* model : models.get()) {
@@ -319,7 +310,6 @@ bool LocationBarView::IsInitialized() const {
 }
 
 SkColor LocationBarView::GetColor(
-    SecurityStateModel::SecurityLevel security_level,
     ColorKind kind) const {
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (kind) {
@@ -336,45 +326,51 @@ SkColor LocationBarView::GetColor(
           ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
     case DEEMPHASIZED_TEXT:
-      return color_utils::AlphaBlend(
-          GetColor(security_level, TEXT),
-          GetColor(security_level, BACKGROUND),
-          128);
+      return color_utils::AlphaBlend(GetColor(TEXT), GetColor(BACKGROUND), 128);
 
-    case SECURITY_TEXT: {
-      SkColor color;
-      switch (security_level) {
-        case SecurityStateModel::EV_SECURE:
-        case SecurityStateModel::SECURE:
-          color = ui::MaterialDesignController::IsModeMaterial() ?
-              gfx::kGoogleGreen700 : SkColorSetRGB(7, 149, 0);
-          break;
+    case EV_BUBBLE_TEXT_AND_BORDER:
+      return ui::MaterialDesignController::IsModeMaterial()
+                 ? gfx::kGoogleGreen700
+                 : SkColorSetRGB(7, 149, 0);
+  }
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
+}
 
-        case SecurityStateModel::SECURITY_POLICY_WARNING:
-          return GetColor(security_level, DEEMPHASIZED_TEXT);
-          break;
+SkColor LocationBarView::GetSecureTextColor(
+    SecurityStateModel::SecurityLevel security_level) const {
+  bool inverted =
+      color_utils::GetLuminanceForColor(GetColor(BACKGROUND)) < 128;
+  SkColor color;
+  switch (security_level) {
+    case SecurityStateModel::EV_SECURE:
+    case SecurityStateModel::SECURE:
+      if (ui::MaterialDesignController::IsModeMaterial() && inverted)
+        return GetColor(TEXT);
+      color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
+      break;
 
-        case SecurityStateModel::SECURITY_ERROR:
-          color = ui::MaterialDesignController::IsModeMaterial() ?
-              gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
-          break;
+    case SecurityStateModel::SECURITY_POLICY_WARNING:
+      return GetColor(DEEMPHASIZED_TEXT);
+      break;
 
-        case SecurityStateModel::SECURITY_WARNING:
-          return GetColor(security_level, TEXT);
-          break;
-
-        default:
-          NOTREACHED();
-          return GetColor(security_level, TEXT);
-      }
-      return color_utils::GetReadableColor(
-          color, GetColor(security_level, BACKGROUND));
+    case SecurityStateModel::SECURITY_ERROR: {
+      bool md = ui::MaterialDesignController::IsModeMaterial();
+      if (md && inverted)
+        return GetColor(TEXT);
+      color = md ? gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
+      break;
     }
+
+    case SecurityStateModel::SECURITY_WARNING:
+      return GetColor(TEXT);
+      break;
 
     default:
       NOTREACHED();
-      return GetColor(security_level, TEXT);
+      return gfx::kPlaceholderColor;
   }
+  return color_utils::GetReadableColor(color, GetColor(BACKGROUND));
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -790,6 +786,15 @@ void LocationBarView::Layout() {
         std::min(width, entry_width), location_bounds.height());
   }
   omnibox_view_->SetBoundsRect(location_bounds);
+}
+
+void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return;
+
+  set_background(new BackgroundWith1PxBorder(
+      GetColor(BACKGROUND), SkColorSetARGB(0x4D, 0x00, 0x00, 0x00),
+      is_popup_mode_));
 }
 
 void LocationBarView::Update(const WebContents* contents) {
@@ -1261,7 +1266,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // the omnibox background, so we can't just blindly fill our entire bounds.
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(GetHorizontalEdgeThickness(), GetVerticalEdgeThickness());
-  SkColor color(GetColor(SecurityStateModel::NONE, BACKGROUND));
+  SkColor color(GetColor(BACKGROUND));
   if (is_popup_mode_) {
     canvas->FillRect(bounds, color);
   } else {

@@ -109,14 +109,9 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
     // Dialogs:
     static const SkColor kDialogBackgroundColorMd = SK_ColorWHITE;
     // Results tables:
-    static const SkColor kResultsTableSelectedBackgroundMd =
-        SkColorSetARGB(0x15, 0x00, 0x00, 0x00);
     static const SkColor kResultsTableTextMd = SK_ColorBLACK;
     static const SkColor kResultsTableDimmedTextMd =
         SkColorSetRGB(0x64, 0x64, 0x64);
-    static const SkColor kResultsTableUrlMd = SkColorSetRGB(0x33, 0x67, 0xD6);
-    static const SkColor kResultsTableHoveredBackgroundMd =
-        SkColorSetARGB(0x0D, 0x00, 0x00, 0x00);
     static const SkColor kResultsTableDividerMd = color_utils::AlphaBlend(
         kResultsTableTextMd, kTextfieldDefaultBackground, 0x34);
     static const SkColor kResultsTableSelectedDividerMd =
@@ -133,9 +128,11 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
 
       // Results Tables
       case kColorId_ResultsTableHoveredBackground:
-        return kResultsTableHoveredBackgroundMd;
+        return SkColorSetA(
+            GetSystemColor(kColorId_ResultsTableNormalBackground), 0x0D);
       case kColorId_ResultsTableSelectedBackground:
-        return kResultsTableSelectedBackgroundMd;
+        return SkColorSetA(
+            GetSystemColor(kColorId_ResultsTableNormalBackground), 0x14);
       case kColorId_ResultsTableNormalText:
       case kColorId_ResultsTableHoveredText:
       case kColorId_ResultsTableSelectedText:
@@ -150,7 +147,7 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       case kColorId_ResultsTableNormalUrl:
       case kColorId_ResultsTableHoveredUrl:
       case kColorId_ResultsTableSelectedUrl:
-        return kResultsTableUrlMd;
+        return GetSystemColor(kColorId_LinkEnabled);
       case kColorId_ResultsTableNormalDivider:
       case kColorId_ResultsTableHoveredDivider:
         return kResultsTableDividerMd;

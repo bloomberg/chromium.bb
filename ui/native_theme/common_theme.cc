@@ -65,7 +65,7 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     const SkColor kSelectedMenuItemForegroundColorMd = SK_ColorBLACK;
     // Link:
     const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
-    const SkColor kLinkEnabledColorMd = SkColorSetRGB(0x33, 0x67, 0xD6);
+    const SkColor kLinkEnabledColorMd = gfx::kGoogleBlue700;
 
     switch (color_id) {
       // MenuItem

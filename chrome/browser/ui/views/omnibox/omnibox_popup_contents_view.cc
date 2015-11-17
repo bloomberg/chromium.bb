@@ -250,6 +250,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.parent = popup_parent->GetNativeView();
     params.bounds = GetPopupBounds();
     params.context = popup_parent->GetNativeWindow();
+    params.native_theme = popup_parent->GetNativeTheme();
     popup_->Init(params);
     // Third-party software such as DigitalPersona identity verification can
     // hook the underlying window creation methods and use SendMessage to

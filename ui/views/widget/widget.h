@@ -240,6 +240,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // When set, this value is used as the Widget's NativeWidget implementation.
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
+    // If provided, sets the native theme for this widget.
+    ui::NativeTheme* native_theme;
     // Aura-only. Provides a DesktopWindowTreeHost implementation to use instead
     // of the default one.
     // TODO(beng): Figure out if there's a better way to expose this, e.g. get
@@ -858,6 +860,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                                ui::WindowShowState* show_state);
 
   internal::NativeWidgetPrivate* native_widget_;
+
+  // If non-null, the native theme for this widget. Otherwise the native theme
+  // comes from |native_widget_|.
+  ui::NativeTheme* native_theme_;
 
   base::ObserverList<WidgetObserver> observers_;
 

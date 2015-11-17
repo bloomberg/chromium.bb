@@ -118,7 +118,7 @@ class LocationBarView : public LocationBar,
     TEXT,
     SELECTED_TEXT,
     DEEMPHASIZED_TEXT,
-    SECURITY_TEXT,
+    EV_BUBBLE_TEXT_AND_BORDER,
   };
 
   LocationBarView(Browser* browser,
@@ -138,8 +138,12 @@ class LocationBarView : public LocationBar,
 
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
-  SkColor GetColor(SecurityStateModel::SecurityLevel security_level,
-                   ColorKind kind) const;
+  SkColor GetColor(ColorKind kind) const;
+
+  // Returns the color to be used for security text in the context of
+  // |security_level|.
+  SkColor GetSecureTextColor(
+      SecurityStateModel::SecurityLevel security_level) const;
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -247,6 +251,7 @@ class LocationBarView : public LocationBar,
   void GetAccessibleState(ui::AXViewState* state) override;
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;

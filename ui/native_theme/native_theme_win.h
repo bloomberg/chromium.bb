@@ -114,10 +114,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              const ExtraParams& extra) const override;
   SkColor GetSystemColor(ColorId color_id) const override;
 
- private:
+ protected:
   NativeThemeWin();
   ~NativeThemeWin() override;
 
+ private:
   // gfx::SysColorChangeListener implementation:
   void OnSysColorChange() override;
 
