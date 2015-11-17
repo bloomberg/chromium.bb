@@ -225,6 +225,37 @@ def _CheckForInvalidPreferenceError(input_api, output_api):
                 results.append(output_api.PresubmitError('Found an invalid preference %s in expected result %s:%s' % (error.group(1), f, line_num)))
     return results
 
+
+def _CheckForForbiddenNamespace(input_api, output_api):
+    """Checks that Blink uses Chromium namespaces only in permitted code."""
+    # This list is not exhaustive, but covers likely ones.
+    chromium_namespaces = ["base", "cc", "content", "gfx", "net", "ui"]
+    chromium_classes = ["scoped_ptr", "scoped_refptr"]
+
+    def source_file_filter(path):
+        return input_api.FilterSourceFile(path,
+                                          white_list=[r'third_party/WebKit/Source/.*\.(h|cpp)$'],
+                                          black_list=[r'third_party/WebKit/Source/(platform|wtf|web)/'])
+
+    comment_re = input_api.re.compile(r'^\s*//')
+    result = []
+    for namespace in chromium_namespaces:
+        namespace_re = input_api.re.compile(r'\b{0}::|^\s*using namespace {0};|^\s*namespace {0} \{{'.format(input_api.re.escape(namespace)))
+        uses_namespace_outside_comments = lambda line: namespace_re.search(line) and not comment_re.search(line)
+        errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_namespace_outside_comments(line),
+                                                                  input_api, source_file_filter)
+        if errors:
+            result += [output_api.PresubmitError('Do not use Chromium namespace {} inside Blink core:\n{}'.format(namespace, '\n'.join(errors)))]
+    for class_name in chromium_classes:
+        class_re = input_api.re.compile(r'\b{0}\b'.format(input_api.re.escape(class_name)))
+        uses_class_outside_comments = lambda line: class_re.search(line) and not comment_re.search(line)
+        errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_class_outside_comments(line),
+                                                                  input_api, source_file_filter)
+        if errors:
+            result += [output_api.PresubmitError('Do not use Chromium class {} inside Blink core:\n{}'.format(class_name, '\n'.join(errors)))]
+    return result
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
@@ -232,6 +263,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
     results.extend(_CheckForDangerousTestFunctions(input_api, output_api))
     results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
+    results.extend(_CheckForForbiddenNamespace(input_api, output_api))
     return results
 
 
