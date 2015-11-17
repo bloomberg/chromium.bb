@@ -63,7 +63,7 @@ static int runTestSuite(base::TestSuite* testSuite)
 int main(int argc, char** argv)
 {
     WTF::setRandomSource(AlwaysZeroNumberSource);
-    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr, nullptr);
+    WTF::initialize(CurrentTime, CurrentTime, CurrentTime, nullptr, nullptr);
     WTF::initializeMainThread(0);
 
     blink::TestingPlatformSupport::Config platformConfig;

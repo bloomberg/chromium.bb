@@ -42,6 +42,8 @@ using testing::AtLeast;
 using testing::Return;
 using testing::_;
 
+namespace {
+
 class MockScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 public:
@@ -119,6 +121,8 @@ private:
         : ScrollAnimator(scrollableArea) { }
 
 };
+
+} // namespace
 
 TEST(ScrollAnimatorEnabled, Enabled)
 {

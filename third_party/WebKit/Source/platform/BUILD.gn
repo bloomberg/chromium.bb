@@ -379,6 +379,10 @@ test("platform_unittests") {
     sources += [ "text/LocaleICUTest.cpp" ]
   }
 
+  if (!is_mac) {
+    sources += [ "scroll/ScrollAnimatorTest.cpp" ]
+  }
+
   sources += [ "testing/RunAllTests.cpp" ]
 
   configs += [

@@ -16,9 +16,6 @@ web_gypi = exec_script("//build/gypi_to_gn.py",
                        "scope",
                        [ "web.gypi" ])
 web_unittest_files = web_gypi.web_unittest_files
-if (!is_mac) {
-  web_unittest_files += [ "tests/ScrollAnimatorTest.cpp" ]
-}
 
 component("web") {
   output_name = "blink_web"
