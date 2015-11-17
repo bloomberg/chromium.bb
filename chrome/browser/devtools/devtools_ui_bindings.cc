@@ -805,6 +805,11 @@ void DevToolsUIBindings::DevicesDiscoveryConfigUpdated() {
           prefs::kDevToolsPortForwardingConfig)->GetValue());
 }
 
+void DevToolsUIBindings::SendPortForwardingStatus(const base::Value& status) {
+  CallClientFunction("DevToolsAPI.devicesPortForwardingStatusChanged", &status,
+                     nullptr, nullptr);
+}
+
 void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
   if (devices_updates_enabled_ == enabled)
     return;
@@ -824,10 +829,16 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
     pref_change_registrar_.Add(prefs::kDevToolsPortForwardingConfig,
         base::Bind(&DevToolsUIBindings::DevicesDiscoveryConfigUpdated,
                    base::Unretained(this)));
+    port_status_serializer_.reset(new PortForwardingStatusSerializer(
+        base::Bind(&DevToolsUIBindings::SendPortForwardingStatus,
+                   base::Unretained(this)),
+        profile_));
     DevicesDiscoveryConfigUpdated();
   } else {
     remote_targets_handler_.reset();
+    port_status_serializer_.reset();
     pref_change_registrar_.RemoveAll();
+    SendPortForwardingStatus(base::DictionaryValue());
   }
 }
 
