@@ -49,7 +49,9 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
 
 WindowTreeHostPlatform::WindowTreeHostPlatform()
     : widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::kCursorNull) {}
+      current_cursor_(ui::kCursorNull) {
+  CreateCompositor();
+}
 
 void WindowTreeHostPlatform::SetPlatformWindow(
     scoped_ptr<ui::PlatformWindow> window) {
@@ -166,7 +168,6 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   widget_ = widget;
-  CreateCompositor();
   WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
