@@ -13,6 +13,8 @@
       'dependencies': [
         'battor_agent_lib',
         '../../device/serial/serial.gyp:device_serial',
+        '../../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
+        '../../third_party/mojo/mojo_public.gyp:mojo_public',
       ],
       'sources': [
         'battor_agent_bin.cc',
