@@ -472,7 +472,7 @@ Element* findFocusableElementDescendingDownIntoFrameDocument(WebFocusType type, 
         if (!owner.contentFrame() || !owner.contentFrame()->isLocalFrame())
             break;
         toLocalFrame(owner.contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
-        Element* foundElement = findFocusableElementInternal(type, FocusNavigationScope::ownedByIFrame(owner), nullptr);
+        Element* foundElement = findFocusableElementRecursively(type, FocusNavigationScope::ownedByIFrame(owner), nullptr);
         if (!foundElement)
             break;
         ASSERT(element != foundElement);
