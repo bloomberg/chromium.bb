@@ -152,7 +152,7 @@ def _CheckChromiumPlatformMacros(input_api, output_api, source_file_filter=None)
 def _CheckForPrintfDebugging(input_api, output_api):
     """Generally speaking, we'd prefer not to land patches that printf
     debug output."""
-    printf_re = input_api.re.compile(r'^\s*printf\(')
+    printf_re = input_api.re.compile(r'^\s*(printf\(|fprintf\(stderr,)')
     errors = input_api.canned_checks._FindNewViolationsOfRule(
         lambda _, x: not printf_re.search(x),
         input_api, None)
