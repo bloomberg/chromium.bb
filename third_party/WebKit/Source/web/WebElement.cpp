@@ -94,14 +94,6 @@ bool WebElement::hasAttribute(const WebString& attrName) const
     return constUnwrap<Element>()->hasAttribute(attrName);
 }
 
-void WebElement::removeAttribute(const WebString& attrName)
-{
-    // TODO: Custom element callbacks need to be called on WebKit API methods that
-    // mutate the DOM in any way.
-    CustomElementProcessingStack::CallbackDeliveryScope deliverCustomElementCallbacks;
-    unwrap<Element>()->removeAttribute(attrName);
-}
-
 WebString WebElement::getAttribute(const WebString& attrName) const
 {
     return constUnwrap<Element>()->getAttribute(attrName);

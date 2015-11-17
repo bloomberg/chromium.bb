@@ -59,7 +59,6 @@ public:
     // namespace. Tag name matching is case-insensitive.
     BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
     BLINK_EXPORT bool hasAttribute(const WebString&) const;
-    BLINK_EXPORT void removeAttribute(const WebString&);
     BLINK_EXPORT WebString getAttribute(const WebString&) const;
     BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
     BLINK_EXPORT WebString textContent() const;
