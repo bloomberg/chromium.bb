@@ -291,8 +291,10 @@ drm_private uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout)
 		struct timespec current;
 		uint64_t current_ns;
 		r = clock_gettime(CLOCK_MONOTONIC, &current);
-		if (r)
-			return r;
+		if (r) {
+			fprintf(stderr, "clock_gettime() returned error (%d)!", errno);
+			return AMDGPU_TIMEOUT_INFINITE;
+		}
 
 		current_ns = ((uint64_t)current.tv_sec) * 1000000000ull;
 		current_ns += current.tv_nsec;
