@@ -294,7 +294,6 @@ void WebStateImpl::ShowTransientContentView(CRWContentView* content_view) {
   DCHECK(Configured());
   DCHECK(content_view);
   DCHECK(content_view.scrollView);
-  DCHECK([content_view.scrollView isDescendantOfView:content_view]);
   [web_controller_ showTransientContentView:content_view];
 }
 

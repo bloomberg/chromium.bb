@@ -654,7 +654,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)showTransientContentView:(CRWContentView*)contentView {
   DCHECK(contentView);
   DCHECK(contentView.scrollView);
-  DCHECK([contentView.scrollView isDescendantOfView:contentView]);
+  // TODO(crbug.com/556848) Reenable DCHECK when |CRWWebControllerContainerView|
+  // is restructured so that subviews are not added during |layoutSubviews|.
+  // DCHECK([contentView.scrollView isDescendantOfView:contentView]);
   [self.containerView displayTransientContent:contentView];
 }
 

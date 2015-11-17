@@ -7,6 +7,17 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
+namespace {
+
+// Background color RGB values for the content view which is displayed when the
+// |_webView| is offset from the screen due to user interaction. Displaying this
+// background color is handled by UIWebView but not WKWebView, so it needs to be
+// set in CRWWebViewContentView to support both. The color value matches that
+// used by UIWebView.
+const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
+
+}  // namespace
+
 @interface CRWWebViewContentView () {
   // The web view being shown.
   base::scoped_nsobject<UIView> _webView;
@@ -27,7 +38,6 @@
     DCHECK([scrollView isDescendantOfView:webView]);
     _webView.reset([webView retain]);
     _scrollView.reset([scrollView retain]);
-    [self addSubview:_webView];
   }
   return self;
 }
@@ -50,6 +60,11 @@
   [super willMoveToSuperview:newSuperview];
   self.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self addSubview:_webView];
+  self.backgroundColor = [UIColor colorWithRed:kBackgroundRGBComponents[0]
+                                         green:kBackgroundRGBComponents[1]
+                                          blue:kBackgroundRGBComponents[2]
+                                         alpha:1.0];
 }
 
 #pragma mark Accessors
