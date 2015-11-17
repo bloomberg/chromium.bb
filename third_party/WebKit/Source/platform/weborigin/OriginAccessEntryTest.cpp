@@ -79,6 +79,12 @@ public:
         RELEASE_ASSERT_NOT_REACHED();
     }
 
+    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+    {
+        static const unsigned char tracingIsDisabled = 0;
+        return &tracingIsDisabled;
+    }
+
     void setPublicSuffix(const blink::WebString& suffix)
     {
         m_suffixList.setPublicSuffix(suffix);
