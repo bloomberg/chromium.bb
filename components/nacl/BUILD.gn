@@ -93,6 +93,8 @@ if (enable_nacl) {
       "//ppapi/shared_impl",
     ]
 
+    data_deps = []
+
     if (is_linux) {
       sources += [
         "zygote/nacl_fork_delegate_linux.cc",
@@ -100,9 +102,13 @@ if (enable_nacl) {
       ]
 
       deps += [
-        ":nacl_helper",
         "//sandbox/linux:sandbox_services",
         "//sandbox/linux:suid_sandbox_client",
+      ]
+
+      data_deps += [
+        ":nacl_helper",
+        ":helper_nonsfi",
       ]
     }
   }
