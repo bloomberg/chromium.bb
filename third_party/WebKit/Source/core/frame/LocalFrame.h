@@ -184,13 +184,15 @@ public:
 
     bool shouldThrottleRendering() const;
 
-    // ========
-
     // Returns the frame scheduler, creating one if needed.
     WebFrameScheduler* frameScheduler();
     void updateFrameSecurityOrigin();
 
+    bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
+
 private:
+    friend class FrameNavigationDisabler;
+
     LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
     // Internal Frame helper overrides:
@@ -203,6 +205,9 @@ private:
     PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&,
         RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags,
         IntRect paintingRect, float opacity = 1);
+
+    void enableNavigation() { --m_navigationDisableCount; }
+    void disableNavigation() { ++m_navigationDisableCount; }
 
     mutable FrameLoader m_loader;
     OwnPtrWillBeMember<NavigationScheduler> m_navigationScheduler;
@@ -220,6 +225,8 @@ private:
     const OwnPtrWillBeMember<FrameConsole> m_console;
     const OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
     OwnPtr<WebFrameScheduler> m_frameScheduler;
+
+    int m_navigationDisableCount;
 
 #if ENABLE(OILPAN)
     // Oilpan: in order to reliably finalize plugin elements with
@@ -326,6 +333,17 @@ inline EventHandler& LocalFrame::eventHandler() const
 DEFINE_TYPE_CASTS(LocalFrame, Frame, localFrame, localFrame->isLocalFrame(), localFrame.isLocalFrame());
 
 DECLARE_WEAK_IDENTIFIER_MAP(LocalFrame);
+
+class FrameNavigationDisabler {
+    WTF_MAKE_NONCOPYABLE(FrameNavigationDisabler);
+    STACK_ALLOCATED();
+public:
+    explicit FrameNavigationDisabler(LocalFrame&);
+    ~FrameNavigationDisabler();
+
+private:
+    RawPtrWillBeMember<LocalFrame> m_frame;
+};
 
 } // namespace blink
 

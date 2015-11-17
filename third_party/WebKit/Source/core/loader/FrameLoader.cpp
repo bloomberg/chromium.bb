@@ -1054,7 +1054,7 @@ bool FrameLoader::prepareForCommit()
     if (pdl != m_provisionalDocumentLoader)
         return false;
     if (m_documentLoader) {
-        FrameNavigationDisabler navigationDisabler(m_frame);
+        FrameNavigationDisabler navigationDisabler(*m_frame);
         detachDocumentLoader(m_documentLoader);
     }
     // detachFromFrame() will abort XHRs that haven't completed, which can

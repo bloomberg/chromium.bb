@@ -75,12 +75,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    friend class FrameNavigationDisabler;
     explicit NavigationScheduler(LocalFrame*);
-
-    void disableFrameNavigation() { ++m_navigationDisableCount; }
-    void enableFrameNavigation() { --m_navigationDisableCount; }
-    bool isFrameNavigationAllowed() const { return !m_navigationDisableCount; }
 
     bool shouldScheduleReload() const;
     bool shouldScheduleNavigation(const String& url) const;
@@ -93,7 +88,6 @@ private:
     RawPtrWillBeMember<LocalFrame> m_frame;
     OwnPtr<CancellableTaskFactory> m_navigateTaskFactory;
     OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
-    int m_navigationDisableCount;
 };
 
 class NavigationDisablerForBeforeUnload {
@@ -113,17 +107,6 @@ public:
 
 private:
     static unsigned s_navigationDisableCount;
-};
-
-class FrameNavigationDisabler {
-    WTF_MAKE_NONCOPYABLE(FrameNavigationDisabler);
-    STACK_ALLOCATED();
-public:
-    explicit FrameNavigationDisabler(LocalFrame*);
-    ~FrameNavigationDisabler();
-
-private:
-    RawPtrWillBeMember<NavigationScheduler> m_navigationScheduler;
 };
 
 } // namespace blink

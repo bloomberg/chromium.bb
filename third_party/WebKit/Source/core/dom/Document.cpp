@@ -2182,7 +2182,17 @@ void Document::detach(const AttachContext& context)
     if (!isActive())
         return;
 
+    // Frame navigation can cause a new Document to be attached. Don't allow that, since that will
+    // cause a situation where LocalFrame still has a Document attached after this finishes!
+    // Normally, it shouldn't actually be possible to trigger navigation here. However, plugins
+    // (see below) can cause lots of crazy things to happen, since plugin detach involves nested
+    // message loops.
+    FrameNavigationDisabler navigationDisabler(*m_frame);
+    // Defer widget updates to avoid plugins trying to run script inside ScriptForbiddenScope,
+    // which will crash the renderer after https://crrev.com/200984
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+    // Don't allow script to run in the middle of detach() because a detaching Document is not in a
+    // consistent state.
     ScriptForbiddenScope forbidScript;
     view()->dispose();
     m_markers->prepareForDestruction();
