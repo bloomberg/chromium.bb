@@ -56,49 +56,12 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
 
 void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     AlternativeServiceMap* alternative_service_map) {
-  for (AlternativeServiceMap::iterator map_it =
-           alternative_service_map_.begin();
-       map_it != alternative_service_map_.end();) {
-    for (AlternativeServiceInfoVector::iterator it = map_it->second.begin();
-         it != map_it->second.end();) {
-      // Keep all the broken ones since those do not get persisted.
-      AlternativeService alternative_service(it->alternative_service);
-      if (alternative_service.host.empty()) {
-        alternative_service.host = map_it->first.host();
-      }
-      if (IsAlternativeServiceBroken(alternative_service)) {
-        ++it;
-        continue;
-      }
-      it = map_it->second.erase(it);
-    }
-    if (map_it->second.empty()) {
-      RemoveCanonicalHost(map_it->first);
-      map_it = alternative_service_map_.Erase(map_it);
-      continue;
-    }
-    ++map_it;
-  }
-
   // Add the entries from persisted data.
   for (AlternativeServiceMap::reverse_iterator input_it =
            alternative_service_map->rbegin();
        input_it != alternative_service_map->rend(); ++input_it) {
     DCHECK(!input_it->second.empty());
-    AlternativeServiceMap::iterator output_it =
-        alternative_service_map_.Peek(input_it->first);
-    if (output_it == alternative_service_map_.end()) {
-      // There is no value in alternative_service_map_ for input_it->first:
-      // inserting in AlternativeServiceVectorInfo.
-      alternative_service_map_.Put(input_it->first, input_it->second);
-      continue;
-    }
-    // There are some broken alternative services in alternative_service_map_
-    // for input_it->first: appending AlternativeServiceInfo one by one.
-    for (const AlternativeServiceInfo& alternative_service_info :
-         input_it->second) {
-      output_it->second.push_back(alternative_service_info);
-    }
+    alternative_service_map_.Put(input_it->first, input_it->second);
   }
 
   // Attempt to find canonical servers.

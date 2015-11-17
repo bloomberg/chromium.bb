@@ -368,8 +368,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, ZeroProbabilityAlwaysExcluded) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
-  // |test_host_port_pair1| has one alternative service, which is non-broken,
-  // and thus will be removed by InitializeAlternativeServiceServers().
+  // |test_host_port_pair1| has an alternative service, which will not be
+  // affected by InitializeAlternativeServiceServers(), because
+  // |alternative_service_map| does not have an entry for
+  // |test_host_port_pair1|.
   HostPortPair test_host_port_pair1("foo1", 80);
   const AlternativeService alternative_service1(NPN_HTTP_2, "bar1", 443);
   const base::Time now = base::Time::Now();
@@ -377,40 +379,36 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   impl_.SetAlternativeService(test_host_port_pair1, alternative_service1, 1.0,
                               expiration1);
 
-  // |test_host_port_pair2| has two alternative services.  The broken one will
-  // remain, the non-broken one will be removed by
-  // InitializeAlternativeServiceServers().
+  // |test_host_port_pair2| has an alternative service, which will be
+  // overwritten by InitializeAlternativeServiceServers(), because
+  // |alternative_service_map| has an entry for
+  // |test_host_port_pair2|.
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService alternative_service2(NPN_SPDY_3_1, "bar2", 443);
   base::Time expiration2 = now + base::TimeDelta::FromDays(2);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, 1.0, expiration2));
-  const AlternativeService alternative_service3(NPN_SPDY_3_1, "bar3", 1234);
-  base::Time expiration3 = now + base::TimeDelta::FromDays(3);
-  alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service3, 0.8, expiration3));
   HostPortPair test_host_port_pair2("foo2", 80);
   impl_.SetAlternativeServices(test_host_port_pair2,
                                alternative_service_info_vector);
-  impl_.MarkAlternativeServiceBroken(alternative_service2);
 
   // Prepare |alternative_service_map| to be loaded by
   // InitializeAlternativeServiceServers().
   AlternativeServiceMap alternative_service_map(
       AlternativeServiceMap::NO_AUTO_EVICT);
-  const AlternativeService alternative_service4(NPN_HTTP_2, "bar4", 123);
-  base::Time expiration4 = now + base::TimeDelta::FromDays(4);
-  const AlternativeServiceInfo alternative_service_info1(alternative_service4,
-                                                         0.7, expiration4);
+  const AlternativeService alternative_service3(NPN_HTTP_2, "bar3", 123);
+  base::Time expiration3 = now + base::TimeDelta::FromDays(3);
+  const AlternativeServiceInfo alternative_service_info1(alternative_service3,
+                                                         0.7, expiration3);
   alternative_service_map.Put(
       test_host_port_pair2,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1));
 
   HostPortPair test_host_port_pair3("foo3", 80);
-  const AlternativeService alternative_service5(NPN_HTTP_2, "bar5", 1234);
-  base::Time expiration5 = now + base::TimeDelta::FromDays(5);
-  const AlternativeServiceInfo alternative_service_info2(alternative_service5,
-                                                         0.2, expiration5);
+  const AlternativeService alternative_service4(NPN_HTTP_2, "bar4", 1234);
+  base::Time expiration4 = now + base::TimeDelta::FromDays(4);
+  const AlternativeServiceInfo alternative_service_info2(alternative_service4,
+                                                         0.2, expiration4);
   alternative_service_map.Put(
       test_host_port_pair3,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2));
@@ -419,22 +417,25 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
 
   // Verify alternative_service_map.
   const AlternativeServiceMap& map = impl_.alternative_service_map();
-  ASSERT_EQ(2u, map.size());
+  ASSERT_EQ(3u, map.size());
   AlternativeServiceMap::const_iterator map_it = map.begin();
   EXPECT_TRUE(map_it->first.Equals(test_host_port_pair3));
   ASSERT_EQ(1u, map_it->second.size());
-  EXPECT_EQ(alternative_service5, map_it->second[0].alternative_service);
+  EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service);
   EXPECT_EQ(0.2, map_it->second[0].probability);
-  EXPECT_EQ(expiration5, map_it->second[0].expiration);
+  EXPECT_EQ(expiration4, map_it->second[0].expiration);
   ++map_it;
   EXPECT_TRUE(map_it->first.Equals(test_host_port_pair2));
-  ASSERT_EQ(2u, map_it->second.size());
-  EXPECT_EQ(alternative_service2, map_it->second[0].alternative_service);
+  ASSERT_EQ(1u, map_it->second.size());
+  EXPECT_EQ(alternative_service3, map_it->second[0].alternative_service);
+  EXPECT_EQ(0.7, map_it->second[0].probability);
+  EXPECT_EQ(expiration3, map_it->second[0].expiration);
+  ++map_it;
+  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair1));
+  ASSERT_EQ(1u, map_it->second.size());
+  EXPECT_EQ(alternative_service1, map_it->second[0].alternative_service);
   EXPECT_EQ(1.0, map_it->second[0].probability);
-  EXPECT_EQ(expiration2, map_it->second[0].expiration);
-  EXPECT_EQ(alternative_service4, map_it->second[1].alternative_service);
-  EXPECT_EQ(0.7, map_it->second[1].probability);
-  EXPECT_EQ(expiration4, map_it->second[1].expiration);
+  EXPECT_EQ(expiration1, map_it->second[0].expiration);
 }
 
 // Regression test for https://crbug.com/504032:
