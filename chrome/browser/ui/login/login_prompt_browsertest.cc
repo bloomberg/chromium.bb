@@ -1423,22 +1423,12 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   }
 }
 
-// Fails on non-aura because of crbug.com/555804.
-// TODO(meacer): Enable for all when that bug is fixed.
-#if defined(USE_AURA)
-#define MAYBE_ShouldNotProceedExistingInterstitial \
-  ShouldNotProceedExistingInterstitial
-#else
-#define MAYBE_ShouldNotProceedExistingInterstitial \
-  DISABLED_MAYBE_ShouldNotProceedExistingInterstitial
-#endif
-
 // Test that the login interstitial isn't proceeding itself or any other
 // interstitial. If this test becomes flaky, it's likely that the logic that
 // prevents the tested scenario from happening got broken, rather than the test
 // itself.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       MAYBE_ShouldNotProceedExistingInterstitial) {
+                       ShouldNotProceedExistingInterstitial) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   ASSERT_TRUE(https_server.Start());
