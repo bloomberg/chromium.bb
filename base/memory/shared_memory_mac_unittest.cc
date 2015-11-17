@@ -337,6 +337,21 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachDuplicateAndClose) {
   EXPECT_EQ(active_name_count, GetActiveNameCount());
 }
 
+// Tests that Mach shared memory can be mapped and unmapped.
+TEST_F(SharedMemoryMacMultiProcessTest, MachUnmapMap) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (mac::IsOSSnowLeopard())
+    return;
+
+  mach_msg_type_number_t active_name_count = GetActiveNameCount();
+
+  scoped_ptr<SharedMemory> shared_memory = CreateSharedMemory(s_memory_size);
+  ASSERT_TRUE(shared_memory->Unmap());
+  ASSERT_TRUE(shared_memory->Map(s_memory_size));
+  shared_memory.reset();
+  EXPECT_EQ(active_name_count, GetActiveNameCount());
+}
+
 // Tests that passing a SharedMemoryHandle to a SharedMemory object also passes
 // ownership, and that destroying the SharedMemory closes the SharedMemoryHandle
 // as well.

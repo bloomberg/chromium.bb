@@ -368,15 +368,17 @@ bool SharedMemory::Unmap() {
   switch (mapped_memory_mechanism_) {
     case SharedMemoryHandle::POSIX:
       munmap(memory_, mapped_size_);
-      memory_ = NULL;
-      mapped_size_ = 0;
-      return true;
+      break;
     case SharedMemoryHandle::MACH:
       mach_vm_deallocate(mach_task_self(),
                          reinterpret_cast<mach_vm_address_t>(memory_),
                          mapped_size_);
-      return true;
+      break;
   }
+
+  memory_ = NULL;
+  mapped_size_ = 0;
+  return true;
 }
 
 SharedMemoryHandle SharedMemory::handle() const {
