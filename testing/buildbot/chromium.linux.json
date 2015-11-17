@@ -14,7 +14,13 @@
         "test": "cc_unittests"
       },
       {
+        "test": "components_browsertests"
+      },
+      {
         "test": "components_unittests"
+      },
+      {
+        "test": "content_browsertests"
       },
       {
         "test": "content_unittests"
