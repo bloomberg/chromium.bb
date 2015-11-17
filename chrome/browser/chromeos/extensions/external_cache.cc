@@ -28,6 +28,16 @@
 
 namespace chromeos {
 
+namespace {
+
+void FlushFile(const base::FilePath& path) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  file.Flush();
+  file.Close();
+}
+
+}  // namespace
+
 ExternalCache::ExternalCache(const base::FilePath& cache_dir,
                              net::URLRequestContextGetter* request_context,
                              const scoped_refptr<base::SequencedTaskRunner>&
@@ -318,6 +328,11 @@ void ExternalCache::OnPutExtension(const std::string& id,
     // Copy entry to don't modify it inside extensions_.
     LOG(ERROR) << "Can't find installed extension in cache " << id;
     return;
+  }
+
+  if (flush_on_put_) {
+    backend_task_runner_->PostTask(FROM_HERE,
+                                   base::Bind(&FlushFile, file_path));
   }
 
   std::string update_url;

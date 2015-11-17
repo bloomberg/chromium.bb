@@ -562,6 +562,7 @@ KioskAppManager::KioskAppManager()
                         this,
                         true /* always_check_updates */,
                         false /* wait_for_cache_initialization */));
+  external_cache_->set_flush_on_put(true);
   UpdateAppData();
   local_accounts_subscription_ =
       CrosSettings::Get()->AddSettingsObserver(

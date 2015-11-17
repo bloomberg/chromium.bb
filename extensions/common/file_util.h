@@ -31,6 +31,9 @@ namespace file_util {
 
 extern const base::FilePath::CharType kTempDirectoryName[];
 
+// Sets the flag to enable safe installation (i.e. flush all installed files).
+void SetUseSafeInstallation(bool use_safe_installation);
+
 // Copies |unpacked_source_dir| into the right location under |extensions_dir|.
 // The destination directory is returned on success, or empty path is returned
 // on failure.

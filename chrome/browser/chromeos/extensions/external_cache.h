@@ -134,6 +134,8 @@ class ExternalCache : public content::NotificationObserver,
                             const std::string& version,
                             const PutExternalExtensionCallback& callback);
 
+  void set_flush_on_put(bool flush_on_put) { flush_on_put_ = flush_on_put; }
+
  private:
   // Notifies the that the cache has been updated, providing
   // extensions loader with an updated list of extensions.
@@ -170,6 +172,9 @@ class ExternalCache : public content::NotificationObserver,
 
   // Set to true if cache should wait for initialization flag file.
   bool wait_for_cache_initialization_;
+
+  // Whether to flush the crx file after putting into |local_cache_|.
+  bool flush_on_put_ = false;
 
   // This is the list of extensions currently configured.
   scoped_ptr<base::DictionaryValue> extensions_;

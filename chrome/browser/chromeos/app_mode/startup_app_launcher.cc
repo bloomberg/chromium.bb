@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -435,6 +436,7 @@ void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
 }
 
 void StartupAppLauncher::BeginInstall() {
+  extensions::file_util::SetUseSafeInstallation(true);
   KioskAppManager::Get()->InstallFromCache(app_id_);
   if (extensions::ExtensionSystem::Get(profile_)
           ->extension_service()
