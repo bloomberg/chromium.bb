@@ -157,6 +157,12 @@ int NaClHostDirClose(struct NaClHostDir *d) {
   return (-1 == retval) ? -NaClXlateErrno(errno) : retval;
 }
 
+/*
+ * In the OSX 10.10 SDK, dirfd is a macro that uses a GNU statement expression.
+ */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-statement-expression"
+
 int NaClHostDirFchdir(struct NaClHostDir *d) {
   int fd = dirfd(d->dirp);
   if (-1 == fd) {
@@ -201,3 +207,5 @@ int NaClHostDirFdatasync(struct NaClHostDir *d) {
   }
   return 0;
 }
+
+#pragma clang diagnostic pop
