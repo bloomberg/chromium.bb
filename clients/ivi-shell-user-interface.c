@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
