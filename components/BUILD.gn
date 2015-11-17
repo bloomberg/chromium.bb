@@ -217,6 +217,10 @@ group("all_components") {
         "//components/wifi_sync",
       ]
     }
+
+    if (is_chromeos && enable_arc) {
+      deps += [ "//components/arc" ]
+    }
   } else {
     deps += [
       "//components/autofill/ios/browser",
@@ -482,6 +486,9 @@ test("components_unittests") {
     }
     if (is_chromeos) {
       deps += [ "//components/ownership:unit_tests" ]
+    }
+    if (is_chromeos && enable_arc) {
+      deps += [ "//components/arc:unit_tests" ]
     }
 
     # TODO(GYP) need this target.

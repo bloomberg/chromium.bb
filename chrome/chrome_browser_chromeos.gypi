@@ -1265,6 +1265,11 @@
             '../ui/ozone/ozone.gyp:ozone',
           ],
         }],
+        ['enable_arc == 1', {
+          'dependencies': [
+            '../components/components.gyp:arc',
+          ],
+        }],
       ],
     },
     {

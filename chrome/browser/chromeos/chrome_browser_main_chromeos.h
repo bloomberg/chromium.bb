@@ -15,6 +15,12 @@ namespace session_manager {
 class SessionManager;
 }
 
+#if defined(ENABLE_ARC)
+namespace arc {
+class ArcBridgeService;
+}
+#endif
+
 namespace chromeos {
 
 class DataPromoNotification;
@@ -76,6 +82,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<EventRewriterController> keyboard_event_rewriters_;
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
+
+#if defined(ENABLE_ARC)
+  scoped_ptr<arc::ArcBridgeService> arc_bridge_service_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

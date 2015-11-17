@@ -1383,6 +1383,14 @@
             'components.gyp:wifi_sync',
           ],
         }],
+        ['chromeos==1 and enable_arc==1', {
+          'sources': [
+            'arc/arc_bridge_service_unittest.cc',
+          ],
+          'dependencies': [
+            'components.gyp:arc',
+          ],
+        }],
         ['OS=="linux"', {
           'sources': [
             'metrics/serialization/serialization_utils_unittest.cc',

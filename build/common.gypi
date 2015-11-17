@@ -1545,6 +1545,9 @@
     'libjpeg_ijg_gyp_path': '<(DEPTH)/third_party/libjpeg/libjpeg.gyp',
     'libjpeg_turbo_gyp_path': '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp',
 
+    # ARC instance disabled by default.
+    'enable_arc%': 0,
+
     'conditions': [
       ['buildtype=="Official"', {
         # Continue to embed build meta data in Official builds, basically the
@@ -3082,6 +3085,9 @@
       ['enable_wexit_time_destructors==1 and OS!="win"', {
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
+      }],
+      ['<(enable_arc)==1', {
+        'defines': ['ENABLE_ARC=1'],
       }],
       ['chromium_code==0', {
         'variables': {

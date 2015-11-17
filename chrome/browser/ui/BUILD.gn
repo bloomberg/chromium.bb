@@ -197,6 +197,9 @@ source_set("ui") {
   } else {
     defines += [ "FRAME_AVATAR_BUTTON=1" ]
   }
+  if (is_chromeos && enable_arc) {
+    deps += [ "//components/arc" ]
+  }
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Messages sent from the host to the ARC instance
+// Messages sent from the ARC instance to the host.
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/ipc_message_macros.h"

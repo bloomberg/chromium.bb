@@ -33,7 +33,6 @@ component("chromeos") {
     "//crypto",
     "//crypto:platform",
     "//google_apis",
-    "//ipc",
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",

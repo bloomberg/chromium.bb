@@ -41,6 +41,10 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_ARC)
+#include "components/arc/arc_bridge_service.h"
+#endif
+
 namespace {
 
 void InitAfterFirstSessionStart() {
@@ -225,11 +229,22 @@ void ChromeShellDelegate::PreInit() {
   display_configuration_observer_.reset(
       new chromeos::DisplayConfigurationObserver());
 
+#if defined(ENABLE_ARC)
+  arc_session_observer_.reset(new ArcSessionObserver);
+#endif
+
   chrome_user_metrics_recorder_.reset(new ChromeUserMetricsRecorder);
 }
 
 void ChromeShellDelegate::PreShutdown() {
   display_configuration_observer_.reset();
+
+#if defined(ENABLE_ARC)
+  // Remove the ARC observer now since it uses the ash::Shell instance in its
+  // destructor, which is unavailable after PreShutdown() returns.
+  arc_session_observer_.reset();
+#endif
+
   chrome_user_metrics_recorder_.reset();
 }
 
@@ -297,3 +312,34 @@ void ChromeShellDelegate::PlatformInit() {
                  chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
 }
+
+#if defined(ENABLE_ARC)
+ChromeShellDelegate::ArcSessionObserver::ArcSessionObserver() {
+  ash::Shell::GetInstance()->AddShellObserver(this);
+}
+
+ChromeShellDelegate::ArcSessionObserver::~ArcSessionObserver() {
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
+}
+
+void ChromeShellDelegate::ArcSessionObserver::OnLoginStateChanged(
+    ash::user::LoginStatus status) {
+  switch (status) {
+    case ash::user::LOGGED_IN_LOCKED:
+    case ash::user::LOGGED_IN_KIOSK_APP:
+      return;
+
+    case ash::user::LOGGED_IN_NONE:
+      arc::ArcBridgeService::Get()->Shutdown();
+      break;
+
+    case ash::user::LOGGED_IN_USER:
+    case ash::user::LOGGED_IN_OWNER:
+    case ash::user::LOGGED_IN_GUEST:
+    case ash::user::LOGGED_IN_PUBLIC:
+    case ash::user::LOGGED_IN_SUPERVISED:
+      arc::ArcBridgeService::Get()->HandleStartup();
+      break;
+  }
+}
+#endif

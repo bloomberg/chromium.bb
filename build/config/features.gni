@@ -203,3 +203,6 @@ enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
 enable_webvr = is_android
 
 use_gio = is_desktop_linux && !is_headless
+
+# Chrome OS: whether to use ARC instances. Disabled by default.
+enable_arc = false
