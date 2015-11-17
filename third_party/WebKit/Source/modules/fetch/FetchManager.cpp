@@ -235,6 +235,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             case WebURLRequest::FetchRequestModeSameOrigin:
             case WebURLRequest::FetchRequestModeCORS:
             case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
+            case WebURLRequest::FetchRequestModeNavigate:
                 performNetworkError("Fetch API cannot load " + m_request->url().string() + ". Redirects to data: URL are allowed only when mode is \"no-cors\".");
                 return;
             }
@@ -252,6 +253,9 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         case WebURLRequest::FetchRequestModeCORS:
         case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
             m_request->setResponseTainting(FetchRequestData::CORSTainting);
+            break;
+        case WebURLRequest::FetchRequestModeNavigate:
+            RELEASE_ASSERT_NOT_REACHED();
             break;
         }
     }
@@ -416,10 +420,12 @@ void FetchManager::Loader::start()
     // "- |request|'s url's scheme is 'data' and |request|'s same-origin data
     //    URL flag is set"
     // "- |request|'s url's scheme is 'about'"
-    // Note we don't support to call this method with |CORS flag|.
+    // Note we don't support to call this method with |CORS flag|
+    // "- |request|'s mode is |navigate|".
     if ((SecurityOrigin::create(m_request->url())->isSameSchemeHostPortAndSuborigin(m_request->origin().get()))
         || (m_request->url().protocolIsData() && m_request->sameOriginDataURLFlag())
-        || (m_request->url().protocolIsAbout())) {
+        || (m_request->url().protocolIsAbout())
+        || (m_request->mode() == WebURLRequest::FetchRequestModeNavigate)) {
         // "The result of performing a basic fetch using request."
         performBasicFetch();
         return;
@@ -592,6 +598,11 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     case WebURLRequest::FetchRequestModeCORS:
     case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
         threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
+        break;
+    case WebURLRequest::FetchRequestModeNavigate:
+        // Using DenyCrossOriginRequests here to reduce the security risk.
+        // "navigate" request is only available in ServiceWorker.
+        threadableLoaderOptions.crossOriginRequestPolicy = DenyCrossOriginRequests;
         break;
     }
     InspectorInstrumentation::willStartFetch(executionContext(), this);

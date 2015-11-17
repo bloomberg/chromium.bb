@@ -60,6 +60,10 @@ test(function() {
      new Request(URL, {mode: ' cors'}),
      new Request(URL, {mode: 'co rs'}),
      new Request(URL, {mode: 'CORS'}),
+     new Request(URL, {mode: 'navigate\0'}),
+     new Request(URL, {mode: ' navigate'}),
+     new Request(URL, {mode: 'navi gate'}),
+     new Request(URL, {mode: 'NAVIGATE'}),
      new Request(URL, {mode: '\0'.repeat(100000)}),
      new Request(URL, {mode: 'x'.repeat(100000)}),
      new Request(URL, {credentials: null}),
@@ -292,6 +296,15 @@ test(function() {
           });
       });
   }, 'Request method name throw test');
+
+test(function() {
+    assert_throws(
+      {name: 'TypeError'},
+      function() {
+        var request = new Request(URL, {mode: 'navigate'});
+      },
+      'new Request with a navigate mode should throw');
+  }, 'Request mode throw test');
 
 test(function() {
     var url = 'http://example.com';

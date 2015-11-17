@@ -66,7 +66,7 @@ async_test(function(t) {
               worker,
               [{
                 url: host_info['HTTP_ORIGIN'] + '/serviceworker/' + SCOPE,
-                mode: 'same-origin'
+                mode: 'navigate'
               }],
               'The SW must intercept the request for a main resourc.');
         })

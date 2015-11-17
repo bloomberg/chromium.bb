@@ -290,6 +290,8 @@ STATIC_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_CORS,
 STATIC_ASSERT_MATCHING_ENUMS(
     FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
     WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
+STATIC_ASSERT_MATCHING_ENUMS(FETCH_REQUEST_MODE_NAVIGATE,
+                             WebURLRequest::FetchRequestModeNavigate);
 
 FetchRequestMode GetFetchRequestModeForWebURLRequest(
     const blink::WebURLRequest& request) {

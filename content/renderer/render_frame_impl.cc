@@ -5039,7 +5039,7 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
 
   // These values are assumed on the browser side for navigations. These checks
   // ensure the renderer has the correct values.
-  DCHECK_EQ(FETCH_REQUEST_MODE_SAME_ORIGIN,
+  DCHECK_EQ(FETCH_REQUEST_MODE_NAVIGATE,
             GetFetchRequestModeForWebURLRequest(*request));
   DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
             GetFetchCredentialsModeForWebURLRequest(*request));

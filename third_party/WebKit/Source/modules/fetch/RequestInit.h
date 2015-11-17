@@ -36,7 +36,7 @@ public:
     String integrity;
     // True if any members in RequestInit are set and hence the referrer member
     // should be used in the Request constructor.
-    bool isReferrerSet;
+    bool areAnyMembersSet;
 };
 
 }

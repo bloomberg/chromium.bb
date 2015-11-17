@@ -76,12 +76,16 @@ enum ServiceWorkerProviderType {
       SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME
 };
 
+// The enum entries below are written to histograms and thus cannot be deleted
+// or reordered.
+// New entries must be added immediately before the end.
 enum FetchRequestMode {
   FETCH_REQUEST_MODE_SAME_ORIGIN,
   FETCH_REQUEST_MODE_NO_CORS,
   FETCH_REQUEST_MODE_CORS,
   FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT,
-  FETCH_REQUEST_MODE_LAST = FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT
+  FETCH_REQUEST_MODE_NAVIGATE,
+  FETCH_REQUEST_MODE_LAST = FETCH_REQUEST_MODE_NAVIGATE
 };
 
 enum FetchCredentialsMode {

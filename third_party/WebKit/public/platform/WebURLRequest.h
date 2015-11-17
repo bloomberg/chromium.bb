@@ -114,7 +114,8 @@ public:
         FetchRequestModeSameOrigin,
         FetchRequestModeNoCORS,
         FetchRequestModeCORS,
-        FetchRequestModeCORSWithForcedPreflight
+        FetchRequestModeCORSWithForcedPreflight,
+        FetchRequestModeNavigate
     };
 
     enum FetchCredentialsMode {

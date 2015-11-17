@@ -120,15 +120,27 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         // We don't use fallback values. We set these flags directly in below.
     }
 
-    //   14. If any of |init|'s members are present, set |request|'s referrer
-    // to client, and |request|'s referrer policy to the empty string.
-    //   => RequestInit::RequestInit.
+    // "14. If any of |init|'s members are present, run these substeps:"
+    if (init.areAnyMembersSet) {
+        // "1. If |request|'s |mode| is "navigate", throw a TypeError."
+        if (request->mode() == WebURLRequest::FetchRequestModeNavigate) {
+            exceptionState.throwTypeError("Cannot construct a Request with a Request whose mode is 'navigate' and a non-empty RequestInit.");
+            return nullptr;
+        }
+        // "2. Unset |request|'s omit-Origin-header flag."
+        // "3. Set |request|'s referrer to "client"."
+        // "4. Set |request|'s referrer policy to the empty string."
+        // => RequestInit::RequestInit.
+    }
+
     //   15. If |init|'s referrer member is present, run these substeps:
     // Note that JS null and undefined are encoded as an empty string and thus
     // a null string means referrer member is not set.
     //   16. If |init|'s referrerPolicy member is present, set |request|'s
     // referrer policy to it.
-    if (init.isReferrerSet) {
+    // areAnyMembersSet will be True, if any members in RequestInit are set and
+    // hence the referrer member
+    if (init.areAnyMembersSet) {
         // 1. Let |referrer| be |init|'s referrer member.
         if (init.referrer.referrer.isEmpty()) {
             // 2. if |referrer| is the empty string, set |request|'s referrer to
@@ -161,10 +173,14 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         request->setReferrerPolicy(init.referrer.referrerPolicy);
     }
 
-
-    // "17. Let |mode| be |init|'s mode member if it is present, and
+    // "16. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
+    // "17. If |mode| is "navigate", throw a TypeError.
     // "18. If |mode| is non-null, set |request|'s mode to |mode|."
+    if (init.mode == "navigate") {
+        exceptionState.throwTypeError("Cannot construct a Request with a RequestInit whose mode member is set as 'navigate'.");
+        return nullptr;
+    }
     if (init.mode == "same-origin") {
         request->setMode(WebURLRequest::FetchRequestModeSameOrigin);
     } else if (init.mode == "no-cors") {
@@ -493,6 +509,8 @@ String Request::mode() const
     case WebURLRequest::FetchRequestModeCORS:
     case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
         return "cors";
+    case WebURLRequest::FetchRequestModeNavigate:
+        return "navigate";
     }
     ASSERT_NOT_REACHED();
     return "";

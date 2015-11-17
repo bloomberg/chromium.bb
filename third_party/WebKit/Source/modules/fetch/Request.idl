@@ -13,7 +13,7 @@ enum RequestContext {
     "prefetch", "script", "serviceworker", "sharedworker",
     "subresource", "style", "track", "video", "worker", "xmlhttprequest", "xslt"
 };
-enum RequestMode { "same-origin", "no-cors", "cors" };
+enum RequestMode { "navigate", "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 enum RequestRedirect { "follow", "error", "manual" };
 

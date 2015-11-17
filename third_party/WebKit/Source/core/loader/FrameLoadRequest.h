@@ -113,7 +113,7 @@ private:
     void initializeFetchFlags()
     {
         // These flags are passed to a service worker which controls the page.
-        m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeSameOrigin);
+        m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNavigate);
         m_resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
         m_resourceRequest.setFetchRedirectMode(WebURLRequest::FetchRedirectModeManual);
     }

@@ -23,10 +23,8 @@
 namespace blink {
 
 RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, ExceptionState& exceptionState)
-    : isReferrerSet(false)
+    : areAnyMembersSet(false)
 {
-    bool areAnyMembersSet = false;
-
     areAnyMembersSet = DictionaryHelper::get(options, "method", method) || areAnyMembersSet;
     areAnyMembersSet = DictionaryHelper::get(options, "headers", headers) || areAnyMembersSet;
     if (!headers) {
@@ -61,7 +59,6 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         referrer = Referrer("about:client", ReferrerPolicyDefault);
         if (isReferrerStringSet)
             referrer.referrer = referrerString;
-        isReferrerSet = true;
     }
 
     if (!isBodySet || v8Body->IsUndefined() || v8Body->IsNull())

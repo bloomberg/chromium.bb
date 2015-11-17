@@ -62180,6 +62180,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="NoCORS"/>
   <int value="2" label="CORS"/>
   <int value="3" label="CORSWithForcedPreflight"/>
+  <int value="4" label="Navigate"/>
 </enum>
 
 <enum name="FFmpegCodecHashes" type="int">
