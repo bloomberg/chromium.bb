@@ -45,6 +45,13 @@ const char* kHevcSupported = kPropProbably;
 const char* kHevcSupported = kNot;
 #endif
 
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+const char* kMp2tsMaybe = kPropMaybe;
+const char* kMp2tsProbably = kPropProbably;
+#else
+const char* kMp2tsMaybe = kNot;
+const char* kMp2tsProbably = kNot;
+#endif
 
 namespace content {
 
@@ -87,6 +94,32 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.123x56\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.1234x6\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.12345x\"'"));
+
+    // Old-style avc1 codecs must be followed by two dot-separated decimal
+    // numbers (H.264 profile and level)
+    // Invalid formats
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1..\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.30.\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.x66.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66x.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.x30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.30x\"'"));
+    // Invalid level values
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.300\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.-1\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.66.x\"'"));
+    // Invalid profile values
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.0.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.65.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.67.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.76.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.78.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.99.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.101.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.300.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.-1.30\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"avc1.x.30\"'"));
 
     // AAC codecs must be followed by one or two valid hexadecimal numbers.
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"mp4a.no\"'"));
@@ -247,6 +280,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.4D401E\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3.64001F\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.66.30\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1, vorbis\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3, vorbis\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1, opus\"'"));
@@ -293,6 +327,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.4D401E\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3.64001F\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.66.30\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1, vorbis\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3, vorbis\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1, opus\"'"));
@@ -337,6 +372,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.4D401E\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3.64001F\"'"));
+    EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1.66.30\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc1, 1\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime +"; codecs=\"avc3, 1\"'"));
 
@@ -482,6 +518,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1.4D401E\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1.66.30\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.40.02\"'"));
@@ -496,6 +533,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1.4D401E\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1.66.30\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.40.02\"'"));
@@ -510,6 +548,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1.4D401E\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1.66.30\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.2\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.02\"'"));
@@ -531,6 +570,10 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42E01E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42801E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.66.13\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.77.30\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.100.40\"'"));
 
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.42E11E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42101E\"'"));
@@ -583,6 +626,10 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42E01E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42801E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42C01E\"'"));
+
+  EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"avc1.66.13\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"avc1.77.30\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/x-m4v; codecs=\"avc1.100.40\"'"));
 
   EXPECT_EQ(kPropMaybe, CanPlay("'video/x-m4v; codecs=\"avc1.42E11E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc1.42101E\"'"));
@@ -637,6 +684,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"avc1.4D401E\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"avc1.66.30\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"hev1.1.6.L93.B0\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"hvc1.1.6.L93.B0\"'"));
@@ -660,6 +708,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"avc1.4D401E\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"avc1.66.30\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"hev1.1.6.L93.B0\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/x-m4a; codecs=\"hvc1.1.6.L93.B0\"'"));
@@ -1147,6 +1196,77 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AAC_ADTS) {
   EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"1\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"aac\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"mp4a.40.2\"'"));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2Ts) {
+  EXPECT_EQ(kMp2tsMaybe, CanPlay("'video/mp2t'"));
+
+  // video/mp2t must support standard RFC 6381 compliant H.264 / AAC codec ids.
+  // H.264 baseline, main, high profiles
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.42E01E\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.4D401E\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.640028\"'"));
+  // AAC LC audio
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"mp4a.40.2\"'"));
+  // H.264 + AAC audio combinations
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.42E01E,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.4D401E,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.40.2\"'"));
+
+  TestMPEGUnacceptableCombinations("video/mp2t");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest,
+                       CodecSupportTest_Mpeg2Ts_LegacyAvc1_codec_ids) {
+  // Old-style avc1/H.264 codec ids that are still being used by some HLS
+  // streaming apps for backward compatibility.
+  // H.264 baseline profile
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.10\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.13\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.20\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.22\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.30\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.32\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.40\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.66.42\"'"));
+  // H.264 main profile
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.10\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.13\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.20\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.22\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.30\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.32\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.40\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.77.42\"'"));
+  // H.264 high profile
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.10\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.13\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.20\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.22\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.30\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.32\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.40\"'"));
+  EXPECT_EQ(kMp2tsProbably, CanPlay("'video/mp2t; codecs=\"avc1.100.42\"'"));
+
+  // H.264 + AAC audio combinations
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.66.10,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.66.30,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.77.10,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.77.30,mp4a.40.2\"'"));
+  EXPECT_EQ(kMp2tsProbably,
+            CanPlay("'video/mp2t; codecs=\"avc1.100.40,mp4a.40.2\"'"));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2TsAudio) {
+  // audio/mp2t is currently not supported (see also crbug.com/556837).
+  EXPECT_EQ(kNot, CanPlay("'audio/mp2t; codecs=\"mp4a.40.2\"'"));
 }
 
 }  // namespace content

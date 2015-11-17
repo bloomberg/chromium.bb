@@ -34,6 +34,12 @@ TEST(MimeUtilTest, StrictMediaMimeType) {
   EXPECT_TRUE(IsStrictMediaMimeType("application/x-mpegurl"));
   EXPECT_TRUE(IsStrictMediaMimeType("application/vnd.apple.mpegurl"));
 
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+  EXPECT_TRUE(IsStrictMediaMimeType("video/mp2t"));
+#else
+  EXPECT_FALSE(IsStrictMediaMimeType("video/mp2t"));
+#endif
+
   EXPECT_FALSE(IsStrictMediaMimeType("video/unknown"));
   EXPECT_FALSE(IsStrictMediaMimeType("Video/UNKNOWN"));
   EXPECT_FALSE(IsStrictMediaMimeType("audio/unknown"));

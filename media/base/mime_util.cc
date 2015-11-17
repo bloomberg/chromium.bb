@@ -298,6 +298,9 @@ static const MediaFormatStrict format_codec_mappings[] = {
     {"audio/x-m4a", kMP4AudioCodecsExpression},
     {"video/mp4", kMP4VideoCodecsExpression},
     {"video/x-m4v", kMP4VideoCodecsExpression},
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+    {"video/mp2t", kMP4VideoCodecsExpression},
+#endif
     {"application/x-mpegurl", kMP4VideoCodecsExpression},
     {"application/vnd.apple.mpegurl", kMP4VideoCodecsExpression}};
 
@@ -342,6 +345,55 @@ static const CodecIDMappings kAmbiguousCodecStringMap[] = {
     {"avc3", MimeUtil::H264_BASELINE},
     // avc1/avc3.XXXXXX may be ambiguous; handled by ParseH264CodecID().
 };
+
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+static const char kHexString[] = "0123456789ABCDEF";
+static char IntToHex(int i) {
+  DCHECK_GE(i, 0) << i << " not a hex value";
+  DCHECK_LE(i, 15) << i << " not a hex value";
+  return kHexString[i];
+}
+
+std::string TranslateLegacyAvc1CodecIds(const std::string& codec_id) {
+  // Special handling for old, pre-RFC 6381 format avc1 strings, which are still
+  // being used by some HLS apps to preserve backward compatibility with older
+  // iOS devices. The old format was avc1.<profile>.<level>
+  // Where <profile> is H.264 profile_idc encoded as a decimal number, i.e.
+  // 66 is baseline profile (0x42)
+  // 77 is main profile (0x4d)
+  // 100 is high profile (0x64)
+  // And <level> is H.264 level multiplied by 10, also encoded as decimal number
+  // E.g. <level> 31 corresponds to H.264 level 3.1
+  // See, for example, http://qtdevseed.apple.com/qadrift/testcases/tc-0133.php
+  uint32 level_start = 0;
+  std::string result;
+  if (base::StartsWith(codec_id, "avc1.66.", base::CompareCase::SENSITIVE)) {
+    level_start = 8;
+    result = "avc1.4200";
+  } else if (base::StartsWith(codec_id, "avc1.77.",
+                              base::CompareCase::SENSITIVE)) {
+    level_start = 8;
+    result = "avc1.4D00";
+  } else if (base::StartsWith(codec_id, "avc1.100.",
+                              base::CompareCase::SENSITIVE)) {
+    level_start = 9;
+    result = "avc1.6400";
+  }
+
+  uint32 level = 0;
+  if (level_start > 0 &&
+      base::StringToUint(codec_id.substr(level_start), &level) && level < 256) {
+    // This is a valid legacy avc1 codec id - return the codec id translated
+    // into RFC 6381 format.
+    result.push_back(IntToHex(level >> 4));
+    result.push_back(IntToHex(level & 0xf));
+    return result;
+  }
+
+  // This is not a valid legacy avc1 codec id - return the original codec id.
+  return codec_id;
+}
+#endif
 
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
   InitializeMimeTypeMaps();
@@ -489,6 +541,16 @@ SupportsType MimeUtil::IsSupportedStrictMediaMimeType(
     return IsCodecSupported(default_codec) ? IsSupported : IsNotSupported;
   }
 
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+  if (mime_type_lower_case == "video/mp2t") {
+    std::vector<std::string> codecs_to_check;
+    for (const auto& codec_id : codecs) {
+      codecs_to_check.push_back(TranslateLegacyAvc1CodecIds(codec_id));
+    }
+    return AreSupportedCodecs(it_strict_map->second, codecs_to_check);
+  }
+#endif
+
   return AreSupportedCodecs(it_strict_map->second, codecs);
 }
 
@@ -559,7 +621,7 @@ static bool ParseH264CodecID(const std::string& codec_id,
   }
 
   // Validate level.
-  *is_ambiguous = !IsValidH264Level(base::ToUpperASCII(codec_id.substr(9)));
+  *is_ambiguous = !IsValidH264Level(codec_id.substr(9));
   return true;
 }
 
