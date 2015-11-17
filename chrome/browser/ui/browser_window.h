@@ -155,7 +155,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Currently only supported on Mac.
   virtual bool SupportsFullscreenWithToolbar() const = 0;
   virtual void UpdateFullscreenWithToolbar(bool with_toolbar) = 0;
+  virtual void ToggleFullscreenToolbar() = 0;
   virtual bool IsFullscreenWithToolbar() const = 0;
+  virtual bool ShouldHideFullscreenToolbar() const = 0;
 
 #if defined(OS_WIN)
   // Sets state for entering or exiting Win8 Metro snap mode.

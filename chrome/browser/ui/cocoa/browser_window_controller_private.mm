@@ -225,6 +225,8 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)layoutSubviews {
+  // TODO(spqchan): Change blockLayoutSubviews so that it only blocks the web
+  // content from resizing.
   if (blockLayoutSubviews_)
     return;
 
@@ -764,6 +766,7 @@ willPositionSheet:(NSWindow*)sheet
   isUsingCustomAnimation_ = NO;
 
   [self showFullscreenExitBubbleIfNecessary];
+  [self layoutSubviews];
   browser_->WindowFullscreenStateChanged();
 }
 
@@ -826,7 +829,7 @@ willPositionSheet:(NSWindow*)sheet
           ->fullscreen_controller()
           ->IsWindowFullscreenForTabOrPending()) {
     style = fullscreen_mac::OMNIBOX_TABS_NONE;
-  } else if (enteringPresentationMode_) {
+  } else if (enteringPresentationMode_ || [self shouldHideFullscreenToolbar]) {
     style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   } else {
     style = fullscreen_mac::OMNIBOX_TABS_PRESENT;

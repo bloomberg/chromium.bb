@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F1077" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1060" identifier="macosx"/>
+        <deployment version="1060" defaultVersion="1060" identifier="macosx"/>
         <development version="5100" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
     </dependencies>
@@ -319,6 +319,11 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="531"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="^IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" tag="34039" keyEquivalent="F" id="70p-NK-bpU">
+                                <connections>
+                                    <action selector="commandDispatch:" target="-1" id="0A7-Iy-65Q"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="538"/>
                             <menuItem title="^IDS_STOP_MENU_MAC" tag="33006" keyEquivalent="." id="539">
                                 <connections>
@@ -533,6 +538,9 @@ CA
                             </menuItem>
                         </items>
                     </menu>
+                </menuItem>
+                <menuItem title="Item" id="PoF-z7-3yH">
+                    <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
             </items>
         </menu>

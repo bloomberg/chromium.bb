@@ -12780,6 +12780,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_EXIT_PRESENTATION_MAC" desc="The Mac menu item to leave presentation mode in the view menu.">
           Exit Presentation Mode
         </message>
+        <message name="IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" desc="The Mac menu checkbox item to show/hide the toolbar in full screen.">
+          Hide Toolbar in Full Screen
+        </message>
         <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to zoom in on the page in the view menu.">
           Zoom In
         </message>

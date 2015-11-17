@@ -1035,7 +1035,16 @@ void BrowserView::UpdateFullscreenWithToolbar(bool with_toolbar) {
   NOTIMPLEMENTED();
 }
 
+void BrowserView::ToggleFullscreenToolbar() {
+  // This is currently a Mac only feature.
+  NOTIMPLEMENTED();
+}
+
 bool BrowserView::IsFullscreenWithToolbar() const {
+  return false;
+}
+
+bool BrowserView::ShouldHideFullscreenToolbar() const {
   return false;
 }
 

@@ -14,6 +14,10 @@ void ExclusiveAccessContext::UpdateFullscreenWithToolbar(bool with_toolbar) {
   NOTIMPLEMENTED();
 }
 
+void ExclusiveAccessContext::ToggleFullscreenToolbar() {
+  NOTIMPLEMENTED();
+}
+
 #if defined(OS_WIN)
 void ExclusiveAccessContext::SetMetroSnapMode(bool enable) {
   NOTIMPLEMENTED();

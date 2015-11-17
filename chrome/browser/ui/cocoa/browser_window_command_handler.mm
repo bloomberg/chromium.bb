@@ -24,6 +24,16 @@
 
 namespace {
 
+void SetToggleState(bool toggled, id item) {
+  DCHECK([item respondsToSelector:@selector(state)] &&
+         [item respondsToSelector:@selector(setState:)]);
+
+  NSInteger old_state = [item state];
+  NSInteger new_state = toggled ? NSOnState : NSOffState;
+  if (old_state != new_state)
+    [item setState:new_state];
+}
+
 // Update a toggle state for an item if modified. The item may be an NSMenuItem
 // or NSButton. Called by -validateUserInterfaceItem:.
 void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
@@ -37,11 +47,12 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
   // On Windows this logic happens in bookmark_bar_view.cc. This simply updates
   // the menu item; it does not display the bookmark bar itself.
   if (tag == IDC_SHOW_BOOKMARK_BAR) {
-    bool toggled = browser->window()->IsBookmarkBarVisible();
-    NSInteger oldState = [item state];
-    NSInteger newState = toggled ? NSOnState : NSOffState;
-    if (oldState != newState)
-      [item setState:newState];
+    SetToggleState(browser->window()->IsBookmarkBarVisible(), item);
+    return;
+  }
+
+  if (tag == IDC_TOGGLE_FULLSCREEN_TOOLBAR) {
+    SetToggleState(browser->window()->ShouldHideFullscreenToolbar(), item);
     return;
   }
 
@@ -61,11 +72,8 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
 
   const std::string encoding = current_tab->GetEncoding();
 
-  bool toggled = encoding_controller.IsItemChecked(profile, encoding, tag);
-  NSInteger oldState = [item state];
-  NSInteger newState = toggled ? NSOnState : NSOffState;
-  if (oldState != newState)
-    [item setState:newState];
+  SetToggleState(encoding_controller.IsItemChecked(profile, encoding, tag),
+                 item);
 }
 
 NSString* GetTitleForViewsFullscreenMenuItem(Browser* browser) {
@@ -93,12 +101,11 @@ NSString* GetTitleForFullscreenMenuItem(Browser* browser) {
 NSString* GetTitleForPresentationModeMenuItem(Browser* browser) {
   NSWindow* ns_window = browser->window()->GetNativeWindow();
   if (BrowserWindowController* controller = [ns_window windowController]) {
-      return l10n_util::GetNSString([controller inPresentationMode]
-                                        ? IDS_EXIT_PRESENTATION_MAC
-                                        : IDS_ENTER_PRESENTATION_MAC);
+    return l10n_util::GetNSString([controller inPresentationMode]
+                                      ? IDS_EXIT_PRESENTATION_MAC
+                                      : IDS_ENTER_PRESENTATION_MAC);
   }
-
-  return GetTitleForViewsFullscreenMenuItem(browser);
+  return GetTitleForFullscreenMenuItem(browser);
 }
 
 // Identify the actual Browser to which the command should be dispatched. It
@@ -194,6 +201,15 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
           chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile());
       NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
       [menuItem setHidden:shouldHide];
+      break;
+    }
+    case IDC_TOGGLE_FULLSCREEN_TOOLBAR: {
+      // TODO(spqchan): Implement a preferences for this command and replace
+      // the Presentation Mode menu item with item.
+      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
+        [menuItem setHidden:YES];
+        enable = false;
+      }
       break;
     }
     default:

@@ -120,7 +120,13 @@ bool TestBrowserWindow::SupportsFullscreenWithToolbar() const {
 void TestBrowserWindow::UpdateFullscreenWithToolbar(bool with_toolbar) {
 }
 
+void TestBrowserWindow::ToggleFullscreenToolbar() {}
+
 bool TestBrowserWindow::IsFullscreenWithToolbar() const {
+  return false;
+}
+
+bool TestBrowserWindow::ShouldHideFullscreenToolbar() const {
   return false;
 }
 

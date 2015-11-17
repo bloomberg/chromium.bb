@@ -218,6 +218,7 @@
 #define IDC_TAKE_SCREENSHOT             40248
 #define IDC_MORE_TOOLS_MENU             40249
 #define IDC_SHOW_FAST_USER_SWITCHER     40250
+#define IDC_TOGGLE_FULLSCREEN_TOOLBAR   40251
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

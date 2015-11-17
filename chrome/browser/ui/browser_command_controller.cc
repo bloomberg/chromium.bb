@@ -526,6 +526,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PRESENTATION_MODE:
       chrome::ToggleFullscreenMode(browser_);
       break;
+    case IDC_TOGGLE_FULLSCREEN_TOOLBAR:
+      chrome::ToggleFullscreenToolbar(browser_);
+      break;
 #endif
     case IDC_EXIT:
       Exit();
@@ -1291,6 +1294,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);
   command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
+                                        fullscreen_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_FULLSCREEN_TOOLBAR,
                                         fullscreen_enabled);
 
   UpdateCommandsForBookmarkBar();

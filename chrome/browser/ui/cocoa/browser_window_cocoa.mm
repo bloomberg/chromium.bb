@@ -442,8 +442,16 @@ void BrowserWindowCocoa::UpdateFullscreenWithToolbar(bool with_toolbar) {
   [controller_ updateFullscreenWithToolbar:with_toolbar];
 }
 
+void BrowserWindowCocoa::ToggleFullscreenToolbar() {
+  [controller_ toggleFullscreenToolbar];
+}
+
 bool BrowserWindowCocoa::IsFullscreenWithToolbar() const {
   return IsFullscreen() && ![controller_ inPresentationMode];
+}
+
+bool BrowserWindowCocoa::ShouldHideFullscreenToolbar() const {
+  return [controller_ shouldHideFullscreenToolbar];
 }
 
 void BrowserWindowCocoa::ConfirmAddSearchProvider(

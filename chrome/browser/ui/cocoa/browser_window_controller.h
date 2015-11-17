@@ -158,6 +158,9 @@ class Command;
   // return nil.
   BOOL isUsingCustomAnimation_;
 
+  // True if the toolbar needs to be hidden in fullscreen.
+  BOOL shouldHideFullscreenToolbar_;
+
   // The size of the original (non-fullscreen) window.  This is saved just
   // before entering fullscreen mode and is only valid when |-isFullscreen|
   // returns YES.
@@ -524,6 +527,11 @@ class Command;
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
                            bubbleType:(ExclusiveAccessBubbleType)bubbleType;
 
+// Toggles and updates the toolbar's visibility in fullscreen mode. This
+// function toggles between the sliding styles: OMNIBOX_TABS_PRESENT and
+// OMNIBOX_TABS_HIDDEN.
+- (void)toggleFullscreenToolbar;
+
 // Returns YES if the browser window is in or entering any fullscreen mode.
 - (BOOL)isInAnyFullscreenMode;
 
@@ -549,6 +557,9 @@ class Command;
 // Whether the system is in the very specific fullscreen mode: Presentation
 // Mode.
 - (BOOL)inPresentationMode;
+
+// Whether if the toolbar should be hidden in fullscreen.
+- (BOOL)shouldHideFullscreenToolbar;
 
 // Resizes the fullscreen window to fit the screen it's currently on.  Called by
 // the PresentationModeController when there is a change in monitor placement or

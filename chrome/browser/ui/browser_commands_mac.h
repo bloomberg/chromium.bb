@@ -13,6 +13,9 @@ namespace chrome {
 // On earlier OSX versions, falls back to presentation mode.
 void ToggleFullscreenWithToolbarOrFallback(Browser* browser);
 
+// Toggles the visibility of the toolbar in fullscreen mode.
+void ToggleFullscreenToolbar(Browser* browser);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_COMMANDS_MAC_H_
