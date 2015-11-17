@@ -16,7 +16,6 @@
 #include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
@@ -70,14 +69,9 @@ class ClientChannelMojo : public ChannelMojo, public ClientChannel {
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
                        int32 peer_pid) override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-      mojo::edk::ScopedPlatformHandle edk_handle(mojo::edk::PlatformHandle(
-#if defined(OS_WIN)
-          handle.release().handle));
-#else
-          handle.release().fd));
-#endif
-      InitMessageReader(
-          mojo::edk::CreateMessagePipe(edk_handle.Pass()), peer_pid);
+      InitMessageReader(mojo::embedder::CreateChannel(
+          handle.Pass(), base::Callback<void(mojo::embedder::ChannelInfo*)>(),
+          scoped_refptr<base::TaskRunner>()), peer_pid);
       return;
     }
     CreateMessagingPipe(handle.Pass(), base::Bind(&ClientChannelMojo::BindPipe,
@@ -125,13 +119,9 @@ class ServerChannelMojo : public ChannelMojo {
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle,
                        int32 peer_pid) override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-      mojo::edk::ScopedPlatformHandle edk_handle(mojo::edk::PlatformHandle(
-#if defined(OS_WIN)
-          handle.release().handle));
-#else
-          handle.release().fd));
-#endif
-      message_pipe_ = mojo::edk::CreateMessagePipe(edk_handle.Pass());
+      message_pipe_ = mojo::embedder::CreateChannel(
+          handle.Pass(), base::Callback<void(mojo::embedder::ChannelInfo*)>(),
+          scoped_refptr<base::TaskRunner>());
       if (!message_pipe_.is_valid()) {
         LOG(WARNING) << "mojo::CreateMessagePipe failed: ";
         listener()->OnChannelError();

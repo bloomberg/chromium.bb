@@ -321,7 +321,8 @@ ScopedMessagePipeHandle CreateChannel(
   DCHECK(internal::g_ipc_support);
 
   if (UseNewEDK()) {
-    did_create_channel_callback.Run(nullptr);
+    if (!did_create_channel_callback.is_null())
+      did_create_channel_callback.Run(nullptr);
     mojo::edk::ScopedPlatformHandle edk_handle(mojo::edk::PlatformHandle(
 #if defined(OS_WIN)
         platform_handle.release().handle));
