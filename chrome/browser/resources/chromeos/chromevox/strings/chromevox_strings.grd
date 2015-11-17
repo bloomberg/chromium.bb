@@ -944,18 +944,6 @@
       <message desc='Brailled when describing an ARIA value maximum. For example "Distance, in meters: 6 min:2 max:10".' name="IDS_CHROMEVOX_ARIA_VALUE_MAX_BRL">
         max:<ph name="x">$1</ph>
       </message>
-      <message desc='Spoken when describing an ARIA value. For example "Distance, in meters textbox 6, min 2, max 10".' name="IDS_CHROMEVOX_ARIA_VALUE_NOW">
-        <ph name="x">$1</ph>
-      </message>
-      <message desc='Brailled when describing an ARIA value. For example "Distance, in meters: 6 min:2 max:10".' name="IDS_CHROMEVOX_ARIA_VALUE_NOW_BRL">
-        <ph name="x">$1</ph>
-      </message>
-      <message desc='Spoken when describing an ARIA value text. For example "Distance, short distance set"' name="IDS_CHROMEVOX_ARIA_VALUE_TEXT">
-        <ph name="x">$1</ph>
-      </message>
-      <message desc='Brailled when describing an ARIA value text. For example "Distance, short distance set"' name="IDS_CHROMEVOX_ARIA_VALUE_TEXT_BRL">
-        <ph name="x">$1</ph>
-      </message>
       <message desc="Describes an element with the ARIA role alert." name="IDS_CHROMEVOX_ROLE_ALERT">
         Alert
       </message>

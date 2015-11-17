@@ -50,7 +50,7 @@ Msgs.getLocale = function() {
 Msgs.getMsg = function(messageId, opt_subs) {
   var message = Msgs.Untranslated[messageId.toUpperCase()];
   if (message !== undefined)
-    return message;
+    return Msgs.applySubstitutions_(message, opt_subs);
   message = chrome.i18n.getMessage(
       Msgs.NAMESPACE_ + messageId, opt_subs);
   if (message == undefined || message == '') {
@@ -111,6 +111,23 @@ Msgs.getLocaleDisplayName = function(locale) {
 };
 
 /**
+ * Applies substitions of the form $N, where N is a number from 1 to 9, to a
+ * string. The numbers are one-based indices into |opt_subs|.
+ * @param {string} message
+ * @param {Array<string>=} opt_subs
+ * @return {string}
+ * @private
+ */
+Msgs.applySubstitutions_ = function(message, opt_subs) {
+  if (opt_subs) {
+    for (var i = 0; i < opt_subs.length; i++) {
+      message = message.replace('$' + (i + 1), opt_subs[i]);
+    }
+  }
+  return message;
+};
+
+/**
  * Strings that are displayed in the user interface but don't need
  * be translated.
  * @type {Object<string>}
@@ -156,6 +173,14 @@ Msgs.Untranslated = {
   ARIA_SELECTED_FALSE_BRL: '( )',
   /** Brailled after a menu if it has a submenu. */
   HAS_SUBMENU_BRL: '->',
-  /** Brailled to describe a &lt;time&gt; tag. */
+  /** Brailled to describe a <time> tag. */
   TAG_TIME_BRL: ' ',
+  /** Spoken when describing an ARIA value. */
+  ARIA_VALUE_NOW: '$1',
+  /** Brailled when describing an ARIA value. */
+  ARIA_VALUE_NOW_BRL: '$1',
+  /** Spoken when describing an ARIA value text. */
+  ARIA_VALUE_TEXT: '$1',
+  /** Brailled when describing an ARIA value text. */
+  ARIA_VALUE_TEXT_BRL: '$1',
 };

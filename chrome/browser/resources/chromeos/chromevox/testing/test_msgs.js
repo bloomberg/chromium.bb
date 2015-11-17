@@ -18,6 +18,12 @@ goog.require('cvox.TestMessages');
 TestMsgs = function() {};
 
 /**
+ * @type {function(string, Array<string>=): string}
+ * @private
+ */
+TestMsgs.applySubstitutions_ = Msgs.applySubstitutions_;
+
+/**
  * @type {Object<string>}
  */
 TestMsgs.Untranslated = Msgs.Untranslated;
@@ -38,30 +44,23 @@ TestMsgs.getMsg = function(messageId, opt_subs) {
   if (!messageId) {
     throw Error('Message id required');
   }
-  var message = TestMsgs.Untranslated[messageId.toUpperCase()];
-  if (message !== undefined)
-    return message;
-  message = cvox.TestMessages[('chromevox_' + messageId).toUpperCase()];
-  if (message === undefined) {
-    throw Error('missing-msg: ' + messageId);
-  }
-
-  var messageString = message.message;
-  var placeholders = message.placeholders;
-  if (placeholders) {
-    for (name in placeholders) {
-      messageString = messageString.replace(
-          '$' + name + '$',
-          placeholders[name].content);
+  var messageString = TestMsgs.Untranslated[messageId.toUpperCase()];
+  if (messageString === undefined) {
+    var messageObj = cvox.TestMessages[(
+        'chromevox_' + messageId).toUpperCase()];
+    if (messageObj === undefined)
+      throw Error('missing-msg: ' + messageId);
+    var messageString = messageObj.message;
+    var placeholders = messageObj.placeholders;
+    if (placeholders) {
+      for (name in placeholders) {
+        messageString = messageString.replace(
+            '$' + name + '$',
+            placeholders[name].content);
+      }
     }
   }
-  if (opt_subs) {
-    // Unshift a null to make opt_subs and message.placeholders line up.
-    for (var i = 0; i < opt_subs.length; i++) {
-      messageString = messageString.replace('$' + (i + 1), opt_subs[i]);
-    }
-  }
-  return messageString;
+  return Msgs.applySubstitutions_(messageString, opt_subs);
 };
 
 /**
