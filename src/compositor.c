@@ -2579,6 +2579,9 @@ surface_damage(struct wl_client *client,
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
+	if (width <= 0 || height <= 0)
+		return;
+
 	pixman_region32_union_rect(&surface->pending.damage,
 				   &surface->pending.damage,
 				   x, y, width, height);
