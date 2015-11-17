@@ -6,8 +6,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "device/serial/serial_io_handler.h"
+#include "device/serial/serial.mojom.h"
 
 namespace battor {
 
@@ -18,22 +17,10 @@ namespace battor {
 // Because the communication is synchronous and passes over a serial connection,
 // callers wishing to avoid blocking the thread (like the Chromium tracing
 // controller) should issue these commands in a separate thread.
-//
-// The serial connection is automatically opened when the first command
-// (e.g. StartTracing(), StopTracing(), etc.) is issued, and automatically
-// closed when either StopTracing() or the destructor is called. For Telemetry,
-// this means that the connection must be reinitialized for every command that's
-// issued because a new BattOrAgent is constructed. For Chromium, we use the
-// same BattOrAgent for multiple commands and thus avoid having to reinitialize
-// the serial connection.
-//
-// This class is NOT thread safe.
 class BattOrAgent {
  public:
   enum BattOrError {
     BATTOR_ERROR_NONE,
-    BATTOR_ERROR_CONNECTION_FAILED,
-    BATTOR_ERROR_TIMEOUT,
   };
 
   explicit BattOrAgent(const std::string& path);
@@ -58,18 +45,7 @@ class BattOrAgent {
   static bool SupportsExplicitClockSync() { return true; }
 
  private:
-  // Initializes the serial connection with the BattOr. If the connection
-  // already exists, BATTOR_ERROR_NONE is immediately returned.
-  BattOrError ConnectIfNeeded();
-
-  // Resets the connection to its unopened state.
-  void ResetConnection();
-
-  // The path of the BattOr (e.g. "/dev/tty.battor_serial").
   std::string path_;
-
-  // IO handler capable of reading from and writing to the serial connection.
-  scoped_refptr<device::SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BattOrAgent);
 };
