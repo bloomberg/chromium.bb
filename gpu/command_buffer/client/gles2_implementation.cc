@@ -321,11 +321,25 @@ void GLES2Implementation::SignalSyncPoint(uint32 sync_point,
 
 void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
                                           const base::Closure& callback) {
-  gpu_control_->SignalSyncToken(
-      sync_token,
-      base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  if (sync_token.HasData() &&
+      (sync_token.verified_flush() ||
+       gpu_control_->CanWaitUnverifiedSyncToken(&sync_token))) {
+
+    gpu::SyncToken intermediate_sync_token = sync_token;
+
+    // Mark the intermediate sync token as verified if we can wait on
+    // unverified sync tokens.
+    intermediate_sync_token.SetVerifyFlush();
+
+    gpu_control_->SignalSyncToken(
+        intermediate_sync_token,
+        base::Bind(&GLES2Implementation::RunIfContextNotLost,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  } else {
+    // Invalid sync token, just call the callback immediately.
+    callback.Run();
+  }
 }
 
 void GLES2Implementation::SignalQuery(uint32 query,

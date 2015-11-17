@@ -1935,7 +1935,7 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
 
 class GLRendererTestSyncPoint : public GLRendererPixelTest {
  protected:
-  static void SyncPointCallback(int* callback_count) {
+  static void SyncTokenCallback(int* callback_count) {
     ++(*callback_count);
     base::MessageLoop::current()->QuitWhenIdle();
   }
@@ -1948,21 +1948,25 @@ class GLRendererTestSyncPoint : public GLRendererPixelTest {
 
 #if !defined(OS_ANDROID)
 TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
-  int sync_point_callback_count = 0;
+  int sync_token_callback_count = 0;
   int other_callback_count = 0;
   gpu::gles2::GLES2Interface* gl =
       output_surface_->context_provider()->ContextGL();
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();
 
-  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
+  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
+
+  gpu::SyncToken sync_token;
+  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
   gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                           GL_INNOCENT_CONTEXT_RESET_ARB);
 
-  context_support->SignalSyncPoint(
-      sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
-  EXPECT_EQ(0, sync_point_callback_count);
+  context_support->SignalSyncToken(
+      sync_token, base::Bind(&SyncTokenCallback, &sync_token_callback_count));
+  EXPECT_EQ(0, sync_token_callback_count);
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
@@ -1974,12 +1978,12 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   base::MessageLoop::current()->Run();
 
   // The sync point shouldn't have happened since the context was lost.
-  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(0, sync_token_callback_count);
   EXPECT_EQ(1, other_callback_count);
 }
 
 TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
-  int sync_point_callback_count = 0;
+  int sync_token_callback_count = 0;
   int other_callback_count = 0;
 
   gpu::gles2::GLES2Interface* gl =
@@ -1987,11 +1991,15 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();
 
-  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
+  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
 
-  context_support->SignalSyncPoint(
-      sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
-  EXPECT_EQ(0, sync_point_callback_count);
+  gpu::SyncToken sync_token;
+  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+  context_support->SignalSyncToken(
+      sync_token, base::Bind(&SyncTokenCallback, &sync_token_callback_count));
+  EXPECT_EQ(0, sync_token_callback_count);
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
@@ -2003,7 +2011,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   base::MessageLoop::current()->Run();
 
   // The sync point should have happened.
-  EXPECT_EQ(1, sync_point_callback_count);
+  EXPECT_EQ(1, sync_token_callback_count);
   EXPECT_EQ(1, other_callback_count);
 }
 #endif  // OS_ANDROID

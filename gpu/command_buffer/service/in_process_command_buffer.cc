@@ -927,6 +927,24 @@ bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
   return true;
 }
 
+void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
+    const SyncToken& sync_token, const base::Closure& callback) {
+  gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
+  DCHECK(sync_point_manager);
+
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager->GetSyncPointClientState(
+          sync_token.namespace_id(), sync_token.command_buffer_id());
+
+  if (!release_state) {
+    callback.Run();
+    return;
+  }
+
+  sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
+                           WrapCallback(callback));
+}
+
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,
                                          const base::Closure& callback) {
   CheckSequencedThread();
@@ -986,20 +1004,11 @@ bool InProcessCommandBuffer::IsFenceSyncFlushReceived(uint64_t release) {
 
 void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
                                              const base::Closure& callback) {
-  gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
-  DCHECK(sync_point_manager);
-
-  scoped_refptr<gpu::SyncPointClientState> release_state =
-      sync_point_manager->GetSyncPointClientState(
-          sync_token.namespace_id(), sync_token.command_buffer_id());
-
-  if (!release_state) {
-    callback.Run();
-    return;
-  }
-
-  sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
-                           WrapCallback(callback));
+  CheckSequencedThread();
+  QueueTask(base::Bind(&InProcessCommandBuffer::SignalSyncTokenOnGpuThread,
+                       base::Unretained(this),
+                       sync_token,
+                       WrapCallback(callback)));
 }
 
 bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
