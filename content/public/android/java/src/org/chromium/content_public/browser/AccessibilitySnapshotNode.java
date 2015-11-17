@@ -27,6 +27,10 @@ public class AccessibilitySnapshotNode {
     public int color, bgcolor;
     public boolean bold, italic, underline, lineThrough;
 
+    public boolean hasSelection;
+    public int startSelection;
+    public int endSelection;
+
     public ArrayList<AccessibilitySnapshotNode> children =
             new ArrayList<AccessibilitySnapshotNode>();
 
@@ -52,6 +56,12 @@ public class AccessibilitySnapshotNode {
         this.underline = underline;
         this.lineThrough = lineThrough;
         hasStyle = true;
+    }
+
+    public void setSelection(int start, int end) {
+        hasSelection = true;
+        startSelection = start;
+        endSelection = end;
     }
 
     public void addChild(AccessibilitySnapshotNode node) {

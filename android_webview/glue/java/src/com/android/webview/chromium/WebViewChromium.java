@@ -1580,7 +1580,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     private void createAssistStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
             int parentX, int parentY) {
         viewNode.setClassName(node.className);
-        viewNode.setText(node.text);
+        if (node.hasSelection) {
+            viewNode.setText(node.text, node.startSelection, node.endSelection);
+        } else {
+            viewNode.setText(node.text);
+        }
         // Do not pass scroll information.
         viewNode.setDimens(node.x - parentX, node.y - parentY, 0, 0, node.width, node.height);
         viewNode.setChildCount(node.children.size());

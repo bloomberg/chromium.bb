@@ -2955,7 +2955,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
             int parentX, int parentY) {
         viewNode.setClassName(node.className);
-        viewNode.setText(node.text);
+        if (node.hasSelection) {
+            viewNode.setText(node.text, node.startSelection, node.endSelection);
+        } else {
+            viewNode.setText(node.text);
+        }
         viewNode.setDimens(node.x - parentX - node.scrollX, node.y - parentY, 0, node.scrollY,
                 node.width, node.height);
         viewNode.setChildCount(node.children.size());

@@ -403,6 +403,12 @@ import java.util.UUID;
         return node;
     }
 
+    @CalledByNative
+    private static void setAccessibilitySnapshotSelection(
+            AccessibilitySnapshotNode node, int start, int end) {
+        node.setSelection(start, end);
+    }
+
     @Override
     public void addObserver(WebContentsObserver observer) {
         assert mNativeWebContentsAndroid != 0;
