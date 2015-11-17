@@ -27,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -364,7 +365,18 @@ ExtensionActionViewController::GetIconImageSource(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   scoped_ptr<IconWithBadgeImageSource> image_source(
       new IconWithBadgeImageSource(size));
-  image_source->SetIcon(icon_factory_.GetIcon(tab_id));
+
+  gfx::Image icon(icon_factory_.GetIcon(tab_id));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // TODO(tdanderson): Use a 16x16 icon if it exists instead of resizing.
+    icon = gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
+        *icon.ToImageSkia(),
+        skia::ImageOperations::RESIZE_BEST,
+        gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
+                  extension_misc::EXTENSION_ICON_BITTY)));
+  }
+  image_source->SetIcon(icon);
+
   scoped_ptr<IconWithBadgeImageSource::Badge> badge;
   std::string badge_text = extension_action_->GetBadgeText(tab_id);
   if (!badge_text.empty()) {
