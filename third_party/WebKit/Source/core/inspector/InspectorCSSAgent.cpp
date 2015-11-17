@@ -1767,7 +1767,7 @@ WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> InspectorCSSAgent::mat
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> rules = filterDuplicateRules(styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules));
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> styles;
-    if (element->style())
+    if (!pseudoId && element->style())
         styles.append(element->style());
     for (unsigned i = rules.size(); i > 0; --i) {
         CSSStyleSheet* parentStyleSheet = rules.at(i - 1)->parentStyleSheet();
