@@ -47990,6 +47990,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.InactiveToReloadTime" units="ms">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Elapsed time between the time a tab switched from being active to inactive
+    (that eventually gets discarded) until it gets reloaded.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.ReloadCount" units="Reloads">
   <owner>georgesak@chromium.org</owner>
   <summary>

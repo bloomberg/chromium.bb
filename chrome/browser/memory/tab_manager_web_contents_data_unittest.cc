@@ -184,4 +184,24 @@ TEST_F(TabManagerWebContentsDataTest, HistogramsReloadToCloseTime) {
   histograms.ExpectBucketCount(kHistogramName, 13000, 1);
 }
 
+TEST_F(TabManagerWebContentsDataTest, HistogramsInactiveToReloadTime) {
+  const char kHistogramName[] = "TabManager.Discarding.InactiveToReloadTime";
+
+  base::HistogramTester histograms;
+
+  EXPECT_TRUE(histograms.GetTotalCountsForPrefix(kHistogramName).empty());
+
+  tab_data()->SetLastInactiveTime(test_clock().NowTicks());
+  test_clock().Advance(base::TimeDelta::FromSeconds(5));
+  tab_data()->SetDiscardState(true);
+  tab_data()->IncrementDiscardCount();
+  test_clock().Advance(base::TimeDelta::FromSeconds(7));
+  tab_data()->SetDiscardState(false);
+
+  EXPECT_EQ(1,
+            histograms.GetTotalCountsForPrefix(kHistogramName).begin()->second);
+
+  histograms.ExpectBucketCount(kHistogramName, 12000, 1);
+}
+
 }  // namespace memory
