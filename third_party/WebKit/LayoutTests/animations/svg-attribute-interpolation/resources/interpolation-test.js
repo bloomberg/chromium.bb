@@ -368,10 +368,6 @@
     return target;
   }
 
-  function reprKeyframe(x) {
-    return (typeof x === 'string') ? "'" + x + "'" : null;
-  }
-
   function createTestTargets(interpolationTests, container, rebaselineContainer) {
     var targets = [];
     for (var interpolationTest of interpolationTests) {
@@ -385,14 +381,19 @@
 
     if (rebaselineTests) {
         var rebaseline = createElement('pre', rebaselineContainer);
+
+        var fromCode = 'from' in params ? `
+  from: '${params.from}',
+  fromComposite: '${params.fromComposite}',` : '';
+
+        var toCode = 'to' in params ? `
+  to: '${params.to}',
+  toComposite: '${params.toComposite}',` : '';
+
         rebaseline.appendChild(document.createTextNode(`\
 assertAttributeInterpolation({
   property: '${params.property}',
-  underlying: '${params.underlying}',
-  from: ${reprKeyframe(params.from)},
-  fromComposite: '${params.fromComposite}',
-  to: ${reprKeyframe(params.to)},
-  toComposite: '${params.toComposite}',
+  underlying: '${params.underlying}',${fromCode}${toCode}
 }, [\n`));
         var rebaselineExpectation;
         rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
