@@ -28,35 +28,6 @@ namespace chromeos {
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 
-// A class that's used to specify the way how Gaia should be loaded.
-struct GaiaContext {
-  GaiaContext();
-
-  // Forces Gaia to reload.
-  bool force_reload = false;
-
-  // Whether local verison of Gaia is used.
-  bool is_local = false;
-
-  // True if user pods can be displayed.
-  bool show_users = false;
-
-  // Whether Gaia should be loaded in offline mode.
-  bool use_offline = false;
-
-  // Email of the current user.
-  std::string email;
-
-  // GAIA ID of the current user.
-  std::string gaia_id;
-
-  // GAPS cookie.
-  std::string gaps_cookie;
-
-  // Whether consumer management enrollment is in progress.
-  bool is_enrolling_consumer_management = false;
-};
-
 // A class that handles WebUI hooks in Gaia screen.
 class GaiaScreenHandler : public BaseScreenHandler,
                           public NetworkPortalDetector::Observer {
@@ -83,6 +54,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
  private:
   // TODO (antrim@): remove this dependency.
   friend class SigninScreenHandler;
+
+  struct GaiaContext;
 
   void LoadGaia(const GaiaContext& context);
 
