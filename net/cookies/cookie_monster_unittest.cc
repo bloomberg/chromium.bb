@@ -100,7 +100,6 @@ struct CookieMonsterTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const int creation_time_granularity_in_ms = 0;
-  static const bool enforces_prefixes = true;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
