@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
 
 #if defined(USE_X11)
@@ -32,7 +32,8 @@ typedef int LocalProfileId;
 
 // Singleton that owns all PasswordStores and associates them with
 // Profiles.
-class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
+class PasswordStoreFactory
+    : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   static scoped_refptr<password_manager::PasswordStore> GetForProfile(
       Profile* profile,
@@ -58,8 +59,8 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
   LocalProfileId GetLocalProfileId(PrefService* prefs) const;
 #endif
 
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
+  // RefcountedBrowserContextKeyedServiceFactory:
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;

@@ -191,7 +191,7 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   // PasswordStore has not completed.
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       browser()->profile(),
-      password_manager::BuildPasswordStoreService<
+      password_manager::BuildPasswordStore<
           content::BrowserContext, password_manager::TestPasswordStore>);
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(

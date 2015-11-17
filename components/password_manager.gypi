@@ -106,8 +106,6 @@
         'password_manager/core/browser/password_store_default.h',
         'password_manager/core/browser/password_store_factory_util.cc',
         'password_manager/core/browser/password_store_factory_util.h',
-        'password_manager/core/browser/password_store_service.cc',
-        'password_manager/core/browser/password_store_service.h',
         'password_manager/core/browser/password_store_sync.cc',
         'password_manager/core/browser/password_store_sync.h',
         'password_manager/core/browser/password_syncable_service.cc',

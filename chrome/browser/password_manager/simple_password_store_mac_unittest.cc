@@ -61,7 +61,7 @@ class SimplePasswordStoreMacTest : public testing::Test {
   }
 
   void TearDown() override {
-    store_->Shutdown();
+    store_->ShutdownOnUIThread();
     EXPECT_TRUE(store_->GetBackgroundTaskRunner());
     store_ = nullptr;
   }

@@ -172,7 +172,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
@@ -221,7 +221,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   base::MessageLoop::current()->RunUntilIdle();
 
   store->RemoveObserver(&observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 // Verify that operations on a PasswordStore with a bad database cause no
@@ -285,7 +285,7 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Ensure no notifications and no explosions during shutdown either.
   bad_store->RemoveObserver(&mock_observer);
-  bad_store->Shutdown();
+  bad_store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest,
@@ -311,7 +311,7 @@ TEST_F(PasswordStoreDefaultTest,
   run_loop.Run();
 
   store->RemoveObserver(&observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest,
@@ -336,7 +336,7 @@ TEST_F(PasswordStoreDefaultTest,
   run_loop.Run();
 
   store->RemoveObserver(&observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest,
@@ -363,7 +363,7 @@ TEST_F(PasswordStoreDefaultTest,
   run_loop.Run();
 
   store->RemoveObserver(&observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 }  // namespace password_manager

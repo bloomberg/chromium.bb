@@ -38,7 +38,7 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
       PrefService* prefs);
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
-  void Shutdown() override;
+  void ShutdownOnUIThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner()
       override;
 

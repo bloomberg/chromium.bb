@@ -137,7 +137,7 @@ class PasswordStoreWinTest : public testing::Test {
 
   void TearDown() override {
     if (store_.get())
-      store_->Shutdown();
+      store_->ShutdownOnUIThread();
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
     wds_ = nullptr;
@@ -285,7 +285,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
 
   // Release the PSW and the WDS before the query can return.
-  store_->Shutdown();
+  store_->ShutdownOnUIThread();
   store_ = nullptr;
   wds_ = nullptr;
 

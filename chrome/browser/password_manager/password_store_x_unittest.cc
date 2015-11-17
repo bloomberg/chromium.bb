@@ -375,7 +375,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   store->RemoveObserver(&observer);
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
@@ -478,7 +478,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
     EXPECT_EQ(db_file_start_info.size, db_file_end_info.size);
   }
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

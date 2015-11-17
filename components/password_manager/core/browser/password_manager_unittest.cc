@@ -135,7 +135,7 @@ class PasswordManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    store_->Shutdown();
+    store_->ShutdownOnUIThread();
     store_ = nullptr;
   }
 

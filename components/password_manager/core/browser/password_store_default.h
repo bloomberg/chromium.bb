@@ -27,7 +27,7 @@ class PasswordStoreDefault : public PasswordStore {
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
 
-  void Shutdown() override;
+  void ShutdownOnUIThread() override;
 
   // To be used only for testing.
   LoginDatabase* login_db() const { return login_db_.get(); }

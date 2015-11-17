@@ -1231,7 +1231,7 @@ class PasswordStoreMacTest : public testing::Test {
     if (!store_)
       return;
 
-    store_->Shutdown();
+    store_->ShutdownOnUIThread();
     store_ = nullptr;
   }
 

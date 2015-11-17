@@ -235,7 +235,7 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
   return false;
 }
 
-void PasswordStore::Shutdown() {
+void PasswordStore::ShutdownOnUIThread() {
   ScheduleTask(base::Bind(&PasswordStore::DestroySyncableService, this));
   // The AffiliationService must be destroyed from the main thread.
   affiliated_match_helper_.reset();

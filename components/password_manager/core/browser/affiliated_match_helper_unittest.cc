@@ -296,7 +296,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   void TearDown() override {
     match_helper_.reset();
-    password_store_->Shutdown();
+    password_store_->ShutdownOnUIThread();
     password_store_ = nullptr;
   }
 

@@ -59,7 +59,7 @@ class PasswordManagerPresenterTest : public testing::Test {
   void SetUp() override {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         &profile_,
-        password_manager::BuildPasswordStoreService<
+        password_manager::BuildPasswordStore<
             content::BrowserContext, password_manager::MockPasswordStore>);
     mock_controller_.reset(new MockPasswordUIView(&profile_));
   }

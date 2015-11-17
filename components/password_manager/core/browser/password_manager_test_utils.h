@@ -8,9 +8,9 @@
 #include <iosfwd>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_store_service.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // TODO(sync): The PasswordFormData code must eventually be refactored away --
@@ -18,17 +18,17 @@
 
 namespace password_manager {
 
-// This templates allows creating methods with signature conforming to
+// This template allows creating methods with signature conforming to
 // TestingFactoryFunction of the appropriate platform instance of
 // KeyedServiceFactory. Context is the browser context prescribed by
 // TestingFactoryFunction. Store is the PasswordStore version needed in the
 // tests which use this method.
 template <class Context, class Store>
-scoped_ptr<KeyedService> BuildPasswordStoreService(Context* context) {
+scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(new Store);
   if (!store->Init(syncer::SyncableService::StartSyncFlare()))
     return nullptr;
-  return scoped_ptr<KeyedService>(new PasswordStoreService(store));
+  return store;
 }
 
 // These constants are used by CreatePasswordFormFromDataForTesting to supply

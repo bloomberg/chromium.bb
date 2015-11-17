@@ -74,7 +74,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   explicit MockPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), store_(new TestPasswordStore), driver_(this) {}
 
-  ~MockPasswordManagerClient() override { store_->Shutdown(); }
+  ~MockPasswordManagerClient() override { store_->ShutdownOnUIThread(); }
 
   PasswordStore* GetPasswordStore() const override { return store_.get(); }
   PrefService* GetPrefs() override { return prefs_.get(); }

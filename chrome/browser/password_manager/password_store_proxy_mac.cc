@@ -56,9 +56,9 @@ bool PasswordStoreProxyMac::Init(
                  static_cast<MigrationStatus>(migration_status_.GetValue())));
 }
 
-void PasswordStoreProxyMac::Shutdown() {
+void PasswordStoreProxyMac::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PasswordStore::Shutdown();
+  PasswordStore::ShutdownOnUIThread();
   thread_->Stop();
 
   // Execute the task which are still pending.
@@ -71,7 +71,7 @@ void PasswordStoreProxyMac::Shutdown() {
   // another. GetBackend() returns the correct result.
   // The backend doesn't need the background thread as PasswordStore::Init() and
   // other public methods were never called on it.
-  GetBackend()->Shutdown();
+  GetBackend()->ShutdownOnUIThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -106,8 +106,8 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
         status = MigrationStatus::MIGRATED;
         // Switch from |password_store_mac_| to |password_store_simple_|.
         password_store_mac_->set_login_metadata_db(nullptr);
-        pending_ui_tasks_.push_back(
-            base::Bind(&PasswordStoreMac::Shutdown, password_store_mac_));
+        pending_ui_tasks_.push_back(base::Bind(
+            &PasswordStoreMac::ShutdownOnUIThread, password_store_mac_));
         password_store_mac_ = nullptr;
         DCHECK(!password_store_simple_);
         password_store_simple_ = new SimplePasswordStoreMac(

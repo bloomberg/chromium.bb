@@ -225,7 +225,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -244,7 +244,7 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
     store->AddLogin(form);
     base::MessageLoop::current()->RunUntilIdle();
   }
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -294,7 +294,7 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
   ASSERT_TRUE(returned_form);
   EXPECT_EQ(*test_form, *returned_form);
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -352,7 +352,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   base::MessageLoop::current()->RunUntilIdle();
 
   store->RemoveObserver(&mock_observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -391,7 +391,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   store->RemoveObserver(&mock_observer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -462,7 +462,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_results.get())));
   store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -580,7 +580,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
                   UnorderedPasswordFormElementsAre(expected_results.get())));
 
   store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
-  store->Shutdown();
+  store->ShutdownOnUIThread();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -797,7 +797,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
           OnGetPasswordStoreResultsConstRef(UnorderedPasswordFormElementsAre(
               expected_credentials_after_update.get())));
       store->GetAutofillableLogins(&mock_consumer);
-      store->Shutdown();
+      store->ShutdownOnUIThread();
       base::MessageLoop::current()->RunUntilIdle();
     }
   }

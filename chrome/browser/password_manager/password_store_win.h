@@ -32,14 +32,14 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
       const scoped_refptr<PasswordWebDataService>& web_data_service);
 
   // PasswordStore:
-  void Shutdown() override;
+  void ShutdownOnUIThread() override;
 
  private:
   class DBHandler;
 
   ~PasswordStoreWin() override;
 
-  // Invoked from Shutdown, but run on the DB thread.
+  // Invoked from ShutdownOnUIThread, but run on the DB thread.
   void ShutdownOnDBThread();
 
   // password_manager::PasswordStore:

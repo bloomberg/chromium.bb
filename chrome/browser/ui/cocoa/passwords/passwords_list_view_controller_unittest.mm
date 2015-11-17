@@ -37,7 +37,7 @@ class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
     ManagePasswordsControllerTest::SetUp();
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         profile(),
-        password_manager::BuildPasswordStoreService<
+        password_manager::BuildPasswordStore<
             content::BrowserContext, password_manager::MockPasswordStore>);
   }
 

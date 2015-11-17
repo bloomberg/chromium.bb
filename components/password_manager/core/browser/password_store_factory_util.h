@@ -13,7 +13,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/password_store_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/syncable_service.h"
@@ -42,26 +41,11 @@ void TrimOrDeleteAffiliationCacheForStoreAndPath(
     const base::FilePath& profile_path,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
-// Extracts the PasswordStore from |service|, taking into account the
-// |access_type|, and whether the corresponding browsing session
-// |is_off_the_record|.
-scoped_refptr<PasswordStore> GetPasswordStoreFromService(
-    PasswordStoreService* service,
-    ServiceAccessType access_type,
-    bool is_off_the_record);
-
 // Creates a LoginDatabase. Looks in |profile_path| for the database file.
 // Does not call LoginDatabase::Init() -- to avoid UI jank, that needs to be
 // called by PasswordStore::Init() on the background thread.
 scoped_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path);
-
-// Initializes the |store|, passing |sync_flare| into it, then returns the
-// |store| wrapped in a PasswordStoreService on success. Returns nullptr on
-// failure.
-scoped_ptr<KeyedService> BuildServiceInstanceFromStore(
-    scoped_refptr<PasswordStore> store,
-    syncer::SyncableService::StartSyncFlare sync_flare);
 
 }  // namespace password_manager
 

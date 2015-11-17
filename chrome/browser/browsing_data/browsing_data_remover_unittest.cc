@@ -2124,7 +2124,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveSameOriginDownloads) {
 TEST_F(BrowsingDataRemoverTest, RemovePasswordStatistics) {
   PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
       GetProfile(),
-      password_manager::BuildPasswordStoreService<
+      password_manager::BuildPasswordStore<
           content::BrowserContext, password_manager::MockPasswordStore>);
   password_manager::MockPasswordStore* store =
       static_cast<password_manager::MockPasswordStore*>(

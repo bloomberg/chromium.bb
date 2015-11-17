@@ -224,7 +224,7 @@ class CredentialManagerDispatcherTest
   }
 
   void TearDown() override {
-    store_->Shutdown();
+    store_->ShutdownOnUIThread();
     content::RenderViewHostTestHarness::TearDown();
   }
 

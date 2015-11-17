@@ -313,7 +313,7 @@ class PasswordFormManagerTest : public testing::Test {
 
   void TearDown() override {
     if (mock_store_.get())
-      mock_store_->Shutdown();
+      mock_store_->ShutdownOnUIThread();
   }
 
   MockPasswordStore* mock_store() const { return mock_store_.get(); }

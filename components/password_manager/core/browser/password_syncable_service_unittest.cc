@@ -195,7 +195,7 @@ class PasswordSyncableServiceWrapper {
     EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
 
-  ~PasswordSyncableServiceWrapper() { password_store_->Shutdown(); }
+  ~PasswordSyncableServiceWrapper() { password_store_->ShutdownOnUIThread(); }
 
   MockPasswordStore* password_store() { return password_store_.get(); }
 

@@ -33,8 +33,8 @@ bool PasswordStoreDefault::Init(
   return PasswordStore::Init(flare);
 }
 
-void PasswordStoreDefault::Shutdown() {
-  PasswordStore::Shutdown();
+void PasswordStoreDefault::ShutdownOnUIThread() {
+  PasswordStore::ShutdownOnUIThread();
   ScheduleTask(base::Bind(&PasswordStoreDefault::ResetLoginDB, this));
 }
 

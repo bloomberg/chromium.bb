@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
 enum class ServiceAccessType;
 
@@ -26,7 +26,8 @@ class PasswordStore;
 
 // Singleton that owns all PasswordStores and associates them with
 // ios::ChromeBrowserState.
-class IOSChromePasswordStoreFactory : public BrowserStateKeyedServiceFactory {
+class IOSChromePasswordStoreFactory
+    : public RefcountedBrowserStateKeyedServiceFactory {
  public:
   static scoped_refptr<password_manager::PasswordStore> GetForBrowserState(
       ios::ChromeBrowserState* browser_state,
@@ -46,7 +47,7 @@ class IOSChromePasswordStoreFactory : public BrowserStateKeyedServiceFactory {
   ~IOSChromePasswordStoreFactory() override;
 
   // BrowserStateKeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;

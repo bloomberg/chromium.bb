@@ -88,34 +88,10 @@ void TrimOrDeleteAffiliationCacheForStoreAndPath(
   }
 }
 
-scoped_refptr<PasswordStore> GetPasswordStoreFromService(
-    password_manager::PasswordStoreService* service,
-    ServiceAccessType access_type,
-    bool is_off_the_record) {
-  if (access_type == ServiceAccessType::IMPLICIT_ACCESS && is_off_the_record) {
-    NOTREACHED() << "Incognito state does not have a password store associated";
-    return nullptr;
-  }
-
-  return service ? service->GetPasswordStore() : nullptr;
-}
-
 scoped_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path) {
   base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
   return make_scoped_ptr(new LoginDatabase(login_db_file_path));
-}
-
-scoped_ptr<KeyedService> BuildServiceInstanceFromStore(
-    scoped_refptr<PasswordStore> store,
-    syncer::SyncableService::StartSyncFlare sync_flare) {
-  DCHECK(store);
-  if (!store->Init(sync_flare)) {
-    NOTREACHED() << "Could not initialize password store.";
-    return nullptr;
-  }
-
-  return make_scoped_ptr(new PasswordStoreService(store));
 }
 
 }  // namespace password_manager
