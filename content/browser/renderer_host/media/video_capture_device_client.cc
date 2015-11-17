@@ -392,8 +392,8 @@ void VideoCaptureDeviceClient::OnError(
     const tracked_objects::Location& from_here,
     const std::string& reason) {
   const std::string log_message = base::StringPrintf(
-      "Error on %s:%d: %s, OS message: %s", from_here.file_name(),
-      from_here.line_number(), reason.c_str(),
+      "error@ %s, %s, OS message: %s", from_here.ToString().c_str(),
+      reason.c_str(),
       logging::SystemErrorCodeToString(logging::GetLastSystemErrorCode())
           .c_str());
   DLOG(ERROR) << log_message;
