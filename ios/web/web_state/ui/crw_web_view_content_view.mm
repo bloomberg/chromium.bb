@@ -46,6 +46,12 @@
   return nil;
 }
 
+- (void)willMoveToSuperview:(nullable UIView*)newSuperview {
+  [super willMoveToSuperview:newSuperview];
+  self.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+}
+
 #pragma mark Accessors
 
 - (UIScrollView*)scrollView {
