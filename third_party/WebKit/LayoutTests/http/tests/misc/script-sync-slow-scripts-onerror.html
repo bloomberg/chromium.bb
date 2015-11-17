@@ -25,22 +25,27 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-var firstOnErrorHandlerHasRun = false;
+var firstOnErrorHandlerCount = 0;
+var secondOnErrorHandlerCount = 0;
+function verifyAndFinish() {
+    shouldBe("firstOnErrorHandlerCount", "1");
+    shouldBe("secondOnErrorHandlerCount", "1");
+    finishJSTest();
+};
+
 function failedFirst() {
-    shouldBeFalse("firstOnErrorHandlerHasRun");
-    firstOnErrorHandlerHasRun = true;
+    firstOnErrorHandlerCount++;
     // Issue another script load so as to have the script runner
     // revisit its script queue. This should not result in this
     // onerror handler running again.
-    loadScript("resources/success.js?1", true);
+    var continuation = secondOnErrorHandlerCount ? verifyAndFinish : undefined;
+    loadScript("resources/success.js?1", true, continuation);
 }
 
-var secondOnErrorHandlerHasRun = false;
 function failedSecond() {
-    shouldBeTrue("firstOnErrorHandlerHasRun");
-    shouldBeFalse("secondOnErrorHandlerHasRun");
-    secondOnErrorHandlerHasRun = true;
-    loadScript("resources/success.js?2", true, finishJSTest);
+    secondOnErrorHandlerCount++;
+    var continuation = firstOnErrorHandlerCount ? verifyAndFinish : undefined;
+    loadScript("resources/success.js?2", true, continuation);
 }
 
 function unexpectedLoad() {

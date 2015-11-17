@@ -1361,5 +1361,3 @@ crbug.com/548416 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/background-at
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
-
-crbug.com/555052 http/tests/misc/script-sync-slow-scripts-onerror.html [ Failure Pass ]
