@@ -111,17 +111,6 @@ camera.effects.Retro30 = function() {
   camera.effects.Retro.call(this, 0.1, 0, 0, 0, 0.1, 0.4);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Retro30.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.Retro30.prototype = {
   __proto__: camera.effects.Retro.prototype
 };
@@ -141,17 +130,6 @@ camera.effects.Retro50 = function() {
   camera.effects.Retro.call(this, 0.2, 0, 0, 0.2, 0.2, 0);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Retro50.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.Retro50.prototype = {
   __proto__: camera.effects.Retro.prototype
 };
@@ -169,17 +147,6 @@ camera.effects.Retro50.prototype.getTitle = function() {
  */
 camera.effects.Retro60 = function() {
   camera.effects.Retro.call(this, 0, 0, 0.2, 0.2, 0, 0);
-};
-
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Retro60.isAvailable = function(webglExtensions) {
-  return true;
 };
 
 camera.effects.Retro60.prototype = {

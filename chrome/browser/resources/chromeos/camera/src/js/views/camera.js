@@ -596,10 +596,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.effectCanvasTexture_ = this.effectCanvas_.texture(
         this.effectInputCanvas_);
 
-    // Add effects if they are available on the platform.
-    var extensions = document.createElement("canvas").getContext(
-        "webgl").getSupportedExtensions();
-
     var effects = [camera.effects.Normal, camera.effects.Vintage,
         camera.effects.Cinema, camera.effects.TiltShift,
         camera.effects.Retro30, camera.effects.Retro50,
@@ -612,8 +608,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
         camera.effects.Funky, camera.effects.Ghost,
         camera.effects.Swirl];
     for (var index = 0; index < effects.length; index++) {
-      if (effects[index].isAvailable(extensions))
-        this.addEffect_(new effects[index]());
+      this.addEffect_(new effects[index]());
     }
 
     // Select the default effect and state of the timer toggle button.

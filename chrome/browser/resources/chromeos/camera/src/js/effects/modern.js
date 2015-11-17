@@ -32,17 +32,6 @@ camera.effects.Modern = function() {
 };
 
 /**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Modern.isAvailable = function(webglExtensions) {
-  return true;
-};
-
-/**
  * Available colors for parts of the image.
  * @type {Array.<Array<number>>}
  */

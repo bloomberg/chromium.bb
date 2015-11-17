@@ -37,18 +37,6 @@ camera.effects.TiltShift = function() {
   Object.seal(this);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.TiltShift.isAvailable = function(webglExtensions) {
-  // Workaround for: crbug.com/523216.
-  return (webglExtensions.indexOf('OES_texture_float_linear') !== -1);
-};
-
 camera.effects.TiltShift.prototype = {
   __proto__: camera.Effect.prototype
 };

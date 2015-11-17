@@ -23,17 +23,6 @@ camera.effects.Swirl = function() {
   Object.freeze(this);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Swirl.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.Swirl.prototype = {
   __proto__: camera.Effect.prototype
 };

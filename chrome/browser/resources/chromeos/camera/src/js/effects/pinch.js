@@ -94,17 +94,6 @@ camera.effects.BigHead = function() {
   camera.effects.Pinch.call(this, 0, 1.0, 1.0);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.BigHead.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.BigHead.prototype = {
   __proto__: camera.effects.Pinch.prototype
 };
@@ -124,17 +113,6 @@ camera.effects.BigJaw = function() {
   camera.effects.Pinch.call(this, 0.9, 0.6, 1.0);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.BigJaw.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.BigJaw.prototype = {
   __proto__: camera.effects.Pinch.prototype
 };
@@ -152,17 +130,6 @@ camera.effects.BigJaw.prototype.getTitle = function() {
  */
 camera.effects.BunnyHead = function() {
   camera.effects.Pinch.call(this, 0.8, 0.8, -0.7);
-};
-
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.BunnyHead.isAvailable = function(webglExtensions) {
-  return true;
 };
 
 camera.effects.BunnyHead.prototype = {
