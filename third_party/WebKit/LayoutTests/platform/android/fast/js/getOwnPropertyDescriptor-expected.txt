@@ -48,12 +48,12 @@ FAIL Object.getOwnPropertyDescriptor(RegExp, '$_').value should be  (of type str
 FAIL Object.getOwnPropertyDescriptor(RegExp, '$_').hasOwnProperty('get') should be false. Was true.
 FAIL Object.getOwnPropertyDescriptor(RegExp, '$_').hasOwnProperty('set') should be false. Was true.
 PASS Object.getOwnPropertyDescriptor(RegExp, '$_').enumerable is false
-PASS Object.getOwnPropertyDescriptor(RegExp, '$_').configurable is true
-FAIL Object.getOwnPropertyDescriptor(/a/g, 'global').value should be true. Threw exception TypeError: Cannot read property 'value' of undefined
-FAIL Object.getOwnPropertyDescriptor(/a/g, 'global').hasOwnProperty('get') should be false. Threw exception TypeError: Cannot read property 'hasOwnProperty' of undefined
-FAIL Object.getOwnPropertyDescriptor(/a/g, 'global').hasOwnProperty('set') should be false. Threw exception TypeError: Cannot read property 'hasOwnProperty' of undefined
-FAIL Object.getOwnPropertyDescriptor(/a/g, 'global').enumerable should be false. Threw exception TypeError: Cannot read property 'enumerable' of undefined
-FAIL Object.getOwnPropertyDescriptor(/a/g, 'global').configurable should be false. Threw exception TypeError: Cannot read property 'configurable' of undefined
+FAIL Object.getOwnPropertyDescriptor(RegExp, '$_').configurable should be true. Was false.
+PASS Object.getOwnPropertyDescriptor(/a/g, 'global').value is true
+PASS Object.getOwnPropertyDescriptor(/a/g, 'global').hasOwnProperty('get') is false
+PASS Object.getOwnPropertyDescriptor(/a/g, 'global').hasOwnProperty('set') is false
+PASS Object.getOwnPropertyDescriptor(/a/g, 'global').enumerable is false
+PASS Object.getOwnPropertyDescriptor(/a/g, 'global').configurable is false
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').value is Node.DOCUMENT_POSITION_DISCONNECTED
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').hasOwnProperty('set') is false
