@@ -243,8 +243,6 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
     EXPECT_TRUE(browser_policy_connector()->IsEnterpriseManaged());
     EXPECT_EQ(kDomain, browser_policy_connector()->GetEnterpriseDomain());
     EXPECT_FALSE(profile_added_);
-    EXPECT_EQ(policy::USER_AFFILIATION_MANAGED,
-              browser_policy_connector()->GetUserAffiliation(kUsername));
     RunUntilIdle();
     EXPECT_FALSE(
         user_manager->IsKnownUser(AccountId::FromUserEmail(kUsername)));

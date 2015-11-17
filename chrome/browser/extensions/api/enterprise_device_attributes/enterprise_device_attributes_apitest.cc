@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/test/result_catcher.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "policy/policy_constants.h"
 
@@ -29,34 +34,71 @@ const base::FilePath::CharType kTestExtensionDir[] =
 const base::FilePath::CharType kUpdateManifestFileName[] =
     FILE_PATH_LITERAL("update_manifest.xml");
 
+const char kAffiliatedUserEmail[] = "user@example.com";
+const char kAffiliationID[] = "some-affiliation-id";
+const char kAnotherAffiliationID[] = "another-affiliation-id";
+
 // The managed_storage extension has a key defined in its manifest, so that
 // its extension ID is well-known and the policy system can push policies for
 // the extension.
 const char kTestExtensionID[] = "nbiliclbejdndfpchgkbmfoppjplbdok";
 
+struct Params {
+  explicit Params(bool affiliated) : affiliated_(affiliated) {}
+  bool affiliated_;
+};
+
 }  // namespace
 
 namespace extensions {
 
-class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
+class EnterpriseDeviceAttributesTest :
+    public ExtensionApiTest,
+    public ::testing::WithParamInterface<Params> {
  public:
-  explicit EnterpriseDeviceAttributesTest(const std::string& domain)
-      : fake_session_manager_client_(new chromeos::FakeSessionManagerClient),
-        test_domain_(domain) {}
+  EnterpriseDeviceAttributesTest() {
+    set_exit_when_last_browser_closes(false);
+    set_chromeos_user_ = false;
+  }
 
  protected:
+  // ExtensionApiTest
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    policy::affiliation_test_helper::
+      AppendCommandLineSwitchesForLoginManager(command_line);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        make_scoped_ptr(fake_session_manager_client_));
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+
+    chromeos::FakeSessionManagerClient* fake_session_manager_client =
+        new chromeos::FakeSessionManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        scoped_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client));
+
+    std::set<std::string> device_affiliation_ids;
+    device_affiliation_ids.insert(kAffiliationID);
+    policy::affiliation_test_helper::SetDeviceAffiliationID(
+        &test_helper_, fake_session_manager_client, device_affiliation_ids);
+
+    std::set<std::string> user_affiliation_ids;
+    if (GetParam().affiliated_) {
+      user_affiliation_ids.insert(kAffiliationID);
+    } else {
+      user_affiliation_ids.insert(kAnotherAffiliationID);
+    }
+    policy::UserPolicyBuilder user_policy;
+    policy::affiliation_test_helper::SetUserAffiliationIDs(
+        &user_policy, fake_session_manager_client,
+        affiliated_account_id_.GetUserEmail(), user_affiliation_ids);
 
     // Set up fake install attributes.
     scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
         new policy::StubEnterpriseInstallAttributes());
 
-    attributes->SetDomain(test_domain_);
-    attributes->SetRegistrationUser(
-        chromeos::login::StubAccountId().GetUserEmail());
+    attributes->SetRegistrationUser(affiliated_account_id_.GetUserEmail());
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
         attributes.release());
 
@@ -67,8 +109,8 @@ class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
     device_policy->policy_data().set_directory_api_id(kDeviceId);
     device_policy->Build();
 
-    fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
-    fake_session_manager_client_->OnPropertyChangeComplete(true);
+    fake_session_manager_client->set_device_policy(device_policy->GetBlob());
+    fake_session_manager_client->OnPropertyChangeComplete(true);
 
     // Init the user policy provider.
     EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
@@ -79,18 +121,16 @@ class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
   }
 
   void SetUpOnMainThread() override {
+    const base::ListValue* users =
+        g_browser_process->local_state()->GetList("LoggedInUsers");
+    if (!users->empty()) {
+      policy::affiliation_test_helper::LoginUser(
+          affiliated_account_id_.GetUserEmail());
+    }
+
     ExtensionApiTest::SetUpOnMainThread();
-
-    // Enable the URLRequestMock, which is required for force-installing the
-    // test extension through policy.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
-
-    SetPolicy();
   }
 
- private:
   void SetPolicy() {
     // Extensions that are force-installed come from an update URL, which
     // defaults to the webstore. Use a mock URL for this test with an update
@@ -116,46 +156,59 @@ class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
     observer.WaitForExtensionLoaded();
   }
 
-  chromeos::FakeSessionManagerClient* const fake_session_manager_client_;
+  // Load |page_url| in |browser| and wait for PASSED or FAILED notification.
+  // The functionality of this function is reduced functionality of
+  // RunExtensionSubtest(), but we don't use it here because it requires
+  // function InProcessBrowserTest::browser() to return non-NULL pointer.
+  // Unfortunately it returns the value which is set in constructor and can't be
+  // modified. Because on login flow there is no browser, the function
+  // InProcessBrowserTest::browser() always returns NULL. Besides this we need
+  // only very little functionality from RunExtensionSubtest(). Thus so that
+  // don't make RunExtensionSubtest() to complex we just introduce a new
+  // function.
+  bool TestExtension(Browser* browser, const std::string& page_url) {
+    DCHECK(!page_url.empty()) << "page_url cannot be empty";
+
+    extensions::ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(browser, GURL(page_url));
+
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+    return true;
+  }
+
+  const AccountId affiliated_account_id_ =
+      AccountId::FromUserEmail(kAffiliatedUserEmail);
+
+ private:
   policy::MockConfigurationPolicyProvider policy_provider_;
   policy::DevicePolicyCrosTestHelper test_helper_;
-  const std::string test_domain_;
 };
 
-// Creates affiliated user before browser initializes.
-class EnterpriseDeviceAttributesAffiliatedTest
-    : public EnterpriseDeviceAttributesTest {
- public:
-  EnterpriseDeviceAttributesAffiliatedTest()
-      : EnterpriseDeviceAttributesTest("gmail.com") {}
-};
-
-// Creates non-affiliated user before browser init.
-class EnterpriseDeviceAttributesNonAffiliatedTest
-    : public EnterpriseDeviceAttributesTest {
- public:
-  EnterpriseDeviceAttributesNonAffiliatedTest()
-      : EnterpriseDeviceAttributesTest("example.com") {}
-};
-
-// Tests the case of an affiliated user and pre-installed extension. Fetches
-// the valid cloud directory device id.
-IN_PROC_BROWSER_TEST_F(EnterpriseDeviceAttributesAffiliatedTest, Success) {
-  // Pass the expected value (device_id) to test.
-  ASSERT_TRUE(RunExtensionSubtest(
-      "", base::StringPrintf("chrome-extension://%s/basic.html?%s",
-                             kTestExtensionID, kDeviceId)))
-      << message_;
+IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, PRE_Success) {
+  policy::affiliation_test_helper::PreLoginUser(
+      affiliated_account_id_.GetUserEmail());
 }
 
-// Test the case of non-affiliated user and pre-installed by policy extension.
-// Extension API is available, but fetches the empty string.
-IN_PROC_BROWSER_TEST_F(EnterpriseDeviceAttributesNonAffiliatedTest,
-                       EmptyString) {
-  // Pass the expected value (empty string) to test.
-  ASSERT_TRUE(RunExtensionSubtest(
-      "", base::StringPrintf("chrome-extension://%s/basic.html?%s",
-                             kTestExtensionID, "")))
+IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
+
+  SetPolicy();
+
+  EXPECT_EQ(GetParam().affiliated_, user_manager::UserManager::Get()->
+      FindUser(affiliated_account_id_)->is_affiliated());
+
+  // Device ID is available only for affiliated user.
+  std::string device_id = GetParam().affiliated_ ? kDeviceId : "";
+
+  // Pass the expected value (device_id) to test.
+  ASSERT_TRUE(TestExtension(CreateBrowser(profile()),
+      base::StringPrintf("chrome-extension://%s/basic.html?%s",
+                             kTestExtensionID, device_id.c_str())))
       << message_;
 }
 
@@ -183,4 +236,8 @@ IN_PROC_BROWSER_TEST_F(
       extension->install_warnings()[0].message);
 }
 
+// Both cases of affiliated and non-affiliated on the device user are tested.
+INSTANTIATE_TEST_CASE_P(AffiliationCheck,
+                          EnterpriseDeviceAttributesTest,
+                        ::testing::Values(Params(true), Params(false)));
 }  //  namespace extensions

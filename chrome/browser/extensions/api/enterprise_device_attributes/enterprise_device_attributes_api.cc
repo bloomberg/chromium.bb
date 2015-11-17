@@ -17,19 +17,12 @@ namespace extensions {
 
 namespace {
 
-// Checks for the current browser context if the user is affiliated and the
-// device is enterprise managed.
+// Checks for the current browser context if the user is affiliated.
 bool IsPermittedToGetDeviceId(content::BrowserContext* context) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(context));
-
-  return connector->IsEnterpriseManaged() &&
-         connector->GetUserAffiliation(user->email()) ==
-             policy::USER_AFFILIATION_MANAGED;
+  return user->is_affiliated();
 }
 
 // Returns the directory device id for the permitted extensions or an empty

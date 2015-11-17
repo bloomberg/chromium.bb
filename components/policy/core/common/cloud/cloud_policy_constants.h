@@ -65,16 +65,6 @@ POLICY_EXPORT extern const char kChromePolicyHeader[];
 POLICY_EXPORT std::string GetPolicyVerificationKey();
 POLICY_EXPORT extern const char kPolicyVerificationKeyHash[];
 
-// TODO(peletskyi): Remove this enum after affiliation code is moved
-// to components/user_manager.
-// Describes the affiliation of a user w.r.t. the device owner.
-enum UserAffiliation {
-  // User is on the same domain the device was registered with.
-  USER_AFFILIATION_MANAGED,
-  // No affiliation between device and user.
-  USER_AFFILIATION_NONE,
-};
-
 // Status codes for communication errors with the device management service.
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,

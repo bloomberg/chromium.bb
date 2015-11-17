@@ -284,25 +284,6 @@ EnrollmentConfig BrowserPolicyConnectorChromeOS::GetPrescribedEnrollmentConfig()
   return EnrollmentConfig();
 }
 
-UserAffiliation BrowserPolicyConnectorChromeOS::GetUserAffiliation(
-    const std::string& user_name) {
-  // An empty username means incognito user in case of ChromiumOS and
-  // no logged-in user in case of Chromium (SigninService). Many tests use
-  // nonsense email addresses (e.g. 'test') so treat those as non-enterprise
-  // users.
-  if (user_name.empty() || user_name.find('@') == std::string::npos)
-    return USER_AFFILIATION_NONE;
-
-  if (install_attributes_ &&
-      (gaia::ExtractDomainName(gaia::CanonicalizeEmail(user_name)) ==
-           install_attributes_->GetDomain() ||
-       policy::IsDeviceLocalAccountUser(user_name, NULL))) {
-    return USER_AFFILIATION_MANAGED;
-  }
-
-  return USER_AFFILIATION_NONE;
-}
-
 void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
     ConfigurationPolicyProvider* user_policy_provider) {
   global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);

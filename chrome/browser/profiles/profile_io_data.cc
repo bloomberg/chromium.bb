@@ -128,7 +128,6 @@
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
@@ -449,14 +448,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                                          user->username_hash(),
                                          profile->GetPath()));
 
-      // Use the device-wide system key slot only if the user is of the same
-      // domain as the device is registered to.
-      policy::BrowserPolicyConnectorChromeOS* connector =
-          g_browser_process->platform_part()
-              ->browser_policy_connector_chromeos();
-      params->use_system_key_slot =
-          connector->GetUserAffiliation(user->email()) ==
-          policy::USER_AFFILIATION_MANAGED;
+      // Use the device-wide system key slot only if the user is affiliated on
+      // the device.
+      params->use_system_key_slot = user->is_affiliated();
     }
   }
 

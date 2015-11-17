@@ -84,10 +84,6 @@ class BrowserPolicyConnectorChromeOS
   // for details.
   EnrollmentConfig GetPrescribedEnrollmentConfig() const;
 
-  // Works out the user affiliation by checking the given |user_name| against
-  // the installation attributes.
-  UserAffiliation GetUserAffiliation(const std::string& user_name);
-
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
     return device_cloud_policy_manager_;
   }

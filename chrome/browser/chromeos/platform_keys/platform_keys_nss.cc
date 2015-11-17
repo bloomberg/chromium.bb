@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/net/nss_context.h"
@@ -778,12 +777,9 @@ void SelectClientCertificates(
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(browser_context));
 
-  // Use the device-wide system key slot only if the user is of the same
-  // domain as the device is registered to.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool use_system_key_slot = connector->GetUserAffiliation(user->email()) ==
-                             policy::USER_AFFILIATION_MANAGED;
+  // Use the device-wide system key slot only if the user is affiliated on the
+  // device.
+  bool use_system_key_slot = user->is_affiliated();
 
   scoped_ptr<SelectCertificatesState> state(new SelectCertificatesState(
       user->username_hash(), use_system_key_slot, cert_request_info, callback));

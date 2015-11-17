@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -152,12 +151,9 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     return false;
   }
   if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     const user_manager::User* logged_in_user =
         user_manager::UserManager::Get()->GetLoggedInUser();
-    if (connector->GetUserAffiliation(logged_in_user->email()) ==
-        policy::USER_AFFILIATION_MANAGED) {
+    if (logged_in_user->is_affiliated()) {
       VLOG(1) << "Respecting proxy for network, as logged-in user belongs to "
               << "the domain the device is enrolled to.";
       return false;

@@ -1017,14 +1017,14 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // authentication cookies set by a SAML IdP on subsequent logins after the
     // first.
     bool transfer_saml_auth_cookies_on_subsequent_login = false;
-    if (has_auth_cookies_ &&
-        g_browser_process->platform_part()
-                ->browser_policy_connector_chromeos()
-                ->GetUserAffiliation(account_id.GetUserEmail()) ==
-            policy::USER_AFFILIATION_MANAGED) {
-      CrosSettings::Get()->GetBoolean(
-          kAccountsPrefTransferSAMLCookies,
-          &transfer_saml_auth_cookies_on_subsequent_login);
+    if (has_auth_cookies_) {
+      const user_manager::User* user =
+          user_manager::UserManager::Get()->FindUser(account_id);
+      if (user->is_affiliated()) {
+        CrosSettings::Get()->GetBoolean(
+            kAccountsPrefTransferSAMLCookies,
+            &transfer_saml_auth_cookies_on_subsequent_login);
+      }
     }
 
     // Transfers authentication-related data from the profile that was used for

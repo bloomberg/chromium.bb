@@ -31,7 +31,9 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -132,6 +134,8 @@ const char kRelayState[] = "RelayState";
 const char kTestUserinfoToken[] = "fake-userinfo-token";
 const char kTestRefreshToken[] = "fake-refresh-token";
 const char kPolicy[] = "{\"managed_users\": [\"*\"]}";
+
+const char kAffiliationID[] = "some-affiliation-id";
 
 // FakeSamlIdp serves IdP auth form and the form submission. The form is
 // served with the template's RelayState placeholder expanded to the real
@@ -951,12 +955,10 @@ void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   SamlTest::SetUpInProcessBrowserTestFixture();
 
   // Initialize device policy.
-  test_helper_.InstallOwnerKey();
-  test_helper_.MarkAsEnterpriseOwned();
-  device_policy_->SetDefaultSigningKey();
-  device_policy_->Build();
-  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
-  fake_session_manager_client_->OnPropertyChangeComplete(true);
+  std::set<std::string> device_affiliation_ids;
+  device_affiliation_ids.insert(kAffiliationID);
+  policy::affiliation_test_helper::SetDeviceAffiliationID(
+      &test_helper_, fake_session_manager_client_, device_affiliation_ids);
 
   // Initialize user policy.
   EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -977,6 +979,18 @@ void SAMLPolicyTest::SetUpOnMainThread() {
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
       AccountId::FromUserEmail(kDifferentDomainSAMLUserEmail),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+
+  // Give affiliated users appropriate affiliation IDs.
+  std::set<std::string> user_affiliation_ids;
+  user_affiliation_ids.insert(kAffiliationID);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kFirstSAMLUserEmail,
+                                                         user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kSecondSAMLUserEmail,
+                                                         user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kHTTPSAMLUserEmail,
+                                                         user_affiliation_ids);
+  chromeos::ChromeUserManager::Get()->SetUserAffiliation(kNonSAMLUserEmail,
+                                                         user_affiliation_ids);
 
   // Set up fake networks.
   DBusThreadManager::Get()
