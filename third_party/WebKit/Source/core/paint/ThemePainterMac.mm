@@ -347,10 +347,10 @@ bool ThemePainterMac::paintSliderTrack(const LayoutObject& o, const PaintInfo& p
     FloatRoundedRect fillRect(fillBounds, fillRadius, fillRadius, fillRadius, fillRadius);
     paintInfo.context->fillRoundedRect(fillRect, fillColor);
 
-    IntSize shadowOffset(isVerticalSlider ? 1 : 0,
-                         isVerticalSlider ? 0 : 1);
-    int shadowBlur = 3;
-    int shadowSpread = 0;
+    FloatSize shadowOffset(isVerticalSlider ? 1 : 0,
+                           isVerticalSlider ? 0 : 1);
+    float shadowBlur = 3;
+    float shadowSpread = 0;
     paintInfo.context->save();
     paintInfo.context->drawInnerShadow(fillRect, shadowColor, shadowOffset, shadowBlur, shadowSpread);
     paintInfo.context->restore();

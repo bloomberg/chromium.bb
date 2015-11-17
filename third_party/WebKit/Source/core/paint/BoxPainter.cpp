@@ -671,7 +671,6 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                 else
                     influenceRect.shrinkRadii(-changeAmount);
 
-                // TODO: support non-integer shadows - crbug.com/334829
                 FloatRoundedRect roundedFillRect = border;
                 roundedFillRect.inflate(shadowSpread);
 
@@ -701,8 +700,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                 else
                     clippedEdges |= GraphicsContext::BottomEdge;
             }
-            // TODO: support non-integer shadows - crbug.com/334828
-            context->drawInnerShadow(border, shadowColor, flooredIntSize(shadowOffset), shadowBlur, shadowSpread, clippedEdges);
+            context->drawInnerShadow(border, shadowColor, shadowOffset, shadowBlur, shadowSpread, clippedEdges);
         }
     }
 }

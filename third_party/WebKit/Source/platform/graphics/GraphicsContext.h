@@ -231,7 +231,9 @@ public:
         LeftEdge = 1 << 4
     };
     typedef unsigned Edges;
-    void drawInnerShadow(const FloatRoundedRect&, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges = NoEdge);
+    void drawInnerShadow(const FloatRoundedRect&, const Color& shadowColor,
+        const FloatSize& shadowOffset, float shadowBlur, float shadowSpread,
+        Edges clippedEdges = NoEdge);
 
     const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
 

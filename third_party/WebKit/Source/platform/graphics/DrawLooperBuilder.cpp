@@ -67,9 +67,7 @@ void DrawLooperBuilder::addUnmodifiedContent()
 void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Color& color,
     ShadowTransformMode shadowTransformMode, ShadowAlphaMode shadowAlphaMode)
 {
-    // Negative blurs are not allowed, so just pin the value to 0
-    if (blur < 0)
-        blur = 0;
+    ASSERT(blur >= 0);
 
     // Detect when there's no effective shadow.
     if (!color.alpha())

@@ -31,6 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/Gradient.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/weborigin/KURL.h"
@@ -412,21 +413,23 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
     }
 }
 
-static inline FloatRect areaCastingShadowInHole(const FloatRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
+static inline FloatRect areaCastingShadowInHole(const FloatRect& holeRect, float shadowBlur,
+    float shadowSpread, const FloatSize& shadowOffset)
 {
-    IntRect bounds(holeRect);
+    FloatRect bounds(holeRect);
 
     bounds.inflate(shadowBlur);
 
     if (shadowSpread < 0)
         bounds.inflate(-shadowSpread);
 
-    IntRect offsetBounds = bounds;
+    FloatRect offsetBounds = bounds;
     offsetBounds.move(-shadowOffset);
     return unionRect(bounds, offsetBounds);
 }
 
-void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges)
+void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color& shadowColor,
+    const FloatSize& shadowOffset, float shadowBlur, float shadowSpread, Edges clippedEdges)
 {
     if (contextDisabled())
         return;
@@ -440,24 +443,24 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
     }
 
     if (clippedEdges & LeftEdge) {
-        holeRect.move(-std::max(shadowOffset.width(), 0) - shadowBlur, 0);
-        holeRect.setWidth(holeRect.width() + std::max(shadowOffset.width(), 0) + shadowBlur);
+        holeRect.move(-std::max(shadowOffset.width(), 0.0f) - shadowBlur, 0);
+        holeRect.setWidth(holeRect.width() + std::max(shadowOffset.width(), 0.0f) + shadowBlur);
     }
     if (clippedEdges & TopEdge) {
-        holeRect.move(0, -std::max(shadowOffset.height(), 0) - shadowBlur);
-        holeRect.setHeight(holeRect.height() + std::max(shadowOffset.height(), 0) + shadowBlur);
+        holeRect.move(0, -std::max(shadowOffset.height(), 0.0f) - shadowBlur);
+        holeRect.setHeight(holeRect.height() + std::max(shadowOffset.height(), 0.0f) + shadowBlur);
     }
     if (clippedEdges & RightEdge)
-        holeRect.setWidth(holeRect.width() - std::min(shadowOffset.width(), 0) + shadowBlur);
+        holeRect.setWidth(holeRect.width() - std::min(shadowOffset.width(), 0.0f) + shadowBlur);
     if (clippedEdges & BottomEdge)
-        holeRect.setHeight(holeRect.height() - std::min(shadowOffset.height(), 0) + shadowBlur);
+        holeRect.setHeight(holeRect.height() - std::min(shadowOffset.height(), 0.0f) + shadowBlur);
 
     Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
 
     FloatRect outerRect = areaCastingShadowInHole(rect.rect(), shadowBlur, shadowSpread, shadowOffset);
     FloatRoundedRect roundedHole(holeRect, rect.radii());
 
-    save();
+    GraphicsContextStateSaver stateSaver(*this);
     if (rect.isRounded()) {
         clipRoundedRect(rect);
         if (shadowSpread < 0)
@@ -473,8 +476,6 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
         DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
     setDrawLooper(drawLooperBuilder.release());
     fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
-    restore();
-    clearDrawLooper();
 }
 
 void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
