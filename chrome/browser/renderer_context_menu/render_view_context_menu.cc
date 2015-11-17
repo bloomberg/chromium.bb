@@ -1547,12 +1547,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       return true;
-    case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
-      // Disabled if no browser is associated (e.g. desktop notifications).
-      if (chrome::FindBrowserWithWebContents(source_web_contents_) == NULL)
-        return false;
-      return true;
-
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
 
@@ -2003,20 +1997,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       source_web_contents_->ViewFrameSource(params_.frame_url,
                                             params_.frame_page_state);
       break;
-
-    case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
-      Browser* browser = chrome::FindBrowserWithWebContents(
-          source_web_contents_);
-      SecurityStateModel::SecurityInfo security_info;
-      SecurityStateModel::SecurityInfoForRequest(
-          params_.frame_url, params_.security_info,
-          Profile::FromBrowserContext(
-              source_web_contents_->GetBrowserContext()),
-          &security_info);
-      chrome::ShowWebsiteSettings(browser, source_web_contents_,
-                                  params_.frame_url, security_info);
-      break;
-    }
 
     case IDC_CONTENT_CONTEXT_UNDO:
       source_web_contents_->Undo();
