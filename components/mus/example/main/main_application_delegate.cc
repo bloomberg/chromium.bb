@@ -12,6 +12,7 @@ MainApplicationDelegate::MainApplicationDelegate() {}
 MainApplicationDelegate::~MainApplicationDelegate() {}
 
 void MainApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  connections_.push_back(app->ConnectToApplication("mojo:example_wm"));
   connections_.push_back(app->ConnectToApplication("mojo:mock_sysui"));
   connections_.push_back(app->ConnectToApplication("mojo:views_examples"));
   connections_.push_back(

@@ -117,6 +117,12 @@ class ConnectionManager : public ServerWindowDelegate,
   // Returns the first ancestor of |service| that is marked as an embed root.
   WindowTreeImpl* GetEmbedRoot(WindowTreeImpl* service);
 
+  WindowTreeHostImpl* GetActiveWindowTreeHost();
+
+  bool has_tree_host_connections() const {
+    return !host_connection_map_.empty();
+  }
+
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
   // WindowManagerChangeCompleted() is called to obtain the original source

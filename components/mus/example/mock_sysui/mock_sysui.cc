@@ -8,7 +8,6 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -97,10 +96,7 @@ MockSysUI::~MockSysUI() {
 
 void MockSysUI::Initialize(mojo::ApplicationImpl* app) {
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
-  mus::mojom::WindowManagerPtr window_manager;
-  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:example_wm")),
-                        &window_manager);
-  views::WindowManagerConnection::Create(window_manager.Pass(), app);
+  views::WindowManagerConnection::Create(app);
 
   DesktopBackground::Create(app->shell());
   Shelf::Create(app->shell());

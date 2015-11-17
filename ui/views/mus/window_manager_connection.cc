@@ -91,12 +91,9 @@ std::vector<gfx::Display> GetDisplaysFromWindowManager(
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(
-    mus::mojom::WindowManagerPtr window_manager,
-    mojo::ApplicationImpl* app) {
+void WindowManagerConnection::Create(mojo::ApplicationImpl* app) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(
-      new WindowManagerConnection(window_manager.Pass(), app));
+  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(app));
 }
 
 // static
@@ -122,10 +119,11 @@ mus::Window* WindowManagerConnection::NewWindow(
   return window_tree_connection->GetRoot();
 }
 
-WindowManagerConnection::WindowManagerConnection(
-    mus::mojom::WindowManagerPtr window_manager,
-    mojo::ApplicationImpl* app)
-    : app_(app), window_manager_(window_manager.Pass()) {
+WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
+    : app_(app) {
+  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:mus")),
+                        &window_manager_);
+
   ui_init_.reset(new ui::mojo::UIInit(
       GetDisplaysFromWindowManager(&window_manager_)));
   ViewsDelegate::GetInstance()->set_native_widget_factory(

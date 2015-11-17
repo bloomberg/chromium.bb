@@ -52,7 +52,10 @@ ConnectionManager::~ConnectionManager() {
 void ConnectionManager::AddHost(WindowTreeHostConnection* host_connection) {
   DCHECK_EQ(0u,
             host_connection_map_.count(host_connection->window_tree_host()));
+  const bool is_first_connection = host_connection_map_.empty();
   host_connection_map_[host_connection->window_tree_host()] = host_connection;
+  if (is_first_connection)
+    delegate_->OnFirstRootConnectionCreated();
 }
 
 ServerWindow* ConnectionManager::CreateServerWindow(const WindowId& id) {
@@ -238,6 +241,10 @@ WindowTreeImpl* ConnectionManager::GetEmbedRoot(WindowTreeImpl* service) {
       return service;
   }
   return nullptr;
+}
+
+WindowTreeHostImpl* ConnectionManager::GetActiveWindowTreeHost() {
+  return host_connection_map_.begin()->first;
 }
 
 uint32_t ConnectionManager::GenerateWindowManagerChangeId(

@@ -10,6 +10,7 @@
 #include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/forwarding_window_manager.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "components/mus/ws/window_tree_impl.h"
@@ -73,9 +74,17 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
 
 bool MandolineUIServicesApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<WindowTreeHostFactory>(this);
   connection->AddService<Gpu>(this);
+  connection->AddService<mojom::WindowManager>(this);
+  connection->AddService<WindowTreeHostFactory>(this);
   return true;
+}
+
+void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
+  WindowManagerRequests requests;
+  requests.swap(pending_window_manager_requests_);
+  for (auto& request : requests)
+    Create(nullptr, request->Pass());
 }
 
 void MandolineUIServicesApp::OnNoMoreRootConnections() {
@@ -94,6 +103,22 @@ MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
       connection_manager, creator_id, root_id, policy_bitmask));
   return new ws::DefaultClientConnection(service.Pass(), connection_manager,
                                          tree_request.Pass(), client.Pass());
+}
+
+void MandolineUIServicesApp::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojom::WindowManager> request) {
+  if (!connection_manager_->has_tree_host_connections()) {
+    pending_window_manager_requests_.push_back(make_scoped_ptr(
+        new mojo::InterfaceRequest<mojom::WindowManager>(request.Pass())));
+    return;
+  }
+  if (!window_manager_impl_) {
+    window_manager_impl_.reset(
+        new ws::ForwardingWindowManager(connection_manager_.get()));
+  }
+  window_manager_bindings_.AddBinding(window_manager_impl_.get(),
+                                      request.Pass());
 }
 
 void MandolineUIServicesApp::Create(

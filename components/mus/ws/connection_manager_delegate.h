@@ -21,6 +21,8 @@ struct WindowId;
 
 class ConnectionManagerDelegate {
  public:
+  virtual void OnFirstRootConnectionCreated();
+
   virtual void OnNoMoreRootConnections() = 0;
 
   // Creates a ClientConnection in response to Embed() calls on the

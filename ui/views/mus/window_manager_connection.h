@@ -32,8 +32,7 @@ class NativeWidgetDelegate;
 class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(mus::WindowTreeDelegate) {
  public:
-  static void Create(mus::mojom::WindowManagerPtr window_manager,
-                     mojo::ApplicationImpl* app);
+  static void Create(mojo::ApplicationImpl* app);
   static WindowManagerConnection* Get();
 
   mojo::ApplicationImpl* app() { return app_; }
@@ -46,8 +45,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   }
 
  private:
-  WindowManagerConnection(mus::mojom::WindowManagerPtr window_manager,
-                          mojo::ApplicationImpl* app);
+  explicit WindowManagerConnection(mojo::ApplicationImpl* app);
   ~WindowManagerConnection() override;
 
   // mus::WindowTreeDelegate:

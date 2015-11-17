@@ -915,13 +915,8 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   if (IsRunningInMojoShell()) {
     MojoShellConnectionImpl::Create();
 #if defined(USE_AURA)
-    mus::mojom::WindowManagerPtr window_manager;
-    mojo::ApplicationImpl* application =
-        MojoShellConnection::Get()->GetApplication();
-    application->ConnectToService(
-        mojo::URLRequest::From(std::string("mojo:example_wm")),
-        &window_manager);
-    views::WindowManagerConnection::Create(window_manager.Pass(), application);
+    views::WindowManagerConnection::Create(
+        MojoShellConnection::Get()->GetApplication());
 #endif
   }
 #endif

@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_MUS_MUS_APP_H_
 #define COMPONENTS_MUS_MUS_APP_H_
 
-#include <set>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
@@ -33,11 +34,13 @@ class SurfacesState;
 
 namespace ws {
 class ConnectionManager;
+class ForwardingWindowManager;
 }
 
 class MandolineUIServicesApp
     : public mojo::ApplicationDelegate,
       public ws::ConnectionManagerDelegate,
+      public mojo::InterfaceFactory<mojom::WindowManager>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
       public mojo::InterfaceFactory<mojom::Gpu>,
       public mojom::WindowTreeHostFactory {
@@ -52,6 +55,7 @@ class MandolineUIServicesApp
       mojo::ApplicationConnection* connection) override;
 
   // ConnectionManagerDelegate:
+  void OnFirstRootConnectionCreated() override;
   void OnNoMoreRootConnections() override;
   ws::ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
@@ -60,6 +64,10 @@ class MandolineUIServicesApp
       const ws::WindowId& root_id,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;
+
+  // mojo::InterfaceFactory<mojom::WindowManager> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojom::WindowManager> request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeHostFactory>:
   void Create(
@@ -77,10 +85,15 @@ class MandolineUIServicesApp
                             mojom::WindowManagerPtr window_manager) override;
 
   mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
+  scoped_ptr<ws::ForwardingWindowManager> window_manager_impl_;
+  mojo::WeakBindingSet<mojom::WindowManager> window_manager_bindings_;
   mojo::ApplicationImpl* app_impl_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
+  using WindowManagerRequests =
+      std::vector<scoped_ptr<mojo::InterfaceRequest<mojom::WindowManager>>>;
+  WindowManagerRequests pending_window_manager_requests_;
 
   // Surfaces
   scoped_refptr<SurfacesState> surfaces_state_;
