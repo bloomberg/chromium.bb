@@ -49,8 +49,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
 
 WindowTreeHostPlatform::WindowTreeHostPlatform()
     : widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::kCursorNull),
-      has_capture_(false) {}
+      current_cursor_(ui::kCursorNull) {}
 
 void WindowTreeHostPlatform::SetPlatformWindow(
     scoped_ptr<ui::PlatformWindow> window) {
@@ -91,15 +90,11 @@ gfx::Point WindowTreeHostPlatform::GetLocationOnNativeScreen() const {
 }
 
 void WindowTreeHostPlatform::SetCapture() {
-  if (!has_capture_) {
-    has_capture_ = true;
-    window_->SetCapture();
-  }
+  window_->SetCapture();
 }
 
 void WindowTreeHostPlatform::ReleaseCapture() {
-  if (has_capture_)
-    window_->ReleaseCapture();
+  window_->ReleaseCapture();
 }
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
@@ -164,10 +159,7 @@ void WindowTreeHostPlatform::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {}
 
 void WindowTreeHostPlatform::OnLostCapture() {
-  if (has_capture_) {
-    has_capture_ = false;
-    OnHostLostWindowCapture();
-  }
+  OnHostLostWindowCapture();
 }
 
 void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(

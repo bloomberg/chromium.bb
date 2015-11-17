@@ -90,8 +90,8 @@ void WinWindow::SetTitle(const base::string16& title) {
 }
 
 void WinWindow::SetCapture() {
-  DCHECK(::GetCapture() != hwnd());
-  ::SetCapture(hwnd());
+  if (::GetCapture() != hwnd())
+    ::SetCapture(hwnd());
 }
 
 void WinWindow::ReleaseCapture() {

@@ -60,7 +60,6 @@ class AURA_EXPORT WindowTreeHostPlatform
   gfx::AcceleratedWidget widget_;
   scoped_ptr<ui::PlatformWindow> window_;
   gfx::NativeCursor current_cursor_;
-  bool has_capture_;
   gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostPlatform);
