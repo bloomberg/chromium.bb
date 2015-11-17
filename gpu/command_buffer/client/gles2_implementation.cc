@@ -321,16 +321,11 @@ void GLES2Implementation::SignalSyncPoint(uint32 sync_point,
 
 void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
                                           const base::Closure& callback) {
-  if (sync_token.HasData()) {
-    DCHECK(sync_token.verified_flush() ||
-           gpu_control_->CanWaitUnverifiedSyncToken(&sync_token));
-
-    gpu_control_->SignalSyncToken(
-        sync_token,
-        base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  }
+  gpu_control_->SignalSyncToken(
+      sync_token,
+      base::Bind(&GLES2Implementation::RunIfContextNotLost,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void GLES2Implementation::SignalQuery(uint32 query,

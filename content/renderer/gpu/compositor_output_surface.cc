@@ -125,13 +125,9 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
     if (context_provider()) {
       gpu::gles2::GLES2Interface* context = context_provider()->ContextGL();
-      const uint64_t fence_sync = context->InsertFenceSyncCHROMIUM();
       context->Flush();
-
-      gpu::SyncToken sync_token;
-      context->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-      context_provider()->ContextSupport()->SignalSyncToken(sync_token,
+      uint32 sync_point = context->InsertSyncPointCHROMIUM();
+      context_provider()->ContextSupport()->SignalSyncPoint(sync_point,
                                                             closure);
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
