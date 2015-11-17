@@ -29,30 +29,25 @@ TEST_F(ChromeManifestTest, ManifestVersionError) {
     base::DictionaryValue* manifest;
     bool expect_error;
   } test_data[] = {
-    { "require_modern_with_default", true, manifest1.get(), true },
-    { "require_modern_with_v1", true, manifest2.get(), true },
-    { "require_modern_with_v2", true, manifest3.get(), false },
-    { "dont_require_modern_with_default", false, manifest1.get(), false },
-    { "dont_require_modern_with_v1", false, manifest2.get(), false },
-    { "dont_require_modern_with_v2", false, manifest3.get(), false },
+      {"require_modern_with_default", true, manifest1.get(), true},
+      {"require_modern_with_v1", true, manifest2.get(), true},
+      {"require_modern_with_v2", true, manifest3.get(), false},
+      {"dont_require_modern_with_default", false, manifest1.get(), false},
+      {"dont_require_modern_with_v1", false, manifest2.get(), false},
+      {"dont_require_modern_with_v2", false, manifest3.get(), false},
   };
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (auto& entry : test_data) {
     int create_flags = Extension::NO_FLAGS;
-    if (test_data[i].require_modern_manifest_version)
+    if (entry.require_modern_manifest_version)
       create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
-    if (test_data[i].expect_error) {
-        LoadAndExpectError(
-            ManifestData(test_data[i].manifest,
-                     test_data[i].test_name),
-            errors::kInvalidManifestVersionOld,
-            extensions::Manifest::UNPACKED,
-            create_flags);
+    if (entry.expect_error) {
+      LoadAndExpectError(ManifestData(entry.manifest, entry.test_name),
+                         errors::kInvalidManifestVersionOld,
+                         extensions::Manifest::UNPACKED, create_flags);
     } else {
-      LoadAndExpectSuccess(ManifestData(test_data[i].manifest,
-                                    test_data[i].test_name),
-                           extensions::Manifest::UNPACKED,
-                           create_flags);
+      LoadAndExpectSuccess(ManifestData(entry.manifest, entry.test_name),
+                           extensions::Manifest::UNPACKED, create_flags);
     }
   }
 }
