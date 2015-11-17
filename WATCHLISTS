@@ -1168,9 +1168,6 @@
       'filepath': 'third_party/WebKit/LayoutTests/imported/' \
                   '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
     },
-    'blink_web_idl': {
-      'filepath': 'third_party/WebKit/Source/core/.*\.idl'
-    },
     'blink_webcomponents': {
       'filepath': 'third_party/WebKit/Source/core/dom/shadow/' \
                   '|third_party/WebKit/Source/core/dom/custom/' \
@@ -1554,7 +1551,6 @@
                             'mlamouri+watch-blink@chromium.org' ],
     'blink_device_orientation': [ 'timvolodine@chromium.org',
                                   'mvanouwerkerk+watch@chromium.org',
-                                  'ch.dumez@samsung.com',
                                   'mlamouri+watch-blink@chromium.org' ],
     'blink_devtools': [ 'pfeldman+blink@chromium.org',
                         'apavlov+blink@chromium.org',
@@ -1684,9 +1680,6 @@
     'blink_out_of_process_frames': [ 'dcheng@chromium.org',
                                      'mlamouri+watch-blink@chromium.org' ],
     'blink_screen_orientation': [ 'mlamouri+watch-blink@chromium.org' ],
-    'blink_web_idl': [ 'ch.dumez@samsung.com',
-                       'vivekg@chromium.org',
-                       'vivek.vg@samsung.com' ],
     'blink_websockets': [ 'tyoshino+watch@chromium.org',
                           'yhirano+watch@chromium.org' ],
     'blink_workers': [ 'blink-worker-reviews@chromium.org',
