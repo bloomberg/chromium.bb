@@ -1775,6 +1775,56 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range,
     return consumeColor(range, context);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumePaintOrder(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+
+    Vector<CSSValueID, 3> paintTypeList;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> stroke = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> markers = nullptr;
+    do {
+        CSSValueID id = range.peek().id();
+        if (id == CSSValueFill && !fill)
+            fill = consumeIdent(range);
+        else if (id == CSSValueStroke && !stroke)
+            stroke = consumeIdent(range);
+        else if (id == CSSValueMarkers && !markers)
+            markers = consumeIdent(range);
+        else
+            return nullptr;
+        paintTypeList.append(id);
+    } while (!range.atEnd());
+
+    // After parsing we serialize the paint-order list. Since it is not possible to
+    // pop a last list items from CSSValueList without bigger cost, we create the
+    // list after parsing.
+    CSSValueID firstPaintOrderType = paintTypeList.at(0);
+    RefPtrWillBeRawPtr<CSSValueList> paintOrderList = CSSValueList::createSpaceSeparated();
+    switch (firstPaintOrderType) {
+    case CSSValueFill:
+    case CSSValueStroke:
+        paintOrderList->append(firstPaintOrderType == CSSValueFill ? fill.release() : stroke.release());
+        if (paintTypeList.size() > 1) {
+            if (paintTypeList.at(1) == CSSValueMarkers)
+                paintOrderList->append(markers.release());
+        }
+        break;
+    case CSSValueMarkers:
+        paintOrderList->append(markers.release());
+        if (paintTypeList.size() > 1) {
+            if (paintTypeList.at(1) == CSSValueStroke)
+                paintOrderList->append(stroke.release());
+        }
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    return paintOrderList.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1929,6 +1979,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyFill:
     case CSSPropertyStroke:
         return consumePaint(m_range, m_context);
+    case CSSPropertyPaintOrder:
+        return consumePaintOrder(m_range);
     default:
         return nullptr;
     }

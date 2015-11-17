@@ -1172,6 +1172,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyStopColor:
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
+    case CSSPropertyPaintOrder:
         validPrimitive = false;
         break;
 
@@ -5501,13 +5502,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
      * correctly and allows optimization in applyRule(..)
      */
 
-    case CSSPropertyPaintOrder:
-        if (m_valueList->size() == 1 && id == CSSValueNormal)
-            validPrimitive = true;
-        else if ((parsedValue = parsePaintOrder()))
-            m_valueList->next();
-        break;
-
     case CSSPropertyStrokeWidth: // <length> | inherit
     case CSSPropertyStrokeDashoffset:
     case CSSPropertyCx:
@@ -5598,60 +5592,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
     if (!validPrimitive)
         return nullptr;
     return ret.release();
-}
-
-// normal | [ fill || stroke || markers ]
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
-{
-    if (m_valueList->size() > 3)
-        return nullptr;
-
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-
-    Vector<CSSValueID, 3> paintTypeList;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> stroke = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> markers = nullptr;
-    while (value) {
-        if (value->id == CSSValueFill && !fill)
-            fill = CSSPrimitiveValue::createIdentifier(value->id);
-        else if (value->id == CSSValueStroke && !stroke)
-            stroke = CSSPrimitiveValue::createIdentifier(value->id);
-        else if (value->id == CSSValueMarkers && !markers)
-            markers = CSSPrimitiveValue::createIdentifier(value->id);
-        else
-            return nullptr;
-        paintTypeList.append(value->id);
-        value = m_valueList->next();
-    }
-
-    // After parsing we serialize the paint-order list. Since it is not possible to
-    // pop a last list items from CSSValueList without bigger cost, we create the
-    // list after parsing.
-    CSSValueID firstPaintOrderType = paintTypeList.at(0);
-    RefPtrWillBeRawPtr<CSSValueList> paintOrderList = CSSValueList::createSpaceSeparated();
-    switch (firstPaintOrderType) {
-    case CSSValueFill:
-    case CSSValueStroke:
-        paintOrderList->append(firstPaintOrderType == CSSValueFill ? fill.release() : stroke.release());
-        if (paintTypeList.size() > 1) {
-            if (paintTypeList.at(1) == CSSValueMarkers)
-                paintOrderList->append(markers.release());
-        }
-        break;
-    case CSSValueMarkers:
-        paintOrderList->append(markers.release());
-        if (paintTypeList.size() > 1) {
-            if (paintTypeList.at(1) == CSSValueStroke)
-                paintOrderList->append(stroke.release());
-        }
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-
-    return paintOrderList.release();
 }
 
 } // namespace blink

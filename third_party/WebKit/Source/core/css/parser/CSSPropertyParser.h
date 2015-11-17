@@ -199,8 +199,6 @@ private:
     bool parseSVGValue(CSSPropertyID propId, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
 
-    PassRefPtrWillBeRawPtr<CSSValue> parsePaintOrder() const;
-
     // CSS3 Parsing Routines (for properties specific to CSS3)
     bool parseBorderImageShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseBorderImage(CSSPropertyID);
