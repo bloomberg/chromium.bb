@@ -1734,7 +1734,10 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
     if (floatToRemove)
         removeFloatingObject(floatToRemove);
 
-    // Iterate over our children and mark them as needed.
+    // Iterate over our children and mark them as needed. If our children are inline, then the
+    // only boxes which could contain floats are atomic inlines (e.g. inline-block, float etc.) and these create formatting
+    // contexts, so can't pick up intruding floats from ancestors/siblings - making them safe to skip.
+    // TODO(rhogan): Should this be !createsNewFormattingContext() instead of !childrenInline()?
     if (!childrenInline()) {
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((!floatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isLayoutBlock())

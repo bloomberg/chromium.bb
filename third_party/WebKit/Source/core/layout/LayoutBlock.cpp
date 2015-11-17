@@ -618,8 +618,13 @@ void LayoutBlock::makeChildrenInlineIfPossible()
         return;
 
     Vector<LayoutBlock*, 3> blocksToRemove;
+    Vector<LayoutBox*, 16> floatsToRemoveFromFloatLists;
     for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->isFloatingOrOutOfFlowPositioned())
+        if (child->isFloating()) {
+            floatsToRemoveFromFloatLists.append(toLayoutBox(child));
+            continue;
+        }
+        if (child->isOutOfFlowPositioned())
             continue;
 
         // There are still block children in the container, so any anonymous wrappers are still needed.
@@ -641,6 +646,12 @@ void LayoutBlock::makeChildrenInlineIfPossible()
 
         blocksToRemove.append(toLayoutBlock(child));
     }
+
+    // If we make an object's children inline we are going to frustrate any future attempts to remove
+    // floats from its children's float-lists before the next layout happens so remove them proactively here.
+    // TODO(rhogan): We need to understand if intruding floats in this object's float list need to be removed also.
+    for (size_t i = 0; i < floatsToRemoveFromFloatLists.size(); i++)
+        toLayoutBlockFlow(this)->markAllDescendantsWithFloatsForLayout(floatsToRemoveFromFloatLists[i]);
 
     for (size_t i = 0; i < blocksToRemove.size(); i++)
         collapseAnonymousBlockChild(this, blocksToRemove[i]);
