@@ -52,8 +52,12 @@ class NET_EXPORT URLRequestContextBuilder {
  public:
   struct NET_EXPORT HttpCacheParams {
     enum Type {
+      // In-memory cache.
       IN_MEMORY,
+      // Disk cache using "default" backend.
       DISK,
+      // Disk cache using "simple" backend (SimpleBackendImpl).
+      DISK_SIMPLE,
     };
 
     HttpCacheParams();

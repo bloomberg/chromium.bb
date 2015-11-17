@@ -398,9 +398,13 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   scoped_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
     scoped_ptr<HttpCache::BackendFactory> http_cache_backend;
-    if (http_cache_params_.type == HttpCacheParams::DISK) {
+    if (http_cache_params_.type != HttpCacheParams::IN_MEMORY) {
+      BackendType backend_type =
+          http_cache_params_.type == HttpCacheParams::DISK
+              ? CACHE_BACKEND_DEFAULT
+              : CACHE_BACKEND_SIMPLE;
       http_cache_backend.reset(new HttpCache::DefaultBackend(
-          DISK_CACHE, CACHE_BACKEND_DEFAULT, http_cache_params_.path,
+          DISK_CACHE, backend_type, http_cache_params_.path,
           http_cache_params_.max_size, context->GetFileTaskRunner()));
     } else {
       http_cache_backend =

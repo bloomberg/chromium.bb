@@ -10,13 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
-#include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class CookieStore;
-class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
@@ -68,8 +66,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::HttpNetworkSession> http_network_session_;
-  scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;

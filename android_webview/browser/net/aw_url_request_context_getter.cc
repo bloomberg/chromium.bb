@@ -69,7 +69,7 @@ void ApplyCmdlineOverridesToURLRequestContextBuilder(
 }
 
 void ApplyCmdlineOverridesToNetworkSessionParams(
-    net::HttpNetworkSession::Params* params) {
+    net::URLRequestContextBuilder::HttpNetworkSessionParams* params) {
   int value;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -86,26 +86,6 @@ void ApplyCmdlineOverridesToNetworkSessionParams(
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
     params->ignore_certificate_errors = true;
   }
-}
-
-void PopulateNetworkSessionParams(
-    net::URLRequestContext* context,
-    net::HttpNetworkSession::Params* params) {
-  params->host_resolver = context->host_resolver();
-  params->cert_verifier = context->cert_verifier();
-  params->channel_id_service = context->channel_id_service();
-  params->transport_security_state = context->transport_security_state();
-  params->proxy_service = context->proxy_service();
-  params->ssl_config_service = context->ssl_config_service();
-  params->http_auth_handler_factory = context->http_auth_handler_factory();
-  params->network_delegate = context->network_delegate();
-  params->http_server_properties = context->http_server_properties();
-  params->net_log = context->net_log();
-  // TODO(sgurun) remove once crbug.com/329681 is fixed.
-  params->next_protos = net::NextProtosSpdy31();
-  params->use_alternative_services = true;
-
-  ApplyCmdlineOverridesToNetworkSessionParams(params);
 }
 
 scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
@@ -220,32 +200,26 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       proxy_config_service_.Pass(), net_log_.get()));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
+
+  net::URLRequestContextBuilder::HttpCacheParams cache_params;
+  cache_params.type =
+      net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+  cache_params.max_size = 20 * 1024 * 1024;  // 20M
+  cache_params.path = cache_path_;
+  builder.EnableHttpCache(cache_params);
+  builder.SetFileTaskRunner(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+
+  net::URLRequestContextBuilder::HttpNetworkSessionParams
+      network_session_params;
+  ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
+  builder.set_http_network_session_params(network_session_params);
+  builder.SetSpdyAndQuicEnabled(true, true);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
-
   url_request_context_ = builder.Build().Pass();
-  // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
-  net::HttpNetworkSession::Params network_session_params;
-
-  PopulateNetworkSessionParams(url_request_context_.get(),
-                               &network_session_params);
-
-  http_network_session_.reset(
-      new net::HttpNetworkSession(network_session_params));
-  main_http_factory_.reset(new net::HttpCache(
-      http_network_session_.get(),
-      make_scoped_ptr(new net::HttpCache::DefaultBackend(
-          net::DISK_CACHE,
-          net::CACHE_BACKEND_SIMPLE,
-          cache_path_,
-          20 * 1024 * 1024,  // 20M
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE))),
-      true /* set_up_quic_server_info */));
-
-  url_request_context_->set_http_transaction_factory(main_http_factory_.get());
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
                                   request_interceptors_.Pass());
-
   job_factory_.reset(new net::URLRequestInterceptingJobFactory(
       job_factory_.Pass(),
       browser_context->GetDataReductionProxyIOData()->CreateInterceptor()));
