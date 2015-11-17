@@ -13,15 +13,16 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebElement;
+using blink::WebFormControlElement;
 using blink::WebGestureEvent;
 using blink::WebInputElement;
 using blink::WebInputEvent;
@@ -29,37 +30,22 @@ using blink::WebMouseEvent;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebSize;
-using blink::WebTextAreaElement;
 using blink::WebUserGestureIndicator;
 
 namespace autofill {
 
 namespace {
 
-// Casts |node| to a WebInputElement.
-// Returns an empty (isNull()) WebInputElement if |node| is not a text field.
-const WebInputElement GetTextWebInputElement(const WebNode& node) {
-  if (!node.isElementNode())
-    return WebInputElement();
-  const WebElement element = node.toConst<WebElement>();
-  if (!element.hasHTMLTagName("input"))
-    return WebInputElement();
-  const WebInputElement* input = blink::toWebInputElement(&element);
-  if (!form_util::IsTextInput(input))
-    return WebInputElement();
-  return *input;
-}
-
-// Casts |node| to a WebTextAreaElement.
-// Returns an empty (isNull()) WebTextAreaElement if |node| is not a
-// textarea field.
-const WebTextAreaElement GetWebTextAreaElement(const WebNode& node) {
-  if (!node.isElementNode())
-    return WebTextAreaElement();
-  const WebElement element = node.toConst<WebElement>();
-  if (!element.hasHTMLTagName("textarea"))
-    return WebTextAreaElement();
-  return element.toConst<WebTextAreaElement>();
+// Casts |element| to a WebFormControlElement, but only if it's a text field.
+// Returns an empty (isNull()) wrapper otherwise.
+const WebFormControlElement GetTextFormControlElement(
+    const WebElement& element) {
+  if (!element.isFormControlElement())
+    return WebFormControlElement();
+  if (form_util::IsTextInput(blink::toWebInputElement(&element)) ||
+      element.hasHTMLTagName("textarea"))
+    return element.toConst<WebFormControlElement>();
+  return WebFormControlElement();
 }
 
 }  // namespace
@@ -102,19 +88,13 @@ void PageClickTracker::FocusChangeComplete() {
 }
 
 void PageClickTracker::DoFocusChangeComplete() {
-  WebNode focused_node = render_frame()->GetFocusedElement();
-  if (focused_node_was_last_clicked_ && !focused_node.isNull()) {
-    const WebInputElement input_element = GetTextWebInputElement(focused_node);
-    if (!input_element.isNull()) {
-      listener_->FormControlElementClicked(input_element,
+  WebElement focused_element = render_frame()->GetFocusedElement();
+  if (focused_node_was_last_clicked_ && !focused_element.isNull()) {
+    const WebFormControlElement control =
+        GetTextFormControlElement(focused_element);
+    if (!control.isNull()) {
+      listener_->FormControlElementClicked(control,
                                            was_focused_before_now_);
-    } else {
-      const WebTextAreaElement textarea_element =
-          GetWebTextAreaElement(focused_node);
-      if (!textarea_element.isNull()) {
-        listener_->FormControlElementClicked(textarea_element,
-                                             was_focused_before_now_);
-      }
     }
   }
 

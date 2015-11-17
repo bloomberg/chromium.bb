@@ -32,7 +32,6 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
-#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
 using blink::WebDocument;
 using blink::WebElement;
@@ -45,7 +44,6 @@ using blink::WebLabelElement;
 using blink::WebNode;
 using blink::WebOptionElement;
 using blink::WebSelectElement;
-using blink::WebTextAreaElement;
 using blink::WebString;
 using blink::WebVector;
 

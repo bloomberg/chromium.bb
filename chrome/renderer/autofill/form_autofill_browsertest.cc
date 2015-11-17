@@ -26,7 +26,6 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
-#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
 using base::ASCIIToUTF16;
 using blink::WebDocument;
@@ -38,7 +37,6 @@ using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebSelectElement;
 using blink::WebString;
-using blink::WebTextAreaElement;
 using blink::WebVector;
 
 namespace autofill {
@@ -544,7 +542,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     // Get the textarea element we want to find.
     WebElement element = web_frame->document().getElementById("street-address");
-    WebTextAreaElement textarea_element = element.to<WebTextAreaElement>();
+    WebFormControlElement textarea_element =
+        element.to<WebFormControlElement>();
 
     // Find the form and verify it's the correct form.
     FormData form;
@@ -1375,7 +1374,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   static WebString GetValueWrapper(WebFormControlElement element) {
     if (element.formControlType() == "textarea")
-      return element.to<WebTextAreaElement>().value();
+      return element.to<WebFormControlElement>().value();
 
     if (element.formControlType() == "select-one")
       return element.to<WebSelectElement>().value();
@@ -1385,7 +1384,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   static WebString GetSuggestedValueWrapper(WebFormControlElement element) {
     if (element.formControlType() == "textarea")
-      return element.to<WebTextAreaElement>().suggestedValue();
+      return element.to<WebFormControlElement>().suggestedValue();
 
     if (element.formControlType() == "select-one")
       return element.to<WebSelectElement>().suggestedValue();

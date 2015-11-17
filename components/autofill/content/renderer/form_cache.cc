@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
-#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using blink::WebConsoleMessage;
@@ -33,7 +32,6 @@ using blink::WebInputElement;
 using blink::WebNode;
 using blink::WebSelectElement;
 using blink::WebString;
-using blink::WebTextAreaElement;
 using blink::WebVector;
 
 namespace autofill {

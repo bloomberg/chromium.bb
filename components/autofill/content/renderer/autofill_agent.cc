@@ -47,7 +47,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
-#include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,7 +66,6 @@ using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebOptionElement;
 using blink::WebString;
-using blink::WebTextAreaElement;
 using blink::WebUserGestureIndicator;
 using blink::WebVector;
 
@@ -666,7 +664,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
       return;
   } else {
     DCHECK(form_util::IsTextAreaElement(element));
-    if (!element.toConst<WebTextAreaElement>().suggestedValue().isEmpty())
+    if (!element.toConst<WebFormControlElement>().suggestedValue().isEmpty())
       return;
   }
 

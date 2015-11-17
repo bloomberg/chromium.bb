@@ -481,7 +481,6 @@
       "web/WebTestInterfaceFactory.h",
       "web/WebTestingSupport.h",
       "web/WebTextAffinity.h",
-      "web/WebTextAreaElement.h",
       "web/WebTextCheckingCompletion.h",
       "web/WebTextCheckingResult.h",
       "web/WebTextCheckingType.h",
