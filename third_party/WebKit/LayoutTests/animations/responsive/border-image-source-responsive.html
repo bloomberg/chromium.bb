@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="resources/responsive-test.js"></script>
 <script>
-assertResponsive({
+assertCSSResponsive({
   property: 'border-image-source',
   from: 'inherit',
   to: 'url("test://to")',
@@ -26,7 +26,7 @@ assertResponsive({
   }],
 });
 
-assertResponsive({
+assertCSSResponsive({
   property: 'border-image-source',
   to: 'url("test://to")',
   configurations: [{

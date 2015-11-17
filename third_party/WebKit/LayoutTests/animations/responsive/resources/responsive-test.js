@@ -3,29 +3,31 @@
 // found in the LICENSE file.
 
 /*
-Exported function:
-assertResponsive
+Exported functions:
+assertCSSResponsive
+assertSVGResponsive
 
-Call signature:
-assertResponsive({
-  property: <CSS Property>,
-  ?from: <CSS Value>,
-  ?to: <CSS Value>,
+Options format: {
+  ?targetTag: <Target element tag name>,
+  property: <Property/Attribute name>,
+  ?getter(target): <Reads animated value from target>,
+  ?from: <Value>,
+  ?to: <Value>,
   configurations: [{
     state: {
-      ?underlying: <CSS Value>,
+      ?underlying: <Value>,
       ?inherited: <CSS Value>,
     },
     expect: [
-      { at: <Float>, is: <CSS Value> }
+      { at: <Float>, is: <Value> },
     ],
   }],
-})
+}
 
 Description:
-assertResponsive takes a property specific interpolation and a list of style
-configurations with interpolation expectations that apply to each
-configuration.
+assertCSSResponsive() and assertSVGResponsive() take a property
+specific interpolation and a list of style configurations with interpolation
+expectations that apply to each configuration.
 It starts the interpolation in every configuration, changes the
 state to every other configuration (n * (n - 1) complexity) and asserts that
 each destination configuration's expectations are met.
@@ -36,9 +38,57 @@ This test is designed to catch stale interpolation caches.
 (function() {
 'use strict';
 var pendingResponsiveTests = [];
+var htmlNamespace = 'http://www.w3.org/1999/xhtml';
+var svgNamespace = 'http://www.w3.org/2000/svg';
 
-function assertResponsive(options) {
-  pendingResponsiveTests.push(options);
+function assertCSSResponsive(options) {
+  pendingResponsiveTests.push({
+    options,
+    bindings: {
+      prefixProperty(property) {
+        return property;
+      },
+      createTargetContainer(container) {
+        return createElement('div', container);
+      },
+      createTarget(container) {
+        return createElement('div', container, 'target');
+      },
+      setValue(target, property, value) {
+        target.style[property] = value;
+      },
+      getAnimatedValue(target, property) {
+        return getComputedStyle(target)[property];
+      },
+    },
+  });
+}
+
+function assertSVGResponsive(options) {
+  pendingResponsiveTests.push({
+    options,
+    bindings: {
+      prefixProperty(property) {
+        return 'svg' + property[0].toUpperCase() + property.slice(1);
+      },
+      createTargetContainer(container) {
+        var svgRoot = createElement('svg', container, 'svg-root', svgNamespace);
+        svgRoot.setAttribute('width', 0);
+        svgRoot.setAttribute('height', 0);
+        return svgRoot;
+      },
+      createTarget(targetContainer) {
+        console.assert(options.targetTag);
+        return createElement(options.targetTag, targetContainer, 'target', svgNamespace);
+      },
+      setValue(target, property, value) {
+        target.setAttribute(property, value);
+      },
+      getAnimatedValue(target, property) {
+        return options.getter ? options.getter(target) : target[property].animVal;
+      },
+    },
+  });
 }
 
 function createStateTransitions(configurations) {
@@ -58,8 +108,8 @@ function createStateTransitions(configurations) {
   return stateTransitions;
 }
 
-function createElement(tag, container, className) {
-  var element = document.createElement(tag);
+function createElement(tag, container, className, namespace) {
+  var element = document.createElementNS(namespace || htmlNamespace, tag);
   if (container) {
     container.appendChild(element);
   }
@@ -69,23 +119,23 @@ function createElement(tag, container, className) {
   return element;
 }
 
-function createTargets(n, container) {
+function createTargets(bindings, n, container) {
   var targets = [];
   for (var i = 0; i < n; i++) {
-    targets.push(createElement('div', container, 'target'));
+    targets.push(bindings.createTarget(container));
   }
   return targets;
 }
 
-function setState(targets, property, state) {
+function setState(bindings, targets, property, state) {
   if (state.inherited) {
     var parent = targets[0].parentElement;
     console.assert(targets.every(function(target) { return target.parentElement === parent; }));
-    parent.style[property] = state.inherited;
+    bindings.setValue(parent, property, state.inherited);
   }
   if (state.underlying) {
     for (var target of targets) {
-      target.style[property] = state.underlying;
+      bindings.setValue(target, property, state.underlying);
     }
   }
 }
@@ -94,18 +144,18 @@ function keyframeText(options, keyframeName) {
   return (keyframeName in options) ? `[${options[keyframeName]}]` : 'neutral';
 }
 
-function createKeyframes(options) {
+function createKeyframes(prefixedProperty, options) {
   var keyframes = [];
   if ('from' in options) {
     keyframes.push({
       offset: 0,
-      [options.property]: options.from,
+      [prefixedProperty]: options.from,
     });
   }
   if ('to' in options) {
     keyframes.push({
       offset: 1,
-      [options.property]: options.to,
+      [prefixedProperty]: options.to,
     });
   }
   return keyframes;
@@ -124,49 +174,57 @@ function startPausedAnimations(targets, keyframes, fractions) {
 }
 
 function runPendingResponsiveTests() {
-  var stateTransitionTests = [];
-  pendingResponsiveTests.forEach(function(options) {
-    var property = options.property;
-    var from = options.from;
-    var to = options.to;
-    var keyframes = createKeyframes(options);
-    var fromText = keyframeText(options, 'from');
-    var toText = keyframeText(options, 'to');
+  return new Promise(function(resolve) {
+    var stateTransitionTests = [];
+    pendingResponsiveTests.forEach(function(responsiveTest) {
+      var options = responsiveTest.options;
+      var bindings = responsiveTest.bindings;
+      var property = options.property;
+      var prefixedProperty = bindings.prefixProperty(property);
+      var from = options.from;
+      var to = options.to;
+      var keyframes = createKeyframes(prefixedProperty, options);
+      var fromText = keyframeText(options, 'from');
+      var toText = keyframeText(options, 'to');
 
-    var stateTransitions = createStateTransitions(options.configurations);
-    stateTransitions.forEach(function(stateTransition) {
-      var before = stateTransition.before;
-      var after = stateTransition.after;
-      var container = createElement('div', document.body);
-      var targets = createTargets(after.expect.length, container);
+      var stateTransitions = createStateTransitions(options.configurations);
+      stateTransitions.forEach(function(stateTransition) {
+        var before = stateTransition.before;
+        var after = stateTransition.after;
+        var container = bindings.createTargetContainer(document.body);
+        var targets = createTargets(bindings, after.expect.length, container);
 
-      setState(targets, property, before.state);
-      startPausedAnimations(targets, keyframes, after.expect.map(function(expectation) { return expectation.at; }));
-      stateTransitionTests.push({
-        applyStateTransition() {
-          setState(targets, property, after.state);
-        },
-        assert() {
-          for (var i = 0; i < targets.length; i++) {
-            var target = targets[i];
-            var expectation = after.expect[i];
-            var actual = getComputedStyle(target)[property];
-            test(function() {
-              assert_equals(actual, expectation.is);
-            }, `Animation on property <${property}> from ${fromText} to ${toText} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
-          }
-        },
+        setState(bindings, targets, property, before.state);
+        startPausedAnimations(targets, keyframes, after.expect.map(function(expectation) { return expectation.at; }));
+        stateTransitionTests.push({
+          applyStateTransition() {
+            setState(bindings, targets, property, after.state);
+          },
+          assert() {
+            for (var i = 0; i < targets.length; i++) {
+              var target = targets[i];
+              var expectation = after.expect[i];
+              var actual = bindings.getAnimatedValue(target, property);
+              test(function() {
+                assert_equals(actual, expectation.is);
+              }, `Animation on property <${prefixedProperty}> from ${fromText} to ${toText} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
+            }
+          },
+        });
       });
     });
-  });
 
-  // Separate style modification from measurement as different phases to avoid a style recalc storm.
-  for (var stateTransitionTest of stateTransitionTests) {
-    stateTransitionTest.applyStateTransition();
-  }
-  for (var stateTransitionTest of stateTransitionTests) {
-    stateTransitionTest.assert();
-  }
+    for (var stateTransitionTest of stateTransitionTests) {
+      stateTransitionTest.applyStateTransition();
+    }
+
+    requestAnimationFrame(function() {
+      for (var stateTransitionTest of stateTransitionTests) {
+        stateTransitionTest.assert();
+      }
+      resolve();
+    });
+  });
 }
 
 function loadScript(url) {
@@ -182,13 +240,13 @@ loadScript('../../resources/testharness.js').then(function() {
   return loadScript('../../resources/testharnessreport.js');
 }).then(function() {
   var asyncHandle = async_test('This test uses responsive-test.js.')
-  requestAnimationFrame(function() {
-    runPendingResponsiveTests();
-    asyncHandle.done()
+  runPendingResponsiveTests().then(function() {
+    asyncHandle.done();
   });
 });
 
 
-window.assertResponsive = assertResponsive;
+window.assertCSSResponsive = assertCSSResponsive;
+window.assertSVGResponsive = assertSVGResponsive;
 
 })();
