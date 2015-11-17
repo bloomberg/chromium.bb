@@ -137,12 +137,10 @@ scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
               sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
               "device_id")));
 
-  Profile* profile = static_cast<Profile*>(context);
-  ProfileSyncServiceMock* sync_service = new ProfileSyncServiceMock(
-      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)), profile);
-  static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
-      ->SetSyncApiComponentFactoryForTesting(factory.Pass());
-  return make_scoped_ptr(sync_service);
+  return make_scoped_ptr(new ProfileSyncServiceMock(
+      make_scoped_ptr(new browser_sync::ChromeSyncClient(
+          static_cast<Profile*>(context), factory.Pass())),
+      static_cast<Profile*>(context)));
 }
 
 void ExtensionSessionsTest::CreateTestProfileSyncService() {

@@ -277,7 +277,7 @@ class SessionsSyncManagerTest
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    sync_client_.reset(new browser_sync::ChromeSyncClient(profile()));
+    sync_client_.reset(new browser_sync::ChromeSyncClient(profile(), nullptr));
     browser_sync::NotificationServiceSessionsRouter* router(
         new browser_sync::NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),

@@ -16,9 +16,6 @@ namespace {
 
 void DummyClearBrowsingDataCallback(base::Time start, base::Time end) {}
 
-void DummyRegisterPlatformTypesCallback(syncer::ModelTypeSet,
-                                        syncer::ModelTypeSet) {}
-
 }  // namespace
 
 FakeSyncClient::FakeSyncClient()
@@ -64,11 +61,6 @@ ClearBrowsingDataCallback FakeSyncClient::GetClearBrowsingDataCallback() {
 
 base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
   return base::Bind(&base::DoNothing);
-}
-
-sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
-FakeSyncClient::GetRegisterPlatformTypesCallback() {
-  return base::Bind(&DummyRegisterPlatformTypesCallback);
 }
 
 autofill::PersonalDataManager* FakeSyncClient::GetPersonalDataManager() {

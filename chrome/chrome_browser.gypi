@@ -2908,6 +2908,8 @@
       'browser/sync/glue/synced_window_delegate_android.h',
       'browser/sync/glue/synced_window_delegates_getter_android.cc',
       'browser/sync/glue/synced_window_delegates_getter_android.h',
+      'browser/sync/profile_sync_components_factory_impl.cc',
+      'browser/sync/profile_sync_components_factory_impl.h',
       'browser/sync/profile_sync_service_android.cc',
       'browser/sync/profile_sync_service_android.h',
       'browser/sync/profile_sync_service_factory.cc',

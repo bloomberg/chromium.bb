@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
-#define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-#include "components/version_info/version_info.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "url/gurl.h"
 
 class OAuth2TokenService;
 class Profile;
+
+namespace base {
+class CommandLine;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -35,22 +37,15 @@ class ProfileSyncComponentsFactoryImpl
   // |url_request_context_getter| must outlive the
   // ProfileSyncComponentsFactoryImpl.
   ProfileSyncComponentsFactoryImpl(
-      sync_driver::SyncClient* sync_client,
-      version_info::Channel channel,
-      const std::string& version,
-      bool is_tablet,
-      const base::CommandLine& command_line,
-      const char* history_disabled_pref,
+      Profile* profile,
+      base::CommandLine* command_line,
       const GURL& sync_service_url,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       OAuth2TokenService* token_service,
       net::URLRequestContextGetter* url_request_context_getter);
   ~ProfileSyncComponentsFactoryImpl() override;
 
-  // SyncApiComponentFactory implementation:
-  void RegisterDataTypes(
-      const RegisterDataTypesMethod& register_platform_types_method) override;
+  void RegisterDataTypes(sync_driver::SyncClient* sync_client) override;
+
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
@@ -58,19 +53,25 @@ class ProfileSyncComponentsFactoryImpl
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
       sync_driver::DataTypeManagerObserver* observer) override;
+
   browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
+      sync_driver::SyncClient* sync_client,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override;
+
   scoped_ptr<sync_driver::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
+
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override;
+
+  // Legacy datatypes that need to be converted to the SyncableService API.
   sync_driver::SyncApiComponentFactory::SyncComponents
   CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
@@ -82,26 +83,28 @@ class ProfileSyncComponentsFactoryImpl
       sync_driver::DataTypeErrorHandler* error_handler) override;
 
  private:
+  // Register data types which are enabled on desktop platforms only.
+  // |disabled_types| and |enabled_types| correspond only to those types
+  // being explicitly enabled/disabled by the command line.
+  void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
+                                syncer::ModelTypeSet enabled_types,
+                                sync_driver::SyncClient* sync_client);
+
   // Register data types which are enabled on both desktop and mobile.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly enabled/disabled by the command line.
   void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
-                               syncer::ModelTypeSet enabled_types);
+                               syncer::ModelTypeSet enabled_types,
+                               sync_driver::SyncClient* sync_client);
 
   void DisableBrokenType(syncer::ModelType type,
                          const tracked_objects::Location& from_here,
                          const std::string& message);
 
-  // Client/platform specific members.
-  sync_driver::SyncClient* const sync_client_;
-  const version_info::Channel channel_;
-  const std::string version_;
-  const bool is_tablet_;
-  const base::CommandLine command_line_;
-  const char* history_disabled_pref_;
+  Profile* profile_;
+  base::CommandLine* command_line_;
+
   const GURL sync_service_url_;
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
   OAuth2TokenService* const token_service_;
   net::URLRequestContextGetter* const url_request_context_getter_;
 
@@ -110,4 +113,4 @@ class ProfileSyncComponentsFactoryImpl
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };
 
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__

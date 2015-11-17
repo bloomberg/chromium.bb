@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/profile_sync_components_factory_impl.h"
+#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/glue/theme_data_type_controller.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
@@ -21,6 +28,7 @@
 #include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
+#include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -34,6 +42,7 @@
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -41,6 +50,20 @@
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
+#include "ui/base/device_form_factor.h"
+
+#if defined(ENABLE_APP_LIST)
+#include "ui/app_list/app_list_switches.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
+#endif
+
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
+#endif
 
 using bookmarks::BookmarkModel;
 using browser_sync::AutofillDataTypeController;
@@ -49,13 +72,20 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
+#if defined(ENABLE_EXTENSIONS)
+using browser_sync::ExtensionDataTypeController;
+using browser_sync::ExtensionSettingDataTypeController;
+#endif
 using browser_sync::HistoryDeleteDirectivesDataTypeController;
 using browser_sync::PasswordDataTypeController;
+using browser_sync::SearchEngineDataTypeController;
 using browser_sync::SessionDataTypeController;
 using browser_sync::SyncBackendHost;
+using browser_sync::ThemeDataTypeController;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
+using content::BrowserThread;
 using sync_driver::DataTypeController;
 using sync_driver::DataTypeErrorHandler;
 using sync_driver::DataTypeManager;
@@ -89,26 +119,14 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
-    sync_driver::SyncClient* sync_client,
-    version_info::Channel channel,
-    const std::string& version,
-    bool is_tablet,
-    const base::CommandLine& command_line,
-    const char* history_disabled_pref,
+    Profile* profile,
+    base::CommandLine* command_line,
     const GURL& sync_service_url,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* url_request_context_getter)
-    : sync_client_(sync_client),
-      channel_(channel),
-      version_(version),
-      is_tablet_(is_tablet),
+    : profile_(profile),
       command_line_(command_line),
-      history_disabled_pref_(history_disabled_pref),
       sync_service_url_(sync_service_url),
-      ui_thread_(ui_thread),
-      db_thread_(db_thread),
       token_service_(token_service),
       url_request_context_getter_(url_request_context_getter),
       weak_factory_(this) {
@@ -116,44 +134,51 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
   DCHECK(url_request_context_getter_);
 }
 
-ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
+ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {
+}
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
-    const RegisterDataTypesMethod& register_platform_types_method) {
+    sync_driver::SyncClient* sync_client) {
   syncer::ModelTypeSet disabled_types =
-      GetDisabledTypesFromCommandLine(command_line_);
+      GetDisabledTypesFromCommandLine(*command_line_);
   syncer::ModelTypeSet enabled_types =
-      GetEnabledTypesFromCommandLine(command_line_);
-  RegisterCommonDataTypes(disabled_types, enabled_types);
-  if (!register_platform_types_method.is_null())
-    register_platform_types_method.Run(disabled_types, enabled_types);
+      GetEnabledTypesFromCommandLine(*command_line_);
+  RegisterCommonDataTypes(disabled_types, enabled_types, sync_client);
+#if !defined(OS_ANDROID)
+  RegisterDesktopDataTypes(disabled_types, enabled_types, sync_client);
+#endif
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     syncer::ModelTypeSet disabled_types,
-    syncer::ModelTypeSet enabled_types) {
-  sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
+    syncer::ModelTypeSet enabled_types,
+    sync_driver::SyncClient* sync_client) {
+  sync_driver::SyncService* sync_service = sync_client->GetSyncService();
   base::Closure error_callback =
-      base::Bind(&ChromeReportUnrecoverableError, channel_);
+      base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
-      ui_thread_, error_callback, sync_client_,
+      ui_thread, error_callback, sync_client,
       sync_service->GetLocalDeviceInfoProvider()));
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
     sync_service->RegisterDataTypeController(new AutofillDataTypeController(
-        ui_thread_, db_thread_, error_callback, sync_client_));
+        ui_thread, db_thread, error_callback, sync_client));
   }
 
   // Autofill profile sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     sync_service->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(ui_thread_, db_thread_,
-                                              error_callback, sync_client_));
+        new AutofillProfileDataTypeController(ui_thread, db_thread,
+                                              error_callback, sync_client));
   }
 
   // Wallet data sync is enabled by default, but behind a syncer experiment
@@ -162,7 +187,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            ui_thread_, db_thread_, error_callback, sync_client_,
+            ui_thread, db_thread, error_callback, sync_client,
             syncer::AUTOFILL_WALLET_DATA));
   }
 
@@ -172,24 +197,25 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled && enabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
-            ui_thread_, db_thread_, error_callback, sync_client_,
+            ui_thread, db_thread, error_callback, sync_client,
             syncer::AUTOFILL_WALLET_METADATA));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    sync_service->RegisterDataTypeController(new BookmarkDataTypeController(
-        ui_thread_, error_callback, sync_client_));
+    sync_service->RegisterDataTypeController(
+        new BookmarkDataTypeController(ui_thread, error_callback, sync_client));
   }
 
   const bool history_disabled =
-      sync_client_->GetPrefService()->GetBoolean(history_disabled_pref_);
+      profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled);
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
   if (!disabled_types.Has(syncer::TYPED_URLS) && !history_disabled) {
-    sync_service->RegisterDataTypeController(new TypedUrlDataTypeController(
-        ui_thread_, error_callback, sync_client_, history_disabled_pref_));
+    sync_service->RegisterDataTypeController(
+        new TypedUrlDataTypeController(ui_thread, error_callback, sync_client,
+                                       prefs::kSavingBrowserHistoryDisabled));
   }
 
   // Delete directive sync is enabled by default.  Register unless full history
@@ -197,8 +223,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new HistoryDeleteDirectivesDataTypeController(
-            ui_thread_, error_callback, sync_client_));
+        new HistoryDeleteDirectivesDataTypeController(ui_thread, error_callback,
+                                                      sync_client));
   }
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
@@ -206,46 +232,159 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // tab sync data is added to the web history on the server.
   if (!disabled_types.Has(syncer::PROXY_TABS) && !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new ProxyDataTypeController(ui_thread_, syncer::PROXY_TABS));
+        new ProxyDataTypeController(ui_thread, syncer::PROXY_TABS));
     // TODO(zea): remove this once SyncedWindowDelegateGetter is componentized.
     // For now, we know that the implementation of SyncService is always a
     // ProfileSyncService at this level.
     ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service);
     sync_service->RegisterDataTypeController(new SessionDataTypeController(
-        ui_thread_, error_callback, sync_client_,
+        ui_thread, error_callback, sync_client,
         pss->GetSyncedWindowDelegatesGetter(),
-        sync_service->GetLocalDeviceInfoProvider(), history_disabled_pref_));
+        sync_service->GetLocalDeviceInfoProvider(),
+        prefs::kSavingBrowserHistoryDisabled));
   }
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
-      !disabled_types.Has(syncer::FAVICON_TRACKING) && !history_disabled) {
+      !disabled_types.Has(syncer::FAVICON_TRACKING) &&
+      !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, base::Closure(), syncer::FAVICON_IMAGES, sync_client_));
+        ui_thread, base::Closure(), syncer::FAVICON_IMAGES, sync_client));
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, base::Closure(), syncer::FAVICON_TRACKING, sync_client_));
+        ui_thread, base::Closure(), syncer::FAVICON_TRACKING, sync_client));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     sync_service->RegisterDataTypeController(new PasswordDataTypeController(
-        ui_thread_, error_callback, sync_client_,
-        sync_client_->GetPasswordStateChangedCallback()));
+        ui_thread, error_callback, sync_client,
+        sync_client->GetPasswordStateChangedCallback()));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
-    sync_service->RegisterDataTypeController(
-        new UIDataTypeController(ui_thread_, error_callback,
-                                 syncer::PRIORITY_PREFERENCES, sync_client_));
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread, error_callback, syncer::PRIORITY_PREFERENCES, sync_client));
   }
 
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (dom_distiller::IsEnableSyncArticlesSet()) {
     sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, error_callback, syncer::ARTICLES, sync_client_));
+        ui_thread, error_callback, syncer::ARTICLES, sync_client));
   }
+
+#if defined(ENABLE_SUPERVISED_USERS)
+  sync_service->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(syncer::SUPERVISED_USER_SETTINGS,
+                                               error_callback, sync_client,
+                                               profile_));
+  sync_service->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USER_WHITELISTS, error_callback, sync_client,
+          profile_));
+#endif
+}
+
+void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
+    syncer::ModelTypeSet disabled_types,
+    syncer::ModelTypeSet enabled_types,
+    sync_driver::SyncClient* sync_client) {
+  sync_driver::SyncService* sync_service = sync_client->GetSyncService();
+  base::Closure error_callback =
+      base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+
+#if defined(ENABLE_EXTENSIONS)
+  // App sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::APPS)) {
+    sync_service->RegisterDataTypeController(new ExtensionDataTypeController(
+        syncer::APPS, error_callback, sync_client, profile_));
+  }
+
+  // Extension sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::EXTENSIONS)) {
+    sync_service->RegisterDataTypeController(new ExtensionDataTypeController(
+        syncer::EXTENSIONS, error_callback, sync_client, profile_));
+  }
+#endif
+
+  // Preference sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::PREFERENCES)) {
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread, error_callback, syncer::PREFERENCES, sync_client));
+  }
+
+#if defined(ENABLE_THEMES)
+  // Theme sync is enabled by default.  Register unless explicitly disabled.
+  if (!disabled_types.Has(syncer::THEMES)) {
+    sync_service->RegisterDataTypeController(
+        new ThemeDataTypeController(error_callback, sync_client, profile_));
+  }
+#endif
+
+  // Search Engine sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
+    sync_service->RegisterDataTypeController(new SearchEngineDataTypeController(
+        ui_thread, error_callback, sync_client,
+        TemplateURLServiceFactory::GetForProfile(profile_)));
+  }
+
+#if defined(ENABLE_EXTENSIONS)
+  // Extension setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
+    sync_service->RegisterDataTypeController(
+        new ExtensionSettingDataTypeController(
+            syncer::EXTENSION_SETTINGS, error_callback, sync_client, profile_));
+  }
+
+  // App setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::APP_SETTINGS)) {
+    sync_service->RegisterDataTypeController(
+        new ExtensionSettingDataTypeController(
+            syncer::APP_SETTINGS, error_callback, sync_client, profile_));
+  }
+#endif
+
+#if defined(ENABLE_APP_LIST)
+  if (app_list::switches::IsAppListSyncEnabled()) {
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread, error_callback, syncer::APP_LIST, sync_client));
+  }
+#endif
+
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+  // Dictionary sync is enabled by default.
+  if (!disabled_types.Has(syncer::DICTIONARY)) {
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread, error_callback, syncer::DICTIONARY, sync_client));
+  }
+#endif
+
+#if defined(ENABLE_SUPERVISED_USERS)
+  sync_service->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USERS, error_callback, sync_client, profile_));
+  sync_service->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USER_SHARED_SETTINGS, error_callback, sync_client,
+          profile_));
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (command_line_->HasSwitch(switches::kEnableWifiCredentialSync) &&
+      !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
+    sync_service->RegisterDataTypeController(new UIDataTypeController(
+        ui_thread, error_callback, syncer::WIFI_CREDENTIALS, sync_client));
+  }
+#endif
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
@@ -262,18 +401,23 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
 browser_sync::SyncBackendHost*
 ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const std::string& name,
+    sync_driver::SyncClient* sync_client,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
   return new browser_sync::SyncBackendHostImpl(
-      name, sync_client_, ui_thread_, invalidator, sync_prefs, sync_folder);
+      name, sync_client,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      invalidator, sync_prefs, sync_folder);
 }
 
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
   return scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
-      new browser_sync::LocalDeviceInfoProviderImpl(channel_, version_,
-                                                    is_tablet_));
+      new browser_sync::LocalDeviceInfoProviderImpl(
+          chrome::GetChannel(),
+          chrome::GetVersionString(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET));
 }
 
 class TokenServiceProvider
@@ -298,9 +442,11 @@ class TokenServiceProvider
 TokenServiceProvider::TokenServiceProvider(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     OAuth2TokenService* token_service)
-    : task_runner_(task_runner), token_service_(token_service) {}
+    : task_runner_(task_runner), token_service_(token_service) {
+}
 
-TokenServiceProvider::~TokenServiceProvider() {}
+TokenServiceProvider::~TokenServiceProvider() {
+}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 TokenServiceProvider::GetTokenServiceTaskRunner() {
@@ -325,9 +471,12 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   // signed in sync user (e.g. sync is running in "backup" mode).
   if (!user_share.sync_credentials.email.empty() &&
       !user_share.sync_credentials.scope_set.empty()) {
+    const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+
     scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider(
-            new TokenServiceProvider(ui_thread_, token_service_));
+            new TokenServiceProvider(ui_thread, token_service_));
     // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
     // AttachmentUploader and AttachmentDownloader instead of creating a new one
     // per AttachmentService (bug 369536).
@@ -338,7 +487,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         store_birthday, model_type));
 
     token_service_provider =
-        new TokenServiceProvider(ui_thread_, token_service_);
+        new TokenServiceProvider(ui_thread, token_service_);
     attachment_downloader = syncer::AttachmentDownloader::Create(
         sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
@@ -362,14 +511,14 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
 }
 
 sync_driver::SyncApiComponentFactory::SyncComponents
-ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
-    sync_driver::SyncService* sync_service,
-    sync_driver::DataTypeErrorHandler* error_handler) {
+    ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
+        sync_driver::SyncService* sync_service,
+        sync_driver::DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
-      sync_service->GetSyncClient()->GetBookmarkModel();
+      BookmarkModelFactory::GetForProfile(profile_);
   syncer::UserShare* user_share = sync_service->GetUserShare();
-// TODO(akalin): We may want to propagate this switch up eventually.
-#if defined(OS_ANDROID) || defined(OS_IOS)
+  // TODO(akalin): We may want to propagate this switch up eventually.
+#if defined(OS_ANDROID)
   const bool kExpectMobileBookmarksFolder = true;
 #else
   const bool kExpectMobileBookmarksFolder = false;
@@ -383,18 +532,23 @@ ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
 }
 
 sync_driver::SyncApiComponentFactory::SyncComponents
-ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(
-    sync_driver::SyncService* sync_service,
-    history::HistoryBackend* history_backend,
-    sync_driver::DataTypeErrorHandler* error_handler) {
-  DCHECK(!ui_thread_->BelongsToCurrentThread());
+    ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(
+        sync_driver::SyncService* sync_service,
+        history::HistoryBackend* history_backend,
+        sync_driver::DataTypeErrorHandler* error_handler) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 
   // TODO(zea): Once TypedURLs are converted to SyncableService, remove
   // |sync_service_| member, and make GetSyncService require it be called on
   // the UI thread.
   TypedUrlModelAssociator* model_associator =
-      new TypedUrlModelAssociator(sync_service, history_backend, error_handler);
+      new TypedUrlModelAssociator(sync_service,
+                                  history_backend,
+                                  error_handler);
   TypedUrlChangeProcessor* change_processor = new TypedUrlChangeProcessor(
-      model_associator, history_backend, error_handler, ui_thread_);
+      model_associator, history_backend, error_handler, ui_thread);
   return SyncComponents(model_associator, change_processor);
 }

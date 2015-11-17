@@ -118,19 +118,20 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   void SetUp() override {
     CHECK(profile_manager_.SetUp());
 
-    TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(std::make_pair(
+    TestingProfile::TestingFactories testing_facotries;
+    testing_facotries.push_back(std::make_pair(
         SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
-    testing_factories.push_back(
-        std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                       BuildAutoIssuingFakeProfileOAuth2TokenService));
-    testing_factories.push_back(
-        std::make_pair(ProfileSyncServiceFactory::GetInstance(), BuildService));
+    testing_facotries.push_back(
+            std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                           BuildAutoIssuingFakeProfileOAuth2TokenService));
+    testing_facotries.push_back(
+            std::make_pair(ProfileSyncServiceFactory::GetInstance(),
+                           BuildService));
 
     profile_ = profile_manager_.CreateTestingProfile(
         "sync-startup-test", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16("sync-startup-test"), 0, std::string(),
-        testing_factories);
+        testing_facotries);
   }
 
   void TearDown() override { sync_->RemoveObserver(&observer_); }
@@ -139,9 +140,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
       content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
     scoped_ptr<browser_sync::ChromeSyncClient> sync_client(
-        new browser_sync::ChromeSyncClient(profile));
-    sync_client->SetSyncApiComponentFactoryForTesting(
-        make_scoped_ptr(new SyncApiComponentFactoryMock()));
+        new browser_sync::ChromeSyncClient(
+            profile, make_scoped_ptr(new SyncApiComponentFactoryMock())));
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         sync_client.Pass(), profile,
         make_scoped_ptr(new SigninManagerWrapper(
@@ -212,7 +212,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     browser_sync::SyncBackendHostMock* sync_backend_host =
         new browser_sync::SyncBackendHostMock();
     EXPECT_CALL(*GetSyncApiComponentFactoryMock(),
-                CreateSyncBackendHost(_, _, _, _))
+                CreateSyncBackendHost(_, _, _, _, _))
         .WillOnce(Return(sync_backend_host));
     return sync_backend_host;
   }
@@ -246,9 +246,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_TRUE(signin->IsAuthenticated());
     scoped_ptr<browser_sync::ChromeSyncClient> sync_client(
-        new browser_sync::ChromeSyncClient(profile));
-    sync_client->SetSyncApiComponentFactoryForTesting(
-        make_scoped_ptr(new SyncApiComponentFactoryMock()));
+        new browser_sync::ChromeSyncClient(
+            profile, make_scoped_ptr(new SyncApiComponentFactoryMock())));
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         sync_client.Pass(), profile,
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
@@ -379,7 +378,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
               CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*GetSyncApiComponentFactoryMock(),
-              CreateSyncBackendHost(_, _, _, _))
+              CreateSyncBackendHost(_, _, _, _, _))
       .Times(0);
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());

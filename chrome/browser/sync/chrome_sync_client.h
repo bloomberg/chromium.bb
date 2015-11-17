@@ -21,7 +21,9 @@ namespace browser_sync {
 
 class ChromeSyncClient : public sync_driver::SyncClient {
  public:
-  explicit ChromeSyncClient(Profile* profile);
+  ChromeSyncClient(
+      Profile* profile,
+      scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
   ~ChromeSyncClient() override;
 
   // SyncClient implementation.
@@ -35,8 +37,6 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
       override;
   base::Closure GetPasswordStateChangedCallback() override;
-  sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
-  GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
@@ -50,28 +50,14 @@ class ChromeSyncClient : public sync_driver::SyncClient {
       syncer::WorkerLoopDestructionObserver* observer) override;
   sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
-  // Helpers for overriding getters in tests.
+  // Helper for testing rollback.
   void SetBrowsingDataRemoverObserverForTesting(
       BrowsingDataRemover::Observer* observer);
-  void SetSyncApiComponentFactoryForTesting(
-      scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
 
  private:
-  // Register data types which are enabled on desktop platforms only.
-  // |disabled_types| and |enabled_types| correspond only to those types
-  // being explicitly disabled/enabled by the command line.
-  void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
-                                syncer::ModelTypeSet enabled_types);
-
-  // Register data types which are enabled on Android platforms only.
-  // |disabled_types| and |enabled_types| correspond only to those types
-  // being explicitly disabled/enabled by the command line.
-  void RegisterAndroidDataTypes(syncer::ModelTypeSet disabled_types,
-                                syncer::ModelTypeSet enabled_types);
+  Profile* const profile_;
 
   void ClearBrowsingData(base::Time start, base::Time end);
-
-  Profile* const profile_;
 
   // The sync api component factory in use by this client.
   scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
@@ -94,8 +80,6 @@ class ChromeSyncClient : public sync_driver::SyncClient {
 
   // Used in integration tests.
   BrowsingDataRemover::Observer* browsing_data_remover_observer_;
-
-  base::WeakPtrFactory<ChromeSyncClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSyncClient);
 };

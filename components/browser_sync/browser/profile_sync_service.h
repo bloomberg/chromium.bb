@@ -230,6 +230,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     ROLLBACK    // Backend for rollback.
   };
 
+  // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
       scoped_ptr<sync_driver::SyncClient> sync_client,
       scoped_ptr<SigninManagerWrapper> signin_wrapper,
@@ -947,7 +948,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
 
-  browser_sync::ProfileSyncServiceStartBehavior start_behavior_;
   scoped_ptr<browser_sync::StartupController> startup_controller_;
 
   scoped_ptr<sync_driver::BackupRollbackController> backup_rollback_controller_;
