@@ -8,7 +8,7 @@ import("//build/config/android/rules.gni")
 source_set("native") {
   deps = [
     "//android_webview/common:version",
-    "//base:base_static",
+    "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//cc:cc",
     "//components/autofill/content/browser:browser",

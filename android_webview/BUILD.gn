@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//tools/grit/repack.gni")
+import("system_webview_apk_tmpl.gni")
 import("webview_repack_locales.gni")
 
 group("android_webview") {
@@ -465,6 +466,7 @@ source_set("common") {
     ":generate_aw_resources",
     ":generate_aw_strings",
     ":generate_components_strings",
+    "//android_webview/common:version",
     "//android_webview/native:native",
     "//cc/surfaces",
     "//components/auto_login_parser:auto_login_parser",
@@ -641,18 +643,13 @@ java_strings_grd("strings_grd") {
   ]
 }
 
-android_apk("system_webview_apk") {
+system_webview_apk_tmpl("system_webview_apk") {
   android_manifest = get_target_outputs(":system_webview_manifest")
   android_manifest = android_manifest[1]
   android_manifest_dep = ":system_webview_manifest"
-  chromium_code = true
   deps = [
     ":system_webview_resources",
-    ":assets",
-    ":libwebviewchromium",
     "//android_webview/glue",
-    "//base:base_java",
   ]
   apk_name = "SystemWebView"
-  native_libs = [ "$root_build_dir/libwebviewchromium.so" ]
 }

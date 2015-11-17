@@ -1387,7 +1387,11 @@ template("android_apk") {
   _generated_proguard_config = "$base_path.resources.proguard.txt"
   process_resources_target = "${_template_name}__process_resources"
   process_resources(process_resources_target) {
-    forward_variables_from(invoker, [ "include_all_resources" ])
+    forward_variables_from(invoker,
+                           [
+                             "include_all_resources",
+                             "shared_resources",
+                           ])
     srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
     r_text_path = "${target_gen_dir}/${target_name}_R.txt"
     android_manifest = _android_manifest
@@ -1619,6 +1623,7 @@ template("android_apk") {
                              "deps",
                              "extensions_to_not_compress",
                              "language_splits",
+                             "shared_resources",
                            ])
     apk_path = _final_apk_path
     android_manifest = _android_manifest

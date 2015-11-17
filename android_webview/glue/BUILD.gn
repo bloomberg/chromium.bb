@@ -5,22 +5,10 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("generate_resource_rewriter.gni")
+import("glue.gni")
 
 webview_framework_ijar =
     "$root_out_dir/lib.java/webview/frameworks.interface.jar"
-
-# This variable shared between 'glue' and 'glue_resource_rewriter' because
-# ResourceRewrite.java need to be generated according 'glue' deps
-glue_library_deps = [
-  "//android_webview:android_webview_java",
-  "//android_webview:resources",
-  "//base:base_java",
-  "//content/public/android:content_java",
-  "//content/public/android:content_java_resources",
-  "//components/web_contents_delegate_android:web_contents_delegate_android_java_resources",
-  "//ui/android:ui_java",
-  "//ui/android:ui_java_resources",
-]
 
 generate_interface_jar("framework_ijar") {
   input_jar = "../../third_party/android_platform/webview/frameworks_6.0.jar"
