@@ -243,6 +243,7 @@
     ['OS=="ios"', {
       'targets': [
         {
+          # GN version: //components/history/ios/browser
           'target_name': 'history_ios_browser',
           'type': 'static_library',
           'include_dirs': [
