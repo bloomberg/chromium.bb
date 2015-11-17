@@ -140,6 +140,7 @@ public class ContentViewClient {
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
             intent = Intent.parseUri(intentUrl, Intent.URI_INTENT_SCHEME);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         } catch (Exception ex) {
             Log.w(TAG, "Bad URI %s", intentUrl, ex);
             return;
