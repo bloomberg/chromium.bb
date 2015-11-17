@@ -363,7 +363,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
+// Disabled on Windows due to flakiness (http://crbug.com/554003).
+#if defined(OS_WIN)
+#define MAYBE_SubscribePersisted DISABLED_SubscribePersisted
+#else
+#define MAYBE_SubscribePersisted SubscribePersisted
+#endif
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribePersisted) {
   std::string script_result;
 
   // First, test that Service Worker registration IDs are assigned in order of
