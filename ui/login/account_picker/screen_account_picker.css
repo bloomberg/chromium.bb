@@ -8,6 +8,10 @@
                       height 180ms ease;
 }
 
+#bubble {
+  z-index: 1;
+}
+
 #signin-banner-container1 {
   bottom: 100%;
   margin-bottom: 10px;
