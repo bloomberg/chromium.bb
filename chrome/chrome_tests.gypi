@@ -3239,7 +3239,7 @@
           ],
         },
         {
-         'target_name': 'telemetry_perf_unittests',
+         'target_name': 'telemetry_perf_unittests_run',
          'type': 'none',
          'dependencies': [
             'chrome_run',
@@ -3253,7 +3253,7 @@
           ],
         },
         {
-         'target_name': 'telemetry_gpu_unittests',
+         'target_name': 'telemetry_gpu_unittests_run',
          'type': 'none',
          'dependencies': [
             '../content/content_shell_and_tests.gyp:telemetry_base',
