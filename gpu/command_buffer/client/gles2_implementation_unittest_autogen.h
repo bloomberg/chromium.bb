@@ -1357,9 +1357,9 @@ TEST_F(GLES2ImplementationTest, LineWidth) {
     cmds::LineWidth cmd;
   };
   Cmds expected;
-  expected.cmd.Init(0.5f);
+  expected.cmd.Init(2.0f);
 
-  gl_->LineWidth(0.5f);
+  gl_->LineWidth(2.0f);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

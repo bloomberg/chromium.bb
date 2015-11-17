@@ -2566,8 +2566,9 @@ _FUNCTION_INFO = {
   'LineWidth': {
     'type': 'StateSet',
     'state': 'LineWidth',
+    'decoder_func': 'DoLineWidth',
     'valid_args': {
-      '0': '0.5f'
+      '0': '2.0f'
     },
   },
   'PolygonOffset': {

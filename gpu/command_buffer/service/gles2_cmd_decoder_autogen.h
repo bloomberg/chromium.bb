@@ -2354,7 +2354,7 @@ error::Error GLES2DecoderImpl::HandleLineWidth(uint32_t immediate_data_size,
   }
   if (state_.line_width != width) {
     state_.line_width = width;
-    glLineWidth(width);
+    DoLineWidth(width);
   }
   return error::kNoError;
 }

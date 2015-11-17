@@ -1753,6 +1753,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool DoIsVertexArrayOES(GLuint client_id);
   bool DoIsPathCHROMIUM(GLuint client_id);
 
+  void DoLineWidth(GLfloat width);
+
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
 
@@ -2290,6 +2292,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   static const CommandInfo command_info[kNumCommands - kStartPoint];
 
   bool force_shader_name_hashing_for_test;
+
+  GLfloat line_width_range_[2];
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -3164,6 +3168,8 @@ bool GLES2DecoderImpl::Initialize(
   glGetIntegerv(GL_MAX_VIEWPORT_DIMS, viewport_params);
   viewport_max_width_ = viewport_params[0];
   viewport_max_height_ = viewport_params[1];
+
+  glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range_);
 
   state_.scissor_width = state_.viewport_width;
   state_.scissor_height = state_.viewport_height;
@@ -6839,6 +6845,11 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
     renderbuffer_manager()->SetInfo(
         renderbuffer, 1, internalformat, width, height);
   }
+}
+
+void GLES2DecoderImpl::DoLineWidth(GLfloat width) {
+  glLineWidth(
+      std::min(std::max(width, line_width_range_[0]), line_width_range_[1]));
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {

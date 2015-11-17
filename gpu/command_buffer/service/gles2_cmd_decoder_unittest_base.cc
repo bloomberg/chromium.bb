@@ -349,6 +349,12 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VIEWPORT_DIMS, _))
       .WillOnce(SetArrayArgument<1>(
           max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
+        .RetiresOnSaturation();
+
+  static GLfloat line_width_range[] = { 1.0f, 2.0f };
+  EXPECT_CALL(*gl_, GetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, _))
+      .WillOnce(SetArrayArgument<1>(
+          line_width_range, line_width_range + arraysize(line_width_range)))
       .RetiresOnSaturation();
 
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());

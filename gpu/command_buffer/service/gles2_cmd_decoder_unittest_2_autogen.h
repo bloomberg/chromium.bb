@@ -694,10 +694,10 @@ TEST_P(GLES2DecoderTest2, IsTransformFeedbackInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_P(GLES2DecoderTest2, LineWidthValidArgs) {
-  EXPECT_CALL(*gl_, LineWidth(0.5f));
+  EXPECT_CALL(*gl_, LineWidth(2.0f));
   SpecializedSetup<cmds::LineWidth, 0>(true);
   cmds::LineWidth cmd;
-  cmd.Init(0.5f);
+  cmd.Init(2.0f);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
