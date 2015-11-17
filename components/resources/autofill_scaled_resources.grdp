@@ -6,7 +6,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="autofill/mastercard.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
 
-  <if expr="is_android">
+  <if expr="is_android and not use_aura">
     <!-- These are not used on desktop, only Android, so use a placeholder file.
          TODO(rouslan): Remove non-keyboard-accessory icon when keyboard
          accessory becomes default on Android. -->
