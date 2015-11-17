@@ -80,6 +80,10 @@
     "label": "//third_party/WebKit/public:blink_platform_unittests",
     "type": "unknown",
   },
+  "breakpad_unittests": {
+    "label": "//breakpad:breakpad_unittests",
+    "type": "console_test_launcher",
+  },
   "browser_tests": {
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",

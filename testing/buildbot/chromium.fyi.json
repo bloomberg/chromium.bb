@@ -7,6 +7,94 @@
       }
     ]
   },
+  "Android User Builder Tests": {
+    "gtest_tests": [
+      {
+        "test": "android_webview_unittests"
+      },
+      {
+        "test": "base_unittests"
+      },
+      {
+        "override_compile_targets": [
+          "breakpad_unittests_deps"
+        ],
+        "test": "breakpad_unittests"
+      },
+      {
+        "test": "cc_unittests"
+      },
+      {
+        "test": "components_browsertests"
+      },
+      {
+        "test": "components_unittests"
+      },
+      {
+        "test": "content_browsertests"
+      },
+      {
+        "test": "content_unittests"
+      },
+      {
+        "test": "device_unittests"
+      },
+      {
+        "test": "events_unittests"
+      },
+      {
+        "test": "gl_tests"
+      },
+      {
+        "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_unittests"
+      },
+      {
+        "test": "ipc_tests"
+      },
+      {
+        "test": "media_unittests"
+      },
+      {
+        "test": "midi_unittests"
+      },
+      {
+        "test": "net_unittests"
+      },
+      {
+        "override_compile_targets": [
+          "sandbox_linux_unittests_deps"
+        ],
+        "test": "sandbox_linux_unittests"
+      },
+      {
+        "test": "skia_unittests"
+      },
+      {
+        "test": "sql_unittests"
+      },
+      {
+        "test": "sync_unit_tests"
+      },
+      {
+        "test": "ui_android_unittests"
+      },
+      {
+        "test": "ui_base_unittests"
+      },
+      {
+        "test": "ui_touch_selection_unittests"
+      },
+      {
+        "test": "unit_tests"
+      },
+      {
+        "test": "webkit_unit_tests"
+      }
+    ]
+  },
   "Browser Side Navigation Linux": {
     "gtest_tests": [
       {

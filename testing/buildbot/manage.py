@@ -59,6 +59,7 @@ SKIP = {
 
 SKIP_GN_ISOLATE_MAP_TARGETS = {
   # TODO(GYP): These targets have not been ported to GN yet.
+  'android_webview_unittests',
   'cast_media_unittests',
   'cast_shell_browser_test',
   'chromevox_tests',
