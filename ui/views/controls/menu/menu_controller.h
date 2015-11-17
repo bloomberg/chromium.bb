@@ -30,7 +30,6 @@ namespace gfx {
 class Screen;
 }
 namespace ui {
-class NativeTheme;
 class OSExchangeData;
 class ScopedEventDispatcher;
 }
@@ -303,8 +302,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // Creates a MenuController. If |blocking| is true a nested message loop is
   // started in |Run|.
-  MenuController(ui::NativeTheme* theme,
-                 bool blocking,
+  MenuController(bool blocking,
                  internal::MenuControllerDelegate* delegate);
 
   ~MenuController() override;
@@ -635,8 +633,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // How deep we are in nested message loops. This should be at most 2 (when
   // showing a context menu from a menu).
   int message_loop_depth_;
-
-  views::MenuConfig menu_config_;
 
   // The timestamp of the event which closed the menu - or 0 otherwise.
   base::TimeDelta closing_event_time_;

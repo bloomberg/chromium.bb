@@ -31,10 +31,11 @@ class MenuScrollViewContainer : public View {
   void SetBubbleArrowOffset(int offset);
 
   // View overrides.
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-  void Layout() override;
   gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  protected:
   // View override.

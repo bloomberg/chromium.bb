@@ -13,21 +13,18 @@
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
-#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
 namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
-  const MenuConfig& config = parent_menu_item_->GetMenuConfig();
-
-  if (config.native_theme == ui::NativeThemeAura::instance()) {
+  ui::NativeTheme* native_theme = GetNativeTheme();
+  if (native_theme == ui::NativeThemeAura::instance()) {
     OnPaintAura(canvas);
     return;
   }
 
   gfx::Rect separator_bounds = GetPaintBounds();
-
 
   // Hack to get the separator to display correctly on Windows where we may
   // have fractional scales. We move the separator 1 pixel down to ensure that
@@ -39,7 +36,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
     separator_bounds.set_y(1);
 
   ui::NativeTheme::ExtraParams extra;
-  config.native_theme->Paint(
+  native_theme->Paint(
       canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
       ui::NativeTheme::kNormal, separator_bounds, extra);
 }

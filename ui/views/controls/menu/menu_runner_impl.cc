@@ -109,9 +109,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
   owns_controller_ = false;
   if (!controller) {
     // No menus are showing, show one.
-    ui::NativeTheme* theme =
-        parent ? parent->GetNativeTheme() : ui::NativeTheme::instance();
-    controller = new MenuController(theme, !for_drop_, this);
+    controller = new MenuController(!for_drop_, this);
     owns_controller_ = true;
   }
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);

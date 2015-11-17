@@ -214,7 +214,7 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void SetupMenuController() {
-    menu_controller_= new MenuController(nullptr, true, nullptr);
+    menu_controller_= new MenuController(true, nullptr);
     menu_controller_->owner_ = owner_.get();
     menu_controller_->showing_ = true;
     menu_controller_->SetSelection(

@@ -116,8 +116,6 @@ struct VIEWS_EXPORT MenuConfig {
   // True if a combobox menu should put a checkmark next to the selected item.
   bool check_selected_combobox_item;
 
-  const ui::NativeTheme* native_theme;
-
   // Delay, in ms, between when menus are selected or moused over and the menu
   // appears.
   int show_delay;

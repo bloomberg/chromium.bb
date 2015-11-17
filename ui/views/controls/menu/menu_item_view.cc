@@ -568,10 +568,7 @@ void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
 }
 
 const MenuConfig& MenuItemView::GetMenuConfig() const {
-  const MenuController* controller = GetMenuController();
-  if (controller)
-    return controller->menu_config_;
-  return MenuConfig::instance(NULL);
+  return MenuConfig::instance(GetNativeTheme());
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,

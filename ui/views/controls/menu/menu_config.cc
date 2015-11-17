@@ -40,7 +40,6 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       use_outer_border(true),
       icons_in_label(false),
       check_selected_combobox_item(false),
-      native_theme(theme),
       show_delay(400),
       corner_radius(0) {
   Init(theme);

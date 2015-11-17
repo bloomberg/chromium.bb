@@ -1217,8 +1217,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   }
 }
 
-MenuController::MenuController(ui::NativeTheme* theme,
-                               bool blocking,
+MenuController::MenuController(bool blocking,
                                internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
       showing_(false),
@@ -1238,7 +1237,6 @@ MenuController::MenuController(ui::NativeTheme* theme,
       active_mouse_view_id_(ViewStorage::GetInstance()->CreateStorageID()),
       delegate_(delegate),
       message_loop_depth_(0),
-      menu_config_(theme),
       closing_event_time_(base::TimeDelta()),
       menu_start_time_(base::TimeTicks()),
       is_combobox_(false),
@@ -1733,9 +1731,10 @@ void MenuController::BuildMenuItemPath(MenuItemView* item,
 }
 
 void MenuController::StartShowTimer() {
-  show_timer_.Start(FROM_HERE,
-                    TimeDelta::FromMilliseconds(menu_config_.show_delay),
-                    this, &MenuController::CommitPendingSelection);
+  MenuItemView* item = pending_state_.item ? pending_state_.item : state_.item;
+  show_timer_.Start(
+      FROM_HERE, TimeDelta::FromMilliseconds(item->GetMenuConfig().show_delay),
+      this, &MenuController::CommitPendingSelection);
 }
 
 void MenuController::StopShowTimer() {
