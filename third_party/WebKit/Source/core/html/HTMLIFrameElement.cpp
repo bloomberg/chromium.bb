@@ -169,7 +169,7 @@ bool HTMLIFrameElement::isInteractiveContent() const
     return true;
 }
 
-void HTMLIFrameElement::valueChanged()
+void HTMLIFrameElement::valueWasSet()
 {
     String invalidTokens;
     setSandboxFlags(m_sandbox->value().isNull() ? SandboxNone : parseSandboxPolicy(m_sandbox->tokens(), invalidTokens));

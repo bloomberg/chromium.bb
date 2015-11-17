@@ -140,7 +140,7 @@ void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntS
 inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser)
     : HTMLElement(linkTag, document)
     , m_linkLoader(this)
-    , m_sizes(DOMSettableTokenList::create())
+    , m_sizes(DOMSettableTokenList::create(this))
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
 {
@@ -154,12 +154,11 @@ PassRefPtrWillBeRawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& docume
 HTMLLinkElement::~HTMLLinkElement()
 {
 #if !ENABLE(OILPAN)
+    m_sizes->setObserver(nullptr);
     m_link.clear();
-
     if (inDocument())
         document().styleEngine().removeStyleSheetCandidateNode(this);
 #endif
-
     linkLoadEventSender().cancelEvent(this);
 }
 
@@ -178,8 +177,6 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         process();
     } else if (name == sizesAttr) {
         m_sizes->setValue(value);
-        parseSizesAttribute(value, m_iconSizes);
-        process();
     } else if (name == mediaAttr) {
         m_media = value.lower();
         process();
@@ -356,6 +353,14 @@ void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender()
     dispatchEvent(Event::create(EventTypeNames::webkitprerenderdomcontentloaded));
 }
 
+void HTMLLinkElement::valueWasSet()
+{
+    setSynchronizedLazyAttribute(HTMLNames::sizesAttr, m_sizes->value());
+    m_iconSizes.clear();
+    parseSizesAttribute(m_sizes->value(), m_iconSizes);
+    process();
+}
+
 bool HTMLLinkElement::sheetLoaded()
 {
     ASSERT(linkStyle());
@@ -456,6 +461,7 @@ DEFINE_TRACE(HTMLLinkElement)
     visitor->trace(m_sizes);
     visitor->trace(m_linkLoader);
     HTMLElement::trace(visitor);
+    DOMSettableTokenListObserver::trace(visitor);
 }
 
 void HTMLLinkElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)

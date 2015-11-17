@@ -97,7 +97,7 @@ void DOMSettableTokenList::setValue(const AtomicString& value)
     m_value = value;
     m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
     if (m_observer)
-        m_observer->valueChanged();
+        m_observer->valueWasSet();
 }
 
 } // namespace blink

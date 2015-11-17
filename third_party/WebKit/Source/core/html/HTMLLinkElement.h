@@ -127,8 +127,9 @@ private:
 };
 
 
-class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderClient {
+class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderClient, private DOMSettableTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 public:
     static PassRefPtrWillBeRawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
     ~HTMLLinkElement() override;
@@ -181,6 +182,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    HTMLLinkElement(Document&, bool createdByParser);
+
     void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
     void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
@@ -210,8 +213,8 @@ private:
     void didSendLoadForLinkPrerender() override;
     void didSendDOMContentLoadedForLinkPrerender() override;
 
-private:
-    HTMLLinkElement(Document&, bool createdByParser);
+    // From DOMSettableTokenListObserver
+    void valueWasSet() final;
 
     OwnPtrWillBeMember<LinkResource> m_link;
     LinkLoader m_linkLoader;

@@ -35,14 +35,16 @@ namespace blink {
 
 class ExceptionState;
 
-class DOMSettableTokenListObserver : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT DOMSettableTokenListObserver : public WillBeGarbageCollectedMixin {
 public:
-    virtual void valueChanged() = 0;
+    // Called when the value property is set, even if the tokens in
+    // the set have not changed.
+    virtual void valueWasSet() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-class DOMSettableTokenList final
+class CORE_EXPORT DOMSettableTokenList final
     : public DOMTokenList
 #if !ENABLE(OILPAN)
     , public RefCounted<DOMSettableTokenList>
