@@ -286,6 +286,8 @@ void WindowTreeHostManager::Start() {
 }
 
 void WindowTreeHostManager::Shutdown() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnWindowTreeHostManagerShutdown());
+
   // Unset the display manager's delegate here because
   // DisplayManager outlives WindowTreeHostManager.
   Shell::GetInstance()->display_manager()->set_delegate(nullptr);

@@ -63,6 +63,9 @@ class ASH_EXPORT ShellObserver {
   // animating but have been restored.
   virtual void OnMaximizeModeEnded() {}
 
+  // Called at the end of Shell::Init.
+  virtual void OnShellInitialized() {}
+
  protected:
   virtual ~ShellObserver() {}
 };

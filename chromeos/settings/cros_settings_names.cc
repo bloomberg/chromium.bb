@@ -175,4 +175,12 @@ const char kRebootOnShutdown[] = "cros.device.reboot_on_shutdown";
 // size in bytes.
 const char kExtensionCacheSize[] = "cros.device.extension_cache_size";
 
+// An integer pref that sets the display rotation at startup to a certain
+// value, overriding the user value:
+// 0 = 0 degrees rotation
+// 1 = 90 degrees clockwise rotation
+// 2 = 180 degrees rotation
+// 3 = 270 degrees clockwise rotation
+const char kDisplayRotationDefault[] = "cros.display_rotation_default";
+
 }  // namespace chromeos

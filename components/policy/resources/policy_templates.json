@@ -134,7 +134,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 310
+#   For your editing convenience: highest ID currently used: 311
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8001,6 +8001,58 @@
 
       If this policy is set to false or unset, Unified Desktop will be
       disabled. In this case, the user cannot enable the feature.''',
+    },
+    {
+      'name': 'DisplayRotationDefault',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'ROTATE_0',
+          'value': 0,
+          'caption': '''Rotate screen by 0 degrees''',
+        },
+        {
+          'name': 'ROTATE_90',
+          'value': 1,
+          'caption': '''Rotate screen clockwise by 90 degrees''',
+        },
+        {
+          'name': 'ROTATE_180',
+          'value': 2,
+          'caption': '''Rotate screen by 180 degrees''',
+        },
+        {
+          'name': 'ROTATE_270',
+          'value': 3,
+          'caption': '''Rotate screen clockwise by 270 degrees''',
+        },
+      ],
+      'supported_on': ['chrome_os:48-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 1,
+      'id': 311,
+      'caption': '''Set default display rotation, reapplied on every reboot''',
+      'tags': [],
+      'desc': '''If this policy is set, each display is rotated to the
+      specified orientation on every reboot, and the first time it is connected
+      after the policy value has changed. Users may change the display
+      rotation via the settings page after logging in, but their
+      setting will be overridden by the policy value at the next reboot.
+
+      This policy applies to both the primary and all secondary displays.
+
+      If the policy is not set, the default value is 0 degrees and the user is
+      free to change it. In this case, the default value is not reapplied at
+      restart.''',
     },
   ],
   'messages': {

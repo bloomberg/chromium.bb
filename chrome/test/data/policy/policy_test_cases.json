@@ -2383,6 +2383,12 @@
     ]
   },
 
+  "DisplayRotationDefault": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "DisplayRotationDefault": 1 }
+  },
+
   "ChromeOsReleaseChannel": {
   },
 

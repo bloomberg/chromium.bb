@@ -799,6 +799,7 @@
       'browser/chromeos/policy/device_policy_cros_browser_test.h',
       'browser/chromeos/policy/device_status_collector_browsertest.cc',
       'browser/chromeos/policy/device_system_use_24hour_clock_browsertest.cc',
+      'browser/chromeos/policy/display_rotation_default_handler_browsertest.cc',
       'browser/chromeos/policy/force_maximize_on_first_run_chromeos_browsertest.cc',
       'browser/chromeos/policy/login_policy_test_base.cc',
       'browser/chromeos/policy/login_policy_test_base.h',

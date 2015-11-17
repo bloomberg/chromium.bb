@@ -809,6 +809,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         new base::StringValue(container.login_screen_domain_auto_complete()),
         nullptr);
   }
+
+  if (policy.has_display_rotation_default()) {
+    const em::DisplayRotationDefaultProto& container(
+        policy.display_rotation_default());
+    policies->Set(
+        key::kDisplayRotationDefault,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
+        DecodeIntegerValue(container.display_rotation_default()).release(),
+        nullptr);
+  }
 }
 
 }  // namespace

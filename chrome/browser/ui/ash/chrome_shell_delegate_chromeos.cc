@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -224,6 +225,8 @@ bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
 
 void ChromeShellDelegate::PreInit() {
   chromeos::LoadDisplayPreferences(IsFirstRunAfterBoot());
+  // Object owns itself, and deletes itself when Observer::OnShutdown is called:
+  new policy::DisplayRotationDefaultHandler();
   // Set the observer now so that we can save the initial state
   // in Shell::Init.
   display_configuration_observer_.reset(

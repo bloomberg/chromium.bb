@@ -59,6 +59,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceOwner,
+    kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
@@ -439,6 +440,13 @@ void DecodeGenericPolicies(
     new_values_cache->SetInteger(
         kExtensionCacheSize,
         policy.extension_cache_size().extension_cache_size());
+  }
+
+  if (policy.has_display_rotation_default() &&
+      policy.display_rotation_default().has_display_rotation_default()) {
+    new_values_cache->SetInteger(
+        kDisplayRotationDefault,
+        policy.display_rotation_default().display_rotation_default());
   }
 }
 

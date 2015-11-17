@@ -92,6 +92,8 @@ CHROMEOS_EXPORT extern const char kRebootOnShutdown[];
 
 CHROMEOS_EXPORT extern const char kExtensionCacheSize[];
 
+CHROMEOS_EXPORT extern const char kDisplayRotationDefault[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

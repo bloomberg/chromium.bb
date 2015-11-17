@@ -72,7 +72,10 @@ class ASH_EXPORT WindowTreeHostManager
 
     // Invoked when the all display configuration changes
     // have been applied.
-    virtual void OnDisplayConfigurationChanged(){};
+    virtual void OnDisplayConfigurationChanged() {}
+
+    // Invoked in WindowTreeHostManager::Shutdown().
+    virtual void OnWindowTreeHostManagerShutdown() {}
 
    protected:
     virtual ~Observer() {}
@@ -225,7 +228,7 @@ class ASH_EXPORT WindowTreeHostManager
   // The mapping from display ID to its window tree host.
   WindowTreeHostMap window_tree_hosts_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   // Store the primary window tree host temporarily while replacing
   // display.

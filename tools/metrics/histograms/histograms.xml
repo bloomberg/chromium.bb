@@ -58667,6 +58667,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="308" label="Default printer selection rules"/>
   <int value="309" label="Allow Dinosaur Easter Egg Game"/>
   <int value="310" label="Whether RC4 cipher suites in TLS are enabled"/>
+  <int value="311" label="Default value for Display Rotation"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

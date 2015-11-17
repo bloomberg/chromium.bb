@@ -112,6 +112,8 @@
         'browser/chromeos/display/output_protection_delegate.h',
         'browser/chromeos/display/overscan_calibrator.cc',
         'browser/chromeos/display/overscan_calibrator.h',
+        'browser/chromeos/policy/display_rotation_default_handler.cc',
+        'browser/chromeos/policy/display_rotation_default_handler.h',
         'browser/chromeos/drive/debug_info_collector.cc',
         'browser/chromeos/drive/debug_info_collector.h',
         'browser/chromeos/drive/download_handler.cc',

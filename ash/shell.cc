@@ -1077,6 +1077,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnShellInitialized());
+
   user_metrics_recorder_->OnShellInitialized();
 }
 

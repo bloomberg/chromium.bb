@@ -631,6 +631,23 @@ message DeviceLogUploadSettingsProto {
   optional bool system_log_upload_enabled = 1 [default = false];
 }
 
+// This setting is controlled by the device policy DisplayRotationDefault.
+// If the policy is set and therefore display_rotation_default contains a value,
+// all displays will be rotated clockwise to the specified orientation at
+// reboot, when first connected, or when the setting is changed.
+// If the optional field |Rotation display_rotation_default = 1| is not present,
+// no changes are done to the rotation.
+message DisplayRotationDefaultProto {
+  // This enum corresponds to gfx::Display::Rotation in ui/gfx/display.h.
+  enum Rotation {
+    ROTATE_0 = 0;
+    ROTATE_90 = 1;
+    ROTATE_180 = 2;
+    ROTATE_270 = 3;
+  };
+  optional Rotation display_rotation_default = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -674,4 +691,5 @@ message ChromeDeviceSettingsProto {
   optional LoginScreenDomainAutoCompleteProto
       login_screen_domain_auto_complete = 37;
   optional DeviceLogUploadSettingsProto device_log_upload_settings = 38;
+  optional DisplayRotationDefaultProto display_rotation_default = 39;
 }
