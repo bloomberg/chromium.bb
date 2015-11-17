@@ -219,6 +219,12 @@ def swarming_trigger(swarming, raw_request):
   if not result:
     on_error.report('Failed to trigger task %s' % raw_request['name'])
     return None
+  if result.get('errors'):
+    # The reply is an error.
+    on_error.report(
+        'Failed to trigger task %s\n%s' %
+          (raw_request['name'], result['errors']))
+    return None
   return result
 
 
