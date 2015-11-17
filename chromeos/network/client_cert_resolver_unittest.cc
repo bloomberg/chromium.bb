@@ -11,8 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -50,9 +52,9 @@ class ClientCertResolverTest : public testing::Test,
  public:
   ClientCertResolverTest()
       : network_properties_changed_count_(0),
-        service_test_(NULL),
-        profile_test_(NULL),
-        cert_loader_(NULL) {}
+        service_test_(nullptr),
+        profile_test_(nullptr),
+        cert_loader_(nullptr) {}
   ~ClientCertResolverTest() override {}
 
   void SetUp() override {
@@ -82,6 +84,7 @@ class ClientCertResolverTest : public testing::Test,
   void TearDown() override {
     client_cert_resolver_->RemoveObserver(this);
     client_cert_resolver_.reset();
+    test_clock_.reset();
     managed_config_handler_.reset();
     network_config_handler_.reset();
     network_profile_handler_.reset();
@@ -137,6 +140,10 @@ class ClientCertResolverTest : public testing::Test,
     network_config_handler_.reset(new NetworkConfigurationHandler());
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
     client_cert_resolver_.reset(new ClientCertResolver());
+
+    test_clock_.reset(new base::SimpleTestClock);
+    test_clock_->SetNow(base::Time::Now());
+    client_cert_resolver_->SetClockForTesting(test_clock_.get());
 
     network_profile_handler_->Init();
     network_config_handler_->Init(network_state_handler_.get(),
@@ -198,10 +205,10 @@ class ClientCertResolverTest : public testing::Test,
 
     std::string error;
     scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-        kTestPolicy, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
+        kTestPolicy, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 
-    base::ListValue* policy = NULL;
+    base::ListValue* policy = nullptr;
     ASSERT_TRUE(policy_value->GetAsList(&policy));
 
     managed_config_handler_->SetPolicy(
@@ -234,10 +241,10 @@ class ClientCertResolverTest : public testing::Test,
 
     std::string error;
     scoped_ptr<base::Value> policy_value = base::JSONReader::ReadAndReturnError(
-        policy_json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
+        policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 
-    base::ListValue* policy = NULL;
+    base::ListValue* policy = nullptr;
     ASSERT_TRUE(policy_value->GetAsList(&policy));
 
     managed_config_handler_->SetPolicy(
@@ -245,6 +252,11 @@ class ClientCertResolverTest : public testing::Test,
         kUserHash,
         *policy,
         base::DictionaryValue() /* no global network config */);
+  }
+
+  void SetWifiState(const std::string& state) {
+    ASSERT_TRUE(service_test_->SetServiceProperty(
+        kWifiStub, shill::kStateProperty, base::StringValue(state)));
   }
 
   void GetClientCertProperties(std::string* pkcs11_id) {
@@ -259,6 +271,7 @@ class ClientCertResolverTest : public testing::Test,
 
   int network_properties_changed_count_;
   std::string test_cert_id_;
+  scoped_ptr<base::SimpleTestClock> test_clock_;
   scoped_ptr<ClientCertResolver> client_cert_resolver_;
 
  private:
@@ -363,6 +376,36 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
   GetClientCertProperties(&pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
   EXPECT_EQ(1, network_properties_changed_count_);
+}
+
+TEST_F(ClientCertResolverTest, ExpiringCertificate) {
+  SetupTestCerts(true /* import issuer */);
+  SetupWifi();
+  base::RunLoop().RunUntilIdle();
+
+  SetupNetworkHandlers();
+  SetupPolicyMatchingIssuerPEM();
+  base::RunLoop().RunUntilIdle();
+
+  StartCertLoader();
+  base::RunLoop().RunUntilIdle();
+
+  SetWifiState(shill::kStateOnline);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the resolver positively matched the pattern in the policy with
+  // the test client cert and configured the network.
+  std::string pkcs11_id;
+  GetClientCertProperties(&pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
+
+  // Verify that, after the certificate expired and the network disconnection
+  // happens, no client certificate was configured.
+  test_clock_->SetNow(base::Time::Max());
+  SetWifiState(shill::kStateOffline);
+  base::RunLoop().RunUntilIdle();
+  GetClientCertProperties(&pkcs11_id);
+  EXPECT_EQ(std::string(), pkcs11_id);
 }
 
 }  // namespace chromeos

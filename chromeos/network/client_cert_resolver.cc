@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
+#include "base/time/clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -62,7 +63,8 @@ bool ContainsValue(const std::vector<T>& vector, const T& value) {
 
 // Returns true if a private key for certificate |cert| is installed.
 bool HasPrivateKey(const net::X509Certificate& cert) {
-  PK11SlotInfo* slot = PK11_KeyForCertExists(cert.os_cert_handle(), NULL, NULL);
+  PK11SlotInfo* slot =
+      PK11_KeyForCertExists(cert.os_cert_handle(), nullptr, nullptr);
   if (!slot)
     return false;
 
@@ -156,14 +158,15 @@ std::string GetPEMEncodedIssuer(const net::X509Certificate& cert) {
 }
 
 std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
-    const net::CertificateList& certs) {
+    const net::CertificateList& certs,
+    base::Time now) {
   // Filter all client certs and determines each certificate's issuer, which is
   // required for the pattern matching.
   std::vector<CertAndIssuer> client_certs;
   for (net::CertificateList::const_iterator it = certs.begin();
        it != certs.end(); ++it) {
     const net::X509Certificate& cert = **it;
-    if (cert.valid_expiry().is_null() || cert.HasExpired() ||
+    if (cert.valid_expiry().is_null() || now > cert.valid_expiry() ||
         !HasPrivateKey(cert) ||
         !CertLoader::IsCertificateHardwareBacked(&cert)) {
       continue;
@@ -180,8 +183,10 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
 // be run on a worker thread.
 void FindCertificateMatches(const net::CertificateList& certs,
                             std::vector<NetworkAndCertPattern>* networks,
+                            base::Time now,
                             NetworkCertMatches* matches) {
-  std::vector<CertAndIssuer> client_certs(CreateSortedCertAndIssuerList(certs));
+  std::vector<CertAndIssuer> client_certs(
+      CreateSortedCertAndIssuerList(certs, now));
 
   for (std::vector<NetworkAndCertPattern>::const_iterator it =
            networks->begin();
@@ -236,10 +241,10 @@ bool ClientCertificatesLoaded() {
 ClientCertResolver::ClientCertResolver()
     : resolve_task_running_(false),
       network_properties_changed_(false),
-      network_state_handler_(NULL),
-      managed_network_config_handler_(NULL),
-      weak_ptr_factory_(this) {
-}
+      network_state_handler_(nullptr),
+      managed_network_config_handler_(nullptr),
+      testing_clock_(nullptr),
+      weak_ptr_factory_(this) {}
 
 ClientCertResolver::~ClientCertResolver() {
   if (network_state_handler_)
@@ -287,8 +292,8 @@ bool ClientCertResolver::ResolveCertificatePatternSync(
     const CertificatePattern& pattern,
     base::DictionaryValue* shill_properties) {
   // Prepare and sort the list of known client certs.
-  std::vector<CertAndIssuer> client_certs(
-      CreateSortedCertAndIssuerList(CertLoader::Get()->cert_list()));
+  std::vector<CertAndIssuer> client_certs(CreateSortedCertAndIssuerList(
+      CertLoader::Get()->cert_list(), base::Time::Now()));
 
   // Search for a certificate matching the pattern.
   std::vector<CertAndIssuer>::iterator cert_it = std::find_if(
@@ -312,6 +317,10 @@ bool ClientCertResolver::ResolveCertificatePatternSync(
   client_cert::SetShillProperties(
       client_cert_type, slot_id, pkcs11_id, shill_properties);
   return true;
+}
+
+void ClientCertResolver::SetClockForTesting(base::Clock* clock) {
+  testing_clock_ = clock;
 }
 
 void ClientCertResolver::NetworkListChanged() {
@@ -344,6 +353,14 @@ void ClientCertResolver::NetworkListChanged() {
   }
 
   ResolveNetworks(networks_to_check);
+}
+
+void ClientCertResolver::NetworkConnectionStateChanged(
+    const NetworkState* network) {
+  if (!ClientCertificatesLoaded())
+    return;
+  if (!network->IsConnectedState() && !network->IsConnectingState())
+    ResolveNetworks(NetworkStateHandler::NetworkStateList(1, network));
 }
 
 void ClientCertResolver::OnCertificatesLoaded(
@@ -448,13 +465,10 @@ void ClientCertResolver::ResolveNetworks(
   NetworkCertMatches* matches = new NetworkCertMatches;
   task_runner->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&FindCertificateMatches,
-                 CertLoader::Get()->cert_list(),
-                 base::Owned(networks_to_resolve.release()),
-                 matches),
+      base::Bind(&FindCertificateMatches, CertLoader::Get()->cert_list(),
+                 base::Owned(networks_to_resolve.release()), Now(), matches),
       base::Bind(&ClientCertResolver::ConfigureCertificates,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(matches)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(matches)));
 }
 
 void ClientCertResolver::ResolvePendingNetworks() {
@@ -510,6 +524,12 @@ void ClientCertResolver::NotifyResolveRequestCompleted() {
   const bool changed = network_properties_changed_;
   network_properties_changed_ = false;
   FOR_EACH_OBSERVER(Observer, observers_, ResolveRequestCompleted(changed));
+}
+
+base::Time ClientCertResolver::Now() const {
+  if (testing_clock_)
+    return testing_clock_->Now();
+  return base::Time::Now();
 }
 
 }  // namespace chromeos
