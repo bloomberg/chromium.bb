@@ -495,10 +495,9 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
   }
 
   var appWindow = chrome.app.window.current();
-  appWindow.innerBounds.width = Math.round(newWidth);
-  appWindow.innerBounds.height = Math.round(newHeight);
-  appWindow.outerBounds.left = Math.round(oldLeft - (newWidth - oldWidth) / 2);
-  appWindow.outerBounds.top = Math.round(oldTop - (newHeight - oldHeight) / 2);
+  appWindow.resizeTo(newWidth, newHeight);
+  appWindow.moveTo(oldLeft - (newWidth - oldWidth) / 2,
+                   oldTop - (newHeight - oldHeight) / 2);
   appWindow.show();
 
   this.videoElement_.play();
