@@ -31,8 +31,8 @@ UIWebView* CreateWebView(CGRect frame,
 // TODO(shreyasv): Rename to CreateUIWebView.
 UIWebView* CreateWebView(CGRect frame);
 
-// Creates and returns a WKWebView. The returned WKWebView will have a
-// user agent string that includes the |request_group_id|.
+// Creates a new WKWebView for displaying regular web content and registers a
+// user agent for it.
 //
 // Preconditions for creation of a WKWebView:
 // 1) |browser_state|, |configuration| are not null.
@@ -44,7 +44,6 @@ UIWebView* CreateWebView(CGRect frame);
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state,
-                           NSString* request_group_id,
                            BOOL use_desktop_user_agent);
 
 // Creates and returns a new WKWebView for displaying regular web content.

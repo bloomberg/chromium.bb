@@ -163,10 +163,8 @@ UIWebView* CreateWebView(CGRect frame) {
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state,
-                           NSString* request_group_id,
                            BOOL use_desktop_user_agent) {
-  web::BuildAndRegisterUserAgentForUIWebView(request_group_id,
-                                             use_desktop_user_agent);
+  web::BuildAndRegisterUserAgentForUIWebView(nil, use_desktop_user_agent);
   return CreateWKWebView(frame, configuration, browser_state);
 }
 

@@ -216,17 +216,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // changed.
 @property(nonatomic, readonly) NSDictionary* wkWebViewObservers;
 
-// Returns the string to use as the request group ID in the user agent. Returns
-// nil unless the network stack is enabled.
-@property(nonatomic, readonly) NSString* requestGroupIDForUserAgent;
-
 // Activity indicator group ID for this web controller.
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Identifier used for storing and retrieving certificates.
 @property(nonatomic, readonly) int certGroupID;
-#endif  // #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
@@ -291,18 +285,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Convenience method to inform CWRWebDelegate about a blocked popup.
 - (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
-#endif
 
 // Adds an activity indicator tasks for this web controller.
 - (void)addActivityIndicatorTask;
 
 // Clears all activity indicator tasks for this web controller.
 - (void)clearActivityIndicatorTasks;
-
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // Updates |security_style| and |cert_status| for the NavigationItem with ID
 // |navigationItemID|, if URL and certificate chain still match |host| and
@@ -322,7 +312,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
-#endif
 
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
 // with NSURLSessionAuthChallengeDisposition and credentials.
@@ -360,14 +349,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // NSURLErrorCancelled code should be cancelled.
 - (BOOL)shouldAbortLoadForCancelledError:(NSError*)error;
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange;
 
 // Called when WKWebView certificateChain or hasOnlySecureContent property has
 // changed.
 - (void)webViewSecurityFeaturesDidChange;
-#endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // Called when WKWebView loading state has been changed.
 - (void)webViewLoadingStateDidChange;
@@ -423,12 +410,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   web::EvaluateJavaScript(_wkWebView, script, nil);
 }
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 - (void)terminateNetworkActivity {
   web::CertStore::GetInstance()->RemoveCertsForGroup(self.certGroupID);
   [super terminateNetworkActivity];
 }
-#endif  // #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy {
   // TODO(eugenebut): implement dialogs/windows suppression using
@@ -499,8 +484,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // TODO(stuartmorgan): Remove this method and use the API for WKWebView,
 // making the reset-on-each-load behavior specific to the UIWebView subclass.
 - (void)registerUserAgent {
-  web::BuildAndRegisterUserAgentForUIWebView([self requestGroupIDForUserAgent],
-                                             [self useDesktopUserAgent]);
+  web::BuildAndRegisterUserAgentForUIWebView(nil, [self useDesktopUserAgent]);
 }
 
 - (BOOL)isCurrentNavigationItemPOST {
@@ -693,23 +677,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (NSDictionary*)wkWebViewObservers {
   return @{
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"certificateChain" : @"webViewSecurityFeaturesDidChange",
+    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
-#endif
     @"loading" : @"webViewLoadingStateDidChange",
     @"title" : @"webViewTitleDidChange",
     @"URL" : @"webViewURLDidChange",
   };
-}
-
-- (NSString*)requestGroupIDForUserAgent {
-#if defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-  return self.webStateImpl->GetRequestGroupID();
-#else
-  return nil;
-#endif
 }
 
 - (NSString*)activityIndicatorGroupID {
@@ -718,13 +692,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
           self.webStateImpl->GetRequestGroupID()];
 }
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 - (int)certGroupID {
   DCHECK(self.webStateImpl);
   // Request tracker IDs are used as certificate groups.
   return self.webStateImpl->GetRequestTracker()->identifier();
 }
-#endif
 
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
   DCHECK(self.webStateImpl);
@@ -745,7 +717,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config {
   return [web::CreateWKWebView(CGRectZero, config,
                                self.webStateImpl->GetBrowserState(),
-                               [self requestGroupIDForUserAgent],
                                [self useDesktopUserAgent]) autorelease];
 }
 
@@ -947,7 +918,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   });
 }
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 - (void)handleSSLCertError:(NSError*)error {
   DCHECK(web::IsWKWebViewSSLCertError(error));
 
@@ -1003,7 +973,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                         }];
   [self loadCancelled];
 }
-#endif  // #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)addActivityIndicatorTask {
   [[CRWNetworkActivityIndicatorManager sharedInstance]
@@ -1014,8 +983,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [[CRWNetworkActivityIndicatorManager sharedInstance]
       clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
 }
-
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
                                      certChain:(NSArray*)chain
@@ -1141,8 +1108,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
 }
-
-#endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
          forCertAcceptPolicy:(web::CertAcceptPolicy)policy
@@ -1436,8 +1401,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [self performSelector:NSSelectorFromString(dispatcherSelectorName)];
 }
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-// TODO(eugenebut): use WKWebView progress even if Chrome net stack is enabled.
 - (void)webViewEstimatedProgressDidChange {
   if ([self.delegate respondsToSelector:
           @selector(webController:didUpdateProgress:)]) {
@@ -1454,8 +1417,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
   [self updateSSLStatusForCurrentNavigationItem];
 }
-
-#endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)webViewLoadingStateDidChange {
   if ([_wkWebView isLoading]) {
@@ -1655,24 +1616,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (![_pendingNavigationInfo cancelled]) {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
-#if defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-    // For WKWebViews, the underlying errors for errors reported by the net
-    // stack are not copied over when transferring the errors from the IO
-    // thread.  For cancelled errors that trigger load abortions, translate the
-    // error early to trigger |-discardNonCommittedEntries| from
-    // |-handleLoadError:inMainFrame:|.
-    if (error.code == NSURLErrorCancelled &&
-        [self shouldAbortLoadForCancelledError:error] &&
-        !error.userInfo[NSUnderlyingErrorKey]) {
-      error = web::NetErrorFromError(error);
-    }
-#endif  // defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
-
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
     if (web::IsWKWebViewSSLCertError(error))
       [self handleSSLCertError:error];
     else
-#endif
       [self handleLoadError:error inMainFrame:YES];
   }
 
@@ -1699,9 +1645,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [self commitPendingNavigationInfo];
   [self webPageChanged];
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
   [self updateSSLStatusForCurrentNavigationItem];
-#endif
 
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {

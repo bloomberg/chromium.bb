@@ -1293,9 +1293,7 @@ TEST_F(CRWWKWebViewWebControllerTest, WebURLWithTrustLevel) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   [[[mockWebView_ stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
   [[[mockWebView_ stub] andReturnBool:NO] hasOnlySecureContent];
-#endif
 
   // Stub out the injection process.
   [[mockWebView_ stub] evaluateJavaScript:OCMOCK_ANY
