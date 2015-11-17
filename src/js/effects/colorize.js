@@ -31,17 +31,6 @@ camera.effects.Colorize = function() {
   Object.seal(this);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.Colorize.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.Colorize.prototype = {
   __proto__: camera.Effect.prototype
 };

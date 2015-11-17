@@ -31,17 +31,6 @@ camera.effects.BigEyes = function() {
   Object.seal(this);
 };
 
-/**
- * Returns true if the effect is available on the platform.
- *
- * @param {Array.<string>} webglExtensions Supported WebGL extensions on the
- *     platform.
- * @return {boolean} True if available, false otherwise.
- */
-camera.effects.BigEyes.isAvailable = function(webglExtensions) {
-  return true;
-};
-
 camera.effects.BigEyes.prototype = {
   __proto__: camera.Effect.prototype
 };
