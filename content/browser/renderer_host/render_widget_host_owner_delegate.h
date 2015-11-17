@@ -7,7 +7,13 @@
 
 #include "content/common/content_export.h"
 
+namespace blink {
+class WebMouseEvent;
+}
+
 namespace content {
+
+struct NativeWebKeyboardEvent;
 
 //
 // RenderWidgetHostOwnerDelegate
@@ -23,6 +29,22 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
 
   // The RenderWidgetHost will be setting its loading state.
   virtual void RenderWidgetWillSetIsLoading(bool is_loading) = 0;
+
+  // The RenderWidgetHost got the focus.
+  virtual void RenderWidgetGotFocus() = 0;
+
+  // The RenderWidgetHost will be hidden or shown.
+  virtual void RenderWidgetWillBeHidden() = 0;
+  virtual void RenderWidgetWillBeShown() = 0;
+
+  // The RenderWidgetHost forwarded a mouse event.
+  virtual void RenderWidgetDidForwardMouseEvent(
+      const blink::WebMouseEvent& mouse_event) = 0;
+
+  // The RenderWidgetHost wants to forward a keyboard event; returns whether
+  // it's allowed to do so.
+  virtual bool MayRenderWidgetForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event) = 0;
 
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}

@@ -209,15 +209,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
-  virtual void WasHidden();
-  virtual void WasShown(const ui::LatencyInfo& latency_info);
+  void WasHidden();
+  void WasShown(const ui::LatencyInfo& latency_info);
 
   // Returns true if the RenderWidget is hidden.
   bool is_hidden() const { return is_hidden_; }
 
   // Called to notify the RenderWidget that its associated native window
   // got/lost focused.
-  virtual void GotFocus();
+  void GotFocus();
   void LostCapture();
 
   // Indicates whether the RenderWidgetHost thinks it is focused.

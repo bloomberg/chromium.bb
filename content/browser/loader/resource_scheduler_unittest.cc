@@ -2223,9 +2223,9 @@ TEST_F(ResourceSchedulerTest, GetVisualSignalFromRenderViewHost) {
                                                  rvh1->GetRoutingID()),
             !rvh2->GetWidget()->is_hidden());
 
-  // 1 visible, 1 hidden
-  rvh1->WasShown(ui::LatencyInfo());
-  rvh2->WasHidden();
+  // 1 visible, 1 hidden.
+  rvh1->GetWidget()->WasShown(ui::LatencyInfo());
+  rvh2->GetWidget()->WasHidden();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(scheduler->IsClientVisibleForTesting(rvh1->GetProcess()->GetID(),
@@ -2234,8 +2234,8 @@ TEST_F(ResourceSchedulerTest, GetVisualSignalFromRenderViewHost) {
                                                     rvh2->GetRoutingID()));
 
   // Flip the visibility and check again.
-  rvh1->WasHidden();
-  rvh2->WasShown(ui::LatencyInfo());
+  rvh1->GetWidget()->WasHidden();
+  rvh2->GetWidget()->WasShown(ui::LatencyInfo());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(scheduler->IsClientVisibleForTesting(rvh1->GetProcess()->GetID(),

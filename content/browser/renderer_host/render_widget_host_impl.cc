@@ -509,6 +509,9 @@ void RenderWidgetHostImpl::WasHidden() {
   if (is_hidden_)
     return;
 
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetWillBeHidden();
+
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasHidden");
   is_hidden_ = true;
 
@@ -532,6 +535,9 @@ void RenderWidgetHostImpl::WasHidden() {
 void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   if (!is_hidden_)
     return;
+
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetWillBeShown();
 
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasShown");
   is_hidden_ = false;
@@ -706,6 +712,8 @@ void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {
 
 void RenderWidgetHostImpl::GotFocus() {
   Focus();
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetGotFocus();
   if (delegate_)
     delegate_->RenderWidgetGotFocus(this);
 }
@@ -962,6 +970,8 @@ void RenderWidgetHostImpl::OnFirstPaintAfterLoad() {
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardMouseEventWithLatencyInfo(mouse_event, ui::LatencyInfo());
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidForwardMouseEvent(mouse_event);
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
@@ -1103,6 +1113,11 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
+  if (owner_delegate_ &&
+      !owner_delegate_->MayRenderWidgetForwardKeyboardEvent(key_event)) {
+    return;
+  }
+
   if (IgnoreInputEvents())
     return;
 

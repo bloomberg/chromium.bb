@@ -822,9 +822,7 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
   }
 }
 
-void RenderViewHostImpl::GotFocus() {
-  RenderWidgetHostImpl::GotFocus();  // Notifies the renderer it got focus.
-
+void RenderViewHostImpl::RenderWidgetGotFocus() {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
     view->GotFocus();
@@ -980,7 +978,7 @@ void RenderViewHostImpl::Shutdown() {
   RenderWidgetHostImpl::Shutdown();
 }
 
-void RenderViewHostImpl::WasHidden() {
+void RenderViewHostImpl::RenderWidgetWillBeHidden() {
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -988,11 +986,9 @@ void RenderViewHostImpl::WasHidden() {
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
                    GetProcess()->GetID(), GetRoutingID()));
   }
-
-  RenderWidgetHostImpl::WasHidden();
 }
 
-void RenderViewHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
+void RenderViewHostImpl::RenderWidgetWillBeShown() {
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1000,8 +996,6 @@ void RenderViewHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
                    GetProcess()->GetID(), GetRoutingID()));
   }
-
-  RenderWidgetHostImpl::WasShown(latency_info);
 }
 
 void RenderViewHostImpl::CreateNewWindow(
@@ -1232,23 +1226,22 @@ void RenderViewHostImpl::OnFocus() {
   delegate_->Activate();
 }
 
-void RenderViewHostImpl::ForwardMouseEvent(
+void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
-  RenderWidgetHostImpl::ForwardMouseEvent(mouse_event);
   if (mouse_event.type == WebInputEvent::MouseWheel &&
       GetWidget()->ignore_input_events()) {
     delegate_->OnIgnoredUIEvent();
   }
 }
 
-void RenderViewHostImpl::ForwardKeyboardEvent(
+bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   if (GetWidget()->ignore_input_events()) {
     if (key_event.type == WebInputEvent::RawKeyDown)
       delegate_->OnIgnoredUIEvent();
-    return;
+    return false;
   }
-  RenderWidgetHostImpl::ForwardKeyboardEvent(key_event);
+  return true;
 }
 
 void RenderViewHostImpl::OnTextSurroundingSelectionResponse(

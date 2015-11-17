@@ -279,12 +279,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // RenderWidgetHost public overrides.
   void Shutdown() override;
-  void WasHidden() override;
-  void WasShown(const ui::LatencyInfo& latency_info) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void GotFocus() override;
-  void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int32_t route_id,
@@ -333,6 +328,13 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // RenderWidgetHostOwnerDelegate overrides.
   void RenderWidgetDidInit() override;
   void RenderWidgetWillSetIsLoading(bool is_loading) override;
+  void RenderWidgetGotFocus() override;
+  void RenderWidgetWillBeHidden() override;
+  void RenderWidgetWillBeShown() override;
+  void RenderWidgetDidForwardMouseEvent(
+      const blink::WebMouseEvent& mouse_event) override;
+  bool MayRenderWidgetForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event) override;
 
   // IPC message handlers.
   void OnShowView(int route_id,
