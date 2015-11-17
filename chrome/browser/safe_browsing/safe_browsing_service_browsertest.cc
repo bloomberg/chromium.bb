@@ -178,8 +178,9 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     ADD_FAILURE() << "Not implemented.";
     return false;
   }
-  void InsertChunks(const std::string& list_name,
-                    const std::vector<SBChunkData*>& chunks) override {
+  void InsertChunks(
+      const std::string& list_name,
+      const std::vector<scoped_ptr<SBChunkData>>& chunks) override {
     ADD_FAILURE() << "Not implemented.";
   }
   void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes) override {

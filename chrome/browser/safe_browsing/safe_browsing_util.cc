@@ -22,8 +22,8 @@ namespace safe_browsing {
 SBChunkData::SBChunkData() {
 }
 
-SBChunkData::SBChunkData(ChunkData* raw_data)
-    : chunk_data_(raw_data) {
+SBChunkData::SBChunkData(scoped_ptr<ChunkData> data)
+    : chunk_data_(data.Pass()) {
   DCHECK(chunk_data_.get());
 }
 

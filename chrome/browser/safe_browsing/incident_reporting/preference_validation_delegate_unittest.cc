@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
@@ -27,7 +27,7 @@ using ::testing::WithArg;
 // instance was provided with the expected data.
 class PreferenceValidationDelegateTest : public testing::Test {
  protected:
-  typedef ScopedVector<safe_browsing::Incident> IncidentVector;
+  typedef std::vector<scoped_ptr<safe_browsing::Incident>> IncidentVector;
 
   PreferenceValidationDelegateTest()
       : kPrefPath_("atomic.pref"),

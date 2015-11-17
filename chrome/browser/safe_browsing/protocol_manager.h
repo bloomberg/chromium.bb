@@ -432,9 +432,10 @@ class SafeBrowsingProtocolManagerDelegate {
 
   // Add new chunks to the database. Invokes |callback| when complete, but must
   // call at a later time.
-  virtual void AddChunks(const std::string& list,
-                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
-                         AddChunksCallback callback) = 0;
+  virtual void AddChunks(
+      const std::string& list,
+      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+      AddChunksCallback callback) = 0;
 
   // Delete chunks from the database.
   virtual void DeleteChunks(

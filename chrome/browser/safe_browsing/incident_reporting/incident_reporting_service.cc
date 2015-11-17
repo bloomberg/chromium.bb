@@ -124,10 +124,10 @@ struct IncidentReportingService::ProfileContext {
 
   // The incidents collected for this profile pending creation and/or upload.
   // Will contain null values for pruned incidents.
-  ScopedVector<Incident> incidents;
+  std::vector<scoped_ptr<Incident>> incidents;
 
   // The incidents data of which should be cleared.
-  ScopedVector<Incident> incidents_to_clear;
+  std::vector<scoped_ptr<Incident>> incidents_to_clear;
 
   // State storage for this profile; null until PROFILE_ADDED notification is
   // received.
@@ -265,7 +265,7 @@ IncidentReportingService::ProfileContext::ProfileContext() : added(false) {
 }
 
 IncidentReportingService::ProfileContext::~ProfileContext() {
-  for (Incident* incident : incidents) {
+  for (const auto& incident : incidents) {
     if (incident)
       LogIncidentDataType(DISCARDED, *incident);
   }
@@ -459,7 +459,7 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
   // Drop all incidents associated with this profile that were received prior to
   // its addition if incident reporting is not enabled for it.
   if (!context->incidents.empty() && !enabled_for_profile) {
-    for (Incident* incident : context->incidents)
+    for (const auto& incident : context->incidents)
       LogIncidentDataType(DROPPED, *incident);
     context->incidents.clear();
   }
@@ -547,7 +547,7 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
   // TODO(grt): Persist incidents for upload on future profile load.
 
   // Remove the association with this profile context from all pending uploads.
-  for (UploadContext* upload : uploads_)
+  for (const auto& upload : uploads_)
     upload->profiles_to_state.erase(context.get());
 
   // Forget about this profile. Incidents not yet sent for upload are lost.
@@ -606,7 +606,7 @@ void IncidentReportingService::AddIncident(Profile* profile,
   }
 
   // Take ownership of the incident.
-  context->incidents.push_back(incident.release());
+  context->incidents.push_back(incident.Pass());
 
   // Remember when the first incident for this report arrived.
   if (first_incident_time_.is_null())
@@ -628,7 +628,7 @@ void IncidentReportingService::AddIncident(Profile* profile,
 void IncidentReportingService::ClearIncident(Profile* profile,
                                              scoped_ptr<Incident> incident) {
   ProfileContext* context = GetOrCreateProfileContext(profile);
-  context->incidents_to_clear.push_back(incident.release());
+  context->incidents_to_clear.push_back(incident.Pass());
   // Begin processing to handle cleared incidents following collation.
   BeginReportProcessing();
 }
@@ -858,17 +858,15 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     if (eligible_profile) {
       ProfileContext* eligible_context = GetProfileContext(eligible_profile);
       // Move the incidents to the target context.
-      eligible_context->incidents.insert(eligible_context->incidents.end(),
-                                         null_context->incidents.begin(),
-                                         null_context->incidents.end());
-      null_context->incidents.weak_clear();
-      eligible_context->incidents_to_clear.insert(
-          eligible_context->incidents_to_clear.end(),
-          null_context->incidents_to_clear.begin(),
-          null_context->incidents_to_clear.end());
-      null_context->incidents_to_clear.weak_clear();
+      for (auto& incident : null_context->incidents) {
+        eligible_context->incidents.push_back(incident.Pass());
+      }
+      null_context->incidents.clear();
+      for (auto& incident : null_context->incidents_to_clear)
+        eligible_context->incidents_to_clear.push_back(incident.Pass());
+      null_context->incidents_to_clear.clear();
     } else {
-      for (Incident* incident : null_context->incidents)
+      for (const auto& incident : null_context->incidents)
         LogIncidentDataType(DROPPED, *incident);
       null_context->incidents.clear();
     }
@@ -884,7 +882,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     }
     ProfileContext* context = profile_and_context.second;
     StateStore::Transaction transaction(context->state_store.get());
-    for (Incident* incident : context->incidents_to_clear)
+    for (const auto& incident : context->incidents_to_clear)
       transaction.Clear(incident->GetType(), incident->GetKey());
     context->incidents_to_clear.clear();
   }
@@ -909,7 +907,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     if (context->incidents.empty())
       continue;
     if (!IsEnabledForProfile(profile_and_context.first)) {
-      for (Incident* incident : context->incidents)
+      for (const auto& incident : context->incidents)
         LogIncidentDataType(DROPPED, *incident);
       context->incidents.clear();
       continue;
@@ -917,7 +915,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     StateStore::Transaction transaction(context->state_store.get());
     std::vector<PersistentIncidentState> states;
     // Prep persistent data and prune any incidents already sent.
-    for (Incident* incident : context->incidents) {
+    for (const auto& incident : context->incidents) {
       const PersistentIncidentState state = ComputeIncidentState(*incident);
       if (context->state_store->HasBeenReported(state.type, state.key,
                                                 state.digest)) {
@@ -965,7 +963,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     // No database manager during testing. Take ownership of the context and
     // continue processing.
     UploadContext* temp_context = context.get();
-    uploads_.push_back(context.release());
+    uploads_.push_back(context.Pass());
     IncidentReportingService::OnKillSwitchResult(temp_context, false);
   } else {
     if (content::BrowserThread::PostTaskAndReplyWithResult(
@@ -976,7 +974,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
             base::Bind(&IncidentReportingService::OnKillSwitchResult,
                        weak_ptr_factory_.GetWeakPtr(),
                        context.get()))) {
-      uploads_.push_back(context.release());
+      uploads_.push_back(context.Pass());
     }  // else should not happen. Let the context be deleted automatically.
   }
 }
@@ -1035,12 +1033,13 @@ void IncidentReportingService::OnReportUploadResult(
 
   // The upload is no longer outstanding, so take ownership of the context (from
   // the collection of outstanding uploads) in this scope.
-  ScopedVector<UploadContext>::iterator it(
-      std::find(uploads_.begin(), uploads_.end(), context));
+  auto it = std::find_if(uploads_.begin(), uploads_.end(),
+                         [context] (const scoped_ptr<UploadContext>& value) {
+                           return value.get() == context;
+                         });
   DCHECK(it != uploads_.end());
-  scoped_ptr<UploadContext> upload(context);  // == *it
-  *it = uploads_.back();
-  uploads_.weak_erase(uploads_.end() - 1);
+  scoped_ptr<UploadContext> upload(it->Pass());
+  uploads_.erase(it);
 
   if (result == IncidentReportUploader::UPLOAD_SUCCESS)
     HandleResponse(*upload);

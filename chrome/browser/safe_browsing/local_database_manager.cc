@@ -591,7 +591,7 @@ void LocalSafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
 
 void LocalSafeBrowsingDatabaseManager::AddChunks(
     const std::string& list,
-    scoped_ptr<ScopedVector<SBChunkData> > chunks,
+    scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
     AddChunksCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
@@ -973,11 +973,11 @@ void LocalSafeBrowsingDatabaseManager::DatabaseLoadComplete() {
 
 void LocalSafeBrowsingDatabaseManager::AddDatabaseChunks(
     const std::string& list_name,
-    scoped_ptr<ScopedVector<SBChunkData> > chunks,
+    scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
     AddChunksCallback callback) {
   DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   if (chunks)
-    GetDatabase()->InsertChunks(list_name, chunks->get());
+    GetDatabase()->InsertChunks(list_name, *chunks);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&LocalSafeBrowsingDatabaseManager::OnAddChunksComplete, this,

@@ -169,8 +169,9 @@ class SafeBrowsingDatabase {
   // UpdateFinished().  If it returns false, the caller MUST NOT call
   // the other functions.
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) = 0;
-  virtual void InsertChunks(const std::string& list_name,
-                            const std::vector<SBChunkData*>& chunks) = 0;
+  virtual void InsertChunks(
+      const std::string& list_name,
+      const std::vector<scoped_ptr<SBChunkData>>& chunks) = 0;
   virtual void DeleteChunks(
       const std::vector<SBChunkDelete>& chunk_deletes) = 0;
   virtual void UpdateFinished(bool update_succeeded) = 0;
@@ -333,8 +334,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                                  std::vector<SBPrefix>* prefix_hits) override;
   bool ContainsMalwareIP(const std::string& ip_address) override;
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override;
-  void InsertChunks(const std::string& list_name,
-                    const std::vector<SBChunkData*>& chunks) override;
+  void InsertChunks(
+      const std::string& list_name,
+      const std::vector<scoped_ptr<SBChunkData>>& chunks) override;
   void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes) override;
   void UpdateFinished(bool update_succeeded) override;
   void CacheHashResults(const std::vector<SBPrefix>& prefixes,

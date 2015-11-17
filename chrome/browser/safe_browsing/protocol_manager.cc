@@ -6,7 +6,6 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -457,8 +456,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
                           base::Time::Now() - chunk_request_start_);
 
       const ChunkUrl chunk_url = chunk_request_urls_.front();
-      scoped_ptr<ScopedVector<SBChunkData>> chunks(
-          new ScopedVector<SBChunkData>);
+      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks(
+          new std::vector<scoped_ptr<SBChunkData>>);
       UMA_HISTOGRAM_COUNTS("SB2.ChunkSize", length);
       update_size_ += length;
       if (!ParseChunk(data, length, chunks.get()))

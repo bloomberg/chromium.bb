@@ -237,9 +237,10 @@ class LocalSafeBrowsingDatabaseManager
   void DatabaseLoadComplete();
 
   // Called on the database thread to add/remove chunks and host keys.
-  void AddDatabaseChunks(const std::string& list,
-                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
-                         AddChunksCallback callback);
+  void AddDatabaseChunks(
+      const std::string& list,
+      scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
+      AddChunksCallback callback);
 
   void DeleteDatabaseChunks(
       scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes);
@@ -297,7 +298,7 @@ class LocalSafeBrowsingDatabaseManager
   void UpdateFinished(bool success) override;
   void GetChunks(GetChunksCallback callback) override;
   void AddChunks(const std::string& list,
-                 scoped_ptr<ScopedVector<SBChunkData>> chunks,
+                 scoped_ptr<std::vector<scoped_ptr<SBChunkData>>> chunks,
                  AddChunksCallback callback) override;
   void DeleteChunks(
       scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes) override;

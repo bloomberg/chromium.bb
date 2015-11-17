@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -336,7 +336,7 @@ class IncidentReportingService : public content::NotificationObserver {
   DownloadMetadataManager download_metadata_manager_;
 
   // The collection of uploads in progress.
-  ScopedVector<UploadContext> uploads_;
+  std::vector<scoped_ptr<UploadContext>> uploads_;
 
   // An object that asynchronously searches for the most recent binary download.
   // Non-NULL while such a search is outstanding.

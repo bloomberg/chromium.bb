@@ -37,7 +37,7 @@ class SBChunkData {
   // Create with manufactured data, for testing only.
   // TODO(shess): Right now the test code calling this is in an anonymous
   // namespace.  Figure out how to shift this into private:.
-  explicit SBChunkData(ChunkData* chunk_data);
+  explicit SBChunkData(scoped_ptr<ChunkData> data);
 
   // Read serialized ChunkData, returning true if the parse suceeded.
   bool ParseFrom(const unsigned char* data, size_t length);

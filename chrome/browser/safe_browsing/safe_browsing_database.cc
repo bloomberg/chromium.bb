@@ -1062,7 +1062,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunk(SafeBrowsingStore* store,
 
 void SafeBrowsingDatabaseNew::InsertChunks(
     const std::string& list_name,
-    const std::vector<SBChunkData*>& chunks) {
+    const std::vector<scoped_ptr<SBChunkData>>& chunks) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 
   if (db_state_manager_.corruption_detected() || chunks.empty())
@@ -1082,11 +1082,11 @@ void SafeBrowsingDatabaseNew::InsertChunks(
   // TODO(shess): I believe that the list is always add or sub.  Can this use
   // that productively?
   store->BeginChunk();
-  for (size_t i = 0; i < chunks.size(); ++i) {
-    if (chunks[i]->IsAdd()) {
-      InsertAddChunk(store, list_id, *chunks[i]);
-    } else if (chunks[i]->IsSub()) {
-      InsertSubChunk(store, list_id, *chunks[i]);
+  for (const auto& chunk : chunks) {
+    if (chunk->IsAdd()) {
+      InsertAddChunk(store, list_id, *chunk);
+    } else if (chunk->IsSub()) {
+      InsertSubChunk(store, list_id, *chunk);
     } else {
       NOTREACHED();
     }

@@ -42,7 +42,7 @@ ACTION_P(TakeIncident, recipient) {
 // An action that passes ownership of the incident in |arg0| to the vector in
 // |incidents|.
 ACTION_P(TakeIncidentToVector, incidents) {
-  incidents->push_back(arg0->release());
+  incidents->push_back(arg0->Pass());
 }
 
 }  // namespace safe_browsing
