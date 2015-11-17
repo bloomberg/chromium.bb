@@ -34,7 +34,7 @@
 #include <sys/uio.h>
 
 #include "compositor.h"
-#include "screenshooter-server-protocol.h"
+#include "weston-screenshooter-server-protocol.h"
 #include "shared/helpers.h"
 
 #include "wcap/wcap-decode.h"
@@ -223,7 +223,7 @@ screenshooter_done(void *data, enum weston_screenshooter_outcome outcome)
 
 	switch (outcome) {
 	case WESTON_SCREENSHOOTER_SUCCESS:
-		screenshooter_send_done(resource);
+		weston_screenshooter_send_done(resource);
 		break;
 	case WESTON_SCREENSHOOTER_NO_MEMORY:
 		wl_resource_post_no_memory(resource);
@@ -252,7 +252,7 @@ screenshooter_shoot(struct wl_client *client,
 	weston_screenshooter_shoot(output, buffer, screenshooter_done, resource);
 }
 
-struct screenshooter_interface screenshooter_implementation = {
+struct weston_screenshooter_interface screenshooter_implementation = {
 	screenshooter_shoot
 };
 
@@ -264,7 +264,7 @@ bind_shooter(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client,
-				      &screenshooter_interface, 1, id);
+				      &weston_screenshooter_interface, 1, id);
 
 	if (client != shooter->client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -622,7 +622,7 @@ screenshooter_create(struct weston_compositor *ec)
 	shooter->client = NULL;
 
 	shooter->global = wl_global_create(ec->wl_display,
-					   &screenshooter_interface, 1,
+					   &weston_screenshooter_interface, 1,
 					   shooter, bind_shooter);
 	weston_compositor_add_key_binding(ec, KEY_S, MODIFIER_SUPER,
 					  screenshooter_binding, shooter);

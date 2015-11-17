@@ -36,7 +36,7 @@
 #include <cairo.h>
 
 #include <wayland-client.h>
-#include "screenshooter-client-protocol.h"
+#include "weston-screenshooter-client-protocol.h"
 #include "shared/os-compatibility.h"
 
 /* The screenshooter is a good example of a custom object exposed by
@@ -44,7 +44,7 @@
  * side marshalling outside libwayland.so */
 
 static struct wl_shm *shm;
-static struct screenshooter *screenshooter;
+static struct weston_screenshooter *screenshooter;
 static struct wl_list output_list;
 int min_x, min_y, max_x, max_y;
 int buffer_copy_done;
@@ -118,12 +118,12 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
-screenshot_done(void *data, struct screenshooter *screenshooter)
+screenshot_done(void *data, struct weston_screenshooter *screenshooter)
 {
 	buffer_copy_done = 1;
 }
 
-static const struct screenshooter_listener screenshooter_listener = {
+static const struct weston_screenshooter_listener screenshooter_listener = {
 	screenshot_done
 };
 
@@ -141,9 +141,10 @@ handle_global(void *data, struct wl_registry *registry,
 		wl_output_add_listener(output->output, &output_listener, output);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
-	} else if (strcmp(interface, "screenshooter") == 0) {
+	} else if (strcmp(interface, "weston_screenshooter") == 0) {
 		screenshooter = wl_registry_bind(registry, name,
-						 &screenshooter_interface, 1);
+						 &weston_screenshooter_interface,
+						 1);
 	}
 }
 
@@ -290,7 +291,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	screenshooter_add_listener(screenshooter, &screenshooter_listener, screenshooter);
+	weston_screenshooter_add_listener(screenshooter,
+					  &screenshooter_listener,
+					  screenshooter);
 
 	if (set_buffer_size(&width, &height))
 		return -1;
@@ -298,7 +301,9 @@ int main(int argc, char *argv[])
 
 	wl_list_for_each(output, &output_list, link) {
 		output->buffer = create_shm_buffer(output->width, output->height, &output->data);
-		screenshooter_shoot(screenshooter, output->output, output->buffer);
+		weston_screenshooter_shoot(screenshooter,
+					   output->output,
+					   output->buffer);
 		buffer_copy_done = 0;
 		while (!buffer_copy_done)
 			wl_display_roundtrip(display);

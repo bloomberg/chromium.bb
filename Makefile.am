@@ -113,8 +113,8 @@ systemd_notify_la_SOURCES =			\
 endif
 
 nodist_weston_SOURCES =					\
-	protocol/screenshooter-protocol.c		\
-	protocol/screenshooter-server-protocol.h	\
+	protocol/weston-screenshooter-protocol.c			\
+	protocol/weston-screenshooter-server-protocol.h			\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-cursor-position-server-protocol.h	\
 	protocol/text-input-unstable-v1-protocol.c			\
@@ -577,8 +577,8 @@ weston_flower_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_screenshooter_SOURCES =				\
 	clients/screenshot.c
 nodist_weston_screenshooter_SOURCES =			\
-	protocol/screenshooter-protocol.c		\
-	protocol/screenshooter-client-protocol.h
+	protocol/weston-screenshooter-protocol.c	\
+	protocol/weston-screenshooter-client-protocol.h
 weston_screenshooter_LDADD = $(CLIENT_LIBS) libshared.la
 weston_screenshooter_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -749,8 +749,8 @@ endif
 endif
 
 BUILT_SOURCES +=					\
-	protocol/screenshooter-protocol.c		\
-	protocol/screenshooter-client-protocol.h	\
+	protocol/weston-screenshooter-protocol.c			\
+	protocol/weston-screenshooter-client-protocol.h			\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-input-unstable-v1-protocol.c			\
@@ -1341,7 +1341,7 @@ BUILT_SOURCES +=				\
 
 EXTRA_DIST +=					\
 	protocol/weston-desktop-shell.xml	\
-	protocol/screenshooter.xml		\
+	protocol/weston-screenshooter.xml	\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
