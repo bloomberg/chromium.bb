@@ -2191,7 +2191,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
 // cc::DisplayListRecordingSource::UpdateAndExpandInvalidation() before we keep only one copy of the algorithm.
 static const int kPixelDistanceToRecord = 4000;
 
-IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
+IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
 {
     FloatRect graphicsLayerBounds(FloatPoint(), graphicsLayer->size());
 
@@ -2256,33 +2256,23 @@ bool CompositedLayerMapping::interestRectChangedEnoughToRepaint(const IntRect& p
     return false;
 }
 
-void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect* interestRect) const
+IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect& previousInterestRect) const
 {
-    IntRect defaultInterestRect;
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (!interestRect) {
-            if (graphicsLayer == m_graphicsLayer || graphicsLayer == m_squashingLayer)
-                defaultInterestRect = computeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
-            else
-                defaultInterestRect = enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
-            interestRect = &defaultInterestRect;
-        }
+    if (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer)
+        return IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
 
-        if (!m_owningLayer.needsRepaint()
-            && !context.paintController().cacheIsEmpty()
-            && !interestRectChangedEnoughToRepaint(m_previousPaintInterestRect, *interestRect, expandedIntSize(graphicsLayer->size()))) {
-            context.paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
-            return;
-        }
-
-        m_previousPaintInterestRect = *interestRect;
-    }
-
-    ASSERT(interestRect);
-    paintContentsInternal(graphicsLayer, context, graphicsLayerPaintingPhase, *interestRect);
+    IntRect newInterestRect = recomputeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
+    if (interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, expandedIntSize(graphicsLayer->size())))
+        return newInterestRect;
+    return previousInterestRect;
 }
 
-void CompositedLayerMapping::paintContentsInternal(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
+bool CompositedLayerMapping::needsRepaint() const
+{
+    return m_owningLayer.needsRepaint();
+}
+
+void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
@@ -2481,7 +2471,7 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquash
     }
 }
 
-String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
+String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer) const
 {
     String name;
     if (graphicsLayer == m_graphicsLayer.get()) {

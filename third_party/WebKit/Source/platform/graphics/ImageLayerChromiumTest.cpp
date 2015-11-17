@@ -37,9 +37,9 @@ namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
 public:
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect*) const override { }
-
-    String debugName(const GraphicsLayer*) override { return String(); }
+    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const { return IntRect(); }
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override { }
+    String debugName(const GraphicsLayer*) const override { return String(); }
 };
 
 class TestImage : public Image {

@@ -41,7 +41,7 @@ class PaintController;
 
 class PLATFORM_EXPORT GraphicsContextPainter {
 public:
-    virtual void paint(GraphicsContext&, const IntRect* clip) = 0;
+    virtual void paint(GraphicsContext&, const IntRect* interestRect) = 0;
     virtual PaintController* paintController() = 0;
 
 protected:

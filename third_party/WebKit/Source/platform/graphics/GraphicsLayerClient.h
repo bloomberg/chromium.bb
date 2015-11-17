@@ -69,10 +69,13 @@ public:
     virtual void notifyFirstTextPaint() { }
     virtual void notifyFirstImagePaint() { }
 
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* inClip) const = 0;
+    virtual IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const = 0;
+    virtual bool needsRepaint() const { return true; }
+    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const = 0;
+
     virtual bool isTrackingPaintInvalidations() const { return false; }
 
-    virtual String debugName(const GraphicsLayer*) = 0;
+    virtual String debugName(const GraphicsLayer*) const = 0;
 
 #if ENABLE(ASSERT)
     // CompositedLayerMapping overrides this to verify that it is not

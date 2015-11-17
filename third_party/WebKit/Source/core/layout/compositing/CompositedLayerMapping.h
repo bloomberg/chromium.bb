@@ -154,7 +154,10 @@ public:
     void notifyFirstTextPaint() override;
     void notifyFirstImagePaint() override;
 
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* clip) const override;
+    IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const override;
+    bool needsRepaint() const override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
+
     bool isTrackingPaintInvalidations() const override;
 
 #if ENABLE(ASSERT)
@@ -194,7 +197,7 @@ public:
     void assertNeedsToUpdateGraphicsLayerBitsCleared() {  ASSERT(m_pendingUpdateScope == GraphicsLayerUpdateNone); }
 #endif
 
-    String debugName(const GraphicsLayer*) override;
+    String debugName(const GraphicsLayer*) const override;
 
     LayoutSize contentOffsetInCompositingLayer() const;
 
@@ -212,7 +215,7 @@ public:
     String debugName() const { return "CompositedLayerMapping for " + owningLayer().debugName(); }
 
 private:
-    static IntRect computeInterestRect(const GraphicsLayer*, LayoutObject* owningLayoutObject);
+    static IntRect recomputeInterestRect(const GraphicsLayer*, LayoutObject* owningLayoutObject);
     static bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize);
 
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
@@ -315,8 +318,6 @@ private:
     // Clear the groupedMapping entry on the layer at the given index, only if that layer does
     // not appear earlier in the set of layers for this object.
     bool invalidateLayerIfNoPrecedingEntry(size_t);
-
-    void paintContentsInternal(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const;
 
     PaintLayer& m_owningLayer;
 
@@ -440,8 +441,6 @@ private:
 
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
-
-    mutable IntRect m_previousPaintInterestRect;
 
     friend class CompositedLayerMappingTest;
 };

@@ -246,7 +246,7 @@ public:
     static void unregisterContentsLayer(WebLayer*);
 
     // GraphicsContextPainter implementation.
-    void paint(GraphicsContext&, const IntRect* clip) override;
+    void paint(GraphicsContext&, const IntRect* interestRect) override;
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
@@ -263,10 +263,8 @@ public:
     static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 
-#ifndef NDEBUG
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    String debugName() const { return m_client->debugName(this) + " debug red fill"; }
-#endif
+    String debugName() const { return m_client->debugName(this); }
 
 protected:
     String debugName(WebLayer*) const;
@@ -275,6 +273,7 @@ protected:
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
     friend class GraphicsLayerFactoryChromium;
     // for testing
+    friend class CompositedLayerMappingTest;
     friend class FakeGraphicsLayerFactory;
 
 private:
@@ -374,6 +373,8 @@ private:
     int m_3dRenderingContext;
 
     OwnPtr<PaintController> m_paintController;
+
+    IntRect m_previousInterestRect;
 };
 
 } // namespace blink

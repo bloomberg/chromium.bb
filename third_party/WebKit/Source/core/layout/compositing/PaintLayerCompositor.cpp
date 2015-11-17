@@ -800,21 +800,19 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     scrollbar->paint(&context, CullRect(transformedClip));
 }
 
-void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect* clip) const
+IntRect PaintLayerCompositor::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect&) const
 {
-    IntRect defaultClip;
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !clip) {
-        defaultClip.setSize(m_layoutView.layoutSize(IncludeScrollbars));
-        clip = &defaultClip;
-    }
-    ASSERT(clip);
+    return IntRect(IntPoint(), m_layoutView.layoutSize(IncludeScrollbars));
+}
 
+void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& interestRect) const
+{
     if (graphicsLayer == layerForHorizontalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, *clip);
+        paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, interestRect);
     else if (graphicsLayer == layerForVerticalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, *clip);
+        paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, interestRect);
     else if (graphicsLayer == layerForScrollCorner())
-        FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, *clip);
+        FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, interestRect);
 }
 
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const
@@ -1184,7 +1182,7 @@ DocumentLifecycle& PaintLayerCompositor::lifecycle() const
     return m_layoutView.document().lifecycle();
 }
 
-String PaintLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
+String PaintLayerCompositor::debugName(const GraphicsLayer* graphicsLayer) const
 {
     String name;
     if (graphicsLayer == m_rootContentLayer.get()) {

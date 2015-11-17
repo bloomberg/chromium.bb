@@ -210,8 +210,9 @@ private:
     bool visualViewportSuppliesScrollbars() const;
 
     // GraphicsLayerClient implementation.
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* inClip) const override;
-    String debugName(const GraphicsLayer*) override;
+    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override;
+    String debugName(const GraphicsLayer*) const override;
 
     void setupScrollbar(WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);

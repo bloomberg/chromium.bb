@@ -579,7 +579,12 @@ GraphicsLayer* VisualViewport::layerForVerticalScrollbar() const
     return m_overlayScrollbarVertical.get();
 }
 
-void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* inClip) const
+IntRect VisualViewport::computeInterestRect(const GraphicsLayer*, const IntRect&) const
+{
+    return IntRect();
+}
+
+void VisualViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const
 {
 }
 
@@ -719,7 +724,7 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const
         || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 
-String VisualViewport::debugName(const GraphicsLayer* graphicsLayer)
+String VisualViewport::debugName(const GraphicsLayer* graphicsLayer) const
 {
     String name;
     if (graphicsLayer == m_innerViewportContainerLayer.get()) {

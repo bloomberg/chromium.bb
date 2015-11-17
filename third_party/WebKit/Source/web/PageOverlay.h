@@ -69,8 +69,9 @@ public:
     String debugName() const { return "PageOverlay"; }
 
     // GraphicsLayerClient implementation
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* inClip) const override;
-    String debugName(const GraphicsLayer*) override;
+    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
+    String debugName(const GraphicsLayer*) const override;
 
 private:
     PageOverlay(WebViewImpl*, PageOverlay::Delegate*);

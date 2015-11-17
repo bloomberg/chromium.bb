@@ -293,9 +293,9 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
         setNeedsDisplay();
 }
 
-void GraphicsLayer::paint(GraphicsContext& context, const IntRect* clip)
+void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
 {
-    ASSERT(clip || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    ASSERT(interestRect || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(drawsContent());
 
     if (!m_client)
@@ -312,8 +312,22 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* clip)
         }
     }
 #endif
-    m_client->paintContents(this, context, m_paintingPhase, clip);
+
+    IntRect newInterestRect;
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        if (!interestRect) {
+            newInterestRect = m_client->computeInterestRect(this, m_previousInterestRect);
+            interestRect = &newInterestRect;
+        }
+        if (!m_client->needsRepaint() && !paintController()->cacheIsEmpty() && m_previousInterestRect == *interestRect) {
+            paintController()->createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
+            return;
+        }
+    }
+
+    m_client->paintContents(this, context, m_paintingPhase, *interestRect);
     notifyFirstPaintToClient();
+    m_previousInterestRect = *interestRect;
 }
 
 void GraphicsLayer::notifyFirstPaintToClient()

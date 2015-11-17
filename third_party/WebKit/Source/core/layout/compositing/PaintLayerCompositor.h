@@ -152,7 +152,7 @@ public:
     void resetTrackedPaintInvalidationRects();
     void setTracksPaintInvalidations(bool);
 
-    String debugName(const GraphicsLayer*) override;
+    String debugName(const GraphicsLayer*) const override;
     DocumentLifecycle& lifecycle() const;
 
     bool needsUpdateDescendantDependentFlags() const { return m_needsUpdateDescendantDependentFlags; }
@@ -177,7 +177,8 @@ private:
 #endif
 
     // GraphicsLayerClient implementation
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect*) const override;
+    IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
 
     bool isTrackingPaintInvalidations() const override;
 
