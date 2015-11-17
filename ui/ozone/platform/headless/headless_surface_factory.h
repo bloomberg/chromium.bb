@@ -24,6 +24,11 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  scoped_refptr<NativePixmap> CreateNativePixmap(
+      gfx::AcceleratedWidget widget,
+      gfx::Size size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override;
 
  private:
   HeadlessWindowManager* window_manager_;

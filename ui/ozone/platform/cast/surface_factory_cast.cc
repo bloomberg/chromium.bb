@@ -69,7 +69,8 @@ void SurfaceFactoryCast::InitializeHardware() {
 
 void SurfaceFactoryCast::TerminateDisplay() {
   void* egl_lib_handle = egl_platform_->GetEglLibrary();
-  DCHECK(egl_lib_handle);
+  if (!egl_lib_handle)
+    return;
 
   EGLGetDisplayFn get_display =
       reinterpret_cast<EGLGetDisplayFn>(dlsym(egl_lib_handle, "eglGetDisplay"));
@@ -188,7 +189,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
       // TODO(halliwell): try to implement this through CastEglPlatform.
       return nullptr;
     }
-    int GetDmaBufFd() override { return 0; }
+    int GetDmaBufFd() override { return -1; }
     int GetDmaBufPitch() override { return 0; }
     gfx::BufferFormat GetBufferFormat() override {
       return gfx::BufferFormat::LAST;
