@@ -117,8 +117,8 @@ nodist_weston_SOURCES =					\
 	protocol/screenshooter-server-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-cursor-position-server-protocol.h	\
-	protocol/text-protocol.c			\
-	protocol/text-server-protocol.h			\
+	protocol/text-input-unstable-v1-protocol.c			\
+	protocol/text-input-unstable-v1-server-protocol.h		\
 	protocol/input-method-protocol.c		\
 	protocol/input-method-server-protocol.h		\
 	protocol/workspaces-protocol.c			\
@@ -686,8 +686,8 @@ weston_editor_SOURCES = 			\
 	clients/editor.c			\
 	shared/helpers.h
 nodist_weston_editor_SOURCES =			\
-	protocol/text-protocol.c		\
-	protocol/text-client-protocol.h
+	protocol/text-input-unstable-v1-protocol.c		\
+	protocol/text-input-unstable-v1-client-protocol.h
 weston_editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
 weston_editor_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS) $(PANGO_CFLAGS)
 endif
@@ -753,8 +753,8 @@ BUILT_SOURCES +=					\
 	protocol/screenshooter-client-protocol.h	\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
-	protocol/text-protocol.c			\
-	protocol/text-client-protocol.h			\
+	protocol/text-input-unstable-v1-protocol.c			\
+	protocol/text-input-unstable-v1-client-protocol.h		\
 	protocol/input-method-protocol.c		\
 	protocol/input-method-client-protocol.h		\
 	protocol/desktop-shell-client-protocol.h	\
@@ -1212,8 +1212,8 @@ devices_weston_LDADD = libtest-client.la
 
 text_weston_SOURCES = tests/text-test.c
 nodist_text_weston_SOURCES =			\
-	protocol/text-protocol.c		\
-	protocol/text-client-protocol.h
+	protocol/text-input-unstable-v1-protocol.c		\
+	protocol/text-input-unstable-v1-client-protocol.h
 text_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 text_weston_LDADD = libtest-client.la
 
@@ -1336,13 +1336,12 @@ BUILT_SOURCES +=				\
 	protocol/weston-test-protocol.c	\
 	protocol/weston-test-server-protocol.h	\
 	protocol/weston-test-client-protocol.h	\
-	protocol/text-protocol.c		\
-	protocol/text-client-protocol.h
+	protocol/text-input-unstable-v1-protocol.c		\
+	protocol/text-input-unstable-v1-client-protocol.h
 
 EXTRA_DIST +=					\
 	protocol/desktop-shell.xml		\
 	protocol/screenshooter.xml		\
-	protocol/text.xml			\
 	protocol/input-method.xml		\
 	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\

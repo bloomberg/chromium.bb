@@ -33,7 +33,7 @@
 
 #include "window.h"
 #include "input-method-client-protocol.h"
-#include "text-client-protocol.h"
+#include "text-input-unstable-v1-client-protocol.h"
 
 struct keyboard;
 
@@ -216,7 +216,7 @@ static const struct layout normal_layout = {
 	12,
 	4,
 	"en",
-	WL_TEXT_INPUT_TEXT_DIRECTION_LTR
+	ZWP_TEXT_INPUT_V1_TEXT_DIRECTION_LTR
 };
 
 static const struct layout numeric_layout = {
@@ -225,7 +225,7 @@ static const struct layout numeric_layout = {
 	12,
 	2,
 	"en",
-	WL_TEXT_INPUT_TEXT_DIRECTION_LTR
+	ZWP_TEXT_INPUT_V1_TEXT_DIRECTION_LTR
 };
 
 static const struct layout arabic_layout = {
@@ -234,7 +234,7 @@ static const struct layout arabic_layout = {
 	13,
 	4,
 	"ar",
-	WL_TEXT_INPUT_TEXT_DIRECTION_RTL
+	ZWP_TEXT_INPUT_V1_TEXT_DIRECTION_RTL
 };
 
 static const char *style_labels[] = {
@@ -339,8 +339,8 @@ static const struct layout *
 get_current_layout(struct virtual_keyboard *keyboard)
 {
 	switch (keyboard->content_purpose) {
-		case WL_TEXT_INPUT_CONTENT_PURPOSE_DIGITS:
-		case WL_TEXT_INPUT_CONTENT_PURPOSE_NUMBER:
+		case ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DIGITS:
+		case ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NUMBER:
 			return &numeric_layout;
 		default:
 			if (keyboard->preferred_language &&
