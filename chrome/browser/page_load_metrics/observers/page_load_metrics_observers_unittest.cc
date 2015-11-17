@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
@@ -229,4 +230,24 @@ TEST_F(PageLoadMetricsObserverTest, ReferralNotFromGWS) {
   // Navigate again to force logging.
   NavigateAndCommit(GURL("https://www.google.com"));
   histogram_tester_.ExpectTotalCount(kHistogramNameFromGWSFirstTextPaint, 0);
+}
+
+TEST_F(PageLoadMetricsObserverTest, IsGoogleCaptcha) {
+  struct {
+    std::string url;
+    bool expected;
+  } test_cases[] = {
+      {"", false},
+      {"http://www.google.com/", false},
+      {"http://www.cnn.com/", false},
+      {"http://ipv4.google.com/", false},
+      {"https://ipv4.google.com/sorry/IndexRedirect?continue=http://a", true},
+      {"https://ipv6.google.com/sorry/IndexRedirect?continue=http://a", true},
+      {"https://ipv7.google.com/sorry/IndexRedirect?continue=http://a", false},
+  };
+  for (const auto& test : test_cases) {
+    EXPECT_EQ(test.expected,
+              google_captcha_observer::IsGoogleCaptcha(GURL(test.url)))
+        << "for URL: " << test.url;
+  }
 }

@@ -6,7 +6,9 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -19,6 +21,8 @@ void RegisterPageLoadMetricsObservers(
   // This is a self-destruct class, and will delete itself when triggered by
   // OnPageLoadMetricsGoingAway.
   metrics->AddObserver(new FromGWSPageLoadMetricsObserver(metrics));
+  metrics->AddObserver(
+      new google_captcha_observer::GoogleCaptchaObserver(metrics));
 }
 
 }  // namespace

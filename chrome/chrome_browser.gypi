@@ -676,6 +676,8 @@
       'browser/net/predictor_tab_helper.h',
       'browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.cc',
       'browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h',
+      'browser/page_load_metrics/observers/google_captcha_observer.cc',
+      'browser/page_load_metrics/observers/google_captcha_observer.h',
       'browser/page_load_metrics/page_load_metrics_initialize.cc',
       'browser/page_load_metrics/page_load_metrics_initialize.h',
       'browser/performance_monitor/performance_monitor.cc',

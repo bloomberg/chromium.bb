@@ -30925,6 +30925,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.GoogleCaptcha.Events"
+    enum="GoogleCaptchaEvent">
+  <owner>mdw@chromium.org</owner>
+  <summary>Events related to Google CAPTCHA pages being seen by users.</summary>
+</histogram>
+
 <histogram name="PageLoad.EventCounts" enum="PageLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
@@ -63584,6 +63590,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="CANT_CREATE_DIR"/>
   <int value="5" label="CANT_WRITE_TO_PATH"/>
   <int value="6" label="UNSET"/>
+</enum>
+
+<enum name="GoogleCaptchaEvent" type="int">
+  <int value="0" label="Google CAPTCHA shown"/>
+  <int value="1" label="Google CAPTCHA solved"/>
 </enum>
 
 <enum name="GoogleNowCardTypeId" type="int">

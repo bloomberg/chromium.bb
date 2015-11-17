@@ -40,6 +40,11 @@ class PageLoadMetricsObserver {
  public:
   virtual ~PageLoadMetricsObserver() {}
 
+  // OnRedirect is triggered when a page load redirects to another URL.
+  // The navigation handle holds relevant data for the navigation, but will
+  // be destroyed soon after this call. Don't hold a reference to it.
+  virtual void OnRedirect(content::NavigationHandle* navigation_handle) {}
+
   // OnCommit is triggered when a page load commits, i.e. when we receive the
   // first data for the request. The navigation handle holds relevant data for
   // the navigation, but will be destroyed soon after this call. Don't hold a

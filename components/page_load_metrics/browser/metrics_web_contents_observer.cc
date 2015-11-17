@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "components/page_load_metrics/browser/page_load_metrics_macros.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
@@ -157,6 +158,11 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
 
   FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
                     OnCommit(navigation_handle));
+}
+
+void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
+                    OnRedirect(navigation_handle));
 }
 
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing) {
@@ -469,6 +475,16 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 
   committed_load_ = finished_nav.Pass();
   committed_load_->Commit(navigation_handle);
+}
+
+void MetricsWebContentsObserver::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  auto it = provisional_loads_.find(navigation_handle);
+  if (it == provisional_loads_.end())
+    return;
+  it->second->Redirect(navigation_handle);
 }
 
 void MetricsWebContentsObserver::WasShown() {
