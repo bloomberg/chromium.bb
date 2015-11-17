@@ -30,5 +30,5 @@ TEST_F(ValidAppManifestTest, AllowUnrecognizedPermissions) {
   base::ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
   permissions->Append(new base::StringValue("not-a-valid-permission"));
-  LoadAndExpectSuccess(ManifestData(manifest.get(), ""));
+  LoadAndExpectSuccess(ManifestData(manifest.Pass(), ""));
 }

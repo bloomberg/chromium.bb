@@ -105,8 +105,9 @@ TEST_F(BrowserActionManifestTest,
 
   base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
-  LoadAndExpectError(ManifestData(manifest_value.get(), "Invalid default icon"),
-                     errors::kInvalidIconPath);
+  LoadAndExpectError(
+      ManifestData(manifest_value.Pass(), "Invalid default icon"),
+      errors::kInvalidIconPath);
 }
 
 }  // namespace

@@ -20,16 +20,17 @@ namespace extensions {
 namespace {
 
 // |manifest_path| is an absolute path to a manifest file.
-base::DictionaryValue* LoadManifestFile(const base::FilePath& manifest_path,
-                                        std::string* error) {
+scoped_ptr<base::DictionaryValue> LoadManifestFile(
+    const base::FilePath& manifest_path,
+    std::string* error) {
   base::FilePath extension_path = manifest_path.DirName();
 
   EXPECT_TRUE(base::PathExists(manifest_path)) <<
       "Couldn't find " << manifest_path.value();
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  base::DictionaryValue* manifest = static_cast<base::DictionaryValue*>(
-      deserializer.Deserialize(NULL, error).release());
+  scoped_ptr<base::DictionaryValue> manifest =
+      base::DictionaryValue::From(deserializer.Deserialize(NULL, error));
 
   // Most unit tests don't need localization, and they'll fail if we try to
   // localize them, since their manifests don't have a default_locale key.
@@ -38,7 +39,8 @@ base::DictionaryValue* LoadManifestFile(const base::FilePath& manifest_path,
   if (manifest &&
       manifest_path.value().find(FILE_PATH_LITERAL("localized")) !=
       std::string::npos)
-    extension_l10n_util::LocalizeExtension(extension_path, manifest, error);
+    extension_l10n_util::LocalizeExtension(extension_path, manifest.get(),
+                                           error);
 
   return manifest;
 }
@@ -55,9 +57,9 @@ ManifestTest::~ManifestTest() {
 // Helper class that simplifies creating methods that take either a filename
 // to a manifest or the manifest itself.
 ManifestTest::ManifestData::ManifestData(const char* name)
-    : name_(name), manifest_(NULL) {
-}
+    : name_(name), manifest_(nullptr) {}
 
+// This does not take ownership of |manifest|.
 ManifestTest::ManifestData::ManifestData(base::DictionaryValue* manifest,
                                           const char* name)
     : name_(name), manifest_(manifest) {
@@ -67,6 +69,15 @@ ManifestTest::ManifestData::ManifestData(base::DictionaryValue* manifest,
 ManifestTest::ManifestData::ManifestData(
     scoped_ptr<base::DictionaryValue> manifest)
     : manifest_(manifest.get()), manifest_holder_(manifest.Pass()) {
+  CHECK(manifest_) << "Manifest NULL";
+}
+
+ManifestTest::ManifestData::ManifestData(
+    scoped_ptr<base::DictionaryValue> manifest,
+    const char* name)
+    : name_(name),
+      manifest_(manifest.get()),
+      manifest_holder_(manifest.Pass()) {
   CHECK(manifest_) << "Manifest NULL";
 }
 
@@ -83,8 +94,8 @@ base::DictionaryValue* ManifestTest::ManifestData::GetManifest(
     return manifest_;
 
   base::FilePath manifest_path = test_data_dir.AppendASCII(name_);
-  manifest_ = LoadManifestFile(manifest_path, error);
-  manifest_holder_.reset(manifest_);
+  manifest_holder_ = LoadManifestFile(manifest_path, error);
+  manifest_ = manifest_holder_.get();
   return manifest_;
 }
 
@@ -101,7 +112,7 @@ base::FilePath ManifestTest::GetTestDataDir() {
 scoped_ptr<base::DictionaryValue> ManifestTest::LoadManifest(
     char const* manifest_name, std::string* error) {
   base::FilePath manifest_path = GetTestDataDir().AppendASCII(manifest_name);
-  return make_scoped_ptr(LoadManifestFile(manifest_path, error));
+  return LoadManifestFile(manifest_path, error);
 }
 
 scoped_refptr<Extension> ManifestTest::LoadExtension(

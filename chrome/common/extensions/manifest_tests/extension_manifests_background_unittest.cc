@@ -31,8 +31,8 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPermission) {
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   std::string error;
-  scoped_ptr<base::DictionaryValue> manifest(
-      LoadManifest("background_scripts.json", &error));
+  scoped_ptr<base::DictionaryValue> manifest =
+      LoadManifest("background_scripts.json", &error);
   ASSERT_TRUE(manifest.get());
 
   scoped_refptr<Extension> extension(

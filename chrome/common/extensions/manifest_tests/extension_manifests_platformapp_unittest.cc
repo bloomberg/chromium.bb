@@ -117,23 +117,21 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   scoped_ptr<base::DictionaryValue> manifest(
       LoadManifest("init_valid_platform_app.json", &error));
 
-  std::vector<linked_ptr<base::DictionaryValue> > manifests;
+  std::vector<scoped_ptr<ManifestData>> manifests;
   // Create each manifest.
-  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    const char* api_name = kPlatformAppExperimentalApis[i];
-
+  for (const char* api_name : kPlatformAppExperimentalApis) {
     // DictionaryValue will take ownership of this ListValue.
     base::ListValue *permissions = new base::ListValue();
     permissions->Append(new base::StringValue("experimental"));
     permissions->Append(new base::StringValue(api_name));
     manifest->Set("permissions", permissions);
-    manifests.push_back(make_linked_ptr(manifest->DeepCopy()));
+    manifests.push_back(
+        make_scoped_ptr(new ManifestData(manifest->CreateDeepCopy(), "")));
   }
-
   // First try to load without any flags. This should warn for every API.
-  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
+  for (const scoped_ptr<ManifestData>& manifest : manifests) {
     LoadAndExpectWarning(
-        ManifestData(manifests[i].get(), ""),
+        *manifest,
         "'experimental' requires the 'experimental-extension-apis' "
         "command line switch to be enabled.");
   }
@@ -141,9 +139,8 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   // Now try again with the experimental flag set.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    LoadAndExpectSuccess(ManifestData(manifests[i].get(), ""));
-  }
+  for (const scoped_ptr<ManifestData>& manifest : manifests)
+    LoadAndExpectSuccess(*manifest);
 }
 
 }  // namespace extensions

@@ -49,7 +49,7 @@ TEST_F(DeclarativeManifestTest, ConditionMissingType) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "'type' is required and must be a string");
 }
 
@@ -69,7 +69,7 @@ TEST_F(DeclarativeManifestTest, ConditionNotDictionary) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "expected dictionary, got boolean");
 }
 
@@ -90,7 +90,7 @@ TEST_F(DeclarativeManifestTest, ActionMissingType) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "'type' is required and must be a string");
 }
 
@@ -111,7 +111,7 @@ TEST_F(DeclarativeManifestTest, ActionNotDictionary) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "expected dictionary, got list");
 }
 
@@ -123,7 +123,7 @@ TEST_F(DeclarativeManifestTest, EventRulesNotList) {
       "  \"version\": \"1\","
       "  \"event_rules\": {}"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "'event_rules' expected list, got dictionary");
 }
 
@@ -135,7 +135,7 @@ TEST_F(DeclarativeManifestTest, EventRuleNotDictionary) {
       "  \"version\": \"1\","
       "  \"event_rules\": [0,1,2]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "expected dictionary, got integer");
 }
 
@@ -157,7 +157,7 @@ TEST_F(DeclarativeManifestTest, EventMissingFromRule) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "'event' is required");
 }
 
@@ -173,7 +173,7 @@ TEST_F(DeclarativeManifestTest, RuleFailedToPopulate) {
       "    }"
       "  ]"
       "}");
-  ManifestData manifest(manifest_data.get(), "test");
+  ManifestData manifest(manifest_data.Pass(), "test");
   LoadAndExpectError(manifest, "rule failed to populate");
 }
 
