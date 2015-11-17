@@ -31,7 +31,7 @@
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
-#include "third_party/icu/source/i18n/unicode/regex.h"
+#include "third_party/re2/re2/re2.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace autofill {
@@ -65,7 +65,7 @@ const char kBillingMode[] = "billing";
 const char kShippingMode[] = "shipping";
 
 // Strip away >= 5 consecutive digits.
-const char kIgnorePatternInFieldName[] = "\\d{5,}+";
+const char kIgnorePatternInFieldName[] = "\\d{5,}";
 
 // A form is considered to have a high prediction mismatch rate if the number of
 // mismatches exceeds this threshold.
@@ -356,28 +356,10 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
 }
 
 std::string StripDigitsIfRequired(const base::string16& input) {
-  UErrorCode status = U_ZERO_ERROR;
-  CR_DEFINE_STATIC_LOCAL(icu::UnicodeString, icu_pattern,
-                         (kIgnorePatternInFieldName));
-  CR_DEFINE_STATIC_LOCAL(icu::RegexMatcher, matcher,
-                         (icu_pattern, UREGEX_CASE_INSENSITIVE, status));
-  DCHECK_EQ(status, U_ZERO_ERROR);
+  std::string return_string = base::UTF16ToUTF8(input);
 
-  icu::UnicodeString icu_input(input.data(), input.length());
-  matcher.reset(icu_input);
-
-  icu::UnicodeString replaced_string = matcher.replaceAll("", status);
-
-  std::string return_string;
-  status = U_ZERO_ERROR;
-  base::UTF16ToUTF8(replaced_string.getBuffer(),
-                    static_cast<size_t>(replaced_string.length()),
-                    &return_string);
-  if (status != U_ZERO_ERROR) {
-    DVLOG(1) << "Couldn't strip digits in " << base::UTF16ToUTF8(input);
-    return base::UTF16ToUTF8(input);
-  }
-
+  re2::RE2::GlobalReplace(&return_string, re2::RE2(kIgnorePatternInFieldName),
+                          std::string());
   return return_string;
 }
 

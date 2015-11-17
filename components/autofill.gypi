@@ -80,6 +80,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+        '../third_party/re2/re2.gyp:re2',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',

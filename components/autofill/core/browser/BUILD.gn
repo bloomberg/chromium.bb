@@ -157,6 +157,7 @@ source_set("browser") {
     "//base",
     "//base:i18n",
     "//base:prefs",
+    "//third_party/re2",
     "//components/autofill/core/common",
     "//components/compression",
     "//components/data_use_measurement/core",
