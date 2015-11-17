@@ -127,8 +127,8 @@ nodist_weston_SOURCES =					\
 	protocol/presentation_timing-server-protocol.h	\
 	protocol/scaler-protocol.c			\
 	protocol/scaler-server-protocol.h		\
-	protocol/linux-dmabuf-protocol.c		\
-	protocol/linux-dmabuf-server-protocol.h
+	protocol/linux-dmabuf-unstable-v1-protocol.c	\
+	protocol/linux-dmabuf-unstable-v1-server-protocol.h
 
 BUILT_SOURCES += $(nodist_weston_SOURCES)
 
@@ -533,11 +533,11 @@ nodist_weston_simple_dmabuf_SOURCES =		\
 	protocol/xdg-shell-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
-	protocol/linux-dmabuf-protocol.c \
-	protocol/linux-dmabuf-client-protocol.h
+	protocol/linux-dmabuf-unstable-v1-protocol.c \
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_simple_dmabuf_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_CLIENT_CFLAGS)
 weston_simple_dmabuf_LDADD = $(SIMPLE_DMABUF_CLIENT_LIBS) libshared.la
-BUILT_SOURCES += protocol/linux-dmabuf-client-protocol.h
+BUILT_SOURCES += protocol/linux-dmabuf-unstable-v1-client-protocol.h
 endif
 
 noinst_LTLIBRARIES += libtoytoolkit.la
@@ -1351,8 +1351,7 @@ EXTRA_DIST +=					\
 	protocol/presentation_timing.xml	\
 	protocol/scaler.xml			\
 	protocol/ivi-application.xml		\
-	protocol/ivi-hmi-controller.xml		\
-	protocol/linux-dmabuf.xml
+	protocol/ivi-hmi-controller.xml
 
 #
 # manual test modules in tests subdirectory

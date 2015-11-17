@@ -41,7 +41,7 @@
 #include "gl-renderer.h"
 #include "vertex-clipping.h"
 #include "linux-dmabuf.h"
-#include "linux-dmabuf-server-protocol.h"
+#include "linux-dmabuf-unstable-v1-server-protocol.h"
 
 #include "shared/helpers.h"
 #include "weston-egl-ext.h"
@@ -1514,7 +1514,7 @@ gl_renderer_import_dmabuf(struct weston_compositor *ec,
 	}
 
 	/* reject all flags we do not recognize or handle */
-	if (dmabuf->flags & ~ZLINUX_BUFFER_PARAMS_FLAGS_Y_INVERT)
+	if (dmabuf->flags & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT)
 		return false;
 
 	image = import_dmabuf(gr, dmabuf);
@@ -1563,7 +1563,7 @@ gl_renderer_attach_dmabuf(struct weston_surface *surface,
 	buffer->width = dmabuf->width;
 	buffer->height = dmabuf->height;
 	buffer->y_inverted =
-		!!(dmabuf->flags & ZLINUX_BUFFER_PARAMS_FLAGS_Y_INVERT);
+		!!(dmabuf->flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
 
 	for (i = 0; i < gs->num_images; i++)
 		egl_image_unref(gs->images[i]);
