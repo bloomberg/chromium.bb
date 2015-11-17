@@ -269,6 +269,12 @@ static inline LineLayoutItem bidiNextShared(LineLayoutItem root, LineLayoutItem 
 template <class Observer>
 static inline LineLayoutItem bidiNextSkippingEmptyInlines(LineLayoutItem root, LineLayoutItem current, Observer* observer)
 {
+    // TODO(rhogan): Rename this caller. It's used for a detailed walk of every object in an inline flow, for example during line layout.
+    // We always return empty inlines in bidiNextShared, which gives lie to the bidiNext[Skipping|Including]EmptyInlines
+    // naming scheme we use to call it. bidiNextSkippingEmptyInlines is the less fussy of the two callers,
+    // it will always try to advance and will return what it finds if it's a line layout object in isIteratorTarget or if
+    // it's an empty LayoutInline. If the LayoutInline has content, it will advance past the start of the LayoutLine and try to return
+    // one of its children.
     // The SkipEmptyInlines callers never care about endOfInlinePtr.
     return bidiNextShared(root, current, observer, SkipEmptyInlines);
 }
@@ -282,6 +288,12 @@ static inline LineLayoutItem bidiNextSkippingEmptyInlines(LineLayoutItem root, L
 
 static inline LineLayoutItem bidiNextIncludingEmptyInlines(LineLayoutItem root, LineLayoutItem current, bool* endOfInlinePtr = nullptr)
 {
+    // TODO(rhogan): Rename this caller. It's used for quick and dirty walks of inline children by InlineWalker, which isn't
+    // interested in the contents of inlines. Use cases include dirtying objects or simplified layout that leaves lineboxes intact.
+    // bidiNextIncludingEmptyInlines will return if the iterator is at the start of a LayoutInline (even if it hasn't
+    // advanced yet) unless it previously stopped at the start of the same LayoutInline the last time it tried to iterate.
+    // If it finds itself inside a LayoutInline that doesn't have anything in isIteratorTarget it will return the enclosing
+    // LayoutInline.
     InlineBidiResolver* observer = nullptr; // Callers who include empty inlines, never use an observer.
     return bidiNextShared(root, current, observer, IncludeEmptyInlines, endOfInlinePtr);
 }

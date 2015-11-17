@@ -412,6 +412,9 @@ inline bool shouldSkipWhitespaceAfterStartObject(LineLayoutBlockFlow block, Line
     while (next && next.isFloatingOrOutOfFlowPositioned())
         next = bidiNextSkippingEmptyInlines(block, next);
 
+    if (next && isEmptyInline(next))
+        next = LineLayoutInline(next).firstChild();
+
     if (next && !next.isBR() && next.isText() && LineLayoutText(next).textLength() > 0) {
         LineLayoutText nextText(next);
         UChar nextChar = nextText.characterAt(0);
