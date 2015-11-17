@@ -12,6 +12,8 @@
 namespace blimp {
 
 class BlimpMessageProcessor;
+class BlimpMessagePump;
+class ConnectionErrorObserver;
 class PacketReader;
 class PacketWriter;
 
@@ -19,29 +21,25 @@ class PacketWriter;
 // a network connection.
 class BLIMP_NET_EXPORT BlimpConnection {
  public:
-  class DisconnectObserver {
-    // Called when the network connection for |this| is disconnected.
-    virtual void OnDisconnected() = 0;
-  };
-
   BlimpConnection(scoped_ptr<PacketReader> reader,
                   scoped_ptr<PacketWriter> writer);
 
   virtual ~BlimpConnection();
 
-  // Lets |observer| know when the network connection is terminated.
-  void AddDisconnectObserver(DisconnectObserver* observer);
+  // Lets |observer| know when the network connection encounters an error.
+  void SetConnectionErrorObserver(ConnectionErrorObserver* observer);
 
   // Sets the processor which will take incoming messages for this connection.
   // Can be set multiple times, but previously set processors are discarded.
-  void set_incoming_message_processor(
-      scoped_ptr<BlimpMessageProcessor> processor);
+  // Caller retains the ownership of |processor|.
+  void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
 
   // Gets a processor for BrowserSession->BlimpConnection message routing.
   scoped_ptr<BlimpMessageProcessor> take_outgoing_message_processor() const;
 
  private:
   scoped_ptr<PacketReader> reader_;
+  scoped_ptr<BlimpMessagePump> message_pump_;
   scoped_ptr<PacketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);

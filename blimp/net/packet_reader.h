@@ -22,7 +22,8 @@ class BLIMP_NET_EXPORT PacketReader {
   // successfully.
   // Returns ERR_IO_PENDING if the operation will be executed asynchronously.
   //     |cb| is later invoked with the packet size or an error code.
-  // All other return values indicate errors.
+  // All other return values indicate errors and caller should stop using this
+  // reader.
   virtual int ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
                          const net::CompletionCallback& cb) = 0;
 };

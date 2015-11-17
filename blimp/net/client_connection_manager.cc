@@ -26,7 +26,7 @@ void ClientConnectionManager::HandleConnection(
   NOTIMPLEMENTED();
 }
 
-void ClientConnectionManager::OnDisconnected() {
+void ClientConnectionManager::OnConnectionError(int error) {
   NOTIMPLEMENTED();
 }
 

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/connection_error_observer.h"
 #include "blimp/net/connection_handler.h"
 
 namespace blimp {
@@ -16,7 +17,7 @@ namespace blimp {
 // Attempts to reconnect if an authenticated connection is
 // disconnected.
 class ClientConnectionManager : public ConnectionHandler,
-                                BlimpConnection::DisconnectObserver {
+                                ConnectionErrorObserver {
   // Caller is responsible for ensuring that |client_browser_session|
   // outlives |this|.
   explicit ClientConnectionManager(ConnectionHandler* connection_handler);
@@ -30,9 +31,9 @@ class ClientConnectionManager : public ConnectionHandler,
   // the underlying ConnectionHandler.
   void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
 
-  // BlimpConnection::DisconnectObserver implementation.
+  // ConnectionErrorObserver implementation.
   // Used to implement reconnection logic on unexpected disconnections.
-  void OnDisconnected() override;
+  void OnConnectionError(int error) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionManager);

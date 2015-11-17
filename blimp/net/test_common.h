@@ -8,6 +8,7 @@
 #include <string>
 
 #include "blimp/net/blimp_message_processor.h"
+#include "blimp/net/packet_reader.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -27,6 +28,15 @@ MATCHER_P(BufferEquals, expected, "") {
   return expected == std::string(arg->data(), expected.size());
 }
 
+// Checks if two proto messages are the same.
+// TODO(kmarshall): promote to a shared testing library.
+MATCHER_P(EqualsProto, message, "") {
+  std::string expected_serialized, actual_serialized;
+  message.SerializeToString(&expected_serialized);
+  arg.SerializeToString(&actual_serialized);
+  return expected_serialized == actual_serialized;
+}
+
 // GMock action that writes data from a string to an IOBuffer.
 //
 //   buf_idx (template parameter 0): 0-based index of the IOBuffer arg.
@@ -35,6 +45,17 @@ ACTION_TEMPLATE(FillBufferFromString,
                 HAS_1_TEMPLATE_PARAMS(int, buf_idx),
                 AND_1_VALUE_PARAMS(str)) {
   memcpy(testing::get<buf_idx>(args)->data(), str.data(), str.size());
+}
+
+// GMock action that writes data from a blimp message to an IOBuffer .
+//
+//   buf_idx (template parameter 0): 0-based index of the IOBuffer arg.
+//   message: the blimp message containing data to be written to the IOBuffer
+ACTION_TEMPLATE(FillBufferFromMessage,
+                HAS_1_TEMPLATE_PARAMS(int, buf_idx),
+                AND_1_VALUE_PARAMS(message)) {
+  message->SerializeToArray(testing::get<buf_idx>(args)->data(),
+                            message->ByteSize());
 }
 
 // Formats a string-based representation of a BlimpMessage header.
@@ -69,6 +90,16 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
+};
+
+class MockPacketReader : public PacketReader {
+ public:
+  MockPacketReader();
+  virtual ~MockPacketReader();
+
+  MOCK_METHOD2(ReadPacket,
+               int(const scoped_refptr<net::GrowableIOBuffer>&,
+                   const net::CompletionCallback&));
 };
 
 class MockBlimpMessageProcessor : public BlimpMessageProcessor {

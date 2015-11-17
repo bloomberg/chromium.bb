@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/connection_error_observer.h"
 #include "blimp/net/connection_handler.h"
 
 namespace blimp {
@@ -16,7 +17,7 @@ namespace blimp {
 //
 // TODO(kmarshall): Add rate limiting and abuse handling logic.
 class EngineConnectionManager : public ConnectionHandler,
-                                public BlimpConnection::DisconnectObserver {
+                                public ConnectionErrorObserver {
  public:
   // Caller is responsible for ensuring that |connection_handler| outlives
   // |this|.

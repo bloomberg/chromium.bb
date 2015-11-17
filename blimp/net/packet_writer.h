@@ -26,6 +26,7 @@ class BLIMP_NET_EXPORT PacketWriter {
   // Returns net::OK or an error code if the operation executed successfully.
   // Returns ERR_IO_PENDING if the operation will be executed asynchronously.
   //     |cb| is later invoked with net::OK or an error code.
+  // An error code indicates that caller should stop using this writer.
   virtual int WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
                           const net::CompletionCallback& callback) = 0;
 };

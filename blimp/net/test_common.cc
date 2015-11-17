@@ -17,6 +17,10 @@ MockStreamSocket::MockStreamSocket() {}
 
 MockStreamSocket::~MockStreamSocket() {}
 
+MockPacketReader::MockPacketReader() {}
+
+MockPacketReader::~MockPacketReader() {}
+
 MockBlimpMessageProcessor::MockBlimpMessageProcessor() {}
 
 MockBlimpMessageProcessor::~MockBlimpMessageProcessor() {}
