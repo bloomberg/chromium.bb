@@ -36,6 +36,7 @@ group("all_components") {
     "//components/device_event_log",
     "//components/dom_distiller/core",
     "//components/google/core/browser",
+    "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
@@ -225,6 +226,7 @@ group("all_components") {
     deps += [
       "//components/autofill/ios/browser",
       "//components/dom_distiller/ios",
+      "//components/keyed_service/ios",
       "//components/webp_transcode",
     ]
   }
@@ -259,6 +261,7 @@ group("all_components") {
       "//components/infobars/core",  # Should work, needs checking.
       "//components/invalidation/impl",  # Should work, needs checking.
       "//components/json_schema",  # Should work, needs checking.
+      "//components/keyed_service/core",  # Blocked on content.
       "//components/keyed_service/content",  # Blocked on content.
       "//components/navigation_interception",  # Blocked on content.
       "//components/omnibox/browser",  # Should work, needs checking.
@@ -334,6 +337,7 @@ test("components_unittests") {
     "//components/data_usage/core:unit_tests",
     "//components/dom_distiller/core:unit_tests",
     "//components/google/core/browser:unit_tests",
+    "//components/keyed_service/core:unit_tests",
     "//components/net_log:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",
@@ -401,7 +405,6 @@ test("components_unittests") {
       "//components/invalidation/impl:unit_tests",
       "//components/json_schema:unit_tests",
       "//components/keyed_service/content:unit_tests",
-      "//components/keyed_service/core:unit_tests",
       "//components/language_usage_metrics:unit_tests",
       "//components/login:unit_tests",
       "//components/memory_pressure:unit_tests",

@@ -82,6 +82,7 @@
     ['OS == "ios"', {
       'targets': [
         {
+          # GN version: //components/keyed_service/ios
           'target_name': 'keyed_service_ios',
           'type': '<(component)',
           'defines': [
