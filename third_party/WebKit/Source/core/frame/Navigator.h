@@ -63,9 +63,6 @@ public:
 
     String userAgent() const override;
 
-    // Relinquishes the storage lock, if one exists.
-    void getStorageUpdates();
-
     // NavigatorLanguage
     Vector<String> languages() override;
 

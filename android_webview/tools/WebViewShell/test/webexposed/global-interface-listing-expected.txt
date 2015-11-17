@@ -3001,7 +3001,6 @@ interface Navigator
     method constructor
     method getBattery
     method getGamepads
-    method getStorageUpdates
     method javaEnabled
     method requestMIDIAccess
     method requestMediaKeySystemAccess

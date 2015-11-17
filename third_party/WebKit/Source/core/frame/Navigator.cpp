@@ -85,11 +85,6 @@ bool Navigator::cookieEnabled() const
     return cookiesEnabled(m_frame->document());
 }
 
-void Navigator::getStorageUpdates()
-{
-    // FIXME: Remove this method or rename to yieldForStorageUpdates.
-}
-
 Vector<String> Navigator::languages()
 {
     Vector<String> languages;

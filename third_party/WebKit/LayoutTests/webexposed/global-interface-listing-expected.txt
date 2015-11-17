@@ -3468,7 +3468,6 @@ interface Navigator
     method constructor
     method getBattery
     method getGamepads
-    method getStorageUpdates
     method getVRDevices
     method isProtocolHandlerRegistered
     method javaEnabled

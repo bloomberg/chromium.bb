@@ -8,6 +8,4 @@
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface NavigatorStorageUtils {
     readonly attribute boolean cookieEnabled;
-    // TODO(philipj): This is called yieldForStorageUpdates() in the spec.
-    [Measure] void getStorageUpdates();
 };
