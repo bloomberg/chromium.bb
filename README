@@ -85,7 +85,7 @@ than one global.
 
 The XML file and protocol name also has the word 'unstable' in them, and
 all of the interfaces in the protocol are prefixed with +z+ and
-postfixed with the major version number.
+suffixed with the major version number.
 
 For example, an unstable protocol called foo-bar with major version 2
 containing the two interfaces wp_foo and wp_bar both minor version 1 will
@@ -129,7 +129,7 @@ The procedure of doing this is the following:
     suffix.
   . Rename the name of the protocol in the XML by removing the
     'unstable' part and the major version number.
-  . Remove the +z+ prefix and the major version number postfix from all
+  . Remove the +z+ prefix and the major version number suffix from all
     of the interfaces in the protocol.
   . Reset all of the interface version attributes to +1+.
   . Update the +README+ file in the unstable directory and create a new
