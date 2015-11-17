@@ -55,20 +55,23 @@ var initialize_Animations = function() {
 
 function test()
 {
-    InspectorTest.selectNodeWithId("node", step1);
-    var timeline = new WebInspector.AnimationTimeline();
-    var elementsPanel = WebInspector.ElementsPanel.instance();
-    elementsPanel.setWidgetBelowDOM(timeline);
     // Override timeline width for testing
     WebInspector.AnimationTimeline.prototype.width = function() { return 1000; }
     // Override animation color for testing
     // FIXME: Set animation name of Web Animation instead; not supported yet
     WebInspector.AnimationUI.Color = function() { return "black"; }
+    var timeline;
+    InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
+    WebInspector.inspectorView.showViewInDrawer("animations", true);
 
-    function step1()
+    function onChangeTabView(id, view)
     {
-        InspectorTest.waitForAnimationAdded(step2);
-        InspectorTest.evaluateInPage("startAnimationWithDelay()");
+        if (!timeline && id === "animations") {
+            timeline = view;
+            InspectorTest.assertTrue(timeline instanceof WebInspector.AnimationTimeline);
+            InspectorTest.waitForAnimationAdded(step2);
+            InspectorTest.evaluateInPage("startAnimationWithDelay()");
+        }
     }
 
     function step2(group)
