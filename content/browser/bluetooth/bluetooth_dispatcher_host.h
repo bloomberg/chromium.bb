@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 
+#include <map>
+
 #include "base/basictypes.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -257,8 +258,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Map that matches characteristic_instance_id to notify session.
   // TODO(ortuno): Also key by thread_id once support for web workers,
   // is added: http://crbug.com/537372
-  base::ScopedPtrMap<std::string,
-                     scoped_ptr<device::BluetoothGattNotifySession>>
+  std::map<std::string, scoped_ptr<device::BluetoothGattNotifySession>>
       characteristic_id_to_notify_session_;
 
   // Map of characteristic_instance_id to a set of thread ids.

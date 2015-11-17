@@ -1219,8 +1219,8 @@ void BluetoothDispatcherHost::OnStartNotifySessionSuccess(
   // compilers may evaluate arguments in any order.
   const std::string characteristic_instance_id =
       notify_session->GetCharacteristicIdentifier();
-  characteristic_id_to_notify_session_.insert(characteristic_instance_id,
-                                              notify_session.Pass());
+  characteristic_id_to_notify_session_.insert(
+      std::make_pair(characteristic_instance_id, notify_session.Pass()));
 
   Send(new BluetoothMsg_StartNotificationsSuccess(thread_id, request_id));
 }

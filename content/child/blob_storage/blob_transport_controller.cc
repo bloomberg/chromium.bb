@@ -49,7 +49,7 @@ void BlobTransportController::InitiateBlobTransfer(
     scoped_ptr<BlobConsolidation> consolidation,
     IPC::Sender* sender) {
   BlobConsolidation* consolidation_ptr = consolidation.get();
-  blob_storage_.insert(uuid, consolidation.Pass());
+  blob_storage_.insert(std::make_pair(uuid, consolidation.Pass()));
   std::vector<storage::DataElement> descriptions;
   GetDescriptions(consolidation_ptr, kLargeThresholdBytes, &descriptions);
   // TODO(dmurph): Uncomment when IPC messages are added.
@@ -188,7 +188,7 @@ BlobTransportController::ResponsesStatus BlobTransportController::GetResponses(
   if (it == blob_storage_.end())
     return ResponsesStatus::BLOB_NOT_FOUND;
 
-  BlobConsolidation* consolidation = it->second;
+  BlobConsolidation* consolidation = it->second.get();
   const auto& consolidated_items = consolidation->consolidated_items();
 
   // Since we can be writing to the same shared memory handle from multiple

@@ -223,9 +223,9 @@ void PresentationDispatcher::getAvailability(
   auto status_it = availability_status_.find(availability_url);
   if (status_it == availability_status_.end()) {
     status = new AvailabilityStatus(availability_url);
-    availability_status_.set(availability_url, make_scoped_ptr(status));
+    availability_status_[availability_url] = make_scoped_ptr(status);
   } else {
-    status = status_it->second;
+    status = status_it->second.get();
   }
   DCHECK(status);
 
@@ -249,7 +249,7 @@ void PresentationDispatcher::startListening(
     return;
   }
   status_it->second->availability_observers.insert(observer);
-  UpdateListeningState(status_it->second);
+  UpdateListeningState(status_it->second.get());
 }
 
 void PresentationDispatcher::stopListening(
@@ -262,7 +262,7 @@ void PresentationDispatcher::stopListening(
     return;
   }
   status_it->second->availability_observers.erase(observer);
-  UpdateListeningState(status_it->second);
+  UpdateListeningState(status_it->second.get());
 }
 
 void PresentationDispatcher::setDefaultPresentationUrl(
@@ -290,7 +290,7 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(
   auto status_it = availability_status_.find(availability_url);
   if (status_it == availability_status_.end())
     return;
-  AvailabilityStatus* status = status_it->second;
+  AvailabilityStatus* status = status_it->second.get();
   DCHECK(status);
 
   if (status->listening_state == ListeningState::WAITING)
@@ -314,7 +314,7 @@ void PresentationDispatcher::OnScreenAvailabilityNotSupported(
   auto status_it = availability_status_.find(availability_url);
   if (status_it == availability_status_.end())
     return;
-  AvailabilityStatus* status = status_it->second;
+  AvailabilityStatus* status = status_it->second.get();
   DCHECK(status);
   DCHECK(status->listening_state == ListeningState::WAITING);
 

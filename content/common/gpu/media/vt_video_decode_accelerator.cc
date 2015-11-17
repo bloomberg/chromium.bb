@@ -829,9 +829,10 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
-    picture_info_map_.insert(picture.id(), make_scoped_ptr(new PictureInfo(
-                                               picture.internal_texture_id(),
-                                               picture.texture_id())));
+    picture_info_map_.insert(std::make_pair(
+        picture.id(),
+        make_scoped_ptr(new PictureInfo(picture.internal_texture_id(),
+                                        picture.texture_id()))));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and
@@ -844,7 +845,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   DCHECK(picture_info_map_.count(picture_id));
-  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second;
+  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
   DCHECK_EQ(CFGetRetainCount(picture_info->cv_image), 1);
   picture_info->cv_image.reset();
   picture_info->gl_image->Destroy(false);
@@ -1009,7 +1010,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   int32_t picture_id = available_picture_ids_.back();
   DCHECK(picture_info_map_.count(picture_id));
-  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second;
+  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
   DCHECK(!picture_info->cv_image);
   DCHECK(!picture_info->gl_image);
 

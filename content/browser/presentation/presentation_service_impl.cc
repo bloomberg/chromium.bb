@@ -200,7 +200,7 @@ void PresentationServiceImpl::ListenForScreenAvailability(
       render_process_id_,
       render_frame_id_,
       listener.get())) {
-    screen_availability_listeners_.set(availability_url, listener.Pass());
+    screen_availability_listeners_[availability_url] = listener.Pass();
   } else {
     DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
   }
@@ -218,9 +218,7 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
     return;
 
   delegate_->RemoveScreenAvailabilityListener(
-      render_process_id_,
-      render_frame_id_,
-      listener_it->second);
+      render_process_id_, render_frame_id_, listener_it->second.get());
   screen_availability_listeners_.erase(listener_it);
 }
 

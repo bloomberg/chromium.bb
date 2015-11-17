@@ -77,7 +77,8 @@ bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
 void ResourceSchedulingFilter::SetRequestIdTaskRunner(
     int id, scoped_ptr<blink::WebTaskRunner> web_task_runner) {
   base::AutoLock lock(request_id_to_task_runner_map_lock_);
-  request_id_to_task_runner_map_.insert(id, web_task_runner.Pass());
+  request_id_to_task_runner_map_.insert(
+      std::make_pair(id, web_task_runner.Pass()));
 }
 
 void ResourceSchedulingFilter::ClearRequestIdTaskRunner(int id) {

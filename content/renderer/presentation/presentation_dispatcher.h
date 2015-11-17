@@ -5,10 +5,10 @@
 #ifndef CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
+#include <map>
 #include <queue>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/id_map.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -151,9 +151,7 @@ class CONTENT_EXPORT PresentationDispatcher
     AvailabilityObserversSet availability_observers;
   };
 
-  using AvailabilityStatusMap =
-    base::ScopedPtrMap<std::string, scoped_ptr<AvailabilityStatus>>;
-  AvailabilityStatusMap availability_status_;
+  std::map<std::string, scoped_ptr<AvailabilityStatus>> availability_status_;
 
   // Updates the listening state of availability for |status| and notifies the
   // client.

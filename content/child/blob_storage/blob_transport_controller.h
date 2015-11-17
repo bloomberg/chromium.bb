@@ -5,10 +5,10 @@
 #ifndef CONTENT_CHILD_BLOB_STORAGE_BLOB_TRANSPORT_CONTROLLER_H_
 #define CONTENT_CHILD_BLOB_STORAGE_BLOB_TRANSPORT_CONTROLLER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -114,7 +114,7 @@ class CONTENT_EXPORT BlobTransportController {
 
   void ReleaseBlobConsolidation(const std::string& uuid);
 
-  base::ScopedPtrMap<std::string, scoped_ptr<BlobConsolidation>> blob_storage_;
+  std::map<std::string, scoped_ptr<BlobConsolidation>> blob_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobTransportController);
 };

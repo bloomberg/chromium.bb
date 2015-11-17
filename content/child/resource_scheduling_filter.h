@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
@@ -47,8 +46,8 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
  private:
   ~ResourceSchedulingFilter() override;
 
-  typedef base::ScopedPtrMap<int, scoped_ptr<blink::WebTaskRunner>>
-      RequestIdToTaskRunnerMap;
+  using RequestIdToTaskRunnerMap =
+      std::map<int, scoped_ptr<blink::WebTaskRunner>>;
 
   // This lock guards |request_id_to_task_runner_map_|
   base::Lock request_id_to_task_runner_map_lock_;

@@ -10,7 +10,6 @@
 #include <map>
 #include <queue>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -226,7 +225,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::set<int32_t> assigned_picture_ids_;
 
   // Texture IDs and image buffers of assigned pictures.
-  base::ScopedPtrMap<int32_t, scoped_ptr<PictureInfo>> picture_info_map_;
+  std::map<int32_t, scoped_ptr<PictureInfo>> picture_info_map_;
 
   // Pictures ready to be rendered to.
   std::vector<int32_t> available_picture_ids_;
