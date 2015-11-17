@@ -111,7 +111,10 @@ source_set("browser") {
       "//chromecast/browser/media",
     ]
 
-    deps += [ "//components/metrics:serialization" ]
+    deps += [
+      "//build/linux:fontconfig",
+      "//components/metrics:serialization",
+    ]
   }
 
   if (enable_mojo_media != "none") {
