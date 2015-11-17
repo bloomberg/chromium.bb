@@ -107,7 +107,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Return a buffer with id |buffer_id| previously given in
   // VideoCaptureControllerEventHandler::OnBufferReady. In the case that the
-  // buffer was backed by a texture, |sync_point| will be waited on before
+  // buffer was backed by a texture, |sync_token| will be waited on before
   // destroying or recycling the texture, to synchronize with texture users in
   // the renderer process. If the consumer provided resource utilization
   // feedback, this will be passed here (-1.0 indicates no feedback).

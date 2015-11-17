@@ -36,15 +36,6 @@
 
 namespace content {
 
-namespace {
-
-void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
-                              const gpu::SyncToken& sync_token) {
-  cb->Run(sync_token, false);
-}
-
-}  // namespace
-
 AuraWindowCaptureMachine::AuraWindowCaptureMachine()
     : desktop_window_(NULL),
       timer_(true, true),
@@ -246,31 +237,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
-
-  if (capture_params_.requested_format.pixel_storage ==
-      media::PIXEL_STORAGE_TEXTURE) {
-    DCHECK_EQ(media::PIXEL_FORMAT_ARGB,
-              capture_params_.requested_format.pixel_format);
-    DCHECK(!video_frame.get());
-    cc::TextureMailbox texture_mailbox;
-    scoped_ptr<cc::SingleReleaseCallback> release_callback;
-    result->TakeTexture(&texture_mailbox, &release_callback);
-    DCHECK(texture_mailbox.IsTexture());
-    if (!texture_mailbox.IsTexture())
-      return false;
-    video_frame = media::VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(texture_mailbox.mailbox(),
-                           texture_mailbox.sync_token(),
-                           texture_mailbox.target()),
-        base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
-        result->size(), gfx::Rect(result->size()), result->size(),
-        base::TimeDelta());
-    capture_frame_cb.Run(video_frame, start_time, true);
-    return true;
-  } else {
-    DCHECK(video_frame.get());
-  }
+  DCHECK(video_frame.get());
 
   // Compute the dest size we want after the letterboxing resize. Make the
   // coordinates and sizes even because we letterbox in YUV space

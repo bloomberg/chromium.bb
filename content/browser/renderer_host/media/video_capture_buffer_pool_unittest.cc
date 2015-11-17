@@ -16,7 +16,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +29,6 @@ struct PixelFormatAndStorage {
 static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
     {media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
     {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
-    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE},
 #if !defined(OS_ANDROID)
     {media::PIXEL_FORMAT_I420,
      media::PIXEL_STORAGE_GPUMEMORYBUFFER},
@@ -225,12 +223,10 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
     ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->mapped_size());
   }
 
-  // Texture backed Frames cannot be manipulated via mapping.
-  if (GetParam().pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
-    ASSERT_NE(nullptr, buffer1->data());
-    ASSERT_NE(nullptr, buffer2->data());
-    ASSERT_NE(nullptr, buffer3->data());
-  }
+  ASSERT_NE(nullptr, buffer1->data());
+  ASSERT_NE(nullptr, buffer2->data());
+  ASSERT_NE(nullptr, buffer3->data());
+
   // Touch the memory.
   if (buffer1->data() != nullptr)
     memset(buffer1->data(), 0x11, buffer1->mapped_size());

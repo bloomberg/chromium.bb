@@ -23,21 +23,6 @@
 
 namespace content {
 
-namespace {
-
-// This is called on an unknown thread when the VideoFrame destructor executes.
-// As of this writing, this callback mechanism is the only interface in
-// VideoFrame to provide the final value for |release_sync_token|.
-// VideoCaptureImpl::DidFinishConsumingFrame() will read the value saved here,
-// and pass it back to the IO thread to pass back to the host via the
-// BufferReady IPC.
-void SaveReleaseSyncToken(gpu::SyncToken* sync_token_storage,
-                          const gpu::SyncToken& release_sync_token) {
-  *sync_token_storage = release_sync_token;
-}
-
-}  // namespace
-
 // A holder of a memory-backed buffer and accessors to it.
 class VideoCaptureImpl::ClientBuffer
     : public base::RefCountedThreadSafe<ClientBuffer> {
@@ -312,10 +297,17 @@ void VideoCaptureImpl::OnBufferReceived(
     media::VideoPixelFormat pixel_format,
     media::VideoFrame::StorageType storage_type,
     const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gpu::MailboxHolder& mailbox_holder) {
+    const gfx::Rect& visible_rect) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_ ||
+      pixel_format != media::PIXEL_FORMAT_I420 ||
+      (storage_type != media::VideoFrame::STORAGE_SHMEM &&
+       storage_type != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS)) {
+    // Crash in debug builds since the host should not have provided a buffer
+    // with an unsupported pixel format or storage type.
+    DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
+    DCHECK(storage_type == media::VideoFrame::STORAGE_SHMEM ||
+           storage_type == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS);
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id,
                                              gpu::SyncToken(), -1.0));
     return;
@@ -332,52 +324,36 @@ void VideoCaptureImpl::OnBufferReceived(
   scoped_refptr<media::VideoFrame> frame;
   BufferFinishedCallback buffer_finished_callback;
   scoped_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
-  if (storage_type == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
-    DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
-    const auto& iter = client_buffer2s_.find(buffer_id);
-    DCHECK(iter != client_buffer2s_.end());
-    scoped_refptr<ClientBuffer2> buffer = iter->second;
-    const auto& handles = buffer->gpu_memory_buffer_handles();
-    frame = media::VideoFrame::WrapExternalYuvGpuMemoryBuffers(
-        media::PIXEL_FORMAT_I420,
-        coded_size,
-        gfx::Rect(coded_size),
-        coded_size,
-        buffer->stride(media::VideoFrame::kYPlane),
-        buffer->stride(media::VideoFrame::kUPlane),
-        buffer->stride(media::VideoFrame::kVPlane),
-        buffer->data(media::VideoFrame::kYPlane),
-        buffer->data(media::VideoFrame::kUPlane),
-        buffer->data(media::VideoFrame::kVPlane),
-        handles[media::VideoFrame::kYPlane],
-        handles[media::VideoFrame::kUPlane],
-        handles[media::VideoFrame::kVPlane],
-        timestamp - first_frame_timestamp_);
-    DCHECK(frame);
-    buffer_finished_callback = media::BindToCurrentLoop(
-        base::Bind(&VideoCaptureImpl::OnClientBufferFinished2,
-                   weak_factory_.GetWeakPtr(), buffer_id, buffer));
-  } else {
-    scoped_refptr<ClientBuffer> buffer;
-    if (storage_type == media::VideoFrame::STORAGE_OPAQUE) {
-      DCHECK(mailbox_holder.mailbox.Verify());
-      DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
-      frame = media::VideoFrame::WrapNativeTexture(
-          pixel_format,
-          mailbox_holder,
-          base::Bind(&SaveReleaseSyncToken, release_sync_token.get()),
+  switch (storage_type) {
+    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS: {
+      const auto& iter = client_buffer2s_.find(buffer_id);
+      DCHECK(iter != client_buffer2s_.end());
+      scoped_refptr<ClientBuffer2> buffer = iter->second;
+      const auto& handles = buffer->gpu_memory_buffer_handles();
+      frame = media::VideoFrame::WrapExternalYuvGpuMemoryBuffers(
+          media::PIXEL_FORMAT_I420,
           coded_size,
           gfx::Rect(coded_size),
           coded_size,
+          buffer->stride(media::VideoFrame::kYPlane),
+          buffer->stride(media::VideoFrame::kUPlane),
+          buffer->stride(media::VideoFrame::kVPlane),
+          buffer->data(media::VideoFrame::kYPlane),
+          buffer->data(media::VideoFrame::kUPlane),
+          buffer->data(media::VideoFrame::kVPlane),
+          handles[media::VideoFrame::kYPlane],
+          handles[media::VideoFrame::kUPlane],
+          handles[media::VideoFrame::kVPlane],
           timestamp - first_frame_timestamp_);
+      buffer_finished_callback = media::BindToCurrentLoop(
+          base::Bind(&VideoCaptureImpl::OnClientBufferFinished2,
+                     weak_factory_.GetWeakPtr(), buffer_id, buffer));
+      break;
     }
-    else {
-      DCHECK(storage_type == media::VideoFrame::STORAGE_UNOWNED_MEMORY ||
-             storage_type == media::VideoFrame::STORAGE_SHMEM);
-      DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
+    case media::VideoFrame::STORAGE_SHMEM: {
       const auto& iter = client_buffers_.find(buffer_id);
       DCHECK(iter != client_buffers_.end());
-      buffer = iter->second;
+      const scoped_refptr<ClientBuffer> buffer = iter->second;
       frame = media::VideoFrame::WrapExternalSharedMemory(
           pixel_format,
           coded_size,
@@ -389,12 +365,17 @@ void VideoCaptureImpl::OnBufferReceived(
           buffer->buffer()->handle(),
           0 /* shared_memory_offset */,
           timestamp - first_frame_timestamp_);
+      buffer_finished_callback = media::BindToCurrentLoop(
+          base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                     weak_factory_.GetWeakPtr(), buffer_id, buffer));
+      break;
     }
-    DCHECK(frame);
-    buffer_finished_callback = media::BindToCurrentLoop(
-        base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                   weak_factory_.GetWeakPtr(), buffer_id, buffer));
+    default:
+      NOTREACHED();
+      break;
   }
+  DCHECK(frame);
+
   frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                                   timestamp);
   frame->AddDestructionObserver(

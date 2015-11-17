@@ -11,25 +11,14 @@
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gl_helper.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_thread.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoCaptureFormat;
@@ -321,10 +310,10 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
     media::VideoPixelFormat pixel_format,
     media::VideoPixelStorage pixel_storage) {
-  DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
-         pixel_format == media::PIXEL_FORMAT_ARGB);
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
+  // Currently, only I420 pixel format is supported.
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
 
   // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
   // it's a ShMem GMB or a DmaBuf GMB.
@@ -351,26 +340,32 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     scoped_ptr<Buffer> buffer,
     const VideoCaptureFormat& frame_format,
     const base::TimeTicks& timestamp) {
-  DCHECK(frame_format.pixel_format == media::PIXEL_FORMAT_I420);
+  // Currently, only I420 pixel format is supported.
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
+
   scoped_refptr<VideoFrame> frame;
-  if (frame_format.pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
-    // Create a VideoFrame to set the correct storage_type and pixel_format.
-    gfx::GpuMemoryBufferHandle handle;
-    frame = VideoFrame::WrapExternalYuvGpuMemoryBuffers(
-        media::PIXEL_FORMAT_I420, frame_format.frame_size,
-        gfx::Rect(frame_format.frame_size), frame_format.frame_size, 0, 0, 0,
-        reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kYPlane)),
-        reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kUPlane)),
-        reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kVPlane)),
-        handle, handle, handle, base::TimeDelta());
-  } else {
-    frame = VideoFrame::WrapExternalData(
-        media::PIXEL_FORMAT_I420, frame_format.frame_size,
-        gfx::Rect(frame_format.frame_size), frame_format.frame_size,
-        reinterpret_cast<uint8*>(buffer->data()),
-        VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
-                                   frame_format.frame_size),
-        base::TimeDelta());
+  switch (frame_format.pixel_storage) {
+    case media::PIXEL_STORAGE_GPUMEMORYBUFFER: {
+      // Create a VideoFrame to set the correct storage_type and pixel_format.
+      gfx::GpuMemoryBufferHandle handle;
+      frame = VideoFrame::WrapExternalYuvGpuMemoryBuffers(
+          media::PIXEL_FORMAT_I420, frame_format.frame_size,
+          gfx::Rect(frame_format.frame_size), frame_format.frame_size, 0, 0, 0,
+          reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kYPlane)),
+          reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kUPlane)),
+          reinterpret_cast<uint8*>(buffer->data(media::VideoFrame::kVPlane)),
+          handle, handle, handle, base::TimeDelta());
+      break;
+    }
+    case media::PIXEL_STORAGE_CPU:
+      frame = VideoFrame::WrapExternalSharedMemory(
+          media::PIXEL_FORMAT_I420, frame_format.frame_size,
+          gfx::Rect(frame_format.frame_size), frame_format.frame_size,
+          reinterpret_cast<uint8*>(buffer->data()),
+          VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                     frame_format.frame_size),
+          base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+      break;
   }
   DCHECK(frame.get());
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
@@ -438,24 +433,31 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
   if (!buffer)
     return scoped_ptr<Buffer>();
 
-  if (storage == media::PIXEL_STORAGE_CPU) {
-    // TODO(emircan): See http://crbug.com/521068, move this pointer arithmetic
-    // inside Buffer::data() when this bug is resolved.
-    *y_plane_data = reinterpret_cast<uint8*>(buffer->data());
-    *u_plane_data =
-        *y_plane_data +
-        VideoFrame::PlaneSize(format, VideoFrame::kYPlane, dimensions)
-            .GetArea();
-    *v_plane_data =
-        *u_plane_data +
-        VideoFrame::PlaneSize(format, VideoFrame::kUPlane, dimensions)
-            .GetArea();
-  } else if (storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
-    *y_plane_data = reinterpret_cast<uint8*>(buffer->data(VideoFrame::kYPlane));
-    *u_plane_data = reinterpret_cast<uint8*>(buffer->data(VideoFrame::kUPlane));
-    *v_plane_data = reinterpret_cast<uint8*>(buffer->data(VideoFrame::kVPlane));
+  switch (storage) {
+    case media::PIXEL_STORAGE_CPU:
+      // TODO(emircan): See http://crbug.com/521068, move this pointer
+      // arithmetic inside Buffer::data() when this bug is resolved.
+      *y_plane_data = reinterpret_cast<uint8*>(buffer->data());
+      *u_plane_data =
+          *y_plane_data +
+          VideoFrame::PlaneSize(format, VideoFrame::kYPlane, dimensions)
+              .GetArea();
+      *v_plane_data =
+          *u_plane_data +
+          VideoFrame::PlaneSize(format, VideoFrame::kUPlane, dimensions)
+              .GetArea();
+      return buffer.Pass();
+    case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
+      *y_plane_data =
+          reinterpret_cast<uint8*>(buffer->data(VideoFrame::kYPlane));
+      *u_plane_data =
+          reinterpret_cast<uint8*>(buffer->data(VideoFrame::kUPlane));
+      *v_plane_data =
+          reinterpret_cast<uint8*>(buffer->data(VideoFrame::kVPlane));
+      return buffer.Pass();
   }
-  return buffer.Pass();
+  NOTREACHED();
+  return scoped_ptr<Buffer>();
 }
 
 }  // namespace content

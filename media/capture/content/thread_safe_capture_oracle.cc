@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -63,17 +64,15 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const gfx::Size visible_size = oracle_.capture_size();
-  // Always round up the coded size to multiple of 16 pixels.
-  // See http://crbug.com/402151.
-  const gfx::Size coded_size((visible_size.width() + 15) & ~15,
-                             (visible_size.height() + 15) & ~15);
+  // TODO(miu): Clients should request exact padding, instead of this
+  // memory-wasting hack to make frames that are compatible with all HW
+  // encoders.  http://crbug.com/555911
+  const gfx::Size coded_size(base::bits::Align(visible_size.width(), 16),
+                             base::bits::Align(visible_size.height(), 16));
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
       client_->ReserveOutputBuffer(coded_size,
-                                   (params_.requested_format.pixel_storage !=
-                                    media::PIXEL_STORAGE_TEXTURE)
-                                       ? media::PIXEL_FORMAT_I420
-                                       : media::PIXEL_FORMAT_ARGB,
+                                   params_.requested_format.pixel_format,
                                    params_.requested_format.pixel_storage));
   // Get the current buffer pool utilization and attenuate it: The utilization
   // reported to the oracle is in terms of a maximum sustainable amount (not the
@@ -110,18 +109,18 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          TRACE_EVENT_SCOPE_THREAD, "trigger", event_name);
     return false;
   }
+
   const int frame_number = oracle_.RecordCapture(attenuated_utilization);
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
                            "frame_number", frame_number, "trigger", event_name);
-  // Texture frames wrap a texture mailbox, which we don't have at the moment.
-  // We do not construct those frames.
-  if (params_.requested_format.pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
-    *storage = VideoFrame::WrapExternalData(
-        media::PIXEL_FORMAT_I420, coded_size, gfx::Rect(visible_size),
-        visible_size, static_cast<uint8*>(output_buffer->data()),
-        output_buffer->mapped_size(), base::TimeDelta());
-    DCHECK(*storage);
-  }
+
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, params_.requested_format.pixel_storage);
+  *storage = VideoFrame::WrapExternalSharedMemory(
+      params_.requested_format.pixel_format, coded_size,
+      gfx::Rect(visible_size), visible_size,
+      static_cast<uint8*>(output_buffer->data()), output_buffer->mapped_size(),
+      base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+  DCHECK(*storage);
   *callback =
       base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this, frame_number,
                  base::Passed(&output_buffer), capture_begin_time,

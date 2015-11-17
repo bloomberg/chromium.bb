@@ -19,7 +19,6 @@
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 
 #if !defined(OS_ANDROID)
@@ -152,11 +151,25 @@ void VideoCaptureController::AddClient(
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::AddClient, id " << id
-           << ", " << params.requested_format.frame_size.ToString()
-           << ", " << params.requested_format.frame_rate
-           << ", " << session_id
-           << ")";
+  DVLOG(1) << "VideoCaptureController::AddClient() -- id=" << id
+           << ", session_id=" << session_id
+           << ", params.requested_format="
+           << media::VideoCaptureFormat::ToString(params.requested_format);
+
+  // Check that requested VideoCaptureParams are valid and supported.  If not,
+  // report an error immediately and punt.
+  if (!params.IsValid() ||
+      params.requested_format.pixel_format != media::PIXEL_FORMAT_I420 ||
+      (params.requested_format.pixel_storage != media::PIXEL_STORAGE_CPU &&
+       params.requested_format.pixel_storage !=
+           media::PIXEL_STORAGE_GPUMEMORYBUFFER)) {
+    // Crash in debug builds since the renderer should not have asked for
+    // invalid or unsupported parameters.
+    LOG(DFATAL) << "Invalid or unsupported video capture parameters requested: "
+                << media::VideoCaptureFormat::ToString(params.requested_format);
+    event_handler->OnError(id);
+    return;
+  }
 
   // If this is the first client added to the controller, cache the parameters.
   if (!controller_clients_.size())
@@ -343,11 +356,20 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue());
     frame->metadata()->MergeInternalValuesInto(metadata.get());
 
-    DCHECK(
-        (frame->IsMappable() && frame->format() == media::PIXEL_FORMAT_I420) ||
-        (frame->HasTextures() && frame->format() == media::PIXEL_FORMAT_ARGB))
-        << "Format and/or storage type combination not supported (received: "
-        << media::VideoPixelFormatToString(frame->format()) << ")";
+    // Only I420 pixel format is currently supported.
+    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420)
+        << "Unsupported pixel format: "
+        << media::VideoPixelFormatToString(frame->format());
+
+    // Sanity-checks to confirm |frame| is actually being backed by |buffer|.
+    DCHECK(frame->storage_type() == media::VideoFrame::STORAGE_SHMEM ||
+           (frame->storage_type() ==
+                media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS));
+    DCHECK(frame->data(media::VideoFrame::kYPlane) >= buffer->data(0) &&
+           (frame->data(media::VideoFrame::kYPlane) <
+                (reinterpret_cast<const uint8*>(buffer->data(0)) +
+                     buffer->mapped_size())))
+        << "VideoFrame does not appear to be backed by Buffer";
 
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
@@ -428,31 +450,32 @@ void VideoCaptureController::DoNewBufferOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const int buffer_id = buffer->id();
 
-  if (frame->HasTextures()) {
-    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
-    DCHECK(frame->coded_size() == frame->visible_rect().size())
-        << "Textures shouldn't be crop-marked or letterboxed.";
-    return;
-  }
-
-  DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
-  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
-    std::vector<gfx::GpuMemoryBufferHandle> handles;
-    for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
-      gfx::GpuMemoryBufferHandle remote_handle;
-      buffer_pool_->ShareToProcess2(buffer_id, i, client->render_process_handle,
-                                    &remote_handle);
-      handles.push_back(remote_handle);
+  switch (frame->storage_type()) {
+    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS: {
+      std::vector<gfx::GpuMemoryBufferHandle> handles;
+      const size_t num_planes = media::VideoFrame::NumPlanes(frame->format());
+      for (size_t i = 0; i < num_planes; ++i) {
+        gfx::GpuMemoryBufferHandle remote_handle;
+        buffer_pool_->ShareToProcess2(
+            buffer_id, i, client->render_process_handle, &remote_handle);
+        handles.push_back(remote_handle);
+      }
+      client->event_handler->OnBufferCreated2(client->controller_id, handles,
+                                              buffer->dimensions(), buffer_id);
+      break;
     }
-    client->event_handler->OnBufferCreated2(client->controller_id, handles,
-                                            buffer->dimensions(), buffer_id);
-  } else {
-    base::SharedMemoryHandle remote_handle;
-    buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
-                                 &remote_handle);
-
-    client->event_handler->OnBufferCreated(client->controller_id, remote_handle,
-                                           buffer->mapped_size(), buffer_id);
+    case media::VideoFrame::STORAGE_SHMEM: {
+      base::SharedMemoryHandle remote_handle;
+      buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
+                                   &remote_handle);
+      client->event_handler->OnBufferCreated(
+          client->controller_id, remote_handle, buffer->mapped_size(),
+          buffer_id);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

@@ -23,10 +23,6 @@
 
 struct VideoCaptureMsg_BufferReady_Params;
 
-namespace gpu {
-struct MailboxHolder;
-}  // namespace gpu
-
 namespace content {
 
 class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
@@ -56,8 +52,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
         media::VideoPixelFormat pixel_format,
         media::VideoFrame::StorageType storage_type,
         const gfx::Size& coded_size,
-        const gfx::Rect& visible_rect,
-        const gpu::MailboxHolder& mailbox_holder) = 0;
+        const gfx::Rect& visible_rect) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.

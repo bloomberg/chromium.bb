@@ -53,7 +53,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
   // be on any thread. |decode_done_cb| is never called after
   // VideoCaptureGpuJpegDecoder is destroyed.
-  VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb);
+  explicit VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb);
   ~VideoCaptureGpuJpegDecoder() override;
 
   // Creates and intializes decoder asynchronously.

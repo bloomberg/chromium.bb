@@ -64,10 +64,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
       media::VideoPixelStorage storage) override {
-    EXPECT_TRUE((format == media::PIXEL_FORMAT_I420 &&
-                 storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::PIXEL_FORMAT_ARGB &&
-                 storage == media::PIXEL_STORAGE_TEXTURE));
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
+    EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
     DoReserveOutputBuffer();
     return scoped_ptr<Buffer>();
   }

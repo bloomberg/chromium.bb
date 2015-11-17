@@ -24,7 +24,6 @@ typedef int VideoCaptureSessionId;
 // TODO(mcasas): http://crbug.com/504160 Consider making this an enum class.
 enum VideoPixelStorage {
   PIXEL_STORAGE_CPU,
-  PIXEL_STORAGE_TEXTURE,
   PIXEL_STORAGE_GPUMEMORYBUFFER,
   PIXEL_STORAGE_MAX = PIXEL_STORAGE_GPUMEMORYBUFFER,
 };
@@ -125,6 +124,10 @@ typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
 // returned.
 struct MEDIA_EXPORT VideoCaptureParams {
   VideoCaptureParams();
+
+  // Returns true if requested_format.IsValid() and all other values are within
+  // their expected ranges.
+  bool IsValid() const;
 
   bool operator==(const VideoCaptureParams& other) const {
     return requested_format == other.requested_format &&

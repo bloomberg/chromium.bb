@@ -20,10 +20,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace gpu {
-struct MailboxHolder;
-}  // namespace gpu
-
 namespace media {
 class VideoFrame;
 }  // namespace media
@@ -123,8 +119,7 @@ class CONTENT_EXPORT VideoCaptureImpl
       media::VideoPixelFormat pixel_format,
       media::VideoFrame::StorageType storage_type,
       const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gpu::MailboxHolder& mailbox_holder) override;
+      const gfx::Rect& visible_rect) override;
   void OnStateChanged(VideoCaptureState state) override;
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;

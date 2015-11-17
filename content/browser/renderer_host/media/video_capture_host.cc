@@ -105,11 +105,6 @@ void VideoCaptureHost::OnBufferReady(
   params.storage_type = video_frame->storage_type();
   params.coded_size = video_frame->coded_size();
   params.visible_rect = video_frame->visible_rect();
-  if (video_frame->HasTextures()) {
-    DCHECK_EQ(1u, media::VideoFrame::NumPlanes(video_frame->format()))
-        << "Only single planar textures are supported";
-    params.mailbox_holder = video_frame->mailbox_holder(0);
-  }
 
   Send(new VideoCaptureMsg_BufferReady(params));
 }

@@ -18,19 +18,13 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if !defined(OS_ANDROID)
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
-#endif
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -54,8 +48,6 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD1(DoBufferCreated2, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoBufferDestroyed, void(VideoCaptureControllerID));
   MOCK_METHOD2(DoI420BufferReady,
-               void(VideoCaptureControllerID, const gfx::Size&));
-  MOCK_METHOD2(DoTextureBufferReady,
                void(VideoCaptureControllerID, const gfx::Size&));
   MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
@@ -82,7 +74,6 @@ class MockVideoCaptureControllerEventHandler
                      int buffer_id,
                      const scoped_refptr<media::VideoFrame>& frame,
                      const base::TimeTicks& timestamp) override {
-    if (!frame->HasTextures()) {
       EXPECT_EQ(frame->format(), media::PIXEL_FORMAT_I420);
       DoI420BufferReady(id, frame->coded_size());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -90,15 +81,6 @@ class MockVideoCaptureControllerEventHandler
           base::Bind(&VideoCaptureController::ReturnBuffer,
                      base::Unretained(controller_), id, this, buffer_id,
                      gpu::SyncToken(), resource_utilization_));
-    } else {
-      EXPECT_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
-      DoTextureBufferReady(id, frame->coded_size());
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
-                                base::Unretained(controller_), id, this,
-                                buffer_id, frame->mailbox_holder(0).sync_token,
-                                resource_utilization_));
-    }
   }
   void OnEnded(VideoCaptureControllerID id) override {
     DoEnded(id);
@@ -135,20 +117,11 @@ class VideoCaptureControllerTest : public testing::Test {
 
   scoped_refptr<media::VideoFrame> WrapI420Buffer(gfx::Size dimensions,
                                                   uint8* data) {
-    return media::VideoFrame::WrapExternalData(
+    return media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, dimensions, gfx::Rect(dimensions), dimensions,
         data,
         media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, dimensions),
-        base::TimeDelta());
-  }
-
-  scoped_refptr<media::VideoFrame> WrapMailboxBuffer(
-      const gpu::MailboxHolder& holder,
-      const media::VideoFrame::ReleaseMailboxCB& release_cb,
-      gfx::Size dimensions) {
-    return media::VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB, holder, release_cb, dimensions,
-        gfx::Rect(dimensions), dimensions, base::TimeDelta());
+        base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
   }
 
   TestBrowserThreadBundle bundle_;
@@ -261,21 +234,10 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Client count should return to zero after all clients are gone.";
 }
 
-static void CacheSyncToken(gpu::SyncToken* called_release_sync_token,
-                           const gpu::SyncToken& release_sync_token) {
-  *called_release_sync_token = release_sync_token;
-}
-
 // This test will connect and disconnect several clients while simulating an
 // active capture device being started and generating frames. It runs on one
 // thread and is intended to behave deterministically.
 TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
-// VideoCaptureController::ReturnBuffer() uses ImageTransportFactory.
-#if !defined(OS_ANDROID)
-  ImageTransportFactory::InitializeForUnitTests(
-      scoped_ptr<ImageTransportFactory>(new NoTransportImageTransportFactory));
-#endif
-
   media::VideoCaptureParams session_100;
   session_100.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
@@ -500,83 +462,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
-
-  // Allocate all buffers from the buffer pool, half as SHM buffer and half as
-  // mailbox buffers.  Make sure of different counts though.
-#if defined(OS_ANDROID)
-  int mailbox_buffers = 0;
-#else
-  int mailbox_buffers = kPoolSize / 2;
-#endif
-  int shm_buffers = kPoolSize - mailbox_buffers;
-  if (shm_buffers == mailbox_buffers) {
-    shm_buffers--;
-    mailbox_buffers++;
-  }
-
-  for (int i = 0; i < shm_buffers; ++i) {
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-        device_->ReserveOutputBuffer(capture_resolution,
-                                     media::PIXEL_FORMAT_I420,
-                                     media::PIXEL_STORAGE_CPU);
-    ASSERT_TRUE(buffer.get());
-    video_frame =
-        WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
-    device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
-                                          base::TimeTicks());
-  }
-  std::vector<gpu::SyncToken> mailbox_synctokens(mailbox_buffers);
-  std::vector<gpu::SyncToken> release_synctokens(mailbox_buffers);
-  for (int i = 0; i < mailbox_buffers; ++i) {
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-        device_->ReserveOutputBuffer(capture_resolution,
-                                     media::PIXEL_FORMAT_ARGB,
-                                     media::PIXEL_STORAGE_TEXTURE);
-    ASSERT_TRUE(buffer.get());
-#if !defined(OS_ANDROID)
-    ImageTransportFactory::GetInstance()->GetGLHelper()->GenerateSyncToken(
-        &mailbox_synctokens[i]);
-#endif
-    device_->OnIncomingCapturedVideoFrame(
-        buffer.Pass(),
-        WrapMailboxBuffer(gpu::MailboxHolder(gpu::Mailbox::Generate(),
-                                             mailbox_synctokens[i], 0),
-                          base::Bind(&CacheSyncToken, &release_synctokens[i]),
-                          capture_resolution),
-        base::TimeTicks());
-  }
-  // ReserveOutputBuffers ought to fail now regardless of buffer format, because
-  // the pool is depleted.
-  ASSERT_FALSE(
-      device_->ReserveOutputBuffer(capture_resolution,
-                                   media::PIXEL_FORMAT_I420,
-                                   media::PIXEL_STORAGE_CPU).get());
-  ASSERT_FALSE(
-      device_->ReserveOutputBuffer(capture_resolution,
-                                   media::PIXEL_FORMAT_ARGB,
-                                   media::PIXEL_STORAGE_TEXTURE).get());
-  EXPECT_CALL(*client_b_,
-              DoI420BufferReady(client_b_route_2, capture_resolution))
-      .Times(shm_buffers);
-  EXPECT_CALL(*client_b_,
-              DoTextureBufferReady(client_b_route_2, capture_resolution))
-      .Times(mailbox_buffers);
-#if !defined(OS_ANDROID)
-  EXPECT_CALL(*client_b_, DoBufferDestroyed(client_b_route_2));
-#endif
-  base::RunLoop().RunUntilIdle();
-  for (size_t i = 0; i < mailbox_synctokens.size(); ++i) {
-    // A new release sync point must be inserted when the video frame is
-    // returned to the Browser process.
-    // See: MockVideoCaptureControllerEventHandler::OnMailboxBufferReady() and
-    // VideoCaptureController::ReturnBuffer()
-    ASSERT_NE(mailbox_synctokens[i], release_synctokens[i]);
-  }
-  Mock::VerifyAndClearExpectations(client_b_.get());
-
-#if !defined(OS_ANDROID)
-  ImageTransportFactory::Terminate();
-#endif
 }
 
 // Exercises the OnError() codepath of VideoCaptureController, and tests the

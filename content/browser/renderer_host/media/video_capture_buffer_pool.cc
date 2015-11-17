@@ -260,14 +260,14 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::ShareToProcess2(
 scoped_ptr<VideoCaptureBufferPool::Tracker>
 VideoCaptureBufferPool::Tracker::CreateTracker(
     media::VideoPixelStorage storage) {
-  DCHECK(storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER ||
-         storage == media::PIXEL_STORAGE_CPU ||
-         storage == media::PIXEL_STORAGE_TEXTURE);
-
-  if (storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER)
-    return make_scoped_ptr(new GpuMemoryBufferTracker());
-  else
-    return make_scoped_ptr(new SharedMemTracker());
+  switch (storage) {
+    case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
+      return make_scoped_ptr(new GpuMemoryBufferTracker());
+    case media::PIXEL_STORAGE_CPU:
+      return make_scoped_ptr(new SharedMemTracker());
+  }
+  NOTREACHED();
+  return scoped_ptr<VideoCaptureBufferPool::Tracker>();
 }
 
 VideoCaptureBufferPool::Tracker::~Tracker() {}
