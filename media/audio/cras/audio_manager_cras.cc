@@ -13,7 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "media/audio/cras/cras_input.h"
@@ -59,12 +58,8 @@ void RecordBeamformingDeviceState(CrosBeamformingDeviceState state) {
 }
 
 bool IsBeamformingDefaultEnabled() {
-  if (base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
-      "Enabled") {
-    return true;
-  }
-  const std::string& board = base::SysInfo::GetLsbReleaseBoard();
-  return board.find("buddy") != std::string::npos;
+  return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
+         "Enabled";
 }
 
 void AddDefaultDevice(AudioDeviceNames* device_names) {
