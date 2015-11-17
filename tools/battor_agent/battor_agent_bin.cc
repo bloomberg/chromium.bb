@@ -10,7 +10,6 @@
 #include <iostream>
 
 #include "base/bind.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "device/serial/serial.mojom.h"
 #include "tools/battor_agent/battor_agent.h"
@@ -24,9 +23,6 @@ using device::serial::ReceiveError;
 using device::serial::SendError;
 
 namespace {
-
-// The maximum amount of time to wait for the BattOr Agent to execute a command.
-static const base::TimeDelta COMMAND_TIMEOUT = base::TimeDelta::FromSeconds(10);
 
 void PrintUsage() {
   cerr << "Usage: battor_agent <command> <arguments>" << endl
