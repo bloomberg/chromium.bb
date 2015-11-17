@@ -185,7 +185,8 @@ def main(args):
     in_out_break_index = args.index('--')
     output_file_names = args[in_out_break_index + 1:]
 
-    idl_file_names = read_idl_files_list_from_file(input_file_name)
+    idl_file_names = read_idl_files_list_from_file(input_file_name,
+                                                   is_gyp_format=True)
     components = set([idl_filename_to_component(filename)
                       for filename in idl_file_names])
     if len(components) != 1:

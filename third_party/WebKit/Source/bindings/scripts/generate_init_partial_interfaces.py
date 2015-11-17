@@ -42,6 +42,7 @@ def parse_options():
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help="a text file containing the IDL file paths, so the command line doesn't exceed OS length limits.")
+    parser.add_option('--gyp-format-list', default=False, action='store_true', help="if specified, idl-files-list is newline separated. When unspecified, it's formatted as a Posix command line.")
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     parser.add_option('--output')
 
@@ -59,7 +60,7 @@ def parse_options():
 def main():
     options = parse_options()
 
-    idl_file_names = read_idl_files_list_from_file(options.idl_files_list)
+    idl_file_names = read_idl_files_list_from_file(options.idl_files_list, is_gyp_format=options.gyp_format_list)
 
     meta_data_list = extract_meta_data(idl_file_names)
     interface_names = ['V8%sPartial' % meta_data['name']

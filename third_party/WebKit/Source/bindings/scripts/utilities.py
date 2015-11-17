@@ -10,6 +10,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 import os
 import cPickle as pickle
 import re
+import shlex
 import string
 import subprocess
 
@@ -258,11 +259,19 @@ def resolve_cygpath(cygdrive_names):
     return idl_file_names
 
 
-def read_idl_files_list_from_file(filename):
-    """Similar to read_file_to_list, but also resolves cygpath."""
+def read_idl_files_list_from_file(filename, is_gyp_format):
+    """Similar to read_file_to_list, but also resolves cygpath.
+
+    If is_gyp_format is True, the file is treated as a newline-separated list
+    with no quoting or escaping. When False, the file is interpreted as a
+    Posix-style quoted and space-separated list."""
     with open(filename) as input_file:
-        file_names = sorted([os.path.realpath(line.rstrip('\n'))
-                             for line in input_file])
+        if is_gyp_format:
+            file_names = sorted([os.path.realpath(line.rstrip('\n'))
+                                 for line in input_file])
+        else:
+            file_names = sorted(shlex.split(input_file))
+
         idl_file_names = [file_name for file_name in file_names
                           if not file_name.startswith('/cygdrive')]
         cygdrive_names = [file_name for file_name in file_names

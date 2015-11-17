@@ -165,7 +165,8 @@ def generate_dictionary_impl(options, input_filename):
         info_provider=info_provider,
         only_if_changed=options.write_file_only_if_changed)
 
-    idl_filenames = read_idl_files_list_from_file(input_filename)
+    idl_filenames = read_idl_files_list_from_file(input_filename,
+                                                  is_gyp_format=True)
     for idl_filename in idl_filenames:
         idl_compiler.compile_file(idl_filename)
 

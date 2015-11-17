@@ -280,6 +280,7 @@
         '<(bindings_scripts_dir)/generate_init_partial_interfaces.py',
         '--idl-files-list',
         '<(core_idl_with_modules_dependency_files_list)',
+        '--gyp-format-list',
         '--output',
         '<(bindings_modules_v8_output_dir)/initPartialInterfacesInModules.cpp',
         '--write-file-only-if-changed',

@@ -8,11 +8,6 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
-core_idl_with_modules_dependency_files_list =
-    "$target_gen_dir/core_idl_with_modules_dependency_files.tmp"
-write_file(core_idl_with_modules_dependency_files_list,
-           rebase_path(core_idl_with_modules_dependency_files, root_build_dir))
-
 # bindings_modules_generated in modules/v8/generated.gyp
 group("bindings_modules_generated") {
   public_deps = [
@@ -75,16 +70,19 @@ action("bindings_modules_v8_generated_init_partial") {
   script = "$bindings_scripts_dir/generate_init_partial_interfaces.py"
 
   inputs = [
-    core_idl_with_modules_dependency_files_list,
     "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
   ]
   outputs = [
     bindings_modules_generated_init_partial_interfaces_file,
   ]
 
+  # Put the IDL file list in a response file to avoid command-line limits.
+  response_file_contents =
+      rebase_path(core_idl_with_modules_dependency_files, root_build_dir)
+
   args = [
     "--idl-files-list",
-    rebase_path(core_idl_with_modules_dependency_files_list, root_build_dir),
+    "{{response_file_name}}",
     "--output",
     rebase_path(bindings_modules_generated_init_partial_interfaces_file,
                 root_build_dir),
