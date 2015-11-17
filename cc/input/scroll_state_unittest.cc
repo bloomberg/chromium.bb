@@ -66,7 +66,7 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
   scoped_ptr<LayerImpl> layer_impl =
       LayerImpl::Create(host_impl.active_tree(), 1);
   scrollState.set_current_native_scrolling_layer(layer_impl.get());
-  EXPECT_EQ(layer_impl, scrollState.current_native_scrolling_layer());
+  EXPECT_EQ(layer_impl.get(), scrollState.current_native_scrolling_layer());
 }
 
 TEST_F(ScrollStateTest, FullyConsumed) {

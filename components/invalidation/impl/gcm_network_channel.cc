@@ -231,7 +231,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
 
 void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fetcher_, source);
+  DCHECK_EQ(fetcher_.get(), source);
   // Free fetcher at the end of function.
   scoped_ptr<net::URLFetcher> fetcher = fetcher_.Pass();
 

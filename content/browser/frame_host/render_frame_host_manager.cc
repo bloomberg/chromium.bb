@@ -399,7 +399,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
   // If the current render_frame_host_ isn't live, we should create it so
   // that we don't show a sad tab while the dest_render_frame_host fetches
   // its first page.  (Bug 1145340)
-  if (dest_render_frame_host != render_frame_host_ &&
+  if (dest_render_frame_host != render_frame_host_.get() &&
       !render_frame_host_->IsRenderFrameLive()) {
     // Note: we don't call InitRenderView here because we are navigating away
     // soon anyway, and we don't have the NavigationEntry for this host.
@@ -429,7 +429,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // Now that we've created a new renderer, be sure to hide it if it isn't
     // our primary one.  Otherwise, we might crash if we try to call Show()
     // on it later.
-    if (dest_render_frame_host != render_frame_host_) {
+    if (dest_render_frame_host != render_frame_host_.get()) {
       if (dest_render_frame_host->GetView())
         dest_render_frame_host->GetView()->Hide();
     } else {
@@ -611,8 +611,8 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // TODO(creis): We need to handle the case that the pending RFH has changed
   // in the mean time, while this was being posted from the IO thread.  We
   // should probably cancel the request in that case.
-  DCHECK(pending_render_frame_host == pending_render_frame_host_ ||
-         pending_render_frame_host == render_frame_host_);
+  DCHECK(pending_render_frame_host == pending_render_frame_host_.get() ||
+         pending_render_frame_host == render_frame_host_.get());
 
   // Store the transferring request so that we can release it if the transfer
   // navigation matches.
@@ -679,7 +679,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     DCHECK(!should_reuse_web_ui_ || web_ui_);
 
     // We should only hear this from our current renderer.
-    DCHECK_EQ(render_frame_host_, render_frame_host);
+    DCHECK_EQ(render_frame_host_.get(), render_frame_host);
 
     // Even when there is no pending RVH, there may be a pending Web UI.
     if (pending_web_ui() || speculative_web_ui_)
@@ -687,11 +687,11 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     return;
   }
 
-  if (render_frame_host == pending_render_frame_host_ ||
-      render_frame_host == speculative_render_frame_host_) {
+  if (render_frame_host == pending_render_frame_host_.get() ||
+      render_frame_host == speculative_render_frame_host_.get()) {
     // The pending cross-process navigation completed, so show the renderer.
     CommitPending();
-  } else if (render_frame_host == render_frame_host_) {
+  } else if (render_frame_host == render_frame_host_.get()) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableBrowserSideNavigation)) {
       CleanUpNavigation();
@@ -1085,7 +1085,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       return nullptr;
     }
 
-    if (navigation_rfh == render_frame_host_) {
+    if (navigation_rfh == render_frame_host_.get()) {
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
       // RenderViewHost changed notification after WebContents and

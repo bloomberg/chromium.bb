@@ -59,7 +59,7 @@ class PanelCocoaTest : public CocoaProfileTest {
     EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
     PanelCocoa* native_window =
         static_cast<PanelCocoa*>(panel->native_panel());
-    EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
+    EXPECT_EQ(panel, native_window->panel_.get());  // Back pointer initialized.
 
     PanelAnimatedBoundsObserver bounds_observer(panel);
 

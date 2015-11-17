@@ -325,7 +325,7 @@ class scoped_ptr {
   scoped_ptr(element_type* p, const D& d) : impl_(p, d) {}
 
   // Constructor.  Allows construction from a nullptr.
-  scoped_ptr(decltype(nullptr)) : impl_(nullptr) {}
+  scoped_ptr(std::nullptr_t) : impl_(nullptr) {}
 
   // Constructor.  Allows construction from a scoped_ptr rvalue for a
   // convertible type and deleter.
@@ -362,7 +362,7 @@ class scoped_ptr {
 
   // operator=.  Allows assignment from a nullptr. Deletes the currently owned
   // object, if any.
-  scoped_ptr& operator=(decltype(nullptr)) {
+  scoped_ptr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }
@@ -403,12 +403,6 @@ class scoped_ptr {
     return impl_.get() ? &scoped_ptr::impl_ : nullptr;
   }
 
-  // Comparison operators.
-  // These return whether two scoped_ptr refer to the same object, not just to
-  // two different but equal objects.
-  bool operator==(const element_type* p) const { return impl_.get() == p; }
-  bool operator!=(const element_type* p) const { return impl_.get() != p; }
-
   // Swap two scoped pointers.
   void swap(scoped_ptr& p2) {
     impl_.swap(p2.impl_);
@@ -429,13 +423,6 @@ class scoped_ptr {
 
   // Forbidden for API compatibility with std::unique_ptr.
   explicit scoped_ptr(int disallow_construction_from_null);
-
-  // Forbid comparison of scoped_ptr types.  If U != T, it totally
-  // doesn't make sense, and if U == T, it still doesn't make sense
-  // because you should never have the same object owned by two different
-  // scoped_ptrs.
-  template <class U> bool operator==(scoped_ptr<U> const& p2) const;
-  template <class U> bool operator!=(scoped_ptr<U> const& p2) const;
 };
 
 template <class T, class D>
@@ -464,7 +451,7 @@ class scoped_ptr<T[], D> {
   explicit scoped_ptr(element_type* array) : impl_(array) {}
 
   // Constructor.  Allows construction from a nullptr.
-  scoped_ptr(decltype(nullptr)) : impl_(nullptr) {}
+  scoped_ptr(std::nullptr_t) : impl_(nullptr) {}
 
   // Constructor.  Allows construction from a scoped_ptr rvalue.
   scoped_ptr(scoped_ptr&& other) : impl_(&other.impl_) {}
@@ -477,7 +464,7 @@ class scoped_ptr<T[], D> {
 
   // operator=.  Allows assignment from a nullptr. Deletes the currently owned
   // array, if any.
-  scoped_ptr& operator=(decltype(nullptr)) {
+  scoped_ptr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }
@@ -507,12 +494,6 @@ class scoped_ptr<T[], D> {
   operator Testable() const {
     return impl_.get() ? &scoped_ptr::impl_ : nullptr;
   }
-
-  // Comparison operators.
-  // These return whether two scoped_ptr refer to the same object, not just to
-  // two different but equal objects.
-  bool operator==(element_type* array) const { return impl_.get() == array; }
-  bool operator!=(element_type* array) const { return impl_.get() != array; }
 
   // Swap two scoped pointers.
   void swap(scoped_ptr& p2) {
@@ -546,13 +527,6 @@ class scoped_ptr<T[], D> {
   // reasons as the constructor above.
   template <typename U> void reset(U* array);
   void reset(int disallow_reset_from_null);
-
-  // Forbid comparison of scoped_ptr types.  If U != T, it totally
-  // doesn't make sense, and if U == T, it still doesn't make sense
-  // because you should never have the same object owned by two different
-  // scoped_ptrs.
-  template <class U> bool operator==(scoped_ptr<U> const& p2) const;
-  template <class U> bool operator!=(scoped_ptr<U> const& p2) const;
 };
 
 // Free functions
@@ -561,14 +535,82 @@ void swap(scoped_ptr<T, D>& p1, scoped_ptr<T, D>& p2) {
   p1.swap(p2);
 }
 
+template <class T1, class D1, class T2, class D2>
+bool operator==(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return p1.get() == p2.get();
+}
 template <class T, class D>
-bool operator==(T* p1, const scoped_ptr<T, D>& p2) {
-  return p1 == p2.get();
+bool operator==(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return p.get() == nullptr;
+}
+template <class T, class D>
+bool operator==(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return p.get() == nullptr;
 }
 
+template <class T1, class D1, class T2, class D2>
+bool operator!=(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return !(p1 == p2);
+}
 template <class T, class D>
-bool operator!=(T* p1, const scoped_ptr<T, D>& p2) {
-  return p1 != p2.get();
+bool operator!=(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return !(p == nullptr);
+}
+template <class T, class D>
+bool operator!=(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return !(p == nullptr);
+}
+
+template <class T1, class D1, class T2, class D2>
+bool operator<(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return p1.get() < p2.get();
+}
+template <class T, class D>
+bool operator<(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return p.get() < nullptr;
+}
+template <class T, class D>
+bool operator<(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return nullptr < p.get();
+}
+
+template <class T1, class D1, class T2, class D2>
+bool operator>(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return p2 < p1;
+}
+template <class T, class D>
+bool operator>(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return nullptr < p;
+}
+template <class T, class D>
+bool operator>(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return p < nullptr;
+}
+
+template <class T1, class D1, class T2, class D2>
+bool operator<=(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return !(p1 > p2);
+}
+template <class T, class D>
+bool operator<=(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return !(p > nullptr);
+}
+template <class T, class D>
+bool operator<=(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return !(nullptr > p);
+}
+
+template <class T1, class D1, class T2, class D2>
+bool operator>=(const scoped_ptr<T1, D1>& p1, const scoped_ptr<T2, D2>& p2) {
+  return !(p1 < p2);
+}
+template <class T, class D>
+bool operator>=(const scoped_ptr<T, D>& p, std::nullptr_t) {
+  return !(p < nullptr);
+}
+template <class T, class D>
+bool operator>=(std::nullptr_t, const scoped_ptr<T, D>& p) {
+  return !(nullptr < p);
 }
 
 // A function to convert T* into scoped_ptr<T>

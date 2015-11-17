@@ -200,7 +200,7 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
 
   base::OneShotTimer* timer = GetLongPressAffordanceTimer();
   EXPECT_TRUE(timer->IsRunning());
-  EXPECT_EQ(window1, GetLongPressAffordanceTarget());
+  EXPECT_EQ(window1.get(), GetLongPressAffordanceTarget());
 
   // Force timeout so that the affordance animation can start.
   timer->user_task().Run();

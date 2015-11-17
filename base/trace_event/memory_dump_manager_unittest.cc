@@ -102,7 +102,7 @@ class MemoryDumpManagerTest : public testing::Test {
     message_loop_.reset(new MessageLoop());
     mdm_.reset(new MemoryDumpManager());
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
-    ASSERT_EQ(mdm_, MemoryDumpManager::GetInstance());
+    ASSERT_EQ(mdm_.get(), MemoryDumpManager::GetInstance());
     delegate_.reset(new MemoryDumpManagerDelegateForTesting);
   }
 

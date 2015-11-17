@@ -127,17 +127,17 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(RST_STREAM, frame_type);
   EXPECT_EQ("HIGHEST", ProducerToString(frame_producer.Pass()));
-  EXPECT_EQ(stream_highest, stream.get());
+  EXPECT_EQ(stream_highest.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_REPLY, frame_type);
   EXPECT_EQ("MEDIUM", ProducerToString(frame_producer.Pass()));
-  EXPECT_EQ(stream_medium, stream.get());
+  EXPECT_EQ(stream_medium.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ("LOW", ProducerToString(frame_producer.Pass()));
-  EXPECT_EQ(NULL, stream.get());
+  EXPECT_EQ(nullptr, stream.get());
 
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -168,17 +168,17 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_STREAM, frame_type);
   EXPECT_EQ(1, ProducerToInt(frame_producer.Pass()));
-  EXPECT_EQ(stream1, stream.get());
+  EXPECT_EQ(stream1.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(SYN_REPLY, frame_type);
   EXPECT_EQ(2, ProducerToInt(frame_producer.Pass()));
-  EXPECT_EQ(stream2, stream.get());
+  EXPECT_EQ(stream2.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
   EXPECT_EQ(RST_STREAM, frame_type);
   EXPECT_EQ(3, ProducerToInt(frame_producer.Pass()));
-  EXPECT_EQ(stream3, stream.get());
+  EXPECT_EQ(stream3.get(), stream.get());
 
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
 }
@@ -207,7 +207,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
     EXPECT_EQ(SYN_STREAM, frame_type);
     EXPECT_EQ(i, ProducerToInt(frame_producer.Pass()));
-    EXPECT_EQ(stream1, stream.get());
+    EXPECT_EQ(stream1.get(), stream.get());
   }
 
   SpdyFrameType frame_type = DATA;
@@ -251,7 +251,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
         << "Unable to Dequeue i: " << i;
     EXPECT_EQ(SYN_STREAM, frame_type);
     EXPECT_EQ(i, ProducerToInt(frame_producer.Pass()));
-    EXPECT_EQ(stream1, stream.get());
+    EXPECT_EQ(stream1.get(), stream.get());
   }
 
   SpdyFrameType frame_type = DATA;

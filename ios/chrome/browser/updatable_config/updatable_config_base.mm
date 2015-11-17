@@ -63,7 +63,7 @@ class ConfigFetcher : public net::URLFetcherDelegate {
   }
 
   void OnURLFetchComplete(const net::URLFetcher* fetcher) override {
-    DCHECK_EQ(fetcher_, fetcher);
+    DCHECK_EQ(fetcher_.get(), fetcher);
     NSData* responseData = nil;
     if (fetcher_->GetResponseCode() == net::HTTP_OK) {
       std::string response;

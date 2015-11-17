@@ -202,8 +202,8 @@ void MergeEnginesFromPrepopulateData(
   for (std::vector<TemplateURL*>::iterator i = actions.removed_engines.begin();
        i < actions.removed_engines.end(); ++i) {
     scoped_ptr<TemplateURL> template_url(*i);
-    TemplateURLService::TemplateURLVector::iterator j =
-        std::find(template_urls->begin(), template_urls->end(), template_url);
+    TemplateURLService::TemplateURLVector::iterator j = std::find(
+        template_urls->begin(), template_urls->end(), template_url.get());
     DCHECK(j != template_urls->end());
     DCHECK(!default_search_provider ||
            (*j)->prepopulate_id() != default_search_provider->prepopulate_id());

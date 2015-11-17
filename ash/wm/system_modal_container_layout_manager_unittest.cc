@@ -275,7 +275,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
 
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
-  EXPECT_EQ(t1, ::wm::GetTransientParent(t2));
+  EXPECT_EQ(t1.get(), ::wm::GetTransientParent(t2));
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.

@@ -739,8 +739,7 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
 
   // The event should target the window because we are still not in overview
   // mode.
-  EXPECT_EQ(window, static_cast<aura::Window*>(
-      targeter->FindTargetForEvent(root_target, &event1)));
+  EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &event1));
 
   ToggleOverview();
 
@@ -751,8 +750,7 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
 
   // Now the transparent window should be intercepting this event.
-  EXPECT_NE(window, static_cast<aura::Window*>(
-        targeter->FindTargetForEvent(root_target, &event2)));
+  EXPECT_NE(window.get(), targeter->FindTargetForEvent(root_target, &event2));
 }
 
 // Tests that clicking on the close button effectively closes the window.

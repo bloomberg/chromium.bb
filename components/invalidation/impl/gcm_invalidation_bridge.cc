@@ -214,7 +214,7 @@ void GCMInvalidationBridge::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   core_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished,
@@ -230,7 +230,7 @@ void GCMInvalidationBridge::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   core_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished,

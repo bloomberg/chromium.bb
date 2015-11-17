@@ -276,7 +276,7 @@ void Window::SetTransform(const gfx::Transform& transform) {
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
-  if (layout_manager == layout_manager_)
+  if (layout_manager == layout_manager_.get())
     return;
   layout_manager_.reset(layout_manager);
   if (!layout_manager)

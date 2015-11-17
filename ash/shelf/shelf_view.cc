@@ -1900,7 +1900,7 @@ void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 }
 
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  if (snap_back_from_rip_off_view_ && animator == bounds_animator_) {
+  if (snap_back_from_rip_off_view_ && animator == bounds_animator_.get()) {
     if (!animator->IsAnimating(snap_back_from_rip_off_view_)) {
       // Coming here the animation of the ShelfButton is finished and the
       // previously hidden status can be shown again. Since the button itself

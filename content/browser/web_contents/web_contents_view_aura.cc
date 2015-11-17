@@ -455,7 +455,7 @@ class WebContentsViewAura::WindowObserver
   }
 
   void OnWillRemoveWindow(aura::Window* window) override {
-    if (window == view_->window_)
+    if (window == view_->window_.get())
       return;
 
     window->RemoveObserver(this);
@@ -463,8 +463,7 @@ class WebContentsViewAura::WindowObserver
   }
 
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (window == view_->window_ ||
-        window->parent() == host_window_ ||
+    if (window == view_->window_.get() || window->parent() == host_window_ ||
         window->parent() == view_->window_->GetRootWindow()) {
       UpdateConstrainedWindows(NULL);
     }
@@ -473,7 +472,7 @@ class WebContentsViewAura::WindowObserver
 
   void OnWindowParentChanged(aura::Window* window,
                              aura::Window* parent) override {
-    if (window != view_->window_)
+    if (window != view_->window_.get())
       return;
 
     aura::Window* host_window =
@@ -529,7 +528,7 @@ class WebContentsViewAura::WindowObserver
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
-    if (window == host_window_ || window == view_->window_) {
+    if (window == host_window_ || window == view_->window_.get()) {
       SendScreenRects();
       if (old_bounds.origin() != new_bounds.origin()) {
         TouchSelectionControllerClientAura* selection_controller_client =
@@ -552,7 +551,7 @@ class WebContentsViewAura::WindowObserver
   }
 
   void OnWindowAddedToRootWindow(aura::Window* window) override {
-    if (window == view_->window_) {
+    if (window == view_->window_.get()) {
       window->GetHost()->AddObserver(this);
 #if defined(OS_WIN)
       if (!window->GetRootWindow()->HasObserver(this))
@@ -563,7 +562,7 @@ class WebContentsViewAura::WindowObserver
 
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override {
-    if (window == view_->window_) {
+    if (window == view_->window_.get()) {
       window->GetHost()->RemoveObserver(this);
 #if defined(OS_WIN)
       window->GetRootWindow()->RemoveObserver(this);
@@ -571,7 +570,7 @@ class WebContentsViewAura::WindowObserver
       const aura::Window::Windows& root_children =
           window->GetRootWindow()->children();
       for (size_t i = 0; i < root_children.size(); ++i) {
-        if (root_children[i] != view_->window_ &&
+        if (root_children[i] != view_->window_.get() &&
             root_children[i] != host_window_) {
           root_children[i]->RemoveObserver(this);
         }

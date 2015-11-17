@@ -101,14 +101,14 @@ void ProfileSyncAuthProvider::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   RespondToTokenRequest(GoogleServiceAuthError::AuthErrorNone(), access_token);
 }
 
 void ProfileSyncAuthProvider::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   RespondToTokenRequest(error, std::string());
 }
 

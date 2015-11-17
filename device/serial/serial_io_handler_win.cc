@@ -282,7 +282,7 @@ void SerialIoHandlerWin::OnIOCompleted(
     DWORD bytes_transferred,
     DWORD error) {
   DCHECK(CalledOnValidThread());
-  if (context == comm_context_) {
+  if (context == comm_context_.get()) {
     DWORD errors;
     COMSTAT status;
     if (!ClearCommError(file().GetPlatformFile(), &errors, &status) ||
@@ -318,7 +318,7 @@ void SerialIoHandlerWin::OnIOCompleted(
         ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
       }
     }
-  } else if (context == read_context_) {
+  } else if (context == read_context_.get()) {
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
@@ -329,7 +329,7 @@ void SerialIoHandlerWin::OnIOCompleted(
                         ? serial::RECEIVE_ERROR_NONE
                         : serial::RECEIVE_ERROR_SYSTEM_ERROR);
     }
-  } else if (context == write_context_) {
+  } else if (context == write_context_.get()) {
     DCHECK(pending_write_buffer());
     if (write_canceled()) {
       WriteCompleted(0, write_cancel_reason());

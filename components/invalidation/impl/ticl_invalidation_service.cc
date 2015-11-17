@@ -205,7 +205,7 @@ void TiclInvalidationService::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
@@ -220,7 +220,7 @@ void TiclInvalidationService::OnGetTokenSuccess(
 void TiclInvalidationService::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  DCHECK_EQ(access_token_request_, request);
+  DCHECK_EQ(access_token_request_.get(), request);
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
   access_token_request_.reset();
   switch (error.state()) {

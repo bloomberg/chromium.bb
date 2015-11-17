@@ -134,19 +134,19 @@ class PrerenderManager::OnCloseWebContentsDeleter
   }
 
   void CloseContents(WebContents* source) override {
-    DCHECK_EQ(tab_, source);
+    DCHECK_EQ(tab_.get(), source);
     ScheduleWebContentsForDeletion(false);
   }
 
   void SwappedOut(WebContents* source) override {
-    DCHECK_EQ(tab_, source);
+    DCHECK_EQ(tab_.get(), source);
     ScheduleWebContentsForDeletion(false);
   }
 
   bool ShouldSuppressDialogs(WebContents* source) override {
     // Use this as a proxy for getting statistics on how often we fail to honor
     // the beforeunload event.
-    DCHECK_EQ(tab_, source);
+    DCHECK_EQ(tab_.get(), source);
     suppressed_dialog_ = true;
     return true;
   }
@@ -824,7 +824,7 @@ PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager,
       contents_(contents),
       handle_count_(0),
       expiry_time_(expiry_time) {
-  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  DCHECK(contents_);
 }
 
 PrerenderManager::PrerenderData::~PrerenderData() {
@@ -841,7 +841,7 @@ void PrerenderManager::PrerenderData::MakeIntoMatchCompleteReplacement() {
 }
 
 void PrerenderManager::PrerenderData::OnHandleCreated(PrerenderHandle* handle) {
-  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  DCHECK(contents_);
   ++handle_count_;
   contents_->AddObserver(handle);
 }
@@ -849,7 +849,7 @@ void PrerenderManager::PrerenderData::OnHandleCreated(PrerenderHandle* handle) {
 void PrerenderManager::PrerenderData::OnHandleNavigatedAway(
     PrerenderHandle* handle) {
   DCHECK_LT(0, handle_count_);
-  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  DCHECK(contents_);
   if (abandon_time_.is_null())
     abandon_time_ = base::TimeTicks::Now();
   // We intentionally don't decrement the handle count here, so that the
@@ -860,7 +860,7 @@ void PrerenderManager::PrerenderData::OnHandleNavigatedAway(
 void PrerenderManager::PrerenderData::OnHandleCanceled(
     PrerenderHandle* handle) {
   DCHECK_LT(0, handle_count_);
-  DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  DCHECK(contents_);
 
   if (--handle_count_ == 0) {
     // This will eventually remove this object from active_prerenders_.

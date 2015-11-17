@@ -157,7 +157,7 @@ void RecordFullscreenStyle(FullscreenStyle style) {
 
   // Only save main window information to preferences.
   PrefService* prefs = browser_->profile()->GetPrefs();
-  if (!prefs || browser_ != chrome::GetLastActiveBrowser())
+  if (!prefs || browser_.get() != chrome::GetLastActiveBrowser())
     return;
 
   // Save the current work area, in flipped coordinates.

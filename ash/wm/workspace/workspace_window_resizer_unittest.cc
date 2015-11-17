@@ -126,7 +126,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     const aura::Window::Windows& windows = parent->children();
     for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
          i != windows.rend(); ++i) {
-      if (*i == window_ || *i == window2_ || *i == window3_) {
+      if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
         if (!result.empty())
           result += " ";
         result += base::IntToString((*i)->id());

@@ -540,10 +540,14 @@ bool OneCopyTileTaskWorkerPool::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
 
-  for (const auto& buffer : buffers_) {
+  for (const auto* buffer : buffers_) {
+    auto in_free_buffers =
+        std::find_if(free_buffers_.begin(), free_buffers_.end(),
+                     [buffer](const scoped_ptr<StagingBuffer>& b) {
+                       return b.get() == buffer;
+                     });
     buffer->OnMemoryDump(pmd, buffer->format,
-                         std::find(free_buffers_.begin(), free_buffers_.end(),
-                                   buffer) != free_buffers_.end());
+                         in_free_buffers != free_buffers_.end());
   }
 
   return true;

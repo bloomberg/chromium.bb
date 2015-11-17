@@ -1384,7 +1384,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   root->SetHasRenderSurface(true);
   root->draw_properties().render_target = root.get();
 
-  ASSERT_TRUE(root == root->render_target());
+  ASSERT_EQ(root.get(), root->render_target());
   RenderSurfaceImpl* target_surface = root->render_surface();
 
   LayerImplList empty_list;

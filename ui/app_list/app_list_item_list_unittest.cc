@@ -178,7 +178,7 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   scoped_ptr<AppListItem> item_removed = RemoveItemAt(1);
-  EXPECT_EQ(item_removed, item_1);
+  EXPECT_EQ(item_removed.get(), item_1);
   EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);
@@ -203,7 +203,7 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_EQ(index, 1u);
 
   scoped_ptr<AppListItem> item_removed = RemoveItem(item_1->id());
-  EXPECT_EQ(item_removed, item_1);
+  EXPECT_EQ(item_removed.get(), item_1);
   EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);

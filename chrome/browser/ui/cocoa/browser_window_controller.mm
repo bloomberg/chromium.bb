@@ -609,7 +609,7 @@ using content::WebContents;
 
 // Called right after our window became the main window.
 - (void)windowDidBecomeMain:(NSNotification*)notification {
-  if (chrome::GetLastActiveBrowser() != browser_) {
+  if (chrome::GetLastActiveBrowser() != browser_.get()) {
     BrowserList::SetLastActive(browser_.get());
   }
   // Always saveWindowPositionIfNeeded when becoming main, not just

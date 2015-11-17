@@ -174,7 +174,7 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
     net::URLRequest* request,
     const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
-  DCHECK(request_ == request);
+  DCHECK_EQ(request_.get(), request);
   // Redirect is not allowed by the update process.
   job_->MadeProgress();
   redirect_response_code_ = request->GetResponseCode();
@@ -185,7 +185,7 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
 
 void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
     net::URLRequest *request) {
-  DCHECK(request == request_);
+  DCHECK_EQ(request_.get(), request);
   int response_code = -1;
   if (request->status().is_success()) {
     response_code = request->GetResponseCode();
@@ -244,7 +244,7 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
 
 void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
     net::URLRequest* request, int bytes_read) {
-  DCHECK(request_ == request);
+  DCHECK_EQ(request_.get(), request);
   bool data_consumed = true;
   if (request->status().is_success() && bytes_read > 0) {
     job_->MadeProgress();
@@ -270,7 +270,8 @@ void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
 
 void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
     const net::HttpResponseHeaders* headers) {
-  DCHECK(request_.get() && headers);
+  DCHECK(request_);
+  DCHECK(headers);
   net::HttpRequestHeaders extra_headers;
 
   // Add If-Modified-Since header if response info has Last-Modified header.

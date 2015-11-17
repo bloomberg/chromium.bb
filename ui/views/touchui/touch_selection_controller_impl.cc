@@ -504,7 +504,7 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     if (dragging_handle_ != cursor_handle_.get()) {
       // The non-dragging-handle might have recently become visible.
       EditingHandleView* non_dragging_handle = selection_handle_1_.get();
-      if (dragging_handle_ == selection_handle_1_) {
+      if (dragging_handle_ == selection_handle_1_.get()) {
         non_dragging_handle = selection_handle_2_.get();
         // if handle 1 is being dragged, it is corresponding to the end of
         // selection and the other handle to the start of selection.
@@ -567,8 +567,8 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 
   // Find the stationary selection handle.
   ui::SelectionBound anchor_bound =
-      selection_handle_1_ == dragging_handle_ ? selection_bound_2_
-                                              : selection_bound_1_;
+      selection_handle_1_.get() == dragging_handle_ ? selection_bound_2_
+                                                    : selection_bound_1_;
 
   // Find selection end points in client_view's coordinate system.
   gfx::Point p2 = anchor_bound.edge_top_rounded();

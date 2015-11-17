@@ -64,7 +64,7 @@ bool DiscardableSharedMemoryHeap::ScopedMemorySegment::IsResident() const {
 
 bool DiscardableSharedMemoryHeap::ScopedMemorySegment::ContainsSpan(
     Span* span) const {
-  return shared_memory_ == span->shared_memory();
+  return shared_memory_.get() == span->shared_memory();
 }
 
 base::trace_event::MemoryAllocatorDump*
@@ -73,7 +73,7 @@ DiscardableSharedMemoryHeap::ScopedMemorySegment::CreateMemoryAllocatorDump(
     size_t block_size,
     const char* name,
     base::trace_event::ProcessMemoryDump* pmd) const {
-  DCHECK_EQ(shared_memory_, span->shared_memory());
+  DCHECK_EQ(shared_memory_.get(), span->shared_memory());
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,

@@ -91,12 +91,12 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   bubble_widget->Show();
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
@@ -126,7 +126,7 @@ TEST_F(BubbleDelegateTest, CloseAnchorViewTest) {
   // Check that the anchor view is correct and set up an anchor view rect.
   // Make sure that this rect will get ignored (as long as the anchor view is
   // attached).
-  EXPECT_EQ(anchor_view, bubble_delegate->GetAnchorView());
+  EXPECT_EQ(anchor_view.get(), bubble_delegate->GetAnchorView());
   const gfx::Rect set_anchor_rect = gfx::Rect(10, 10, 100, 100);
   bubble_delegate->SetAnchorRectForTest(set_anchor_rect);
   const gfx::Rect view_rect = bubble_delegate->GetAnchorRect();
@@ -134,7 +134,7 @@ TEST_F(BubbleDelegateTest, CloseAnchorViewTest) {
 
   // Create the bubble.
   bubble_widget->Show();
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
 
   // Remove now the anchor view and make sure that the original found rect
   // is still kept, so that the bubble does not jump when the view gets deleted.
@@ -174,20 +174,20 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // Showing and hiding the bubble widget should have no effect on its anchor.
   bubble_widget->Show();
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
   bubble_widget->Hide();
-  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
 
   // Ensure that closing the anchor widget clears the bubble's reference to that
   // anchor widget, but the bubble itself does not close.
   anchor_widget->CloseNow();
-  EXPECT_NE(anchor_widget, bubble_delegate->anchor_widget());
+  EXPECT_NE(anchor_widget.get(), bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:

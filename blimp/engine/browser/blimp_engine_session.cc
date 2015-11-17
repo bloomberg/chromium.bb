@@ -225,7 +225,7 @@ void BlimpEngineSession::RequestToLockMouse(content::WebContents* web_contents,
 }
 
 void BlimpEngineSession::CloseContents(content::WebContents* source) {
-  if (source == web_contents_)
+  if (source == web_contents_.get())
     web_contents_.reset();
 }
 

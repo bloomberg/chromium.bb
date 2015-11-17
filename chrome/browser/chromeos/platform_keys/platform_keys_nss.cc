@@ -633,7 +633,7 @@ void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
   // Check that the private key is in the correct slot.
   PK11SlotInfo* slot =
       PK11_KeyForCertExists(state->certificate_->os_cert_handle(), NULL, NULL);
-  if (slot != state->slot_) {
+  if (slot != state->slot_.get()) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
     return;
   }

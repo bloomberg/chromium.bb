@@ -380,7 +380,7 @@ void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
 
 bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
   DCHECK_NE(net::URLRequestStatus::IO_PENDING, url_request_->status().status());
-  DCHECK_EQ(request, url_request_);
+  DCHECK_EQ(request, url_request_.get());
   if (url_request_->status().is_success())
     return false;
   int net_error = url_request_->status().error();

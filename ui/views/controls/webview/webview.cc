@@ -65,7 +65,7 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   }
   // web_contents() now returns |replacement| from here onwards.
   SetFocusable(!!web_contents());
-  if (wc_owner_ != replacement)
+  if (wc_owner_.get() != replacement)
     wc_owner_.reset();
   if (embed_fullscreen_widget_mode_enabled_) {
     is_embedding_fullscreen_widget_ =

@@ -742,18 +742,18 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
   tab_strip_model->AppendWebContents(contents1.get(), true);
   tab_strip_model->SetTabPinned(3, true);
 
-  EXPECT_EQ(contents2, tab_strip_model->GetWebContentsAt(0));
-  EXPECT_EQ(contents1, tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(contents2.get(), tab_strip_model->GetWebContentsAt(0));
+  EXPECT_EQ(contents1.get(), tab_strip_model->GetWebContentsAt(1));
+  EXPECT_EQ(contents4.get(), tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(contents3.get(), tab_strip_model->GetWebContentsAt(3));
   EXPECT_EQ(2, tab_strip_model->IndexOfFirstNonPinnedTab());
 
   ResetAndWait(ProfileResetter::PINNED_TABS);
 
-  EXPECT_EQ(contents2, tab_strip_model->GetWebContentsAt(0));
-  EXPECT_EQ(contents1, tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(contents2.get(), tab_strip_model->GetWebContentsAt(0));
+  EXPECT_EQ(contents1.get(), tab_strip_model->GetWebContentsAt(1));
+  EXPECT_EQ(contents4.get(), tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(contents3.get(), tab_strip_model->GetWebContentsAt(3));
   EXPECT_EQ(0, tab_strip_model->IndexOfFirstNonPinnedTab());
 }
 

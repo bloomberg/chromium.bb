@@ -240,7 +240,7 @@ void ServiceWorkerWriteToCacheJob::OnReceivedRedirect(
     net::URLRequest* request,
     const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnReceivedRedirect");
   // Script resources can't redirect.
@@ -252,7 +252,7 @@ void ServiceWorkerWriteToCacheJob::OnReceivedRedirect(
 void ServiceWorkerWriteToCacheJob::OnAuthRequired(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnAuthRequired");
   // TODO(michaeln): Pass this thru to our jobs client.
@@ -264,7 +264,7 @@ void ServiceWorkerWriteToCacheJob::OnAuthRequired(
 void ServiceWorkerWriteToCacheJob::OnCertificateRequested(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnCertificateRequested");
   // TODO(michaeln): Pass this thru to our jobs client.
@@ -278,7 +278,7 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnSSLCertificateError");
   // TODO(michaeln): Pass this thru to our jobs client,
@@ -291,7 +291,7 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
 void ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart(
     net::URLRequest* request,
     bool* defer) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart");
   NotifyBeforeNetworkStart(defer);
@@ -299,7 +299,7 @@ void ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart(
 
 void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     net::URLRequest* request) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   if (!request->status().is_success()) {
     NotifyDoneHelper(request->status(), kFetchScriptError);
     return;
@@ -401,7 +401,7 @@ void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(net::Error error) {
 
 void ServiceWorkerWriteToCacheJob::OnReadCompleted(net::URLRequest* request,
                                                    int bytes_read) {
-  DCHECK_EQ(net_request_, request);
+  DCHECK_EQ(net_request_.get(), request);
   if (bytes_read < 0) {
     DCHECK(!request->status().is_success());
     NotifyDoneHelper(request->status(), kFetchScriptError);

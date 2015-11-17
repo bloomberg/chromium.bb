@@ -240,7 +240,7 @@ TEST_F(TrackedObjectsTest, DeathDataTestRecordDeath) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   scoped_ptr<DeathData> data(new DeathData());
-  ASSERT_NE(data, reinterpret_cast<DeathData*>(NULL));
+  ASSERT_NE(data, nullptr);
   EXPECT_EQ(data->run_duration_sum(), 0);
   EXPECT_EQ(data->run_duration_max(), 0);
   EXPECT_EQ(data->run_duration_sample(), 0);
@@ -279,7 +279,7 @@ TEST_F(TrackedObjectsTest, DeathDataTest2Phases) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   scoped_ptr<DeathData> data(new DeathData());
-  ASSERT_NE(data, reinterpret_cast<DeathData*>(NULL));
+  ASSERT_NE(data, nullptr);
 
   int32 run_ms = 42;
   int32 queue_ms = 8;

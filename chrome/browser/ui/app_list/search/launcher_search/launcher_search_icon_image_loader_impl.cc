@@ -58,7 +58,7 @@ void LauncherSearchIconImageLoaderImpl::LoadIconResourceFromExtension() {
 
 void LauncherSearchIconImageLoaderImpl::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
-  DCHECK_EQ(extension_icon_image_, image);
+  DCHECK_EQ(extension_icon_image_.get(), image);
   OnExtensionIconChanged(extension_icon_image_->image_skia());
 }
 

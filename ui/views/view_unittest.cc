@@ -2169,11 +2169,11 @@ TEST_F(ViewTest, MAYBE_NativeViewHierarchyChanged) {
   EXPECT_EQ(NULL, observer_view->toplevel());
 
   child->SetContentsView(observer_view);
-  EXPECT_EQ(toplevel1, observer_view->toplevel());
+  EXPECT_EQ(toplevel1.get(), observer_view->toplevel());
 
   Widget::ReparentNativeView(child->GetNativeView(),
                              toplevel2->GetNativeView());
-  EXPECT_EQ(toplevel2, observer_view->toplevel());
+  EXPECT_EQ(toplevel2.get(), observer_view->toplevel());
 
   observer_view->parent()->RemoveChildView(observer_view);
   EXPECT_EQ(NULL, observer_view->toplevel());
@@ -3921,7 +3921,7 @@ TEST_F(ViewLayerTest, RecreateLayerZOrder) {
   const std::vector<ui::Layer*>& child_layers_post = v->layer()->children();
   ASSERT_EQ(3u, child_layers_post.size());
   EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[1]);
+  EXPECT_EQ(v1_old_layer.get(), child_layers_post[1]);
   EXPECT_EQ(v2->layer(), child_layers_post[2]);
 }
 
@@ -3952,7 +3952,7 @@ TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
   const std::vector<ui::Layer*>& child_layers_post = root_layer->children();
   ASSERT_EQ(3u, child_layers_post.size());
   EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[1]);
+  EXPECT_EQ(v1_old_layer.get(), child_layers_post[1]);
   EXPECT_EQ(v2->layer(), child_layers_post[2]);
 }
 

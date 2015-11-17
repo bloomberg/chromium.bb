@@ -63,7 +63,7 @@ void ConsumerEnrollmentHandler::OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
       const base::Time& expiration_time) {
-  DCHECK_EQ(token_request_, request);
+  DCHECK_EQ(token_request_.get(), request);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
 
   OnOwnerAccessTokenAvailable(access_token);
@@ -72,7 +72,7 @@ void ConsumerEnrollmentHandler::OnGetTokenSuccess(
 void ConsumerEnrollmentHandler::OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) {
-  DCHECK_EQ(token_request_, request);
+  DCHECK_EQ(token_request_.get(), request);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
 
   LOG(ERROR) << "Failed to get the access token: " << error.ToString();

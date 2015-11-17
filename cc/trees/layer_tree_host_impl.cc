@@ -899,7 +899,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
           it->draw_properties().occlusion_in_content_space.IsOccluded(
               it->visible_layer_rect());
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
-        DCHECK_EQ(active_tree_, it->layer_tree_impl());
+        DCHECK_EQ(active_tree_.get(), it->layer_tree_impl());
 
         frame->will_draw_layers.push_back(*it);
 

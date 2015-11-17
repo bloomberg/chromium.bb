@@ -146,25 +146,25 @@ TEST(ScopedPtrTest, ScopedPtr) {
   }
   EXPECT_EQ(0, constructed);
 
-  // Test swap(), == and !=
+  // Test swap().
   {
     scoped_ptr<ConDecLogger> scoper1;
     scoped_ptr<ConDecLogger> scoper2;
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+    EXPECT_TRUE(scoper1.get() == scoper2.get());
+    EXPECT_FALSE(scoper1.get() != scoper2.get());
 
     ConDecLogger* logger = new ConDecLogger(&constructed);
     scoper1.reset(logger);
     EXPECT_EQ(logger, scoper1.get());
     EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
 
     scoper2.swap(scoper1);
     EXPECT_EQ(logger, scoper2.get());
     EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
   }
   EXPECT_EQ(0, constructed);
 }
@@ -327,12 +327,12 @@ TEST(ScopedPtrTest, ScopedPtrWithArray) {
   }
   EXPECT_EQ(0, constructed);
 
-  // Test swap(), ==, !=, and type-safe Boolean.
+  // Test swap() and type-safe Boolean.
   {
     scoped_ptr<ConDecLogger[]> scoper1;
     scoped_ptr<ConDecLogger[]> scoper2;
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+    EXPECT_TRUE(scoper1.get() == scoper2.get());
+    EXPECT_FALSE(scoper1.get() != scoper2.get());
 
     ConDecLogger* loggers = new ConDecLogger[kNumLoggers];
     for (int i = 0; i < kNumLoggers; ++i) {
@@ -343,14 +343,14 @@ TEST(ScopedPtrTest, ScopedPtrWithArray) {
     EXPECT_EQ(loggers, scoper1.get());
     EXPECT_FALSE(scoper2);
     EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
 
     scoper2.swap(scoper1);
     EXPECT_EQ(loggers, scoper2.get());
     EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
   }
   EXPECT_EQ(0, constructed);
 
@@ -549,28 +549,28 @@ TEST(ScopedPtrTest, CustomDeleter) {
   EXPECT_EQ(1, deletes);
   EXPECT_EQ(3, alternate_deletes);
 
-  // Test swap(), ==, !=, and type-safe Boolean.
+  // Test swap(), and type-safe Boolean.
   {
     scoped_ptr<double, CountingDeleter> scoper1(NULL,
                                                 CountingDeleter(&deletes));
     scoped_ptr<double, CountingDeleter> scoper2(NULL,
                                                 CountingDeleter(&deletes));
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+    EXPECT_TRUE(scoper1.get() == scoper2.get());
+    EXPECT_FALSE(scoper1.get() != scoper2.get());
 
     scoper1.reset(&dummy_value);
     EXPECT_TRUE(scoper1);
     EXPECT_EQ(&dummy_value, scoper1.get());
     EXPECT_FALSE(scoper2);
     EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
 
     scoper2.swap(scoper1);
     EXPECT_EQ(&dummy_value, scoper2.get());
     EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+    EXPECT_FALSE(scoper1.get() == scoper2.get());
+    EXPECT_TRUE(scoper1.get() != scoper2.get());
   }
 }
 
@@ -725,4 +725,150 @@ TEST(ScopedPtrTest, ReferenceCycle) {
   a->b.reset(new StructB);
   a->b->a.reset(a);
   a->~StructA();
+}
+
+TEST(ScopedPtrTest, Operators) {
+  struct Parent {};
+  struct Child : public Parent {};
+
+  scoped_ptr<Parent> p(new Parent);
+  scoped_ptr<Parent> p2(new Parent);
+  scoped_ptr<Child> c(new Child);
+  scoped_ptr<Parent> pnull;
+
+  // Operator==.
+  EXPECT_TRUE(p == p);
+  EXPECT_FALSE(p == c);
+  EXPECT_FALSE(p == p2);
+  EXPECT_FALSE(p == pnull);
+
+  EXPECT_FALSE(p == nullptr);
+  EXPECT_FALSE(nullptr == p);
+  EXPECT_TRUE(pnull == nullptr);
+  EXPECT_TRUE(nullptr == pnull);
+
+  // Operator!=.
+  EXPECT_FALSE(p != p);
+  EXPECT_TRUE(p != c);
+  EXPECT_TRUE(p != p2);
+  EXPECT_TRUE(p != pnull);
+
+  EXPECT_TRUE(p != nullptr);
+  EXPECT_TRUE(nullptr != p);
+  EXPECT_FALSE(pnull != nullptr);
+  EXPECT_FALSE(nullptr != pnull);
+
+  // Compare two scoped_ptr<T>.
+  EXPECT_EQ(p.get() < p2.get(), p < p2);
+  EXPECT_EQ(p.get() <= p2.get(), p <= p2);
+  EXPECT_EQ(p.get() > p2.get(), p > p2);
+  EXPECT_EQ(p.get() >= p2.get(), p >= p2);
+  EXPECT_EQ(p2.get() < p.get(), p2 < p);
+  EXPECT_EQ(p2.get() <= p.get(), p2 <= p);
+  EXPECT_EQ(p2.get() > p.get(), p2 > p);
+  EXPECT_EQ(p2.get() >= p.get(), p2 >= p);
+
+  // And convertible scoped_ptr<T> and scoped_ptr<U>.
+  EXPECT_EQ(p.get() < c.get(), p < c);
+  EXPECT_EQ(p.get() <= c.get(), p <= c);
+  EXPECT_EQ(p.get() > c.get(), p > c);
+  EXPECT_EQ(p.get() >= c.get(), p >= c);
+  EXPECT_EQ(c.get() < p.get(), c < p);
+  EXPECT_EQ(c.get() <= p.get(), c <= p);
+  EXPECT_EQ(c.get() > p.get(), c > p);
+  EXPECT_EQ(c.get() >= p.get(), c >= p);
+
+  // Compare to nullptr.
+  EXPECT_TRUE(p > nullptr);
+  EXPECT_FALSE(nullptr > p);
+  EXPECT_FALSE(pnull > nullptr);
+  EXPECT_FALSE(nullptr > pnull);
+
+  EXPECT_TRUE(p >= nullptr);
+  EXPECT_FALSE(nullptr >= p);
+  EXPECT_TRUE(pnull >= nullptr);
+  EXPECT_TRUE(nullptr >= pnull);
+
+  EXPECT_FALSE(p < nullptr);
+  EXPECT_TRUE(nullptr < p);
+  EXPECT_FALSE(pnull < nullptr);
+  EXPECT_FALSE(nullptr < pnull);
+
+  EXPECT_FALSE(p <= nullptr);
+  EXPECT_TRUE(nullptr <= p);
+  EXPECT_TRUE(pnull <= nullptr);
+  EXPECT_TRUE(nullptr <= pnull);
+};
+
+TEST(ScopedPtrTest, ArrayOperators) {
+  struct Parent {};
+  struct Child : public Parent {};
+
+  scoped_ptr<Parent[]> p(new Parent[1]);
+  scoped_ptr<Parent[]> p2(new Parent[1]);
+  scoped_ptr<Child[]> c(new Child[1]);
+  scoped_ptr<Parent[]> pnull;
+
+  // Operator==.
+  EXPECT_TRUE(p == p);
+  EXPECT_FALSE(p == c);
+  EXPECT_FALSE(p == p2);
+  EXPECT_FALSE(p == pnull);
+
+  EXPECT_FALSE(p == nullptr);
+  EXPECT_FALSE(nullptr == p);
+  EXPECT_TRUE(pnull == nullptr);
+  EXPECT_TRUE(nullptr == pnull);
+
+  // Operator!=.
+  EXPECT_FALSE(p != p);
+  EXPECT_TRUE(p != c);
+  EXPECT_TRUE(p != p2);
+  EXPECT_TRUE(p != pnull);
+
+  EXPECT_TRUE(p != nullptr);
+  EXPECT_TRUE(nullptr != p);
+  EXPECT_FALSE(pnull != nullptr);
+  EXPECT_FALSE(nullptr != pnull);
+
+  // Compare two scoped_ptr<T>.
+  EXPECT_EQ(p.get() < p2.get(), p < p2);
+  EXPECT_EQ(p.get() <= p2.get(), p <= p2);
+  EXPECT_EQ(p.get() > p2.get(), p > p2);
+  EXPECT_EQ(p.get() >= p2.get(), p >= p2);
+  EXPECT_EQ(p2.get() < p.get(), p2 < p);
+  EXPECT_EQ(p2.get() <= p.get(), p2 <= p);
+  EXPECT_EQ(p2.get() > p.get(), p2 > p);
+  EXPECT_EQ(p2.get() >= p.get(), p2 >= p);
+
+  // And convertible scoped_ptr<T> and scoped_ptr<U>.
+  EXPECT_EQ(p.get() < c.get(), p < c);
+  EXPECT_EQ(p.get() <= c.get(), p <= c);
+  EXPECT_EQ(p.get() > c.get(), p > c);
+  EXPECT_EQ(p.get() >= c.get(), p >= c);
+  EXPECT_EQ(c.get() < p.get(), c < p);
+  EXPECT_EQ(c.get() <= p.get(), c <= p);
+  EXPECT_EQ(c.get() > p.get(), c > p);
+  EXPECT_EQ(c.get() >= p.get(), c >= p);
+
+  // Compare to nullptr.
+  EXPECT_TRUE(p > nullptr);
+  EXPECT_FALSE(nullptr > p);
+  EXPECT_FALSE(pnull > nullptr);
+  EXPECT_FALSE(nullptr > pnull);
+
+  EXPECT_TRUE(p >= nullptr);
+  EXPECT_FALSE(nullptr >= p);
+  EXPECT_TRUE(pnull >= nullptr);
+  EXPECT_TRUE(nullptr >= pnull);
+
+  EXPECT_FALSE(p < nullptr);
+  EXPECT_TRUE(nullptr < p);
+  EXPECT_FALSE(pnull < nullptr);
+  EXPECT_FALSE(nullptr < pnull);
+
+  EXPECT_FALSE(p <= nullptr);
+  EXPECT_TRUE(nullptr <= p);
+  EXPECT_TRUE(pnull <= nullptr);
+  EXPECT_TRUE(nullptr <= pnull);
 }
