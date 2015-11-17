@@ -35,8 +35,6 @@ This test is designed to catch stale interpolation caches.
 
 (function() {
 'use strict';
-var sharedStyle = null;
-var animationCount = 0;
 var pendingResponsiveTests = [];
 
 function assertResponsive(options) {
@@ -92,33 +90,22 @@ function setState(targets, property, state) {
   }
 }
 
-function createAnimationName() {
-  return 'anim' + (animationCount++);
+function createKeyframes(property, from, to) {
+  return [
+    {[property]: from},
+    {[property]: to},
+  ];
 }
 
-function createKeyframes(animationName, property, from, to) {
-  return `
-@keyframes ${animationName} {
-  from { ${property}: ${from}; }
-  to { ${property}: ${to}; }
-}`;
-}
-
-function addGlobalStyle(styleText) {
-  if (!sharedStyle) {
-    sharedStyle = createElement('style', document.documentElement);
-  }
-  sharedStyle.textContent += styleText;
-}
-
-function startPausedAnimations(targets, animationName, fractions) {
+function startPausedAnimations(targets, keyframes, fractions) {
   console.assert(targets.length == fractions.length);
   for (var i = 0; i < targets.length; i++) {
     var target = targets[i];
     var fraction = fractions[i];
-    console.assert(fraction >= 0 && fraction <= 1);
-    target.style.animation = `${animationName} 1s linear both paused`;
-    target.style.animationDelay = `${-fraction}s`;
+    console.assert(fraction >= 0 && fraction < 1);
+    var animation = target.animate(keyframes, 1);
+    animation.currentTime = fraction;
+    animation.pause();
   }
 }
 
@@ -128,8 +115,7 @@ function runPendingResponsiveTests() {
     var property = options.property;
     var from = options.from;
     var to = options.to;
-    var animationName = createAnimationName();
-    addGlobalStyle(createKeyframes(animationName, property, from, to));
+    var keyframes = createKeyframes(property, from, to);
 
     var stateTransitions = createStateTransitions(options.configurations);
     stateTransitions.forEach(function(stateTransition) {
@@ -139,7 +125,7 @@ function runPendingResponsiveTests() {
       var targets = createTargets(after.expect.length, container);
 
       setState(targets, property, before.state);
-      startPausedAnimations(targets, animationName, after.expect.map(function(expectation) { return expectation.at; }));
+      startPausedAnimations(targets, keyframes, after.expect.map(function(expectation) { return expectation.at; }));
       stateTransitionTests.push({
         applyStateTransition() {
           setState(targets, property, after.state);
@@ -157,9 +143,6 @@ function runPendingResponsiveTests() {
       });
     });
   });
-
-  // Force style recalc to instantiate animations internally.
-  getComputedStyle(document.body).color;
 
   // Separate style modification from measurement as different phases to avoid a style recalc storm.
   for (var stateTransitionTest of stateTransitionTests) {
