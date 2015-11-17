@@ -70,7 +70,6 @@ typedef void *EGLContext;
 #include "shared/helpers.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
-#include "workspaces-client-protocol.h"
 #include "shared/os-compatibility.h"
 
 #include "window.h"
@@ -96,7 +95,6 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
 	struct text_cursor_position *text_cursor_position;
-	struct workspace_manager *workspace_manager;
 	struct xdg_shell *xdg_shell;
 	struct ivi_application *ivi_application; /* ivi style shell */
 	EGLDisplay dpy;
@@ -131,9 +129,6 @@ struct display {
 	void *user_data;
 
 	struct xkb_context *xkb_context;
-
-	uint32_t workspace;
-	uint32_t workspace_count;
 
 	/* A hack to get text extents for tooltips */
 	cairo_surface_t *dummy_surface;
@@ -2130,22 +2125,6 @@ widget_set_tooltip(struct widget *parent, char *entry, float x, float y)
 }
 
 static void
-workspace_manager_state(void *data,
-			struct workspace_manager *workspace_manager,
-			uint32_t current,
-			uint32_t count)
-{
-	struct display *display = data;
-
-	display->workspace = current;
-	display->workspace_count = count;
-}
-
-static const struct workspace_manager_listener workspace_manager_listener = {
-	workspace_manager_state
-};
-
-static void
 frame_resize_handler(struct widget *widget,
 		     int32_t width, int32_t height, void *data)
 {
@@ -2272,29 +2251,12 @@ static void
 frame_menu_func(void *data, struct input *input, int index)
 {
 	struct window *window = data;
-	struct display *display;
 
 	switch (index) {
 	case 0: /* close */
 		window_close(window);
 		break;
-	case 1: /* move to workspace above */
-		display = window->display;
-		if (display->workspace > 0)
-			workspace_manager_move_surface(
-				display->workspace_manager,
-				window->main_surface->surface,
-				display->workspace - 1);
-		break;
-	case 2: /* move to workspace below */
-		display = window->display;
-		if (display->workspace < display->workspace_count - 1)
-			workspace_manager_move_surface(
-				display->workspace_manager,
-				window->main_surface->surface,
-				display->workspace + 1);
-		break;
-	case 3: /* fullscreen */
+	case 1: /* fullscreen */
 		/* we don't have a way to get out of fullscreen for now */
 		if (window->fullscreen_handler)
 			window->fullscreen_handler(window, window->user_data);
@@ -2311,7 +2273,6 @@ window_show_frame_menu(struct window *window,
 
 	static const char *entries[] = {
 		"Close",
-		"Move to workspace above", "Move to workspace below",
 		"Fullscreen"
 	};
 
@@ -5312,18 +5273,6 @@ input_destroy(struct input *input)
 }
 
 static void
-init_workspace_manager(struct display *d, uint32_t id)
-{
-	d->workspace_manager =
-		wl_registry_bind(d->registry, id,
-				 &workspace_manager_interface, 1);
-	if (d->workspace_manager != NULL)
-		workspace_manager_add_listener(d->workspace_manager,
-					       &workspace_manager_listener,
-					       d);
-}
-
-static void
 shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
 	struct display *d = data;
@@ -5390,8 +5339,6 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		d->text_cursor_position =
 			wl_registry_bind(registry, id,
 					 &text_cursor_position_interface, 1);
-	} else if (strcmp(interface, "workspace_manager") == 0) {
-		init_workspace_manager(d, id);
 	} else if (strcmp(interface, "wl_subcompositor") == 0) {
 		d->subcompositor =
 			wl_registry_bind(registry, id,
@@ -5622,9 +5569,6 @@ display_create(int *argc, char *argv[])
 	wl_list_init(&d->input_list);
 	wl_list_init(&d->output_list);
 	wl_list_init(&d->global_list);
-
-	d->workspace = 0;
-	d->workspace_count = 1;
 
 	d->registry = wl_display_get_registry(d->display);
 	wl_registry_add_listener(d->registry, &registry_listener, d);

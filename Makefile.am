@@ -121,8 +121,6 @@ nodist_weston_SOURCES =					\
 	protocol/text-input-unstable-v1-server-protocol.h		\
 	protocol/input-method-unstable-v1-protocol.c			\
 	protocol/input-method-unstable-v1-server-protocol.h		\
-	protocol/workspaces-protocol.c			\
-	protocol/workspaces-server-protocol.h		\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-server-protocol.h	\
 	protocol/scaler-protocol.c			\
@@ -552,8 +550,6 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/scaler-protocol.c			\
 	protocol/scaler-client-protocol.h		\
-	protocol/workspaces-protocol.c			\
-	protocol/workspaces-client-protocol.h		\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
@@ -761,8 +757,6 @@ BUILT_SOURCES +=					\
 	protocol/weston-desktop-shell-protocol.c			\
 	protocol/scaler-client-protocol.h		\
 	protocol/scaler-protocol.c			\
-	protocol/workspaces-client-protocol.h		\
-	protocol/workspaces-protocol.c			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
@@ -1342,7 +1336,6 @@ BUILT_SOURCES +=				\
 EXTRA_DIST +=					\
 	protocol/weston-desktop-shell.xml	\
 	protocol/weston-screenshooter.xml	\
-	protocol/workspaces.xml			\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
 	protocol/presentation_timing.xml	\
