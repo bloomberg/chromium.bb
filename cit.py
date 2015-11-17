@@ -42,6 +42,9 @@ def need_to_update(branch):
   except OSError:
     return True  # Gclient failed, definitely need to update.
 
+  if not os.path.isdir(INFRA_DIR):
+    return True
+
   local_rev = get_git_rev(INFRA_DIR, 'HEAD')
 
   subprocess.check_call(
