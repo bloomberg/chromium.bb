@@ -38,7 +38,7 @@ import java.util.zip.GZIPOutputStream;
  * and false otherwise.
  */
 public class MinidumpUploadCallable implements Callable<Integer> {
-    private static final String TAG = "cr.MDUploadCallable";
+    private static final String TAG = "MDUploadCallable";
 
     // These preferences are obsolete and are kept only for removing from user preferences.
     protected static final String PREF_DAY_UPLOAD_COUNT = "crash_day_dump_upload_count";
@@ -84,13 +84,15 @@ public class MinidumpUploadCallable implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (!mPermManager.isUploadPermitted()) {
-            Log.i(TAG, "Minidump upload is not permitted");
+        if (!mPermManager.isUploadUserPermitted()) {
+            Log.i(TAG, "Minidump upload is not permitted by user. Marking file as uploaded for "
+                    + "cleanup to prevent future uploads.");
+            cleanupMinidumpFile();
             return UPLOAD_DISABLED;
         }
 
         boolean isLimited = mPermManager.isUploadLimited();
-        if (isLimited) {
+        if (isLimited || !mPermManager.isUploadPermitted()) {
             Log.i(TAG, "Minidump cannot currently be uploaded due to constraints.");
             return UPLOAD_FAILURE;
         }

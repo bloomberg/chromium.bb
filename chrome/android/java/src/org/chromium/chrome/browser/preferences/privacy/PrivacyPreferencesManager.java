@@ -246,6 +246,26 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
+     * Check whether the user allows uploading.
+     * This doesn't take network condition into consideration.
+     * A crash dump may be retried if this check passes.
+     *
+     * @return whether user's preference allows uploading crash dump.
+     */
+    @Override
+    public boolean isUploadUserPermitted() {
+        if (!mCrashUploadingEnabled) return false;
+        if (isCellularExperimentEnabled()) return isUsageAndCrashReportingEnabled();
+
+        if (isMobileNetworkCapable()) {
+            String option =
+                    mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload);
+            return option.equals(mCrashDumpAlwaysUpload) || option.equals(mCrashDumpWifiOnlyUpload);
+        }
+        return mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
+    }
+
+    /**
      * Check whether uploading crash dump should be in constrained mode based on user experiments
      * and current connection type. This function shows whether in general uploads should be limited
      * for this user and does not determine whether crash uploads are currently possible or not. Use

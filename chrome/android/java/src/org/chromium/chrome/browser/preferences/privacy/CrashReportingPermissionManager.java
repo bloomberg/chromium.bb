@@ -16,6 +16,13 @@ public interface CrashReportingPermissionManager {
     public boolean isUploadPermitted();
 
     /**
+     * Check whether to allow uploading crash dump now based on user consent only.
+     *
+     * @return whether user allows uploading crash dump.
+     */
+    public boolean isUploadUserPermitted();
+
+    /**
      * Check whether uploading crash dump should be in constrained mode based on user experiments
      * and current connection type. This function shows whether in general uploads should be limited
      * for this user and does not determine whether crash uploads are currently possible or not. Use

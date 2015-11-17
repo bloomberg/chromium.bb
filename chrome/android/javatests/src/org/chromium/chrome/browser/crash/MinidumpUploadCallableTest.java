@@ -114,16 +114,24 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     private static class MockCrashReportingPermissionManager
             implements CrashReportingPermissionManager {
         private final boolean mIsPermitted;
+        private final boolean mIsUserPermitted;
         private final boolean mIsLimited;
 
-        MockCrashReportingPermissionManager(boolean isPermitted, boolean isLimited) {
+        MockCrashReportingPermissionManager(boolean isPermitted,
+                boolean isUserPermitted, boolean isLimited) {
             mIsPermitted = isPermitted;
+            mIsUserPermitted = isUserPermitted;
             mIsLimited = isLimited;
         }
 
         @Override
         public boolean isUploadPermitted() {
             return mIsPermitted;
+        }
+
+        @Override
+        public boolean isUploadUserPermitted() {
+            return mIsUserPermitted;
         }
 
         @Override
@@ -173,7 +181,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCallWhenCurrentlyPermitted() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(true, false);
+                new MockCrashReportingPermissionManager(true, true, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
 
@@ -187,15 +195,30 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallPermittedButNotUnderCurrentCircumstances() throws Exception {
+    public void testCallNotPermittedByUser() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(false, false);
+                new MockCrashReportingPermissionManager(false, false, false);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
         assertEquals(MinidumpUploadCallable.UPLOAD_DISABLED,
+                minidumpUploadCallable.call().intValue());
+        assertTrue(mExpectedFileAfterUpload.exists());
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCallPermittedButNotUnderCurrentCircumstances() throws Exception {
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager(false, true, false);
+
+        HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
+
+        MinidumpUploadCallable minidumpUploadCallable =
+                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+        assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
                 minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
     }
@@ -204,7 +227,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCrashUploadConstrainted() throws Exception {
         CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager(true, true);
+                new MockCrashReportingPermissionManager(true, true, true);
 
         HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory();
 
