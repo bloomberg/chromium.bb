@@ -44532,6 +44532,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.MemoryUsed" units="kb">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The memory used by the software reporter tool as reported by the tool itself
+    via the registry. Logged just after the software reporter tool has finished.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.MinorVersion">
   <owner>mad@chromium.org</owner>
   <summary>

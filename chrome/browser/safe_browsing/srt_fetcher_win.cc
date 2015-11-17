@@ -76,11 +76,13 @@ PromptTrigger g_prompt_trigger_;
 
 const wchar_t kScanTimesSubKey[] = L"ScanTimes";
 const wchar_t kFoundUwsValueName[] = L"FoundUws";
+const wchar_t kMemoryUsedValueName[] = L"MemoryUsed";
 
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
     "SoftwareReporter.FoundUwSReadError";
 const char kScanTimesMetricName[] = "SoftwareReporter.UwSScanTimes";
+const char kMemoryUsedMetricName[] = "SoftwareReporter.MemoryUsed";
 
 void DisplaySRTPrompt(const base::FilePath& download_path) {
   // Find the last active browser, which may be NULL, in which case we won't
@@ -186,6 +188,21 @@ void ReportFoundUwS() {
     reporter_key.DeleteValue(kFoundUwsValueName);
 
     UMA_HISTOGRAM_BOOLEAN(kFoundUwsReadErrorMetricName, parse_error);
+  }
+}
+
+// Reports to UMA the memory usage of the software reporter tool as reported by
+// the tool itself in the Windows registry.
+void ReportSwReporterMemoryUsage() {
+  base::win::RegKey reporter_key(HKEY_CURRENT_USER,
+                                 kSoftwareRemovalToolRegistryKey,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
+  DWORD memory_used = 0;
+  if (reporter_key.Valid() &&
+      reporter_key.ReadValueDW(kMemoryUsedValueName, &memory_used) ==
+          ERROR_SUCCESS) {
+    UMA_HISTOGRAM_MEMORY_KB(kMemoryUsedMetricName, memory_used);
+    reporter_key.DeleteValue(kMemoryUsedValueName);
   }
 }
 
@@ -483,6 +500,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     }
     ReportSwReporterRuntime(reporter_running_time);
     ReportSwReporterScanTimes();
+    ReportSwReporterMemoryUsage();
 
     if (!IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
