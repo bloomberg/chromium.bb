@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -99,11 +98,11 @@ class MockMojoHostResolver : public HostResolverMojo::Impl {
                   interfaces::HostResolverRequestClientPtr client) override;
 
  private:
-  ScopedVector<HostResolverAction> actions_;
+  std::vector<scoped_ptr<HostResolverAction>> actions_;
   size_t results_returned_ = 0;
   mojo::Array<interfaces::HostResolverRequestInfoPtr> requests_received_;
   const base::Closure request_connection_error_callback_;
-  ScopedVector<MockMojoHostResolverRequest> requests_;
+  std::vector<scoped_ptr<MockMojoHostResolverRequest>> requests_;
 };
 
 MockMojoHostResolver::MockMojoHostResolver(
@@ -130,8 +129,8 @@ void MockMojoHostResolver::ResolveDns(
                            actions_[results_returned_]->addresses.Pass());
       break;
     case HostResolverAction::RETAIN:
-      requests_.push_back(new MockMojoHostResolverRequest(
-          client.Pass(), request_connection_error_callback_));
+      requests_.push_back(make_scoped_ptr(new MockMojoHostResolverRequest(
+          client.Pass(), request_connection_error_callback_)));
       break;
     case HostResolverAction::DROP:
       client.reset();
