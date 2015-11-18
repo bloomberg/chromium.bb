@@ -77,7 +77,6 @@
         'test/test_device_client.cc',
         'test/test_device_client.h',
         'test/usb_test_gadget_impl.cc',
-        'usb/usb_context_unittest.cc',
         'usb/usb_descriptors_unittest.cc',
         'usb/usb_device_filter_unittest.cc',
         'usb/usb_device_handle_unittest.cc',
@@ -111,11 +110,7 @@
         }],
         ['OS=="android"', {
           'dependencies!': [
-            '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
             'battery/battery.gyp:device_battery',
-            'devices_app/devices_app.gyp:devices_app_lib',
-            'usb/usb.gyp:device_usb',
-            'usb/usb.gyp:device_usb_mocks',
             'serial/serial.gyp:device_serial',
             'serial/serial.gyp:device_serial_test_util',
             'hid/hid.gyp:device_hid',
@@ -128,10 +123,10 @@
           'sources/': [
             ['exclude', '(^|/)hid'],
             ['exclude', '(^|/)serial'],
-            ['exclude', '(^|/)usb'],
           ],
           'sources!': [
             'battery/battery_status_service_unittest.cc',
+            'usb/usb_context_unittest.cc',
           ],
         }],
         ['OS=="mac"', {

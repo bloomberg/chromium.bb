@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -111,7 +112,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
@@ -217,9 +217,7 @@ BrowserProcessImpl::BrowserProcessImpl(
   ui::InitIdleMonitor();
 #endif
 
-#if !defined(OS_ANDROID)
   device_client_.reset(new ChromeDeviceClient);
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
   // Athena sets its own instance during Athena's init process.

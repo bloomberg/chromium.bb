@@ -11,8 +11,6 @@ generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
 source_set("usb") {
   sources = [
-    "usb_context.cc",
-    "usb_context.h",
     "usb_descriptors.cc",
     "usb_descriptors.h",
     "usb_device.cc",
@@ -21,18 +19,10 @@ source_set("usb") {
     "usb_device_filter.h",
     "usb_device_handle.cc",
     "usb_device_handle.h",
-    "usb_device_handle_impl.cc",
-    "usb_device_handle_impl.h",
-    "usb_device_impl.cc",
-    "usb_device_impl.h",
-    "usb_error.cc",
-    "usb_error.h",
     "usb_ids.cc",
     "usb_ids.h",
     "usb_service.cc",
     "usb_service.h",
-    "usb_service_impl.cc",
-    "usb_service_impl.h",
     "webusb_descriptors.cc",
     "webusb_descriptors.h",
     generated_ids,
@@ -45,22 +35,39 @@ source_set("usb") {
     "//components/device_event_log",
     "//device/core",
     "//net",
-    "//third_party/libusb",
   ]
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
   }
+
+  if (is_android) {
+    sources += [
+      "usb_service_android.cc",
+      "usb_service_android.h",
+    ]
+  } else {
+    sources += [
+      "usb_context.cc",
+      "usb_context.h",
+      "usb_device_handle_impl.cc",
+      "usb_device_handle_impl.h",
+      "usb_device_impl.cc",
+      "usb_device_impl.h",
+      "usb_error.cc",
+      "usb_error.h",
+      "usb_service_impl.cc",
+      "usb_service_impl.h",
+    ]
+
+    deps += [ "//third_party/libusb" ]
+  }
+
   if (is_chromeos) {
     deps += [
       "//chromeos",
       "//dbus",
     ]
-  }
-
-  # TODO(moshayedi): crbug.com/549257. Add USB support for Aura on Android.
-  if (is_android) {
-    deps -= [ "//third_party/libusb" ]
   }
 }
 

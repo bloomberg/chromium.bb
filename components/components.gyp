@@ -129,6 +129,7 @@
         'web_cache.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',
+        'webusb.gypi',
       ],
     }],
     ['OS == "ios"', {
@@ -143,7 +144,6 @@
         'feedback.gypi',
         'proximity_auth.gypi',
         'storage_monitor.gypi',
-        'webusb.gypi',
       ]
     }],
     ['chromeos == 1', {

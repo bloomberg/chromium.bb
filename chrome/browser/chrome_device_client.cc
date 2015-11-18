@@ -26,9 +26,11 @@ device::UsbService* ChromeDeviceClient::GetUsbService() {
 
 device::HidService* ChromeDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if !defined(OS_ANDROID)
   if (!hid_service_) {
     hid_service_ = device::HidService::Create(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
+#endif
   return hid_service_.get();
 }

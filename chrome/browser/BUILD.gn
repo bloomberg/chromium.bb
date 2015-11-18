@@ -319,8 +319,13 @@ source_set("browser") {
       "//components/visitedlink/common",
       "//components/web_cache/browser",
       "//components/web_modal",
+      "//components/webusb",
       "//content/app/resources",
+      "//device/core",
+      "//device/devices_app/public/cpp",
+      "//device/devices_app/public/cpp:factory",
       "//device/devices_app/usb/public/interfaces",
+      "//device/usb",
       "//media",
       "//media/midi",
       "//mojo/application/public/cpp",
@@ -698,14 +703,7 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
                            ".",
                            "//chrome")
-    deps += [
-      "//components/feedback",
-      "//components/webusb",
-      "//device/core",
-      "//device/devices_app/public/cpp",
-      "//device/devices_app/public/cpp:factory",
-      "//device/usb",
-    ]
+    deps += [ "//components/feedback" ]
   }
 
   if (!is_chrome_branded) {

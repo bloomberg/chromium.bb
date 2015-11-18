@@ -73,6 +73,27 @@
             '../udev_linux/udev.gyp:udev_linux',
           ],
         }],
+        ['OS=="android"', {
+          'dependencies!': [
+            '../../third_party/libusb/libusb.gyp:libusb',
+          ],
+          'sources': [
+            'usb_service_android.cc',
+            'usb_service_android.h',
+          ],
+          'sources!': [
+            'usb_context.cc',
+            'usb_context.h',
+            'usb_device_handle_impl.cc',
+            'usb_device_handle_impl.h',
+            'usb_device_impl.cc',
+            'usb_device_impl.h',
+            'usb_error.cc',
+            'usb_error.h',
+            'usb_service_impl.cc',
+            'usb_service_impl.h',
+          ]
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../../chromeos/chromeos.gyp:chromeos',

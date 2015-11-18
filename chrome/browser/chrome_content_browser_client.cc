@@ -639,7 +639,6 @@ void GetGuestViewDefaultContentSettingRules(
 void CreateUsbDeviceManager(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::DeviceManager> request) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {
@@ -650,7 +649,6 @@ void CreateUsbDeviceManager(
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateDeviceManager(render_frame_host, request.Pass());
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 
 }  // namespace

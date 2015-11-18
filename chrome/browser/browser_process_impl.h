@@ -319,9 +319,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<ChromeChildProcessWatcher> child_process_watcher_;
 
-#if !defined(OS_ANDROID)
   scoped_ptr<ChromeDeviceClient> device_client_;
-#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // Any change to this #ifdef must be reflected as well in
