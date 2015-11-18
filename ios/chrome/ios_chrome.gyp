@@ -529,6 +529,8 @@
         'browser/ui/webui/about_ui.h',
         'browser/ui/webui/crashes_ui.cc',
         'browser/ui/webui/crashes_ui.h',
+        'browser/ui/webui/gcm/gcm_internals_ui.cc',
+        'browser/ui/webui/gcm/gcm_internals_ui.h',
         'browser/ui/webui/net_export/net_export_ui.cc',
         'browser/ui/webui/net_export/net_export_ui.h',
         'browser/ui/webui/sync_internals/sync_internals_message_handler.cc',
