@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
@@ -131,8 +130,8 @@ class DnsSocketData {
 
   scoped_ptr<DnsQuery> query_;
   bool use_tcp_;
-  ScopedVector<uint16> lengths_;
-  ScopedVector<DnsResponse> responses_;
+  std::vector<scoped_ptr<uint16>> lengths_;
+  std::vector<scoped_ptr<DnsResponse>> responses_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   scoped_ptr<SequencedSocketData> provider_;
@@ -467,7 +466,7 @@ class DnsTransactionTest : public testing::Test {
 
   DnsConfig config_;
 
-  ScopedVector<DnsSocketData> socket_data_;
+  std::vector<scoped_ptr<DnsSocketData>> socket_data_;
 
   std::deque<int> transaction_ids_;
   scoped_ptr<TestSocketFactory> socket_factory_;
