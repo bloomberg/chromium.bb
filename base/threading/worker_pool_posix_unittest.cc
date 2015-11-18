@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -27,17 +26,15 @@ class PosixDynamicThreadPool::PosixDynamicThreadPoolPeer {
   ConditionVariable* pending_tasks_available_cv() {
     return &pool_->pending_tasks_available_cv_;
   }
-  size_t num_pending_tasks() const { return pool_->pending_tasks_.size(); }
-  size_t num_idle_threads() const { return pool_->num_idle_threads_; }
-  ConditionVariable* num_threads_cv() { return pool_->num_threads_cv_.get(); }
-  void set_num_threads_cv(ConditionVariable* cv) {
-    pool_->num_threads_cv_.reset(cv);
+  const std::queue<PendingTask>& pending_tasks() const {
+    return pool_->pending_tasks_;
   }
-  const std::vector<PlatformThreadHandle>& threads_to_cleanup() const {
-    return pool_->threads_to_cleanup_;
+  int num_idle_threads() const { return pool_->num_idle_threads_; }
+  ConditionVariable* num_idle_threads_cv() {
+    return pool_->num_idle_threads_cv_.get();
   }
-  const std::vector<PlatformThreadHandle>& worker_threads() const {
-    return pool_->worker_threads_;
+  void set_num_idle_threads_cv(ConditionVariable* cv) {
+    pool_->num_idle_threads_cv_.reset(cv);
   }
 
  private:
@@ -47,8 +44,6 @@ class PosixDynamicThreadPool::PosixDynamicThreadPoolPeer {
 };
 
 namespace {
-
-const int64 kDefaultIdleSecondsBeforeExit = 60 * 60;
 
 // IncrementingTask's main purpose is to increment a counter.  It also updates a
 // set of unique thread ids, and signals a ConditionVariable on completion.
@@ -61,10 +56,10 @@ void IncrementingTask(Lock* counter_lock,
                       Lock* unique_threads_lock,
                       std::set<PlatformThreadId>* unique_threads) {
   {
-    AutoLock locked(*unique_threads_lock);
+    base::AutoLock locked(*unique_threads_lock);
     unique_threads->insert(PlatformThread::CurrentId());
   }
-  AutoLock locked(*counter_lock);
+  base::AutoLock locked(*counter_lock);
   (*counter)++;
 }
 
@@ -78,12 +73,12 @@ struct BlockingIncrementingTaskArgs {
   Lock* num_waiting_to_start_lock;
   int* num_waiting_to_start;
   ConditionVariable* num_waiting_to_start_cv;
-  WaitableEvent* start;
+  base::WaitableEvent* start;
 };
 
 void BlockingIncrementingTask(const BlockingIncrementingTaskArgs& args) {
   {
-    AutoLock num_waiting_to_start_locked(*args.num_waiting_to_start_lock);
+    base::AutoLock num_waiting_to_start_locked(*args.num_waiting_to_start_lock);
     (*args.num_waiting_to_start)++;
   }
   args.num_waiting_to_start_cv->Signal();
@@ -95,62 +90,53 @@ void BlockingIncrementingTask(const BlockingIncrementingTaskArgs& args) {
 class PosixDynamicThreadPoolTest : public testing::Test {
  protected:
   PosixDynamicThreadPoolTest()
-      : counter_(0),
+      : pool_(new base::PosixDynamicThreadPool("dynamic_pool", 60 * 60)),
+        peer_(pool_.get()),
+        counter_(0),
         num_waiting_to_start_(0),
         num_waiting_to_start_cv_(&num_waiting_to_start_lock_),
         start_(true, false) {}
 
+  void SetUp() override {
+    peer_.set_num_idle_threads_cv(new ConditionVariable(peer_.lock()));
+  }
+
   void TearDown() override {
     // Wake up the idle threads so they can terminate.
     if (pool_.get())
-      pool_->Terminate(false);
-  }
-
-  void Initialize(TimeDelta idle_time_before_exit) {
-    pool_ = new PosixDynamicThreadPool("dynamic_pool", idle_time_before_exit);
-    peer_.reset(
-        new PosixDynamicThreadPool::PosixDynamicThreadPoolPeer(pool_.get()));
-    peer_->set_num_threads_cv(new ConditionVariable(peer_->lock()));
+      pool_->Terminate();
   }
 
   void WaitForTasksToStart(int num_tasks) {
-    AutoLock num_waiting_to_start_locked(num_waiting_to_start_lock_);
+    base::AutoLock num_waiting_to_start_locked(num_waiting_to_start_lock_);
     while (num_waiting_to_start_ < num_tasks) {
       num_waiting_to_start_cv_.Wait();
     }
   }
 
-  void WaitForIdleThreads(size_t num_idle_threads) {
-    AutoLock pool_locked(*peer_->lock());
-    while (peer_->num_idle_threads() != num_idle_threads) {
-      peer_->num_threads_cv()->Wait();
+  void WaitForIdleThreads(int num_idle_threads) {
+    base::AutoLock pool_locked(*peer_.lock());
+    while (peer_.num_idle_threads() < num_idle_threads) {
+      peer_.num_idle_threads_cv()->Wait();
     }
   }
 
-  void WaitForLivingThreads(int num_living_threads) {
-    AutoLock pool_locked(*peer_->lock());
-    while (static_cast<int>(peer_->worker_threads().size()) !=
-           num_living_threads) {
-      peer_->num_threads_cv()->Wait();
-    }
+  base::Closure CreateNewIncrementingTaskCallback() {
+    return base::Bind(&IncrementingTask, &counter_lock_, &counter_,
+                      &unique_threads_lock_, &unique_threads_);
   }
 
-  Closure CreateNewIncrementingTaskCallback() {
-    return Bind(&IncrementingTask, &counter_lock_, &counter_,
-                &unique_threads_lock_, &unique_threads_);
-  }
-
-  Closure CreateNewBlockingIncrementingTaskCallback() {
+  base::Closure CreateNewBlockingIncrementingTaskCallback() {
     BlockingIncrementingTaskArgs args = {
         &counter_lock_, &counter_, &unique_threads_lock_, &unique_threads_,
         &num_waiting_to_start_lock_, &num_waiting_to_start_,
         &num_waiting_to_start_cv_, &start_
     };
-    return Bind(&BlockingIncrementingTask, args);
+    return base::Bind(&BlockingIncrementingTask, args);
   }
 
-  scoped_refptr<PosixDynamicThreadPool> pool_;
-  scoped_ptr<PosixDynamicThreadPool::PosixDynamicThreadPoolPeer> peer_;
+  scoped_refptr<base::PosixDynamicThreadPool> pool_;
+  base::PosixDynamicThreadPool::PosixDynamicThreadPoolPeer peer_;
   Lock counter_lock_;
   int counter_;
   Lock unique_threads_lock_;
@@ -158,17 +144,15 @@ class PosixDynamicThreadPoolTest : public testing::Test {
   Lock num_waiting_to_start_lock_;
   int num_waiting_to_start_;
   ConditionVariable num_waiting_to_start_cv_;
-  WaitableEvent start_;
+  base::WaitableEvent start_;
 };
 
 }  // namespace
 
 TEST_F(PosixDynamicThreadPoolTest, Basic) {
-  Initialize(TimeDelta::FromSeconds(kDefaultIdleSecondsBeforeExit));
-
-  EXPECT_EQ(0U, peer_->num_idle_threads());
+  EXPECT_EQ(0, peer_.num_idle_threads());
   EXPECT_EQ(0U, unique_threads_.size());
-  EXPECT_EQ(0U, peer_->num_pending_tasks());
+  EXPECT_EQ(0U, peer_.pending_tasks().size());
 
   // Add one task and wait for it to be completed.
   pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
@@ -181,8 +165,6 @@ TEST_F(PosixDynamicThreadPoolTest, Basic) {
 }
 
 TEST_F(PosixDynamicThreadPoolTest, ReuseIdle) {
-  Initialize(TimeDelta::FromSeconds(kDefaultIdleSecondsBeforeExit));
-
   // Add one task and wait for it to be completed.
   pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
 
@@ -197,13 +179,11 @@ TEST_F(PosixDynamicThreadPoolTest, ReuseIdle) {
   WaitForIdleThreads(2);
 
   EXPECT_EQ(2U, unique_threads_.size());
-  EXPECT_EQ(2U, peer_->num_idle_threads());
+  EXPECT_EQ(2, peer_.num_idle_threads());
   EXPECT_EQ(3, counter_);
 }
 
 TEST_F(PosixDynamicThreadPoolTest, TwoActiveTasks) {
-  Initialize(TimeDelta::FromSeconds(kDefaultIdleSecondsBeforeExit));
-
   // Add two blocking tasks.
   pool_->PostTask(FROM_HERE, CreateNewBlockingIncrementingTaskCallback());
   pool_->PostTask(FROM_HERE, CreateNewBlockingIncrementingTaskCallback());
@@ -215,14 +195,12 @@ TEST_F(PosixDynamicThreadPoolTest, TwoActiveTasks) {
   WaitForIdleThreads(2);
 
   EXPECT_EQ(2U, unique_threads_.size());
-  EXPECT_EQ(2U, peer_->num_idle_threads()) << "Existing threads are now idle.";
+  EXPECT_EQ(2, peer_.num_idle_threads()) << "Existing threads are now idle.";
   EXPECT_EQ(2, counter_);
 }
 
 TEST_F(PosixDynamicThreadPoolTest, Complex) {
-  Initialize(TimeDelta::FromSeconds(kDefaultIdleSecondsBeforeExit));
-
-  // Add one non blocking tasks and wait for it to finish.
+  // Add two non blocking tasks and wait for them to finish.
   pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
 
   WaitForIdleThreads(1);
@@ -237,15 +215,15 @@ TEST_F(PosixDynamicThreadPoolTest, Complex) {
   WaitForIdleThreads(2);
 
   EXPECT_EQ(3, counter_);
-  EXPECT_EQ(2U, peer_->num_idle_threads());
+  EXPECT_EQ(2, peer_.num_idle_threads());
   EXPECT_EQ(2U, unique_threads_.size());
 
   // Wake up all idle threads so they can exit.
   {
-    AutoLock locked(*peer_->lock());
-    while (peer_->worker_threads().size() > 0) {
-      peer_->pending_tasks_available_cv()->Signal();
-      peer_->num_threads_cv()->Wait();
+    base::AutoLock locked(*peer_.lock());
+    while (peer_.num_idle_threads() > 0) {
+      peer_.pending_tasks_available_cv()->Signal();
+      peer_.num_idle_threads_cv()->Wait();
     }
   }
 
@@ -269,77 +247,8 @@ TEST_F(PosixDynamicThreadPoolTest, Complex) {
   // be either 2 or 3 unique thread IDs in the set at this stage in the test.
   EXPECT_TRUE(unique_threads_.size() >= 2 && unique_threads_.size() <= 3)
       << "unique_threads_.size() = " << unique_threads_.size();
-  EXPECT_EQ(1U, peer_->num_idle_threads());
+  EXPECT_EQ(1, peer_.num_idle_threads());
   EXPECT_EQ(4, counter_);
-}
-
-TEST_F(PosixDynamicThreadPoolTest, NoNewThreadForCleanup) {
-  // Let worker threads quit quickly after they are idle.
-  Initialize(TimeDelta::FromMilliseconds(1));
-
-  for (size_t i = 0; i < 2; ++i) {
-    // This will create a worker thread.
-    pool_->PostTask(FROM_HERE, CreateNewBlockingIncrementingTaskCallback());
-
-    WaitForTasksToStart(1);
-
-    PlatformThreadHandle worker;
-    {
-      AutoLock locked(*peer_->lock());
-      ASSERT_EQ(1u, peer_->worker_threads().size());
-      worker = peer_->worker_threads()[0];
-    }
-
-    start_.Signal();
-
-    // Wait for the worker thread to quit.
-    WaitForLivingThreads(0);
-
-    {
-      AutoLock locked(*peer_->lock());
-      // The thread that just quit is recorded for cleanup. But we don't create
-      // a worker thread just for doing that.
-      ASSERT_EQ(1u, peer_->threads_to_cleanup().size());
-      EXPECT_TRUE(worker.is_equal(peer_->threads_to_cleanup()[0]));
-      EXPECT_TRUE(peer_->worker_threads().empty());
-    }
-  }
-
-  pool_->Terminate(true);
-
-  {
-    AutoLock locked(*peer_->lock());
-    EXPECT_TRUE(peer_->threads_to_cleanup().empty());
-    EXPECT_TRUE(peer_->worker_threads().empty());
-  }
-}
-
-TEST_F(PosixDynamicThreadPoolTest, BlockingTerminate) {
-  // Let worker threads quit quickly after they are idle.
-  Initialize(TimeDelta::FromMilliseconds(3));
-
-  for (size_t i = 0; i < 5; ++i) {
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(i));
-    for (size_t j = 0; j < 50; ++j)
-      pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
-  }
-
-  pool_->Terminate(true);
-
-  {
-    AutoLock locked(*peer_->lock());
-    EXPECT_TRUE(peer_->threads_to_cleanup().empty());
-    EXPECT_TRUE(peer_->worker_threads().empty());
-  }
-
-  int counter = counter_;
-  EXPECT_GE(5 * 50, counter);
-  EXPECT_GE(5 * 50u, unique_threads_.size());
-
-  // Make sure that no threads are still running and trying to modify
-  // |counter_|.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
-  EXPECT_EQ(counter, counter_);
 }
 
 }  // namespace base
