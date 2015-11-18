@@ -356,6 +356,8 @@ cvox.KeyMap.fromJSON = function(json) {
           cvox.PlatformUtil.matchesPlatform(value.sequence.platformFilter);
     });
   } catch (e) {
+    console.error('Failed to load key map from JSON');
+    console.error(e);
     return null;
   }
 
