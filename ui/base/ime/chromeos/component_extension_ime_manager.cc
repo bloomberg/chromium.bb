@@ -33,7 +33,6 @@ const char* kLoginLayoutWhitelist[] = {
   "es(cat)",
   "fi",
   "fr",
-  "fr(bepo)",
   "fr(oss)",
   "gb(dvorak)",
   "gb(extd)",
