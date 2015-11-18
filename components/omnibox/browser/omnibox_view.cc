@@ -81,10 +81,18 @@ int OmniboxView::GetIcon() const {
   return (id == IDR_OMNIBOX_HTTP) ? IDR_LOCATION_BAR_HTTP : id;
 }
 
-gfx::VectorIconId OmniboxView::GetVectorIcon() const {
+gfx::VectorIconId OmniboxView::GetVectorIcon(bool invert) const {
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!IsEditingOrEmpty())
-    return controller_->GetToolbarModel()->GetVectorIcon();
+  if (!IsEditingOrEmpty()) {
+    gfx::VectorIconId id = controller_->GetToolbarModel()->GetVectorIcon();
+    if (invert) {
+      if (id == gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID)
+        return gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_INVERT;
+      if (id == gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID)
+        return gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID_INVERT;
+    }
+    return id;
+  }
   // Reuse the dropdown icons...
   gfx::VectorIconId id = AutocompleteMatch::TypeToVectorIcon(
       model_ ? model_->CurrentTextType()

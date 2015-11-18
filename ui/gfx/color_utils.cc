@@ -291,12 +291,13 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
                         static_cast<int>(b));
 }
 
+bool IsDark(SkColor color) {
+  return GetLuminanceForColor(color) < 128;
+}
+
 SkColor BlendTowardOppositeLuminance(SkColor color, SkAlpha alpha) {
-  unsigned char background_luminance =
-      color_utils::GetLuminanceForColor(color);
-  const SkColor blend_color =
-      (background_luminance < 128) ? SK_ColorWHITE : SK_ColorBLACK;
-  return color_utils::AlphaBlend(blend_color, color, alpha);
+  return AlphaBlend(IsDark(color) ? SK_ColorWHITE : SK_ColorBLACK, color,
+                    alpha);
 }
 
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
@@ -334,8 +335,7 @@ bool IsInvertedColorScheme() {
 SkColor DeriveDefaultIconColor(SkColor text_color) {
   // This function works similarly to BlendTowardOppositeLuminance, but uses a
   // different blend value for lightening and darkening.
-  unsigned char luminance = color_utils::GetLuminanceForColor(text_color);
-  if (luminance < 128) {
+  if (IsDark(text_color)) {
     // For black text, this comes out to kChromeIconGrey.
     return color_utils::AlphaBlend(SK_ColorWHITE, text_color,
                                    SkColorGetR(gfx::kChromeIconGrey));

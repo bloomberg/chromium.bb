@@ -79,6 +79,8 @@ class IconLabelBubbleView : public views::View {
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
+  SkColor GetParentBackgroundColor() const;
+
   gfx::Size GetSizeForLabelWidth(int width) const;
 
  private:
@@ -90,9 +92,9 @@ class IconLabelBubbleView : public views::View {
   // As above, but for Material Design. TODO(estade): remove/replace the above.
   int GetBubbleOuterPaddingMd(bool leading) const;
 
-  // Sets a background color on |label_| based on |background_image_color| and
-  // |parent_background_color_|.
-  void SetLabelBackgroundColor(SkColor background_image_color);
+  // Sets a background color on |label_| based on |chip_background_color| and
+  // the parent's bg color.
+  void SetLabelBackgroundColor(SkColor chip_background_color);
 
   // views::View:
   const char* GetClassName() const override;
@@ -107,6 +109,9 @@ class IconLabelBubbleView : public views::View {
 
   bool is_extension_icon_;
 
+  // This is only used in pre-MD. In MD, the background color is derived from
+  // the native theme (so it responds to native theme updates). TODO(estade):
+  // remove when MD is default.
   SkColor parent_background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);

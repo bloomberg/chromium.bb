@@ -284,6 +284,9 @@ class LocationBarView : public LocationBar,
   // The vertical padding to be applied to all contained views.
   int VerticalPadding() const;
 
+  // Updates |location_icon_view_| based on the current state and theme.
+  void RefreshLocationIcon();
+
   // Updates the visibility state of the Content Blocked icons to reflect what
   // is actually blocked on the current page. Returns true if the visibility
   // of at least one of the views in |content_setting_views_| changed.

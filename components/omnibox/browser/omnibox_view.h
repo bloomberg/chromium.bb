@@ -75,8 +75,10 @@ class OmniboxView {
   // Returns the resource ID of the icon to show for the current text.
   int GetIcon() const;
 
-  // Like GetIcon(), but returns a vector icon identifier.
-  gfx::VectorIconId GetVectorIcon() const;
+  // Like GetIcon(), but returns a vector icon identifier. If |invert| is true,
+  // this returns an icon suitable for display in an inverted (light-on-dark)
+  // color scheme.
+  gfx::VectorIconId GetVectorIcon(bool invert) const;
 
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will

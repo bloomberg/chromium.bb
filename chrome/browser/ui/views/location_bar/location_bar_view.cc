@@ -339,8 +339,7 @@ SkColor LocationBarView::GetColor(
 
 SkColor LocationBarView::GetSecureTextColor(
     SecurityStateModel::SecurityLevel security_level) const {
-  bool inverted =
-      color_utils::GetLuminanceForColor(GetColor(BACKGROUND)) < 128;
+  bool inverted = color_utils::IsDark(GetColor(BACKGROUND));
   SkColor color;
   switch (security_level) {
     case SecurityStateModel::EV_SECURE:
@@ -792,6 +791,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return;
 
+  RefreshLocationIcon();
   set_background(new BackgroundWith1PxBorder(
       GetColor(BACKGROUND), SkColorSetARGB(0x4D, 0x00, 0x00, 0x00),
       is_popup_mode_));
@@ -866,6 +866,22 @@ int LocationBarView::GetVerticalEdgeThickness() const {
 int LocationBarView::VerticalPadding() const {
   return is_popup_mode_ ?
       kPopupEdgeThickness : GetLayoutConstant(LOCATION_BAR_VERTICAL_PADDING);
+}
+
+void LocationBarView::RefreshLocationIcon() {
+  // |omnibox_view_| may not be ready yet if Init() has not been called. The
+  // icon will be set soon by OnChanged().
+  if (!omnibox_view_)
+    return;
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    location_icon_view_->SetImage(gfx::CreateVectorIcon(
+        omnibox_view_->GetVectorIcon(color_utils::IsDark(GetColor(BACKGROUND))),
+        16, color_utils::DeriveDefaultIconColor(GetColor(TEXT))));
+  } else {
+    location_icon_view_->SetImage(
+        *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));
+  }
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
@@ -1359,11 +1375,7 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 // LocationBarView, private OmniboxEditController implementation:
 
 void LocationBarView::OnChanged() {
-  location_icon_view_->SetImage(
-      ui::MaterialDesignController::IsModeMaterial()
-          ? gfx::CreateVectorIcon(omnibox_view_->GetVectorIcon(), 16,
-                                  gfx::kChromeIconGrey)
-          : *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));
+  RefreshLocationIcon();
   location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
 
   Layout();

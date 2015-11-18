@@ -88,6 +88,9 @@ GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
 GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
                               SkAlpha alpha);
 
+// Returns true if the luminance of |color| is closer to black than white.
+GFX_EXPORT bool IsDark(SkColor color);
+
 // Makes a dark color lighter or a light color darker by blending |color| with
 // white or black depending on its current luminance.  |alpha| controls the
 // amount of white or black that will be alpha-blended into |color|.

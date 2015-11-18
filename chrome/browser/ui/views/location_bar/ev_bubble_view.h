@@ -28,6 +28,7 @@ class EVBubbleView : public IconLabelBubbleView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // Returns what the minimum size would be if the label text were |text|.
   gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;

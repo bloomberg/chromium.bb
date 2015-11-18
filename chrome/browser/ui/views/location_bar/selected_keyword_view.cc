@@ -17,6 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
@@ -56,11 +58,15 @@ void SelectedKeywordView::ResetImage() {
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LinkEnabled);
+  DCHECK(ui::MaterialDesignController::IsModeMaterial());
+  return color_utils::IsDark(GetParentBackgroundColor())
+             ? gfx::kGoogleBlue700
+             : GetNativeTheme()->GetSystemColor(
+                   ui::NativeTheme::kColorId_LinkEnabled);
 }
 
 SkColor SelectedKeywordView::GetBorderColor() const {
+  DCHECK(ui::MaterialDesignController::IsModeMaterial());
   return GetTextColor();
 }
 

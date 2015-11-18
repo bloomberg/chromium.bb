@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 
@@ -12,7 +14,9 @@ EVBubbleView::EVBubbleView(const gfx::FontList& font_list,
                            SkColor text_color,
                            SkColor parent_background_color,
                            LocationBarView* location_bar)
-    : IconLabelBubbleView(IDR_OMNIBOX_HTTPS_VALID,
+    : IconLabelBubbleView(ui::MaterialDesignController::IsModeMaterial()
+                              ? 0
+                              : IDR_OMNIBOX_HTTPS_VALID,
                           font_list,
                           text_color,
                           parent_background_color,
@@ -55,6 +59,16 @@ void EVBubbleView::OnGestureEvent(ui::GestureEvent* event) {
     page_info_helper_.ProcessEvent(*event);
     event->SetHandled();
   }
+}
+
+void EVBubbleView::OnNativeThemeChanged(const ui::NativeTheme* native_theme) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP, 16,
+        GetTextColor()));
+  }
+
+  IconLabelBubbleView::OnNativeThemeChanged(native_theme);
 }
 
 gfx::Size EVBubbleView::GetMinimumSizeForLabelText(
