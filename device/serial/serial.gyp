@@ -29,6 +29,11 @@
       'target_name': 'device_serial',
       'type': 'static_library',
       'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            '../../chromeos/chromeos.gyp:chromeos',
+          ],
+        }],
         ['use_udev == 1', {
           'dependencies': [
             '../udev_linux/udev.gyp:udev_linux',
