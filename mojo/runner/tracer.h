@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "mojo/application/public/cpp/lib/trace_provider_impl.h"
 #include "mojo/common/data_pipe_drainer.h"
+#include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace mojo {

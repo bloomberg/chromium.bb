@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/public/cpp/lib/tracing_impl.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 #include "base/trace_event/trace_event_impl.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 #ifdef NDEBUG
 #include "base/command_line.h"
-#include "mojo/application/public/cpp/switches.h"
+#include "mojo/services/tracing/public/cpp/switches.h"
 #endif
 
 namespace mojo {
@@ -27,7 +27,8 @@ void TracingImpl::Initialize(ApplicationImpl* app) {
   connection_->AddService(this);
 
 #ifdef NDEBUG
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEarlyTracing)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          tracing::kEarlyTracing)) {
     provider_impl_.ForceEnableTracing();
   }
 #else

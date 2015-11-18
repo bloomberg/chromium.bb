@@ -241,14 +241,8 @@
         'application/public/cpp/lib/service_provider_impl.cc',
         'application/public/cpp/lib/service_registry.cc',
         'application/public/cpp/lib/service_registry.h',
-        'application/public/cpp/lib/trace_provider_impl.cc',
-        'application/public/cpp/lib/trace_provider_impl.h',
-        'application/public/cpp/lib/tracing_impl.cc',
-        'application/public/cpp/lib/tracing_impl.h',
         'application/public/cpp/service_connector.h',
         'application/public/cpp/service_provider_impl.h',
-        'application/public/cpp/switches.cc',
-        'application/public/cpp/switches.h',
       ],
       'dependencies': [
         'mojo_application_bindings',
@@ -262,7 +256,6 @@
       'dependencies': [
         'mojo_application_bindings_mojom',
         'mojo_services.gyp:network_service_bindings_lib',
-        'mojo_services.gyp:tracing_service_bindings_lib',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [

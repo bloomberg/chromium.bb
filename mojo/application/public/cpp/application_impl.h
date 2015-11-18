@@ -21,8 +21,6 @@
 
 namespace mojo {
 
-class TracingImpl;
-
 // TODO(beng): This comment is hilariously out of date.
 // Utility class for communicating with the Shell, and providing Services
 // to clients.
@@ -152,7 +150,6 @@ class ApplicationImpl : public Application {
   ApplicationDelegate* delegate_;
   Binding<Application> binding_;
   ShellPtr shell_;
-  scoped_ptr<TracingImpl> tracing_impl_;
   std::string url_;
   Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;

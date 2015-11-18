@@ -10,15 +10,12 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
-#include "mojo/application/public/cpp/lib/tracing_impl.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
 namespace {
-
-bool g_has_tracing_service = false;
 
 void DefaultTerminationClosure() {
   if (base::MessageLoop::current() &&
@@ -109,23 +106,6 @@ void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
   shell_ = shell.Pass();
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
   url_ = url;
-
-  if (!g_has_tracing_service) {
-    // Each copy of base in our process must have one tracing service,
-    // otherwise data will be double counted or not counted. When we load a
-    // mojo application, either in process or creating a child process, the
-    // copy of base loaded needs to be connected to the tracing service.  It's
-    // the responsibility of the first application to connect to the tracing
-    // service to establish this connection.
-    //
-    // This is safe because if this is a ContentHandler, it will outlive all
-    // its served Applications. If this is a raw mojo application, it is the
-    // only Application served.
-    tracing_impl_.reset(new TracingImpl);
-    tracing_impl_->Initialize(this);
-    g_has_tracing_service = true;
-  }
-
   delegate_->Initialize(this);
 }
 

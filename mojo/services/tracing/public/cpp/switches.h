@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPLICATION_PUBLIC_CPP_SWITCHES_H_
-#define MOJO_APPLICATION_PUBLIC_CPP_SWITCHES_H_
+#ifndef MOJO_SERVICES_TRACING_PUBLIC_CPP_SWITCHES_H_
+#define MOJO_SERVICES_TRACING_PUBLIC_CPP_SWITCHES_H_
 
-namespace mojo {
+namespace tracing {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kEnableStatsCollectionBindings[];
 
 extern const char kTraceStartup[];
-extern const char kTraceStartupOutputName[];
 
 #ifdef NDEBUG
 // In release builds, specifying this flag will force reporting of tracing
@@ -20,6 +19,6 @@ extern const char kTraceStartupOutputName[];
 extern const char kEarlyTracing[];
 #endif
 
-}  // namespace mojo
+}  // namespace tracing
 
-#endif  // MOJO_APPLICATION_PUBLIC_CPP_SWITCHES_H_
+#endif  // MOJO_SERVICES_TRACING_PUBLIC_CPP_SWITCHES_H_

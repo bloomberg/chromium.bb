@@ -17,6 +17,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
 class ApplicationImpl;

@@ -14,7 +14,6 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/tracing/tracing_app.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
@@ -136,15 +135,6 @@ class TestApplicationLoader : public ApplicationLoader,
   GURL last_requestor_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
-};
-
-class TracingApplicationLoader : public ApplicationLoader {
- private:
-  // ApplicationLoader implementation.
-  void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {
-    new ApplicationImpl(new tracing::TracingApp, application_request.Pass());
-  }
 };
 
 class ClosingApplicationLoader : public ApplicationLoader {
@@ -413,9 +403,6 @@ class ApplicationManagerTest : public testing::Test {
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
         scoped_ptr<ApplicationLoader>(test_loader_));
-    application_manager_->SetLoaderForURL(
-        make_scoped_ptr(new TracingApplicationLoader),
-        GURL("mojo:tracing"));
 
     TestServicePtr service_proxy;
     ConnectToService(application_manager_.get(), GURL(kTestURLString),

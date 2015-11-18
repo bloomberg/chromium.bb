@@ -17,9 +17,9 @@
 #include "mandoline/ui/desktop_ui/find_bar_view.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/toolbar_view.h"
-#include "mojo/application/public/cpp/switches.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "ui/gfx/canvas.h"
 #include "ui/mojo/init/ui_init.h"
@@ -241,7 +241,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   static bool recorded_browser_startup_metrics = false;
   if (!recorded_browser_startup_metrics &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          mojo::kEnableStatsCollectionBindings)) {
+          tracing::kEnableStatsCollectionBindings)) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:tracing");
     tracing::StartupPerformanceDataCollectorPtr collector;

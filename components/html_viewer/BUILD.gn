@@ -186,6 +186,7 @@ source_set("lib") {
     "//mojo/public/cpp/environment:environment",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//net",
     "//skia",

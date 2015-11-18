@@ -14,6 +14,7 @@
 #include "components/mus/gles2/raster_thread_helper.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -116,6 +117,8 @@ class GlobalState {
   // TODO(erg): In the long run, delete this allocator and get the real shared
   // memory based purging allocator working here.
   DiscardableMemoryAllocator discardable_memory_allocator_;
+
+  mojo::TracingImpl tracing_;
 
   scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
   scoped_ptr<BlinkPlatformImpl> blink_platform_;
