@@ -4,6 +4,7 @@
 
 #include "media/midi/midi_manager_alsa.h"
 
+#include <errno.h>
 #include <poll.h>
 #include <stdlib.h>
 #include <algorithm>
