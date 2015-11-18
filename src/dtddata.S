@@ -22,19 +22,18 @@
 
 /* from: http://www.linuxjournal.com/content/embedding-file-executable-aka-hello-world-version-5967#comment-348129 */
 
-.altmacro
 .macro binfile name file
 	.p2align 2
-	.globl \name&_begin
-\name&_begin:
-	.incbin \file
-\name&_end:
+	.globl \name\()_begin
+\name\()_begin:
+	.incbin "\file"
+\name\()_end:
 	.byte 0
 	.p2align 2
-	.globl \name&_len
-\name&_len:
-	.int (\name&_end - \name&_begin)
+	.globl \name\()_len
+\name\()_len:
+	.int (\name\()_end - \name\()_begin)
 .endm
 
 .section .rodata
-binfile DTD_DATA "src/wayland.dtd.embed"
+binfile DTD_DATA src/wayland.dtd.embed
