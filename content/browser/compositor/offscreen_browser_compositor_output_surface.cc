@@ -41,7 +41,6 @@ OffscreenBrowserCompositorOutputSurface::
       fbo_(0),
       is_backbuffer_discarded_(false),
       weak_ptr_factory_(this) {
-  capabilities_.max_frames_pending = 1;
   capabilities_.uses_default_gl_framebuffer = false;
 }
 

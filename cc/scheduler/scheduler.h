@@ -95,7 +95,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetNeedsPrepareTiles();
 
-  void SetMaxSwapsPending(int max);
   void DidSwapBuffers();
   void DidSwapBuffersComplete();
 

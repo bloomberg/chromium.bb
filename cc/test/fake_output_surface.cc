@@ -25,10 +25,7 @@ FakeOutputSurface::FakeOutputSurface(
       suspended_for_recycle_(false),
       framebuffer_(0),
       overlay_candidate_validator_(nullptr) {
-  if (delegated_rendering) {
-    capabilities_.delegated_rendering = true;
-    capabilities_.max_frames_pending = 1;
-  }
+  capabilities_.delegated_rendering = delegated_rendering;
 }
 
 FakeOutputSurface::FakeOutputSurface(
@@ -41,10 +38,7 @@ FakeOutputSurface::FakeOutputSurface(
       suspended_for_recycle_(false),
       framebuffer_(0),
       overlay_candidate_validator_(nullptr) {
-  if (delegated_rendering) {
-    capabilities_.delegated_rendering = true;
-    capabilities_.max_frames_pending = 1;
-  }
+  capabilities_.delegated_rendering = delegated_rendering;
 }
 
 FakeOutputSurface::FakeOutputSurface(
@@ -57,10 +51,7 @@ FakeOutputSurface::FakeOutputSurface(
       suspended_for_recycle_(false),
       framebuffer_(0),
       overlay_candidate_validator_(nullptr) {
-  if (delegated_rendering) {
-    capabilities_.delegated_rendering = true;
-    capabilities_.max_frames_pending = 1;
-  }
+  capabilities_.delegated_rendering = delegated_rendering;
 }
 
 FakeOutputSurface::FakeOutputSurface(
@@ -74,10 +65,7 @@ FakeOutputSurface::FakeOutputSurface(
       suspended_for_recycle_(false),
       framebuffer_(0),
       overlay_candidate_validator_(nullptr) {
-  if (delegated_rendering) {
-    capabilities_.delegated_rendering = true;
-    capabilities_.max_frames_pending = 1;
-  }
+  capabilities_.delegated_rendering = delegated_rendering;
 }
 
 FakeOutputSurface::~FakeOutputSurface() {}

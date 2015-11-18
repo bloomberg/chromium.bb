@@ -174,9 +174,6 @@ class CC_EXPORT SchedulerStateMachine {
   // PrepareTiles will occur shortly (even if no redraw is required).
   void SetNeedsPrepareTiles();
 
-  // Sets how many swaps can be pending to the OutputSurface.
-  void SetMaxSwapsPending(int max);
-
   // If the scheduler attempted to draw and swap, this provides feedback
   // regarding whether or not the swap actually occured. We might skip the
   // swap when there is not damage, for example.

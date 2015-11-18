@@ -187,7 +187,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
-  void SetMaxSwapsPendingOnImplThread(int max) override;
   void DidSwapBuffersOnImplThread() override;
   void DidSwapBuffersCompleteOnImplThread() override;
   void OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) override;

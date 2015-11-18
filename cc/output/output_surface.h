@@ -45,10 +45,6 @@ class OutputSurfaceClient;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
-  enum {
-    DEFAULT_MAX_FRAMES_PENDING = 2
-  };
-
   OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
                 const scoped_refptr<ContextProvider>& worker_context_provider,
                 scoped_ptr<SoftwareOutputDevice> software_device);
@@ -67,7 +63,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   struct Capabilities {
     Capabilities()
         : delegated_rendering(false),
-          max_frames_pending(0),
+          max_frames_pending(1),
           adjust_deadline_for_parent(true),
           uses_default_gl_framebuffer(true),
           flipped_output_surface(false),

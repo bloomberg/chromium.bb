@@ -14,7 +14,6 @@ namespace blimp {
 BlimpOutputSurface::BlimpOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider)
     : cc::OutputSurface(context_provider) {
-  capabilities_.max_frames_pending = 2;
 }
 
 BlimpOutputSurface::~BlimpOutputSurface() {}

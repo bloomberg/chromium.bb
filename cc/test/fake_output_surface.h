@@ -94,6 +94,10 @@ class FakeOutputSurface : public OutputSurface {
     return surface.Pass();
   }
 
+  void set_max_frames_pending(int max) {
+    capabilities_.max_frames_pending = max;
+  }
+
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
 

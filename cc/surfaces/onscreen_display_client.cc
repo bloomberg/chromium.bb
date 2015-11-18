@@ -35,10 +35,7 @@ OnscreenDisplayClient::~OnscreenDisplayClient() {
 }
 
 bool OnscreenDisplayClient::Initialize() {
-  int max_frames_pending =
-      output_surface_ ? output_surface_->capabilities().max_frames_pending : 0;
-  if (max_frames_pending <= 0)
-    max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
+  DCHECK(output_surface_);
 
   BeginFrameSource* frame_source;
   if (disable_display_vsync_) {
@@ -51,8 +48,9 @@ bool OnscreenDisplayClient::Initialize() {
     frame_source = synthetic_frame_source_.get();
   }
 
-  scheduler_.reset(new DisplayScheduler(
-      display_.get(), frame_source, task_runner_.get(), max_frames_pending));
+  scheduler_.reset(
+      new DisplayScheduler(display_.get(), frame_source, task_runner_.get(),
+                           output_surface_->capabilities().max_frames_pending));
 
   return display_->Initialize(output_surface_.Pass(), scheduler_.get());
 }

@@ -79,7 +79,6 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
   DCHECK(registry_);
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
-  capabilities_.max_frames_pending = 1;
   memory_policy_.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 }

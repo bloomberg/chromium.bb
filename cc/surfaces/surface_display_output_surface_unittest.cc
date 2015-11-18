@@ -36,6 +36,7 @@ class FakeOnscreenDisplayClient : public OnscreenDisplayClient {
     // to it now for future reference.
     fake_output_surface_ =
         static_cast<FakeOutputSurface*>(output_surface_.get());
+    fake_output_surface_->set_max_frames_pending(2);
   }
 
   FakeOutputSurface* output_surface() { return fake_output_surface_; }

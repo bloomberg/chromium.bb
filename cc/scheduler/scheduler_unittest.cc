@@ -1471,7 +1471,6 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
 void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     bool swap_ack_before_deadline) {
   // To get into a high latency state, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Draw and swap for first BeginFrame
@@ -1595,7 +1594,6 @@ TEST_F(SchedulerTest,
   SetUpScheduler(true);
 
   // To get into a high latency state, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Even if every estimate related to the main thread is slow, we should
@@ -1659,7 +1657,6 @@ TEST_F(SchedulerTest,
 
 void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
   // To get into a high latency state, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Draw and swap for first BeginFrame
@@ -1770,7 +1767,6 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
 
   // To get into a high latency state, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Impl thread hits deadline before commit finishes to make
@@ -1899,7 +1895,6 @@ TEST_F(
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Get a new active tree in main-thread high latency mode and put us
@@ -1970,7 +1965,6 @@ TEST_F(SchedulerTest,
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Start a new commit in main-thread high latency mode and hold off on
@@ -2051,7 +2045,6 @@ TEST_F(
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // Start a new commit in main-thread high latency mode and hold off on
@@ -2447,7 +2440,6 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   fake_compositor_timing_history_->SetDrawDurationEstimate(base::TimeDelta());
 
   // To test swap ack throttling, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
   client_->SetAutomaticSwapAck(false);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.

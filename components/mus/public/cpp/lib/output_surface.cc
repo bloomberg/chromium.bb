@@ -18,7 +18,6 @@ OutputSurface::OutputSurface(
     scoped_ptr<mus::WindowSurface> surface)
     : cc::OutputSurface(context_provider), surface_(surface.Pass()) {
   capabilities_.delegated_rendering = true;
-  capabilities_.max_frames_pending = 1;
 }
 
 OutputSurface::~OutputSurface() {}

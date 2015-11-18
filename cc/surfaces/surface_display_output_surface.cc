@@ -25,7 +25,6 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
       allocator_(allocator) {
   factory_.set_needs_sync_points(false);
   capabilities_.delegated_rendering = true;
-  capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = true;
   capabilities_.can_force_reclaim_resources = true;
   // Display and SurfaceDisplayOutputSurface share a GL context, so sync

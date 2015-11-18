@@ -2299,10 +2299,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
           : base::TimeDelta();
   client_->SetEstimatedParentDrawTime(parent_draw_time);
 
-  int max_frames_pending = output_surface_->capabilities().max_frames_pending;
-  if (max_frames_pending <= 0)
-    max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
-  client_->SetMaxSwapsPendingOnImplThread(max_frames_pending);
+  DCHECK_EQ(1, output_surface_->capabilities().max_frames_pending);
   client_->OnCanDrawStateChanged(CanDraw());
 
   // There will not be anything to draw here, so set high res

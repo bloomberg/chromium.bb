@@ -13,6 +13,11 @@
 
 namespace cc {
 
+namespace {
+// Surfaces and CompositorTimingHistory don't support more than 1 pending swap.
+const int kMaxPendingSwaps = 1;
+}  // namespace
+
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
       output_surface_state_(OUTPUT_SURFACE_NONE),
@@ -32,7 +37,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       invalidate_output_surface_funnel_(false),
       prepare_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
-      max_pending_swaps_(1),
       pending_swaps_(0),
       swaps_with_current_output_surface_(0),
       needs_redraw_(false),
@@ -217,7 +221,6 @@ void SchedulerStateMachine::AsValueInto(
                     invalidate_output_surface_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
-  state->SetInteger("max_pending_swaps_", max_pending_swaps_);
   state->SetInteger("pending_swaps_", pending_swaps_);
   state->SetInteger("swaps_with_current_output_surface",
                     swaps_with_current_output_surface_);
@@ -912,7 +915,7 @@ bool SchedulerStateMachine::main_thread_missed_last_deadline() const {
 }
 
 bool SchedulerStateMachine::SwapThrottled() const {
-  return pending_swaps_ >= max_pending_swaps_;
+  return pending_swaps_ >= kMaxPendingSwaps;
 }
 
 void SchedulerStateMachine::SetVisible(bool visible) {
@@ -957,17 +960,12 @@ void SchedulerStateMachine::SetNeedsPrepareTiles() {
     needs_prepare_tiles_ = true;
   }
 }
-
-void SchedulerStateMachine::SetMaxSwapsPending(int max) {
-  max_pending_swaps_ = max;
-}
-
 void SchedulerStateMachine::DidSwapBuffers() {
   TRACE_EVENT_ASYNC_BEGIN0("cc", "Scheduler:pending_swaps", this);
   pending_swaps_++;
   swaps_with_current_output_surface_++;
 
-  DCHECK_LE(pending_swaps_, max_pending_swaps_);
+  DCHECK_LE(pending_swaps_, kMaxPendingSwaps);
 
   did_perform_swap_in_last_draw_ = true;
   last_frame_number_swap_performed_ = current_frame_number_;

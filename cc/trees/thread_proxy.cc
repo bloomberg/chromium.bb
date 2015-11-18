@@ -308,10 +308,6 @@ void ThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
   impl().scheduler->SetEstimatedParentDrawTime(draw_time);
 }
 
-void ThreadProxy::SetMaxSwapsPendingOnImplThread(int max) {
-  impl().scheduler->SetMaxSwapsPending(max);
-}
-
 void ThreadProxy::DidSwapBuffersOnImplThread() {
   impl().scheduler->DidSwapBuffers();
 }

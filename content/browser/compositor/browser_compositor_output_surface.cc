@@ -56,7 +56,6 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 }
 
 void BrowserCompositorOutputSurface::Initialize() {
-  capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = false;
 }
 

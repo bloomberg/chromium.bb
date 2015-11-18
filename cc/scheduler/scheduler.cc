@@ -193,10 +193,6 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetMaxSwapsPending(int max) {
-  state_machine_.SetMaxSwapsPending(max);
-}
-
 void Scheduler::DidSwapBuffers() {
   state_machine_.DidSwapBuffers();
 
