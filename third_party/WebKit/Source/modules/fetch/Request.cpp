@@ -316,6 +316,22 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     if (temporaryBody)
         r->m_request->setBuffer(temporaryBody);
 
+    // https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-3
+    // "If |init|'s body member is a 'Credential' object:"
+    if (init.isCredentialRequest) {
+        // "1. If |r|'s url is not the same as |r|'s client’s origin, throw a TypeError."
+        if (!origin->canRequest(r->url())) {
+            exceptionState.throwTypeError("Credentials may only be submitted to same-origin endpoints.");
+            return nullptr;
+        }
+        // "2. Set |r|'s redirect mode to "error"."
+        r->m_request->setRedirect(WebURLRequest::FetchRedirectModeError);
+        // "3. Set |r|'s skip-service-worker flag."
+        // TODO(mkwst): Set this flag.
+        // "4. Set |r|'s opaque flag."
+        r->setOpaque();
+    }
+
     // "34. Set |r|'s MIME type to the result of extracting a MIME type from
     // |r|'s request's header list."
     r->m_request->setMIMEType(r->m_request->headerList()->extractMIMEType());

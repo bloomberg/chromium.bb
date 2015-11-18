@@ -7,8 +7,10 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/credentialmanager/Credential.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {
@@ -18,6 +20,8 @@ class FormDataOptions;
 class PasswordCredentialData;
 class WebPasswordCredential;
 
+using CredentialPostBodyType = FormDataOrURLSearchParams;
+
 class PasswordCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -25,15 +29,27 @@ public:
     static PasswordCredential* create(WebPasswordCredential*);
 
     // PasswordCredential.idl
-    FormData* toFormData(ScriptState*, const FormDataOptions&);
+    void setIdName(const String& name) { m_idName = name; }
+    const String& idName() const { return m_idName; }
 
+    void setPasswordName(const String& name) { m_passwordName = name; }
+    const String& passwordName() const { return m_passwordName; }
+
+    void setAdditionalData(const CredentialPostBodyType& data) { m_additionalData = data; }
+    void additionalData(CredentialPostBodyType& out) const { out = m_additionalData; }
+
+    // Internal methods
+    PassRefPtr<EncodedFormData> encodeFormData() const;
+    const String& password() const;
     DECLARE_VIRTUAL_TRACE();
 
 private:
     PasswordCredential(WebPasswordCredential*);
     PasswordCredential(const String& id, const String& password, const String& name, const KURL& icon);
 
-    const String& password() const;
+    String m_idName;
+    String m_passwordName;
+    CredentialPostBodyType m_additionalData;
 };
 
 } // namespace blink

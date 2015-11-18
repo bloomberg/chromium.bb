@@ -12,8 +12,11 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
+#include "bindings/modules/v8/V8PasswordCredential.h"
+#include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
+#include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/Headers.h"
@@ -25,6 +28,7 @@ namespace blink {
 
 RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, ExceptionState& exceptionState)
     : areAnyMembersSet(false)
+    , isCredentialRequest(false)
 {
     areAnyMembersSet = DictionaryHelper::get(options, "method", method) || areAnyMembersSet;
     areAnyMembersSet = DictionaryHelper::get(options, "headers", headers) || areAnyMembersSet;
@@ -83,6 +87,18 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeFormData();
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
         body = FetchFormDataConsumerHandle::create(context, formData.release());
+    } else if (V8PasswordCredential::hasInstance(v8Body, isolate)) {
+        // See https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-4
+        // and https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-3
+        isCredentialRequest = true;
+        PasswordCredential* credential = V8PasswordCredential::toImpl(v8::Local<v8::Object>::Cast(v8Body));
+
+        RefPtr<EncodedFormData> encodedData = credential->encodeFormData();
+        if (encodedData->boundary().isEmpty())
+            contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
+        else
+            contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + encodedData->boundary().data();
+        body = FetchFormDataConsumerHandle::create(context, encodedData.release());
     } else if (v8Body->IsString()) {
         contentType = "text/plain;charset=UTF-8";
         body = FetchFormDataConsumerHandle::create(toUSVString(isolate, v8Body, exceptionState));

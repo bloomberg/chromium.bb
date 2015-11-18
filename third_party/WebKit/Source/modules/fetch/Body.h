@@ -50,10 +50,21 @@ public:
         ActiveDOMObject::trace(visitor);
     }
 
+    // https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-2
+    void setOpaque() { m_opaque = true; }
+    bool opaque() const { return m_opaque; }
+
 private:
     virtual String mimeType() const = 0;
 
+    // Body consumption algorithms will reject with a TypeError in a number of error
+    // conditions. This method wraps those up into one call which returns an empty
+    // ScriptPromise if the consumption may proceed, and a ScriptPromise rejected with
+    // a TypeError if it ought to be blocked.
+    ScriptPromise rejectInvalidConsumption(ScriptState*);
+
     bool m_bodyPassed;
+    bool m_opaque;
 };
 
 } // namespace blink

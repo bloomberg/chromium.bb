@@ -46,6 +46,7 @@ public:
 
     // Internal helpers
     PassRefPtr<EncodedFormData> encodeFormData() const;
+    const Vector<std::pair<String, String>>& params() const { return m_params; }
 
     DECLARE_TRACE();
 

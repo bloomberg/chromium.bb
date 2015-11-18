@@ -6,6 +6,7 @@ include_rules = [
     "-modules",
     "+modules/ModulesExport.h",
     "+modules/fetch",
+    "+modules/credentialmanager",
     "+platform",
     "+public/platform",
     "-web",

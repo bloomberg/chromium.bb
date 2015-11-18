@@ -3622,8 +3622,13 @@ interface PageTransitionEvent : Event
     getter persisted
     method constructor
 interface PasswordCredential : Credential
+    getter additionalData
+    getter idName
+    getter passwordName
     method constructor
-    method toFormData
+    setter additionalData
+    setter idName
+    setter passwordName
 interface Path2D
     method addPath
     method arc

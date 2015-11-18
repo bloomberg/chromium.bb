@@ -104,8 +104,9 @@ public:
 
 ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 {
-    if (bodyUsed())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
+    ScriptPromise promise = rejectInvalidConsumption(scriptState);
+    if (!promise.isEmpty())
+        return promise;
 
     // When the main thread sends a V8::TerminateExecution() signal to a worker
     // thread, any V8 API on the worker thread starts returning an empty
@@ -117,7 +118,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+    promise = resolver->promise();
     if (bodyBuffer()) {
         bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsArrayBuffer(), new BodyArrayBufferConsumer(resolver));
     } else {
@@ -128,15 +129,16 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 
 ScriptPromise Body::blob(ScriptState* scriptState)
 {
-    if (bodyUsed())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
+    ScriptPromise promise = rejectInvalidConsumption(scriptState);
+    if (!promise.isEmpty())
+        return promise;
 
     // See above comment.
     if (!scriptState->executionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+    promise = resolver->promise();
     if (bodyBuffer()) {
         bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsBlobHandle(mimeType()), new BodyBlobConsumer(resolver));
     } else {
@@ -150,15 +152,16 @@ ScriptPromise Body::blob(ScriptState* scriptState)
 
 ScriptPromise Body::json(ScriptState* scriptState)
 {
-    if (bodyUsed())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
+    ScriptPromise promise = rejectInvalidConsumption(scriptState);
+    if (!promise.isEmpty())
+        return promise;
 
     // See above comment.
     if (!scriptState->executionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+    promise = resolver->promise();
     if (bodyBuffer()) {
         bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyJsonConsumer(resolver));
     } else {
@@ -169,15 +172,16 @@ ScriptPromise Body::json(ScriptState* scriptState)
 
 ScriptPromise Body::text(ScriptState* scriptState)
 {
-    if (bodyUsed())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
+    ScriptPromise promise = rejectInvalidConsumption(scriptState);
+    if (!promise.isEmpty())
+        return promise;
 
     // See above comment.
     if (!scriptState->executionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+    promise = resolver->promise();
     if (bodyBuffer()) {
         bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyTextConsumer(resolver));
     } else {
@@ -206,9 +210,18 @@ bool Body::hasPendingActivity() const
     return bodyBuffer()->hasPendingActivity();
 }
 
-Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_bodyPassed(false)
+Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_bodyPassed(false), m_opaque(false)
 {
     suspendIfNeeded();
+}
+
+ScriptPromise Body::rejectInvalidConsumption(ScriptState* scriptState)
+{
+    if (m_opaque)
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
+    if (bodyUsed())
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
+    return ScriptPromise();
 }
 
 } // namespace blink

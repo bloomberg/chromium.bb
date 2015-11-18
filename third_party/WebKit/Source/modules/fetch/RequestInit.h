@@ -37,6 +37,8 @@ public:
     // True if any members in RequestInit are set and hence the referrer member
     // should be used in the Request constructor.
     bool areAnyMembersSet;
+    // True if the RequestInit |body| was created from a 'PasswordCredential' object.
+    bool isCredentialRequest;
 };
 
 }

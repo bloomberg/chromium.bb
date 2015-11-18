@@ -14,7 +14,7 @@ namespace blink {
 
 class ExceptionState;
 
-class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
+class Credential : public GarbageCollectedFinalized<Credential>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Credential.idl
