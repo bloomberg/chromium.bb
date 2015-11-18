@@ -3,20 +3,24 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://md-settings/prefs/pref_util.html">
 
 <dom-module id="settings-dropdown-menu">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <paper-dropdown-menu id="dropdownMenu"
-        label="[[menuLabel_]]" disabled>
-      <paper-menu class="dropdown-content" selected="{{selected_}}">
+    <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
+        on-iron-select="onSelect_"
+        disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
+      <paper-menu class="dropdown-content" selected="{{selected_}}"
+          attr-for-selected="data-value">
         <template is="dom-repeat" items="[[menuOptions]]">
-          <paper-item>[[item.1]]</paper-item>
+          <paper-item data-value$="[[item.0]]">[[item.1]]</paper-item>
         </template>
-        <template is="dom-if" if="[[showNotFoundValue_]]">
-          <paper-item>[[i18n('custom')]]</paper-item>
-        </template>
+        <paper-item data-value$="[[notFoundValue_]]"
+            hidden$="[[!isSelectedNotFound_(selected_)]]">
+          [[i18n('custom')]]
+        </paper-item>
       </paper-menu>
     </paper-dropdown-menu>
   </template>

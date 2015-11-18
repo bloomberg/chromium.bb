@@ -2,6 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+ /**
+ * This tuple is made up of a (value, name, attribute). The value and name are
+ * used by the dropdown menu. The attribute is optional 'user data' that is
+ * ignored by the dropdown menu.
+ * @typedef {{
+ *   0: (number|string),
+ *   1: string,
+ *   2: (string|undefined)
+ * }}
+ */
+var DropdownMenuOption;
+
+/**
+ * @typedef {!Array<!DropdownMenuOption>}
+ */
+var DropdownMenuOptionList;
+
 /**
  * 'settings-dropdown-menu' is a control for displaying options
  * in the settings.
@@ -18,31 +35,33 @@ Polymer({
   is: 'settings-dropdown-menu',
 
   properties: {
-    /**
-     * A text label for the drop-down menu.
-     */
-    label: {
-      type: String,
-    },
+    /** A text label for the drop-down menu. */
+    label: String,
 
     /**
      * List of options for the drop-down menu.
-     * @type {!Array<{0: (Object|number|string), 1: string,
-     *   2: (string|undefined)}>}
+     * TODO(michaelpg): use named properties instead of indices.
+     * @type {DropdownMenuOptionList}
      */
     menuOptions: {
-      notify: true,
       type: Array,
       value: function() { return []; },
     },
 
     /**
      * A single Preference object being tracked.
-     * @type {?PrefObject}
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
      */
     pref: {
       type: Object,
       notify: true,
+    },
+
+    /** Whether the dropdown menu should be disabled. */
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
     },
 
     /**
@@ -54,124 +73,94 @@ Polymer({
       value: function() { return loadTimeData.getString('loading'); },
     },
 
-     /**
-     * A reverse lookup from the menu value back to the index in the
-     * menuOptions array.
-     * @private {!Object<string, string>}
-     */
-    menuMap_: {
-      type: Object,
-      value: function() { return {}; },
-    },
-
     /**
-     * The current selected item (an index number as a string).
+     * The current selected value, as a string.
      * @private
      */
-    selected_: {
-      notify: true,
-      observer: 'onSelectedChanged_',
+    selected_: String,
+
+    /**
+     * The value of the 'custom' item.
+     * @private
+     */
+    notFoundValue_: {
       type: String,
-    },
-
-    /**
-     * The current selected pref value.
-     * @private
-     */
-    selectedValue_: {
-      type: String,
-    },
-
-    /**
-     * Whether to show the 'custom' item.
-     * @private
-     */
-    showNotFoundValue_: {
-      type: Boolean,
+      value: 'SETTINGS_DROPDOWN_NOT_FOUND_ITEM',
     },
   },
 
   behaviors: [
-    I18nBehavior
+    I18nBehavior,
   ],
 
   observers: [
-    'checkSetup_(menuOptions, selectedValue_)',
-    'prefChanged_(pref.value)',
+    'checkSetup_(menuOptions)',
+    'updateSelected_(pref.value)',
   ],
+
+  ready: function() {
+    this.checkSetup_(this.menuOptions);
+  },
 
   /**
    * Check to see if we have all the pieces needed to enable the control.
-   * @param {!Array<{0: (Object|number|string), 1: string,
-   *   2: (string|undefined)}>} menuOptions
-   * @param {string} selectedValue_
+   * @param {DropdownMenuOptionList} menuOptions
    * @private
    */
-  checkSetup_: function(menuOptions, selectedValue_) {
-    if (!this.menuOptions.length) {
+  checkSetup_: function(menuOptions) {
+    if (!this.menuOptions.length)
       return;
-    }
 
-    if (!Object.keys(this.menuMap_).length) {
-      // Create a map from index value [0] back to the index i.
-      var result = {};
-      for (var i = 0; i < this.menuOptions.length; ++i)
-        result[JSON.stringify(this.menuOptions[i][0])] = i.toString();
-      this.menuMap_ = result;
-    }
-
-    // We need the menuOptions and the selectedValue_.  They may arrive
-    // at different times (each is asynchronous).
-    this.selected_ = this.getItemIndex(this.selectedValue_);
     this.menuLabel_ = this.label;
-    this.$.dropdownMenu.disabled = false;
-  },
-
-  /**
-   * @param {string} item A value from the menuOptions array.
-   * @return {string}
-   * @private
-   */
-  getItemIndex: function(item) {
-    var result = this.menuMap_[item];
-    if (result)
-      return result;
-    this.showNotFoundValue_ = true;
-    // The 'not found' item is added as the last of the options.
-    return (this.menuOptions.length).toString();
-  },
-
-  /**
-   * @param {string} index An index into the menuOptions array.
-   * @return {Object|number|string|undefined}
-   * @private
-   */
-  getItemValue: function(index) {
-    if (this.menuOptions.length) {
-      var result = this.menuOptions[index];
-      if (result)
-        return result[0];
-    }
-    return undefined;
+    this.updateSelected_();
   },
 
   /**
    * Pass the selection change to the pref value.
    * @private
    */
-  onSelectedChanged_: function() {
-    var prefValue = this.getItemValue(this.selected_);
-    if (prefValue !== undefined) {
-      this.selectedValue_ = JSON.stringify(prefValue);
-      this.set('pref.value', prefValue);
+  onSelect_: function() {
+    if (!this.pref || this.selected_ == undefined ||
+        this.selected_ == this.notFoundValue_) {
+      return;
     }
+    var prefValue = Settings.PrefUtil.stringToPrefValue(
+        this.selected_, this.pref);
+    if (prefValue !== undefined)
+      this.set('pref.value', prefValue);
   },
 
   /**
-   * @param {number|string} value A value from the menuOptions array.
+   * Updates the selected item when the pref or menuOptions change.
    * @private
    */
-  prefChanged_: function(value) {
-    this.selectedValue_ = JSON.stringify(value);
+  updateSelected_: function() {
+    if (!this.pref)
+      return;
+    var prefValue = this.pref.value;
+    var option = this.menuOptions.find(function(menuItem) {
+      return menuItem[0] == prefValue;
+    });
+    if (option == undefined)
+      this.selected_ = this.notFoundValue_;
+    else
+      this.selected_ = Settings.PrefUtil.prefToString(this.pref);
+  },
+
+  /**
+   * @param {string} selected
+   * @return {boolean}
+   * @private
+   */
+  isSelectedNotFound_: function(selected) {
+    return this.menuOptions && selected == this.notFoundValue_;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldDisableMenu_: function() {
+    return this.disabled || !this.menuOptions.length;
   },
 });
