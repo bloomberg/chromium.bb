@@ -472,7 +472,7 @@ ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
   return content::BrowserThread::GetBlockingPool();
 }
 
-#if !defined(USE_AURA) && !defined(USE_CHROMEOS)
+#if !defined(USE_ASH)
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(
     const views::Widget::InitParams& params) {

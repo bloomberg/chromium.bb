@@ -630,6 +630,7 @@
       'browser/ui/ash/multi_user/multi_user_context_menu.h',
       'browser/ui/ash/session_state_delegate_views.cc',
       'browser/ui/ash/session_state_delegate_views.h',
+      'browser/ui/views/chrome_views_delegate_ash.cc',
     ],
     # Ash + Views.
     'chrome_browser_ui_ash_views_sources': [
@@ -691,7 +692,6 @@
     'chrome_browser_ui_aura_non_chromeos': [
       'browser/ui/aura/active_desktop_monitor.cc',
       'browser/ui/aura/active_desktop_monitor.h',
-      'browser/ui/views/chrome_views_delegate_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.cc',
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
       'browser/ui/views/message_center/message_center_frame_view.cc',
