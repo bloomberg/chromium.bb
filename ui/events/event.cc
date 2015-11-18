@@ -918,7 +918,12 @@ std::string KeyEvent::GetCodeString() const {
 // ScrollEvent
 
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
-    : MouseEvent(native_event) {
+    : MouseEvent(native_event),
+      x_offset_(0.0f),
+      y_offset_(0.0f),
+      x_offset_ordinal_(0.0f),
+      y_offset_ordinal_(0.0f),
+      finger_count_(0) {
   if (type() == ET_SCROLL) {
     GetScrollOffsets(native_event,
                      &x_offset_, &y_offset_,
