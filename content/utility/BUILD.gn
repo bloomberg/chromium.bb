@@ -13,7 +13,10 @@ source_set("utility") {
   sources =
       rebase_path(content_utility_gypi_values.utility_sources, ".", "//content")
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//content/public/common:mojo_shell_client",
+  ]
 
   deps = [
     "//base",

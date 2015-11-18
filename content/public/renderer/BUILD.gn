@@ -25,7 +25,10 @@ source_set("renderer_sources") {
                         ".",
                         "//content")
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//content/public/common:mojo_shell_client",
+  ]
 
   deps = [
     "//content/public/common:common_sources",

@@ -12,7 +12,10 @@ source_set("browser") {
   # internal content ones) should depend on the public one.
   visibility = [ "//content/public/browser:browser_sources" ]
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//content/public/common:mojo_shell_client",
+  ]
   defines = []
   libs = []
   ldflags = []
@@ -104,7 +107,10 @@ source_set("browser") {
             ],
             ".")
 
-    defines += [ "MOJO_SHELL_CLIENT" ]
+    sources += [
+      "mojo/mojo_shell_client_host.cc",
+      "mojo/mojo_shell_client_host.h",
+    ]
 
     # Non-iOS deps.
     deps += [
