@@ -97,6 +97,12 @@ class CONTENT_EXPORT NavigationHandle {
   // Resumes a navigation that was previously deferred by a NavigationThrottle.
   virtual void Resume() = 0;
 
+  // Cancels a navigation that was previously deferred by a NavigationThrottle.
+  // |result| should be equal to NavigationThrottle::CANCEL or
+  // NavigationThrottle::CANCEL_AND_IGNORE.
+  virtual void CancelDeferredNavigation(
+      NavigationThrottle::ThrottleCheckResult result) = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

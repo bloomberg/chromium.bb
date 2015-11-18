@@ -287,7 +287,9 @@ void NavigationRequest::OnStartChecksComplete(
   CHECK(result != NavigationThrottle::DEFER);
 
   // Abort the request if needed. This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result == NavigationThrottle::CANCEL) {
+    // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
@@ -302,7 +304,9 @@ void NavigationRequest::OnRedirectChecksComplete(
   CHECK(result != NavigationThrottle::DEFER);
 
   // Abort the request if needed. This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result == NavigationThrottle::CANCEL) {
+    // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }

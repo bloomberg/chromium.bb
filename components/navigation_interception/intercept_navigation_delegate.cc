@@ -89,7 +89,7 @@ InterceptNavigationDelegate::CreateThrottleFor(
     content::NavigationHandle* handle) {
   return scoped_ptr<content::NavigationThrottle>(
       new InterceptNavigationThrottle(
-          handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread)));
+          handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread), false));
 }
 
 // static

@@ -67,7 +67,8 @@ class InterceptNavigationThrottleTest
                 test_handle.get(),
                 base::Bind(
                     &MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                    base::Unretained(mock_callback_receiver_.get()))))
+                    base::Unretained(mock_callback_receiver_.get())),
+                true))
             .Pass());
     return test_handle->CallWillStartRequestForTesting(
         is_post, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
@@ -83,7 +84,8 @@ class InterceptNavigationThrottleTest
                 test_handle.get(),
                 base::Bind(
                     &MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                    base::Unretained(mock_callback_receiver_.get()))))
+                    base::Unretained(mock_callback_receiver_.get())),
+                true))
             .Pass());
     test_handle->CallWillStartRequestForTesting(
         true, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);

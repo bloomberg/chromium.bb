@@ -82,6 +82,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool HasCommitted() override;
   bool IsErrorPage() override;
   void Resume() override;
+  void CancelDeferredNavigation(
+      NavigationThrottle::ThrottleCheckResult result) override;
   void RegisterThrottleForTesting(
       scoped_ptr<NavigationThrottle> navigation_throttle) override;
   NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
@@ -162,6 +164,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     DEFERRING_START,
     WILL_REDIRECT_REQUEST,
     DEFERRING_REDIRECT,
+    CANCELING,
     READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
@@ -173,6 +176,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
+
+  // Helper function to run and reset the |complete_callback_|. This marks the
+  // end of a round of NavigationThrottleChecks.
+  void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
   // Used in tests.
   State state() const { return state_; }

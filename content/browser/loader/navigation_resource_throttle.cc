@@ -162,6 +162,8 @@ void NavigationResourceThrottle::OnUIChecksPerformed(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
     controller()->CancelAndIgnore();
+  } else if (result == NavigationThrottle::CANCEL) {
+    controller()->Cancel();
   } else {
     controller()->Resume();
   }

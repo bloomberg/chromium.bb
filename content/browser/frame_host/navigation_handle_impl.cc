@@ -85,6 +85,14 @@ NavigationHandleImpl::NavigationHandleImpl(
 
 NavigationHandleImpl::~NavigationHandleImpl() {
   GetDelegate()->DidFinishNavigation(this);
+
+  // Cancel the navigation on the IO thread if the NavigationHandle is being
+  // destroyed in the middle of the NavigationThrottles checks.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation) &&
+      !complete_callback_.is_null()) {
+    RunCompleteCallback(NavigationThrottle::CANCEL_AND_IGNORE);
+  }
 }
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
@@ -169,7 +177,16 @@ void NavigationHandleImpl::Resume() {
   }
 
   if (result != NavigationThrottle::DEFER)
-    complete_callback_.Run(result);
+    RunCompleteCallback(result);
+}
+
+void NavigationHandleImpl::CancelDeferredNavigation(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
+  DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
+         result == NavigationThrottle::CANCEL);
+  state_ = CANCELING;
+  RunCompleteCallback(result);
 }
 
 void NavigationHandleImpl::RegisterThrottleForTesting(
@@ -244,7 +261,7 @@ void NavigationHandleImpl::WillStartRequest(
 
   // If the navigation is not deferred, run the callback.
   if (result != NavigationThrottle::DEFER)
-    callback.Run(result);
+    RunCompleteCallback(result);
 }
 
 void NavigationHandleImpl::WillRedirectRequest(
@@ -268,7 +285,7 @@ void NavigationHandleImpl::WillRedirectRequest(
 
   // If the navigation is not deferred, run the callback.
   if (result != NavigationThrottle::DEFER)
-    callback.Run(result);
+    RunCompleteCallback(result);
 }
 
 void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
@@ -305,7 +322,9 @@ NavigationHandleImpl::CheckWillStartRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
+        state_ = CANCELING;
         return result;
 
       case NavigationThrottle::DEFER:
@@ -334,7 +353,9 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
+        state_ = CANCELING;
         return result;
 
       case NavigationThrottle::DEFER:
@@ -349,6 +370,15 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
   next_index_ = 0;
   state_ = WILL_REDIRECT_REQUEST;
   return NavigationThrottle::PROCEED;
+}
+
+void NavigationHandleImpl::RunCompleteCallback(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(result != NavigationThrottle::DEFER);
+  if (!complete_callback_.is_null())
+    complete_callback_.Run(result);
+
+  complete_callback_.Reset();
 }
 
 }  // namespace content
