@@ -60,7 +60,7 @@ scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
   for (int i = 0; i < proto.items_size(); i++) {
     const proto::DisplayItem& item_proto = proto.items(i);
     DisplayItem* item =
-        DisplayItemProtoFactory::AllocateAndConstruct(list, item_proto);
+        DisplayItemProtoFactory::AllocateAndConstruct(list.get(), item_proto);
     if (item)
       item->FromProtobuf(item_proto);
   }

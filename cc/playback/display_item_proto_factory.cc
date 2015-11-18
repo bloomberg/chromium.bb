@@ -17,7 +17,7 @@ namespace cc {
 
 // static
 DisplayItem* DisplayItemProtoFactory::AllocateAndConstruct(
-    scoped_refptr<DisplayItemList> list,
+    DisplayItemList* list,
     const proto::DisplayItem& proto) {
   switch (proto.type()) {
     case proto::DisplayItem::Type_Clip:
