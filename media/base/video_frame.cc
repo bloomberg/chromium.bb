@@ -492,6 +492,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   }
 #endif
 
+  if (frame->storage_type() == STORAGE_SHMEM)
+    wrapping_frame->AddSharedMemoryHandle(frame->shared_memory_handle_);
+
   return wrapping_frame;
 }
 

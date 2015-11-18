@@ -78,6 +78,9 @@ class CONTENT_EXPORT RTCVideoEncoder
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
+  // Task runner that the video accelerator runs on.
+  const scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
+
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;
 
