@@ -812,6 +812,9 @@ void UserMediaClientImpl::DelayedGetUserMediaRequestFailed(
     case MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
       request_info.requestFailedUASpecific("MediaDeviceFailedDueToShutdown");
       return;
+    case MEDIA_DEVICE_KILL_SWITCH_ON:
+      request_info.requestFailedUASpecific("MediaDeviceKillSwitchOn");
+      return;
   }
   NOTREACHED();
   request_info.requestFailed();

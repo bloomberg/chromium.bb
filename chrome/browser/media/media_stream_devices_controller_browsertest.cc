@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -13,13 +14,17 @@
 #include "chrome/browser/media/media_stream_device_permissions.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
+#include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -713,4 +718,34 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                  this));
   ASSERT_TRUE(controller.IsAskingForAudio());
   ASSERT_TRUE(controller.IsAskingForVideo());
+}
+
+// Request and block microphone and camera access with kill switch.
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       RequestAndKillSwitchMicCam) {
+  std::map<std::string, std::string> params;
+  params[PermissionUtil::GetPermissionString(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)] =
+      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+  params[PermissionUtil::GetPermissionString(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)] =
+      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+  variations::AssociateVariationParams(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup", params);
+  base::FieldTrialList::CreateFieldTrial(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup");
+  InitWithUrl(GURL("https://www.example.com"));
+  SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_ALLOWED);
+  SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
+  MediaStreamDevicesController controller(
+      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 this));
+
+  EXPECT_FALSE(controller.IsAllowedForAudio());
+  EXPECT_FALSE(controller.IsAllowedForVideo());
+  EXPECT_FALSE(controller.IsAskingForAudio());
+  EXPECT_FALSE(controller.IsAskingForVideo());
 }

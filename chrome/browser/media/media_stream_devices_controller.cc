@@ -423,7 +423,10 @@ void MediaStreamDevicesController::RunCallback(
     content::MediaStreamRequestResult denial_reason) {
   CHECK(!callback_.is_null());
 
-  if (persist_permission_changes_) {
+  // If the kill switch is on we don't update the tab context or persist the
+  // setting.
+  if (persist_permission_changes_ &&
+      denial_reason != content::MEDIA_DEVICE_KILL_SWITCH_ON) {
     StorePermission(audio_setting, video_setting);
     UpdateTabSpecificContentSettings(audio_setting, video_setting);
   }

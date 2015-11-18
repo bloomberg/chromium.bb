@@ -50,8 +50,29 @@ ContentSetting MediaPermission::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
+  // Use the Permission Context to find out if the kill switch is on. Set the
+  // denial reason to kill switch.
+  content::PermissionType permission_type =
+      ContentSettingsTypeToPermission(content_type_);
+  PermissionContextBase* permission_context =
+      PermissionContext::Get(profile_, permission_type);
+
+  if (!permission_context) {
+    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
+    return CONTENT_SETTING_BLOCK;
+  }
+
+  MediaStreamDevicePermissionContext* media_device_permission_context =
+      static_cast<MediaStreamDevicePermissionContext*>(permission_context);
+
+  if (media_device_permission_context->IsPermissionKillSwitchOn()) {
+    *denial_reason = content::MEDIA_DEVICE_KILL_SWITCH_ON;
+    return CONTENT_SETTING_BLOCK;
+  }
+
   // Check policy and content settings.
-  ContentSetting result = GetStoredContentSetting();
+  ContentSetting result =
+      GetStoredContentSetting(media_device_permission_context);
   if (result == CONTENT_SETTING_BLOCK)
     *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
 
@@ -71,18 +92,8 @@ ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
   return GetPermissionStatus(denial_reason);
 }
 
-ContentSetting MediaPermission::GetStoredContentSetting() const {
-  content::PermissionType permission_type =
-      ContentSettingsTypeToPermission(content_type_);
-  PermissionContextBase* permission_context =
-      PermissionContext::Get(profile_, permission_type);
-
-  if (!permission_context)
-    return CONTENT_SETTING_BLOCK;
-
-  MediaStreamDevicePermissionContext* media_device_permission_context =
-      static_cast<MediaStreamDevicePermissionContext*>(permission_context);
-
+ContentSetting MediaPermission::GetStoredContentSetting(
+    MediaStreamDevicePermissionContext* media_device_permission_context) const {
   if (is_insecure_pepper_request_) {
     return media_device_permission_context
         ->GetPermissionStatusAllowingInsecureForPepper(requesting_origin_,
