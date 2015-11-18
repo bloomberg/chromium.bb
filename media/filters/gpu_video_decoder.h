@@ -58,6 +58,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   int GetMaxDecodeRequests() const override;
 
   // VideoDecodeAccelerator::Client implementation.
+  void NotifyCdmAttached(bool success) override;
   void ProvidePictureBuffers(uint32 count,
                              const gfx::Size& size,
                              uint32 texture_target) override;
@@ -102,6 +103,10 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   typedef std::map<int32, PictureBuffer> PictureBufferMap;
 
+  // Callback to set CDM. |cdm_attached_cb| is called when the decryptor in the
+  // CDM has been completely attached to the pipeline.
+  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+
   void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Static method is to allow it to run even after GVD is deleted.
@@ -145,6 +150,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // occurs.
   scoped_ptr<VideoDecodeAccelerator> vda_;
 
+  InitCB init_cb_;
   OutputCB output_cb_;
 
   DecodeCB eos_decode_cb_;
@@ -155,6 +161,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   State state_;
 
   VideoDecoderConfig config_;
+
+  // Callback to request/cancel CDM ready notification.
+  SetCdmReadyCB set_cdm_ready_cb_;
+  CdmAttachedCB cdm_attached_cb_;
 
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the

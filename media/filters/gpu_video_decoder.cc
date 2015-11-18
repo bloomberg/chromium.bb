@@ -121,10 +121,9 @@ std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
 
-// TODO(xhwang): Support CDM setting using |set_cdm_ready_cb|.
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
-                                 const SetCdmReadyCB& /* set_cdm_ready_cb */,
+                                 const SetCdmReadyCB& set_cdm_ready_cb,
                                  const InitCB& init_cb,
                                  const OutputCB& output_cb) {
   DVLOG(3) << "Initialize()";
@@ -156,6 +155,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!IsProfileSupported(config.profile(), config.coded_size())) {
+    DVLOG(1) << "Profile " << config.profile() << " or coded size "
+             << config.coded_size().ToString() << " not supported.";
     bound_init_cb.Run(false);
     return;
   }
@@ -174,12 +175,50 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   vda_ = factories_->CreateVideoDecodeAccelerator().Pass();
   if (!vda_ || !vda_->Initialize(config.profile(), this)) {
+    DVLOG(1) << "VDA initialization failed.";
     bound_init_cb.Run(false);
+    return;
+  }
+
+  if (config.is_encrypted()) {
+    init_cb_ = bound_init_cb;
+    set_cdm_ready_cb_ = set_cdm_ready_cb;
+    set_cdm_ready_cb_.Run(BindToCurrentLoop(
+        base::Bind(&GpuVideoDecoder::SetCdm, weak_factory_.GetWeakPtr())));
     return;
   }
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
   bound_init_cb.Run(true);
+}
+
+void GpuVideoDecoder::SetCdm(CdmContext* cdm_context,
+                             const CdmAttachedCB& cdm_attached_cb) {
+  DVLOG(2) << __FUNCTION__;
+  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+
+  DCHECK(!init_cb_.is_null());
+  DCHECK(!set_cdm_ready_cb_.is_null());
+  set_cdm_ready_cb_.Reset();
+
+  if (!cdm_context || cdm_context->GetCdmId() == CdmContext::kInvalidCdmId) {
+    DVLOG(1) << "CDM ID not available.";
+    cdm_attached_cb.Run(false);
+    base::ResetAndReturn(&init_cb_).Run(false);
+    return;
+  }
+
+  cdm_attached_cb_ = cdm_attached_cb;
+  vda_->SetCdm(cdm_context->GetCdmId());
+}
+
+void GpuVideoDecoder::NotifyCdmAttached(bool success) {
+  DVLOG_IF(2, !success) << __FUNCTION__ << ": CDM not attached.";
+  DCHECK(!init_cb_.is_null());
+  DCHECK(!cdm_attached_cb_.is_null());
+
+  base::ResetAndReturn(&cdm_attached_cb_).Run(success);
+  base::ResetAndReturn(&init_cb_).Run(success);
 }
 
 void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
@@ -544,6 +583,13 @@ GpuVideoDecoder::~GpuVideoDecoder() {
   if (vda_)
     DestroyVDA();
   DCHECK(assigned_picture_buffers_.empty());
+
+  if (!set_cdm_ready_cb_.is_null())
+    base::ResetAndReturn(&set_cdm_ready_cb_).Run(CdmReadyCB());
+  if (!cdm_attached_cb_.is_null())
+    base::ResetAndReturn(&cdm_attached_cb_).Run(false);
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(false);
 
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     delete available_shm_segments_[i];
