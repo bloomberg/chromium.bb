@@ -607,13 +607,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -1540,13 +1546,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -1760,13 +1772,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -4861,13 +4879,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -5065,13 +5089,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -5374,13 +5404,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
@@ -5566,13 +5602,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
-      {
-        "name": "telemetry_unittests",
-        "script": "telemetry_unittests.py"
-      },
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"

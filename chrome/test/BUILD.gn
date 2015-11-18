@@ -689,6 +689,46 @@ if (!is_android) {
 
   # TODO(GYP): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
+  group("telemetry_unittests_run") {
+    testonly = true
+    deps = [
+      ":telemetry_unittests",
+    ]
+  }
+
+  group("telemetry_unittests") {
+    deps = [
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+    ]
+
+    data = [
+      "//tools/perf/",
+
+      # Field trial config
+      "//tools/variations/",
+
+      # For isolate contract.
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
+
+    if (is_win && (symbol_level == 1 || symbol_level == 2)) {
+      # TODO(GYP): These should be provided automatically through data_deps.
+      data += [ "$root_out_dir/chrome.exe.pdb" ]
+      if (is_component_build) {
+        data += [
+          "$root_out_dir/base.dll.pdb",
+          "$root_out_dir/blink_platform.dll.pdb",
+          "$root_out_dir/blink_web.dll.pdb",
+          "$root_out_dir/content.dll.pdb",
+        ]
+      }
+    }
+  }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
   group("telemetry_gpu_test_run") {
     testonly = true
     deps = [

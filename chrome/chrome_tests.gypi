@@ -3253,6 +3253,20 @@
           ],
         },
         {
+         'target_name': 'telemetry_unittests_run',
+         'type': 'none',
+         'dependencies': [
+            'chrome_run',
+            'telemetry_chrome_test_base'
+         ],
+         'includes': [
+           '../build/isolate.gypi',
+          ],
+          'sources': [
+            'telemetry_unittests.isolate',
+          ],
+        },
+        {
          'target_name': 'telemetry_gpu_unittests_run',
          'type': 'none',
          'dependencies': [
