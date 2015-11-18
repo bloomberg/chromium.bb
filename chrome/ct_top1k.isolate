@@ -1,0 +1,43 @@
+# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  'includes': [
+    # TODO(rmistry): Try out the below once things are running on the
+    #                FYI waterfall.
+    # '../tools/telemetry/telemetry.isolate',
+    # '../tools/perf/perf.isolate',
+    '../tools/perf/chrome_telemetry_build/telemetry_binary_manager.isolate',
+  ],
+  'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'files': [
+          '../build/android/pylib/',
+          '../build/android/devil/',
+          '../testing/variations/',
+          '../third_party/catapult/',
+          '../tools/telemetry/',
+          '../tools/perf/',
+          '../tools/variations/',
+          '../testing/test_env.py',
+          '../out/Release/',
+
+          '../content/test/ct/run_ct_top1k.py',
+          '../content/test/ct/slave<(SLAVE_NUM)/page_sets/',
+          '../content/test/ct/run_chromium_perf_swarming',
+        ],
+        'command': [
+          'python',
+          '../content/test/ct/run_ct_top1k.py',
+          '--slave_num=<(SLAVE_NUM)',
+          '--benchmark=<(BENCHMARK)',
+          '--master=<(MASTER)',
+          '--builder=<(BUILDER)',
+          '--git_hash=<(GIT_HASH)',
+        ],
+      },
+    }],
+  ]
+}
