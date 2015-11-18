@@ -85,7 +85,7 @@ scoped_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
   new_polygon->normal_.set_x(normal_.x());
   new_polygon->normal_.set_y(normal_.y());
   new_polygon->normal_.set_z(normal_.z());
-  return new_polygon.Pass();
+  return new_polygon;
 }
 
 float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {
@@ -294,11 +294,11 @@ bool DrawPolygon::Split(const DrawPolygon& splitter,
   DCHECK_GE(poly2->points().size(), 3u);
 
   if (SideCompare(*poly1, splitter) == BSP_FRONT) {
-    *front = poly1.Pass();
-    *back = poly2.Pass();
+    *front = std::move(poly1);
+    *back = std::move(poly2);
   } else {
-    *front = poly2.Pass();
-    *back = poly1.Pass();
+    *front = std::move(poly2);
+    *back = std::move(poly1);
   }
   return true;
 }

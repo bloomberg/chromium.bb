@@ -422,7 +422,7 @@ void Layer::RequestCopyOfOutput(
   }
   if (request->IsEmpty())
     return;
-  copy_requests_.push_back(request.Pass());
+  copy_requests_.push_back(std::move(request));
   if (had_no_copy_requests) {
     UpdateNumCopyRequestsForSubtree(1);
   }
@@ -1161,7 +1161,7 @@ void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
 
 static void RunCopyCallbackOnMainThread(scoped_ptr<CopyOutputRequest> request,
                                         scoped_ptr<CopyOutputResult> result) {
-  request->SendResult(result.Pass());
+  request->SendResult(std::move(result));
 }
 
 static void PostCopyCallbackToMainThread(
@@ -1309,7 +1309,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
             base::Bind(&PostCopyCallbackToMainThread,
                        main_thread_task_runner,
                        base::Passed(&original_request)));
-    main_thread_copy_requests.push_back(main_thread_request.Pass());
+    main_thread_copy_requests.push_back(std::move(main_thread_request));
   }
   if (!copy_requests_.empty() && layer_tree_host_)
     layer_tree_host_->property_trees()->needs_rebuild = true;
@@ -1659,7 +1659,7 @@ bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
 
   UMA_HISTOGRAM_BOOLEAN("Renderer.AnimationAddedToOrphanLayer",
                         !layer_tree_host_);
-  layer_animation_controller_->AddAnimation(animation.Pass());
+  layer_animation_controller_->AddAnimation(std::move(animation));
   SetNeedsCommit();
   return true;
 }

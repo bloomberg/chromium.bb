@@ -610,7 +610,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
 
     // Save the result for later.
     EXPECT_FALSE(result_);
-    result_ = result.Pass();
+    result_ = std::move(result);
 
     // Post a commit to lose the output surface.
     layer_tree_host()->SetNeedsCommit();
@@ -846,7 +846,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
         TextureMailbox(mailbox, sync_token_, GL_TEXTURE_2D));
     EXPECT_TRUE(request->has_texture_mailbox());
 
-    copy_layer_->RequestCopyOfOutput(request.Pass());
+    copy_layer_->RequestCopyOfOutput(std::move(request));
   }
 
   void AfterTest() override {
@@ -907,7 +907,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
                 base::Bind(&LayerTreeHostCopyRequestTestDestroyBeforeCopy::
                                 CopyOutputCallback,
                            base::Unretained(this)));
-        copy_layer_->RequestCopyOfOutput(request.Pass());
+        copy_layer_->RequestCopyOfOutput(std::move(request));
 
         layer_tree_host()->SetViewportSize(gfx::Size());
         break;
@@ -984,7 +984,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
                 base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::
                                 CopyOutputCallback,
                            base::Unretained(this)));
-        copy_layer_->RequestCopyOfOutput(request.Pass());
+        copy_layer_->RequestCopyOfOutput(std::move(request));
 
         layer_tree_host()->SetViewportSize(gfx::Size());
         break;

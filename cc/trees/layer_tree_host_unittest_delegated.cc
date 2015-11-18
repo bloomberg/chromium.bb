@@ -85,8 +85,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                       root_output_rect,
                       root_damage_rect,
                       gfx::Transform());
-    frame->render_pass_list.push_back(root_pass.Pass());
-    return frame.Pass();
+    frame->render_pass_list.push_back(std::move(root_pass));
+    return frame;
   }
 
   scoped_ptr<DelegatedFrameData> CreateInvalidFrameData(
@@ -131,8 +131,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                               flipped,
                               nearest_neighbor);
 
-    frame->render_pass_list.push_back(root_pass.Pass());
-    return frame.Pass();
+    frame->render_pass_list.push_back(std::move(root_pass));
+    return frame;
   }
 
   void AddTransferableResource(DelegatedFrameData* frame,
@@ -257,7 +257,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     gfx::Size frame_size = root_pass->output_rect.size();
 
     if (frame_provider_.get() && frame_size == frame_provider_->frame_size()) {
-      frame_provider_->SetFrameData(frame_data.Pass());
+      frame_provider_->SetFrameData(std::move(frame_data));
       return;
     }
 
@@ -268,7 +268,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     }
 
     frame_provider_ = new DelegatedFrameProvider(resource_collection_.get(),
-                                                 frame_data.Pass());
+                                                 std::move(frame_data));
 
     delegated_ = CreateDelegatedLayer(frame_provider_.get());
   }
@@ -421,7 +421,7 @@ class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame1.get(), 999);
     AddTransferableResource(frame1.get(), 999);
-    SetFrameData(frame1.Pass());
+    SetFrameData(std::move(frame1));
   }
 
   void DidInitializeOutputSurface() override {
@@ -696,7 +696,7 @@ class LayerTreeHostDelegatedTestMergeResources
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame1.get(), 999);
     AddTransferableResource(frame1.get(), 999);
-    SetFrameData(frame1.Pass());
+    SetFrameData(std::move(frame1));
 
     // The second frame uses resource 999 still, but also adds 555.
     scoped_ptr<DelegatedFrameData> frame2 =
@@ -705,7 +705,7 @@ class LayerTreeHostDelegatedTestMergeResources
     AddTransferableResource(frame2.get(), 999);
     AddTextureQuad(frame2.get(), 555);
     AddTransferableResource(frame2.get(), 555);
-    SetFrameData(frame2.Pass());
+    SetFrameData(std::move(frame2));
 
     // The resource 999 from frame1 is returned since it is still on the main
     // thread.
@@ -757,7 +757,7 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     AddTransferableResource(frame.get(), 999);
     AddTextureQuad(frame.get(), 555);
     AddTransferableResource(frame.get(), 555);
-    SetFrameData(frame.Pass());
+    SetFrameData(std::move(frame));
 
     PostSetNeedsCommitToMainThread();
   }
@@ -814,7 +814,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // All of the resources are in use.
@@ -828,7 +828,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 3:
         // 555 is no longer in use.
@@ -841,7 +841,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
 
         // Stop using any resources.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 4:
         // Postpone collecting resources for a frame. They should still be there
@@ -897,7 +897,7 @@ class LayerTreeHostDelegatedTestReusedResources
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // All of the resources are in use.
@@ -909,7 +909,7 @@ class LayerTreeHostDelegatedTestReusedResources
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
         AddTransferableResource(frame.get(), 999);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // Resource are not immediately released.
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -922,7 +922,7 @@ class LayerTreeHostDelegatedTestReusedResources
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 3:
         // The 999 resource is the only unused one. Two references were sent, so
@@ -965,7 +965,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // All of the resources are in use.
@@ -977,7 +977,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
         AddTransferableResource(frame.get(), 999);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // Resource are not immediately released.
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1000,7 +1000,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         AddTextureQuad(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
     }
   }
@@ -1063,7 +1063,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // All of the resources are in use.
@@ -1075,7 +1075,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
         AddTransferableResource(frame.get(), 999);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // Resource are not immediately released.
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1095,7 +1095,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // The resources are used by the new frame but are returned anyway since
         // we passed them again.
@@ -1179,7 +1179,7 @@ class LayerTreeHostDelegatedTestBadFrame
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // All of the resources are in use.
@@ -1197,7 +1197,7 @@ class LayerTreeHostDelegatedTestBadFrame
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
         AddTextureQuad(frame.get(), 775);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // The parent compositor (this one) does a commit.
         break;
@@ -1209,7 +1209,7 @@ class LayerTreeHostDelegatedTestBadFrame
         // Now send a good frame with 999 again.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // The bad frame's resource is given back to the child compositor.
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1333,7 +1333,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1342,7 +1342,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
 
         // Now send an empty frame.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // The unused resource should be returned.
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1399,13 +1399,13 @@ class LayerTreeHostDelegatedTestDontLeakResource
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         // But then we immediately stop using 999.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // The unused resources should be returned. 555 is still used, but it's
@@ -1418,7 +1418,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
         }
         // Send a frame with no resources in it.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 3:
         // The now unused resource 555 should be returned.
@@ -1478,7 +1478,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1490,7 +1490,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 3:
         // Since 999 is in the grandparent it is not returned.
@@ -1618,7 +1618,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
         AddTransferableResource(frame.get(), 444);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1629,7 +1629,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         // 999 and 444 will be returned for frame 1, but not 555 since it's in
         // the current frame.
         break;
@@ -1640,7 +1640,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 4:
         // 555 from frame 1 and 2 isn't returned since it's still in use. 999
@@ -1653,7 +1653,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         }
 
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         // 555 will be returned 3 times for frames 1 2 and 3, and 999 will be
         // returned once for frame 3.
         break;
@@ -1728,7 +1728,7 @@ class DelegatedFrameIsActivatedDuringCommit
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame.get(), 999);
     AddTransferableResource(frame.get(), 999);
-    SetFrameData(frame.Pass());
+    SetFrameData(std::move(frame));
 
     PostSetNeedsCommitToMainThread();
   }
@@ -1755,7 +1755,7 @@ class DelegatedFrameIsActivatedDuringCommit
             CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       }
       case 2:
@@ -1768,7 +1768,7 @@ class DelegatedFrameIsActivatedDuringCommit
         // Finish the test by releasing resources on the next frame.
         scoped_ptr<DelegatedFrameData> frame =
             CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
     }
   }
@@ -1819,7 +1819,7 @@ class LayerTreeHostDelegatedTestTwoImplLayers
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1838,7 +1838,7 @@ class LayerTreeHostDelegatedTestTwoImplLayers
 
         // Use a frame with no resources in it.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 4:
         // We gave one frame to the frame provider, so we should get one
@@ -1878,7 +1878,7 @@ class LayerTreeHostDelegatedTestTwoImplLayersTwoFrames
         AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -1896,7 +1896,7 @@ class LayerTreeHostDelegatedTestTwoImplLayersTwoFrames
         delegated_->RemoveFromParent();
         delegated_ = NULL;
 
-        frame_provider_->SetFrameData(frame.Pass());
+        frame_provider_->SetFrameData(std::move(frame));
         delegated_ = CreateDelegatedLayer(frame_provider_.get());
         break;
       case 3:
@@ -1906,7 +1906,7 @@ class LayerTreeHostDelegatedTestTwoImplLayersTwoFrames
 
         // Use a frame with no resources in it.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 4:
         // We gave two frames to the frame provider, so we should get two
@@ -1949,7 +1949,7 @@ class LayerTreeHostDelegatedTestTwoLayers
         AddTransferableResource(frame.get(), 555);
 
         // Create a DelegatedRendererLayer using the frame.
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // Create a second DelegatedRendererLayer using the same frame provider.
@@ -2036,7 +2036,7 @@ class LayerTreeHostDelegatedTestRemoveAndAddToTree
         AddTransferableResource(frame.get(), 555);
 
         // Create a DelegatedRendererLayer using the frame.
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -2066,7 +2066,7 @@ class LayerTreeHostDelegatedTestRemoveAndAddToTree
         AddTransferableResource(frame.get(), 888);
         AddTextureQuad(frame.get(), 777);
         AddTransferableResource(frame.get(), 777);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 5:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -2127,7 +2127,7 @@ class LayerTreeHostDelegatedTestRemoveAndChangeResources
         AddTransferableResource(frame.get(), 555);
 
         // Create a DelegatedRendererLayer using the frame.
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
@@ -2149,7 +2149,7 @@ class LayerTreeHostDelegatedTestRemoveAndChangeResources
         AddTransferableResource(frame.get(), 888);
         AddTextureQuad(frame.get(), 777);
         AddTransferableResource(frame.get(), 777);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
 
         resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
         {
@@ -2204,14 +2204,14 @@ class LayerTreeHostDelegatedTestActiveFrameIsValid
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
         AddTransferableResource(frame.get(), 999);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
       case 2:
         // This frame stops in the pending tree while we redraw the active tree.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
-        SetFrameData(frame.Pass());
+        SetFrameData(std::move(frame));
         break;
     }
   }

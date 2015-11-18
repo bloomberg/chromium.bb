@@ -34,7 +34,7 @@ scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPassId id,
   const gfx::Rect damage_rect = rect;
   const gfx::Transform transform_to_root_target;
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
-  return pass.Pass();
+  return pass;
 }
 
 scoped_ptr<RenderPass> CreateTestRenderPass(
@@ -45,7 +45,7 @@ scoped_ptr<RenderPass> CreateTestRenderPass(
   const gfx::Rect output_rect = rect;
   const gfx::Rect damage_rect = rect;
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
-  return pass.Pass();
+  return pass;
 }
 
 SharedQuadState* CreateTestSharedQuadState(
@@ -478,7 +478,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
   color_quad->SetNew(shared_state, rect, rect, SK_ColorGREEN, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -514,8 +514,8 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
   RenderPass* child_pass_ptr = child_pass.get();
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   EXPECT_TRUE(this->RunPixelTestWithReadbackTarget(
       &pass_list,
@@ -546,7 +546,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
   color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -579,7 +579,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
   color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -647,7 +647,7 @@ class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
         render_pass_->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     background_quad->SetNew(background_quad_state, viewport_rect_,
                             viewport_rect_, SK_ColorWHITE, false);
-    pass_list_.push_back(render_pass_.Pass());
+    pass_list_.push_back(std::move(render_pass_));
     const base::FilePath::CharType* fileName = IntersectingQuadImage<T>();
     EXPECT_TRUE(
         this->RunPixelTest(&pass_list_, base::FilePath(fileName), comparator));
@@ -830,8 +830,8 @@ TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
   CreateTestRenderPassDrawQuad(this->back_quad_state_, this->quad_rect_,
                                child_pass_id2, this->render_pass_.get());
 
-  this->pass_list_.push_back(child_pass1.Pass());
-  this->pass_list_.push_back(child_pass2.Pass());
+  this->pass_list_.push_back(std::move(child_pass1));
+  this->pass_list_.push_back(std::move(child_pass2));
   SCOPED_TRACE("IntersectingRenderQuadsPass");
   this->template AppendBackgroundAndRunTest<RenderPassDrawQuad>(
       FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f));
@@ -887,7 +887,7 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithoutBackground) {
   color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -921,7 +921,7 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
   color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -965,7 +965,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
         background_size, gfx::Rect(background_size), 128, 128, 128, green_rect,
         149, 43, 21, pass.get(), video_resource_updater_.get(),
         resource_provider_.get());
-    pass_list->push_back(pass.Pass());
+    pass_list->push_back(std::move(pass));
   }
 
   void SetUp() override {
@@ -992,7 +992,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
                                      rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(
       this->RunPixelTest(&pass_list,
@@ -1017,7 +1017,7 @@ TEST_F(VideoGLRendererPixelTest, ClippedYUVRect) {
                                      draw_rect, viewport,
                                      resource_provider_.get());
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes_clipped.png")),
@@ -1040,7 +1040,7 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1064,7 +1064,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   // If we didn't get black out of the YUV values above, then we probably have a
   // color range issue.
@@ -1089,7 +1089,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
@@ -1132,7 +1132,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRectGrey) {
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(
       this->RunPixelTest(&pass_list,
@@ -1159,7 +1159,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1186,7 +1186,7 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   color_quad->SetNew(shared_state, rect, rect, SK_ColorBLACK, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1275,8 +1275,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            FilterOperations());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // This test has alpha=254 for the software renderer vs. alpha=255 for the gl
   // renderer so use a fuzzy comparator.
@@ -1347,8 +1347,8 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
                            FilterOperations());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // This test blends slightly differently with the software renderer vs. the gl
   // renderer so use a fuzzy comparator.
@@ -1419,8 +1419,8 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
                            FilterOperations());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // This test blends slightly differently with the software renderer vs. the gl
   // renderer so use a fuzzy comparator.
@@ -1515,8 +1515,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
 
   RenderPassList pass_list;
 
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // This test has alpha=254 for the software renderer vs. alpha=255 for the gl
   // renderer so use a fuzzy comparator.
@@ -1564,8 +1564,8 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
       pass_shared_state, pass_rect, child_pass_id, root_pass.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
 
@@ -1626,8 +1626,8 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
                      false);
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
 
@@ -1723,8 +1723,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
                 false);
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1824,8 +1824,8 @@ class RendererPixelTestWithBackgroundFilter
                             SK_ColorWHITE,
                             false);
 
-    pass_list_.push_back(filter_pass.Pass());
-    pass_list_.push_back(root_pass.Pass());
+    pass_list_.push_back(std::move(filter_pass));
+    pass_list_.push_back(std::move(root_pass));
   }
 
   RenderPassList pass_list_;
@@ -1906,7 +1906,7 @@ TEST_F(ExternalStencilPixelTest, StencilTestEnabled) {
   blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
   pass->has_transparent_background = false;
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1928,7 +1928,7 @@ TEST_F(ExternalStencilPixelTest, StencilTestDisabled) {
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   green->SetNew(green_shared_state, rect, rect, SK_ColorGREEN, false);
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1972,8 +1972,8 @@ TEST_F(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
   CreateTestRenderPassDrawQuad(
       pass_shared_state, pass_rect, child_pass_id, root_pass.get());
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1997,7 +1997,7 @@ TEST_F(ExternalStencilPixelTest, DeviceClip) {
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2038,7 +2038,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2085,7 +2085,7 @@ TEST_F(GLRendererPixelTest, AxisAligned) {
   blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2124,7 +2124,7 @@ TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
   green->SetNew(green_shared_state, rect, rect, SK_ColorGREEN, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2162,7 +2162,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
   blue->SetNew(blue_shared_state, rect, rect, SK_ColorBLUE, false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2216,7 +2216,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
                     viewport,  // Intentionally bigger than clip.
                     gfx::Rect(), viewport, gfx::RectF(viewport),
                     viewport.size(), nearest_neighbor, texture_format, viewport,
-                    1.f, blue_raster_source.Pass());
+                    1.f, std::move(blue_raster_source));
 
   // One viewport-filling green quad.
   scoped_ptr<FakeDisplayListRecordingSource> green_recording =
@@ -2239,10 +2239,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   green_quad->SetNew(green_shared_state, viewport, gfx::Rect(), viewport,
                      gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
                      nearest_neighbor, texture_format, viewport, 1.f,
-                     green_raster_source.Pass());
+                     std::move(green_raster_source));
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2304,10 +2304,11 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   white_quad->SetNew(white_shared_state, viewport, gfx::Rect(), viewport,
                      gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
-                     texture_format, viewport, 1.f, white_raster_source.Pass());
+                     texture_format, viewport, 1.f,
+                     std::move(white_raster_source));
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2374,10 +2375,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
-               texture_format, viewport, 1.f, raster_source.Pass());
+               texture_format, viewport, 1.f, std::move(raster_source));
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   this->disable_picture_quad_image_filtering_ = true;
 
@@ -2426,10 +2427,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
-               texture_format, viewport, 1.f, raster_source.Pass());
+               texture_format, viewport, 1.f, std::move(raster_source));
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2479,7 +2480,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
                nearest_neighbor);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2530,7 +2531,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
                vertex_opacity, false, nearest_neighbor);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2581,7 +2582,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
                vertex_opacity, false, nearest_neighbor);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   // Allow for a small amount of error as the blending alogrithm used by Skia is
   // affected by the offset in the expanded rect.
@@ -2643,7 +2644,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
                       gfx::Rect(), green_rect2,
                       gfx::RectF(gfx::SizeF(green_rect2.size())),
                       green_rect2.size(), nearest_neighbor, texture_format,
-                      green_rect2, 1.f, green_raster_source.Pass());
+                      green_rect2, 1.f, std::move(green_raster_source));
 
   // Add a green clipped checkerboard in the bottom right to help test
   // interleaving picture quad content and solid color content.
@@ -2714,7 +2715,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   blue_quad->SetNew(blue_shared_state, quad_content_rect, gfx::Rect(),
                     quad_content_rect, gfx::RectF(quad_content_rect),
                     content_union_rect.size(), nearest_neighbor, texture_format,
-                    content_union_rect, contents_scale, raster_source.Pass());
+                    content_union_rect, contents_scale,
+                    std::move(raster_source));
 
   // Fill left half of viewport with green.
   gfx::Transform half_green_quad_to_target_transform;
@@ -2730,7 +2732,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
                           false);
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2780,8 +2782,8 @@ TEST_F(GLRendererPixelTestWithFlippedOutputSurface, ExplicitFlipTest) {
       pass_shared_state, pass_rect, child_pass_id, root_pass.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -2828,8 +2830,8 @@ TEST_F(GLRendererPixelTestWithFlippedOutputSurface, CheckChildPassUnflipped) {
       pass_shared_state, pass_rect, child_pass_id, root_pass.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // Check that the child pass remains unflipped.
   EXPECT_TRUE(this->RunPixelTestWithReadbackTarget(
@@ -2877,8 +2879,8 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
       pass_shared_state, pass_rect, child_pass_id, root_pass.get());
 
   RenderPassList pass_list;
-  pass_list.push_back(child_pass.Pass());
-  pass_list.push_back(root_pass.Pass());
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
 
   // Check that the child pass remains unflipped.
   gfx::Rect capture_rect(this->device_viewport_size_.width() / 2,
@@ -2965,7 +2967,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   }
 
   RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("spiral.png")),

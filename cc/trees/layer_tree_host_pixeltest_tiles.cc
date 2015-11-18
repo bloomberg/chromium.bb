@@ -134,7 +134,7 @@ class BlueYellowClient : public ContentLayerClient {
         skia::AdoptRef(recorder.endRecordingAsPicture());
 
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
-    item->SetNew(picture.Pass());
+    item->SetNew(std::move(picture));
 
     display_list->Finalize();
     return display_list;

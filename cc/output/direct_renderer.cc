@@ -183,7 +183,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
       scoped_ptr<ScopedResource> texture =
           ScopedResource::Create(resource_provider_);
       render_pass_textures_.set(render_passes_in_draw_order[i]->id,
-                              texture.Pass());
+                                std::move(texture));
     }
   }
 }
@@ -512,7 +512,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
           *it, gfx::RectF(quad.visible_rect),
           quad.shared_quad_state->quad_to_target_transform, next_polygon_id++));
       if (new_polygon->points().size() > 2u) {
-        poly_list.push_back(new_polygon.Pass());
+        poly_list.push_back(std::move(new_polygon));
       }
       continue;
     }

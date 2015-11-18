@@ -297,7 +297,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
                            GL_TEXTURE_2D);
     next_sync_point_++;
 
-    tab_contents_->SetTextureMailbox(mailbox, callback.Pass());
+    tab_contents_->SetTextureMailbox(mailbox, std::move(callback));
   }
 
   void DidCommit() override {

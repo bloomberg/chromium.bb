@@ -127,7 +127,7 @@ LayerImpl::~LayerImpl() {
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
   child->SetParent(this);
   DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
-  children_.push_back(child.Pass());
+  children_.push_back(std::move(child));
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
@@ -1023,7 +1023,7 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
     return;
   }
 
-  mask_layer_ = mask_layer.Pass();
+  mask_layer_ = std::move(mask_layer);
   mask_layer_id_ = new_layer_id;
   if (mask_layer_)
     mask_layer_->SetParent(this);
@@ -1032,7 +1032,7 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
 
 scoped_ptr<LayerImpl> LayerImpl::TakeMaskLayer() {
   mask_layer_id_ = -1;
-  return mask_layer_.Pass();
+  return std::move(mask_layer_);
 }
 
 void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
@@ -1045,7 +1045,7 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
     return;
   }
 
-  replica_layer_ = replica_layer.Pass();
+  replica_layer_ = std::move(replica_layer);
   replica_layer_id_ = new_layer_id;
   if (replica_layer_)
     replica_layer_->SetParent(this);
@@ -1054,7 +1054,7 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
 
 scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
   replica_layer_id_ = -1;
-  return replica_layer_.Pass();
+  return std::move(replica_layer_);
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {

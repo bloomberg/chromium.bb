@@ -209,8 +209,8 @@ void ThreadedChannel::PostFrameTimingEventsOnMain(
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::PostFrameTimingEventsOnMain,
                             proxy_main_->GetMainWeakPtr(),
-                            base::Passed(composite_events.Pass()),
-                            base::Passed(main_frame_events.Pass())));
+                            base::Passed(std::move(composite_events)),
+                            base::Passed(std::move(main_frame_events))));
 }
 
 void ThreadedChannel::BeginMainFrame(

@@ -52,7 +52,7 @@ LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
   if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {
     scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
-    layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
+    layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
   }
 }
 
@@ -64,7 +64,7 @@ void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
     // promise is pinned so that it is not interrupted by new incoming
     // activations (which would otherwise break the swap promise).
     layer_tree_host_impl_->active_tree()->QueuePinnedSwapPromise(
-        swap_promise.Pass());
+        std::move(swap_promise));
   }
 }
 
@@ -96,7 +96,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
     scoped_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));
     layer_tree_host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(
-        swap_promise.Pass());
+        std::move(swap_promise));
   }
 }
 

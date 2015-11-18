@@ -62,8 +62,7 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     context3d_ = context3d.get();
 
-    output_surface3d_ =
-        FakeOutputSurface::Create3d(context3d.Pass());
+    output_surface3d_ = FakeOutputSurface::Create3d(std::move(context3d));
     CHECK(output_surface3d_->BindToClient(&client_));
 
     output_surface_software_ = FakeOutputSurface::CreateSoftware(

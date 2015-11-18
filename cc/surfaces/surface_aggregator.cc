@@ -231,7 +231,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
                     child_to_parent_map, gfx::Transform(), ClipData(),
                     copy_pass.get(), surface_id);
 
-    dest_pass_list_->push_back(copy_pass.Pass());
+    dest_pass_list_->push_back(std::move(copy_pass));
   }
 
   gfx::Transform surface_transform =
@@ -457,7 +457,7 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
                     child_to_parent_map, gfx::Transform(), ClipData(),
                     copy_pass.get(), surface->surface_id());
 
-    dest_pass_list_->push_back(copy_pass.Pass());
+    dest_pass_list_->push_back(std::move(copy_pass));
   }
 }
 
@@ -641,7 +641,7 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   // TODO(jamesr): Aggregate all resource references into the returned frame's
   // resource list.
 
-  return frame.Pass();
+  return frame;
 }
 
 void SurfaceAggregator::ReleaseResources(SurfaceId surface_id) {

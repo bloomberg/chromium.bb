@@ -99,7 +99,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   scoped_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
-  root_clip->AddChild(root_ptr.Pass());
+  root_clip->AddChild(std::move(root_ptr));
   scoped_ptr<LayerImpl> scroll_parent =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
@@ -261,7 +261,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   scoped_ptr<LayerImpl> layer_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* layer = layer_ptr.get();
-  root->AddChild(layer_ptr.Pass());
+  root->AddChild(std::move(layer_ptr));
   layer->SetScrollClipLayer(root->id());
   host_impl.active_tree()->BuildPropertyTreesForTesting();
   DCHECK(host_impl.CanDraw());

@@ -44,7 +44,7 @@ void PictureImageLayer::SetImage(skia::RefPtr<const SkImage> image) {
   if (image_.get() == image.get())
     return;
 
-  image_ = image.Pass();
+  image_ = std::move(image);
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
 }
@@ -80,7 +80,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
   auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
-  item->SetNew(picture.Pass());
+  item->SetNew(std::move(picture));
 
   display_list->Finalize();
   return display_list;

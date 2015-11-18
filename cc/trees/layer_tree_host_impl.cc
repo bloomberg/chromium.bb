@@ -478,7 +478,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   page_scale_animation_ = PageScaleAnimation::Create(
       ScrollOffsetToVector2dF(scroll_total),
       active_tree_->current_page_scale_factor(), viewport_size,
-      scaled_scrollable_size, timing_function.Pass());
+      scaled_scrollable_size, std::move(timing_function));
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);
@@ -611,7 +611,8 @@ ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
 
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
     scoped_ptr<SwapPromise> swap_promise) {
-  swap_promises_for_main_thread_scroll_update_.push_back(swap_promise.Pass());
+  swap_promises_for_main_thread_scroll_update_.push_back(
+      std::move(swap_promise));
 }
 
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
@@ -659,7 +660,7 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 
 void LayerTreeHostImpl::FrameData::AppendRenderPass(
     scoped_ptr<RenderPass> render_pass) {
-  render_passes.push_back(render_pass.Pass());
+  render_passes.push_back(std::move(render_pass));
 }
 
 DrawMode LayerTreeHostImpl::GetDrawMode() const {
@@ -2224,8 +2225,8 @@ void LayerTreeHostImpl::RecordMainFrameTiming(
 void LayerTreeHostImpl::PostFrameTimingEvents(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  client_->PostFrameTimingEventsOnImplThread(composite_events.Pass(),
-                                             main_frame_events.Pass());
+  client_->PostFrameTimingEventsOnImplThread(std::move(composite_events),
+                                             std::move(main_frame_events));
 }
 
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
@@ -3028,7 +3029,7 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
       active_tree_->elastic_overscroll()->PullDeltaForMainThread();
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
 
-  return scroll_info.Pass();
+  return scroll_info;
 }
 
 void LayerTreeHostImpl::SetFullRootLayerDamage() {
@@ -3155,7 +3156,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   }
 
   if (!events->empty())
-    client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
+    client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
 
   if (has_active_animations)
     SetNeedsAnimate();
@@ -3450,7 +3451,7 @@ void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
 
 void LayerTreeHostImpl::ScheduleMicroBenchmark(
     scoped_ptr<MicroBenchmarkImpl> benchmark) {
-  micro_benchmark_controller_.ScheduleRun(benchmark.Pass());
+  micro_benchmark_controller_.ScheduleRun(std::move(benchmark));
 }
 
 void LayerTreeHostImpl::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
@@ -3498,11 +3499,11 @@ void LayerTreeHostImpl::ScrollAnimationCreate(
   curve->SetInitialValue(current_offset);
 
   scoped_ptr<Animation> animation = Animation::Create(
-      curve.Pass(), AnimationIdProvider::NextAnimationId(),
+      std::move(curve), AnimationIdProvider::NextAnimationId(),
       AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
   animation->set_is_impl_only(true);
 
-  layer_impl->layer_animation_controller()->AddAnimation(animation.Pass());
+  layer_impl->layer_animation_controller()->AddAnimation(std::move(animation));
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(

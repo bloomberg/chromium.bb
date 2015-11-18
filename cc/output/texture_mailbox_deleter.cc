@@ -57,7 +57,7 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
                                                context_provider,
                                                texture_id));
 
-  impl_callbacks_.push_back(impl_callback.Pass());
+  impl_callbacks_.push_back(std::move(impl_callback));
 
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
@@ -75,7 +75,7 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
     main_callback = SingleReleaseCallback::Create(run_impl_callback);
   }
 
-  return main_callback.Pass();
+  return main_callback;
 }
 
 void TextureMailboxDeleter::RunDeleteTextureOnImplThread(

@@ -130,7 +130,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
   ++total_resource_count_;
 
   Resource* resource = pool_resource.get();
-  in_use_resources_.set(resource->id(), pool_resource.Pass());
+  in_use_resources_.set(resource->id(), std::move(pool_resource));
   in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
       resource->size(), resource->format());
   return resource;
@@ -234,7 +234,7 @@ void ResourcePool::CheckBusyResources() {
 }
 
 void ResourcePool::DidFinishUsingResource(scoped_ptr<PoolResource> resource) {
-  unused_resources_.push_front(resource.Pass());
+  unused_resources_.push_front(std::move(resource));
 }
 
 void ResourcePool::ScheduleEvictExpiredResourcesIn(

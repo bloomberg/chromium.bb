@@ -25,9 +25,7 @@ VideoLayer::VideoLayer(const LayerSettings& settings,
 VideoLayer::~VideoLayer() {}
 
 scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  scoped_ptr<VideoLayerImpl> impl =
-      VideoLayerImpl::Create(tree_impl, id(), provider_, video_rotation_);
-  return impl.Pass();
+  return VideoLayerImpl::Create(tree_impl, id(), provider_, video_rotation_);
 }
 
 bool VideoLayer::Update() {

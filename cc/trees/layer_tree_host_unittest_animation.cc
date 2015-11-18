@@ -414,8 +414,8 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(new FakeFloatAnimationCurve());
       scoped_ptr<Animation> animation(
-          Animation::Create(curve.Pass(), 1, 1, Animation::OPACITY));
-      layer->layer_animation_controller()->AddAnimation(animation.Pass());
+          Animation::Create(std::move(curve), 1, 1, Animation::OPACITY));
+      layer->layer_animation_controller()->AddAnimation(std::move(animation));
 
       // We add the animation *before* attaching the layer to the tree.
       layer_tree_host()->root_layer()->AddChild(layer);
@@ -650,10 +650,11 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
             ScrollOffsetAnimationCurve::Create(
                 gfx::ScrollOffset(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
-        scoped_ptr<Animation> animation(
-            Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+        scoped_ptr<Animation> animation(Animation::Create(
+            std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
         animation->set_needs_synchronized_start_time(true);
-        bool animation_added = scroll_layer_->AddAnimation(animation.Pass());
+        bool animation_added =
+            scroll_layer_->AddAnimation(std::move(animation));
         bool impl_scrolling_supported =
             layer_tree_host()->proxy()->SupportsImplScrolling();
         EXPECT_EQ(impl_scrolling_supported, animation_added);
@@ -701,9 +702,9 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
                                            EaseInOutTimingFunction::Create()));
     scoped_ptr<Animation> animation(
-        Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+        Animation::Create(std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
     animation->set_needs_synchronized_start_time(true);
-    scroll_layer_->AddAnimation(animation.Pass());
+    scroll_layer_->AddAnimation(std::move(animation));
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

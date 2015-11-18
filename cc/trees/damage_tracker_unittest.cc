@@ -98,9 +98,9 @@ class DamageTrackerTest : public testing::Test {
     child->SetPosition(gfx::PointF(100.f, 100.f));
     child->SetBounds(gfx::Size(30, 30));
     child->SetDrawsContent(true);
-    root->AddChild(child.Pass());
+    root->AddChild(std::move(child));
 
-    return root.Pass();
+    return root;
   }
 
   scoped_ptr<LayerImpl> CreateTestTreeWithTwoSurfaces() {
@@ -145,12 +145,12 @@ class DamageTrackerTest : public testing::Test {
     grand_child2->SetBounds(gfx::Size(6, 8));
     grand_child2->SetDrawsContent(true);
 
-    child1->AddChild(grand_child1.Pass());
-    child1->AddChild(grand_child2.Pass());
-    root->AddChild(child1.Pass());
-    root->AddChild(child2.Pass());
+    child1->AddChild(std::move(grand_child1));
+    child1->AddChild(std::move(grand_child2));
+    root->AddChild(std::move(child1));
+    root->AddChild(std::move(child2));
 
-    return root.Pass();
+    return root;
   }
 
   scoped_ptr<LayerImpl> CreateAndSetUpTestTreeWithOneSurface() {
@@ -160,7 +160,7 @@ class DamageTrackerTest : public testing::Test {
     // everything, so that we can actually perform specific tests.
     EmulateDrawingOneFrame(root.get());
 
-    return root.Pass();
+    return root;
   }
 
   scoped_ptr<LayerImpl> CreateAndSetUpTestTreeWithTwoSurfaces() {
@@ -170,7 +170,7 @@ class DamageTrackerTest : public testing::Test {
     // everything, so that we can actually perform specific tests.
     EmulateDrawingOneFrame(root.get());
 
-    return root.Pass();
+    return root;
   }
 
  protected:
@@ -718,7 +718,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
     child2->SetPosition(gfx::PointF(400.f, 380.f));
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
-    root->AddChild(child2.Pass());
+    root->AddChild(std::move(child2));
   }
   EmulateDrawingOneFrame(root.get());
 
@@ -772,7 +772,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
     // scenario.
     ASSERT_FALSE(child2->LayerPropertyChanged());
     ASSERT_TRUE(child2->update_rect().IsEmpty());
-    root->AddChild(child2.Pass());
+    root->AddChild(std::move(child2));
   }
   EmulateDrawingOneFrame(root.get());
 
@@ -798,7 +798,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
     child2->SetPosition(gfx::PointF(400.f, 380.f));
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
-    root->AddChild(child2.Pass());
+    root->AddChild(std::move(child2));
   }
   LayerImpl* child2 = root->children()[1].get();
   EmulateDrawingOneFrame(root.get());
@@ -1047,7 +1047,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     grand_child3->SetPosition(gfx::PointF(240.f, 240.f));
     grand_child3->SetBounds(gfx::Size(10, 10));
     grand_child3->SetDrawsContent(true);
-    child1->AddChild(grand_child3.Pass());
+    child1->AddChild(std::move(grand_child3));
   }
   child1->SetOpacity(0.5f);
   EmulateDrawingOneFrame(root.get());
@@ -1062,7 +1062,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
-    grand_child1->SetReplicaLayer(grand_child1_replica.Pass());
+    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
     grand_child1->SetHasRenderSurface(true);
   }
   EmulateDrawingOneFrame(root.get());
@@ -1147,7 +1147,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
             LayerImpl::Create(host_impl_.active_tree(), 3);
     mask_layer->SetPosition(child->position());
     mask_layer->SetBounds(child->bounds());
-    child->SetMaskLayer(mask_layer.Pass());
+    child->SetMaskLayer(std::move(mask_layer));
     child->SetHasRenderSurface(true);
   }
   LayerImpl* mask_layer = child->mask_layer();
@@ -1160,7 +1160,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     grand_child->SetPosition(gfx::PointF(2.f, 2.f));
     grand_child->SetBounds(gfx::Size(2, 2));
     grand_child->SetDrawsContent(true);
-    child->AddChild(grand_child.Pass());
+    child->AddChild(std::move(grand_child));
   }
   EmulateDrawingOneFrame(root.get());
 
@@ -1236,7 +1236,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
-    grand_child1->SetReplicaLayer(grand_child1_replica.Pass());
+    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
     grand_child1->SetHasRenderSurface(true);
   }
   LayerImpl* grand_child1_replica = grand_child1->replica_layer();
@@ -1247,7 +1247,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
             LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
     replica_mask_layer->SetBounds(grand_child1->bounds());
-    grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());
+    grand_child1_replica->SetMaskLayer(std::move(replica_mask_layer));
   }
   LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();
 
@@ -1313,7 +1313,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
-    grand_child1->SetReplicaLayer(grand_child1_replica.Pass());
+    grand_child1->SetReplicaLayer(std::move(grand_child1_replica));
     grand_child1->SetHasRenderSurface(true);
   }
   LayerImpl* grand_child1_replica = grand_child1->replica_layer();
@@ -1325,7 +1325,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     replica_mask_layer->SetPosition(gfx::PointF());
     // Note: this is not the transform origin being tested.
     replica_mask_layer->SetBounds(grand_child1->bounds());
-    grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());
+    grand_child1_replica->SetMaskLayer(std::move(replica_mask_layer));
   }
   LayerImpl* replica_mask_layer = grand_child1_replica->mask_layer();
 

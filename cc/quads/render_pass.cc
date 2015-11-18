@@ -88,7 +88,7 @@ scoped_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
                     damage_rect,
                     transform_to_root_target,
                     has_transparent_background);
-  return copy_pass.Pass();
+  return copy_pass;
 }
 
 // static
@@ -134,7 +134,7 @@ void RenderPass::CopyAll(const std::vector<scoped_ptr<RenderPass>>& in,
         copy_pass->CopyFromAndAppendDrawQuad(quad, copy_shared_quad_state);
       }
     }
-    out->push_back(copy_pass.Pass());
+    out->push_back(std::move(copy_pass));
   }
 }
 

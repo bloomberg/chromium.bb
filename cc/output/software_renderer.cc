@@ -586,7 +586,7 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   current_canvas_->readPixels(
       bitmap.get(), window_copy_rect.x(), window_copy_rect.y());
 
-  request->SendBitmapResult(bitmap.Pass());
+  request->SendBitmapResult(std::move(bitmap));
 }
 
 void SoftwareRenderer::DiscardBackbuffer() {

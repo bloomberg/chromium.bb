@@ -100,9 +100,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     }
 
     if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(context3d.Pass());
+      return FakeOutputSurface::CreateDelegating3d(std::move(context3d));
     else
-      return FakeOutputSurface::Create3d(context3d.Pass());
+      return FakeOutputSurface::Create3d(std::move(context3d));
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -194,7 +194,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     scoped_ptr<OutputSurface> surface(
         LayerTreeHostContextTest::CreateOutputSurface());
     CHECK(surface);
-    layer_tree_host()->SetOutputSurface(surface.Pass());
+    layer_tree_host()->SetOutputSurface(std::move(surface));
   }
 
   void DidInitializeOutputSurface() override {
@@ -408,7 +408,7 @@ class LayerTreeHostClientTakeAwayOutputSurface
         LayerTreeHostContextTest::CreateOutputSurface();
     CHECK(surface);
     setos_counter_++;
-    layer_tree_host()->SetOutputSurface(surface.Pass());
+    layer_tree_host()->SetOutputSurface(std::move(surface));
   }
 
   void HideAndReleaseOutputSurface() {
@@ -936,12 +936,12 @@ class LayerTreeHostContextTestDontUseLostResources
     AddOneOfEveryQuadType(pass.get(), child_resource_provider_.get(),
                           RenderPassId(2, 1), &mailbox_sync_point);
 
-    frame_data->render_pass_list.push_back(pass_for_quad.Pass());
-    frame_data->render_pass_list.push_back(pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(pass_for_quad));
+    frame_data->render_pass_list.push_back(std::move(pass));
 
     delegated_resource_collection_ = new DelegatedFrameResourceCollection;
     delegated_frame_provider_ = new DelegatedFrameProvider(
-        delegated_resource_collection_.get(), frame_data.Pass());
+        delegated_resource_collection_.get(), std::move(frame_data));
 
     ResourceId resource = child_resource_provider_->CreateResource(
         gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);

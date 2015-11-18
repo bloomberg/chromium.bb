@@ -175,12 +175,12 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
     RenderPassList* render_passes_in_draw_order) {
   ClearRenderPasses();
 
-  for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
-    RenderPassList::iterator to_take =
-        render_passes_in_draw_order->begin() + i;
+  size_t i = 0;
+  for (auto& render_pass : *render_passes_in_draw_order) {
     render_passes_index_by_id_.insert(
-        RenderPassToIndexMap::value_type((*to_take)->id, i));
-    render_passes_in_draw_order_.push_back(to_take->Pass());
+        RenderPassToIndexMap::value_type(render_pass->id, i));
+    render_passes_in_draw_order_.push_back(std::move(render_pass));
+    ++i;
   }
 
   // Give back an empty array instead of nulls.
@@ -265,7 +265,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
         render_passes_in_draw_order_[i]->Copy(output_render_pass_id);
     copy_pass->transform_to_root_target.ConcatTransform(
         delegated_frame_to_root_transform);
-    render_pass_sink->AppendRenderPass(copy_pass.Pass());
+    render_pass_sink->AppendRenderPass(std::move(copy_pass));
   }
 }
 

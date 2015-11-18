@@ -96,7 +96,7 @@ void DelegatingRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   TRACE_EVENT0("cc,benchmark", "DelegatingRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = metadata;
-  compositor_frame.delegated_frame_data = delegated_frame_data_.Pass();
+  compositor_frame.delegated_frame_data = std::move(delegated_frame_data_);
   output_surface_->SwapBuffers(&compositor_frame);
 }
 

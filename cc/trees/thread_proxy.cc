@@ -49,8 +49,9 @@ scoped_ptr<Proxy> ThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-  return make_scoped_ptr(new ThreadProxy(layer_tree_host, task_runner_provider,
-                                         external_begin_frame_source.Pass()));
+  return make_scoped_ptr(
+      new ThreadProxy(layer_tree_host, task_runner_provider,
+                      std::move(external_begin_frame_source)));
 }
 
 ThreadProxy::ThreadProxy(
@@ -63,7 +64,7 @@ ThreadProxy::ThreadProxy(
           this,
           layer_tree_host->id(),
           layer_tree_host->rendering_stats_instrumentation(),
-          external_begin_frame_source.Pass()) {
+          std::move(external_begin_frame_source)) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(task_runner_provider_);
   DCHECK(task_runner_provider_->IsMainThread());
@@ -111,7 +112,7 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
           base::Bind(&ThreadProxy::RenewTreePriority, base::Unretained(proxy)),
           base::TimeDelta::FromMilliseconds(
               kSmoothnessTakesPriorityExpirationDelay * 1000)),
-      external_begin_frame_source(external_begin_frame_source.Pass()),
+      external_begin_frame_source(std::move(external_begin_frame_source)),
       rendering_stats_instrumentation(rendering_stats_instrumentation),
       weak_factory(proxy) {}
 
@@ -124,7 +125,7 @@ ThreadProxy::~ThreadProxy() {
 }
 
 void ThreadProxy::SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) {
-  threaded_channel_ = threaded_channel.Pass();
+  threaded_channel_ = std::move(threaded_channel);
   main().channel_main = threaded_channel_.get();
 }
 
@@ -376,7 +377,7 @@ void ThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
   TRACE_EVENT0("cc",
                "ThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(task_runner_provider_->IsImplThread());
-  impl().channel_impl->SetAnimationEvents(events.Pass());
+  impl().channel_impl->SetAnimationEvents(std::move(events));
 }
 
 bool ThreadProxy::IsInsideDraw() { return impl().inside_draw; }
@@ -574,7 +575,7 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame(
   // main_frame_before_activation_enabled is set, since we might run this code
   // twice before recording a duration. crbug.com/469824
   impl().last_begin_main_frame_args = begin_main_frame_state->begin_frame_args;
-  impl().channel_impl->BeginMainFrame(begin_main_frame_state.Pass());
+  impl().channel_impl->BeginMainFrame(std::move(begin_main_frame_state));
   devtools_instrumentation::DidRequestMainThreadFrame(
       impl().layer_tree_host_id);
 }
@@ -937,7 +938,7 @@ void ThreadProxy::DidCompleteSwapBuffers() {
 void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc", "ThreadProxy::SetAnimationEvents");
   DCHECK(task_runner_provider_->IsMainThread());
-  main().layer_tree_host->SetAnimationEvents(events.Pass());
+  main().layer_tree_host->SetAnimationEvents(std::move(events));
 }
 
 void ThreadProxy::InitializeImplOnImpl(CompletionEvent* completion,
@@ -964,7 +965,7 @@ void ThreadProxy::InitializeImplOnImpl(CompletionEvent* completion,
       Scheduler::Create(this, scheduler_settings, impl().layer_tree_host_id,
                         task_runner_provider_->ImplThreadTaskRunner(),
                         impl().external_begin_frame_source.get(),
-                        compositor_timing_history.Pass());
+                        std::move(compositor_timing_history));
 
   DCHECK_EQ(impl().scheduler->visible(),
             impl().layer_tree_host_impl->visible());
@@ -1169,16 +1170,16 @@ void ThreadProxy::PostFrameTimingEventsOnImplThread(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(task_runner_provider_->IsImplThread());
-  impl().channel_impl->PostFrameTimingEventsOnMain(composite_events.Pass(),
-                                                   main_frame_events.Pass());
+  impl().channel_impl->PostFrameTimingEventsOnMain(
+      std::move(composite_events), std::move(main_frame_events));
 }
 
 void ThreadProxy::PostFrameTimingEventsOnMain(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(task_runner_provider_->IsMainThread());
-  main().layer_tree_host->RecordFrameTimingEvents(composite_events.Pass(),
-                                                  main_frame_events.Pass());
+  main().layer_tree_host->RecordFrameTimingEvents(std::move(composite_events),
+                                                  std::move(main_frame_events));
 }
 
 base::WeakPtr<ProxyMain> ThreadProxy::GetMainWeakPtr() {

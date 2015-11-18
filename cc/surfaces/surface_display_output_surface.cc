@@ -64,7 +64,7 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
   scoped_ptr<CompositorFrame> frame_copy(new CompositorFrame());
   frame->AssignTo(frame_copy.get());
   factory_.SubmitCompositorFrame(
-      surface_id_, frame_copy.Pass(),
+      surface_id_, std::move(frame_copy),
       base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,
                  base::Unretained(this)));
 }

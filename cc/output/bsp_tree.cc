@@ -13,8 +13,7 @@
 
 namespace cc {
 
-BspNode::BspNode(scoped_ptr<DrawPolygon> data) : node_data(data.Pass()) {
-}
+BspNode::BspNode(scoped_ptr<DrawPolygon> data) : node_data(std::move(data)) {}
 
 BspNode::~BspNode() {
 }
@@ -69,8 +68,8 @@ void BspTree::BuildTree(BspNode* node,
         if (!split_result) {
           break;
         }
-        front_list.push_back(new_front.Pass());
-        back_list.push_back(new_back.Pass());
+        front_list.push_back(std::move(new_front));
+        back_list.push_back(std::move(new_back));
         break;
       }
       case BSP_COPLANAR_FRONT:

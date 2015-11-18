@@ -42,7 +42,7 @@ void TestOutputSurface::SwapBuffers(CompositorFrame* frame) {
 class MockContextProvider : public TestContextProvider {
  public:
   explicit MockContextProvider(scoped_ptr<TestWebGraphicsContext3D> context)
-      : TestContextProvider(context.Pass()) {}
+      : TestContextProvider(std::move(context)) {}
   MOCK_METHOD0(DeleteCachedResources, void());
 
  protected:

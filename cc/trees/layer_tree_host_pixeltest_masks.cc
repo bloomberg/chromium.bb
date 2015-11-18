@@ -61,7 +61,7 @@ class MaskContentLayerClient : public ContentLayerClient {
 
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(picture.Pass());
+    item->SetNew(std::move(picture));
 
     display_list->Finalize();
     return display_list;
@@ -115,7 +115,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask_display_list->Raster(canvas, nullptr, gfx::Rect(mask_bounds), 1.0f);
   skia::RefPtr<const SkImage> image =
       skia::AdoptRef(surface->newImageSnapshot());
-  mask->SetImage(image.Pass());
+  mask->SetImage(std::move(image));
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
@@ -339,7 +339,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
 
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(picture.Pass());
+    item->SetNew(std::move(picture));
 
     display_list->Finalize();
     return display_list;
@@ -379,7 +379,7 @@ class CircleContentLayerClient : public ContentLayerClient {
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
-    item->SetNew(picture.Pass());
+    item->SetNew(std::move(picture));
 
     display_list->Finalize();
     return display_list;

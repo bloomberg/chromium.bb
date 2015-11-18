@@ -18,7 +18,7 @@ DelegatedFrameProvider::DelegatedFrameProvider(
   RenderPass* root_pass = frame->render_pass_list.back().get();
   frame_size_ = root_pass->output_rect.size();
   DCHECK(!frame_size_.IsEmpty());
-  SetFrameData(frame.Pass());
+  SetFrameData(std::move(frame));
 }
 
 DelegatedFrameProvider::~DelegatedFrameProvider() {
@@ -61,7 +61,7 @@ void DelegatedFrameProvider::SetFrameData(
     resource_collection_->UnrefResources(returned);
   }
 
-  frame_ = frame.Pass();
+  frame_ = std::move(frame);
 
   resource_collection_->ReceivedResources(frame_->resource_list);
   resource_collection_->RefResources(frame_->resource_list);

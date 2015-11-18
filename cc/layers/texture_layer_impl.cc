@@ -42,7 +42,7 @@ void TextureLayerImpl::SetTextureMailbox(
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
-  release_callback_ = release_callback.Pass();
+  release_callback_ = std::move(release_callback);
   own_mailbox_ = true;
   valid_texture_copy_ = false;
   SetNeedsPushProperties();
@@ -66,7 +66,7 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetNearestNeighbor(nearest_neighbor_);
   if (own_mailbox_) {
     texture_layer->SetTextureMailbox(texture_mailbox_,
-                                     release_callback_.Pass());
+                                     std::move(release_callback_));
     own_mailbox_ = false;
   }
 }
@@ -83,7 +83,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
          texture_mailbox_.IsSharedMemory())) {
       external_texture_resource_ =
           resource_provider->CreateResourceFromTextureMailbox(
-              texture_mailbox_, release_callback_.Pass());
+              texture_mailbox_, std::move(release_callback_));
       DCHECK(external_texture_resource_);
       texture_copy_ = nullptr;
       valid_texture_copy_ = false;

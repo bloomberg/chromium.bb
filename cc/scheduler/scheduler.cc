@@ -42,8 +42,8 @@ scoped_ptr<Scheduler> Scheduler::Create(
       BackToBackBeginFrameSource::Create(task_runner);
   return make_scoped_ptr(new Scheduler(
       client, settings, layer_tree_host_id, task_runner, external_frame_source,
-      synthetic_frame_source.Pass(), unthrottled_frame_source.Pass(),
-      compositor_timing_history.Pass()));
+      std::move(synthetic_frame_source), std::move(unthrottled_frame_source),
+      std::move(compositor_timing_history)));
 }
 
 Scheduler::Scheduler(
@@ -60,11 +60,11 @@ Scheduler::Scheduler(
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
       external_frame_source_(external_frame_source),
-      synthetic_frame_source_(synthetic_frame_source.Pass()),
-      unthrottled_frame_source_(unthrottled_frame_source.Pass()),
+      synthetic_frame_source_(std::move(synthetic_frame_source)),
+      unthrottled_frame_source_(std::move(unthrottled_frame_source)),
       frame_source_(BeginFrameSourceMultiplexer::Create()),
       throttle_frame_production_(false),
-      compositor_timing_history_(compositor_timing_history.Pass()),
+      compositor_timing_history_(std::move(compositor_timing_history)),
       begin_impl_frame_deadline_mode_(
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
       begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),

@@ -112,7 +112,7 @@ void SurfaceLayer::SatisfyDestroySequence() {
   DCHECK(!destroy_sequence_.is_null());
   scoped_ptr<SatisfySwapPromise> satisfy(
       new SatisfySwapPromise(destroy_sequence_, satisfy_callback_));
-  layer_tree_host()->QueueSwapPromise(satisfy.Pass());
+  layer_tree_host()->QueueSwapPromise(std::move(satisfy));
   destroy_sequence_ = SurfaceSequence();
 }
 

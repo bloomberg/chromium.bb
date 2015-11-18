@@ -23,14 +23,14 @@ class CC_EXPORT CopyOutputResult {
   }
   static scoped_ptr<CopyOutputResult> CreateBitmapResult(
       scoped_ptr<SkBitmap> bitmap) {
-    return make_scoped_ptr(new CopyOutputResult(bitmap.Pass()));
+    return make_scoped_ptr(new CopyOutputResult(std::move(bitmap)));
   }
   static scoped_ptr<CopyOutputResult> CreateTextureResult(
       const gfx::Size& size,
       const TextureMailbox& texture_mailbox,
       scoped_ptr<SingleReleaseCallback> release_callback) {
-    return make_scoped_ptr(
-        new CopyOutputResult(size, texture_mailbox, release_callback.Pass()));
+    return make_scoped_ptr(new CopyOutputResult(size, texture_mailbox,
+                                                std::move(release_callback)));
   }
 
   ~CopyOutputResult();

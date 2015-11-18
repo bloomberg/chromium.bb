@@ -1153,9 +1153,9 @@ static bool AddTestAnimation(Layer* layer) {
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.7f, nullptr));
   scoped_ptr<Animation> animation =
-      Animation::Create(curve.Pass(), 0, 0, Animation::OPACITY);
+      Animation::Create(std::move(curve), 0, 0, Animation::OPACITY);
 
-  return layer->AddAnimation(animation.Pass());
+  return layer->AddAnimation(std::move(animation));
 }
 
 TEST_F(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
@@ -1274,11 +1274,11 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   // layer does not abort either one.
   scoped_ptr<CopyOutputRequest> request = CopyOutputRequest::CreateRequest(
       base::Bind(&ReceiveCopyOutputResult, &result_count));
-  layer->RequestCopyOfOutput(request.Pass());
+  layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, result_count);
   request = CopyOutputRequest::CreateRequest(
       base::Bind(&ReceiveCopyOutputResult, &result_count));
-  layer->RequestCopyOfOutput(request.Pass());
+  layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, result_count);
 
   // When the layer is destroyed, expect both requests to be aborted.
@@ -1295,27 +1295,28 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_first_result_from_this_source));
   request->set_source(this);
-  layer->RequestCopyOfOutput(request.Pass());
+  layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_first_result_from_this_source);
   // Make a request from a different source.
   int did_receive_result_from_different_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_result_from_different_source));
   request->set_source(reinterpret_cast<void*>(0xdeadbee0));
-  layer->RequestCopyOfOutput(request.Pass());
+  layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_different_source);
   // Make a request without specifying the source.
   int did_receive_result_from_anonymous_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_result_from_anonymous_source));
-  layer->RequestCopyOfOutput(request.Pass());
+  layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);
   // Make the second request from |this| source.
   int did_receive_second_result_from_this_source = 0;
   request = CopyOutputRequest::CreateRequest(base::Bind(
       &ReceiveCopyOutputResult, &did_receive_second_result_from_this_source));
   request->set_source(this);
-  layer->RequestCopyOfOutput(request.Pass());  // First request to be aborted.
+  layer->RequestCopyOfOutput(
+      std::move(request));  // First request to be aborted.
   EXPECT_EQ(1, did_receive_first_result_from_this_source);
   EXPECT_EQ(0, did_receive_result_from_different_source);
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);

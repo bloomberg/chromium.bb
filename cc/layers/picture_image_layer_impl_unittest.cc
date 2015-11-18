@@ -133,7 +133,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   EXPECT_EQ(1.f, pending_layer->tilings()->tiling_at(0)->contents_scale());
 
   // Push to active layer.
-  host_impl_.pending_tree()->SetRootLayer(pending_layer.Pass());
+  host_impl_.pending_tree()->SetRootLayer(std::move(pending_layer));
   host_impl_.ActivateSyncTree();
 
   TestablePictureImageLayerImpl* active_layer =

@@ -220,8 +220,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                     gfx::Vector2dF(),
                     FilterOperations());
 
-  pass_list.push_back(pass.Pass());
-  pass_list.push_back(contrib.Pass());
+  pass_list.push_back(std::move(pass));
+  pass_list.push_back(std::move(contrib));
 
   // Make a copy with CopyAll().
   RenderPassList copy_list;
@@ -303,7 +303,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                       gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3), SkColor(),
                       false);
 
-  pass_list.push_back(pass.Pass());
+  pass_list.push_back(std::move(pass));
 
   // Make a copy with CopyAll().
   RenderPassList copy_list;

@@ -145,7 +145,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     layer->SetBounds(gfx::Size(width, height));
     skia::RefPtr<const SkImage> image =
         skia::AdoptRef(backing_store->newImageSnapshot());
-    layer->SetImage(image.Pass());
+    layer->SetImage(std::move(image));
     return layer;
   }
 
@@ -170,7 +170,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
                      paint);
     skia::RefPtr<const SkImage> image =
         skia::AdoptRef(surface->newImageSnapshot());
-    mask->SetImage(image.Pass());
+    mask->SetImage(std::move(image));
     layer->SetMaskLayer(mask.get());
   }
 

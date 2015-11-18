@@ -50,8 +50,8 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
     TakeLatencyInfo(&frame->metadata.latency_info);
   }
 
-  scoped_ptr<CompositorFrame> previous_frame = current_frame_.Pass();
-  current_frame_ = frame.Pass();
+  scoped_ptr<CompositorFrame> previous_frame = std::move(current_frame_);
+  current_frame_ = std::move(frame);
 
   if (current_frame_) {
     factory_->ReceiveFromChild(
@@ -104,7 +104,7 @@ void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
   if (current_frame_ &&
       !current_frame_->delegated_frame_data->render_pass_list.empty())
     current_frame_->delegated_frame_data->render_pass_list.back()
-        ->copy_requests.push_back(copy_request.Pass());
+        ->copy_requests.push_back(std::move(copy_request));
   else
     copy_request->SendEmptyResult();
 }

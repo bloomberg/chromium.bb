@@ -733,7 +733,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -778,7 +778,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -816,7 +816,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateOffscreen(context_owned.Pass()));
+      FakeOutputSurface::CreateOffscreen(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -887,7 +887,7 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
   VisibilityChangeIsLastCallTrackingContext* context = context_owned.get();
 
   scoped_refptr<TestContextProvider> provider =
-      TestContextProvider::Create(context_owned.Pass());
+      TestContextProvider::Create(std::move(context_owned));
 
   provider->support()->SetSurfaceVisibleCallback(base::Bind(
       &VisibilityChangeIsLastCallTrackingContext::set_last_call_was_visibility,
@@ -960,7 +960,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -1046,7 +1046,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(mock_context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(mock_context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -1137,7 +1137,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -1210,7 +1210,7 @@ class NonReshapableOutputSurface : public FakeOutputSurface {
  public:
   explicit NonReshapableOutputSurface(
       scoped_ptr<TestWebGraphicsContext3D> context3d)
-      : FakeOutputSurface(TestContextProvider::Create(context3d.Pass()),
+      : FakeOutputSurface(TestContextProvider::Create(std::move(context3d)),
                           false) {
     surface_size_ = gfx::Size(500, 500);
   }
@@ -1224,7 +1224,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<NonReshapableOutputSurface> output_surface(
-      new NonReshapableOutputSurface(context_owned.Pass()));
+      new NonReshapableOutputSurface(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
   output_surface->set_fixed_size(gfx::Size(100, 100));
 
@@ -1384,7 +1384,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      new NonReshapableOutputSurface(context_owned.Pass()));
+      new NonReshapableOutputSurface(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -2069,7 +2069,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   scoped_ptr<DiscardCheckingContext> context_owned(new DiscardCheckingContext);
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -2106,7 +2106,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, release_callback.Pass());
+      mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -2222,7 +2222,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   MockOverlayScheduler overlay_scheduler;
   scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create(context_owned.Pass());
+      TestContextProvider::Create(std::move(context_owned));
   context_provider->support()->SetScheduleOverlayPlaneCallback(base::Bind(
       &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
 
@@ -2261,7 +2261,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, release_callback.Pass());
+      mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;

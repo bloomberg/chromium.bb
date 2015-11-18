@@ -101,7 +101,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   owning_layer->SetBlendMode(blend_mode);
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-  root_layer->AddChild(owning_layer.Pass());
+  root_layer->AddChild(std::move(owning_layer));
 
   gfx::Rect content_rect(0, 0, 50, 50);
   gfx::Rect clip_rect(5, 5, 40, 40);
@@ -138,7 +138,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
 class TestRenderPassSink : public RenderPassSink {
  public:
   void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override {
-    render_passes_.push_back(render_pass.Pass());
+    render_passes_.push_back(std::move(render_pass));
   }
 
   const RenderPassList& RenderPasses() const {
@@ -165,7 +165,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   owning_layer->draw_properties().render_target = owning_layer.get();
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
-  root_layer->AddChild(owning_layer.Pass());
+  root_layer->AddChild(std::move(owning_layer));
 
   gfx::Rect content_rect(0, 0, 50, 50);
   gfx::Transform origin;

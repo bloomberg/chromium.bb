@@ -21,7 +21,7 @@ OnscreenDisplayClient::OnscreenDisplayClient(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : output_surface_(output_surface.Pass()),
+    : output_surface_(std::move(output_surface)),
       task_runner_(task_runner),
       display_(new Display(this,
                            manager,
@@ -52,7 +52,7 @@ bool OnscreenDisplayClient::Initialize() {
       new DisplayScheduler(display_.get(), frame_source, task_runner_.get(),
                            output_surface_->capabilities().max_frames_pending));
 
-  return display_->Initialize(output_surface_.Pass(), scheduler_.get());
+  return display_->Initialize(std::move(output_surface_), scheduler_.get());
 }
 
 void OnscreenDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,

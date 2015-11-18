@@ -221,7 +221,7 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
-  root_layer_ = layer.Pass();
+  root_layer_ = std::move(layer);
 
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
@@ -261,7 +261,7 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
 scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
-  return root_layer_.Pass();
+  return std::move(root_layer_);
 }
 
 static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
@@ -325,7 +325,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->pending_page_scale_animation_ =
-      pending_page_scale_animation_.Pass();
+      std::move(pending_page_scale_animation_);
 
   target_tree->SetViewportLayersFromIds(
       overscroll_elasticity_layer_id_, page_scale_layer_id_,
@@ -1122,14 +1122,14 @@ bool LayerTreeImpl::DistributeRootScrollOffset(
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
-  swap_promise_list_.push_back(swap_promise.Pass());
+  swap_promise_list_.push_back(std::move(swap_promise));
 }
 
 void LayerTreeImpl::QueuePinnedSwapPromise(
     scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(IsActiveTree());
   DCHECK(swap_promise);
-  pinned_swap_promise_list_.push_back(swap_promise.Pass());
+  pinned_swap_promise_list_.push_back(std::move(swap_promise));
 }
 
 void LayerTreeImpl::PassSwapPromises(
@@ -1760,12 +1760,12 @@ VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()
 
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     scoped_ptr<PendingPageScaleAnimation> pending_animation) {
-  pending_page_scale_animation_ = pending_animation.Pass();
+  pending_page_scale_animation_ = std::move(pending_animation);
 }
 
 scoped_ptr<PendingPageScaleAnimation>
     LayerTreeImpl::TakePendingPageScaleAnimation() {
-  return pending_page_scale_animation_.Pass();
+  return std::move(pending_page_scale_animation_);
 }
 
 bool LayerTreeImpl::IsAnimatingFilterProperty(const LayerImpl* layer) const {

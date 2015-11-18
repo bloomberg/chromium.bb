@@ -83,10 +83,10 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
                         gfx::Transform());
 
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    frame_data->render_pass_list.push_back(render_pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(render_pass));
 
     CompositorFrame frame;
-    frame.delegated_frame_data = frame_data.Pass();
+    frame.delegated_frame_data = std::move(frame_data);
 
     surface_display_output_surface_.SwapBuffers(&frame);
   }

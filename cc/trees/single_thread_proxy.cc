@@ -29,7 +29,7 @@ scoped_ptr<Proxy> SingleThreadProxy::Create(
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   return make_scoped_ptr(
       new SingleThreadProxy(layer_tree_host, client, task_runner_provider,
-                            external_begin_frame_source.Pass()));
+                            std::move(external_begin_frame_source)));
 }
 
 SingleThreadProxy::SingleThreadProxy(
@@ -40,7 +40,7 @@ SingleThreadProxy::SingleThreadProxy(
     : layer_tree_host_(layer_tree_host),
       client_(client),
       task_runner_provider_(task_runner_provider),
-      external_begin_frame_source_(external_begin_frame_source.Pass()),
+      external_begin_frame_source_(std::move(external_begin_frame_source)),
       next_frame_is_newly_committed_frame_(false),
 #if DCHECK_IS_ON()
       inside_impl_frame_(false),
@@ -68,10 +68,11 @@ SingleThreadProxy::SingleThreadProxy(
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host->rendering_stats_instrumentation()));
 
-    scheduler_on_impl_thread_ = Scheduler::Create(
-        this, scheduler_settings, layer_tree_host_->id(),
-        task_runner_provider_->MainThreadTaskRunner(),
-        external_begin_frame_source_.get(), compositor_timing_history.Pass());
+    scheduler_on_impl_thread_ =
+        Scheduler::Create(this, scheduler_settings, layer_tree_host_->id(),
+                          task_runner_provider_->MainThreadTaskRunner(),
+                          external_begin_frame_source_.get(),
+                          std::move(compositor_timing_history));
   }
 }
 
@@ -424,7 +425,7 @@ void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
       "cc", "SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(task_runner_provider_->IsImplThread());
   DebugScopedSetMainThread main(task_runner_provider_);
-  layer_tree_host_->SetAnimationEvents(events.Pass());
+  layer_tree_host_->SetAnimationEvents(std::move(events));
 }
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
@@ -504,8 +505,8 @@ void SingleThreadProxy::OnDrawForOutputSurface() {
 void SingleThreadProxy::PostFrameTimingEventsOnImplThread(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  layer_tree_host_->RecordFrameTimingEvents(composite_events.Pass(),
-                                            main_frame_events.Pass());
+  layer_tree_host_->RecordFrameTimingEvents(std::move(composite_events),
+                                            std::move(main_frame_events));
 }
 
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {

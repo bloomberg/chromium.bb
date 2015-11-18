@@ -515,8 +515,8 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
-  return CreateResourceFromTextureMailbox(mailbox, release_callback_impl.Pass(),
-                                          false);
+  return CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback_impl), false);
 }
 
 void ResourceProvider::DeleteResource(ResourceId id) {

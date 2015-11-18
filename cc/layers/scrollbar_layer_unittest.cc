@@ -50,8 +50,8 @@ LayerImpl* LayerImplForScrollAreaAndScrollbar(const LayerSettings& settings,
         settings, scrollbar->Orientation(), thumb_thickness, track_start,
         kIsLeftSideVerticalScrollbar, child1->id());
   } else {
-    child2 =
-        PaintedScrollbarLayer::Create(settings, scrollbar.Pass(), child1->id());
+    child2 = PaintedScrollbarLayer::Create(settings, std::move(scrollbar),
+                                           child1->id());
   }
   layer_tree_root->AddChild(child1);
   layer_tree_root->InsertChild(child2, reverse_order ? 0 : 1);
@@ -149,8 +149,8 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // Create and attach a non-overlay scrollbar.
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      layer_settings(), layer_tree_host_.get(), scrollbar.Pass(), false, false,
-      0, 0);
+      layer_settings(), layer_tree_host_.get(), std::move(scrollbar), false,
+      false, 0, 0);
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<PaintedScrollbarLayerImpl*>(
           layer_impl_tree_root->children()[1].get());
@@ -166,8 +166,8 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   scrollbar.reset(new FakeScrollbar(false, false, true));
 
   layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      layer_settings(), layer_tree_host_.get(), scrollbar.Pass(), false, false,
-      0, 0);
+      layer_settings(), layer_tree_host_.get(), std::move(scrollbar), false,
+      false, 0, 0);
   scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(
       layer_impl_tree_root->children()[1].get());
 
@@ -184,7 +184,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings());
   scoped_refptr<Layer> content_layer = Layer::Create(layer_settings());
   scoped_refptr<Layer> scrollbar_layer = PaintedScrollbarLayer::Create(
-      layer_settings(), scrollbar.Pass(), layer_tree_root->id());
+      layer_settings(), std::move(scrollbar), layer_tree_root->id());
 
   // Choose bounds to give max_scroll_offset = (30, 50).
   layer_tree_root->SetBounds(gfx::Size(70, 150));
@@ -371,8 +371,8 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      layer_settings(), layer_tree_host_.get(), scrollbar.Pass(), false, true,
-      kThumbThickness, kTrackStart);
+      layer_settings(), layer_tree_host_.get(), std::move(scrollbar), false,
+      true, kThumbThickness, kTrackStart);
   ScrollbarLayerImplBase* scrollbar_layer_impl =
       static_cast<SolidColorScrollbarLayerImpl*>(
           layer_impl_tree_root->children()[1].get());
@@ -593,7 +593,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
 
     scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
     scrollbar_layer_ = PaintedScrollbarLayer::Create(
-        layer_settings(), scrollbar.Pass(), scroll_layer_->id());
+        layer_settings(), std::move(scrollbar), scroll_layer_->id());
     scrollbar_layer_->SetScrollLayer(scroll_layer_->id());
     scrollbar_layer_->SetLayerTreeHost(layer_tree_host());
     scrollbar_layer_->SetBounds(bounds_);
@@ -664,7 +664,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
           kTrackStart, kIsLeftSideVerticalScrollbar, layer_tree_root->id());
     } else {
       scrollbar_layer = PaintedScrollbarLayer::Create(
-          layer_settings(), scrollbar.Pass(), layer_tree_root->id());
+          layer_settings(), std::move(scrollbar), layer_tree_root->id());
     }
     layer_tree_root->AddChild(content_layer);
     layer_tree_root->AddChild(scrollbar_layer);

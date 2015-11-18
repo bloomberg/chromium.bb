@@ -69,8 +69,8 @@ class SurfaceFactoryTest : public testing::Test {
       frame_data->resource_list.push_back(resource);
     }
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
-    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+    frame->delegated_frame_data = std::move(frame_data);
+    factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
 
@@ -389,7 +389,7 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data.reset(new DelegatedFrameData);
 
-  factory_->SubmitCompositorFrame(surface_id, frame.Pass(),
+  factory_->SubmitCompositorFrame(surface_id, std::move(frame),
                                   SurfaceFactory::DrawCallback());
   EXPECT_EQ(2, surface->frame_index());
   factory_->Destroy(surface_id);
@@ -413,12 +413,12 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
   frame_data->resource_list.push_back(resource);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-  frame->delegated_frame_data = frame_data.Pass();
+  frame->delegated_frame_data = std::move(frame_data);
   uint32 execute_count = 0;
   SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
 
   factory_->SubmitCompositorFrame(
-      id, frame.Pass(), base::Bind(&DrawCallback, &execute_count, &drawn));
+      id, std::move(frame), base::Bind(&DrawCallback, &execute_count, &drawn));
 
   surface_id_ = SurfaceId();
   factory_->DestroyAll();
@@ -441,9 +441,9 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->metadata.satisfies_sequences.push_back(6);
   frame->metadata.satisfies_sequences.push_back(4);
-  frame->delegated_frame_data = frame_data.Pass();
+  frame->delegated_frame_data = std::move(frame_data);
   DCHECK(manager_.GetSurfaceForId(id2));
-  factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+  factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                   SurfaceFactory::DrawCallback());
   DCHECK(!manager_.GetSurfaceForId(id2));
 
@@ -492,10 +492,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     scoped_ptr<RenderPass> render_pass(RenderPass::Create());
     render_pass->referenced_surfaces.push_back(surface_id_);
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    frame_data->render_pass_list.push_back(render_pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(render_pass));
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
-    factory_->SubmitCompositorFrame(id2, frame.Pass(),
+    frame->delegated_frame_data = std::move(frame_data);
+    factory_->SubmitCompositorFrame(id2, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
   factory_->Destroy(id2);
@@ -505,10 +505,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     scoped_ptr<RenderPass> render_pass(RenderPass::Create());
     render_pass->referenced_surfaces.push_back(id2);
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    frame_data->render_pass_list.push_back(render_pass.Pass());
+    frame_data->render_pass_list.push_back(std::move(render_pass));
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
-    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+    frame->delegated_frame_data = std::move(frame_data);
+    factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
   }
   factory_->Destroy(surface_id_);

@@ -104,7 +104,7 @@ class OcclusionTrackerTest : public testing::Test {
     SetProperties(layer_ptr, transform, position, bounds);
 
     DCHECK(!root_.get());
-    root_ = layer.Pass();
+    root_ = std::move(layer);
 
     layer_ptr->SetHasRenderSurface(true);
     SetRootLayerOnMainThread(layer_ptr);
@@ -121,7 +121,7 @@ class OcclusionTrackerTest : public testing::Test {
     scoped_ptr<LayerImpl> layer = LayerImpl::Create(tree, id);
     LayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
-    parent->AddChild(layer.Pass());
+    parent->AddChild(std::move(layer));
     return layer_ptr;
   }
 
@@ -155,7 +155,7 @@ class OcclusionTrackerTest : public testing::Test {
         layer_ptr->SetOpaqueContentsRect(gfx::Rect());
     }
 
-    parent->AddChild(layer.Pass());
+    parent->AddChild(std::move(layer));
     return layer_ptr;
   }
 
@@ -168,7 +168,7 @@ class OcclusionTrackerTest : public testing::Test {
     scoped_ptr<TestContentLayerImpl> layer(new TestContentLayerImpl(tree, id));
     TestContentLayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
-    SetReplica(owning_layer, layer.Pass());
+    SetReplica(owning_layer, std::move(layer));
     return layer_ptr;
   }
 
@@ -178,7 +178,7 @@ class OcclusionTrackerTest : public testing::Test {
     scoped_ptr<TestContentLayerImpl> layer(new TestContentLayerImpl(tree, id));
     TestContentLayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, identity_matrix, gfx::PointF(), bounds);
-    SetMask(owning_layer, layer.Pass());
+    SetMask(owning_layer, std::move(layer));
     return layer_ptr;
   }
 
@@ -296,11 +296,11 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void SetReplica(LayerImpl* owning_layer, scoped_ptr<LayerImpl> layer) {
-    owning_layer->SetReplicaLayer(layer.Pass());
+    owning_layer->SetReplicaLayer(std::move(layer));
   }
 
   void SetMask(LayerImpl* owning_layer, scoped_ptr<LayerImpl> layer) {
-    owning_layer->SetMaskLayer(layer.Pass());
+    owning_layer->SetMaskLayer(std::move(layer));
   }
 
   bool opaque_layers_;

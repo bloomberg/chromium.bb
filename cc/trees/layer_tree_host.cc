@@ -68,8 +68,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
-      params->external_begin_frame_source.Pass());
-  return layer_tree_host.Pass();
+      std::move(params->external_begin_frame_source));
+  return layer_tree_host;
 }
 
 scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
@@ -79,8 +79,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
   layer_tree_host->InitializeSingleThreaded(
       single_thread_client, params->main_task_runner,
-      params->external_begin_frame_source.Pass());
-  return layer_tree_host.Pass();
+      std::move(params->external_begin_frame_source));
+  return layer_tree_host;
 }
 
 LayerTreeHost::LayerTreeHost(InitParams* params)
@@ -140,7 +140,7 @@ void LayerTreeHost::InitializeThreaded(
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
   InitializeProxy(ThreadProxy::Create(this, task_runner_provider_.get(),
-                                      external_begin_frame_source.Pass()));
+                                      std::move(external_begin_frame_source)));
 }
 
 void LayerTreeHost::InitializeSingleThreaded(
@@ -150,20 +150,20 @@ void LayerTreeHost::InitializeSingleThreaded(
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
   InitializeProxy(SingleThreadProxy::Create(
       this, single_thread_client, task_runner_provider_.get(),
-      external_begin_frame_source.Pass()));
+      std::move(external_begin_frame_source)));
 }
 
 void LayerTreeHost::InitializeForTesting(
     scoped_ptr<TaskRunnerProvider> task_runner_provider,
     scoped_ptr<Proxy> proxy_for_testing) {
-  task_runner_provider_ = task_runner_provider.Pass();
-  InitializeProxy(proxy_for_testing.Pass());
+  task_runner_provider_ = std::move(task_runner_provider);
+  InitializeProxy(std::move(proxy_for_testing));
 }
 
 void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
 
-  proxy_ = proxy.Pass();
+  proxy_ = std::move(proxy);
   proxy_->Start();
   if (settings_.accelerated_animation_enabled) {
     if (animation_host_)
@@ -321,7 +321,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   host_impl->SetDebugState(debug_state_);
   if (pending_page_scale_animation_) {
     sync_tree->SetPendingPageScaleAnimation(
-        pending_page_scale_animation_.Pass());
+        std::move(pending_page_scale_animation_));
   }
 
   if (!ui_resource_request_queue_.empty()) {
@@ -387,7 +387,7 @@ void LayerTreeHost::SetOutputSurface(scoped_ptr<OutputSurface> surface) {
   DCHECK(surface);
 
   DCHECK(!new_output_surface_);
-  new_output_surface_ = surface.Pass();
+  new_output_surface_ = std::move(surface);
   proxy_->SetOutputSurface(new_output_surface_.get());
 }
 
@@ -397,7 +397,7 @@ scoped_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
 
   DidLoseOutputSurface();
   proxy_->ReleaseOutputSurface();
-  return current_output_surface_.Pass();
+  return std::move(current_output_surface_);
 }
 
 void LayerTreeHost::RequestNewOutputSurface() {
@@ -407,7 +407,7 @@ void LayerTreeHost::RequestNewOutputSurface() {
 void LayerTreeHost::DidInitializeOutputSurface() {
   DCHECK(new_output_surface_);
   output_surface_lost_ = false;
-  current_output_surface_ = new_output_surface_.Pass();
+  current_output_surface_ = std::move(new_output_surface_);
   client_->DidInitializeOutputSurface();
 }
 
@@ -436,7 +436,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   gpu_memory_buffer_manager_ = NULL;
   task_graph_runner_ = NULL;
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
-  return host_impl.Pass();
+  return host_impl;
 }
 
 void LayerTreeHost::DidLoseOutputSurface() {
@@ -537,9 +537,9 @@ void LayerTreeHost::SetAnimationEvents(
     scoped_ptr<AnimationEventsVector> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   if (animation_host_)
-    animation_host_->SetAnimationEvents(events.Pass());
+    animation_host_->SetAnimationEvents(std::move(events));
   else
-    animation_registrar_->SetAnimationEvents(events.Pass());
+    animation_registrar_->SetAnimationEvents(std::move(events));
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
@@ -820,7 +820,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "Main thread scroll update");
-    QueueSwapPromise(swap_promise.Pass());
+    QueueSwapPromise(std::move(swap_promise));
   }
 
   gfx::Vector2dF inner_viewport_scroll_delta;
@@ -999,13 +999,13 @@ int LayerTreeHost::ScheduleMicroBenchmark(
     const std::string& benchmark_name,
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
-  return micro_benchmark_controller_.ScheduleRun(
-      benchmark_name, value.Pass(), callback);
+  return micro_benchmark_controller_.ScheduleRun(benchmark_name,
+                                                 std::move(value), callback);
 }
 
 bool LayerTreeHost::SendMessageToMicroBenchmark(int id,
                                                 scoped_ptr<base::Value> value) {
-  return micro_benchmark_controller_.SendMessage(id, value.Pass());
+  return micro_benchmark_controller_.SendMessage(id, std::move(value));
 }
 
 void LayerTreeHost::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
@@ -1024,7 +1024,7 @@ void LayerTreeHost::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
 
 void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
-  swap_promise_list_.push_back(swap_promise.Pass());
+  swap_promise_list_.push_back(std::move(swap_promise));
 }
 
 void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
@@ -1064,8 +1064,8 @@ void LayerTreeHost::SetAuthoritativeVSyncInterval(
 void LayerTreeHost::RecordFrameTimingEvents(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
-  client_->RecordFrameTimingEvents(composite_events.Pass(),
-                                   main_frame_events.Pass());
+  client_->RecordFrameTimingEvents(std::move(composite_events),
+                                   std::move(main_frame_events));
 }
 
 Layer* LayerTreeHost::LayerById(int id) const {

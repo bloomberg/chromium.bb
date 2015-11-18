@@ -34,7 +34,7 @@ PictureLayer::PictureLayer(const LayerSettings& settings,
                            ContentLayerClient* client,
                            scoped_ptr<DisplayListRecordingSource> source)
     : PictureLayer(settings, client) {
-  recording_source_ = source.Pass();
+  recording_source_ = std::move(source);
 }
 
 PictureLayer::~PictureLayer() {

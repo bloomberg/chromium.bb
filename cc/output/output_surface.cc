@@ -122,7 +122,7 @@ OutputSurface::OutputSurface(
     : client_(NULL),
       context_provider_(context_provider),
       worker_context_provider_(worker_context_provider),
-      software_device_(software_device.Pass()),
+      software_device_(std::move(software_device)),
       device_scale_factor_(-1),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this) {
@@ -141,14 +141,12 @@ OutputSurface::OutputSurface(
 }
 
 OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(nullptr, nullptr, software_device.Pass()) {
-}
+    : OutputSurface(nullptr, nullptr, std::move(software_device)) {}
 
 OutputSurface::OutputSurface(
     const scoped_refptr<ContextProvider>& context_provider,
     scoped_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(context_provider, nullptr, software_device.Pass()) {
-}
+    : OutputSurface(context_provider, nullptr, std::move(software_device)) {}
 
 void OutputSurface::CommitVSyncParameters(base::TimeTicks timebase,
                                           base::TimeDelta interval) {

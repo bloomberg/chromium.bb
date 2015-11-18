@@ -83,7 +83,7 @@ class LayerTreeHostReadbackPixelTest
 
     if (!copy_subrect_.IsEmpty())
       request->set_area(copy_subrect_);
-    return request.Pass();
+    return request;
   }
 
   void BeginTest() override {
@@ -125,7 +125,8 @@ class LayerTreeHostReadbackPixelTest
         CopyTextureMailboxToBitmap(result->size(), texture_mailbox);
     release_callback->Run(gpu::SyncToken(), false);
 
-    ReadbackResultAsBitmap(CopyOutputResult::CreateBitmapResult(bitmap.Pass()));
+    ReadbackResultAsBitmap(
+        CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
   }
 
   ReadbackType readback_type_;

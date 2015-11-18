@@ -190,7 +190,7 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
                gfx::IntersectRects(content_rect_,
                                    damage_tracker_->current_damage_rect()),
                screen_space_transform_);
-  pass_sink->AppendRenderPass(pass.Pass());
+  pass_sink->AppendRenderPass(std::move(pass));
 }
 
 void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,

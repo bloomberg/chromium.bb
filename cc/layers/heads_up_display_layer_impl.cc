@@ -103,7 +103,7 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   resource->Allocate(internal_content_bounds_,
                      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                      resource_provider->best_texture_format());
-  resources_.push_back(resource.Pass());
+  resources_.push_back(std::move(resource));
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(

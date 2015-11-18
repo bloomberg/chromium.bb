@@ -93,7 +93,7 @@ static scoped_ptr<SharedBitmap> CreateAndFillSharedBitmap(
   uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_bitmap->pixels());
   CHECK(pixels);
   std::fill_n(pixels, size.GetArea(), value);
-  return shared_bitmap.Pass();
+  return shared_bitmap;
 }
 
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {
@@ -283,7 +283,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
     base::AutoLock lock_for_texture_access(namespace_->lock);
     pending->texture = UnboundTexture(texture);
-    pending_produce_textures_.push_back(pending.Pass());
+    pending_produce_textures_.push_back(std::move(pending));
   }
 
   GLuint createAndConsumeTextureCHROMIUM(GLenum target,
@@ -404,7 +404,7 @@ class ResourceProviderTest
         context3d_ = context3d.get();
 
         scoped_refptr<TestContextProvider> context_provider =
-            TestContextProvider::Create(context3d.Pass());
+            TestContextProvider::Create(std::move(context3d));
 
         output_surface_ = FakeOutputSurface::Create3d(context_provider);
 
@@ -413,10 +413,10 @@ class ResourceProviderTest
         child_context_ = child_context_owned.get();
         if (child_needs_sync_token) {
           child_output_surface_ =
-              FakeOutputSurface::Create3d(child_context_owned.Pass());
+              FakeOutputSurface::Create3d(std::move(child_context_owned));
         } else {
           child_output_surface_ = FakeOutputSurface::CreateNoRequireSyncPoint(
-              child_context_owned.Pass());
+              std::move(child_context_owned));
         }
         break;
       }
@@ -484,7 +484,7 @@ class ResourceProviderTest
               release_called, release_sync_token, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(gpu_mailbox, *sync_token, GL_TEXTURE_2D),
-          callback.Pass());
+          std::move(callback));
     } else {
       gfx::Size size(64, 64);
       scoped_ptr<SharedBitmap> shared_bitmap(
@@ -496,7 +496,7 @@ class ResourceProviderTest
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
               release_called, release_sync_token, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(shared_bitmap_ptr, size), callback.Pass());
+          TextureMailbox(shared_bitmap_ptr, size), std::move(callback));
     }
   }
 
@@ -1393,7 +1393,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
 
   FakeOutputSurfaceClient child_output_surface_client;
   scoped_ptr<OutputSurface> child_output_surface(
-      FakeOutputSurface::Create3d(child_context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(child_context_owned)));
   CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
   scoped_ptr<ResourceProvider> child_resource_provider(ResourceProvider::Create(
@@ -1875,7 +1875,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
     FakeOutputSurfaceClient child_output_surface_client;
     scoped_ptr<OutputSurface> child_output_surface(
-        FakeOutputSurface::Create3d(child_context_owned.Pass()));
+        FakeOutputSurface::Create3d(std::move(child_context_owned)));
     CHECK(child_output_surface->BindToClient(&child_output_surface_client));
     scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
         new TestSharedBitmapManager());
@@ -1892,7 +1892,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
     FakeOutputSurfaceClient parent_output_surface_client;
     scoped_ptr<OutputSurface> parent_output_surface(
-        FakeOutputSurface::Create3d(parent_context_owned.Pass()));
+        FakeOutputSurface::Create3d(std::move(parent_context_owned)));
     CHECK(parent_output_surface->BindToClient(&parent_output_surface_client));
 
     scoped_ptr<ResourceProvider> parent_resource_provider(
@@ -2499,7 +2499,7 @@ TEST_P(ResourceProviderTest, LostContext) {
           base::Bind(ReleaseCallback, &release_sync_token, &lost_resource,
                      &main_thread_task_runner));
   resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D), callback.Pass());
+      TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D), std::move(callback));
 
   EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_FALSE(lost_resource);
@@ -2524,7 +2524,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2603,7 +2603,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2646,7 +2646,7 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2690,7 +2690,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2767,7 +2767,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   TextureMailbox mailbox(shared_bitmap.get(), size);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, callback.Pass());
+      mailbox, std::move(callback));
   EXPECT_NE(0u, id);
 
   {
@@ -2798,7 +2798,7 @@ class ResourceProviderTestTextureMailboxGLFilters
 
     FakeOutputSurfaceClient output_surface_client;
     scoped_ptr<OutputSurface> output_surface(
-        FakeOutputSurface::Create3d(context_owned.Pass()));
+        FakeOutputSurface::Create3d(std::move(context_owned)));
     CHECK(output_surface->BindToClient(&output_surface_client));
 
     scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2830,7 +2830,7 @@ class ResourceProviderTestTextureMailboxGLFilters
     mailbox.set_nearest_neighbor(mailbox_nearest_neighbor);
 
     ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
-        mailbox, callback.Pass());
+        mailbox, std::move(callback));
     EXPECT_NE(0u, id);
 
     Mock::VerifyAndClearExpectations(context);
@@ -2941,7 +2941,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -2966,7 +2966,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, callback.Pass());
+      mailbox, std::move(callback));
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
@@ -3011,7 +3011,7 @@ TEST_P(ResourceProviderTest,
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -3036,7 +3036,7 @@ TEST_P(ResourceProviderTest,
   TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, callback.Pass());
+      mailbox, std::move(callback));
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
@@ -3065,7 +3065,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -3090,7 +3090,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, callback.Pass());
+      mailbox, std::move(callback));
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
@@ -3186,7 +3186,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -3242,7 +3242,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -3298,7 +3298,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
@@ -3349,7 +3349,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   const int kWidth = 2;
@@ -3434,7 +3434,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(4, 4);
@@ -3466,7 +3466,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   gfx::Size size(4, 4);
@@ -3517,7 +3517,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(context_owned.Pass()));
+      FakeOutputSurface::Create3d(std::move(context_owned)));
   CHECK(output_surface->BindToClient(&output_surface_client));
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());

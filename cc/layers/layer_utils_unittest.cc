@@ -43,7 +43,7 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
     root->AddChild(LayerImpl::Create(host_impl->active_tree(), 2));
     root->children()[0]->AddChild(
         LayerImpl::Create(host_impl->active_tree(), 3));
-    return root.Pass();
+    return root;
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;

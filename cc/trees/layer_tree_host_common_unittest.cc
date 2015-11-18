@@ -312,16 +312,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scroll_layer->SetScrollClipLayer(clip_layer->id());
   scroll_layer->SetScrollDelta(kScrollDelta);
   gfx::Transform impl_transform;
-  scroll_layer->AddChild(sublayer_scoped_ptr.Pass());
+  scroll_layer->AddChild(std::move(sublayer_scoped_ptr));
   LayerImpl* scroll_layer_raw_ptr = scroll_layer_scoped_ptr.get();
-  clip_layer->AddChild(scroll_layer_scoped_ptr.Pass());
+  clip_layer->AddChild(std::move(scroll_layer_scoped_ptr));
   scroll_layer_raw_ptr->PushScrollOffsetFromMainThread(kScrollOffset);
 
   scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(3, 4), true, false,
                                false);
-  root->AddChild(clip_layer_scoped_ptr.Pass());
+  root->AddChild(std::move(clip_layer_scoped_ptr));
   root->SetHasRenderSurface(true);
 
   ExecuteCalculateDrawProperties(
@@ -635,7 +635,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   SetLayerPropertiesForTesting(child_replica.get(), replica_layer_transform,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(), true,
                                false, false);
-  child->SetReplicaLayer(child_replica.Pass());
+  child->SetReplicaLayer(std::move(child_replica));
 
   ExecuteCalculateDrawProperties(root);
 
@@ -775,8 +775,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
                                gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
                                gfx::Size(), true, false, false);
 
-  render_surface1->SetReplicaLayer(replica_of_rs1.Pass());
-  render_surface2->SetReplicaLayer(replica_of_rs2.Pass());
+  render_surface1->SetReplicaLayer(std::move(replica_of_rs1));
+  render_surface2->SetReplicaLayer(std::move(replica_of_rs2));
   ExecuteCalculateDrawProperties(root);
 
   // Only layers that are associated with render surfaces should have an actual
@@ -2410,7 +2410,7 @@ TEST_F(LayerTreeHostCommonTest,
       Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  grand_child->layer_animation_controller()->AddAnimation(animation.Pass());
+  grand_child->layer_animation_controller()->AddAnimation(std::move(animation));
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -3279,10 +3279,10 @@ TEST_F(LayerTreeHostCommonTest,
 
   host_impl.SetViewportSize(root->bounds());
 
-  child->AddChild(grand_child.Pass());
-  root->AddChild(child.Pass());
-  root->AddChild(occluding_child.Pass());
-  host_impl.active_tree()->SetRootLayer(root.Pass());
+  child->AddChild(std::move(grand_child));
+  root->AddChild(std::move(child));
+  root->AddChild(std::move(occluding_child));
+  host_impl.active_tree()->SetRootLayer(std::move(root));
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
   host_impl.active_tree()->BuildPropertyTreesForTesting();
@@ -4720,7 +4720,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   SetLayerPropertiesForTesting(replica.get(), replica_transform, gfx::Point3F(),
                                gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
                                true, false);
-  child->SetReplicaLayer(replica.Pass());
+  child->SetReplicaLayer(std::move(replica));
 
   // This layer should end up in the same surface as child, with the same draw
   // and screen space transforms.
@@ -4831,7 +4831,7 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(replica.get(), replica_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(13, 11), false, true,
                                false);
-  child->SetReplicaLayer(replica.Pass());
+  child->SetReplicaLayer(std::move(replica));
 
   float device_scale_factor = 1.7f;
   ExecuteCalculateDrawProperties(parent, device_scale_factor);
@@ -4959,7 +4959,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   AddOpacityTransitionToController(
       child->layer_animation_controller(), 10.0, 0.0f, 1.0f, false);
 
-  root->AddChild(child.Pass());
+  root->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
 
   LayerImplList render_surface_layer_list;
@@ -5004,9 +5004,9 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
     child_ = child_ptr.get();
     grand_child_ = grand_child_ptr.get();
 
-    child_->AddChild(grand_child_ptr.Pass());
-    root_->AddChild(child_ptr.Pass());
-    host_impl_.active_tree()->SetRootLayer(root_ptr.Pass());
+    child_->AddChild(std::move(grand_child_ptr));
+    root_->AddChild(std::move(child_ptr));
+    host_impl_.active_tree()->SetRootLayer(std::move(root_ptr));
 
     root_->SetContentsOpaque(true);
     child_->SetContentsOpaque(true);
@@ -5229,8 +5229,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   grand_child->SetDrawsContent(true);
   grand_child->SetHideLayerAndSubtree(true);
 
-  child->AddChild(grand_child.Pass());
-  root->AddChild(child.Pass());
+  child->AddChild(std::move(grand_child));
+  root->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
 
   LayerImplList render_surface_layer_list;
@@ -5276,8 +5276,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
                                true, false, false);
   grand_child->SetDrawsContent(true);
 
-  child->AddChild(grand_child.Pass());
-  root->AddChild(child.Pass());
+  child->AddChild(std::move(grand_child));
+  root->AddChild(std::move(child));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -5359,12 +5359,12 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   LayerImpl* copy_grand_parent_sibling_after_layer =
       copy_grand_parent_sibling_after.get();
 
-  copy_request->AddChild(copy_child.Pass());
-  copy_parent->AddChild(copy_request.Pass());
-  copy_grand_parent->AddChild(copy_parent.Pass());
-  root->AddChild(copy_grand_parent_sibling_before.Pass());
-  root->AddChild(copy_grand_parent.Pass());
-  root->AddChild(copy_grand_parent_sibling_after.Pass());
+  copy_request->AddChild(std::move(copy_child));
+  copy_parent->AddChild(std::move(copy_request));
+  copy_grand_parent->AddChild(std::move(copy_parent));
+  root->AddChild(std::move(copy_grand_parent_sibling_before));
+  root->AddChild(std::move(copy_grand_parent));
+  root->AddChild(std::move(copy_grand_parent_sibling_after));
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer.
@@ -5470,9 +5470,9 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_layer->PassCopyRequests(&copy_requests);
   EXPECT_TRUE(copy_layer->HasCopyRequest());
 
-  copy_layer->AddChild(copy_child.Pass());
-  copy_parent->AddChild(copy_layer.Pass());
-  root->AddChild(copy_parent.Pass());
+  copy_layer->AddChild(std::move(copy_child));
+  copy_parent->AddChild(std::move(copy_layer));
+  root->AddChild(std::move(copy_parent));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -5969,9 +5969,9 @@ TEST_F(LayerTreeHostCommonTest,
       make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   Layer* child3 = child_3.get();
 
-  parent->AddChild(child_1.Pass());
-  child1->AddChild(child_2.Pass());
-  child2->AddChild(child_3.Pass());
+  parent->AddChild(std::move(child_1));
+  child1->AddChild(std::move(child_2));
+  child2->AddChild(std::move(child_3));
 
   host()->SetRootLayer(root);
 
@@ -6039,9 +6039,9 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   child2->Set3dSortingContextId(1);
   child3->Set3dSortingContextId(1);
 
-  child2->AddChild(child3.Pass());
-  child1->AddChild(child2.Pass());
-  root->AddChild(child1.Pass());
+  child2->AddChild(std::move(child3));
+  child1->AddChild(std::move(child2));
+  root->AddChild(std::move(child1));
 
   {
     LayerImplList render_surface_layer_list;
@@ -6651,9 +6651,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   container->SetDrawsContent(true);
   scroller->SetDrawsContent(true);
   fixed->SetDrawsContent(true);
-  scroller->AddChild(fixed.Pass());
-  container->AddChild(scroller.Pass());
-  root->AddChild(container.Pass());
+  scroller->AddChild(std::move(fixed));
+  container->AddChild(std::move(scroller));
+  root->AddChild(std::move(container));
 
   // Rounded to integers already.
   {
@@ -6792,9 +6792,9 @@ TEST_F(LayerTreeHostCommonTest,
   scroll_layer->SetScrollDelta(scroll_delta);
   scroll_layer->SetScrollCompensationAdjustment(main_scroll_fractional_part);
 
-  scroller->AddChild(fixed.Pass());
-  container->AddChild(scroller.Pass());
-  root->AddChild(container.Pass());
+  scroller->AddChild(std::move(fixed));
+  container->AddChild(std::move(scroller));
+  root->AddChild(std::move(container));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -6915,9 +6915,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AnimationScaleFactorTrackingLayerImpl* child_raw = child.get();
   AnimationScaleFactorTrackingLayerImpl* grand_child_raw = grand_child.get();
 
-  child->AddChild(grand_child.Pass());
-  parent->AddChild(child.Pass());
-  grand_parent->AddChild(parent.Pass());
+  child->AddChild(std::move(grand_child));
+  parent->AddChild(std::move(child));
+  grand_parent->AddChild(std::move(parent));
 
   SetLayerPropertiesForTesting(grand_parent.get(), identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
@@ -7244,10 +7244,10 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   LayerImpl* grand_child1_raw = grand_child1.get();
   LayerImpl* grand_child2_raw = grand_child2.get();
 
-  child->AddChild(grand_child1.Pass());
-  child->AddChild(grand_child2.Pass());
-  parent->AddChild(child.Pass());
-  grand_parent->AddChild(parent.Pass());
+  child->AddChild(std::move(grand_child1));
+  child->AddChild(std::move(grand_child2));
+  parent->AddChild(std::move(child));
+  grand_parent->AddChild(std::move(parent));
 
   SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
@@ -7376,7 +7376,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   scoped_ptr<LayerImpl> replica_layer =
       LayerImpl::Create(host_impl.active_tree(), 20);
   replica_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 21));
-  child_raw->SetReplicaLayer(replica_layer.Pass());
+  child_raw->SetReplicaLayer(std::move(replica_layer));
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
@@ -7487,8 +7487,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   scoped_ptr<LayerImpl> child2 = LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* child2_layer = child2.get();
 
-  root->AddChild(child1.Pass());
-  root->AddChild(child2.Pass());
+  root->AddChild(std::move(child1));
+  root->AddChild(std::move(child2));
   root->SetHasRenderSurface(true);
   root->SetDrawsContent(true);
 
@@ -7512,7 +7512,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       LayerImpl::Create(host_impl.active_tree(), 5);
   replica_layer->SetHasRenderSurface(true);
   replica_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 6));
-  child1_layer->SetReplicaLayer(replica_layer.Pass());
+  child1_layer->SetReplicaLayer(std::move(replica_layer));
   child1_layer->SetHasRenderSurface(true);
 
   ExecuteCalculateDrawProperties(root_layer);
@@ -7974,10 +7974,10 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   curve->AddKeyframe(FilterKeyframe::Create(
       base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
   scoped_ptr<Animation> animation =
-      Animation::Create(curve.Pass(), 0, 1, Animation::FILTER);
+      Animation::Create(std::move(curve), 0, 1, Animation::FILTER);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->layer_animation_controller()->AddAnimation(animation.Pass());
+  child->layer_animation_controller()->AddAnimation(std::move(animation));
 
   ExecuteCalculateDrawProperties(root.get());
 
@@ -8418,7 +8418,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
       animation_id, 1, Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->AddAnimation(animation.Pass());
+  child->AddAnimation(std::move(animation));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
   grandchild->set_visible_rect_from_property_trees(gfx::Rect());
@@ -8445,7 +8445,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
       animation_id, 1, Animation::OPACITY);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->AddAnimation(animation.Pass());
+  child->AddAnimation(std::move(animation));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
 }
@@ -8487,9 +8487,9 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   LayerImpl* grandchild_ptr = grandchild.get();
   LayerImpl* greatgrandchild_ptr = greatgrandchild.get();
 
-  grandchild->AddChild(greatgrandchild.Pass());
-  child->AddChild(grandchild.Pass());
-  root->AddChild(child.Pass());
+  grandchild->AddChild(std::move(greatgrandchild));
+  child->AddChild(std::move(grandchild));
+  root->AddChild(std::move(child));
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());

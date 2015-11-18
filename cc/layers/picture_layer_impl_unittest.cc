@@ -258,8 +258,8 @@ class PictureLayerImplTest : public testing::Test {
     pending_layer->SetBounds(raster_source->GetSize());
     pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
 
-    pending_root->AddChild(pending_layer.Pass());
-    pending_tree->SetRootLayer(pending_root.Pass());
+    pending_root->AddChild(std::move(pending_layer));
+    pending_tree->SetRootLayer(std::move(pending_root));
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -1363,7 +1363,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
           host_impl_.pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
-  pending_layer_->SetMaskLayer(mask_ptr.Pass());
+  pending_layer_->SetMaskLayer(std::move(mask_ptr));
   pending_layer_->SetHasRenderSurface(true);
 
   RebuildPropertyTreesOnPendingTree();
@@ -1492,7 +1492,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
           host_impl_.pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
-  pending_layer_->SetMaskLayer(mask_ptr.Pass());
+  pending_layer_->SetMaskLayer(std::move(mask_ptr));
   pending_layer_->SetHasRenderSurface(true);
 
   RebuildPropertyTreesOnPendingTree();
@@ -1580,10 +1580,10 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
   scoped_ptr<OutputSurface> new_output_surface =
-      FakeOutputSurface::Create3d(context.Pass());
+      FakeOutputSurface::Create3d(std::move(context));
   host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
-  output_surface_ = new_output_surface.Pass();
+  output_surface_ = std::move(new_output_surface);
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -1620,10 +1620,10 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
   scoped_ptr<OutputSurface> new_output_surface =
-      FakeOutputSurface::Create3d(context.Pass());
+      FakeOutputSurface::Create3d(std::move(context));
   host_impl_.SetVisible(true);
   host_impl_.InitializeRenderer(new_output_surface.get());
-  output_surface_ = new_output_surface.Pass();
+  output_surface_ = std::move(new_output_surface);
 
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -2287,7 +2287,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
                                                    pending_raster_source);
   pending_layer->SetDrawsContent(true);
-  pending_tree->SetRootLayer(pending_layer.Pass());
+  pending_tree->SetRootLayer(std::move(pending_layer));
 
   pending_layer_ = static_cast<FakePictureLayerImpl*>(
       host_impl_.pending_tree()->LayerById(id_));

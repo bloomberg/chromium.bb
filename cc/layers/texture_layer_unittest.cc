@@ -92,7 +92,7 @@ class FakeTextureLayerClient : public TextureLayerClient {
       return false;
 
     *mailbox = mailbox_;
-    *release_callback = release_callback_.Pass();
+    *release_callback = std::move(release_callback_);
     mailbox_changed_ = false;
     return true;
   }
@@ -100,7 +100,7 @@ class FakeTextureLayerClient : public TextureLayerClient {
   void set_mailbox(const TextureMailbox& mailbox,
                    scoped_ptr<SingleReleaseCallback> release_callback) {
     mailbox_ = mailbox;
-    release_callback_ = release_callback.Pass();
+    release_callback_ = std::move(release_callback);
     mailbox_changed_ = true;
   }
 
@@ -648,7 +648,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
             base::Unretained(this)));
     layer_->SetTextureMailbox(TextureMailbox(MailboxFromChar(mailbox_char),
                                              gpu::SyncToken(), GL_TEXTURE_2D),
-                              callback.Pass());
+                              std::move(callback));
   }
 
   void BeginTest() override {
@@ -764,7 +764,7 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
             &TextureLayerMailboxIsActivatedDuringCommit::ReleaseCallback));
     layer_->SetTextureMailbox(TextureMailbox(MailboxFromChar(mailbox_char),
                                              gpu::SyncToken(), GL_TEXTURE_2D),
-                              callback.Pass());
+                              std::move(callback));
   }
 
   void BeginTest() override {
@@ -1352,7 +1352,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
             base::Unretained(this)));
     layer_->SetTextureMailbox(TextureMailbox(MailboxFromChar(mailbox_char),
                                              gpu::SyncToken(), GL_TEXTURE_2D),
-                              callback.Pass());
+                              std::move(callback));
   }
 
   void SetupTree() override {
@@ -1421,7 +1421,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
             base::Unretained(this)));
     layer_->SetTextureMailbox(TextureMailbox(MailboxFromChar(mailbox_char),
                                              gpu::SyncToken(), GL_TEXTURE_2D),
-                              callback.Pass());
+                              std::move(callback));
   }
 
   void SetupTree() override {

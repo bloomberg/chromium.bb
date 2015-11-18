@@ -114,9 +114,9 @@ TEST(BspTreeTest, NoSplit) {
       CREATE_DRAW_POLYGON(vertices_c, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 2));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_a.Pass());
-  polygon_list.push_back(polygon_b.Pass());
-  polygon_list.push_back(polygon_c.Pass());
+  polygon_list.push_back(std::move(polygon_a));
+  polygon_list.push_back(std::move(polygon_b));
+  polygon_list.push_back(std::move(polygon_c));
 
   int compare_ids[] = {1, 0, 2};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -142,8 +142,8 @@ TEST(BspTreeTest, BasicSplit) {
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_a.Pass());
-  polygon_list.push_back(polygon_b.Pass());
+  polygon_list.push_back(std::move(polygon_a));
+  polygon_list.push_back(std::move(polygon_b));
 
   int compare_ids[] = {1, 0, 1};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -171,8 +171,8 @@ TEST(BspTreeTest, QuadOffset) {
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_a.Pass());
-  polygon_list.push_back(polygon_b.Pass());
+  polygon_list.push_back(std::move(polygon_a));
+  polygon_list.push_back(std::move(polygon_b));
 
   int compare_ids[] = {1, 0};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -200,8 +200,8 @@ TEST(BspTreeTest, QuadOffsetSplit) {
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_b.Pass());
-  polygon_list.push_back(polygon_a.Pass());
+  polygon_list.push_back(std::move(polygon_b));
+  polygon_list.push_back(std::move(polygon_a));
 
   int compare_ids[] = {0, 1, 0};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -236,9 +236,9 @@ TEST(BspTreeTest, ThreeWaySplit) {
       CREATE_DRAW_POLYGON(vertices_c, gfx::Vector3dF(0.0f, 1.0f, 0.0f), 2));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_a.Pass());
-  polygon_list.push_back(polygon_b.Pass());
-  polygon_list.push_back(polygon_c.Pass());
+  polygon_list.push_back(std::move(polygon_a));
+  polygon_list.push_back(std::move(polygon_b));
+  polygon_list.push_back(std::move(polygon_c));
 
   int compare_ids[] = {2, 1, 2, 0, 2, 1, 2};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -277,9 +277,9 @@ TEST(BspTreeTest, Coplanar) {
 
   {
     std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-    polygon_list.push_back(polygon_a.Pass());
-    polygon_list.push_back(polygon_b.Pass());
-    polygon_list.push_back(polygon_c.Pass());
+    polygon_list.push_back(std::move(polygon_a));
+    polygon_list.push_back(std::move(polygon_b));
+    polygon_list.push_back(std::move(polygon_c));
 
     int compare_ids[] = {0, 1, 2};
     std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -289,9 +289,9 @@ TEST(BspTreeTest, Coplanar) {
   // Now check a different order and ensure we get that back as well
   {
     std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-    polygon_list.push_back(polygon_f.Pass());
-    polygon_list.push_back(polygon_d.Pass());
-    polygon_list.push_back(polygon_e.Pass());
+    polygon_list.push_back(std::move(polygon_f));
+    polygon_list.push_back(std::move(polygon_d));
+    polygon_list.push_back(std::move(polygon_e));
 
     int compare_ids[] = {0, 1, 2};
     std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);
@@ -334,10 +334,10 @@ TEST(BspTreeTest, CoplanarSplit) {
       CREATE_DRAW_POLYGON(vertices_d, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 3));
 
   std::deque<scoped_ptr<DrawPolygon>> polygon_list;
-  polygon_list.push_back(polygon_a.Pass());
-  polygon_list.push_back(polygon_b.Pass());
-  polygon_list.push_back(polygon_c.Pass());
-  polygon_list.push_back(polygon_d.Pass());
+  polygon_list.push_back(std::move(polygon_a));
+  polygon_list.push_back(std::move(polygon_b));
+  polygon_list.push_back(std::move(polygon_c));
+  polygon_list.push_back(std::move(polygon_d));
 
   int compare_ids[] = {3, 0, 1, 2, 3};
   std::vector<int> compare_list = INT_VECTOR_FROM_ARRAY(compare_ids);

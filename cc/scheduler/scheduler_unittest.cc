@@ -271,7 +271,7 @@ class SchedulerTest : public testing::Test {
     scheduler_ = TestScheduler::Create(
         now_src_.get(), client_.get(), scheduler_settings_, 0,
         task_runner_.get(), fake_external_begin_frame_source_.get(),
-        fake_compositor_timing_history.Pass());
+        std::move(fake_compositor_timing_history));
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
 
@@ -293,7 +293,7 @@ class SchedulerTest : public testing::Test {
 
   void SetUpScheduler(scoped_ptr<FakeSchedulerClient> client,
                       bool initSurface) {
-    client_ = client.Pass();
+    client_ = std::move(client);
     if (initSurface)
       CreateSchedulerAndInitSurface();
     else
@@ -1228,7 +1228,7 @@ TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
   scoped_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
       make_scoped_ptr(new SchedulerClientNeedsPrepareTilesInDraw);
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(client.Pass(), true);
+  SetUpScheduler(std::move(client), true);
 
   // Simulate a few visibility changes and associated PrepareTiles.
   for (int i = 0; i < 10; i++) {
@@ -3331,7 +3331,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   scoped_ptr<FakeSchedulerClient> client =
       make_scoped_ptr(new SchedulerClientSetNeedsPrepareTilesOnDraw);
-  SetUpScheduler(client.Pass(), true);
+  SetUpScheduler(std::move(client), true);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);

@@ -266,7 +266,8 @@ class ThreadedChannelTestSetAnimationEvents : public ThreadedChannelTest {
   void StartTestOnImplThread() override {
     scoped_ptr<AnimationEventsVector> events(
         make_scoped_ptr(new AnimationEventsVector));
-    thread_proxy_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
+    thread_proxy_->PostAnimationEventsToMainThreadOnImplThread(
+        std::move(events));
   }
 
   void ReceivedSetAnimationEvents() override {

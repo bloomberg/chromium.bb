@@ -29,11 +29,11 @@ class TestOutputSurface : public OutputSurface {
       : OutputSurface(worker_context_provider) {}
 
   explicit TestOutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(software_device.Pass()) {}
+      : OutputSurface(std::move(software_device)) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     scoped_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(context_provider, software_device.Pass()) {}
+      : OutputSurface(context_provider, std::move(software_device)) {}
 
   void SwapBuffers(CompositorFrame* frame) override {
     client_->DidSwapBuffers();

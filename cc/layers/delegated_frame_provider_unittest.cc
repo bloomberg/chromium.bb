@@ -32,8 +32,8 @@ class DelegatedFrameProviderTest
                       root_output_rect,
                       root_damage_rect,
                       gfx::Transform());
-    frame->render_pass_list.push_back(root_pass.Pass());
-    return frame.Pass();
+    frame->render_pass_list.push_back(std::move(root_pass));
+    return frame;
   }
 
   void AddTransferableResource(DelegatedFrameData* frame,
@@ -84,7 +84,7 @@ class DelegatedFrameProviderTest
 
   void SetFrameProvider(scoped_ptr<DelegatedFrameData> frame_data) {
     frame_provider_ =
-        new DelegatedFrameProvider(resource_collection_, frame_data.Pass());
+        new DelegatedFrameProvider(resource_collection_, std::move(frame_data));
   }
 
   scoped_refptr<DelegatedFrameResourceCollection> resource_collection_;
@@ -99,12 +99,12 @@ TEST_F(DelegatedFrameProviderTest, SameResources) {
       CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   frame = CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(0u, resources_.size());
@@ -121,14 +121,14 @@ TEST_F(DelegatedFrameProviderTest, ReplaceResources) {
       CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 
   frame = CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
   AddTextureQuad(frame.get(), 555);
   AddTransferableResource(frame.get(), 555);
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(1u, resources_.size());
@@ -152,7 +152,7 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   ReturnedResourceArray returned;
   TransferableResource::ReturnResources(reffed, &returned);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
@@ -179,7 +179,7 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(2, 2));
   AddTextureQuad(frame.get(), 555);
   AddTransferableResource(frame.get(), 555);
-  frame_provider_->SetFrameData(frame.Pass());
+  frame_provider_->SetFrameData(std::move(frame));
 
   // The resources from the first frame are still reffed by the observers.
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
@@ -210,7 +210,7 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   ReturnedResourceArray returned;
   TransferableResource::ReturnResources(reffed, &returned);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
@@ -235,7 +235,7 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(2, 2));
   AddTextureQuad(frame.get(), 555);
   AddTransferableResource(frame.get(), 555);
-  frame_provider_->SetFrameData(frame.Pass());
+  frame_provider_->SetFrameData(std::move(frame));
 
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(1u, resources_.size());
@@ -252,7 +252,7 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
   ReturnedResourceArray returned;
   TransferableResource::ReturnResources(reffed, &returned);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
@@ -296,7 +296,7 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   ReturnedResourceArray returned;
   TransferableResource::ReturnResources(reffed, &returned);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
       DelegatedRendererLayer::Create(layer_settings_, frame_provider_);
@@ -320,7 +320,7 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(2, 2));
   AddTextureQuad(frame.get(), 555);
   AddTransferableResource(frame.get(), 555);
-  frame_provider_->SetFrameData(frame.Pass());
+  frame_provider_->SetFrameData(std::move(frame));
 
   // Both observers get the damage for the new frame.
   frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
@@ -341,7 +341,7 @@ TEST_F(DelegatedFrameProviderTest, LostNothing) {
 
   TransferableResourceArray reffed = frame->resource_list;
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   // There is nothing to lose.
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
@@ -356,14 +356,14 @@ TEST_F(DelegatedFrameProviderTest, LostSomething) {
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   // Add a second reference on the resource.
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(5, 5));
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
 
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   // There is something to lose.
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
@@ -380,7 +380,7 @@ TEST_F(DelegatedFrameProviderTest, NothingReturnedAfterLoss) {
       CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
   AddTextureQuad(frame.get(), 444);
   AddTransferableResource(frame.get(), 444);
-  SetFrameProvider(frame.Pass());
+  SetFrameProvider(std::move(frame));
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 

@@ -35,7 +35,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
 
   skia::RefPtr<const SkImage> image =
       skia::AdoptRef(image_surface->newImageSnapshot());
-  layer->SetImage(image.Pass());
+  layer->SetImage(std::move(image));
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =

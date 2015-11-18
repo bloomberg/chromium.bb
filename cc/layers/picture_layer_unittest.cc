@@ -82,7 +82,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   MockContentLayerClient client;
   scoped_refptr<FakePictureLayer> layer =
       FakePictureLayer::CreateWithRecordingSource(
-          LayerSettings(), &client, recording_source_owned.Pass());
+          LayerSettings(), &client, std::move(recording_source_owned));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
