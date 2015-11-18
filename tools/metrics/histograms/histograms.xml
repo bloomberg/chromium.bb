@@ -2911,6 +2911,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.DecodedImage.Orientation" enum="DecodedImageOrientation">
+  <owner>rob.buis@samsung.org</owner>
+  <summary>Image orientation inferred during decode.</summary>
+</histogram>
+
 <histogram name="Blink.DecodedImageType" enum="DecodedImageType">
   <owner>urvang@chromium.org</owner>
   <summary>Image codec inferred during decode.</summary>
@@ -56917,6 +56922,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7"
       label="Data use tracking ended dialog 'Learn more' link clicked"/>
   <int value="8" label="Data use tracking ended dialog opted out"/>
+</enum>
+
+<enum name="DecodedImageOrientation" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Top Left"/>
+  <int value="2" label="Top Right"/>
+  <int value="3" label="Bottom Right"/>
+  <int value="4" label="Bottom Left"/>
+  <int value="5" label="Left Top"/>
+  <int value="6" label="Right Top"/>
+  <int value="7" label="Right Bottom"/>
+  <int value="8" label="Left Bottom"/>
 </enum>
 
 <enum name="DecodedImageType" type="int">

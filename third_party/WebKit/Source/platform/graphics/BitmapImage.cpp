@@ -368,6 +368,7 @@ bool BitmapImage::isSizeAvailable()
             fileExtention == "bmp"  ? ImageBMP :
             ImageUnknown;
         Platform::current()->histogramEnumeration("Blink.DecodedImageType", type, LastDecodedImageType + 1);
+        Platform::current()->histogramEnumeration("Blink.DecodedImage.Orientation", m_source.orientationAtIndex(0).orientation(), ImageOrientationEnumEnd);
     }
 
     return m_sizeAvailable;

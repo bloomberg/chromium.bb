@@ -47,6 +47,7 @@ enum ImageOrientationEnum {
     OriginLeftBottom = 8, // 270 degree CW rotation
     // All other values are "reserved" as of EXIF 2.2
     DefaultImageOrientation = OriginTopLeft,
+    ImageOrientationEnumEnd = OriginLeftBottom + 1,
 };
 
 enum RespectImageOrientationEnum {
@@ -83,6 +84,8 @@ public:
 
     inline bool operator==(const ImageOrientation& other) const { return other.m_orientation == m_orientation; }
     inline bool operator!=(const ImageOrientation& other) const { return !(*this == other); }
+
+    ImageOrientationEnum orientation() const { return m_orientation; }
 
 private:
     // FIXME: This only needs to be one byte.

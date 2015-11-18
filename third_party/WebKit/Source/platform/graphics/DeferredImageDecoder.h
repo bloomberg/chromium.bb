@@ -91,7 +91,6 @@ private:
 
     String m_filenameExtension;
     IntSize m_size;
-    ImageOrientation m_orientation;
     int m_repetitionCount;
     bool m_hasColorProfile;
 

@@ -53,6 +53,8 @@ AffineTransform ImageOrientation::transformFromDefault(const FloatSize& drawnSiz
         return AffineTransform( 0, -1, -1,  0,  w, h);
     case OriginLeftBottom:
         return AffineTransform( 0, -1,  1,  0,  0, h);
+    default:
+        ASSERT_NOT_REACHED();
     }
 
     ASSERT_NOT_REACHED();
