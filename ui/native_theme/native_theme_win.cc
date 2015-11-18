@@ -611,16 +611,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedUrl:
       return color_utils::GetReadableColor(kUrlTextColor,
                                            system_colors_[COLOR_HIGHLIGHT]);
-    case kColorId_ResultsTableNormalDivider:
-      return color_utils::AlphaBlend(system_colors_[COLOR_WINDOWTEXT],
-                                     system_colors_[COLOR_WINDOW], 0x34);
-    case kColorId_ResultsTableHoveredDivider:
-      return color_utils::AlphaBlend(
-          system_colors_[COLOR_WINDOWTEXT],
-          GetSystemColor(kColorId_ResultsTableHoveredBackground), 0x34);
-    case kColorId_ResultsTableSelectedDivider:
-      return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHTTEXT],
-                                     system_colors_[COLOR_HIGHLIGHT], 0x34);
     case kColorId_ResultsTablePositiveText:
       return color_utils::GetReadableColor(kPositiveTextColor,
                                            system_colors_[COLOR_WINDOW]);

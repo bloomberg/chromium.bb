@@ -322,9 +322,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ResultsTableNormalUrl,
     kColorId_ResultsTableHoveredUrl,
     kColorId_ResultsTableSelectedUrl,
-    kColorId_ResultsTableNormalDivider,
-    kColorId_ResultsTableHoveredDivider,
-    kColorId_ResultsTableSelectedDivider,
     // Positive text refers to good (often rendered in green) text, such as the
     // stock value went up.
     kColorId_ResultsTablePositiveText,

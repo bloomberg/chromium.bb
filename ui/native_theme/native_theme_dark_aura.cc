@@ -87,9 +87,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     // Temporary pass-throughs to NativeThemeAura, for colors not yet defined
     // for dark themes. TODO(estade): define colors for these and remove this
     // block.
-    case kColorId_ResultsTableNormalDivider:
-    case kColorId_ResultsTableHoveredDivider:
-    case kColorId_ResultsTableSelectedDivider:
     case kColorId_ResultsTablePositiveText:
     case kColorId_ResultsTablePositiveHoveredText:
     case kColorId_ResultsTablePositiveSelectedText:

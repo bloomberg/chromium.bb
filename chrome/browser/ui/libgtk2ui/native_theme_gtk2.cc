@@ -412,18 +412,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return SelectedURLColor(
           GetSystemColor(kColorId_TextfieldSelectionColor),
           GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused));
-    case kColorId_ResultsTableNormalDivider:
-      return color_utils::AlphaBlend(GetTextColor(GetWindow(), NORMAL),
-                                     GetBGColor(GetWindow(), NORMAL),
-                                     0x34);
-    case kColorId_ResultsTableHoveredDivider:
-      return color_utils::AlphaBlend(GetTextColor(GetWindow(), PRELIGHT),
-                                     GetBGColor(GetWindow(), PRELIGHT),
-                                     0x34);
-    case kColorId_ResultsTableSelectedDivider:
-      return color_utils::AlphaBlend(GetTextColor(GetWindow(), SELECTED),
-                                     GetBGColor(GetWindow(), SELECTED),
-                                     0x34);
 
     case kColorId_ResultsTablePositiveText: {
       return color_utils::GetReadableColor(kPositiveTextColor,

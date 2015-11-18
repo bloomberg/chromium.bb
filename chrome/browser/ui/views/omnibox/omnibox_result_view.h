@@ -42,7 +42,6 @@ class OmniboxResultView : public views::View,
     TEXT,
     DIMMED_TEXT,
     URL,
-    DIVIDER,
     NUM_KINDS
   };
 
