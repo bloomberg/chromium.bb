@@ -9,20 +9,24 @@ define('main', [
     'chrome/browser/ui/webui/engagement/site_engagement.mojom',
     'content/public/renderer/service_provider',
 ], function(connection, siteEngagementMojom, serviceProvider) {
-
   return function() {
     var uiHandler = connection.bindHandleToProxy(
         serviceProvider.connectToService(
             siteEngagementMojom.SiteEngagementUIHandler.name),
         siteEngagementMojom.SiteEngagementUIHandler);
 
-    // Populate engagement table.
-    uiHandler.getSiteEngagementInfo().then(function(response) {
-      // Round each score to 2 decimal places.
-      response.info.forEach(function(x) {
-        x.score = Number(Math.round(x.score * 100) / 100);
+    var updateEngagementTable = function() {
+      // Populate engagement table.
+      uiHandler.getSiteEngagementInfo().then(function(response) {
+        // Round each score to 2 decimal places.
+        response.info.forEach(function(x) {
+          x.score = Number(Math.round(x.score * 100) / 100);
+        });
+        $('engagement-table').engagementInfo = response.info;
       });
-      $('engagement-table').engagementInfo = response.info;
-    });
+
+      setTimeout(updateEngagementTable, 2000);
+    };
+    updateEngagementTable();
   };
 });
