@@ -5,8 +5,10 @@
 package org.chromium.webview_shell;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.CookieManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -24,7 +26,14 @@ public class TelemetryActivity extends Activity {
 
         WebView webView = (WebView) findViewById(R.id.webview);
         CookieManager.setAcceptFileSchemeCookies(true);
-        webView.getSettings().setJavaScriptEnabled(true);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+
+        Intent intent = getIntent();
+        String userAgentString = intent.getStringExtra("userAgent");
+        if (userAgentString != null) {
+            settings.setUserAgentString(userAgentString);
+        }
 
         webView.setWebViewClient(new WebViewClient() {
                 @Override
