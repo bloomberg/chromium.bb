@@ -431,9 +431,6 @@ public:
 
     // Editing -------------------------------------------------------------
 
-    // Replaces the selection with the given text.
-    virtual void replaceSelection(const WebString& text) = 0;
-
     virtual void insertText(const WebString& text) = 0;
 
     virtual void setMarkedText(const WebString& text, unsigned location, unsigned length) = 0;
@@ -461,7 +458,6 @@ public:
     virtual void enableContinuousSpellChecking(bool) = 0;
     virtual bool isContinuousSpellCheckingEnabled() const = 0;
     virtual void requestTextChecking(const WebElement&) = 0;
-    virtual void replaceMisspelledRange(const WebString&) = 0;
     virtual void removeSpellingMarkers() = 0;
 
     // Selection -----------------------------------------------------------

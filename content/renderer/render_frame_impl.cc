@@ -1507,6 +1507,7 @@ void RenderFrameImpl::OnReplace(const base::string16& text) {
     frame_->selectWordAroundCaret();
 
   frame_->replaceSelection(text);
+  SyncSelectionIfRequired();
 }
 
 void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {

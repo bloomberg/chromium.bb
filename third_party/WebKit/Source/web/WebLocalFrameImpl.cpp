@@ -1078,7 +1078,7 @@ unsigned WebLocalFrameImpl::unloadListenerCount() const
 
 void WebLocalFrameImpl::replaceSelection(const WebString& text)
 {
-    bool selectReplacement = false;
+    bool selectReplacement = frame()->editor().behavior().shouldSelectReplacement();
     bool smartReplace = true;
     frame()->editor().replaceSelectionWithText(text, selectReplacement, smartReplace);
 }

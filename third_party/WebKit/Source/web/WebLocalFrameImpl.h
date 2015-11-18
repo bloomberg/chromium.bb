@@ -149,7 +149,6 @@ public:
     void dispatchWillSendRequest(WebURLRequest&) override;
     WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&) override;
     unsigned unloadListenerCount() const override;
-    void replaceSelection(const WebString&) override;
     void insertText(const WebString&) override;
     void setMarkedText(const WebString&, unsigned location, unsigned length) override;
     void unmarkText() override;
@@ -255,6 +254,7 @@ public:
     void requestRunTask(WebSuspendableTask*) const override;
     void didCallAddSearchProvider() override;
     void didCallIsSearchProviderInstalled() override;
+    void replaceSelection(const WebString&) override;
 
     void willBeDetached();
     void willDetachParent();

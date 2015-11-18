@@ -94,7 +94,6 @@ public:
     void dispatchWillSendRequest(WebURLRequest&) override;
     WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&) override;
     unsigned unloadListenerCount() const override;
-    void replaceSelection(const WebString&) override;
     void insertText(const WebString&) override;
     void setMarkedText(const WebString&, unsigned location, unsigned length) override;
     void unmarkText() override;
@@ -108,7 +107,6 @@ public:
     void enableContinuousSpellChecking(bool) override;
     bool isContinuousSpellCheckingEnabled() const override;
     void requestTextChecking(const WebElement&) override;
-    void replaceMisspelledRange(const WebString&) override;
     void removeSpellingMarkers() override;
     bool hasSelection() const override;
     WebRange selectionRange() const override;

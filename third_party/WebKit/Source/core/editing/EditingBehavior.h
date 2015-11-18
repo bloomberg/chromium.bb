@@ -47,6 +47,11 @@ public:
         return m_type != EditingWindowsBehavior && m_type != EditingAndroidBehavior;
     }
 
+    bool shouldSelectReplacement() const
+    {
+        return m_type == EditingAndroidBehavior;
+    }
+
     // On Windows, selections should always be considered as directional, regardless if it is
     // mouse-based or keyboard-based.
     bool shouldConsiderSelectionAsDirectional() const { return m_type != EditingMacBehavior; }

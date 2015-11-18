@@ -157,6 +157,11 @@ public:
     // selection to collapse. If the new extent is set to the same position as
     // the current base, this function will do nothing.
     virtual void moveRangeSelectionExtent(const WebPoint&) = 0;
+    // Replaces the selection with the input string.
+    virtual void replaceSelection(const WebString&) = 0;
+
+    // Spell-checking support -------------------------------------------------
+    virtual void replaceMisspelledRange(const WebString&) = 0;
 
     // Content Settings -------------------------------------------------------
 
