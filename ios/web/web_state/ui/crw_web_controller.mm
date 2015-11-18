@@ -1798,19 +1798,24 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
   [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
 
-  // If the current entry has a serialized state object, inject its state into
-  // the web view.
-  web::NavigationItemImpl* currentItem =
-      self.currentSessionEntry.navigationItemImpl;
-  [self setPushedOrReplacedURL:currentItem->GetURL()
-                   stateObject:currentItem->GetSerializedStateObject()];
   // Only load the new URL if the current entry was not created by a JavaScript
   // window.history.pushState() call from |fromEntry|.
-  if (![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
+  BOOL shouldLoadURL =
+      ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
           isPushStateNavigationBetweenEntry:fromEntry
-                                   andEntry:self.currentSessionEntry]) {
-    web::NavigationItem* currentItem =
-        _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
+                                   andEntry:self.currentSessionEntry];
+  // Set the serialized state if necessary.  State must be set if:
+  // - the transition between |fromEntry| and the current session entry is a
+  //   history.pushState, or
+  // - the current session entry has a serialized state object (occurs after a
+  //   history.replaceState).
+  web::NavigationItemImpl* currentItem =
+      self.currentSessionEntry.navigationItemImpl;
+  NSString* stateObject = currentItem->GetSerializedStateObject();
+  if (!shouldLoadURL || stateObject.length) {
+    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
+  }
+  if (shouldLoadURL) {
     GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
                                                  toItem:currentItem];
     ui::PageTransition transition = ui::PageTransitionFromInt(
