@@ -107,7 +107,7 @@ private:
 
     RefPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
-    OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
+    OwnPtrWillBePersistent<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
     OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     // 'shadow page' - created to proxy loading requests from the worker.

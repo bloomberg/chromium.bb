@@ -108,6 +108,11 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
     // Detach the client before closing the view to avoid getting called back.
     m_mainFrame->setClient(0);
 
+    if (m_workerGlobalScopeProxy) {
+        m_workerGlobalScopeProxy->detach();
+        m_workerGlobalScopeProxy.clear();
+    }
+
     m_webView->close();
     m_mainFrame->close();
     if (m_loaderProxy)
