@@ -19,7 +19,7 @@ namespace {
 // See header file for what these mean.
 const char kOptionDscp[] = "DSCP";
 #if defined(OS_WIN)
-const char kOptionNonBlockingIO[] = "non_blocking_io";
+const char kOptionDisableNonBlockingIO[] = "disable_non_blocking_io";
 #endif
 const char kOptionPacerTargetBurstSize[] = "pacer_target_burst_size";
 const char kOptionPacerMaxBurstSize[] = "pacer_max_burst_size";
@@ -134,7 +134,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
       transport_->SetDscp(net::DSCP_AF41);
     }
 #if defined(OS_WIN)
-    if (options->HasKey(kOptionNonBlockingIO)) {
+    if (!options->HasKey(kOptionDisableNonBlockingIO)) {
       transport_->UseNonBlockingIO();
     }
 #endif

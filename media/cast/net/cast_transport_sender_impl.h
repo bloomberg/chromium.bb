@@ -59,19 +59,24 @@ class CastTransportSenderImpl : public CastTransportSender {
   // |raw_events_callback| is a null callback.
   // |options| contains optional settings for the transport, possible
   // keys are:
-  //   "DSCP" (value ignored) - turns DSCP on
-  //   "non_blocking_io" (value ignored) - Windows only.
-  //                                       Turns on non-blocking IO for socket.
-  //   "pacer_target_burst_size": int - specifies how many packets to send
-  //                                    per 10 ms ideally.
-  //   "pacer_max_burst_size": int - specifies how many pakcets to send
-  //                                 per 10 ms, max
-  //   "send_buffer_min_size": int - specifies the minimum socket send buffer
-  //                                 size
-  //   "disable_wifi_scan" (value ignored) - disable wifi scans while streaming
-  //   "media_streaming_mode" (value ignored) - turn media streaming mode on
+  //   "DSCP" (value ignored)
+  //       - Turns DSCP on (higher IP Precedence and Type of Service).
+  //   "disable_non_blocking_io" (value ignored)
+  //       - Windows only.  Turns off non-blocking IO for the socket.
+  //         Note: Non-blocking IO is, by default, enabled on all platforms.
+  //   "pacer_target_burst_size": int
+  //        - Specifies how many packets to send per 10 ms ideally.
+  //   "pacer_max_burst_size": int
+  //        - Specifies how many pakcets to send per 10 ms, maximum.
+  //   "send_buffer_min_size": int
+  //        - Specifies the minimum socket send buffer size.
+  //   "disable_wifi_scan" (value ignored)
+  //        - Disable wifi scans while streaming.
+  //   "media_streaming_mode" (value ignored)
+  //        - Turn media streaming mode on.
   // Note, these options may be ignored on some platforms.
   // TODO(hubbe): Too many callbacks, replace with an interface.
+  // http://crbug.com/557477
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
