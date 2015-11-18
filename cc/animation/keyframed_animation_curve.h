@@ -122,7 +122,7 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
 
   void AddKeyframe(scoped_ptr<ColorKeyframe> keyframe);
   void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
-    timing_function_ = timing_function.Pass();
+    timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
@@ -152,7 +152,7 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
 
   void AddKeyframe(scoped_ptr<FloatKeyframe> keyframe);
   void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
-    timing_function_ = timing_function.Pass();
+    timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
@@ -183,7 +183,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
 
   void AddKeyframe(scoped_ptr<TransformKeyframe> keyframe);
   void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
-    timing_function_ = timing_function.Pass();
+    timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation
@@ -223,7 +223,7 @@ class CC_EXPORT KeyframedFilterAnimationCurve
 
   void AddKeyframe(scoped_ptr<FilterKeyframe> keyframe);
   void SetTimingFunction(scoped_ptr<TimingFunction> timing_function) {
-    timing_function_ = timing_function.Pass();
+    timing_function_ = std::move(timing_function);
   }
 
   // AnimationCurve implementation

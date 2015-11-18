@@ -51,7 +51,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     curve->SetInitialValue(current_offset);
 
     scoped_ptr<Animation> animation = Animation::Create(
-        curve.Pass(), AnimationIdProvider::NextAnimationId(),
+        std::move(curve), AnimationIdProvider::NextAnimationId(),
         AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
     animation->set_is_impl_only(true);
 
@@ -64,7 +64,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
       scroll_offset_animation_player_->AttachLayer(layer_id);
     }
 
-    scroll_offset_animation_player_->AddAnimation(animation.Pass());
+    scroll_offset_animation_player_->AddAnimation(std::move(animation));
   }
 
   bool ScrollAnimationUpdateTarget(int layer_id,
@@ -208,7 +208,7 @@ void AnimationHost::RegisterPlayerForLayer(int layer_id,
     element_animations = new_element_animations.get();
 
     layer_to_element_animations_map_.add(layer_id,
-                                         new_element_animations.Pass());
+                                         std::move(new_element_animations));
     element_animations->CreateLayerAnimationController(layer_id);
   }
 
@@ -354,7 +354,7 @@ scoped_ptr<AnimationEventsVector> AnimationHost::CreateEvents() {
 
 void AnimationHost::SetAnimationEvents(
     scoped_ptr<AnimationEventsVector> events) {
-  return animation_registrar_->SetAnimationEvents(events.Pass());
+  return animation_registrar_->SetAnimationEvents(std::move(events));
 }
 
 bool AnimationHost::ScrollOffsetAnimationWasInterrupted(int layer_id) const {

@@ -60,7 +60,7 @@ scoped_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
     scoped_ptr<TimingFunction> timing_function,
     DurationBehavior duration_behavior) {
   return make_scoped_ptr(new ScrollOffsetAnimationCurve(
-      target_value, timing_function.Pass(), duration_behavior));
+      target_value, std::move(timing_function), duration_behavior));
 }
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
@@ -68,7 +68,7 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
     scoped_ptr<TimingFunction> timing_function,
     DurationBehavior duration_behavior)
     : target_value_(target_value),
-      timing_function_(timing_function.Pass()),
+      timing_function_(std::move(timing_function)),
       duration_behavior_(duration_behavior) {}
 
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
@@ -111,11 +111,11 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   scoped_ptr<TimingFunction> timing_function(
       static_cast<TimingFunction*>(timing_function_->Clone().release()));
   scoped_ptr<ScrollOffsetAnimationCurve> curve_clone =
-      Create(target_value_, timing_function.Pass(), duration_behavior_);
+      Create(target_value_, std::move(timing_function), duration_behavior_);
   curve_clone->initial_value_ = initial_value_;
   curve_clone->total_animation_duration_ = total_animation_duration_;
   curve_clone->last_retarget_ = last_retarget_;
-  return curve_clone.Pass();
+  return std::move(curve_clone);
 }
 
 void ScrollOffsetAnimationCurve::UpdateTarget(

@@ -29,7 +29,7 @@ bool MicroBenchmark::IsDone() const {
 void MicroBenchmark::DidUpdateLayers(LayerTreeHost* host) {}
 
 void MicroBenchmark::NotifyDone(scoped_ptr<base::Value> result) {
-  callback_.Run(result.Pass());
+  callback_.Run(std::move(result));
   is_done_ = true;
 }
 

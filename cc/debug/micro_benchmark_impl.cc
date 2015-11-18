@@ -17,7 +17,7 @@ namespace {
 
 void RunCallback(const MicroBenchmarkImpl::DoneCallback& callback,
                  scoped_ptr<base::Value> result) {
-  callback.Run(result.Pass());
+  callback.Run(std::move(result));
 }
 
 }

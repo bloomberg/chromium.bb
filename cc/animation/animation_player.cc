@@ -125,10 +125,10 @@ void AnimationPlayer::AddAnimation(scoped_ptr<Animation> animation) {
 
   if (element_animations_) {
     element_animations_->layer_animation_controller()->AddAnimation(
-        animation.Pass());
+        std::move(animation));
     SetNeedsCommit();
   } else {
-    animations_.push_back(animation.Pass());
+    animations_.push_back(std::move(animation));
   }
 }
 

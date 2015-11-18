@@ -47,7 +47,7 @@ class ScrollbarAnimationControllerThinningTest
     clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
-    clip_layer_->AddChild(scroll_layer.Pass());
+    clip_layer_->AddChild(std::move(scroll_layer));
 
     const int kId = 2;
     const int kThumbThickness = 10;

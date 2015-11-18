@@ -60,9 +60,7 @@ WebCompositorAnimationImpl::WebCompositorAnimationImpl(
     }
   }
   animation_ = Animation::Create(
-      curve.Pass(),
-      animation_id,
-      group_id,
+      std::move(curve), animation_id, group_id,
       static_cast<cc::Animation::TargetProperty>(target_property));
 }
 
@@ -194,7 +192,7 @@ void WebCompositorAnimationImpl::setFillMode(FillMode fill_mode) {
 
 scoped_ptr<cc::Animation> WebCompositorAnimationImpl::PassAnimation() {
   animation_->set_needs_synchronized_start_time(true);
-  return animation_.Pass();
+  return std::move(animation_);
 }
 
 }  // namespace cc_blink

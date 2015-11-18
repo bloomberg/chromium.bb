@@ -27,12 +27,14 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   if (name == "invalidation_benchmark") {
-    return make_scoped_ptr(new InvalidationBenchmark(value.Pass(), callback));
+    return make_scoped_ptr(
+        new InvalidationBenchmark(std::move(value), callback));
   } else if (name == "rasterize_and_record_benchmark") {
     return make_scoped_ptr(
-        new RasterizeAndRecordBenchmark(value.Pass(), callback));
+        new RasterizeAndRecordBenchmark(std::move(value), callback));
   } else if (name == "unittest_only_benchmark") {
-    return make_scoped_ptr(new UnittestOnlyBenchmark(value.Pass(), callback));
+    return make_scoped_ptr(
+        new UnittestOnlyBenchmark(std::move(value), callback));
   }
   return nullptr;
 }
@@ -54,11 +56,11 @@ int MicroBenchmarkController::ScheduleRun(
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   scoped_ptr<MicroBenchmark> benchmark =
-      CreateBenchmark(micro_benchmark_name, value.Pass(), callback);
+      CreateBenchmark(micro_benchmark_name, std::move(value), callback);
   if (benchmark.get()) {
     int id = GetNextIdAndIncrement();
     benchmark->set_id(id);
-    benchmarks_.push_back(benchmark.Pass());
+    benchmarks_.push_back(std::move(benchmark));
     host_->SetNeedsCommit();
     return id;
   }
@@ -94,7 +96,7 @@ void MicroBenchmarkController::ScheduleImplBenchmarks(
     }
 
     if (benchmark_impl.get())
-      host_impl->ScheduleMicroBenchmark(benchmark_impl.Pass());
+      host_impl->ScheduleMicroBenchmark(std::move(benchmark_impl));
   }
 }
 

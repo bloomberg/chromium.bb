@@ -36,7 +36,7 @@ const TimeTicks kInitialTickTime = TicksFromSecondsF(1.0);
 scoped_ptr<Animation> CreateAnimation(scoped_ptr<AnimationCurve> curve,
                                       int group_id,
                                       Animation::TargetProperty property) {
-  return Animation::Create(curve.Pass(), 0, group_id, property);
+  return Animation::Create(std::move(curve), 0, group_id, property);
 }
 
 TEST(LayerAnimationControllerTest, SyncNewAnimation) {
@@ -459,7 +459,7 @@ TEST(LayerAnimationControllerTest, TrivialTransition) {
       1, Animation::OPACITY));
 
   EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
   EXPECT_TRUE(controller->needs_to_start_animations_for_testing());
   controller->Animate(kInitialTickTime);
   EXPECT_FALSE(controller->needs_to_start_animations_for_testing());
@@ -490,7 +490,7 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
       1, Animation::OPACITY));
   to_add->set_is_impl_only(true);
 
-  controller_impl->AddAnimation(to_add.Pass());
+  controller_impl->AddAnimation(std::move(to_add));
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
@@ -536,9 +536,9 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
       base::TimeDelta::FromSecondsD(1.0), operations, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::TRANSFORM));
+      Animation::Create(std::move(curve), 1, 0, Animation::TRANSFORM));
   animation->set_is_impl_only(true);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   // Run animation.
   controller_impl->Animate(kInitialTickTime);
@@ -588,8 +588,8 @@ TEST(LayerAnimationControllerTest, FilterTransition) {
                                             end_filters, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::FILTER));
-  controller->AddAnimation(animation.Pass());
+      Animation::Create(std::move(curve), 1, 0, Animation::FILTER));
+  controller->AddAnimation(std::move(animation));
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
@@ -637,9 +637,9 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
                                             end_filters, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::FILTER));
+      Animation::Create(std::move(curve), 1, 0, Animation::FILTER));
   animation->set_is_impl_only(true);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   // Run animation.
   controller_impl->Animate(kInitialTickTime);
@@ -690,9 +690,9 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
           EaseInOutTimingFunction::Create().Pass()));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+      Animation::Create(std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
   animation->set_needs_synchronized_start_time(true);
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
 
   dummy_provider_impl.set_scroll_offset(initial_value);
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -769,9 +769,9 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
           EaseInOutTimingFunction::Create().Pass()));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+      Animation::Create(std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
   animation->set_needs_synchronized_start_time(true);
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
 
   dummy_provider.set_scroll_offset(initial_value);
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -842,9 +842,9 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   double duration_in_seconds = curve->Duration().InSecondsF();
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+      Animation::Create(std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
   animation->set_is_impl_only(true);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
@@ -896,9 +896,9 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
 
   int animation_id = 1;
   scoped_ptr<Animation> animation(Animation::Create(
-      curve.Pass(), animation_id, 0, Animation::SCROLL_OFFSET));
+      std::move(curve), animation_id, 0, Animation::SCROLL_OFFSET));
   animation->set_needs_synchronized_start_time(true);
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
@@ -917,10 +917,10 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
   // Now, test the 2-argument version of RemoveAnimation.
   curve = ScrollOffsetAnimationCurve::Create(
       target_value, EaseInOutTimingFunction::Create().Pass());
-  animation = Animation::Create(curve.Pass(), animation_id, 0,
+  animation = Animation::Create(std::move(curve), animation_id, 0,
                                 Animation::SCROLL_OFFSET);
   animation->set_needs_synchronized_start_time(true);
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->scroll_offset_animation_was_interrupted());
@@ -1019,7 +1019,7 @@ TEST(LayerAnimationControllerTest,
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
   to_add->set_is_impl_only(true);
-  controller_impl->AddAnimation(to_add.Pass());
+  controller_impl->AddAnimation(std::move(to_add));
 
   EXPECT_FALSE(delegate.started());
   EXPECT_FALSE(delegate.finished());
@@ -1148,7 +1148,7 @@ TEST(LayerAnimationControllerTest,
 
   // We should pause at the first keyframe indefinitely waiting for that
   // animation to start.
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -1236,7 +1236,7 @@ TEST(LayerAnimationControllerTest, Interrupt) {
           .Pass(),
       2, Animation::OPACITY));
   controller->AbortAnimations(Animation::OPACITY);
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
 
   // Since the previous animation was aborted, the new animation should start
   // right in this call to animate.
@@ -1343,7 +1343,7 @@ TEST(LayerAnimationControllerTest, TrivialLooping) {
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
   to_add->set_iterations(3);
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
@@ -1389,7 +1389,7 @@ TEST(LayerAnimationControllerTest, InfiniteLooping) {
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
   to_add->set_iterations(-1);
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
@@ -1529,7 +1529,7 @@ TEST(LayerAnimationControllerTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(2.0, 0.f, 1.f)).Pass(),
       0, Animation::OPACITY));
   to_add->set_needs_synchronized_start_time(true);
-  controller->AddAnimation(to_add.Pass());
+  controller->AddAnimation(std::move(to_add));
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
@@ -1560,7 +1560,7 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1)).Pass(), 1,
       Animation::TRANSFORM));
   first_animation->set_is_controlling_instance_for_test(true);
-  controller->AddAnimation(first_animation.Pass());
+  controller->AddAnimation(std::move(first_animation));
 
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
@@ -1569,7 +1569,7 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       2, Animation::OPACITY));
   second_animation->set_is_controlling_instance_for_test(true);
-  controller->AddAnimation(second_animation.Pass());
+  controller->AddAnimation(std::move(second_animation));
 
   // Animate but don't UpdateState.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -1672,8 +1672,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
       base::TimeDelta::FromSecondsD(1.0), operations1, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
-  controller_impl->AddAnimation(animation.Pass());
+      Animation::Create(std::move(curve1), 1, 1, Animation::TRANSFORM));
+  controller_impl->AddAnimation(std::move(animation));
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
       KeyframedTransformAnimationCurve::Create());
@@ -1685,8 +1685,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
-  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::TRANSFORM);
-  controller_impl->AddAnimation(animation.Pass());
+  animation = Animation::Create(std::move(curve2), 2, 2, Animation::TRANSFORM);
+  controller_impl->AddAnimation(std::move(animation));
 
   gfx::BoxF box(1.f, 2.f, -1.f, 3.f, 4.f, 5.f);
   gfx::BoxF bounds;
@@ -1720,8 +1720,8 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   operations3.AppendMatrix(transform3);
   curve3->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations3, nullptr));
-  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
-  controller_impl->AddAnimation(animation.Pass());
+  animation = Animation::Create(std::move(curve3), 3, 3, Animation::TRANSFORM);
+  controller_impl->AddAnimation(std::move(animation));
   EXPECT_FALSE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
 }
 
@@ -1875,13 +1875,13 @@ TEST(LayerAnimationControllerTest, FinishedEventsForGroup) {
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(2.0)).Pass(), 1,
       group_id, Animation::TRANSFORM));
   first_animation->set_is_controlling_instance_for_test(true);
-  controller_impl->AddAnimation(first_animation.Pass());
+  controller_impl->AddAnimation(std::move(first_animation));
 
   scoped_ptr<Animation> second_animation(Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       2, group_id, Animation::OPACITY));
   second_animation->set_is_controlling_instance_for_test(true);
-  controller_impl->AddAnimation(second_animation.Pass());
+  controller_impl->AddAnimation(std::move(second_animation));
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
@@ -1930,13 +1930,13 @@ TEST(LayerAnimationControllerTest, FinishedAndAbortedEventsForGroup) {
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(), 1,
       Animation::TRANSFORM));
   first_animation->set_is_controlling_instance_for_test(true);
-  controller_impl->AddAnimation(first_animation.Pass());
+  controller_impl->AddAnimation(std::move(first_animation));
 
   scoped_ptr<Animation> second_animation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
   second_animation->set_is_controlling_instance_for_test(true);
-  controller_impl->AddAnimation(second_animation.Pass());
+  controller_impl->AddAnimation(std::move(second_animation));
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
@@ -1986,8 +1986,8 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
       base::TimeDelta::FromSecondsD(1.0), operations1, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 2, 2, Animation::TRANSFORM));
-  controller_impl->AddAnimation(animation.Pass());
+      Animation::Create(std::move(curve1), 2, 2, Animation::TRANSFORM));
+  controller_impl->AddAnimation(std::move(animation));
 
   // Translations don't affect scale.
   EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
@@ -2002,8 +2002,8 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
-  animation = Animation::Create(curve2.Pass(), 3, 3, Animation::TRANSFORM);
-  controller_impl->AddAnimation(animation.Pass());
+  animation = Animation::Create(std::move(curve2), 3, 3, Animation::TRANSFORM);
+  controller_impl->AddAnimation(std::move(animation));
 
   EXPECT_TRUE(controller_impl->HasAnimationThatAffectsScale());
 
@@ -2045,8 +2045,8 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
       base::TimeDelta::FromSecondsD(1.0), operations1, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 2, 2, Animation::TRANSFORM));
-  controller_impl->AddAnimation(animation.Pass());
+      Animation::Create(std::move(curve1), 2, 2, Animation::TRANSFORM));
+  controller_impl->AddAnimation(std::move(animation));
 
   // The only transform animation we've added is a translation.
   EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
@@ -2064,9 +2064,9 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
-  animation = Animation::Create(curve2.Pass(), 3, 3, Animation::TRANSFORM);
+  animation = Animation::Create(std::move(curve2), 3, 3, Animation::TRANSFORM);
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   // A scale animation is not a translation.
   EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms(
@@ -2111,9 +2111,9 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
   curve1->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
   scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+      Animation::Create(std::move(curve1), 1, 1, Animation::TRANSFORM));
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   float start_scale = 0.f;
   EXPECT_TRUE(controller_impl->AnimationStartScale(
@@ -2142,12 +2142,12 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
       base::TimeDelta::FromSecondsD(1.0), operations3, nullptr));
 
   controller_impl->RemoveAnimation(1);
-  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::TRANSFORM);
+  animation = Animation::Create(std::move(curve2), 2, 2, Animation::TRANSFORM);
 
   // Reverse Direction
   animation->set_direction(Animation::DIRECTION_REVERSE);
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
       KeyframedTransformAnimationCurve::Create());
@@ -2160,9 +2160,9 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
   curve3->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations5, nullptr));
 
-  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
+  animation = Animation::Create(std::move(curve3), 3, 3, Animation::TRANSFORM);
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   EXPECT_TRUE(controller_impl->AnimationStartScale(
       LayerAnimationController::ObserverType::PENDING, &start_scale));
@@ -2215,9 +2215,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       base::TimeDelta::FromSecondsD(1.0), operations1, nullptr));
 
   scoped_ptr<Animation> animation(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+      Animation::Create(std::move(curve1), 1, 1, Animation::TRANSFORM));
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   EXPECT_TRUE(controller_impl->MaximumTargetScale(
       LayerAnimationController::ObserverType::PENDING, &max_scale));
@@ -2244,9 +2244,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
   curve2->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
-  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::TRANSFORM);
+  animation = Animation::Create(std::move(curve2), 2, 2, Animation::TRANSFORM);
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   EXPECT_TRUE(controller_impl->MaximumTargetScale(
       LayerAnimationController::ObserverType::PENDING, &max_scale));
@@ -2273,9 +2273,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
   curve3->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operations3, nullptr));
 
-  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
+  animation = Animation::Create(std::move(curve3), 3, 3, Animation::TRANSFORM);
   animation->set_affects_active_observers(false);
-  controller_impl->AddAnimation(animation.Pass());
+  controller_impl->AddAnimation(std::move(animation));
 
   EXPECT_FALSE(controller_impl->MaximumTargetScale(
       LayerAnimationController::ObserverType::PENDING, &max_scale));
@@ -2320,9 +2320,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScaleWithDirection) {
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
   scoped_ptr<Animation> animation_owned(
-      Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+      Animation::Create(std::move(curve1), 1, 1, Animation::TRANSFORM));
   Animation* animation = animation_owned.get();
-  controller_impl->AddAnimation(animation_owned.Pass());
+  controller_impl->AddAnimation(std::move(animation_owned));
 
   float max_scale = 0.f;
 
@@ -2819,7 +2819,7 @@ TEST(LayerAnimationControllerTest, TestIsCurrentlyAnimatingProperty) {
       1, Animation::OPACITY));
   animation->set_affects_active_observers(false);
 
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
   controller->Animate(kInitialTickTime);
   EXPECT_TRUE(controller->IsCurrentlyAnimatingProperty(
       Animation::OPACITY, LayerAnimationController::ObserverType::PENDING));
@@ -2893,7 +2893,7 @@ TEST(LayerAnimationControllerTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   animation->set_time_offset(TimeDelta::FromMilliseconds(-2000));
   animation->set_affects_active_observers(false);
 
-  controller->AddAnimation(animation.Pass());
+  controller->AddAnimation(std::move(animation));
 
   controller->Animate(kInitialTickTime);
 

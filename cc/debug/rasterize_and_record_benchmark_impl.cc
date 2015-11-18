@@ -148,7 +148,7 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
   result->SetInteger("total_picture_layers_off_screen",
                      rasterize_results_.total_picture_layers_off_screen);
 
-  NotifyDone(result.Pass());
+  NotifyDone(std::move(result));
 }
 
 void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {

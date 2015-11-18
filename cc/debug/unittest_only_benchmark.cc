@@ -49,7 +49,7 @@ bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
 }
 
 void UnittestOnlyBenchmark::RecordImplResults(scoped_ptr<base::Value> results) {
-  NotifyDone(results.Pass());
+  NotifyDone(std::move(results));
 }
 
 scoped_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(

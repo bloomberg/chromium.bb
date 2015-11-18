@@ -48,16 +48,15 @@ scoped_ptr<Animation> Animation::Create(
     int animation_id,
     int group_id,
     TargetProperty target_property) {
-  return make_scoped_ptr(new Animation(curve.Pass(),
-                                       animation_id,
-                                       group_id,
-                                       target_property)); }
+  return make_scoped_ptr(
+      new Animation(std::move(curve), animation_id, group_id, target_property));
+}
 
 Animation::Animation(scoped_ptr<AnimationCurve> curve,
                      int animation_id,
                      int group_id,
                      TargetProperty target_property)
-    : curve_(curve.Pass()),
+    : curve_(std::move(curve)),
       id_(animation_id),
       group_(group_id),
       target_property_(target_property),
@@ -73,8 +72,7 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       is_controlling_instance_(false),
       is_impl_only_(false),
       affects_active_observers_(true),
-      affects_pending_observers_(true) {
-}
+      affects_pending_observers_(true) {}
 
 Animation::~Animation() {
   if (run_state_ == RUNNING || run_state_ == PAUSED)
@@ -271,7 +269,7 @@ scoped_ptr<Animation> Animation::CloneAndInitialize(
   to_return->fill_mode_ = fill_mode_;
   DCHECK(!to_return->is_controlling_instance_);
   to_return->is_controlling_instance_ = true;
-  return to_return.Pass();
+  return to_return;
 }
 
 void Animation::PushPropertiesTo(Animation* other) const {

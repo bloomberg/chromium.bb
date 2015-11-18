@@ -49,11 +49,9 @@ scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     const gfx::SizeF& viewport_size,
     const gfx::SizeF& root_layer_size,
     scoped_ptr<TimingFunction> timing_function) {
-  return make_scoped_ptr(new PageScaleAnimation(start_scroll_offset,
-                                                start_page_scale_factor,
-                                                viewport_size,
-                                                root_layer_size,
-                                                timing_function.Pass()));
+  return make_scoped_ptr(new PageScaleAnimation(
+      start_scroll_offset, start_page_scale_factor, viewport_size,
+      root_layer_size, std::move(timing_function)));
 }
 
 PageScaleAnimation::PageScaleAnimation(
@@ -69,8 +67,7 @@ PageScaleAnimation::PageScaleAnimation(
       target_anchor_(),
       viewport_size_(viewport_size),
       root_layer_size_(root_layer_size),
-      timing_function_(timing_function.Pass()) {
-}
+      timing_function_(std::move(timing_function)) {}
 
 PageScaleAnimation::~PageScaleAnimation() {}
 

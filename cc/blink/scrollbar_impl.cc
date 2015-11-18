@@ -16,10 +16,9 @@ ScrollbarImpl::ScrollbarImpl(
     scoped_ptr<WebScrollbar> scrollbar,
     blink::WebScrollbarThemePainter painter,
     scoped_ptr<blink::WebScrollbarThemeGeometry> geometry)
-    : scrollbar_(scrollbar.Pass()),
+    : scrollbar_(std::move(scrollbar)),
       painter_(painter),
-      geometry_(geometry.Pass()) {
-}
+      geometry_(std::move(geometry)) {}
 
 ScrollbarImpl::~ScrollbarImpl() {
 }

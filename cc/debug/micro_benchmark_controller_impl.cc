@@ -22,7 +22,7 @@ MicroBenchmarkControllerImpl::~MicroBenchmarkControllerImpl() {}
 
 void MicroBenchmarkControllerImpl::ScheduleRun(
     scoped_ptr<MicroBenchmarkImpl> benchmark) {
-  benchmarks_.push_back(benchmark.Pass());
+  benchmarks_.push_back(std::move(benchmark));
 }
 
 void MicroBenchmarkControllerImpl::DidCompleteCommit() {

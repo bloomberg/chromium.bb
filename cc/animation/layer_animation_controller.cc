@@ -304,7 +304,7 @@ void LayerAnimationController::ActivateAnimations() {
 void LayerAnimationController::AddAnimation(scoped_ptr<Animation> animation) {
   bool added_transform_animation =
       animation->target_property() == Animation::TRANSFORM;
-  animations_.push_back(animation.Pass());
+  animations_.push_back(std::move(animation));
   needs_to_start_animations_ = true;
   UpdateActivation(NORMAL_ACTIVATION);
   if (added_transform_animation)
@@ -708,7 +708,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
         animations_[i]->CloneAndInitialize(initial_run_state));
     DCHECK(!to_add->needs_synchronized_start_time());
     to_add->set_affects_active_observers(false);
-    controller_impl->AddAnimation(to_add.Pass());
+    controller_impl->AddAnimation(std::move(to_add));
   }
 }
 

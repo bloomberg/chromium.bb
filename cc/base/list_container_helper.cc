@@ -242,7 +242,7 @@ class ListContainerHelper::CharAllocator {
     new_list->size = 0;
     new_list->step = element_size_;
     new_list->data.reset(new char[list_size * element_size_]);
-    storage_.push_back(new_list.Pass());
+    storage_.push_back(std::move(new_list));
   }
 
   std::vector<scoped_ptr<InnerList>> storage_;

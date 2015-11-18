@@ -26,7 +26,7 @@ scoped_ptr<Animation> CreateAnimation(double iterations,
                         0, 1, Animation::OPACITY));
   to_return->set_iterations(iterations);
   to_return->set_playback_rate(playback_rate);
-  return to_return.Pass();
+  return to_return;
 }
 
 scoped_ptr<Animation> CreateAnimation(double iterations, double duration) {

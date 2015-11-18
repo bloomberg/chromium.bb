@@ -26,7 +26,7 @@ blink::WebLayer* WebImageLayerImpl::layer() {
 void WebImageLayerImpl::setImage(const SkImage* image) {
   skia::RefPtr<const SkImage> imageRef = skia::SharePtr(image);
   static_cast<cc::PictureImageLayer*>(layer_->layer())
-      ->SetImage(imageRef.Pass());
+      ->SetImage(std::move(imageRef));
   static_cast<WebLayerImplFixedBounds*>(layer_.get())
       ->SetFixedBounds(gfx::Size(image->width(), image->height()));
 }

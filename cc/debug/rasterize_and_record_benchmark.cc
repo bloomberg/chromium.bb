@@ -46,7 +46,7 @@ RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
     const MicroBenchmark::DoneCallback& callback)
     : MicroBenchmark(callback),
       record_repeat_count_(kDefaultRecordRepeatCount),
-      settings_(value.Pass()),
+      settings_(std::move(value)),
       main_thread_benchmark_done_(false),
       host_(nullptr),
       weak_ptr_factory_(this) {
@@ -93,7 +93,7 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
 
   results_->MergeDictionary(results);
 
-  NotifyDone(results_.Pass());
+  NotifyDone(std::move(results_));
 }
 
 scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
