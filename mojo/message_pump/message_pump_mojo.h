@@ -97,9 +97,9 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
                            MojoResult result,
                            uint32_t result_index);
 
-  void SignalControlPipe(const RunState& run_state);
+  void SignalControlPipe();
 
-  WaitState GetWaitState(const RunState& run_state) const;
+  WaitState GetWaitState() const;
 
   // Returns the deadline for the call to MojoWaitMany().
   MojoDeadline GetDeadlineForWait(const RunState& run_state) const;
@@ -126,6 +126,10 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   int next_handler_id_;
 
   base::ObserverList<Observer> observers_;
+
+  // Used to wake up run loop from |SignalControlPipe()|.
+  ScopedMessagePipeHandle read_handle_;
+  ScopedMessagePipeHandle write_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpMojo);
 };

@@ -43,15 +43,9 @@ struct MessagePumpMojo::WaitState {
 };
 
 struct MessagePumpMojo::RunState {
-  RunState() : should_quit(false) {
-    CreateMessagePipe(NULL, &read_handle, &write_handle);
-  }
+  RunState() : should_quit(false) {}
 
   base::TimeTicks delayed_work_time;
-
-  // Used to wake up WaitForWork().
-  ScopedMessagePipeHandle read_handle;
-  ScopedMessagePipeHandle write_handle;
 
   bool should_quit;
 };
@@ -60,6 +54,11 @@ MessagePumpMojo::MessagePumpMojo() : run_state_(NULL), next_handler_id_(0) {
   DCHECK(!current())
       << "There is already a MessagePumpMojo instance on this thread.";
   g_tls_current_pump.Pointer()->Set(this);
+
+  MojoResult result = CreateMessagePipe(nullptr, &read_handle_, &write_handle_);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+  CHECK(read_handle_.is_valid());
+  CHECK(write_handle_.is_valid());
 }
 
 MessagePumpMojo::~MessagePumpMojo() {
@@ -107,9 +106,6 @@ void MessagePumpMojo::RemoveObserver(Observer* observer) {
 
 void MessagePumpMojo::Run(Delegate* delegate) {
   RunState run_state;
-  // TODO: better deal with error handling.
-  CHECK(run_state.read_handle.is_valid());
-  CHECK(run_state.write_handle.is_valid());
   RunState* old_state = NULL;
   {
     base::AutoLock auto_lock(run_state_lock_);
@@ -130,9 +126,7 @@ void MessagePumpMojo::Quit() {
 }
 
 void MessagePumpMojo::ScheduleWork() {
-  base::AutoLock auto_lock(run_state_lock_);
-  if (run_state_)
-    SignalControlPipe(*run_state_);
+  SignalControlPipe();
 }
 
 void MessagePumpMojo::ScheduleDelayedWork(
@@ -172,7 +166,7 @@ void MessagePumpMojo::DoRunLoop(RunState* run_state, Delegate* delegate) {
 
 bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   const MojoDeadline deadline = block ? GetDeadlineForWait(run_state) : 0;
-  const WaitState wait_state = GetWaitState(run_state);
+  const WaitState wait_state = GetWaitState();
 
   const WaitManyResult wait_many_result =
       WaitMany(wait_state.handles, wait_state.wait_signals, deadline, nullptr);
@@ -181,7 +175,7 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   if (result == MOJO_RESULT_OK) {
     if (wait_many_result.index == 0) {
       // Control pipe was written to.
-      ReadMessageRaw(run_state.read_handle.get(), NULL, NULL, NULL, NULL,
+      ReadMessageRaw(read_handle_.get(), NULL, NULL, NULL, NULL,
                      MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
     } else {
       DCHECK(handlers_.find(wait_state.handles[wait_many_result.index]) !=
@@ -247,19 +241,18 @@ void MessagePumpMojo::RemoveInvalidHandle(const WaitState& wait_state,
   DidSignalHandler();
 }
 
-void MessagePumpMojo::SignalControlPipe(const RunState& run_state) {
+void MessagePumpMojo::SignalControlPipe() {
   const MojoResult result =
-      WriteMessageRaw(run_state.write_handle.get(), NULL, 0, NULL, 0,
+      WriteMessageRaw(write_handle_.get(), NULL, 0, NULL, 0,
                       MOJO_WRITE_MESSAGE_FLAG_NONE);
   // If we can't write we likely won't wake up the thread and there is a strong
   // chance we'll deadlock.
   CHECK_EQ(MOJO_RESULT_OK, result);
 }
 
-MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState(
-    const RunState& run_state) const {
+MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
   WaitState wait_state;
-  wait_state.handles.push_back(run_state.read_handle.get());
+  wait_state.handles.push_back(read_handle_.get());
   wait_state.wait_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
