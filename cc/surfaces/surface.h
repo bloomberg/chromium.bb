@@ -48,7 +48,8 @@ class CC_SURFACES_EXPORT Surface {
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them.
   void TakeCopyOutputRequests(
-      std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests);
+      std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>>*
+          copy_requests);
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
 

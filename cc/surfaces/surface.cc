@@ -110,19 +110,16 @@ void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
 }
 
 void Surface::TakeCopyOutputRequests(
-    std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests) {
+    std::multimap<RenderPassId, scoped_ptr<CopyOutputRequest>>* copy_requests) {
   DCHECK(copy_requests->empty());
   if (current_frame_) {
     for (const auto& render_pass :
          current_frame_->delegated_frame_data->render_pass_list) {
-      while (!render_pass->copy_requests.empty()) {
-        scoped_ptr<CopyOutputRequest> request =
-            PopBack(&render_pass->copy_requests);
-        // TODO(vmpstr): |copy_requests| should store scoped_ptrs.
-        // crbug.com/557388.
+      for (auto& request : render_pass->copy_requests) {
         copy_requests->insert(
-            std::make_pair(render_pass->id, request.release()));
+            std::make_pair(render_pass->id, std::move(request)));
       }
+      render_pass->copy_requests.clear();
     }
   }
 }
