@@ -455,4 +455,23 @@ TEST(URLPatternSetTest, AddOrigin) {
       URLPattern::SCHEME_HTTP, GURL("https://google.com/")));
 }
 
+TEST(URLPatternSetTest, ToStringVector) {
+  URLPatternSet set;
+  AddPattern(&set, "https://google.com/");
+  AddPattern(&set, "https://google.com/");
+  AddPattern(&set, "https://yahoo.com/");
+
+  scoped_ptr<std::vector<std::string>> string_vector(set.ToStringVector());
+
+  EXPECT_EQ(2UL, string_vector->size());
+
+  const auto begin = string_vector->begin();
+  const auto end = string_vector->end();
+
+  auto it = std::find(begin, end, "https://google.com/");
+  EXPECT_NE(it, end);
+  it = std::find(begin, end, "https://yahoo.com/");
+  EXPECT_NE(it, end);
+}
+
 }  // namespace extensions

@@ -266,7 +266,6 @@ scoped_ptr<std::vector<std::string> > URLPatternSet::ToStringVector() const {
        ++i) {
     value->push_back(i->GetAsString());
   }
-  std::unique(value->begin(), value->end());
   return value.Pass();
 }
 
