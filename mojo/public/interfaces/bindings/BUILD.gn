@@ -7,6 +7,7 @@ import("../../tools/bindings/mojom.gni")
 mojom("bindings") {
   sources = [
     "interface_control_messages.mojom",
+    "pipe_control_messages.mojom",
   ]
 
   with_environment = false

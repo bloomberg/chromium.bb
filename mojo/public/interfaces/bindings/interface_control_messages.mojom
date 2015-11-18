@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[DartPackage="mojo", JavaPackage="org.chromium.mojo.bindings"]
+[JavaPackage="org.chromium.mojo.bindings"]
 module mojo;
 
-// For each message pipe representing a user-defined interface, some control
-// functions are provided at the same end of the message pipe as the
-// user-defined interface, providing information about the user-defined
-// interface and controlling behavior of the message pipe.
+// For each user-defined interface, some control functions are provided at the
+// same end of the message pipe as the user-defined interface, providing
+// information about the user-defined interface.
 
 ////////////////////////////////////////////////////////////////////////////////
 // Run@0xFFFFFFFF(RunInput input) => (RunOutput? output);

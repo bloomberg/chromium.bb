@@ -292,6 +292,9 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
                 break;
             }
 {%   endfor %}
+            default: {
+                break;
+            }
         }
     }
 
@@ -320,6 +323,9 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
                 break;
             }
 {%   endfor %}
+            default: {
+                break;
+            }
         }
         return result;
     }
@@ -343,6 +349,8 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
             case {{field.ordinal}}:
                 return {{equality(field.kind, 'm'~field|ucc, 'other.m'~field|ucc)}};
 {%   endfor %}
+            default:
+                break;
         }
         return false;
     }
@@ -357,9 +365,14 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         result = prime * result + org.chromium.mojo.bindings.BindingsHelper.hashCode(mTag_);
         switch (mTag_) {
 {%   for field in union.fields %}
-            case {{field.ordinal}}:
+            case {{field.ordinal}}: {
                 result = prime * result + {{hash(field.kind, 'm'~field|ucc)}};
+                break;
+            }
 {%   endfor %}
+            default: {
+                break;
+            }
         }
         return result;
     }

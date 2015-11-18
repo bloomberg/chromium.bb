@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 
+#include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/core.h"
@@ -64,13 +65,13 @@ struct Interface_Data {
 static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
 
 struct AssociatedInterface_Data {
-  uint32_t interface_id;
+  InterfaceId interface_id;
   uint32_t version;
 };
 static_assert(sizeof(AssociatedInterface_Data) == 8,
               "Bad_sizeof(AssociatedInterface_Data)");
 
-using AssociatedInterfaceRequest_Data = uint32_t;
+using AssociatedInterfaceRequest_Data = InterfaceId;
 
 #pragma pack(pop)
 

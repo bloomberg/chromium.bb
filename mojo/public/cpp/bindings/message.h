@@ -40,6 +40,9 @@ class Message {
   // Access the header.
   const internal::MessageHeader* header() const { return &data_->header; }
 
+  uint32_t interface_id() const { return data_->header.interface_id; }
+  void set_interface_id(uint32_t id) { data_->header.interface_id = id; }
+
   uint32_t name() const { return data_->header.name; }
   bool has_flag(uint32_t flag) const { return !!(data_->header.flags & flag); }
 
