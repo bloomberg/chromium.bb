@@ -200,3 +200,18 @@ test("vp9_parser_fuzzer") {
     "//media",
   ]
 }
+
+test("v8_json_parser_fuzzer") {
+  sources = [
+    "v8_json_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//v8",
+    "//v8:v8_libplatform",
+  ]
+  data = [
+    "$root_out_dir/natives_blob.bin",
+    "$root_out_dir/snapshot_blob.bin",
+  ]
+}
