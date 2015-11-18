@@ -363,6 +363,11 @@ bool Window::HasFocus() const {
   return connection_ && connection_->GetFocusedWindow() == this;
 }
 
+void Window::SetCanFocus(bool can_focus) {
+  if (connection_)
+    tree_client()->SetCanFocus(id_, can_focus);
+}
+
 void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
   Embed(client.Pass(), mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&EmptyEmbedCallback));

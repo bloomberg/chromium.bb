@@ -25,6 +25,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
       transient_parent_(nullptr),
       visible_(false),
       opacity_(1),
+      can_focus_(true),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerWindowDrawTracker).

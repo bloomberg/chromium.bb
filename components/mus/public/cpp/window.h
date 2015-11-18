@@ -176,6 +176,7 @@ class Window {
   // Focus.
   void SetFocus();
   bool HasFocus() const;
+  void SetCanFocus(bool can_focus);
 
   // Embedding. See window_tree.mojom for details.
   void Embed(mus::mojom::WindowTreeClientPtr client);

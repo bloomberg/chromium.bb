@@ -28,12 +28,19 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   void SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
+  // Moves activation to the next activatable window.
+  void CycleActivationForward();
+
  private:
   // Describes the source of the change.
   enum ChangeSource {
     CHANGE_SOURCE_EXPLICIT,
     CHANGE_SOURCE_DRAWN_STATE_CHANGED,
   };
+
+  // Returns whether |window| can be focused or activated.
+  bool CanBeFocused(ServerWindow* window) const;
+  bool CanBeActivated(ServerWindow* window) const;
 
   // Implementation of SetFocusedWindow().
   void SetFocusedWindowImpl(ServerWindow* window, ChangeSource change_source);

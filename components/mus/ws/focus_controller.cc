@@ -28,12 +28,38 @@ ServerWindow* FocusController::GetFocusedWindow() {
   return drawn_tracker_ ? drawn_tracker_->window() : nullptr;
 }
 
+bool FocusController::CanBeFocused(ServerWindow* window) const {
+  // All ancestors of |window| must be drawn, and be focusable.
+  for (ServerWindow* w = window; w; w = w->parent()) {
+    if (!w->IsDrawn())
+      return false;
+    if (!w->can_focus())
+      return false;
+  }
+
+  // |window| must be a descendent of an activatable window.
+  for (ServerWindow* w = window; w; w = w->parent()) {
+    if (CanBeActivated(w))
+      return true;
+  }
+
+  return false;
+}
+
+bool FocusController::CanBeActivated(ServerWindow* window) const {
+  // TODO(sad): Implement this.
+  return true;
+}
+
 void FocusController::SetFocusedWindowImpl(ServerWindow* window,
                                            ChangeSource change_source) {
+  if (window && !CanBeFocused(window))
+    return;
   ServerWindow* old = GetFocusedWindow();
 
   DCHECK(!window || window->IsDrawn());
 
+  // TODO(sad): Activate the closest activatable ancestor window.
   if (window)
     drawn_tracker_.reset(new ServerWindowDrawnTracker(window, this));
   else

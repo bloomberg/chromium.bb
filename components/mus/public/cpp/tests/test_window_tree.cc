@@ -85,6 +85,8 @@ void TestWindowTree::Embed(uint32_t window_id,
 
 void TestWindowTree::SetFocus(uint32_t window_id) {}
 
+void TestWindowTree::SetCanFocus(uint32_t window_id, bool can_focus) {}
+
 void TestWindowTree::SetWindowTextInputState(uint32_t window_id,
                                              mojo::TextInputStatePtr state) {}
 

@@ -64,6 +64,7 @@ class TestWindowTree : public mojom::WindowTree {
              uint32_t policy_bitmask,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t window_id) override;
+  void SetCanFocus(uint32_t window_id, bool can_focus) override;
   void SetWindowTextInputState(uint32_t window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(uint32_t window_id,

@@ -819,6 +819,12 @@ void WindowTreeImpl::SetFocus(uint32_t window_id) {
   }
 }
 
+void WindowTreeImpl::SetCanFocus(uint32_t window_id, bool can_focus) {
+  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+  if (window && ShouldRouteToWindowManager(window))
+    window->set_can_focus(can_focus);
+}
+
 void WindowTreeImpl::SetPreferredSize(
     uint32_t window_id,
     mojo::SizePtr size,

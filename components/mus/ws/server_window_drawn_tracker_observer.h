@@ -16,8 +16,7 @@ class ServerWindowDrawnTrackerObserver {
   // Invoked when the drawn state changes. If |is_drawn| is false |ancestor|
   // identifies where the change occurred. In the case of a remove |ancestor| is
   // the parent of the window that was removed. In the case of a visibility
-  // change
-  // |ancestor| is the parent of the window whose visibility changed.
+  // change |ancestor| is the parent of the window whose visibility changed.
   virtual void OnDrawnStateChanged(ServerWindow* ancestor,
                                    ServerWindow* window,
                                    bool is_drawn) {}

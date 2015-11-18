@@ -119,6 +119,9 @@ class ServerWindow {
     return text_input_state_;
   }
 
+  void set_can_focus(bool can_focus) { can_focus_ = can_focus; }
+  bool can_focus() const { return can_focus_; }
+
   // Returns true if this window is attached to a root and all ancestors are
   // visible.
   bool IsDrawn() const;
@@ -170,6 +173,7 @@ class ServerWindow {
   gfx::Insets client_area_;
   scoped_ptr<ServerWindowSurfaceManager> surface_manager_;
   float opacity_;
+  bool can_focus_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
 

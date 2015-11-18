@@ -65,6 +65,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                  const gfx::Rect& bounds);
   void SetClientArea(Id window_id, const gfx::Insets& client_area);
   void SetFocus(Id window_id);
+  void SetCanFocus(Id window_id, bool can_focus);
   void SetVisible(Id window_id, bool visible);
   void SetProperty(Window* window,
                    const std::string& name,

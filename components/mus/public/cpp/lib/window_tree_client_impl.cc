@@ -220,6 +220,11 @@ void WindowTreeClientImpl::SetFocus(Id window_id) {
   tree_->SetFocus(window_id);
 }
 
+void WindowTreeClientImpl::SetCanFocus(Id window_id, bool can_focus) {
+  DCHECK(tree_);
+  tree_->SetCanFocus(window_id, can_focus);
+}
+
 void WindowTreeClientImpl::SetVisible(Id window_id, bool visible) {
   DCHECK(tree_);
   tree_->SetWindowVisibility(window_id, visible, ActionCompletedCallback());
