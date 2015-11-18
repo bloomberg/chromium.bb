@@ -64,6 +64,7 @@ struct buffer {
 enum window_flags {
 	WINDOW_FLAG_USE_VIEWPORT = 0x1,
 	WINDOW_FLAG_ROTATING_TRANSFORM = 0x2,
+	WINDOW_FLAG_USE_DAMAGE_BUFFER = 0x4,
 };
 
 struct window {
@@ -261,6 +262,14 @@ create_window(struct display *display, int width, int height,
 		exit(1);
 	}
 
+	if (display->compositor_version < 4 &&
+	    (flags & WINDOW_FLAG_USE_DAMAGE_BUFFER)) {
+		fprintf(stderr, "wl_surface.damage_buffer unsupported in "
+				"wl_surface version %d\n",
+			display->compositor_version);
+		exit(1);
+	}
+
 	window = calloc(1, sizeof *window);
 	if (!window)
 		return NULL;
@@ -303,8 +312,12 @@ create_window(struct display *display, int width, int height,
 	}
 
 	/* Initialise damage to full surface, so the padding gets painted */
-	wl_surface_damage(window->surface, 0, 0, INT32_MAX, INT32_MAX);
-
+	if (window->flags & WINDOW_FLAG_USE_DAMAGE_BUFFER) {
+		wl_surface_damage_buffer(window->surface, 0, 0,
+					 INT32_MAX, INT32_MAX);
+	} else {
+		wl_surface_damage(window->surface, 0, 0, INT32_MAX, INT32_MAX);
+	}
 	return window;
 }
 
@@ -567,12 +580,20 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		  bwidth - 2 * bborder, bheight - 2 * bborder, 0x80000000);
 
 	/* Damage where the ball was */
-	wl_surface_damage(window->surface,
-			  window->ball.x - window->ball.radius,
-			  window->ball.y - window->ball.radius,
-			  window->ball.radius * 2 + 1,
-			  window->ball.radius * 2 + 1);
-
+	if (window->flags & WINDOW_FLAG_USE_DAMAGE_BUFFER) {
+		window_get_transformed_ball(window, &bx, &by);
+		wl_surface_damage_buffer(window->surface,
+					 bx - bradius + off_x,
+					 by - bradius + off_y,
+					 bradius * 2 + 1,
+					 bradius * 2 + 1);
+	} else {
+		wl_surface_damage(window->surface,
+				  window->ball.x - window->ball.radius,
+				  window->ball.y - window->ball.radius,
+				  window->ball.radius * 2 + 1,
+				  window->ball.radius * 2 + 1);
+	}
 	window_advance_game(window, time);
 
 	window_get_transformed_ball(window, &bx, &by);
@@ -595,12 +616,19 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	}
 
 	/* Damage where the ball is now */
-	wl_surface_damage(window->surface,
-			  window->ball.x - window->ball.radius,
-			  window->ball.y - window->ball.radius,
-			  window->ball.radius * 2 + 1,
-			  window->ball.radius * 2 + 1);
-
+	if (window->flags & WINDOW_FLAG_USE_DAMAGE_BUFFER) {
+		wl_surface_damage_buffer(window->surface,
+					 bx - bradius + off_x,
+					 by - bradius + off_y,
+					 bradius * 2 + 1,
+					 bradius * 2 + 1);
+	} else {
+		wl_surface_damage(window->surface,
+				  window->ball.x - window->ball.radius,
+				  window->ball.y - window->ball.radius,
+				  window->ball.radius * 2 + 1,
+				  window->ball.radius * 2 + 1);
+	}
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 
 	if (window->display->compositor_version >= 2 &&
@@ -787,6 +815,7 @@ print_usage(int retval)
 		"  --transform=TRANSFORM\tTransform for the surface\n"
 		"  --rotating-transform\tUse a different buffer_transform for each frame\n"
 		"  --use-viewport\tUse wl_viewport\n"
+		"  --use-damage-buffer\tUse damage_buffer to post damage\n"
 	);
 
 	exit(retval);
@@ -837,7 +866,7 @@ main(int argc, char **argv)
 		    strcmp(argv[i], "-h") == 0) {
 			print_usage(0);
 		} else if (sscanf(argv[i], "--version=%d", &version) > 0) {
-			if (version < 1 || version > 3) {
+			if (version < 1 || version > 4) {
 				fprintf(stderr, "Unsupported wl_surface version: %d\n",
 					version);
 				return 1;
@@ -860,6 +889,9 @@ main(int argc, char **argv)
 			continue;
 		} else if (strcmp(argv[i], "--use-viewport") == 0) {
 			flags |= WINDOW_FLAG_USE_VIEWPORT;
+			continue;
+		} else if (strcmp(argv[i], "--use-damage-buffer") == 0) {
+			flags |= WINDOW_FLAG_USE_DAMAGE_BUFFER;
 			continue;
 		} else {
 			printf("Invalid option: %s\n", argv[i]);
