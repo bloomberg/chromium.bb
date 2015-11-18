@@ -689,7 +689,8 @@ void VideoDecoderShim::DecoderImpl::Initialize(
   DCHECK(!decoder_);
 #if !defined(MEDIA_DISABLE_LIBVPX)
   if (config.codec() == media::kCodecVP9) {
-    decoder_.reset(new media::VpxVideoDecoder());
+    decoder_.reset(
+        new media::VpxVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
   } else
 #endif
 
