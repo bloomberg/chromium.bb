@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {DIV} at (0,2.50) size 1x11
           LayoutBlockFlow {DIV} at (1,0) size 135x16
       LayoutText {#text} at (0,0) size 0x0
-layer at (12,73) size 135x16 scrollWidth 294
+layer at (12,73) size 135x16 scrollWidth 295
   LayoutBlockFlow {DIV} at (0,0) size 135x16
     LayoutText {#text} at (0,0) size 294x16
       text run at (0,0) width 294: "This text should be centered vertically in the button"

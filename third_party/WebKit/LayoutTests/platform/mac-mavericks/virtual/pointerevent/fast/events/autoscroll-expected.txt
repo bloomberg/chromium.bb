@@ -22,7 +22,7 @@ layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,3121) size 769x18
         LayoutText {#text} at (0,0) size 411x18
           text run at (0,0) width 411: "If the bug does not occur, you'll be left down here at the bottom."
-layer at (11,3097) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 125
+layer at (11,3097) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 126
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 126x13
       text run at (0,0) width 126: "select some of this text"

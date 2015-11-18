@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (546,35) size 1x0
       LayoutTextControl {INPUT} at (0,40) size 40x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (10,51) size 36x16 scrollWidth 42
+layer at (10,51) size 36x16 scrollWidth 43
   LayoutBlockFlow {DIV} at (2,3) size 36x16
     LayoutText {#text} at (0,0) size 42x16
       text run at (0,0) width 42: "198765"

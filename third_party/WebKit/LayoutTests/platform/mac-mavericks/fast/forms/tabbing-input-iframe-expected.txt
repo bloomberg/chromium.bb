@@ -22,7 +22,7 @@ layer at (135,26) size 302x152
     layer at (0,0) size 300x150
       LayoutBlockFlow {HTML} at (0,0) size 300x150
         LayoutBlockFlow {BODY} at (8,8) size 284x134
-layer at (444,167) size 117x13 scrollWidth 123
+layer at (444,167) size 117x13 scrollWidth 124
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 123x13
       text run at (0,0) width 123: "This should have focus"

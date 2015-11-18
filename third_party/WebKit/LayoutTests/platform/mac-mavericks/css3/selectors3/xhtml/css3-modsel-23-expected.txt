@@ -13,7 +13,7 @@ layer at (0,0) size 800x73
         LayoutBR {br} at (0,0) size 0x0
         LayoutTextControl {input} at (0,22) size 203x19 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,41) size 197x13 scrollWidth 237
+layer at (11,41) size 197x13 scrollWidth 238
   LayoutBlockFlow {div} at (3,3) size 197x13
     LayoutText {#text} at (0,0) size 237x13
       text run at (0,0) width 237: "a text area (enabled) with green background"

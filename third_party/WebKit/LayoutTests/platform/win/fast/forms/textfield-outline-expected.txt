@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (562,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 245x27 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (9,28) size 243x23 scrollWidth 543
+layer at (9,28) size 243x23 scrollWidth 544
   LayoutBlockFlow {DIV} at (1,2) size 243x23
     LayoutText {#text} at (0,0) size 544x22
       text run at (0,0) width 544: "abcThis tests that typing doesn't cut holes in the focus outline"
