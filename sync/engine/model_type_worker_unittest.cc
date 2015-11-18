@@ -823,16 +823,17 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
 
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
   UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
+  const EntityData& entity = update.entity.value();
 
-  EXPECT_FALSE(update.id.empty());
-  EXPECT_EQ(tag_hash, update.client_tag_hash);
+  EXPECT_FALSE(entity.id.empty());
+  EXPECT_EQ(tag_hash, entity.client_tag_hash);
   EXPECT_LT(0, update.response_version);
-  EXPECT_FALSE(update.ctime.is_null());
-  EXPECT_FALSE(update.mtime.is_null());
-  EXPECT_FALSE(update.non_unique_name.empty());
-  EXPECT_FALSE(update.deleted);
-  EXPECT_EQ("tag1", update.specifics.preference().name());
-  EXPECT_EQ("value1", update.specifics.preference().value());
+  EXPECT_FALSE(entity.creation_time.is_null());
+  EXPECT_FALSE(entity.modification_time.is_null());
+  EXPECT_FALSE(entity.non_unique_name.empty());
+  EXPECT_FALSE(entity.is_deleted());
+  EXPECT_EQ("tag1", entity.specifics.preference().name());
+  EXPECT_EQ("value1", entity.specifics.preference().value());
 }
 
 // Test commit of encrypted updates.
@@ -915,8 +916,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
   // Test some basic properties regarding the update.
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
   UpdateResponseData update1 = GetUpdateResponseOnModelThread("tag1");
-  EXPECT_EQ("tag1", update1.specifics.preference().name());
-  EXPECT_EQ("value1", update1.specifics.preference().value());
+  EXPECT_EQ("tag1", update1.entity->specifics.preference().name());
+  EXPECT_EQ("value1", update1.entity->specifics.preference().value());
   EXPECT_TRUE(update1.encryption_key_name.empty());
 
   // Set received updates to be encrypted using the new nigori.
@@ -928,8 +929,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
   // Test its basic features and the value of encryption_key_name.
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag2"));
   UpdateResponseData update2 = GetUpdateResponseOnModelThread("tag2");
-  EXPECT_EQ("tag2", update2.specifics.preference().name());
-  EXPECT_EQ("value2", update2.specifics.preference().value());
+  EXPECT_EQ("tag2", update2.entity->specifics.preference().name());
+  EXPECT_EQ("value2", update2.entity->specifics.preference().value());
   EXPECT_FALSE(update2.encryption_key_name.empty());
 }
 
@@ -975,8 +976,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   UpdateLocalCryptographer();
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
   UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
-  EXPECT_EQ("tag1", update.specifics.preference().name());
-  EXPECT_EQ("value1", update.specifics.preference().value());
+  EXPECT_EQ("tag1", update.entity->specifics.preference().name());
+  EXPECT_EQ("value1", update.entity->specifics.preference().value());
   EXPECT_FALSE(update.encryption_key_name.empty());
 }
 
@@ -1006,18 +1007,20 @@ TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
 // Test decryption of pending updates saved across a restart.
 TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   // Create a fake pending update.
+  EntityData entity;
+  entity.client_tag_hash = GenerateTagHash("tag1");
+  entity.id = "SomeID";
+  entity.creation_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
+  entity.modification_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
+  entity.non_unique_name = "encrypted";
+  entity.specifics = GenerateSpecifics("tag1", "value1");
+  EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
+
   UpdateResponseData update;
-
-  update.client_tag_hash = GenerateTagHash("tag1");
-  update.id = "SomeID";
+  update.entity = entity.Pass();
   update.response_version = 100;
-  update.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
-  update.mtime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
-  update.non_unique_name = "encrypted";
-  update.deleted = false;
-
-  update.specifics = GenerateSpecifics("tag1", "value1");
-  EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
 
   // Inject the update during CommitQueue initialization.
   UpdateResponseDataList saved_pending_updates;
@@ -1045,17 +1048,21 @@ TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   UpdateLocalCryptographer();
 
   // Create a fake pending update.
-  UpdateResponseData update;
-  update.client_tag_hash = GenerateTagHash("tag1");
-  update.id = "SomeID";
-  update.response_version = 100;
-  update.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
-  update.mtime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
-  update.non_unique_name = "encrypted";
-  update.deleted = false;
+  EntityData entity;
+  entity.client_tag_hash = GenerateTagHash("tag1");
+  entity.id = "SomeID";
+  entity.creation_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
+  entity.modification_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
+  entity.non_unique_name = "encrypted";
 
-  update.specifics = GenerateSpecifics("tag1", "value1");
-  EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
+  entity.specifics = GenerateSpecifics("tag1", "value1");
+  EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
+
+  UpdateResponseData update;
+  update.entity = entity.Pass();
+  update.response_version = 100;
 
   // Inject the update during CommitQueue initialization.
   UpdateResponseDataList saved_pending_updates;

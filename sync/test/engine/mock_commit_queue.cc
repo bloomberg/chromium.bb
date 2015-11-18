@@ -38,7 +38,7 @@ bool MockCommitQueue::HasCommitRequestForTagHash(
        lists_it != commit_request_lists_.rend(); ++lists_it) {
     for (CommitRequestDataList::const_iterator it = lists_it->begin();
          it != lists_it->end(); ++it) {
-      if (it->client_tag_hash == tag_hash) {
+      if (it->entity->client_tag_hash == tag_hash) {
         return true;
       }
     }
@@ -56,7 +56,7 @@ CommitRequestData MockCommitQueue::GetLatestCommitRequestForTagHash(
        lists_it != commit_request_lists_.rend(); ++lists_it) {
     for (CommitRequestDataList::const_iterator it = lists_it->begin();
          it != lists_it->end(); ++it) {
-      if (it->client_tag_hash == tag_hash) {
+      if (it->entity->client_tag_hash == tag_hash) {
         return *it;
       }
     }
@@ -77,22 +77,23 @@ UpdateResponseData MockCommitQueue::UpdateFromServer(
     SetServerVersion(tag_hash, version);
   }
 
-  UpdateResponseData data;
+  EntityData data;
   data.id = GenerateId(tag_hash);
   data.client_tag_hash = tag_hash;
-  data.response_version = version;
-  data.deleted = false;
   data.specifics = specifics;
-
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.mtime = data.ctime + base::TimeDelta::FromSeconds(version);
+  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data.modification_time =
+      data.creation_time + base::TimeDelta::FromSeconds(version);
   data.non_unique_name = specifics.preference().name();
 
-  data.encryption_key_name = server_encryption_key_name_;
+  UpdateResponseData response_data;
+  response_data.entity = data.Pass();
+  response_data.response_version = version;
+  response_data.encryption_key_name = server_encryption_key_name_;
 
-  return data;
+  return response_data;
 }
 
 UpdateResponseData MockCommitQueue::TombstoneFromServer(
@@ -104,33 +105,35 @@ UpdateResponseData MockCommitQueue::TombstoneFromServer(
     SetServerVersion(tag_hash, version);
   }
 
-  UpdateResponseData data;
+  EntityData data;
   data.id = GenerateId(tag_hash);
   data.client_tag_hash = tag_hash;
-  data.response_version = version;
-  data.deleted = true;
-
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.mtime = data.ctime + base::TimeDelta::FromSeconds(version);
+  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data.modification_time =
+      data.creation_time + base::TimeDelta::FromSeconds(version);
   data.non_unique_name = "Name Non Unique";
 
-  data.encryption_key_name = server_encryption_key_name_;
+  UpdateResponseData response_data;
+  response_data.entity = data.Pass();
+  response_data.response_version = version;
+  response_data.encryption_key_name = server_encryption_key_name_;
 
-  return data;
+  return response_data;
 }
 
 CommitResponseData MockCommitQueue::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
-  const std::string& client_tag_hash = request_data.client_tag_hash;
+  const EntityData& entity = request_data.entity.value();
+  const std::string& client_tag_hash = entity.client_tag_hash;
 
   CommitResponseData response_data;
 
   if (request_data.base_version == 0) {
     // Server assigns new ID to newly committed items.
-    DCHECK(request_data.id.empty());
-    response_data.id = request_data.id;
+    DCHECK(entity.id.empty());
+    response_data.id = entity.id;
   } else {
     // Otherwise we reuse the ID from the request.
     response_data.id = GenerateId(client_tag_hash);

@@ -12,7 +12,7 @@ EntityData::EntityData() {}
 EntityData::~EntityData() {}
 
 void EntityData::Swap(EntityData* other) {
-  server_id.swap(other->server_id);
+  id.swap(other->id);
   client_tag_hash.swap(other->client_tag_hash);
   non_unique_name.swap(other->non_unique_name);
 
@@ -23,6 +23,12 @@ void EntityData::Swap(EntityData* other) {
 
   parent_id.swap(other->parent_id);
   unique_position.Swap(&other->unique_position);
+}
+
+EntityDataPtr EntityData::Pass() {
+  EntityDataPtr target;
+  target.swap_value(this);
+  return target.Pass();
 }
 
 void EntityDataTraits::SwapValue(EntityData* dest, EntityData* src) {

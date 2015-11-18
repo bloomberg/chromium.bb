@@ -140,15 +140,22 @@ void ModelTypeEntity::Delete() {
 
 void ModelTypeEntity::InitializeCommitRequestData(
     CommitRequestData* request) const {
-  request->id = id_;
-  request->client_tag_hash = client_tag_hash_;
+  // TODO(stanisc): Switch ModelTypeEntity to EntityData to
+  // avoid temporary EntityData
+  EntityData data;
+  data.id = id_;
+  data.client_tag_hash = client_tag_hash_;
+  data.creation_time = ctime_;
+  data.modification_time = mtime_;
+  data.non_unique_name = non_unique_name_;
+
+  if (!deleted_) {
+    data.specifics.CopyFrom(specifics_);
+  }
+
+  request->entity = data.Pass();
   request->sequence_number = sequence_number_;
   request->base_version = base_version_;
-  request->ctime = ctime_;
-  request->mtime = mtime_;
-  request->non_unique_name = non_unique_name_;
-  request->deleted = deleted_;
-  request->specifics.CopyFrom(specifics_);
 }
 
 void ModelTypeEntity::SetCommitRequestInProgress() {

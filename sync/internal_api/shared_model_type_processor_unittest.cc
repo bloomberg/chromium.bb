@@ -266,7 +266,7 @@ bool SharedModelTypeProcessorTest::HasPendingUpdate(
   const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
-    if (it->client_tag_hash == client_tag_hash)
+    if (it->entity->client_tag_hash == client_tag_hash)
       return true;
   }
   return false;
@@ -279,7 +279,7 @@ UpdateResponseData SharedModelTypeProcessorTest::GetPendingUpdate(
   const UpdateResponseDataList list = type_processor_->GetPendingUpdates();
   for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
-    if (it->client_tag_hash == client_tag_hash)
+    if (it->entity->client_tag_hash == client_tag_hash)
       return *it;
   }
   NOTREACHED();
@@ -369,14 +369,16 @@ TEST_F(SharedModelTypeProcessorTest, CreateLocalItem) {
   // Verify the commit request this operation has triggered.
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const CommitRequestData& tag1_data = GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_request_data =
+      GetLatestCommitRequestForTag("tag1");
+  const EntityData& tag1_data = tag1_request_data.entity.value();
 
+  EXPECT_EQ(kUncommittedVersion, tag1_request_data.base_version);
   EXPECT_TRUE(tag1_data.id.empty());
-  EXPECT_EQ(kUncommittedVersion, tag1_data.base_version);
-  EXPECT_FALSE(tag1_data.ctime.is_null());
-  EXPECT_FALSE(tag1_data.mtime.is_null());
+  EXPECT_FALSE(tag1_data.creation_time.is_null());
+  EXPECT_FALSE(tag1_data.modification_time.is_null());
   EXPECT_EQ("tag1", tag1_data.non_unique_name);
-  EXPECT_FALSE(tag1_data.deleted);
+  EXPECT_FALSE(tag1_data.is_deleted());
   EXPECT_EQ("tag1", tag1_data.specifics.preference().name());
   EXPECT_EQ("value1", tag1_data.specifics.preference().value());
 }
@@ -390,25 +392,30 @@ TEST_F(SharedModelTypeProcessorTest, CreateAndModifyLocalItem) {
   WriteItem("tag1", "value1");
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v1_request_data =
+      GetLatestCommitRequestForTag("tag1");
+  const EntityData& tag1_v1_data = tag1_v1_request_data.entity.value();
 
   WriteItem("tag1", "value2");
   EXPECT_EQ(2U, GetNumCommitRequestLists());
 
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const CommitRequestData& tag1_v2_data = GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v2_request_data =
+      GetLatestCommitRequestForTag("tag1");
+  const EntityData& tag1_v2_data = tag1_v2_request_data.entity.value();
 
   // Test some of the relations between old and new commit requests.
+  EXPECT_GT(tag1_v2_request_data.sequence_number,
+            tag1_v1_request_data.sequence_number);
   EXPECT_EQ(tag1_v1_data.specifics.preference().value(), "value1");
-  EXPECT_GT(tag1_v2_data.sequence_number, tag1_v1_data.sequence_number);
 
   // Perform a thorough examination of the update-generated request.
+  EXPECT_EQ(kUncommittedVersion, tag1_v2_request_data.base_version);
   EXPECT_TRUE(tag1_v2_data.id.empty());
-  EXPECT_EQ(kUncommittedVersion, tag1_v2_data.base_version);
-  EXPECT_FALSE(tag1_v2_data.ctime.is_null());
-  EXPECT_FALSE(tag1_v2_data.mtime.is_null());
+  EXPECT_FALSE(tag1_v2_data.creation_time.is_null());
+  EXPECT_FALSE(tag1_v2_data.modification_time.is_null());
   EXPECT_EQ("tag1", tag1_v2_data.non_unique_name);
-  EXPECT_FALSE(tag1_v2_data.deleted);
+  EXPECT_FALSE(tag1_v2_data.is_deleted());
   EXPECT_EQ("tag1", tag1_v2_data.specifics.preference().name());
   EXPECT_EQ("value2", tag1_v2_data.specifics.preference().value());
 }
@@ -442,9 +449,9 @@ TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown) {
 
   EXPECT_GT(tag1_v2_data.sequence_number, tag1_v1_data.sequence_number);
 
-  EXPECT_TRUE(tag1_v2_data.id.empty());
+  EXPECT_TRUE(tag1_v2_data.entity->id.empty());
   EXPECT_EQ(kUncommittedVersion, tag1_v2_data.base_version);
-  EXPECT_TRUE(tag1_v2_data.deleted);
+  EXPECT_TRUE(tag1_v2_data.entity->is_deleted());
 }
 
 // Creates an item locally then deletes it.

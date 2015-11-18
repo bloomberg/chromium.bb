@@ -27,7 +27,7 @@ TEST_F(EntityDataTest, IsDeleted) {
 TEST_F(EntityDataTest, Swap) {
   EntityData data;
   syncer::AddDefaultFieldValue(syncer::BOOKMARKS, &data.specifics);
-  data.server_id = "server_id";
+  data.id = "id";
   data.client_tag_hash = "client_tag_hash";
   data.non_unique_name = "non_unique_name";
   data.creation_time = base::Time::FromTimeT(10);
@@ -46,8 +46,7 @@ TEST_F(EntityDataTest, Swap) {
       &data.specifics.bookmark();
   const std::string* unique_position_value = &data.unique_position.value();
 
-  EntityDataPtr ptr;
-  ptr.swap_value(&data);
+  EntityDataPtr ptr(data.Pass());
 
   // Compare addresses of the data wrapped by EntityDataPtr to make sure that
   // the underlying objects are exactly the same.
@@ -55,7 +54,7 @@ TEST_F(EntityDataTest, Swap) {
   EXPECT_EQ(unique_position_value, &ptr->unique_position.value());
 
   // Compare other fields.
-  EXPECT_EQ("server_id", ptr->server_id);
+  EXPECT_EQ("id", ptr->id);
   EXPECT_EQ("client_tag_hash", ptr->client_tag_hash);
   EXPECT_EQ("non_unique_name", ptr->non_unique_name);
   EXPECT_EQ("parent_id", ptr->parent_id);

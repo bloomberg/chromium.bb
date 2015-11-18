@@ -41,25 +41,30 @@ class EntityTrackerTest : public ::testing::Test {
 
   CommitRequestData MakeCommitRequestData(int64 sequence_number,
                                           int64 base_version) {
-    CommitRequestData data;
+    EntityData data;
     data.id = kServerId;
     data.client_tag_hash = kClientTagHash;
-    data.sequence_number = sequence_number;
-    data.base_version = base_version;
-    data.ctime = kCtime;
-    data.mtime = kMtime;
-    data.non_unique_name = kClientTag;
-    data.deleted = false;
+    data.creation_time = kCtime;
+    data.modification_time = kMtime;
     data.specifics = specifics;
-    return data;
+    data.non_unique_name = kClientTag;
+
+    CommitRequestData request_data;
+    request_data.entity = data.Pass();
+    request_data.sequence_number = sequence_number;
+    request_data.base_version = base_version;
+    return request_data;
   }
 
   UpdateResponseData MakeUpdateResponseData(int64 response_version) {
-    UpdateResponseData data;
+    EntityData data;
     data.id = kServerId;
     data.client_tag_hash = kClientTagHash;
-    data.response_version = response_version;
-    return data;
+
+    UpdateResponseData response_data;
+    response_data.entity = data.Pass();
+    response_data.response_version = response_version;
+    return response_data;
   }
 
   const std::string kServerId;

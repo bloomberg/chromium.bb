@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 
 namespace syncer_v2 {
-FORWARD_DECLARE_TEST(EntityDataTest, Swap);
+struct EntityData;
 }  // namespace syncable
 
 namespace syncer {
@@ -52,6 +52,8 @@ struct DefaultProtoValuePtrTraits {
 // value.
 template <typename T, typename Traits = DefaultProtoValuePtrTraits<T>>
 class ProtoValuePtr {
+  TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ProtoValuePtr)
+
  private:
   // Immutable shareable ref-counted wrapper that embeds the value.
   class Wrapper : public base::RefCountedThreadSafe<Wrapper> {
@@ -75,10 +77,10 @@ class ProtoValuePtr {
     T value_;
   };
 
+ public:
   ProtoValuePtr() {}
   ~ProtoValuePtr() {}
 
- public:
   const T& value() const {
     return wrapper_ ? wrapper_->value() : Traits::DefaultValue();
   }
@@ -90,11 +92,11 @@ class ProtoValuePtr {
 
  private:
   friend struct syncable::EntryKernel;
+  friend struct syncer_v2::EntityData;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueAssignment);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueSwap);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ParsingTest);
-  FRIEND_TEST_ALL_PREFIXES(syncer_v2::EntityDataTest, Swap);
 
   // set the value to copy of |new_value|.
   void set_value(const T& new_value) {

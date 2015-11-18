@@ -244,7 +244,8 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   for (UpdateResponseDataList::const_iterator list_it = response_list.begin();
        list_it != response_list.end(); ++list_it) {
     const UpdateResponseData& response_data = *list_it;
-    const std::string& client_tag_hash = response_data.client_tag_hash;
+    const EntityData& data = response_data.entity.value();
+    const std::string& client_tag_hash = data.client_tag_hash;
 
     // If we're being asked to apply an update to this entity, this overrides
     // the previous pending updates.
@@ -252,18 +253,18 @@ void SharedModelTypeProcessor::OnUpdateReceived(
 
     EntityMap::const_iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
+      // TODO(stanisc): Pass / share entire EntityData with ModelTypeEntity.
       scoped_ptr<ModelTypeEntity> entity = ModelTypeEntity::FromServerUpdate(
-          response_data.id, response_data.client_tag_hash,
-          response_data.non_unique_name, response_data.response_version,
-          response_data.specifics, response_data.deleted, response_data.ctime,
-          response_data.mtime, response_data.encryption_key_name);
+          data.id, data.client_tag_hash, data.non_unique_name,
+          response_data.response_version, data.specifics, data.is_deleted(),
+          data.creation_time, data.modification_time,
+          response_data.encryption_key_name);
       entities_.insert(client_tag_hash, entity.Pass());
     } else {
       ModelTypeEntity* entity = it->second;
       entity->ApplyUpdateFromServer(
-          response_data.response_version, response_data.deleted,
-          response_data.specifics, response_data.mtime,
-          response_data.encryption_key_name);
+          response_data.response_version, data.is_deleted(), data.specifics,
+          data.modification_time, response_data.encryption_key_name);
 
       // TODO: Do something special when conflicts are detected.
     }
@@ -285,7 +286,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   for (UpdateResponseDataList::const_iterator list_it = pending_updates.begin();
        list_it != pending_updates.end(); ++list_it) {
     const UpdateResponseData& update = *list_it;
-    const std::string& client_tag_hash = update.client_tag_hash;
+    const std::string& client_tag_hash = update.entity->client_tag_hash;
 
     UpdateMap::const_iterator lookup_it =
         pending_updates_map_.find(client_tag_hash);

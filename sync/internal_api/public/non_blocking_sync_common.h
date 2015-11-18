@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "sync/api/entity_data.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -39,27 +40,20 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   // This flag is set to true when the first download cycle is complete.  The
   // ModelTypeProcessor should not attempt to commit any items until this
   // flag is set.
-  bool initial_sync_done;
+  bool initial_sync_done = false;
 };
 
 struct SYNC_EXPORT_PRIVATE CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();
 
-  std::string id;
-  std::string client_tag_hash;
+  EntityDataPtr entity;
 
   // Strictly incrementing number for in-progress commits.  More information
   // about its meaning can be found in comments in the files that make use of
   // this struct.
-  int64 sequence_number;
-
-  int64 base_version;
-  base::Time ctime;
-  base::Time mtime;
-  std::string non_unique_name;
-  bool deleted;
-  sync_pb::EntitySpecifics specifics;
+  int64 sequence_number = 0;
+  int64 base_version = 0;
 };
 
 struct SYNC_EXPORT_PRIVATE CommitResponseData {
@@ -68,22 +62,17 @@ struct SYNC_EXPORT_PRIVATE CommitResponseData {
 
   std::string id;
   std::string client_tag_hash;
-  int64 sequence_number;
-  int64 response_version;
+  int64 sequence_number = 0;
+  int64 response_version = 0;
 };
 
 struct SYNC_EXPORT_PRIVATE UpdateResponseData {
+  EntityDataPtr entity;
+
   UpdateResponseData();
   ~UpdateResponseData();
 
-  std::string id;
-  std::string client_tag_hash;
-  int64 response_version;
-  base::Time ctime;
-  base::Time mtime;
-  std::string non_unique_name;
-  bool deleted;
-  sync_pb::EntitySpecifics specifics;
+  int64 response_version = 0;
   std::string encryption_key_name;
 };
 
