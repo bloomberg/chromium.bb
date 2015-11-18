@@ -953,7 +953,8 @@ bool Node::canStartSelection() const
         if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)
             return false;
     }
-    return parentOrShadowHostNode() ? parentOrShadowHostNode()->canStartSelection() : true;
+    ContainerNode* parent = ComposedTreeTraversal::parent(*this);
+    return parent ? parent->canStartSelection() : true;
 }
 
 bool Node::canParticipateInComposedTree() const
