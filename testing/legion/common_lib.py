@@ -11,9 +11,7 @@ import socket
 
 LOGGING_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'WARN', 'ERROR']
 MY_IP = socket.gethostbyname(socket.gethostname())
-SERVER_ADDRESS = ''
-SERVER_PORT = 31710
-DEFAULT_TIMEOUT_SECS = 20 * 60  # 30 minutes
+DEFAULT_TIMEOUT_SECS = 30 * 60  # 30 minutes
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SWARMING_DIR = os.path.join(THIS_DIR, '..', '..', 'tools', 'swarming_client')
 
@@ -41,3 +39,12 @@ def GetOutputDir():
   parser.add_argument('--output-dir')
   args, _ = parser.parse_known_args()
   return args.output_dir
+
+
+def GetUnusedPort():
+  """Finds and returns an unused port."""
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  s.bind(('localhost', 0))
+  _, port = s.getsockname()
+  s.close()
+  return port

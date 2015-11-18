@@ -26,18 +26,22 @@ def main():
                       help='One time token used to authenticate with the host')
   parser.add_argument('--controller',
                       help='The ip address of the controller machine')
+  parser.add_argument('--controller-port', type=int,
+                      help='The port the controllers registration server is on')
   parser.add_argument('--idle-timeout', type=int,
                       default=common_lib.DEFAULT_TIMEOUT_SECS,
                       help='The idle timeout for the rpc server in seconds')
   args, _ = parser.parse_known_args()
 
+  my_port = common_lib.GetUnusedPort()
   logging.info(
-      'Registering with registration server at %s using OTP "%s"',
-      args.controller, args.otp)
-  rpc_server.RpcServer.Connect(args.controller).RegisterTask(args.otp,
-                                                             common_lib.MY_IP)
+      'Registering with registration server at %s:%d using OTP "%s"',
+      args.controller, args.controller_port, args.otp)
+  rpc_server.RpcServer.Connect(
+      args.controller, args.controller_port).RegisterTask(
+          args.otp, common_lib.MY_IP, my_port)
 
-  server = rpc_server.RpcServer(args.controller, args.idle_timeout)
+  server = rpc_server.RpcServer(args.controller, my_port, args.idle_timeout)
 
   server.serve_forever()
   logging.info('Server shutdown complete')

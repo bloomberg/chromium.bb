@@ -86,7 +86,8 @@ class TestCase(unittest.TestCase):
   @classmethod
   def CreateTask(cls, *args, **kwargs):
     """Convenience method to create a new task."""
-    task = task_controller.TaskController(*args, **kwargs)
+    task = task_controller.TaskController(
+        reg_server_port=cls._registration_server.port, *args, **kwargs)
     cls._registration_server.RegisterTaskCallback(
         task.otp, task.OnConnect)
     return task

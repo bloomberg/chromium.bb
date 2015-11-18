@@ -51,7 +51,7 @@ class TaskController(object):
   _task_count = 0
   _tasks = []
 
-  def __init__(self, isolated_hash, dimensions, priority=100,
+  def __init__(self, isolated_hash, dimensions, reg_server_port, priority=100,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS,
                connection_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS,
                verbosity='ERROR', name=None, run_id=None):
@@ -67,11 +67,13 @@ class TaskController(object):
     self._connect_event = threading.Event()
     self._connected = False
     self._ip_address = None
+    self._reg_server_port = reg_server_port
     self._otp = self._CreateOTP()
     self._rpc = None
     self._output_dir = None
     self._platform = None
     self._executable = None
+    self._task_rpc_port = None
 
     run_id = run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     self._task_name = '%s/%s/%s' % (
@@ -162,8 +164,9 @@ class TaskController(object):
     controller_name = socket.gethostname()
     test_name = os.path.basename(sys.argv[0])
     creation_time = datetime.datetime.utcnow()
-    otp = 'task:%s controller:%s test:%s creation:%s' % (
-        self._name, controller_name, test_name, creation_time)
+    otp = 'task:%s controller:%s port: %d test:%s creation:%s' % (
+        self._name, controller_name, self._reg_server_port, test_name,
+        creation_time)
     return otp
 
   def Create(self):
@@ -218,6 +221,7 @@ class TaskController(object):
     cmd.extend([
         '--',
         '--controller', common_lib.MY_IP,
+        '--controller-port', str(self._reg_server_port),
         '--otp', self._otp,
         '--verbosity', self._verbosity,
         '--idle-timeout', str(self._idle_timeout_secs),
@@ -234,12 +238,15 @@ class TaskController(object):
     if p.returncode != 0:
       raise Error(stderr)
 
-  def OnConnect(self, ip_address):
-    """Receives task ip address on connection."""
+  def OnConnect(self, ip_address, rpc_port):
+    """Receives task ip address and port on connection."""
     self._ip_address = ip_address
+    self._task_rpc_port = rpc_port
     self._connected = True
-    self._rpc = rpc_server.RpcServer.Connect(self._ip_address)
-    logging.info('%s connected from %s', self._name, ip_address)
+    self._rpc = rpc_server.RpcServer.Connect(self._ip_address,
+                                             self._task_rpc_port)
+    logging.info('%s connected from %s:%s', self._name, ip_address,
+                 self._task_rpc_port)
     self._connect_event.set()
 
   def RetrieveOutputFiles(self):

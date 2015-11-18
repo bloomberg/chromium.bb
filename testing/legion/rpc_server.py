@@ -51,10 +51,10 @@ class RpcServer(SimpleJSONRPCServer.SimpleJSONRPCServer,
                 SocketServer.ThreadingMixIn):
   """Restricts all endpoints to only specified IP addresses."""
 
-  def __init__(self, authorized_address,
+  def __init__(self, authorized_address, port,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS):
     SimpleJSONRPCServer.SimpleJSONRPCServer.__init__(
-        self, (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
+        self, ('', port),
         allow_none=True, logRequests=False,
         requestHandler=RequestHandler)
     self.authorized_address = authorized_address
@@ -128,7 +128,7 @@ class RpcServer(SimpleJSONRPCServer.SimpleJSONRPCServer,
     self.shutdown()
 
   @staticmethod
-  def Connect(server, port=common_lib.SERVER_PORT):
+  def Connect(server, port):
     """Creates and returns a connection to an RPC server."""
     addr = 'http://%s:%d' % (server, port)
     logging.debug('Connecting to RPC server at %s', addr)

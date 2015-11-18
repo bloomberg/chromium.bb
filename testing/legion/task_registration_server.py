@@ -24,12 +24,17 @@ class TaskRegistrationServer(object):
     self._expected_tasks = {}
     self._rpc_server = None
     self._thread = None
+    self._port = common_lib.GetUnusedPort()
 
-  def _RegisterTaskRPC(self, otp, ip):
+  @property
+  def port(self):
+    return self._port
+
+  def _RegisterTaskRPC(self, otp, ip, port):
     """The RPC used by a task to register with the registration server."""
     assert otp in self._expected_tasks
     cb = self._expected_tasks.pop(otp)
-    cb(ip)
+    cb(ip, port)
 
   def RegisterTaskCallback(self, otp, callback):
     """Registers a callback associated with an OTP."""
@@ -40,8 +45,7 @@ class TaskRegistrationServer(object):
     """Starts the registration server."""
     logging.info('Starting task registration server')
     self._rpc_server = SimpleJSONRPCServer.SimpleJSONRPCServer(
-        (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
-        allow_none=True, logRequests=False)
+        ('', self._port), allow_none=True, logRequests=False)
     self._rpc_server.register_function(
         self._RegisterTaskRPC, 'RegisterTask')
     self._thread = threading.Thread(target=self._rpc_server.serve_forever)
