@@ -1525,10 +1525,14 @@ LayoutEditor.prototype = {
     _onMouseWheel: function(event)
     {
         event.preventDefault();
-        if (event.wheelDelta > 0)
-            InspectorOverlayHost.previousSelector();
-        else
+        this._mouseWheelDelta = (this._mouseWheelDelta || 0) + event.wheelDelta;
+        if (this._mouseWheelDelta >= 120) {
             InspectorOverlayHost.nextSelector();
+            this._mouseWheelDelta = 0;
+        } else if (this._mouseWheelDelta <= -120) {
+            InspectorOverlayHost.previousSelector();
+            this._mouseWheelDelta = 0;
+        }
     },
 
     /**
