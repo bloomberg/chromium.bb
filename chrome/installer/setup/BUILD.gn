@@ -22,6 +22,7 @@ if (is_win) {
 
     deps = [
       ":lib",
+      "//base/allocator",
       "//build/config/sanitizers:deps",
       "//components/crash/content/app",
     ]
@@ -68,6 +69,7 @@ if (is_win) {
       "archive_patch_helper_unittest.cc",
       "install_unittest.cc",
       "install_worker_unittest.cc",
+      "memory_unittest.cc",
       "run_all_unittests.cc",
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
@@ -78,6 +80,7 @@ if (is_win) {
       ":lib",
       "//base",
       "//base:i18n",
+      "//base/allocator",
       "//base/test:test_support",
       "//chrome/installer/mini_installer:unit_tests",
       "//chrome/installer/util:strings",

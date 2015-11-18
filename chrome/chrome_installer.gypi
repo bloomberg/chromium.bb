@@ -309,6 +309,11 @@
                 },
               },
             }],
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
         },
         {
@@ -360,6 +365,7 @@
             'installer/setup/install_worker.cc',        # Move to lib
             'installer/setup/install_worker.h',         # Move to lib
             'installer/setup/install_worker_unittest.cc',
+            'installer/setup/memory_unittest.cc',
             'installer/setup/run_all_unittests.cc',
             'installer/setup/setup_constants.cc',       # Move to lib
             'installer/setup/setup_constants.h',        # Move to lib
@@ -369,6 +375,13 @@
             'installer/setup/update_active_setup_version_work_item.cc',  # Move to lib
             'installer/setup/update_active_setup_version_work_item.h',   # Move to lib
             'installer/setup/update_active_setup_version_work_item_unittest.cc',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
