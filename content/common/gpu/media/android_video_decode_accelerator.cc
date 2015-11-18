@@ -21,6 +21,11 @@
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
+#if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+#include "media/base/media_keys.h"
+#include "media/mojo/services/mojo_cdm_service.h"
+#endif
+
 namespace content {
 
 // Max number of bitstreams notified to the client with
@@ -138,8 +143,15 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   return true;
 }
 
-void AndroidVideoDecodeAccelerator::SetCdm(int /* cdm_id */) {
-  // TODO(xhwang): Implement CDM setting here.
+void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
+  DVLOG(2) << __FUNCTION__ << ": " << cdm_id;
+
+#if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+  // TODO(timav): Implement CDM setting here. See http://crbug.com/542417
+  scoped_refptr<media::MediaKeys> cdm = media::MojoCdmService::GetCdm(cdm_id);
+  DCHECK(cdm);
+#endif
+
   NOTIMPLEMENTED();
   NotifyCdmAttached(false);
 }

@@ -4,7 +4,11 @@
 
 #include "media/mojo/services/mojo_cdm_service.h"
 
+#include <map>
+
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/synchronization/lock.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -18,11 +22,59 @@
 
 namespace media {
 
+namespace {
+
+// Manages all CDMs created by MojoCdmService. Can only have one instance per
+// process so use a LazyInstance to ensure this.
+class CdmManager {
+ public:
+  CdmManager() {}
+  ~CdmManager() {}
+
+  // Returns the CDM associated with |cdm_id|. Can be called on any thread.
+  scoped_refptr<MediaKeys> GetCdm(int cdm_id) {
+    base::AutoLock lock(lock_);
+    auto iter = cdm_map_.find(cdm_id);
+    return iter == cdm_map_.end() ? nullptr : iter->second;
+  }
+
+  // Registers the |cdm| for |cdm_id|.
+  void RegisterCdm(int cdm_id, const scoped_refptr<MediaKeys>& cdm) {
+    base::AutoLock lock(lock_);
+    DCHECK(!cdm_map_.count(cdm_id));
+    cdm_map_[cdm_id] = cdm;
+  }
+
+  // Unregisters the CDM associated with |cdm_id|.
+  void UnregisterCdm(int cdm_id) {
+    base::AutoLock lock(lock_);
+    DCHECK(cdm_map_.count(cdm_id));
+    cdm_map_.erase(cdm_id);
+  }
+
+ private:
+  // Lock to protect |cdm_map_|.
+  base::Lock lock_;
+  std::map<int, scoped_refptr<MediaKeys>> cdm_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(CdmManager);
+};
+
+base::LazyInstance<CdmManager>::Leaky g_cdm_manager = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 using SimpleMojoCdmPromise = MojoCdmPromise<>;
 using CdmIdMojoCdmPromise = MojoCdmPromise<int>;
 using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
+
+// static
+scoped_refptr<MediaKeys> MojoCdmService::GetCdm(int cdm_id) {
+  DVLOG(1) << __FUNCTION__ << ": " << cdm_id;
+  return g_cdm_manager.Get().GetCdm(cdm_id);
+}
 
 MojoCdmService::MojoCdmService(
     base::WeakPtr<MojoCdmServiceContext> context,
@@ -40,6 +92,8 @@ MojoCdmService::MojoCdmService(
 }
 
 MojoCdmService::~MojoCdmService() {
+  g_cdm_manager.Get().UnregisterCdm(cdm_id_);
+
   if (cdm_id_ != CdmContext::kInvalidCdmId && context_)
     context_->UnregisterCdm(cdm_id_);
 }
@@ -151,7 +205,11 @@ void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
 
   cdm_ = cdm;
   cdm_id_ = next_cdm_id_++;
+
   context_->RegisterCdm(cdm_id_, this);
+  g_cdm_manager.Get().RegisterCdm(cdm_id_, cdm);
+
+  DVLOG(1) << __FUNCTION__ << ": CDM successfully created with ID " << cdm_id_;
   promise->resolve(cdm_id_);
 }
 

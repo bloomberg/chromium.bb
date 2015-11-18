@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/common/common.gni")
+import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
@@ -367,6 +368,10 @@ source_set("common") {
         "gpu/media/android_video_encode_accelerator.cc",
         "gpu/media/android_video_encode_accelerator.h",
       ]
+    }
+
+    if (enable_mojo_media == "gpu") {
+      deps += [ "//media/mojo/services:application" ]
     }
   }
 
