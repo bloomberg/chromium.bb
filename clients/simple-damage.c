@@ -454,8 +454,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 	struct buffer *buffer;
-	int off_x, off_y, bwidth, bheight, bborder, bpitch, bradius;
-	uint32_t *buffer_data;
+	int off_x = 0, off_y = 0;
+	int bwidth, bheight, bborder, bpitch, bradius;
 	float bx, by;
 
 	buffer = window_next_buffer(window);
@@ -494,8 +494,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	bborder = window->border * window->scale;
 	bradius = window->ball.radius * window->scale;
 
-	buffer_data = buffer->shm_data;
 	if (window->viewport) {
+		int tx, ty;
 		/* Fill the whole thing with red to detect viewport errors */
 		paint_box(buffer->shm_data, bpitch, 0, 0, bwidth, bheight,
 			  0xffff0000);
@@ -508,35 +508,41 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		bheight /= 2;
 
 		/* Offset the drawing region */
-		off_x = (window->width / 3) * window->scale;
-		off_y = (window->height / 5) * window->scale;
+		tx = (window->width / 3) * window->scale;
+		ty = (window->height / 5) * window->scale;
 		switch (window->transform) {
 		default:
 		case WL_OUTPUT_TRANSFORM_NORMAL:
-			buffer_data += off_y * bpitch + off_x;
+			off_y = ty;
+			off_x = tx;
 			break;
 		case WL_OUTPUT_TRANSFORM_90:
-			buffer_data += off_x * bpitch + (bwidth - off_y);
+			off_y = tx;
+			off_x = bwidth - ty;
 			break;
 		case WL_OUTPUT_TRANSFORM_180:
-			buffer_data += (bheight - off_y) * bpitch +
-				       (bwidth - off_x);
+			off_y = bheight - ty;
+			off_x = bwidth - tx;
 			break;
 		case WL_OUTPUT_TRANSFORM_270:
-			buffer_data += (bheight - off_x) * bpitch + off_y;
+			off_y = bheight - tx;
+			off_x = ty;
 			break;
 		case WL_OUTPUT_TRANSFORM_FLIPPED:
-			buffer_data += off_y * bpitch + (bwidth - off_x);
+			off_y = ty;
+			off_x = bwidth - tx;
 			break;
 		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-			buffer_data += (bheight - off_x) * bpitch +
-				       (bwidth - off_y);
+			off_y = bheight - tx;
+			off_x = bwidth - ty;
 			break;
 		case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-			buffer_data += (bheight - off_y) * bpitch + off_x;
+			off_y = bheight - ty;
+			off_x = tx;
 			break;
 		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-			buffer_data += off_x * bpitch + off_y;
+			off_y = tx;
+			off_x = ty;
 			break;
 		}
 		wl_viewport_set_source(window->viewport,
@@ -547,15 +553,17 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	}
 
 	/* Paint the border */
-	paint_box(buffer_data, bpitch, 0, 0, bwidth, bborder, 0xffffffff);
-	paint_box(buffer_data, bpitch, 0, 0, bborder, bheight, 0xffffffff);
-	paint_box(buffer_data, bpitch,
-		  bwidth - bborder, 0, bborder, bheight, 0xffffffff);
-	paint_box(buffer_data, bpitch,
-		  0, bheight - bborder, bwidth, bborder, 0xffffffff);
+	paint_box(buffer->shm_data, bpitch, off_x, off_y,
+		  bwidth, bborder, 0xffffffff);
+	paint_box(buffer->shm_data, bpitch, off_x, off_y,
+		  bborder, bheight, 0xffffffff);
+	paint_box(buffer->shm_data, bpitch, off_x + bwidth - bborder, off_y,
+		  bborder, bheight, 0xffffffff);
+	paint_box(buffer->shm_data, bpitch, off_x, off_y + bheight - bborder,
+		  bwidth, bborder, 0xffffffff);
 
 	/* fill with translucent */
-	paint_box(buffer_data, bpitch, bborder, bborder,
+	paint_box(buffer->shm_data, bpitch, off_x + bborder, off_y + bborder,
 		  bwidth - 2 * bborder, bheight - 2 * bborder, 0x80000000);
 
 	/* Damage where the ball was */
@@ -570,7 +578,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	window_get_transformed_ball(window, &bx, &by);
 
 	/* Paint the ball */
-	paint_circle(buffer_data, bpitch, bx, by, bradius, 0xff00ff00);
+	paint_circle(buffer->shm_data, bpitch, off_x + bx, off_y + by,
+		     bradius, 0xff00ff00);
 
 	if (print_debug) {
 		printf("Ball now located at (%f, %f)\n",
@@ -580,7 +589,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		       bradius);
 
 		printf("Buffer damage rectangle: (%d, %d) @ %dx%d\n",
-		       (int)(bx - bradius), (int)(by - bradius),
+		       (int)(bx - bradius) + off_x,
+		       (int)(by - bradius) + off_y,
 		       bradius * 2 + 1, bradius * 2 + 1);
 	}
 
