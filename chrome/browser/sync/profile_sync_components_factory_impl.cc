@@ -109,11 +109,7 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
 
 syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
     const base::CommandLine& command_line) {
-  syncer::ModelTypeSet enabled_types;
-  if (command_line.HasSwitch(autofill::switches::kEnableWalletMetadataSync))
-    enabled_types.Put(syncer::AUTOFILL_WALLET_METADATA);
-
-  return enabled_types;
+  return syncer::ModelTypeSet();
 }
 
 }  // namespace
@@ -191,10 +187,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             syncer::AUTOFILL_WALLET_DATA));
   }
 
-  // Wallet metadata sync depends on Wallet data sync and is disabled by
-  // default. Register if Wallet data is syncing and metadata sync is explicitly
-  // enabled.
-  if (!wallet_disabled && enabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
+  // Wallet metadata sync depends on Wallet data sync. Register if Wallet data
+  // is syncing and metadata sync is not explicitly disabled.
+  if (!wallet_disabled &&
+      !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
         new browser_sync::AutofillWalletDataTypeController(
             ui_thread, db_thread, error_callback, sync_client,

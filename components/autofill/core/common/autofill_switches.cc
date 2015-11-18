@@ -71,10 +71,6 @@ const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 const char kEnableSuggestionsWithSubstringMatch[] =
     "enable-suggestions-with-substring-match";
 
-// Enables syncing usage counts and last use dates of Wallet addresses and
-// cards.
-const char kEnableWalletMetadataSync[]      = "enable-wallet-metadata-sync";
-
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
