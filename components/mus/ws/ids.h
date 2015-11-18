@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_IDS_H_
 #define COMPONENTS_MUS_WS_IDS_H_
 
+#include <tuple>
+
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"
 
@@ -29,10 +31,8 @@ struct WindowId {
   bool operator!=(const WindowId& other) const { return !(*this == other); }
 
   bool operator<(const WindowId& other) const {
-    if (connection_id == other.connection_id)
-      return window_id < other.window_id;
-
-    return connection_id < other.connection_id;
+    return std::tie(connection_id, window_id) <
+           std::tie(other.connection_id, other.window_id);
   }
 
   ConnectionSpecificId connection_id;

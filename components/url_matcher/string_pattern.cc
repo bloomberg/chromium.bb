@@ -4,6 +4,8 @@
 
 #include "components/url_matcher/string_pattern.h"
 
+#include <tuple>
+
 namespace url_matcher {
 
 StringPattern::StringPattern(const std::string& pattern,
@@ -13,8 +15,7 @@ StringPattern::StringPattern(const std::string& pattern,
 StringPattern::~StringPattern() {}
 
 bool StringPattern::operator<(const StringPattern& rhs) const {
-  if (id_ != rhs.id_) return id_ < rhs.id_;
-  return pattern_ < rhs.pattern_;
+  return std::tie(id_, pattern_) < std::tie(rhs.id_, rhs.pattern_);
 }
 
 }  // namespace url_matcher

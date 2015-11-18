@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/form_data.h"
 
+#include <tuple>
+
 #include "base/base64.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
@@ -86,15 +88,9 @@ bool FormData::SameFormAs(const FormData& form) const {
 }
 
 bool FormData::operator<(const FormData& form) const {
-  if (name != form.name)
-    return name < form.name;
-  if (origin != form.origin)
-    return origin < form.origin;
-  if (action != form.action)
-    return action < form.action;
-  if (is_form_tag != form.is_form_tag)
-    return is_form_tag < form.is_form_tag;
-  return fields < form.fields;
+  return std::tie(name, origin, action, is_form_tag, fields) <
+         std::tie(form.name, form.origin, form.action, form.is_form_tag,
+                  form.fields);
 }
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
