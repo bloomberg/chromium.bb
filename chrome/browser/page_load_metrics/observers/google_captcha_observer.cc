@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "components/page_load_metrics/browser/page_load_metrics_macros.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 

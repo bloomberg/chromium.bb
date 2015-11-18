@@ -6,20 +6,11 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "components/page_load_metrics/browser/page_load_metrics_macros.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
-
-base::TimeDelta GetFirstContentfulPaint(
-    const page_load_metrics::PageLoadTiming& timing) {
-  if (timing.first_text_paint.is_zero())
-    return timing.first_image_paint;
-  if (timing.first_image_paint.is_zero())
-    return timing.first_text_paint;
-  return std::min(timing.first_text_paint, timing.first_image_paint);
-}
 
 bool IsFromGoogle(const GURL& url) {
   const char kGoogleSearchHostnamePrefix[] = "www.";

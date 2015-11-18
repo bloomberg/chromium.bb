@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "components/page_load_metrics/browser/page_load_metrics_macros.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/rappor/rappor_service.h"
@@ -79,14 +79,6 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 
 void RecordInternalError(InternalErrorLoadEvent event) {
   UMA_HISTOGRAM_ENUMERATION(kErrorEvents, event, ERR_LAST_ENTRY);
-}
-
-base::TimeDelta GetFirstContentfulPaint(const PageLoadTiming& timing) {
-  if (timing.first_text_paint.is_zero())
-    return timing.first_image_paint;
-  if (timing.first_image_paint.is_zero())
-    return timing.first_text_paint;
-  return std::min(timing.first_text_paint, timing.first_image_paint);
 }
 
 // The number of buckets in the bitfield histogram. These buckets are described

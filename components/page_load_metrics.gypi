@@ -38,9 +38,10 @@
           'sources': [
             'page_load_metrics/browser/metrics_web_contents_observer.cc',
             'page_load_metrics/browser/metrics_web_contents_observer.h',
-            'page_load_metrics/browser/page_load_metrics_macros.h',
             'page_load_metrics/browser/page_load_metrics_observer.cc',
             'page_load_metrics/browser/page_load_metrics_observer.h',
+            'page_load_metrics/browser/page_load_metrics_util.cc',
+            'page_load_metrics/browser/page_load_metrics_util.h',
           ],
         },
         {
