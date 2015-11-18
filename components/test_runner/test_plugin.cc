@@ -312,9 +312,11 @@ void TestPlugin::updateGeometry(
     gpu::Mailbox mailbox;
     context_->genMailboxCHROMIUM(mailbox.name);
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    const blink::WGC3Duint64 fence_sync = context_->insertFenceSyncCHROMIUM();
     context_->flush();
+
     gpu::SyncToken sync_token;
-    context_->insertSyncPoint(sync_token.GetData());
+    context_->genSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
     scoped_ptr<cc::SharedBitmap> bitmap =

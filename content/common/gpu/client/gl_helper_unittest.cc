@@ -1363,8 +1363,12 @@ class GLHelperTest : public testing::Test {
     context_->genMailboxCHROMIUM(mailbox.name);
     EXPECT_FALSE(mailbox.IsZero());
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    const blink::WGC3Duint64 fence_sync = context_->insertFenceSyncCHROMIUM();
+    context_->shallowFlushCHROMIUM();
+
     gpu::SyncToken sync_token;
-    ASSERT_TRUE(context_->insertSyncPoint(sync_token.GetData()));
+    ASSERT_TRUE(context_->genSyncTokenCHROMIUM(fence_sync,
+                                               sync_token.GetData()));
 
     std::string message = base::StringPrintf(
         "input size: %dx%d "
