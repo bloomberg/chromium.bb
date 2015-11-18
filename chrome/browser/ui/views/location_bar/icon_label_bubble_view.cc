@@ -49,6 +49,7 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
   AddChildView(image_);
 
   label_->SetEnabledColor(text_color);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   if (elide_in_middle)
     label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
