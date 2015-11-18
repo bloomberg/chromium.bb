@@ -51,7 +51,7 @@ void UsbTabHelper::GetPermissionProvider(
     scoped_ptr<WebUSBPermissionProvider> permission_provider(
         new WebUSBPermissionProvider(render_frame_host));
     permission_provider->Bind(request.Pass());
-    permission_provider_.set(render_frame_host, permission_provider.Pass());
+    permission_provider_[render_frame_host] = permission_provider.Pass();
   } else {
     it->second->Bind(request.Pass());
   }

@@ -22,9 +22,9 @@ void BuildFingerprintsMap(
       const net::SHA256HashValue fingerprint =
           net::X509Certificate::CalculateFingerprint256(
               cert_info.certificate->os_cert_handle());
-      fingerprint_to_cert->insert(
+      fingerprint_to_cert->insert(std::make_pair(
           fingerprint, make_scoped_ptr(new ThreadSafeCertificateMap::MapValue(
-                           cert_info, extension_id)));
+                           cert_info, extension_id))));
     }
   }
 }
@@ -53,7 +53,7 @@ void ThreadSafeCertificateMap::Update(
   for (const auto& entry : fingerprint_to_cert_and_extension_) {
     const net::SHA256HashValue& fingerprint = entry.first;
     // This doesn't modify the map if it already contains the key |fingerprint|.
-    new_fingerprint_map.insert(fingerprint, nullptr);
+    new_fingerprint_map.insert(std::make_pair(fingerprint, nullptr));
   }
   fingerprint_to_cert_and_extension_.swap(new_fingerprint_map);
 }
@@ -72,7 +72,7 @@ bool ThreadSafeCertificateMap::LookUpCertificate(
   if (it == fingerprint_to_cert_and_extension_.end())
     return false;
 
-  MapValue* const value = it->second;
+  MapValue* const value = it->second.get();
   if (value) {
     *is_currently_provided = true;
     *info = value->cert_info;
@@ -85,11 +85,11 @@ void ThreadSafeCertificateMap::RemoveExtension(
     const std::string& extension_id) {
   base::AutoLock auto_lock(lock_);
   for (auto& entry : fingerprint_to_cert_and_extension_) {
-    MapValue* const value = entry.second;
+    MapValue* const value = entry.second.get();
     // Only remove the association of the fingerprint to the extension, but keep
     // the fingerprint.
     if (value && value->extension_id == extension_id)
-      fingerprint_to_cert_and_extension_.set(entry.first, nullptr);
+      fingerprint_to_cert_and_extension_[entry.first] = nullptr;
   }
 }
 

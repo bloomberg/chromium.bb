@@ -58,7 +58,8 @@ int CertificateRequests::AddRequest(
       FROM_HERE, base::TimeDelta::FromMinutes(kGetCertificatesTimeoutInMinutes),
       base::Bind(timeout_callback, request_id));
 
-  const auto insert_result = requests_.insert(request_id, state.Pass());
+  const auto insert_result =
+      requests_.insert(std::make_pair(request_id, state.Pass()));
   DCHECK(insert_result.second) << "request id already in use.";
   return request_id;
 }
@@ -101,11 +102,11 @@ bool CertificateRequests::RemoveRequest(
 std::vector<int> CertificateRequests::DropExtension(
     const std::string& extension_id) {
   std::vector<int> completed_requests;
-  for (auto& entry : requests_) {
+  for (const auto& entry : requests_) {
     DVLOG(2) << "Remove extension " << extension_id
              << " from certificate request " << entry.first;
 
-    CertificateRequestState& state = *entry.second;
+    CertificateRequestState& state = *entry.second.get();
     state.pending_extensions.erase(extension_id);
     if (state.pending_extensions.empty())
       completed_requests.push_back(entry.first);

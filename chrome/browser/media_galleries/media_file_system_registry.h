@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -117,9 +116,8 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
   // Map a profile to a shutdown notification subscription.
-  typedef base::ScopedPtrMap<
-      Profile*,
-      scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+  typedef std::map<Profile*,
+                   scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
       ProfileSubscriptionMap;
 
   void OnPermissionRemoved(MediaGalleriesPreferences* pref,

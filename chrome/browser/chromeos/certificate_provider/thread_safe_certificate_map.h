@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
@@ -32,9 +31,9 @@ class ThreadSafeCertificateMap {
     std::string extension_id;
   };
   using FingerprintToCertAndExtensionMap =
-      base::ScopedPtrMap<net::SHA256HashValue,
-                         scoped_ptr<MapValue>,
-                         net::SHA256HashValueLessThan>;
+      std::map<net::SHA256HashValue,
+               scoped_ptr<MapValue>,
+               net::SHA256HashValueLessThan>;
 
   ThreadSafeCertificateMap();
   ~ThreadSafeCertificateMap();

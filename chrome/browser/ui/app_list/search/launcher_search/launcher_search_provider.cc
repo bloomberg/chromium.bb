@@ -59,9 +59,8 @@ void LauncherSearchProvider::SetSearchResults(
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
   // Add this extension's results (erasing any existing results).
-  extension_results_.set(
-      extension_id,
-      make_scoped_ptr(new ScopedVector<LauncherSearchResult>(results.Pass())));
+  extension_results_[extension_id] =
+      make_scoped_ptr(new ScopedVector<LauncherSearchResult>(results.Pass()));
 
   // Update results with other extension results.
   ClearResults();

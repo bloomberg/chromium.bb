@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/linked_ptr.h"
@@ -109,9 +108,8 @@ class GalleryWatchManager
   typedef std::map<base::FilePath, NotificationInfo> WatchedPaths;
   typedef std::map<content::BrowserContext*, GalleryWatchManagerObserver*>
       ObserverMap;
-  typedef base::ScopedPtrMap<
-      content::BrowserContext*,
-      scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+  typedef std::map<content::BrowserContext*,
+                   scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
       BrowserContextSubscriptionMap;
 
   // Ensure there is a subscription to shutdown notifications for

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "net/cert/x509_certificate.h"
@@ -56,7 +55,7 @@ class CertificateRequests {
  private:
   struct CertificateRequestState;
 
-  base::ScopedPtrMap<int, scoped_ptr<CertificateRequestState>> requests_;
+  std::map<int, scoped_ptr<CertificateRequestState>> requests_;
   int next_free_request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateRequests);

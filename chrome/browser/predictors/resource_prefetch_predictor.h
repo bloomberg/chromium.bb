@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -170,7 +169,7 @@ class ResourcePrefetchPredictor
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
       NavigationMap;
-  typedef base::ScopedPtrMap<NavigationID, scoped_ptr<Result>> ResultsMap;
+  typedef std::map<NavigationID, scoped_ptr<Result>> ResultsMap;
 
   // Returns true if the main page request is supported for prediction.
   static bool IsHandledMainPage(net::URLRequest* request);

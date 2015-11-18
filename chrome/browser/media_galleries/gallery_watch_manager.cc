@@ -344,12 +344,11 @@ void GalleryWatchManager::EnsureBrowserContextSubscription(
     BrowserContext* browser_context) {
   auto it = browser_context_subscription_map_.find(browser_context);
   if (it == browser_context_subscription_map_.end()) {
-    browser_context_subscription_map_.set(
-        browser_context,
+    browser_context_subscription_map_[browser_context] =
         ShutdownNotifierFactory::GetInstance()
             ->Get(browser_context)
             ->Subscribe(base::Bind(&GalleryWatchManager::ShutdownBrowserContext,
-                                   base::Unretained(this), browser_context)));
+                                   base::Unretained(this), browser_context));
   }
 }
 

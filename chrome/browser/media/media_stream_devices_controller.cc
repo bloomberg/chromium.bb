@@ -4,9 +4,10 @@
 
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
+#include <map>
+
 #include "base/auto_reset.h"
 #include "base/callback_helpers.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,8 +90,7 @@ class MediaPermissionRequestLogger : content::WebContentsObserver {
   // Map of <render process id, render frame id> ->
   // MediaPermissionRequestLogger.
   using RequestMap =
-      base::ScopedPtrMap<std::pair<int, int>,
-                         scoped_ptr<MediaPermissionRequestLogger>>;
+      std::map<std::pair<int, int>, scoped_ptr<MediaPermissionRequestLogger>>;
 
  public:
   static void LogRequest(content::WebContents* contents,
@@ -102,8 +102,8 @@ class MediaPermissionRequestLogger : content::WebContentsObserver {
     if (!ContainsKey(GetRequestMap(), key)) {
       UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
                             is_secure);
-      GetRequestMap().set(key, make_scoped_ptr(new MediaPermissionRequestLogger(
-                                   contents, key)));
+      GetRequestMap()[key] =
+          make_scoped_ptr(new MediaPermissionRequestLogger(contents, key));
     }
   }
 

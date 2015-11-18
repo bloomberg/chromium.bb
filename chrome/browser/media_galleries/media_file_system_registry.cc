@@ -580,11 +580,10 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   if (!ContainsKey(extension_hosts_map_, profile)) {
     extension_hosts_map_[profile] = ExtensionHostMap();
     DCHECK(!ContainsKey(profile_subscription_map_, profile));
-    profile_subscription_map_.set(
-        profile,
+    profile_subscription_map_[profile] =
         ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
             base::Bind(&MediaFileSystemRegistry::OnProfileShutdown,
-                       base::Unretained(this), profile)));
+                       base::Unretained(this), profile));
     media_galleries::UsageCount(media_galleries::PROFILES_WITH_USAGE);
   }
 
