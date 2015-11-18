@@ -18,13 +18,16 @@ def get_console_width(default=80):
     _, columns = os.popen('stty size', 'r').read().split()
   except (IOError, OSError, ValueError):
     columns = default
-  return columns
+  return int(columns)
 
 
 def generate_histogram(data, buckets):
   """Generates an histogram out of a list of floats.
 
   The data is bucketed into |buckets| buckets.
+
+  Returns:
+    dict of bucket: size
   """
   if not data:
     return {}
@@ -42,12 +45,21 @@ def generate_histogram(data, buckets):
   return dict(((k*bucket_size)+minimum, v) for k, v in out.iteritems())
 
 
-def print_histogram(data, columns, key_format):
-  """Prints ASCII art representing an histogram."""
+def print_histogram(data, columns=0, key_format=None):
+  """Prints ASCII art representing an histogram.
+
+  Arguments:
+    data: as formatted by generate_histogram().
+    columns: width of the graph.
+    key_format: printf like format for the keys.
+  """
   # TODO(maruel): Add dots for tens.
   if not data:
     # Nothing to print.
     return
+
+  columns = columns or get_console_width()
+  key_format = key_format or '%s'
 
   max_key_width = max(len(key_format % k) for k in data)
   # 3 == 1 for ' ' prefix, 2 for ': ' suffix.
