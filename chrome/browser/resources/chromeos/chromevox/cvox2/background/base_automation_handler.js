@@ -40,9 +40,6 @@ BaseAutomationHandler = function(node) {
     valueChanged: this.onValueChanged
   };
 
-  /** @type {boolean} @private */
-  this.isRegistered_ = false;
-
   /** @type {!Object<string, function(AutomationEvent): void>} @private */
   this.listeners_ = {};
 
@@ -62,23 +59,16 @@ BaseAutomationHandler.prototype = {
       this.node_.addEventListener(eventType, listener, true);
       this.listeners_[eventType] = listener;
     }
-
-    this.isRegistered_ = true;
   },
 
   /**
    * Unregisters listeners.
    */
   unregister: function() {
-    if (!this.isRegistered_)
-      throw new Error('Not registered on node ' + this.node_.toString());
-
     for (var eventType in this.listenerMap_) {
       this.node_.removeEventListener(
           eventType, this.listeners_[eventType], true);
     }
-
-    this.isRegistered_ = false;
   },
 
   /**

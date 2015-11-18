@@ -88,6 +88,7 @@ cvox.TabsApiHandler.prototype = {
       cvox.ChromeVox.braille.write(
           cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
       cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
+      this.refreshAutomationHandler_(tab.id);
     }.bind(this));
   },
 
