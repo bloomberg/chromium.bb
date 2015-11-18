@@ -3863,6 +3863,7 @@
             'html/HTMLImageElementTest.cpp',
             'html/HTMLInputElementTest.cpp',
             'html/HTMLLinkElementSizesAttributeTest.cpp',
+            'html/HTMLOutputElementTest.cpp',
             'html/HTMLSelectElementTest.cpp',
             'html/HTMLTableRowElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',
