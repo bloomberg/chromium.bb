@@ -24,6 +24,8 @@
       'browser/geolocation/mock_location_provider.h',
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
+      'public/test/background_sync_test_util.cc',
+      'public/test/background_sync_test_util.h',
       'public/test/browser_test.h',
       'public/test/browser_test_base.cc',
       'public/test/browser_test_base.h',

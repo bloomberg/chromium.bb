@@ -12,7 +12,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_type.h"
+#include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -111,6 +113,27 @@ class ServiceWorkerTest : public ExtensionApiTest {
   ScopedCurrentChannel current_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTest);
+};
+
+class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
+ public:
+  ServiceWorkerBackgroundSyncTest() {}
+  ~ServiceWorkerBackgroundSyncTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // ServiceWorkerRegistration.sync requires experimental flag.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    ServiceWorkerTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUp() override {
+    content::background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    ServiceWorkerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBackgroundSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterSucceedsOnTrunk) {
@@ -340,6 +363,32 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
   EXPECT_TRUE(RunExtensionSubtest("service_worker/notifications/has_permission",
                                   "page.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBackgroundSyncTest, Sync) {
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/sync"), kFlagNone);
+  ASSERT_TRUE(extension);
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Prevent firing by going offline.
+  content::background_sync_test_util::SetOnline(web_contents, false);
+
+  ExtensionTestMessageListener sync_listener("SYNC: send-chats", false);
+  sync_listener.set_failure_message("FAIL");
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "window.runServiceWorker()", &result));
+  ASSERT_EQ("SERVICE_WORKER_READY", result);
+
+  EXPECT_FALSE(sync_listener.was_satisfied());
+  // Resume firing by going online.
+  content::background_sync_test_util::SetOnline(web_contents, true);
+  EXPECT_TRUE(sync_listener.WaitUntilSatisfied());
 }
 
 }  // namespace extensions

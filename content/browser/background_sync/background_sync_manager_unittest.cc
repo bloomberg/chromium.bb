@@ -25,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/background_sync_controller.h"
+#include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
@@ -289,7 +290,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void SetUp() override {
     // Don't let the tests be confused by the real-world device connectivity
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(true);
+    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
 
     // TODO(jkarlin): Create a new object with all of the necessary SW calls
     // so that we can inject test versions instead of bringing up all of this
@@ -328,8 +329,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void TearDown() override {
     // Restore the network observer functionality for subsequent tests
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
-        false);
+    background_sync_test_util::SetIgnoreNetworkChangeNotifier(false);
   }
 
   void RegisterServiceWorkers() {

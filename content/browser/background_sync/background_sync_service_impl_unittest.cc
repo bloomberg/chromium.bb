@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
@@ -108,7 +109,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void SetUp() override {
     // Don't let the tests be confused by the real-world device connectivity
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(true);
+    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
 
     CreateTestHelper();
     CreateBackgroundSyncContext();
@@ -125,8 +126,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     background_sync_context_ = nullptr;
 
     // Restore the network observer functionality for subsequent tests
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
-        false);
+    background_sync_test_util::SetIgnoreNetworkChangeNotifier(false);
   }
 
   // SetUp helper methods
