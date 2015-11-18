@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_FACTORY_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_FACTORY_H_
 
+#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -68,13 +69,12 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
   ~ContentAutofillDriverFactory() override;
 
  private:
-  void CreateDriverForFrame(content::RenderFrameHost* render_frame_host);
-
   AutofillClient* client_;
   std::string app_locale_;
   AutofillManager::AutofillDownloadManagerState enable_download_manager_;
 
-  std::map<content::RenderFrameHost*, ContentAutofillDriver*> frame_driver_map_;
+  std::map<content::RenderFrameHost*, scoped_ptr<ContentAutofillDriver>>
+      frame_driver_map_;
 };
 
 }  // namespace autofill

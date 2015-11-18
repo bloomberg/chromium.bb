@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_PASSWORD_MANAGER_DRIVER_FACTORY_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_PASSWORD_MANAGER_DRIVER_FACTORY_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -68,13 +70,7 @@ class ContentPasswordManagerDriverFactory
       PasswordManagerClient* client,
       autofill::AutofillClient* autofill_client);
 
-  // Creates a driver for |render_frame_host|, saves it in the frame_driver_map_
-  // and returns a (non-owning) pointer to it.
-  ContentPasswordManagerDriver* CreateDriverForFrame(
-      content::RenderFrameHost* render_frame_host);
-
-  base::ScopedPtrMap<content::RenderFrameHost*,
-                     scoped_ptr<ContentPasswordManagerDriver>>
+  std::map<content::RenderFrameHost*, scoped_ptr<ContentPasswordManagerDriver>>
       frame_driver_map_;
 
   PasswordManagerClient* password_client_;
