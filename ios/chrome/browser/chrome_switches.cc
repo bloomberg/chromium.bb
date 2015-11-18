@@ -91,4 +91,7 @@ const char kIOSMetricsRecordingOnly[] = "metrics-recording-only";
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";
 
+// These mappings only apply to the host resolver.
+const char kIOSHostResolverRules[] = "host-resolver-rules";
+
 }  // namespace switches
