@@ -77,7 +77,7 @@ class DataUseTabModel {
   DataUseTabModel(const ExternalDataUseObserver* data_use_observer,
                   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  ~DataUseTabModel();
+  virtual ~DataUseTabModel();
 
   base::WeakPtr<DataUseTabModel> GetWeakPtr();
 
@@ -95,12 +95,16 @@ class DataUseTabModel {
   // closed.
   void OnTabCloseEvent(int32_t tab_id);
 
+  // Notifies the DataUseTabModel that tracking label |label| is removed. Any
+  // active tracking sessions with the label are ended.
+  virtual void OnTrackingLabelRemoved(std::string label);
+
   // Gets the label for the |data_use| object. |output_label| must not be null.
   // If a tab tracking session is found that was active at the time of request
   // start of |data_use|, returns true and |output_label| is populated with its
   // label. Otherwise returns false and |output_label| is set to empty string.
-  bool GetLabelForDataUse(const data_usage::DataUse& data_use,
-                          std::string* output_label) const;
+  virtual bool GetLabelForDataUse(const data_usage::DataUse& data_use,
+                                  std::string* output_label) const;
 
   // Adds or removes observers from the observer list. These functions are
   // thread-safe and can be called from any thread.
@@ -110,6 +114,7 @@ class DataUseTabModel {
  private:
   friend class DataUseTabModelTest;
   friend class MockTabDataUseEntryTest;
+  friend class TestDataUseTabModel;
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, SingleTabTracking);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, MultipleTabTracking);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, ObserverStartEndEvents);
@@ -118,6 +123,7 @@ class DataUseTabModel {
                            MultipleObserverMultipleStartEndEvents);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEventEndsTracking);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, OnTrackingLabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            CompactTabEntriesWithinMaxLimit);
 

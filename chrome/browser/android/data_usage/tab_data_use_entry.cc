@@ -113,6 +113,12 @@ bool TabDataUseEntry::EndTracking() {
   return true;
 }
 
+bool TabDataUseEntry::EndTrackingWithLabel(const std::string& label) {
+  if (!sessions_.empty() && sessions_.back().label == label)
+    return EndTracking();
+  return false;
+}
+
 void TabDataUseEntry::OnTabCloseEvent() {
   DCHECK(!IsTrackingDataUse());
   tab_close_time_ = Now();

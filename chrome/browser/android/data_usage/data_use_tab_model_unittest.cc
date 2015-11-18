@@ -284,6 +284,40 @@ TEST_F(DataUseTabModelTest, TabCloseEventEndsTracking) {
       kTabID1, base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(20));
 }
 
+// Checks that end tracking for specific labels closes those active sessions.
+TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
+  MockTabDataUseObserver mock_observer;
+
+  data_use_tab_model_.StartTrackingDataUse(kTabID1, kTestLabel1);
+  data_use_tab_model_.StartTrackingDataUse(kTabID2, kTestLabel2);
+  data_use_tab_model_.StartTrackingDataUse(kTabID3, kTestLabel3);
+  data_use_tab_model_.AddObserver(&mock_observer);
+  ExpectTabEntrySize(TabEntrySize::THREE);
+
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  EXPECT_TRUE(IsTrackingDataUse(kTabID2));
+  EXPECT_TRUE(IsTrackingDataUse(kTabID3));
+
+  // Observer notified of end tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID2)).Times(1);
+
+  data_use_tab_model_.OnTrackingLabelRemoved(kTestLabel2);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  EXPECT_FALSE(IsTrackingDataUse(kTabID2));
+  EXPECT_TRUE(IsTrackingDataUse(kTabID3));
+
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID3)).Times(1);
+
+  data_use_tab_model_.OnTrackingLabelRemoved(kTestLabel3);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  EXPECT_FALSE(IsTrackingDataUse(kTabID2));
+  EXPECT_FALSE(IsTrackingDataUse(kTabID3));
+}
+
 // Checks that |active_tabs_| does not grow beyond GetMaxTabEntriesForTests tab
 // entries.
 TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {

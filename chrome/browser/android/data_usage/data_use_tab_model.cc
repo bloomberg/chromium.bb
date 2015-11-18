@@ -71,6 +71,12 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
     case TRANSITION_FROM_EXTERNAL_APP: {
       // Enter events.
       std::string label;
+      TabEntryMap::const_iterator tab_entry_iterator =
+          active_tabs_.find(tab_id);
+      if (tab_entry_iterator != active_tabs_.end() &&
+          tab_entry_iterator->second.IsTrackingDataUse()) {
+        break;
+      }
       if (data_use_observer_->Matches(url, &label)) {
         // TODO(rajendrant): Need to handle scenarios where these labels change
         // in the middle of a tab session. Should |data_use_observer_| notify us
@@ -108,6 +114,13 @@ void DataUseTabModel::OnTabCloseEvent(int32_t tab_id) {
   if (tab_entry.IsTrackingDataUse())
     tab_entry.EndTracking();
   tab_entry.OnTabCloseEvent();
+}
+
+void DataUseTabModel::OnTrackingLabelRemoved(std::string label) {
+  for (auto& tab_entry : active_tabs_) {
+    if (tab_entry.second.EndTrackingWithLabel(label))
+      NotifyObserversOfTrackingEnding(tab_entry.first);
+  }
 }
 
 bool DataUseTabModel::GetLabelForDataUse(const data_usage::DataUse& data_use,

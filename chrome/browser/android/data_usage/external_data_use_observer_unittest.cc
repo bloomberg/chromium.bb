@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model_test_utils.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,6 +45,10 @@ class ExternalDataUseObserverTest : public testing::Test {
     external_data_use_observer_.reset(new ExternalDataUseObserver(
         data_use_aggregator_.get(), io_task_runner_.get(),
         ui_task_runner_.get()));
+    test_data_use_tab_model_ = new TestDataUseTabModel(
+        external_data_use_observer_.get(), ui_task_runner_.get());
+    external_data_use_observer_->data_use_tab_model_.reset(
+        test_data_use_tab_model_);
   }
 
   scoped_ptr<ExternalDataUseObserver> Create() const {
@@ -55,11 +61,16 @@ class ExternalDataUseObserverTest : public testing::Test {
     return external_data_use_observer_.get();
   }
 
+  TestDataUseTabModel* test_data_use_tab_model() const {
+    return test_data_use_tab_model_;
+  }
+
  private:
   // Required for creating multiple threads for unit testing.
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
+  TestDataUseTabModel* test_data_use_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 };
@@ -239,6 +250,31 @@ TEST_F(ExternalDataUseObserverTest, ChangeRegex) {
       GURL("http://www.google.com#q=abc"), &label));
   EXPECT_TRUE(external_data_use_observer()->Matches(
       GURL("http://www.google.co.in#q=abc"), &label));
+}
+
+// Tests that tab model is notified when tracking labels are removed.
+TEST_F(ExternalDataUseObserverTest, LabelRemoved) {
+  std::vector<std::string> labels;
+
+  labels.push_back("label_1");
+  labels.push_back("label_2");
+  labels.push_back("label_3");
+  external_data_use_observer()->RegisterURLRegexes(
+      std::vector<std::string>(labels.size(), std::string()),
+      std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
+
+  EXPECT_CALL(*test_data_use_tab_model(), OnTrackingLabelRemoved("label_3"))
+      .Times(1);
+  EXPECT_CALL(*test_data_use_tab_model(), OnTrackingLabelRemoved("label_2"))
+      .Times(1);
+
+  labels.clear();
+  labels.push_back("label_1");
+  labels.push_back("label_4");
+  labels.push_back("label_5");
+  external_data_use_observer()->RegisterURLRegexes(
+      std::vector<std::string>(labels.size(), std::string()),
+      std::vector<std::string>(labels.size(), "http://foobar.com"), labels);
 }
 
 // Tests that at most one data use request is submitted.

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
@@ -230,7 +231,7 @@ void ExternalDataUseObserver::OnDataUse(
   std::string label;
 
   for (const data_usage::DataUse* data_use : data_use_sequence) {
-    if (!Matches(data_use->url, &label))
+    if (!data_use_tab_model_->GetLabelForDataUse(*data_use, &label))
       continue;
 
     BufferDataUseReport(data_use, label, previous_report_time_,
@@ -340,6 +341,11 @@ void ExternalDataUseObserver::RegisterURLRegexes(
   DCHECK_EQ(app_package_name.size(), domain_path_regex.size());
   DCHECK_EQ(app_package_name.size(), label.size());
 
+  base::hash_set<std::string> removed_matching_rule_labels;
+
+  for (const auto& matching_rule : matching_rules_)
+    removed_matching_rule_labels.insert(matching_rule->label());
+
   matching_rules_.clear();
   re2::RE2::Options options(re2::RE2::DefaultOptions);
   options.set_case_sensitive(false);
@@ -354,7 +360,12 @@ void ExternalDataUseObserver::RegisterURLRegexes(
     DCHECK(!label[i].empty());
     matching_rules_.push_back(
         new MatchingRule(app_package_name[i], pattern.Pass(), label[i]));
+
+    removed_matching_rule_labels.erase(label[i]);
   }
+
+  for (std::string label : removed_matching_rule_labels)
+    data_use_tab_model_->OnTrackingLabelRemoved(label);
 
   if (matching_rules_.size() == 0 && registered_as_observer_) {
     // Unregister as an observer if no regular expressions were received.

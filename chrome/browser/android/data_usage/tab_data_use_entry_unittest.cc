@@ -146,6 +146,16 @@ TEST_F(TabDataUseEntryTest, MultipleTabSessionCloseEvent) {
   EXPECT_FALSE(tab_entry_->IsTrackingDataUse());
 }
 
+// Tests that active tracking session ends with EndTrackingWithLabel.
+TEST_F(TabDataUseEntryTest, EndTrackingWithLabel) {
+  EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+  EXPECT_TRUE(tab_entry_->IsTrackingDataUse());
+
+  EXPECT_TRUE(tab_entry_->EndTrackingWithLabel(kTestLabel1));
+  EXPECT_FALSE(tab_entry_->IsTrackingDataUse());
+  ExpectTabEntrySessionsSize(TabEntrySessionSize::ONE);
+}
+
 // Test version of |TabDataUseEntry|, which permits mocking of calls to Now.
 class MockTabDataUseEntry : public TabDataUseEntry {
  public:

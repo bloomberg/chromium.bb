@@ -54,6 +54,10 @@ class TabDataUseEntry {
   // tracking session, and true otherwise.
   bool EndTracking();
 
+  // Ends the active tracking session if it is labeled with |label| and returns
+  // true.
+  bool EndTrackingWithLabel(const std::string& label);
+
   // Records that the tab has been closed, in preparation for deletion.
   void OnTabCloseEvent();
 
@@ -82,6 +86,7 @@ class TabDataUseEntry {
   friend class MockTabDataUseEntryTest;
   FRIEND_TEST_ALL_PREFIXES(TabDataUseEntryTest, SingleTabSessionCloseEvent);
   FRIEND_TEST_ALL_PREFIXES(TabDataUseEntryTest, MultipleTabSessionCloseEvent);
+  FRIEND_TEST_ALL_PREFIXES(TabDataUseEntryTest, EndTrackingWithLabel);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
   FRIEND_TEST_ALL_PREFIXES(MockTabDataUseEntryTest, CompactTabSessionHistory);
 

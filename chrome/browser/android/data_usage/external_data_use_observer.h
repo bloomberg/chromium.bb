@@ -96,10 +96,12 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   }
 
  private:
+  friend class ExternalDataUseObserverTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ChangeRegex);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            AtMostOneDataUseSubmitRequest);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
