@@ -9,38 +9,41 @@
 
 namespace views {
 
-void GetDefaultWindowMask(const gfx::Size &size, gfx::Path *window_mask) {
-  // Redefine the window visible region for the new size.
+void GetDefaultWindowMask(const gfx::Size& size, float scale,
+                          gfx::Path* window_mask) {
+  const SkScalar sk_scale = SkFloatToScalar(scale);
+  const SkScalar width = SkIntToScalar(size.width()) / sk_scale;
+  const SkScalar height = SkIntToScalar(size.height()) / sk_scale;
+
   window_mask->moveTo(0, 3);
-  window_mask->lineTo(1, 2);
+  window_mask->lineTo(1, 3);
   window_mask->lineTo(1, 1);
-  window_mask->lineTo(2, 1);
+  window_mask->lineTo(3, 1);
   window_mask->lineTo(3, 0);
 
-  window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
-  window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
-  window_mask->lineTo(SkIntToScalar(size.width()), 3);
+  window_mask->lineTo(width - 3, 0);
+  window_mask->lineTo(width - 3, 1);
+  window_mask->lineTo(width - 1, 1);
+  window_mask->lineTo(width - 1, 3);
+  window_mask->lineTo(width, 3);
 
-  window_mask->lineTo(SkIntToScalar(size.width()),
-                      SkIntToScalar(size.height() - 3));
-  window_mask->lineTo(SkIntToScalar(size.width() - 1),
-                      SkIntToScalar(size.height() - 3));
-  window_mask->lineTo(SkIntToScalar(size.width() - 1),
-                      SkIntToScalar(size.height() - 1));
-  window_mask->lineTo(SkIntToScalar(size.width() - 3),
-                      SkIntToScalar(size.height() - 2));
-  window_mask->lineTo(SkIntToScalar(size.width() - 3),
-                      SkIntToScalar(size.height()));
+  window_mask->lineTo(width, height - 3);
+  window_mask->lineTo(width - 1, height - 3);
+  window_mask->lineTo(width - 1, height - 1);
+  window_mask->lineTo(width - 3, height - 1);
+  window_mask->lineTo(width - 3, height);
 
-  window_mask->lineTo(3, SkIntToScalar(size.height()));
-  window_mask->lineTo(2, SkIntToScalar(size.height() - 2));
-  window_mask->lineTo(1, SkIntToScalar(size.height() - 1));
-  window_mask->lineTo(1, SkIntToScalar(size.height() - 3));
-  window_mask->lineTo(0, SkIntToScalar(size.height() - 3));
+  window_mask->lineTo(3, height);
+  window_mask->lineTo(3, height - 1);
+  window_mask->lineTo(1, height - 1);
+  window_mask->lineTo(1, height - 3);
+  window_mask->lineTo(0, height - 3);
 
   window_mask->close();
+
+  SkMatrix m;
+  m.setScale(sk_scale, sk_scale);
+  window_mask->transform(m);
 }
 
 } // namespace views
