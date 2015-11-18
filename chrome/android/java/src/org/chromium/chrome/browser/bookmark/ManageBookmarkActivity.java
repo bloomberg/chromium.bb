@@ -11,7 +11,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Process;
@@ -23,6 +22,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -32,9 +33,6 @@ import org.chromium.ui.base.DeviceFormFactor;
  * android.provider.Browser.saveBookmark
  */
 public class ManageBookmarkActivity extends FragmentActivity {
-
-    private static final String BOOKMARK_ID_URI_PARAM = "id";
-    private static final String BOOKMARK_IS_FOLDER_URI_PARAM = "isfolder";
 
     private static final String TAG = "ManageBookmarkActivity";
 
@@ -197,36 +195,18 @@ public class ManageBookmarkActivity extends FragmentActivity {
             throw new IllegalArgumentException("intent can not be null");
         }
         Intent intent = getIntent();
-        Uri intentUri = intent.getData();
 
-        Long bookmarkId = null;
-        boolean isFolder = false;
-        AddEditBookmarkFragment addEditFragment;
-        if (intentUri != null && intentUri.getHost().equals("editbookmark")) {
-            isFolder = intentUri.getBooleanQueryParameter(BOOKMARK_IS_FOLDER_URI_PARAM, false);
-            String bookmarkIdParam = intentUri.getQueryParameter(BOOKMARK_ID_URI_PARAM);
-            if (bookmarkIdParam != null) bookmarkId = Long.parseLong(bookmarkIdParam);
-            addEditFragment = AddEditBookmarkFragment.newEditInstance(isFolder, bookmarkId);
-        } else {
-            Bundle extras = intent.getExtras();
-            String url = null;
-            String name = null;
-            if (extras != null) {
-                isFolder = extras.getBoolean(BOOKMARK_INTENT_IS_FOLDER, false);
+        boolean isFolder = IntentUtils.safeGetBooleanExtra(
+                intent, BOOKMARK_INTENT_IS_FOLDER, false);
+        String name = IntentUtils.safeGetStringExtra(intent, BOOKMARK_INTENT_TITLE);
+        String url = IntentUtils.safeGetStringExtra(intent, BOOKMARK_INTENT_URL);
+        if (url != null) url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
+        long bookmarkId = IntentUtils.safeGetLongExtra(
+                intent, BOOKMARK_INTENT_ID, ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
 
-                if (extras.containsKey(BOOKMARK_INTENT_TITLE)) {
-                    name = extras.getString(BOOKMARK_INTENT_TITLE);
-                }
-                if (extras.containsKey(BOOKMARK_INTENT_URL)) {
-                    url = extras.getString(BOOKMARK_INTENT_URL);
-                    url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-                }
-                if (extras.containsKey(BOOKMARK_INTENT_ID)) {
-                    bookmarkId = extras.getLong(BOOKMARK_INTENT_ID);
-                }
-            }
-            addEditFragment = AddEditBookmarkFragment.newInstance(isFolder, bookmarkId, name, url);
-        }
+        AddEditBookmarkFragment addEditFragment = AddEditBookmarkFragment.newInstance(
+                isFolder, bookmarkId, name, url);
+
         setActionListenerOnAddEdit(addEditFragment);
         return addEditFragment;
     }

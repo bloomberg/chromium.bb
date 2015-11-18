@@ -261,12 +261,6 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="chrome" android:host="editbookmark" />
-            </intent-filter>
-            <intent-filter>
                 <!-- This is sent by the BrowserProviderProxy as a result of
                      calls to android.provider.Browser.saveBookmark(). -->
                 <action android:name="{{ manifest_package }}.ADDBOOKMARK" />
