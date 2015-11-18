@@ -245,10 +245,12 @@ void BookmarkBubbleView::Init() {
   if (SyncPromoUI::ShouldShowSyncPromo(profile_)) {
     // The column layout used for the sync promo.
     cs = layout->AddColumnSet(SYNC_PROMO_COLUMN_SET_ID);
+    // Use FIXED as we don't want the width of the promo to impact the overall
+    // width.
     cs->AddColumn(GridLayout::FILL,
                   GridLayout::FILL,
                   1,
-                  GridLayout::USE_PREF,
+                  GridLayout::FIXED,
                   0,
                   0);
     layout->StartRow(0, SYNC_PROMO_COLUMN_SET_ID);
