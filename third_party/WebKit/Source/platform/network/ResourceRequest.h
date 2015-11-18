@@ -135,9 +135,12 @@ public:
     void clearHTTPReferrer();
 
     const AtomicString& httpOrigin() const { return httpHeaderField("Origin"); }
-    void setHTTPOrigin(const AtomicString& httpOrigin) { setHTTPHeaderField("Origin", httpOrigin); }
+    const AtomicString& httpSuborigin() const { return httpHeaderField("Suborigin"); }
+    // Note that these will also set and clear, respectively, the
+    // Suborigin header, if appropriate.
+    void setHTTPOrigin(PassRefPtr<SecurityOrigin>);
     void clearHTTPOrigin();
-    void addHTTPOriginIfNeeded(const AtomicString& origin);
+    void addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin>);
 
     const AtomicString& httpUserAgent() const { return httpHeaderField("User-Agent"); }
     void setHTTPUserAgent(const AtomicString& httpUserAgent) { setHTTPHeaderField("User-Agent", httpUserAgent); }

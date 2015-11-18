@@ -729,7 +729,7 @@ void DocumentThreadableLoader::loadActualRequest()
     OwnPtr<ResourceLoaderOptions> actualOptions;
     actualOptions.swap(m_actualOptions);
 
-    actualRequest->setHTTPOrigin(securityOrigin()->toAtomicString());
+    actualRequest->setHTTPOrigin(securityOrigin());
 
     clearResource();
 

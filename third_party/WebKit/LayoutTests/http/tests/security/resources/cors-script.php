@@ -10,6 +10,11 @@ if ($cors_arg != "false") {
 if (strtolower($_GET["credentials"]) == "true") {
     header("Access-Control-Allow-Credentials: true");
 }
+
+if ($_SERVER["HTTP_SUBORIGIN"] == "foobar") {
+    header("Access-Control-Allow-Suborigin: foobar");
+}
+
 header("Content-Type: application/javascript");
 $delay = $_GET['delay'];
 if ($delay)

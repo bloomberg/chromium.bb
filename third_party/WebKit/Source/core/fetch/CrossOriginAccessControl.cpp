@@ -69,7 +69,7 @@ void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* sec
     request.setFetchCredentialsMode(allowCredentials == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
 
     if (securityOrigin)
-        request.setHTTPOrigin(securityOrigin->toAtomicString());
+        request.setHTTPOrigin(securityOrigin);
 }
 
 ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin* securityOrigin)
@@ -133,6 +133,7 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
 {
     AtomicallyInitializedStaticReference(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
     AtomicallyInitializedStaticReference(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
+    AtomicallyInitializedStaticReference(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin", AtomicString::ConstructFromLiteral)));
 
     int statusCode = response.httpStatusCode();
 
@@ -142,6 +143,18 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     }
 
     const AtomicString& allowOriginHeaderValue = response.httpHeaderField(allowOriginHeaderName);
+
+    // Check Suborigins, unless the Access-Control-Allow-Origin is '*',
+    // which implies that all Suborigins are okay as well.
+    if (securityOrigin->hasSuborigin() && allowOriginHeaderValue != starAtom) {
+        const AtomicString& allowSuboriginHeaderValue = response.httpHeaderField(allowSuboriginHeaderName);
+        AtomicString atomicSuboriginName(securityOrigin->suboriginName());
+        if (allowSuboriginHeaderValue != starAtom && allowSuboriginHeaderValue != atomicSuboriginName) {
+            errorDescription = buildAccessControlFailureMessage("The 'Access-Control-Allow-Suborigin' header has a value '" + allowSuboriginHeaderValue + "' that is not equal to the supplied suborigin.", securityOrigin);
+            return false;
+        }
+    }
+
     if (allowOriginHeaderValue == starAtom) {
         // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
         // even with Access-Control-Allow-Credentials set to true.
@@ -271,7 +284,7 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
     if (redirectCrossOrigin) {
         // If now to a different origin, update/set Origin:.
         newRequest.clearHTTPOrigin();
-        newRequest.setHTTPOrigin(securityOrigin->toAtomicString());
+        newRequest.setHTTPOrigin(securityOrigin);
         // If the user didn't request credentials in the first place, update our
         // state so we neither request them nor expect they must be allowed.
         if (options.credentialsRequested == ClientDidNotRequestCredentials)
