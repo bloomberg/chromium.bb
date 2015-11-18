@@ -1095,10 +1095,8 @@
       <description summary="mark part of the surface damaged">
 	This request is used to describe the regions where the pending
 	buffer is different from the current surface contents, and where
-	the surface therefore needs to be repainted. The pending buffer
-	must be set by wl_surface.attach before sending damage. The
-	compositor ignores the parts of the damage that fall outside of
-	the surface.
+	the surface therefore needs to be repainted. The compositor
+	ignores the parts of the damage that fall outside of the surface.
 
 	Damage is double-buffered state, see wl_surface.commit.
 
