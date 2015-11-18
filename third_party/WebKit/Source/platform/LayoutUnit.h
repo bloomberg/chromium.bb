@@ -109,6 +109,7 @@ public:
     operator int() const { return toInt(); }
     operator unsigned() const { return toUnsigned(); }
     operator double() const { return toDouble(); }
+    operator float() const { return toFloat(); }
     operator bool() const { return m_value; }
 
     LayoutUnit operator++(int)
