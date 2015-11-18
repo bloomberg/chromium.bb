@@ -154,13 +154,13 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // TODO(xiyuan): Figure out a better way to expose this info.
   virtual bool HasPendingBootstrap(const AccountId& account_id) const;
 
-  // Helper function that copies users from |users_list| to |users_vector| and
+  // Helper function that converts users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.
-  static void ParseUserList(const base::ListValue& users_list,
-                            const std::set<AccountId>& existing_users,
-                            std::vector<AccountId>* users_vector,
-                            std::set<AccountId>* users_set);
+  void ParseUserList(const base::ListValue& users_list,
+                     const std::set<AccountId>& existing_users,
+                     std::vector<AccountId>* users_vector,
+                     std::set<AccountId>* users_set);
 
   // Returns true if trusted device policies have successfully been retrieved
   // and ephemeral users are enabled.

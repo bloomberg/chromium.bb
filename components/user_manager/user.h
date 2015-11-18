@@ -97,7 +97,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   base::string16 GetDisplayName() const override;
   base::string16 GetGivenName() const override;
   const gfx::ImageSkia& GetImage() const override;
-  AccountId GetAccountId() const override;
+  const AccountId& GetAccountId() const override;
 
   // Allows managing child status of the user. Used for RegularUser.
   virtual void SetIsChild(bool is_child);

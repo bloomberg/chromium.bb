@@ -36,7 +36,7 @@ class USER_MANAGER_EXPORT UserInfo {
   virtual std::string GetEmail() const = 0;
 
   // Returns AccountId for the user.
-  virtual AccountId GetAccountId() const = 0;
+  virtual const AccountId& GetAccountId() const = 0;
 
   // Gets the avatar image for the user.
   virtual const gfx::ImageSkia& GetImage() const = 0;

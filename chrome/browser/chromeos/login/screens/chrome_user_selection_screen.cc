@@ -77,19 +77,20 @@ void ChromeUserSelectionScreen::OnDeviceLocalAccountsChanged() {
 
 void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
     policy::DeviceLocalAccountPolicyBroker* broker) {
-  const std::string& user_id = broker->user_id();
+  const AccountId& account_id = GetAccountIdOfKnownUser(broker->user_id());
+  DCHECK(account_id.is_valid());
   const std::string& display_name = broker->GetDisplayName();
-  if (display_name == public_session_display_names_[user_id])
+  if (display_name == public_session_display_names_[account_id])
     return;
 
-  public_session_display_names_[user_id] = display_name;
+  public_session_display_names_[account_id] = display_name;
 
   if (!handler_initialized_)
     return;
 
   if (!display_name.empty()) {
     // If a new display name was set by policy, notify the UI about it.
-    view_->SetPublicSessionDisplayName(user_id, display_name);
+    view_->SetPublicSessionDisplayName(account_id, display_name);
     return;
   }
 
@@ -101,13 +102,13 @@ void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ChromeUserSelectionScreen::SetPublicSessionDisplayName,
-                 weak_factory_.GetWeakPtr(),
-                 user_id));
+                 weak_factory_.GetWeakPtr(), account_id));
 }
 
 void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
     policy::DeviceLocalAccountPolicyBroker* broker) {
-  const std::string& user_id = broker->user_id();
+  const AccountId& account_id = GetAccountIdOfKnownUser(broker->user_id());
+  DCHECK(account_id.is_valid());
   const policy::PolicyMap::Entry* entry =
       broker->core()->store()->policy_map().Get(policy::key::kSessionLocales);
 
@@ -131,30 +132,30 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   }
 
   std::vector<std::string>& recommended_locales =
-      public_session_recommended_locales_[user_id];
+      public_session_recommended_locales_[account_id];
 
   if (new_recommended_locales != recommended_locales)
-    SetPublicSessionLocales(user_id, new_recommended_locales);
+    SetPublicSessionLocales(account_id, new_recommended_locales);
 
   if (new_recommended_locales.empty())
-    public_session_recommended_locales_.erase(user_id);
+    public_session_recommended_locales_.erase(account_id);
   else
     recommended_locales = new_recommended_locales;
 }
 
 void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
-    const std::string& user_id) {
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(user_id));
+    const AccountId& account_id) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
 
-  view_->SetPublicSessionDisplayName(user_id,
+  view_->SetPublicSessionDisplayName(account_id,
                                      base::UTF16ToUTF8(user->GetDisplayName()));
 }
 
 void ChromeUserSelectionScreen::SetPublicSessionLocales(
-    const std::string& user_id,
+    const AccountId& account_id,
     const std::vector<std::string>& recommended_locales) {
   if (!handler_initialized_)
     return;
@@ -178,7 +179,7 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
   const bool two_or_more_recommended_locales = recommended_locales.size() >= 2;
 
   // Notify the UI.
-  view_->SetPublicSessionLocales(user_id, available_locales.Pass(),
+  view_->SetPublicSessionLocales(account_id, available_locales.Pass(),
                                  default_locale,
                                  two_or_more_recommended_locales);
 }

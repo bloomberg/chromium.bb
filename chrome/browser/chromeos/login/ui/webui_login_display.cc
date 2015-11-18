@@ -77,8 +77,8 @@ void WebUILoginDisplay::HandleGetUsers() {
   SignInScreenController::Get()->SendUserList();
 }
 
-void WebUILoginDisplay::CheckUserStatus(const std::string& user_id) {
-  SignInScreenController::Get()->CheckUserStatus(user_id);
+void WebUILoginDisplay::CheckUserStatus(const AccountId& account_id) {
+  SignInScreenController::Get()->CheckUserStatus(account_id);
 }
 
 // ---- Gaia screen methods

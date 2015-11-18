@@ -37,38 +37,38 @@ void UserBoardScreenHandler::HandleGetUsers() {
   model_->SendUserList();
 }
 
-void UserBoardScreenHandler::HandleHardlockPod(const std::string& user_id) {
+void UserBoardScreenHandler::HandleHardlockPod(const AccountId& account_id) {
   CHECK(model_);
-  model_->HardLockPod(user_id);
+  model_->HardLockPod(account_id);
 }
 
-void UserBoardScreenHandler::HandleAttemptUnlock(const std::string& user_id) {
+void UserBoardScreenHandler::HandleAttemptUnlock(const AccountId& account_id) {
   CHECK(model_);
-  model_->AttemptEasyUnlock(user_id);
+  model_->AttemptEasyUnlock(account_id);
 }
 
 void UserBoardScreenHandler::HandleRecordClickOnLockIcon(
-    const std::string& user_id) {
+    const AccountId& account_id) {
   CHECK(model_);
-  model_->RecordClickOnLockIcon(user_id);
+  model_->RecordClickOnLockIcon(account_id);
 }
 
 //----------------- API
 
 void UserBoardScreenHandler::SetPublicSessionDisplayName(
-    const std::string& user_id,
+    const AccountId& account_id,
     const std::string& display_name) {
-  CallJS("login.AccountPickerScreen.setPublicSessionDisplayName", user_id,
+  CallJS("login.AccountPickerScreen.setPublicSessionDisplayName", account_id,
          display_name);
 }
 
 void UserBoardScreenHandler::SetPublicSessionLocales(
-    const std::string& user_id,
+    const AccountId& account_id,
     scoped_ptr<base::ListValue> locales,
     const std::string& default_locale,
     bool multiple_recommended_locales) {
-  CallJS("login.AccountPickerScreen.setPublicSessionLocales", user_id, *locales,
-         default_locale, multiple_recommended_locales);
+  CallJS("login.AccountPickerScreen.setPublicSessionLocales", account_id,
+         *locales, default_locale, multiple_recommended_locales);
 }
 
 void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message) {
@@ -76,20 +76,21 @@ void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message) {
 }
 
 void UserBoardScreenHandler::ShowUserPodCustomIcon(
-    const std::string& user_id,
+    const AccountId& account_id,
     const base::DictionaryValue& icon) {
-  CallJS("login.AccountPickerScreen.showUserPodCustomIcon", user_id, icon);
+  CallJS("login.AccountPickerScreen.showUserPodCustomIcon", account_id, icon);
 }
 
-void UserBoardScreenHandler::HideUserPodCustomIcon(const std::string& user_id) {
-  CallJS("login.AccountPickerScreen.hideUserPodCustomIcon", user_id);
+void UserBoardScreenHandler::HideUserPodCustomIcon(
+    const AccountId& account_id) {
+  CallJS("login.AccountPickerScreen.hideUserPodCustomIcon", account_id);
 }
 
 void UserBoardScreenHandler::SetAuthType(
-    const std::string& user_id,
+    const AccountId& account_id,
     proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& initial_value) {
-  CallJS("login.AccountPickerScreen.setAuthType", user_id,
+  CallJS("login.AccountPickerScreen.setAuthType", account_id,
          static_cast<int>(auth_type), base::StringValue(initial_value));
 }
 

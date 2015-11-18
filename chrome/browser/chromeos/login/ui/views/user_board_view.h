@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class UserBoardModel;
@@ -25,18 +27,18 @@ class UserBoardView {
   virtual void Bind(UserBoardModel& model) = 0;
   virtual void Unbind() = 0;
 
-  virtual void SetPublicSessionDisplayName(const std::string& user_id,
+  virtual void SetPublicSessionDisplayName(const AccountId& account_id,
                                            const std::string& display_name) = 0;
-  virtual void SetPublicSessionLocales(const std::string& user_id,
+  virtual void SetPublicSessionLocales(const AccountId& account_id,
                                        scoped_ptr<base::ListValue> locales,
                                        const std::string& default_locale,
                                        bool multiple_recommended_locales) = 0;
   virtual void ShowBannerMessage(const base::string16& message) = 0;
-  virtual void ShowUserPodCustomIcon(const std::string& user_id,
+  virtual void ShowUserPodCustomIcon(const AccountId& account_id,
                                      const base::DictionaryValue& icon) = 0;
-  virtual void HideUserPodCustomIcon(const std::string& user_id) = 0;
+  virtual void HideUserPodCustomIcon(const AccountId& account_id) = 0;
   virtual void SetAuthType(
-      const std::string& user_id,
+      const AccountId& account_id,
       proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
       const base::string16& initial_value) = 0;
 };

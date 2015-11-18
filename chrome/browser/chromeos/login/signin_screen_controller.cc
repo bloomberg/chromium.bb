@@ -75,8 +75,8 @@ void SignInScreenController::SendUserList() {
   user_selection_screen_->HandleGetUsers();
 }
 
-void SignInScreenController::CheckUserStatus(const std::string& user_id) {
-  user_selection_screen_->CheckUserStatus(user_id);
+void SignInScreenController::CheckUserStatus(const AccountId& account_id) {
+  user_selection_screen_->CheckUserStatus(account_id);
 }
 
 void SignInScreenController::SetWebUIHandler(

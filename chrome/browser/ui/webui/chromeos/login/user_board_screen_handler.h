@@ -32,23 +32,23 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
 
   // Handlers
   void HandleGetUsers();
-  void HandleHardlockPod(const std::string& user_id);
-  void HandleAttemptUnlock(const std::string& user_id);
-  void HandleRecordClickOnLockIcon(const std::string& user_id);
+  void HandleHardlockPod(const AccountId& account_id);
+  void HandleAttemptUnlock(const AccountId& account_id);
+  void HandleRecordClickOnLockIcon(const AccountId& account_id);
 
   // UserBoardView implementation:
-  void SetPublicSessionDisplayName(const std::string& user_id,
+  void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
-  void SetPublicSessionLocales(const std::string& user_id,
+  void SetPublicSessionLocales(const AccountId& account_id,
                                scoped_ptr<base::ListValue> locales,
                                const std::string& default_locale,
                                bool multiple_recommended_locales) override;
   void ShowBannerMessage(const base::string16& message) override;
-  void ShowUserPodCustomIcon(const std::string& user_id,
+  void ShowUserPodCustomIcon(const AccountId& account_id,
                              const base::DictionaryValue& icon) override;
-  void HideUserPodCustomIcon(const std::string& user_id) override;
+  void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(
-      const std::string& user_id,
+      const AccountId& account_id,
       proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
       const base::string16& initial_value) override;
 

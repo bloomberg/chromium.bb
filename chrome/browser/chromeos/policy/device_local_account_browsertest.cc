@@ -688,7 +688,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
             "    document.getElementById('pod-row').getPodWithUsername_('%s');"
             "pod.click();"
             "domAutomationController.send(pod.classList.contains('advanced'));",
-            account_id_1_.GetUserEmail().c_str()),
+            account_id_1_.Serialize().c_str()),
         &advanced));
     // Verify that the pod expanded to its basic/advanced form, as expected.
     EXPECT_EQ(expect_advanced, advanced);
@@ -895,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
   const std::string get_compact_pod_display_name = base::StringPrintf(
       "domAutomationController.send(document.getElementById('pod-row')"
       "    .getPodWithUsername_('%s').nameElement.textContent);",
-      account_id_1_.GetUserEmail().c_str());
+      account_id_1_.Serialize().c_str());
   std::string display_name;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       contents_,
@@ -906,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       "domAutomationController.send(document.getElementById('pod-row')"
       "    .getPodWithUsername_('%s').querySelector('.expanded-pane-name')"
       "        .textContent);",
-      account_id_1_.GetUserEmail().c_str());
+      account_id_1_.Serialize().c_str());
   display_name.clear();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       contents_,
@@ -920,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .click();",
-          account_id_1_.GetUserEmail().c_str())));
+          account_id_1_.Serialize().c_str())));
 
   // Change the display name.
   device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
@@ -957,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       base::StringPrintf(
           "domAutomationController.send(document.getElementById('pod-row')"
           "    .getPodWithUsername_('%s').expanded);",
-          account_id_1_.GetUserEmail().c_str()),
+          account_id_1_.Serialize().c_str()),
       &expanded));
   EXPECT_TRUE(expanded);
 }
@@ -1677,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleNoSwitch) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          account_id_1_.Serialize().c_str())));
 
   WaitForSessionStart();
 
@@ -1706,7 +1706,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.language-and-input').click();"
           "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.GetUserEmail().c_str()),
+          account_id_1_.Serialize().c_str()),
       &advanced));
   EXPECT_FALSE(advanced);
 
@@ -1720,7 +1720,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
 
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
@@ -1735,7 +1735,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.keyboard-select').value = '%s';"
           "pod.querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str(),
+          account_id_1_.Serialize().c_str(),
           public_session_input_method_id_.c_str())));
 
   WaitForSessionStart();
@@ -1768,7 +1768,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          account_id_1_.Serialize().c_str())));
 
   WaitForSessionStart();
 
@@ -1801,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       "for (var i = 0; i < languageSelect.length; ++i)"
       "  locales.push(languageSelect.options[i].value);"
       "domAutomationController.send(JSON.stringify(locales));",
-      account_id_1_.GetUserEmail().c_str());
+      account_id_1_.Serialize().c_str());
   std::string json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_locale_list,
@@ -1836,7 +1836,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       "domAutomationController.send(document.getElementById('pod-row')"
       "    .getPodWithUsername_('%s').querySelector('.language-select')"
       "        .value);",
-      account_id_1_.GetUserEmail().c_str());
+      account_id_1_.Serialize().c_str());
   std::string selected_locale;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_selected_locale,
@@ -1891,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
 
   // Change the list of recommended locales.
   SetRecommendedLocales(kRecommendedLocales2, arraysize(kRecommendedLocales2));
@@ -1917,7 +1917,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.keyboard-select').value = '%s';",
-          account_id_1_.GetUserEmail().c_str(),
+          account_id_1_.Serialize().c_str(),
           public_session_input_method_id_.c_str())));
 
   // Click on a different pod, causing focus to shift away and the pod to
@@ -1927,7 +1927,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .click();",
-          account_id_2_.GetUserEmail().c_str())));
+          account_id_2_.Serialize().c_str())));
 
   // Click on the pod again, causing it to expand again. Verify that the pod has
   // kept all its state (the advanced form is being shown, the manually selected
@@ -1944,7 +1944,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           "state.keyboardLayout = pod.querySelector('.keyboard-select').value;"
           "console.log(JSON.stringify(state));"
           "domAutomationController.send(JSON.stringify(state));",
-          account_id_1_.GetUserEmail().c_str()),
+          account_id_1_.Serialize().c_str()),
       &json));
   LOG(ERROR) << json;
   value_ptr = base::JSONReader::Read(json);
@@ -1966,7 +1966,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          account_id_1_.Serialize().c_str())));
 
   WaitForSessionStart();
 
@@ -2000,7 +2000,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.click();"
           "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.GetUserEmail().c_str()),
+          account_id_1_.Serialize().c_str()),
       &advanced));
   EXPECT_FALSE(advanced);
   EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
@@ -2012,7 +2012,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          account_id_1_.Serialize().c_str())));
 
   WaitForSessionStart();
 
@@ -2105,7 +2105,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
 
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
@@ -2131,7 +2131,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.keyboard-select').value = '%s';"
           "pod.querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str(),
+          account_id_1_.Serialize().c_str(),
           public_session_input_method_id_.c_str())));
 
   // Spin the loop until the login observer fires. Then, unregister the

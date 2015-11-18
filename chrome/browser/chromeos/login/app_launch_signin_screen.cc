@@ -214,8 +214,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
   webui_handler_->LoadUsers(users_list, false);
 }
 
-void AppLaunchSigninScreen::CheckUserStatus(const std::string& user_id) {
-}
+void AppLaunchSigninScreen::CheckUserStatus(const AccountId& account_id) {}
 
 bool AppLaunchSigninScreen::IsUserWhitelisted(const std::string& user_id) {
   NOTREACHED();

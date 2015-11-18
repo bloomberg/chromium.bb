@@ -21,14 +21,24 @@
 namespace {
 
 // Parses the user image URL, which looks like
-// "chrome://userimage/user@host?key1=value1&...&key_n=value_n",
+// "chrome://userimage/serialized-user-id?key1=value1&...&key_n=value_n",
 // to user email.
 void ParseRequest(const GURL& url,
                   std::string* email) {
   DCHECK(url.is_valid());
-  *email = net::UnescapeURLComponent(url.path().substr(1),
-                                    (net::UnescapeRule::URL_SPECIAL_CHARS |
-                                     net::UnescapeRule::SPACES));
+  const std::string serialized_account_id = net::UnescapeURLComponent(
+      url.path().substr(1),
+      (net::UnescapeRule::URL_SPECIAL_CHARS | net::UnescapeRule::SPACES));
+  AccountId account_id(EmptyAccountId());
+  const bool status =
+      AccountId::Deserialize(serialized_account_id, &account_id);
+  // TODO(alemate): DCHECK(status) - should happen after options page is
+  // migrated.
+  if (!status) {
+    LOG(WARNING) << "Failed to deserialize '" << serialized_account_id << "'";
+    account_id = AccountId::FromUserEmail(serialized_account_id);
+  }
+  *email = account_id.GetUserEmail();
 }
 
 }  // namespace

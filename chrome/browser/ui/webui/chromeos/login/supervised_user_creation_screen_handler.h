@@ -106,8 +106,8 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   // WebUI message handlers.
   void HandleCheckSupervisedUserName(const base::string16& name);
 
-  void HandleManagerSelected(const std::string& manager_id);
-  void HandleImportUserSelected(const std::string& user_id);
+  void HandleManagerSelected(const AccountId& manager_id);
+  void HandleImportUserSelected(const AccountId& account_id);
 
   void HandleFinishLocalSupervisedUserCreation();
   void HandleAbortLocalSupervisedUserCreation();
@@ -115,12 +115,12 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   void HandleRetryLocalSupervisedUserCreation(const base::ListValue* args);
   void HandleCurrentSupervisedUserPage(const std::string& current_page);
 
-  void HandleAuthenticateManager(const std::string& raw_manager_username,
+  void HandleAuthenticateManager(const AccountId& manager_account_id,
                                  const std::string& manager_password);
   void HandleCreateSupervisedUser(const base::string16& new_raw_user_name,
                                const std::string& new_user_password);
-  void HandleImportSupervisedUser(const std::string& user_id);
-  void HandleImportSupervisedUserWithPassword(const std::string& user_id,
+  void HandleImportSupervisedUser(const AccountId& account_id);
+  void HandleImportSupervisedUserWithPassword(const AccountId& account_id,
                                               const std::string& password);
 
   void HandleGetImages();
