@@ -113,10 +113,9 @@ void SurfacelessGlRenderer::RenderFrame() {
                                  buffers_[back_buffer_]->image(),
                                  gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
   back_buffer_ ^= 1;
-  if (!surface_->SwapBuffersAsync(
-          base::Bind(&SurfacelessGlRenderer::PostRenderFrameTask,
-                     weak_ptr_factory_.GetWeakPtr())))
-    LOG(FATAL) << "Failed to swap buffers";
+  surface_->SwapBuffersAsync(
+      base::Bind(&SurfacelessGlRenderer::PostRenderFrameTask,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SurfacelessGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {

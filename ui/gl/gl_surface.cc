@@ -117,29 +117,28 @@ bool GLSurface::SupportsPostSubBuffer() {
   return false;
 }
 
+bool GLSurface::SupportsAsyncSwap() {
+  return false;
+}
+
 unsigned int GLSurface::GetBackingFrameBufferObject() {
   return 0;
 }
 
-bool GLSurface::SwapBuffersAsync(const SwapCompletionCallback& callback) {
-  DCHECK(!IsSurfaceless());
-  gfx::SwapResult result = SwapBuffers();
-  callback.Run(result);
-  return result == gfx::SwapResult::SWAP_ACK;
+void GLSurface::SwapBuffersAsync(const SwapCompletionCallback& callback) {
+  NOTREACHED();
 }
 
 gfx::SwapResult GLSurface::PostSubBuffer(int x, int y, int width, int height) {
   return gfx::SwapResult::SWAP_FAILED;
 }
 
-bool GLSurface::PostSubBufferAsync(int x,
+void GLSurface::PostSubBufferAsync(int x,
                                    int y,
                                    int width,
                                    int height,
                                    const SwapCompletionCallback& callback) {
-  gfx::SwapResult result = PostSubBuffer(x, y, width, height);
-  callback.Run(result);
-  return result == gfx::SwapResult::SWAP_ACK;
+  NOTREACHED();
 }
 
 bool GLSurface::OnMakeCurrent(GLContext* context) {
@@ -262,9 +261,9 @@ gfx::SwapResult GLSurfaceAdapter::SwapBuffers() {
   return surface_->SwapBuffers();
 }
 
-bool GLSurfaceAdapter::SwapBuffersAsync(
+void GLSurfaceAdapter::SwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  return surface_->SwapBuffersAsync(callback);
+  surface_->SwapBuffersAsync(callback);
 }
 
 gfx::SwapResult GLSurfaceAdapter::PostSubBuffer(int x,
@@ -274,14 +273,21 @@ gfx::SwapResult GLSurfaceAdapter::PostSubBuffer(int x,
   return surface_->PostSubBuffer(x, y, width, height);
 }
 
-bool GLSurfaceAdapter::PostSubBufferAsync(
-    int x, int y, int width, int height,
-        const SwapCompletionCallback& callback) {
-  return surface_->PostSubBufferAsync(x, y, width, height, callback);
+void GLSurfaceAdapter::PostSubBufferAsync(
+    int x,
+    int y,
+    int width,
+    int height,
+    const SwapCompletionCallback& callback) {
+  surface_->PostSubBufferAsync(x, y, width, height, callback);
 }
 
 bool GLSurfaceAdapter::SupportsPostSubBuffer() {
   return surface_->SupportsPostSubBuffer();
+}
+
+bool GLSurfaceAdapter::SupportsAsyncSwap() {
+  return surface_->SupportsAsyncSwap();
 }
 
 gfx::Size GLSurfaceAdapter::GetSize() {

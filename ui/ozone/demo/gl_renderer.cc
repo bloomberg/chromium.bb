@@ -51,9 +51,8 @@ void GlRenderer::RenderFrame() {
   glClearColor(1 - fraction, fraction, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (!surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
-                                             weak_ptr_factory_.GetWeakPtr())))
-    LOG(FATAL) << "Failed to swap buffers";
+  surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {

@@ -70,6 +70,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Returns whether or not the surface supports PostSubBuffer.
   virtual bool SupportsPostSubBuffer();
 
+  // Returns whether SwapBuffersAsync() is supported.
+  virtual bool SupportsAsyncSwap();
+
   // Returns the internal frame buffer object name if the surface is backed by
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
@@ -80,7 +83,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // surface is displayed on screen. The callback can be used to delay sending
   // SwapBufferAck till that data is available. The callback should be run on
   // the calling thread (i.e. same thread SwapBuffersAsync is called)
-  virtual bool SwapBuffersAsync(const SwapCompletionCallback& callback);
+  virtual void SwapBuffersAsync(const SwapCompletionCallback& callback);
 
   // Copy part of the backbuffer to the frontbuffer.
   virtual gfx::SwapResult PostSubBuffer(int x, int y, int width, int height);
@@ -90,7 +93,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // callback can be used to delay sending SwapBufferAck till that data is
   // available. The callback should be run on the calling thread (i.e. same
   // thread PostSubBufferAsync is called)
-  virtual bool PostSubBufferAsync(int x,
+  virtual void PostSubBufferAsync(int x,
                                   int y,
                                   int width,
                                   int height,
@@ -210,14 +213,15 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool DeferDraws() override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
-  bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
+  void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
-  bool PostSubBufferAsync(int x,
+  void PostSubBufferAsync(int x,
                           int y,
                           int width,
                           int height,
                           const SwapCompletionCallback& callback) override;
   bool SupportsPostSubBuffer() override;
+  bool SupportsAsyncSwap() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   unsigned int GetBackingFrameBufferObject() override;

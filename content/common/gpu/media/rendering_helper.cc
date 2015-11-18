@@ -779,10 +779,13 @@ void RenderingHelper::RenderContent() {
 
   base::Closure schedule_frame = base::Bind(
       &RenderingHelper::ScheduleNextRenderContent, base::Unretained(this));
-  if (!need_swap_buffer ||
-      !gl_surface_->SwapBuffersAsync(
-          base::Bind(&WaitForSwapAck, schedule_frame)))
+  if (!need_swap_buffer) {
     schedule_frame.Run();
+    return;
+  }
+
+  gl_surface_->SwapBuffersAsync(
+          base::Bind(&WaitForSwapAck, schedule_frame));
 }
 
 // Helper function for the LayoutRenderingAreas(). The |lengths| are the

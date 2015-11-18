@@ -153,10 +153,11 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                             const RectF& crop_rect) override;
   bool IsOffscreen() override;
   VSyncProvider* GetVSyncProvider() override;
+  bool SupportsAsyncSwap() override;
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
-  bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
-  bool PostSubBufferAsync(int x,
+  void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
+  void PostSubBufferAsync(int x,
                           int y,
                           int width,
                           int height,
@@ -312,6 +313,10 @@ VSyncProvider* GLSurfaceOzoneSurfaceless::GetVSyncProvider() {
   return vsync_provider_.get();
 }
 
+bool GLSurfaceOzoneSurfaceless::SupportsAsyncSwap() {
+  return true;
+}
+
 bool GLSurfaceOzoneSurfaceless::SupportsPostSubBuffer() {
   return true;
 }
@@ -321,15 +326,17 @@ gfx::SwapResult GLSurfaceOzoneSurfaceless::PostSubBuffer(int x,
                                                          int width,
                                                          int height) {
   // The actual sub buffer handling is handled at higher layers.
-  SwapBuffers();
-  return gfx::SwapResult::SWAP_ACK;
+  NOTREACHED();
+  return gfx::SwapResult::SWAP_FAILED;
 }
 
-bool GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
+void GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
     const SwapCompletionCallback& callback) {
   // If last swap failed, don't try to schedule new ones.
-  if (!last_swap_buffers_result_)
-    return false;
+  if (!last_swap_buffers_result_) {
+    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    return;
+  }
 
   glFlush();
 
@@ -345,8 +352,10 @@ bool GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
   // implemented in GL drivers.
   if (has_implicit_external_sync_) {
     EGLSyncKHR fence = InsertFence();
-    if (!fence)
-      return false;
+    if (!fence) {
+      callback.Run(gfx::SwapResult::SWAP_FAILED);
+      return;
+    }
 
     base::Closure fence_wait_task =
         base::Bind(&WaitForFence, GetDisplay(), fence);
@@ -357,23 +366,22 @@ bool GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
 
     base::WorkerPool::PostTaskAndReply(FROM_HERE, fence_wait_task,
                                        fence_retired_callback, false);
-    return true;
   } else if (ozone_surface_->IsUniversalDisplayLinkDevice()) {
     glFinish();
   }
 
   frame->ready = true;
   SubmitFrame();
-  return last_swap_buffers_result_;
 }
 
-bool GLSurfaceOzoneSurfaceless::PostSubBufferAsync(
+void GLSurfaceOzoneSurfaceless::PostSubBufferAsync(
     int x,
     int y,
     int width,
     int height,
     const SwapCompletionCallback& callback) {
-  return SwapBuffersAsync(callback);
+  // The actual sub buffer handling is handled at higher layers.
+  SwapBuffersAsync(callback);
 }
 
 GLSurfaceOzoneSurfaceless::~GLSurfaceOzoneSurfaceless() {
@@ -441,7 +449,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
   bool Resize(const gfx::Size& size, float scale_factor) override;
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult SwapBuffers() override;
-  bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
+  void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
   void Destroy() override;
   bool IsSurfaceless() const override;
 
@@ -516,17 +524,17 @@ gfx::SwapResult GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffers() {
   return gfx::SwapResult::SWAP_ACK;
 }
 
-bool GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(
+void GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(
     const SwapCompletionCallback& callback) {
   if (!images_[current_surface_]->ScheduleOverlayPlane(
           widget_, 0, OverlayTransform::OVERLAY_TRANSFORM_NONE,
-          gfx::Rect(GetSize()), gfx::RectF(1, 1)))
-    return false;
-  if (!GLSurfaceOzoneSurfaceless::SwapBuffersAsync(callback))
-    return false;
+          gfx::Rect(GetSize()), gfx::RectF(1, 1))) {
+    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    return;
+  }
+  GLSurfaceOzoneSurfaceless::SwapBuffersAsync(callback);
   current_surface_ ^= 1;
   BindFramebuffer();
-  return true;
 }
 
 void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {

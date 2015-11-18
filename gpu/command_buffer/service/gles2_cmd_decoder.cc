@@ -1120,6 +1120,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for SwapBuffers.
   void DoSwapBuffers();
 
+  // Callback for async SwapBuffers.
+  void FinishSwapBuffers(gfx::SwapResult result);
+
   // Wrapper for SwapInterval.
   void DoSwapInterval(int interval);
 
@@ -2222,6 +2225,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
+  bool supports_async_swap_;
 
   ContextType context_type_;
 
@@ -2767,6 +2771,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
+      supports_async_swap_(false),
       context_type_(CONTEXT_TYPE_OPENGLES2),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
@@ -3216,6 +3221,8 @@ bool GLES2DecoderImpl::Initialize(
           .disable_post_sub_buffers_for_onscreen_surfaces &&
       !surface->IsOffscreen())
     supports_post_sub_buffer_ = false;
+
+  supports_async_swap_ = surface->SupportsAsyncSwap();
 
   if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
@@ -9294,11 +9301,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
         glReadPixels(x, y, width, height, format, type, 0);
         pending_readpixel_fences_.push(linked_ptr<FenceCallback>(
             new FenceCallback()));
-        WaitForReadPixels(base::Bind(
-            &GLES2DecoderImpl::FinishReadPixels,
-            base::internal::SupportsWeakPtrBase::StaticAsWeakPtr
-            <GLES2DecoderImpl>(this),
-            c, buffer));
+        WaitForReadPixels(base::Bind(&GLES2DecoderImpl::FinishReadPixels,
+                                     base::AsWeakPtr(this), c, buffer));
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
         return error::kNoError;
       } else {
@@ -9385,13 +9389,17 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
-  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height) !=
-      gfx::SwapResult::SWAP_FAILED) {
-    return error::kNoError;
+
+  if (supports_async_swap_) {
+    surface_->PostSubBufferAsync(
+        c.x, c.y, c.width, c.height,
+        base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
+                   base::AsWeakPtr(this)));
   } else {
-    LOG(ERROR) << "Context lost because PostSubBuffer failed.";
-    return error::kLostContext;
+    FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height));
   }
+
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
@@ -11967,19 +11975,26 @@ void GLES2DecoderImpl::DoSwapBuffers() {
       if (!feature_info_->gl_version_info().is_angle)
         glFlush();
     }
+  } else if (supports_async_swap_) {
+    surface_->SwapBuffersAsync(base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
+                                          base::AsWeakPtr(this)));
   } else {
-    if (surface_->SwapBuffers() == gfx::SwapResult::SWAP_FAILED) {
-      LOG(ERROR) << "Context lost because SwapBuffers failed.";
-      if (!CheckResetStatus()) {
-        MarkContextLost(error::kUnknown);
-        group_->LoseContexts(error::kUnknown);
-      }
-    }
+    FinishSwapBuffers(surface_->SwapBuffers());
   }
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
+  if (result == gfx::SwapResult::SWAP_FAILED) {
+    LOG(ERROR) << "Context lost because SwapBuffers failed.";
+    if (!CheckResetStatus()) {
+      MarkContextLost(error::kUnknown);
+      group_->LoseContexts(error::kUnknown);
+    }
+  }
 }
 
 void GLES2DecoderImpl::DoSwapInterval(int interval) {
