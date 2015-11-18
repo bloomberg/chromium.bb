@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<style>
+  .test {
+      width: 100px;
+      height: 100px;
+  }
+</style>
+<div class="test"></div>
+<script>
+  var BorderImageWithBorderStyleNone = 1026; // From UseCounter.h
+  window.jsTestIsAsync = true;
+
+  shouldBeFalse("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+
+  var style = document.querySelector('.test').style;
+
+  // Set a solid border-image; expect no hit
+  style.borderWidth = '20px';
+  style.borderStyle = 'solid';
+  style.borderImage = 'linear-gradient(to bottom, blue, white) 1 repeat';
+    
+  runAfterLayoutAndPaint(
+      function() {
+          shouldBeFalse("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+
+          // Set one border to none but nuke all border widths; expect no hit
+          style.borderWidth = '0px';
+          style.borderTopStyle = 'none';
+
+          runAfterLayoutAndPaint(
+              function() {
+                  shouldBeFalse("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+
+                  // Add fill to trigger more border-image code; expect no hit
+                  style.borderImage = 'linear-gradient(to bottom, blue, white) fill 1 repeat';
+
+                  runAfterLayoutAndPaint(
+                      function() {
+                          shouldBeFalse("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+
+                          // Add a top border width that according to spec should be clamped to zero because
+                          // border-top-style is none; expect hit
+                          style.borderTopWidth = '10px';
+
+                          runAfterLayoutAndPaint(
+                              function() {
+                                  shouldBeTrue("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+                                  finishJSTest();
+                              });
+                      });
+              });
+      });
+</script>

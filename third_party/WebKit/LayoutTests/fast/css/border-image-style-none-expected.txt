@@ -1,0 +1,9 @@
+PASS window.internals.isUseCounted(document, BorderImageWithBorderStyleNone) is false
+PASS window.internals.isUseCounted(document, BorderImageWithBorderStyleNone) is false
+PASS window.internals.isUseCounted(document, BorderImageWithBorderStyleNone) is false
+PASS window.internals.isUseCounted(document, BorderImageWithBorderStyleNone) is false
+PASS window.internals.isUseCounted(document, BorderImageWithBorderStyleNone) is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/NinePieceImagePainter.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/BoxPainter.h"
@@ -34,6 +35,14 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
 
     if (!styleImage->canRender(m_layoutObject, style.effectiveZoom()))
         return false;
+
+    // Find out if the hasImage() check in ComputedStyle::border*Width had any affect, i.e. if a border is non-zero while border-style is
+    // none or hidden.
+    if ((style.borderLeftWidth() && (style.borderLeft().style() == BNONE || style.borderLeft().style() == BHIDDEN))
+        || (style.borderRightWidth() && (style.borderRight().style() == BNONE || style.borderRight().style() == BHIDDEN))
+        || (style.borderTopWidth() && (style.borderTop().style() == BNONE || style.borderTop().style() == BHIDDEN))
+        || (style.borderBottomWidth() && (style.borderBottom().style() == BNONE || style.borderBottom().style() == BHIDDEN)))
+        UseCounter::count(m_layoutObject.document(), UseCounter::BorderImageWithBorderStyleNone);
 
     // FIXME: border-image is broken with full page zooming when tiling has to happen, since the tiling function
     // doesn't have any understanding of the zoom that is in effect on the tile.
