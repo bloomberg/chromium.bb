@@ -61,16 +61,18 @@ int main(int argc, char** argv) {
                                    io_thread.task_runner().get(),
                                    mojo::embedder::ScopedPlatformHandle());
 
-    base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
+    mojo::InterfaceRequest<mojo::Application> application_request;
+    scoped_ptr<mojo::runner::RunnerConnection> connection(
+        mojo::runner::RunnerConnection::ConnectToRunner(&application_request));
+
     WindowTypeLauncher delegate;
     {
-      mojo::InterfaceRequest<mojo::Application> application_request;
-      scoped_ptr<mojo::runner::RunnerConnection> connection(
-          mojo::runner::RunnerConnection::ConnectToRunner(
-              &application_request, mojo::ScopedMessagePipeHandle()));
+      base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
       mojo::ApplicationImpl impl(&delegate, application_request.Pass());
       loop.Run();
     }
+
+    connection.reset();
 
     mojo::embedder::ShutdownIPCSupport();
   }

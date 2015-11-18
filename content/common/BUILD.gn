@@ -209,7 +209,7 @@ source_set("common") {
     ]
   }
 
-  defines = []
+  defines = [ "MOJO_SHELL_CLIENT" ]
   include_dirs = []
   libs = []
   ldflags = []

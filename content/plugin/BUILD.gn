@@ -28,10 +28,7 @@ if (enable_plugins && !is_linux) {
       "webplugin_proxy.h",
     ]
 
-    configs += [
-      "//content:content_implementation",
-      "//content/public/common:mojo_shell_client",
-    ]
+    configs += [ "//content:content_implementation" ]
 
     deps = [
       "//content:export",

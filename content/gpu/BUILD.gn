@@ -38,10 +38,7 @@ source_set("gpu_sources") {
     "in_process_gpu_thread.h",
   ]
 
-  configs += [
-    "//content:content_implementation",
-    "//content/public/common:mojo_shell_client",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   deps = [
     "//base",

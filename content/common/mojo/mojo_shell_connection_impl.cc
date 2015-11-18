@@ -31,26 +31,19 @@ bool IsRunningInMojoShell() {
 // static
 void MojoShellConnectionImpl::Create() {
   DCHECK(IsRunningInMojoShell());
-  CreateWithMessagePipe(mojo::ScopedMessagePipeHandle());
-}
-
-// static
-void MojoShellConnectionImpl::CreateWithMessagePipe(
-    mojo::ScopedMessagePipeHandle handle) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   MojoShellConnectionImpl* connection = new MojoShellConnectionImpl;
   lazy_tls_ptr.Pointer()->Set(connection);
-  connection->WaitForShell(handle.Pass());
+  connection->WaitForShell();
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl() : initialized_(false) {}
 MojoShellConnectionImpl::~MojoShellConnectionImpl() {}
 
-void MojoShellConnectionImpl::WaitForShell(
-    mojo::ScopedMessagePipeHandle handle) {
+void MojoShellConnectionImpl::WaitForShell() {
   mojo::InterfaceRequest<mojo::Application> application_request;
-  runner_connection_.reset(mojo::runner::RunnerConnection::ConnectToRunner(
-      &application_request, handle.Pass()));
+  runner_connection_.reset(
+      mojo::runner::RunnerConnection::ConnectToRunner(&application_request));
   application_impl_.reset(new mojo::ApplicationImpl(
       this, application_request.Pass()));
   application_impl_->WaitForInitialize();

@@ -20,11 +20,6 @@
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/common/mojo/channel_init.h"
-#include "ipc/ipc_platform_file.h"
-#endif
-
 namespace base {
 class MessageLoop;
 
@@ -240,9 +235,6 @@ class CONTENT_EXPORT ChildThreadImpl
 #if defined(USE_TCMALLOC)
   void OnGetTcmallocStats();
 #endif
-#if defined(MOJO_SHELL_CLIENT)
-  void OnBindControllerHandle(const IPC::PlatformFileForTransit& file);
-#endif
 
   void EnsureConnected();
 
@@ -304,10 +296,6 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
 
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
-
-#if defined(MOJO_SHELL_CLIENT)
-  ChannelInit mojo_shell_channel_init_;
-#endif
 
   base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
 
