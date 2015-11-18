@@ -3,19 +3,19 @@
 <script>
 assertCSSResponsive({
   property: 'box-shadow',
-  from: 'inherit',
-  to: 'green 20px 20px 20px 20px',
+  from: 'green 20px 20px 20px 20px',
+  to: 'inherit',
   configurations: [{
     state: {inherited: 'blue 0px 0px 0px 0px'},
     expect: [
-      {at: 0.25, is: 'rgb(0, 32, 191) 5px 5px 5px 5px'},
-      {at: 0.75, is: 'rgb(0, 96, 64) 15px 15px 15px 15px'},
+      {at: 0.25, is: 'rgb(0, 96, 64) 15px 15px 15px 15px'},
+      {at: 0.75, is: 'rgb(0, 32, 191) 5px 5px 5px 5px'},
     ],
   }, {
     state: {inherited: 'yellow 100px 100px 100px 100px'},
     expect: [
-      {at: 0.25, is: 'rgb(191, 223, 0) 80px 80px 80px 80px'},
-      {at: 0.75, is: 'rgb(64, 160, 0) 40px 40px 40px 40px'},
+      {at: 0.25, is: 'rgb(64, 160, 0) 40px 40px 40px 40px'},
+      {at: 0.75, is: 'rgb(191, 223, 0) 80px 80px 80px 80px'},
     ],
   }],
 });

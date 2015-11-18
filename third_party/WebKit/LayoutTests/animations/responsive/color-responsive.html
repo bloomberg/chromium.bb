@@ -38,4 +38,23 @@ assertCSSResponsive({
     ],
   }],
 });
+
+assertResponsive({
+  property: 'color',
+  from: 'green',
+  to: 'currentcolor',
+  configurations: [{
+    state: {inherited: 'blue'},
+    expect: [
+      {at: 0.25, is: 'rgb(0, 96, 64)'},
+      {at: 0.75, is: 'rgb(0, 32, 191)'},
+    ],
+  }, {
+    state: {inherited: 'yellow'},
+    expect: [
+      {at: 0.25, is: 'rgb(64, 160, 0)'},
+      {at: 0.75, is: 'rgb(191, 223, 0)'},
+    ],
+  }],
+});
 </script>
