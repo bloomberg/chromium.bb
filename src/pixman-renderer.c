@@ -133,13 +133,76 @@ pixman_renderer_read_pixels(struct weston_output *output,
 	return 0;
 }
 
+/*
+ * Warning: This function does not work for projective, affine, or matrices
+ * that encode arbitrary rotations. Only 90-degree step rotations are
+ * supported.
+ *
+ * Luckily it is only used for output matrices, so it is fine here.
+ */
+static void
+weston_matrix_transform_region(pixman_region32_t *dest,
+			       struct weston_matrix *matrix,
+			       pixman_region32_t *src)
+{
+	pixman_box32_t *src_rects, *dest_rects;
+	int nrects, i;
+
+	src_rects = pixman_region32_rectangles(src, &nrects);
+	dest_rects = malloc(nrects * sizeof(*dest_rects));
+	if (!dest_rects)
+		return;
+
+	for (i = 0; i < nrects; i++) {
+		struct weston_vector vec1 = {{
+			src_rects[i].x1, src_rects[i].y1, 0, 1
+		}};
+		weston_matrix_transform(matrix, &vec1);
+		vec1.f[0] /= vec1.f[3];
+		vec1.f[1] /= vec1.f[3];
+
+		struct weston_vector vec2 = {{
+			src_rects[i].x2, src_rects[i].y2, 0, 1
+		}};
+		weston_matrix_transform(matrix, &vec2);
+		vec2.f[0] /= vec2.f[3];
+		vec2.f[1] /= vec2.f[3];
+
+		if (vec1.f[0] < vec2.f[0]) {
+			dest_rects[i].x1 = floor(vec1.f[0]);
+			dest_rects[i].x2 = ceil(vec2.f[0]);
+		} else {
+			dest_rects[i].x1 = floor(vec2.f[0]);
+			dest_rects[i].x2 = ceil(vec1.f[0]);
+		}
+
+
+		if (vec1.f[1] < vec2.f[1]) {
+			dest_rects[i].y1 = floor(vec1.f[1]);
+			dest_rects[i].y2 = ceil(vec2.f[1]);
+		} else {
+			dest_rects[i].y1 = floor(vec2.f[1]);
+			dest_rects[i].y2 = ceil(vec1.f[1]);
+		}
+	}
+
+	pixman_region32_clear(dest);
+	pixman_region32_init_rects(dest, dest_rects, nrects);
+	free(dest_rects);
+}
+
 static void
 region_global_to_output(struct weston_output *output, pixman_region32_t *region)
 {
-	pixman_region32_translate(region, -output->x, -output->y);
-	weston_transformed_region(output->width, output->height,
-				  output->transform, output->current_scale,
-				  region, region);
+	if (output->zoom.active) {
+		weston_matrix_transform_region(region, &output->matrix, region);
+	} else {
+		pixman_region32_translate(region, -output->x, -output->y);
+		weston_transformed_region(output->width, output->height,
+					  output->transform,
+					  output->current_scale,
+					  region, region);
+	}
 }
 
 #define D2F(v) pixman_double_to_fixed((double)v)
@@ -470,7 +533,6 @@ static void
 draw_view(struct weston_view *ev, struct weston_output *output,
 	  pixman_region32_t *damage) /* in global coordinates */
 {
-	static int zoom_logged = 0;
 	struct pixman_surface_state *ps = get_surface_state(ev->surface);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
@@ -486,11 +548,6 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
-
-	if (output->zoom.active && !zoom_logged) {
-		weston_log("pixman renderer does not support zoom\n");
-		zoom_logged = 1;
-	}
 
 	if (view_transformation_is_translation(ev)) {
 		/* The simple case: The surface regions opaque, non-opaque,
@@ -614,7 +671,7 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 
 	if (!buffer)
 		return;
-	
+
 	shm_buffer = wl_shm_buffer_get(buffer->resource);
 
 	if (! shm_buffer) {
@@ -735,7 +792,7 @@ pixman_renderer_surface_set_color(struct weston_surface *es,
 	color.green = green * 0xffff;
 	color.blue = blue * 0xffff;
 	color.alpha = alpha * 0xffff;
-	
+
 	if (ps->image) {
 		pixman_image_unref(ps->image);
 		ps->image = NULL;
