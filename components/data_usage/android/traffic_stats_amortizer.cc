@@ -71,20 +71,13 @@ int64_t ScaleByteCount(int64_t bytes, double ratio, double* remainder) {
 // |pre_amortization_total| into each of the DataUse objects in
 // |data_use_sequence| by scaling the byte counts determined by the
 // |get_byte_count_fn| function (e.g. tx_bytes, rx_bytes) for each DataUse
-// appropriately.
+// appropriately. |pre_amortization_total| must not be 0.
 void AmortizeByteCountSequence(DataUseBuffer* data_use_sequence,
                                int64_t* (*get_byte_count_fn)(DataUse*),
                                int64_t pre_amortization_total,
                                int64_t desired_post_amortization_total) {
-  DCHECK_GE(pre_amortization_total, 0);
+  DCHECK_GT(pre_amortization_total, 0);
   DCHECK_GE(desired_post_amortization_total, 0);
-
-  if (pre_amortization_total == 0) {
-    // TODO(sclittle): If |desired_post_amortization_total| is non-zero, this
-    // could be ignoring overhead that should be amortized in somehow. Handle
-    // this case gracefully.
-    return;
-  }
 
   const double ratio = static_cast<double>(desired_post_amortization_total) /
                        static_cast<double>(pre_amortization_total);
@@ -102,27 +95,6 @@ int64_t* GetTxBytes(DataUse* data_use) {
 }
 int64_t* GetRxBytes(DataUse* data_use) {
   return &data_use->rx_bytes;
-}
-
-// Amortizes the difference between |desired_post_amortization_total_tx_bytes|
-// and |pre_amortization_total_tx_bytes| into each of the DataUse objects in
-// |data_use_sequence| by scaling the DataUse's |tx_bytes| appropriately. Does
-// the same with the |rx_bytes| using those respective parameters.
-void AmortizeDataUseSequence(DataUseBuffer* data_use_sequence,
-                             int64_t pre_amortization_total_tx_bytes,
-                             int64_t desired_post_amortization_total_tx_bytes,
-                             int64_t pre_amortization_total_rx_bytes,
-                             int64_t desired_post_amortization_total_rx_bytes) {
-  DCHECK(data_use_sequence);
-  DCHECK(!data_use_sequence->empty());
-
-  AmortizeByteCountSequence(data_use_sequence, &GetTxBytes,
-                            pre_amortization_total_tx_bytes,
-                            desired_post_amortization_total_tx_bytes);
-
-  AmortizeByteCountSequence(data_use_sequence, &GetRxBytes,
-                            pre_amortization_total_rx_bytes,
-                            desired_post_amortization_total_rx_bytes);
 }
 
 }  // namespace
@@ -252,17 +224,21 @@ void TrafficStatsAmortizer::AmortizeNow() {
     DCHECK_GE(current_traffic_stats_rx_bytes,
               last_amortization_traffic_stats_rx_bytes_);
 
-    int64_t desired_post_amortization_total_tx_bytes =
-        current_traffic_stats_tx_bytes -
-        last_amortization_traffic_stats_tx_bytes_;
-    int64_t desired_post_amortization_total_rx_bytes =
-        current_traffic_stats_rx_bytes -
-        last_amortization_traffic_stats_rx_bytes_;
-
-    AmortizeDataUseSequence(&buffered_data_use_, pre_amortization_tx_bytes_,
-                            desired_post_amortization_total_tx_bytes,
-                            pre_amortization_rx_bytes_,
-                            desired_post_amortization_total_rx_bytes);
+    // Only attempt to amortize network overhead from TrafficStats if any of
+    // those bytes are reflected in the pre-amortization byte totals. Otherwise,
+    // that network overhead will be amortized in a later amortization run.
+    if (pre_amortization_tx_bytes_ != 0) {
+      AmortizeByteCountSequence(&buffered_data_use_, &GetTxBytes,
+                                pre_amortization_tx_bytes_,
+                                current_traffic_stats_tx_bytes -
+                                    last_amortization_traffic_stats_tx_bytes_);
+    }
+    if (pre_amortization_rx_bytes_ != 0) {
+      AmortizeByteCountSequence(&buffered_data_use_, &GetRxBytes,
+                                pre_amortization_rx_bytes_,
+                                current_traffic_stats_rx_bytes -
+                                    last_amortization_traffic_stats_rx_bytes_);
+    }
   }
 
   // TODO(sclittle): Record some UMA about the delay before amortizing and how
@@ -272,21 +248,34 @@ void TrafficStatsAmortizer::AmortizeNow() {
   is_amortization_in_progress_ = false;
   current_amortization_run_start_time_ = base::TimeTicks();
 
+  // Don't update the previous amortization run's TrafficStats byte counts if
+  // none of the bytes since then are reflected in the pre-amortization byte
+  // totals. This way, the overhead that wasn't handled in this amortization run
+  // can be handled in a later amortization run that actually has bytes in that
+  // direction. This mitigates the problem of losing TrafficStats overhead bytes
+  // on slow networks due to TrafficStats seeing the bytes much earlier than the
+  // network stack reports them, or vice versa.
+  if (!are_last_amortization_traffic_stats_available_ ||
+      pre_amortization_tx_bytes_ != 0) {
+    last_amortization_traffic_stats_tx_bytes_ = current_traffic_stats_tx_bytes;
+  }
+  if (!are_last_amortization_traffic_stats_available_ ||
+      pre_amortization_rx_bytes_ != 0) {
+    last_amortization_traffic_stats_rx_bytes_ = current_traffic_stats_rx_bytes;
+  }
+
   are_last_amortization_traffic_stats_available_ =
       are_current_traffic_stats_available;
-  last_amortization_traffic_stats_tx_bytes_ = current_traffic_stats_tx_bytes;
-  last_amortization_traffic_stats_rx_bytes_ = current_traffic_stats_rx_bytes;
 
   pre_amortization_tx_bytes_ = 0;
   pre_amortization_rx_bytes_ = 0;
 
-  // Pass post-amortization DataUse objects to their respective callbacks.
   DataUseBuffer data_use_sequence;
   data_use_sequence.swap(buffered_data_use_);
-  for (auto& data_use_buffer_pair : data_use_sequence) {
-    scoped_ptr<DataUse> data_use(data_use_buffer_pair.first.release());
-    data_use_buffer_pair.second.Run(data_use.Pass());
-  }
+
+  // Pass post-amortization DataUse objects to their respective callbacks.
+  for (auto& data_use_buffer_pair : data_use_sequence)
+    data_use_buffer_pair.second.Run(data_use_buffer_pair.first.Pass());
 }
 
 }  // namespace android

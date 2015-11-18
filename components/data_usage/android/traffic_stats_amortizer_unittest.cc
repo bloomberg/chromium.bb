@@ -340,28 +340,61 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroScaleFactor) {
 TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroPreAmortizationBytes) {
   SkipFirstAmortizationRun();
 
-  // Both byte counts should stay 0, even though TrafficStats saw bytes.
+  // Both byte counts should stay 0, even though TrafficStats saw bytes, which
+  // should be reflected in the next amortization run instead.
   amortizer()->AmortizeDataUse(CreateDataUse(0, 0),
                                ExpectDataUseCallback(CreateDataUse(0, 0)));
+  // Add the TrafficStats byte counts for this and the next amortization run.
   amortizer()->AddTrafficStats(100, 1000);
   AdvanceTime(kTrafficStatsQueryDelay);
   EXPECT_EQ(1, data_use_callback_call_count());
 
-  // This time, only TX bytes are 0, so RX bytes should double, but TX bytes
-  // should stay 0.
-  amortizer()->AmortizeDataUse(CreateDataUse(0, 500),
-                               ExpectDataUseCallback(CreateDataUse(0, 1000)));
-  amortizer()->AddTrafficStats(100, 1000);
+  // Both byte counts should double, even though the TrafficStats byte counts
+  // actually updated during the previous amortization run.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 500),
+                               ExpectDataUseCallback(CreateDataUse(100, 1000)));
   AdvanceTime(kTrafficStatsQueryDelay);
   EXPECT_EQ(2, data_use_callback_call_count());
+}
 
-  // This time, only RX bytes are 0, so TX bytes should double, but RX bytes
-  // should stay 0.
-  amortizer()->AmortizeDataUse(CreateDataUse(50, 0),
-                               ExpectDataUseCallback(CreateDataUse(100, 0)));
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroTxPreAmortizationBytes) {
+  SkipFirstAmortizationRun();
+
+  // The count of transmitted bytes starts at 0, so it should stay 0, and be
+  // amortized in the next amortization run instead.
+  amortizer()->AmortizeDataUse(CreateDataUse(0, 500),
+                               ExpectDataUseCallback(CreateDataUse(0, 1000)));
+  // Add the TrafficStats byte counts for this and the next amortization run.
   amortizer()->AddTrafficStats(100, 1000);
   AdvanceTime(kTrafficStatsQueryDelay);
-  EXPECT_EQ(3, data_use_callback_call_count());
+  EXPECT_EQ(1, data_use_callback_call_count());
+
+  // The count of transmitted bytes should double, even though they actually
+  // updated during the previous amortization run.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 0),
+                               ExpectDataUseCallback(CreateDataUse(100, 0)));
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(2, data_use_callback_call_count());
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeWithZeroRxPreAmortizationBytes) {
+  SkipFirstAmortizationRun();
+
+  // The count of received bytes starts at 0, so it should stay 0, and be
+  // amortized in the next amortization run instead.
+  amortizer()->AmortizeDataUse(CreateDataUse(50, 0),
+                               ExpectDataUseCallback(CreateDataUse(100, 0)));
+  // Add the TrafficStats byte counts for this and the next amortization run.
+  amortizer()->AddTrafficStats(100, 1000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(1, data_use_callback_call_count());
+
+  // The count of received bytes should double, even though they actually
+  // updated during the previous amortization run.
+  amortizer()->AmortizeDataUse(CreateDataUse(0, 500),
+                               ExpectDataUseCallback(CreateDataUse(0, 1000)));
+  AdvanceTime(kTrafficStatsQueryDelay);
+  EXPECT_EQ(2, data_use_callback_call_count());
 }
 
 TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxDelay) {
@@ -375,7 +408,7 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxDelay) {
   // kSmallDelay is a delay that's shorter than the delay before TrafficStats
   // would be queried, where kMaxAmortizationDelay is a multiple of kSmallDelay.
   const base::TimeDelta kSmallDelay = kMaxAmortizationDelay / 10;
-  EXPECT_LT(kSmallDelay, kMaxAmortizationDelay);
+  EXPECT_LT(kSmallDelay, kTrafficStatsQueryDelay);
 
   // Simulate multiple cases of extra bytes being reported, each before
   // TrafficStats would be queried, until kMaxAmortizationDelay has elapsed.
