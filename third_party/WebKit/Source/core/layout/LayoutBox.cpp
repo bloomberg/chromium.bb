@@ -2483,6 +2483,13 @@ LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(SizeType heig
     return -1;
 }
 
+bool LayoutBox::stretchesToViewportInQuirksMode() const
+{
+    if (!isDocumentElement() && !isBody())
+        return false;
+    return style()->logicalHeight().isAuto() && !isFloatingOrOutOfFlowPositioned() && !isInline() && !flowThreadContainingBlock();
+}
+
 bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const
 {
     // If the writing mode of the containing block is orthogonal to ours, it means that we shouldn't

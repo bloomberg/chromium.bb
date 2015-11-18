@@ -621,10 +621,7 @@ public:
 
     void computeLogicalWidth(LogicalExtentComputedValues&) const;
 
-    bool stretchesToViewport() const
-    {
-        return document().inQuirksMode() && style()->logicalHeight().isAuto() && !isFloatingOrOutOfFlowPositioned() && (isDocumentElement() || isBody()) && !isInline();
-    }
+    bool stretchesToViewport() const { return document().inQuirksMode() && stretchesToViewportInQuirksMode(); }
 
     virtual LayoutSize intrinsicSize() const { return LayoutSize(); }
     LayoutUnit intrinsicLogicalWidth() const { return style()->isHorizontalWritingMode() ? intrinsicSize().width() : intrinsicSize().height(); }
@@ -900,6 +897,7 @@ private:
     // Returns true if we queued up a paint invalidation.
     bool invalidatePaintOfLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
 
+    bool stretchesToViewportInQuirksMode() const;
     bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 
     LayoutUnit containingBlockLogicalWidthForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
