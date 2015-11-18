@@ -1825,6 +1825,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePaintOrder(CSSParserTokenRange& r
     return paintOrderList.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeNoneOrURI(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    String url = consumeUrl(range);
+    if (url.isNull())
+        return nullptr;
+    return CSSURIValue::create(url);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1981,6 +1992,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumePaint(m_range, m_context);
     case CSSPropertyPaintOrder:
         return consumePaintOrder(m_range);
+    case CSSPropertyMarkerStart:
+    case CSSPropertyMarkerMid:
+    case CSSPropertyMarkerEnd:
+        return consumeNoneOrURI(m_range);
     default:
         return nullptr;
     }
@@ -2471,6 +2486,16 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(webkitBorderAfterShorthand(), important);
     case CSSPropertyWebkitTextStroke:
         return consumeShorthandGreedily(webkitTextStrokeShorthand(), important);
+    case CSSPropertyMarker: {
+        ImplicitScope implicitScope(this);
+        RefPtrWillBeRawPtr<CSSValue> marker = parseSingleValue(CSSPropertyMarkerStart);
+        if (!marker || !m_range.atEnd())
+            return false;
+        addProperty(CSSPropertyMarkerStart, marker, important);
+        addProperty(CSSPropertyMarkerMid, marker, important);
+        addProperty(CSSPropertyMarkerEnd, marker.release(), important);
+        return true;
+    }
     default:
         m_currentShorthand = oldShorthand;
         return false;

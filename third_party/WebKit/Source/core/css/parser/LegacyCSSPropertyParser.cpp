@@ -1173,6 +1173,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
     case CSSPropertyPaintOrder:
+    case CSSPropertyMarker:
+    case CSSPropertyMarkerStart:
+    case CSSPropertyMarkerMid:
+    case CSSPropertyMarkerEnd:
         validPrimitive = false;
         break;
 
@@ -5474,9 +5478,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyClipPath:
     case CSSPropertyFilter:
-    case CSSPropertyMarkerStart:
-    case CSSPropertyMarkerMid:
-    case CSSPropertyMarkerEnd:
     case CSSPropertyMask:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -5520,21 +5521,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             parsedValue = parseSVGStrokeDasharray();
         break;
 
-    /* shorthand properties */
-    case CSSPropertyMarker: {
-        ShorthandScope scope(this, propId);
-        CSSPropertyParser::ImplicitScope implicitScope(this);
-        if (!parseValue(CSSPropertyMarkerStart, important))
-            return false;
-        if (m_valueList->current()) {
-            rollbackLastProperties(1);
-            return false;
-        }
-        CSSValue* value = m_parsedProperties.last().value();
-        addProperty(CSSPropertyMarkerMid, value, important);
-        addProperty(CSSPropertyMarkerEnd, value, important);
-        return true;
-    }
     default:
         // If you crash here, it's because you added a css property and are not handling it
         // in either this switch statement or the one in CSSPropertyParser::parseValue
