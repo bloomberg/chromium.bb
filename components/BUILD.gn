@@ -53,6 +53,7 @@ group("all_components") {
     "//components/pref_registry",
     "//components/omnibox/browser",
     "//components/infobars/core",
+    "//components/signin/core/browser",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/version_ui",
@@ -133,7 +134,6 @@ group("all_components") {
       "//components/safe_browsing_db",
       "//components/search_provider_logos",
       "//components/security_interstitials/core",
-      "//components/signin/core/browser",
       "//components/ssl_config",
       "//components/startup_metric_utils/common",
       "//components/startup_metric_utils/browser",
@@ -228,6 +228,7 @@ group("all_components") {
       "//components/dom_distiller/ios",
       "//components/history/ios/browser",
       "//components/keyed_service/ios",
+      "//components/signin/ios/browser",
       "//components/translate/ios/browser",
       "//components/webp_transcode",
     ]
@@ -356,6 +357,7 @@ test("components_unittests") {
     "//components/search_engines:unit_tests",
     "//components/undo:unit_tests",
     "//components/leveldb_proto:unit_tests",
+    "//components/signin/core/browser:unit_tests",
     "//components/suggestions:unit_tests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
@@ -429,7 +431,6 @@ test("components_unittests") {
       "//components/search_engines:unit_tests",
       "//components/search:unit_tests",
       "//components/search_provider_logos:unit_tests",
-      "//components/signin/core/browser:unit_tests",
       "//components/ssl_config:unit_tests",
       "//components/sync_bookmarks:unit_tests",
       "//components/sync_driver:unit_tests",
@@ -508,6 +509,7 @@ test("components_unittests") {
     }
   } else {
     deps += [
+      "//components/signin/ios/browser:unit_tests",
       "//components/translate/ios/browser:unit_tests",
       "//components/webp_transcode:unit_tests",
     ]

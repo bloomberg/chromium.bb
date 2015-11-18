@@ -126,6 +126,7 @@
     }, {  # OS==ios
       'targets': [
         {
+          # GN version: //components/sessions
           'target_name': 'sessions_ios',
           'type': 'static_library',
           'dependencies': [

@@ -17,8 +17,8 @@ source_set("browser") {
   ]
 
   deps = [
+    "//components/signin/core/browser",
     "//ios/web",
-    "//signin/core/browser",
   ]
 }
 
