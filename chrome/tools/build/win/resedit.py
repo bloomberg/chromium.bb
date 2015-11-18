@@ -45,7 +45,7 @@ def _ResIdToString(res_id):
   return res_id
 
 
-class _ResourceEditor(object):
+class ResourceEditor(object):
   """A utility class to make it easy to extract and manipulate resources in a
   Windows binary."""
 
@@ -157,7 +157,8 @@ class _ResourceEditor(object):
                        res_type_str, res_lang, res_name_str, dest_file)
 
           # Extract each resource to a file in the output dir.
-          os.makedirs(dest_dir)
+          if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
           self.ExtractResource(res_type, res_lang, res_name, dest_file)
 
   def ExtractResource(self, res_type, res_lang, res_name, dest_file):
@@ -209,7 +210,7 @@ class _ResourceEditor(object):
       res_name: the name of the resource, e.g. "SETUP.EXE".
       file_path: path to the file containing the new resource data.
     """
-    _LOGGER.info('Writing resource "%s:%s" from file.',
+    _LOGGER.info('Writing resource "%s:%s" from file %s.',
         res_type, res_name, file_path)
 
     with open(file_path, 'rb') as f:
@@ -230,9 +231,11 @@ class _ResourceEditor(object):
       update_handle = self._update_handle
       self._update_handle = None
       win32api.EndUpdateResource(update_handle, False)
-
-    _LOGGER.info('Writing edited file to "%s".', self._output_file)
-    shutil.copyfile(self._temp_file, self._output_file)
+      _LOGGER.info('Writing edited file to "%s".', self._output_file)
+      shutil.copyfile(self._temp_file, self._output_file)
+    else:
+      _LOGGER.info('No edits made. Copying input to "%s".', self._output_file)
+      shutil.copyfile(self._input_file, self._output_file)
 
 
 _USAGE = """\
@@ -298,7 +301,7 @@ def main(options, args):
     logging.basicConfig(level=logging.INFO)
 
   # Create the editor for our input file.
-  editor = _ResourceEditor(args[0], options.output_file)
+  editor = ResourceEditor(args[0], options.output_file)
 
   if options.extract_all:
     editor.ExtractAllToDir(options.extract_all)
