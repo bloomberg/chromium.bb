@@ -111,7 +111,7 @@ struct gl_surface_state {
 
 	GLuint textures[3];
 	int num_textures;
-	int needs_full_upload;
+	bool needs_full_upload;
 	pixman_region32_t texture_damage;
 
 	/* These are only used by SHM surfaces to detect when we need
@@ -1253,7 +1253,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 done:
 	pixman_region32_fini(&gs->texture_damage);
 	pixman_region32_init(&gs->texture_damage);
-	gs->needs_full_upload = 0;
+	gs->needs_full_upload = false;
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
 }
@@ -1331,7 +1331,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->gl_format = gl_format;
 		gs->gl_pixel_type = gl_pixel_type;
 		gs->buffer_type = BUFFER_TYPE_SHM;
-		gs->needs_full_upload = 1;
+		gs->needs_full_upload = true;
 		gs->y_inverted = 1;
 
 		gs->surface = es;
