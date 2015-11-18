@@ -95,6 +95,23 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/android_webview_test_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/chrome_public_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/content_shell_apk/gen"/>
+    <classpathentry kind="src" path="out/Debug/gen/base/base_android_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/base/base_multidex_gen__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/base/base_native_libraries_gen__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/android/chrome_android_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/android/chrome_public_apk__native_libraries_java__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/android/resource_id_javagen__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/content_setting_javagen__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/content_settings_type_javagen__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/chrome/page_info_connection_type_javagen__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/bookmarks/common/android/bookmark_type_javagen__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/dom_distiller/android/dom_distiller_core_font_family_javagen__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/dom_distiller/android/dom_distiller_core_theme_javagen__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/enhanced_bookmarks/enhanced_bookmarks_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/offline_pages/offline_pages_enums_java__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/components/omnibox/browser/autocomplete_match_type_javagen__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/content/browser/accessibility/content_browser_accessibility_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/content/public/android/content_public_android_java_enums_srcjar__generate_enum/enums"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/activity_type_ids_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/android_resource_type_java"/>
@@ -148,6 +165,10 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/web_input_event_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_text_input_type"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/window_open_disposition_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/media/base/android/media_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/net/android/net_android_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/net/android/net_errors_java__apply_gcc/java_cpp_template"/>
+    <classpathentry kind="src" path="out/Debug/gen/sync/android/java_enums__generate_enum/enums"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/base_native_libraries_gen"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/chrome_version_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/dom_distiller_core_font_family_java"/>
@@ -155,6 +176,11 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/templates/load_states_list"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/net_errors_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/resource_id_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/third_party/WebKit/public/blink_headers_java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/ui/accessibility/ax_enumerations_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/ui/android/java_enums_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/ui/touch_selection/ui_touch_handle_orientation_srcjar__generate_enum/enums"/>
+    <classpathentry kind="src" path="out/Debug/gen/ui/touch_selection/ui_touch_selection_enums_srcjar__generate_enum/enums"/>
     <classpathentry kind="src" path="out/Debug/java_mojo/device_battery_mojo_bindings/src"/>
     <classpathentry kind="src" path="out/Debug/java_mojo/mojo_public_test_interfaces_mojom/src"/>
     <classpathentry kind="src" path="out/Debug/java_proto/cacheinvalidation_proto_java/src"/>
