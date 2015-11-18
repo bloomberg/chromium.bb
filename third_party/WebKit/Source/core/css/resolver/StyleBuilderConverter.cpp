@@ -526,7 +526,7 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const Named
         }
         {
             NamedGridLinesMap::AddResult endResult = namedGridLines.add(namedGridAreaEntry.key + "-end", Vector<size_t>());
-            endResult.storedValue->value.append(areaSpan.resolvedFinalPosition.toInt() + 1);
+            endResult.storedValue->value.append(areaSpan.resolvedFinalPosition.toInt());
             std::sort(endResult.storedValue->value.begin(), endResult.storedValue->value.end());
         }
     }

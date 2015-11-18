@@ -209,7 +209,7 @@ public:
         const size_t endOfVaryingTrackIndex = (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
         for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
             if (checkEmptyCells(rowSpan, columnSpan)) {
-                OwnPtr<GridCoordinate> result = adoptPtr(new GridCoordinate(GridSpan(m_rowIndex, m_rowIndex + rowSpan - 1), GridSpan(m_columnIndex, m_columnIndex + columnSpan - 1)));
+                OwnPtr<GridCoordinate> result = adoptPtr(new GridCoordinate(GridSpan(m_rowIndex, m_rowIndex + rowSpan), GridSpan(m_columnIndex, m_columnIndex + columnSpan)));
                 // Advance the iterator to avoid an infinite loop where we would return the same grid area over and over.
                 ++varyingTrackIndex;
                 return result.release();
@@ -536,7 +536,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     // 4. Grow all Grid tracks having a fraction as the MaxTrackSizingFunction.
     double flexFraction = 0;
     if (hasDefiniteFreeSpace) {
-        flexFraction = findFlexFactorUnitSize(tracks, GridSpan(0, tracks.size() - 1), direction, initialFreeSpace);
+        flexFraction = findFlexFactorUnitSize(tracks, GridSpan(0, tracks.size()), direction, initialFreeSpace);
     } else {
         for (const auto& trackIndex : flexibleSizedTracksIndex)
             flexFraction = std::max(flexFraction, normalizedFlexFraction(tracks[trackIndex], gridTrackSize(direction, trackIndex).maxTrackBreadth().flex()));
@@ -784,10 +784,7 @@ private:
 
 bool LayoutGrid::spanningItemCrossesFlexibleSizedTracks(const GridSpan& span, GridTrackSizingDirection direction) const
 {
-    const GridResolvedPosition initialTrackPosition = span.resolvedInitialPosition;
-    const GridResolvedPosition finalTrackPosition = span.resolvedFinalPosition;
-
-    for (GridResolvedPosition trackPosition = initialTrackPosition; trackPosition <= finalTrackPosition; ++trackPosition) {
+    for (const auto& trackPosition : span) {
         const GridTrackSize& trackSize = gridTrackSize(direction, trackPosition.toInt());
         if (trackSize.minTrackBreadth().isFlex() || trackSize.maxTrackBreadth().isFlex())
             return true;
@@ -1091,18 +1088,18 @@ bool LayoutGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection dire
 }
 #endif
 
-void LayoutGrid::ensureGridSize(size_t maximumRowIndex, size_t maximumColumnIndex)
+void LayoutGrid::ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize)
 {
     const size_t oldRowSize = gridRowCount();
-    if (maximumRowIndex >= oldRowSize) {
-        m_grid.grow(maximumRowIndex + 1);
+    if (maximumRowSize > oldRowSize) {
+        m_grid.grow(maximumRowSize);
         for (size_t row = oldRowSize; row < gridRowCount(); ++row)
             m_grid[row].grow(gridColumnCount());
     }
 
-    if (maximumColumnIndex >= gridColumnCount()) {
+    if (maximumColumnSize > gridColumnCount()) {
         for (size_t row = 0; row < gridRowCount(); ++row)
-            m_grid[row].grow(maximumColumnIndex + 1);
+            m_grid[row].grow(maximumColumnSize);
     }
 }
 
@@ -1181,19 +1178,19 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
 
         // |positions| is 0 if we need to run the auto-placement algorithm.
         if (rowPositions) {
-            maximumRowIndex = std::max<size_t>(maximumRowIndex, rowPositions->resolvedFinalPosition.next().toInt());
+            maximumRowIndex = std::max<size_t>(maximumRowIndex, rowPositions->resolvedFinalPosition.toInt());
         } else {
             // Grow the grid for items with a definite row span, getting the largest such span.
             GridSpan positions = GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(*style(), *child, ForRows, GridResolvedPosition(0));
-            maximumRowIndex = std::max<size_t>(maximumRowIndex, positions.resolvedFinalPosition.next().toInt());
+            maximumRowIndex = std::max<size_t>(maximumRowIndex, positions.resolvedFinalPosition.toInt());
         }
 
         if (columnPositions) {
-            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, columnPositions->resolvedFinalPosition.next().toInt());
+            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, columnPositions->resolvedFinalPosition.toInt());
         } else {
             // Grow the grid for items with a definite column span, getting the largest such span.
             GridSpan positions = GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(*style(), *child, ForColumns, GridResolvedPosition(0));
-            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, positions.resolvedFinalPosition.next().toInt());
+            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, positions.resolvedFinalPosition.toInt());
         }
     }
 
@@ -1286,7 +1283,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(LayoutBox& gridItem, std::pair<siz
                 // Check that it fits in the minor axis direction, as we shouldn't grow in that direction here (it was already managed in populateExplicitGridAndOrderIterator()).
                 GridResolvedPosition minorAxisFinalPositionIndex = autoPlacementMinorAxisDirection() == ForColumns ? emptyGridArea->columns.resolvedFinalPosition : emptyGridArea->rows.resolvedFinalPosition;
                 const size_t endOfMinorAxis = autoPlacementMinorAxisDirection() == ForColumns ? gridColumnCount() : gridRowCount();
-                if (minorAxisFinalPositionIndex.toInt() < endOfMinorAxis)
+                if (minorAxisFinalPositionIndex.toInt() <= endOfMinorAxis)
                     break;
 
                 // Discard empty grid area as it does not fit in the minor axis direction.
@@ -1481,12 +1478,12 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         || (positions->resolvedInitialPosition.toInt() > lastTrackIndex);
     bool endIsAuto = endPosition.isAuto()
         || (endPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridResolvedPosition::finalPositionSide(direction)))
-        || (positions->resolvedFinalPosition.toInt() > lastTrackIndex);
+        || (positions->resolvedFinalPosition.prev().toInt() > lastTrackIndex);
 
     GridResolvedPosition firstPosition = GridResolvedPosition(0);
     GridResolvedPosition initialPosition = startIsAuto ? firstPosition : positions->resolvedInitialPosition;
     GridResolvedPosition lastPosition = GridResolvedPosition(lastTrackIndex);
-    GridResolvedPosition finalPosition = endIsAuto ? lastPosition : positions->resolvedFinalPosition;
+    GridResolvedPosition finalPosition = endIsAuto ? lastPosition : positions->resolvedFinalPosition.prev();
 
     // Positioned children do not grow the grid, so we need to clamp the positions to avoid ending up outside of it.
     initialPosition = std::min<GridResolvedPosition>(initialPosition, lastPosition);
@@ -1551,9 +1548,9 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChildIncludingAlignmentOffsets(const La
     const GridSpan& span = cachedGridSpan(child, direction);
     const Vector<LayoutUnit>& linePositions = (direction == ForColumns) ? m_columnPositions : m_rowPositions;
     LayoutUnit initialTrackPosition = linePositions[span.resolvedInitialPosition.toInt()];
-    LayoutUnit finalTrackPosition = linePositions[span.resolvedFinalPosition.toInt()];
+    LayoutUnit finalTrackPosition = linePositions[span.resolvedFinalPosition.prev().toInt()];
     // Track Positions vector stores the 'start' grid line of each track, so w have to add last track's baseSize.
-    return finalTrackPosition - initialTrackPosition + tracks[span.resolvedFinalPosition.toInt()].baseSize();
+    return finalTrackPosition - initialTrackPosition + tracks[span.resolvedFinalPosition.prev().toInt()].baseSize();
 }
 
 void LayoutGrid::populateGridPositions(GridSizingData& sizingData)
@@ -1871,7 +1868,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
         return startPosition;
     case GridAxisEnd:
     case GridAxisCenter: {
-        size_t childEndLine = rowsSpan.resolvedFinalPosition.next().toInt();
+        size_t childEndLine = rowsSpan.resolvedFinalPosition.toInt();
         LayoutUnit endOfRow = m_rowPositions[childEndLine];
         // m_rowPositions include gutters so we need to substract them to get the actual end position for a given
         // row (this does not have to be done for the last track as there are no more m_rowPositions after it)
@@ -1903,7 +1900,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
         return startPosition;
     case GridAxisEnd:
     case GridAxisCenter: {
-        size_t childEndLine = columnsSpan.resolvedFinalPosition.next().toInt();
+        size_t childEndLine = columnsSpan.resolvedFinalPosition.toInt();
         LayoutUnit endOfColumn = m_columnPositions[childEndLine];
         // m_columnPositions include gutters so we need to substract them to get the actual end position for a given
         // column (this does not have to be done for the last track as there are no more m_columnPositions after it)

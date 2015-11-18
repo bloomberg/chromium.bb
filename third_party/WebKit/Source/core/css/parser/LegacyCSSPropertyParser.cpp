@@ -2970,20 +2970,20 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
 
         // We handle several grid areas with the same name at once to simplify the validation code.
         size_t lookAheadCol;
-        for (lookAheadCol = currentCol; lookAheadCol < (columnCount - 1); ++lookAheadCol) {
-            if (columnNames[lookAheadCol + 1] != gridAreaName)
+        for (lookAheadCol = currentCol + 1; lookAheadCol < columnCount; ++lookAheadCol) {
+            if (columnNames[lookAheadCol] != gridAreaName)
                 break;
         }
 
         NamedGridAreaMap::iterator gridAreaIt = gridAreaMap.find(gridAreaName);
         if (gridAreaIt == gridAreaMap.end()) {
-            gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan(rowCount, rowCount), GridSpan(currentCol, lookAheadCol)));
+            gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan(rowCount, rowCount + 1), GridSpan(currentCol, lookAheadCol)));
         } else {
             GridCoordinate& gridCoordinate = gridAreaIt->value;
 
             // The following checks test that the grid area is a single filled-in rectangle.
             // 1. The new row is adjacent to the previously parsed row.
-            if (rowCount != gridCoordinate.rows.resolvedFinalPosition.next().toInt())
+            if (rowCount != gridCoordinate.rows.resolvedFinalPosition.toInt())
                 return false;
 
             // 2. The new area starts at the same position as the previously parsed area.
@@ -2996,7 +2996,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
 
             ++gridCoordinate.rows.resolvedFinalPosition;
         }
-        currentCol = lookAheadCol;
+        currentCol = lookAheadCol - 1;
     }
 
     m_valueList->next();

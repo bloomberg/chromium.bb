@@ -26,24 +26,11 @@ enum GridTrackSizingDirection {
     ForRows
 };
 
-// This class represents an index into one of the dimensions of the grid array.
+// This class represents a line index into one of the dimensions of the grid array.
 // Wraps a size_t integer just for the purpose of knowing what we manipulate in the grid code.
 class GridResolvedPosition {
     DISALLOW_NEW();
 public:
-    static GridResolvedPosition adjustGridPositionForAfterEndSide(size_t resolvedPosition)
-    {
-        return resolvedPosition ? GridResolvedPosition(resolvedPosition - 1) : GridResolvedPosition(0);
-    }
-
-    static GridResolvedPosition adjustGridPositionForSide(size_t resolvedPosition, GridPositionSide side)
-    {
-        // An item finishing on the N-th line belongs to the N-1-th cell.
-        if (side == ColumnEndSide || side == RowEndSide)
-            return adjustGridPositionForAfterEndSide(resolvedPosition);
-
-        return GridResolvedPosition(resolvedPosition);
-    }
 
     static bool isValidNamedLineOrArea(const String& lineName, const ComputedStyle&, GridPositionSide);
     static GridPositionSide initialPositionSide(GridTrackSizingDirection);
@@ -59,14 +46,6 @@ public:
     GridResolvedPosition(size_t position)
         : m_integerPosition(position)
     {
-    }
-
-    GridResolvedPosition(const GridPosition& position, GridPositionSide side)
-    {
-        ASSERT(position.integerPosition());
-        size_t integerPosition = position.integerPosition() - 1;
-
-        m_integerPosition = adjustGridPositionForSide(integerPosition, side).toInt();
     }
 
     GridResolvedPosition& operator*()
@@ -118,6 +97,11 @@ public:
     GridResolvedPosition next() const
     {
         return GridResolvedPosition(m_integerPosition + 1);
+    }
+
+    GridResolvedPosition prev() const
+    {
+        return GridResolvedPosition(m_integerPosition > 0 ? m_integerPosition - 1 : 0);
     }
 
     static size_t explicitGridColumnCount(const ComputedStyle&);

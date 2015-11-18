@@ -44,8 +44,8 @@ namespace blink {
 const size_t kGridMaxTracks = 1000000;
 
 // A span in a single direction (either rows or columns). Note that |resolvedInitialPosition|
-// and |resolvedFinalPosition| are grid areas' indexes, NOT grid lines'. Iterating over the
-// span should include both |resolvedInitialPosition| and |resolvedFinalPosition| to be correct.
+// and |resolvedFinalPosition| are grid lines' indexes.
+// Iterating over the span shouldn't include |resolvedFinalPosition| to be correct.
 struct GridSpan {
     USING_FAST_MALLOC(GridSpan);
 public:
@@ -56,10 +56,11 @@ public:
 
     static PassOwnPtr<GridSpan> createWithSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
     {
-        // 'span 1' is contained inside a single grid track regardless of the direction.
-        // That's why the CSS span value is one more than the offset we apply.
-        size_t positionOffset = position.spanPosition() - 1;
+        size_t positionOffset = position.spanPosition();
         if (side == ColumnStartSide || side == RowStartSide) {
+            if (resolvedOppositePosition == 0)
+                return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition.next());
+
             GridResolvedPosition initialResolvedPosition = GridResolvedPosition(std::max<int>(0, resolvedOppositePosition.toInt() - positionOffset));
             return GridSpan::create(initialResolvedPosition, resolvedOppositePosition);
         }
@@ -77,21 +78,17 @@ public:
 
     static PassOwnPtr<GridSpan> createWithInitialNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
     {
-        // The grid line inequality needs to be strict (which doesn't match the after / end case) because |resolvedOppositePosition|
-        // is already converted to an index in our grid representation (ie one was removed from the grid line to account for the side).
+        if (resolvedOppositePosition == 0)
+            return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition.next());
+
         size_t firstLineBeforeOppositePositionIndex = 0;
         const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
-        if (firstLineBeforeOppositePosition != gridLines.end()) {
-            if (*firstLineBeforeOppositePosition > resolvedOppositePosition.toInt() && firstLineBeforeOppositePosition != gridLines.begin())
-                --firstLineBeforeOppositePosition;
-
+        if (firstLineBeforeOppositePosition != gridLines.end())
             firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
-        }
-
-        size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
+        size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition());
         GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition(gridLines[gridLineIndex]);
-        if (resolvedGridLinePosition > resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition;
+        if (resolvedGridLinePosition >= resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition.prev();
         return GridSpan::create(resolvedGridLinePosition, resolvedOppositePosition);
     }
 
@@ -101,11 +98,11 @@ public:
         const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
         if (firstLineAfterOppositePosition != gridLines.end())
             firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
-
         size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
-        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
-        if (resolvedGridLinePosition < resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition;
+        GridResolvedPosition resolvedGridLinePosition = gridLines[gridLineIndex];
+        if (resolvedGridLinePosition <= resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition.next();
+
         return GridSpan::create(resolvedOppositePosition, resolvedGridLinePosition);
     }
 
@@ -113,7 +110,7 @@ public:
         : resolvedInitialPosition(std::min(resolvedInitialPosition.toInt(), kGridMaxTracks - 1))
         , resolvedFinalPosition(std::min(resolvedFinalPosition.toInt(), kGridMaxTracks))
     {
-        ASSERT(resolvedInitialPosition <= resolvedFinalPosition);
+        ASSERT(resolvedInitialPosition < resolvedFinalPosition);
     }
 
     bool operator==(const GridSpan& o) const
@@ -123,7 +120,7 @@ public:
 
     size_t integerSpan() const
     {
-        return resolvedFinalPosition.toInt() - resolvedInitialPosition.toInt() + 1;
+        return resolvedFinalPosition.toInt() - resolvedInitialPosition.toInt();
     }
 
     GridResolvedPosition resolvedInitialPosition;
@@ -138,7 +135,7 @@ public:
 
     iterator end() const
     {
-        return resolvedFinalPosition.next();
+        return resolvedFinalPosition;
     }
 };
 
@@ -148,8 +145,8 @@ struct GridCoordinate {
 public:
     // HashMap requires a default constuctor.
     GridCoordinate()
-        : columns(0, 0)
-        , rows(0, 0)
+        : columns(0, 1)
+        , rows(0, 1)
     {
     }
 
