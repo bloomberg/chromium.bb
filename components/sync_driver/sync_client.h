@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/util/extensions_activity.h"
@@ -53,7 +54,6 @@ class SyncSessionsClient;
 
 namespace sync_driver {
 
-class SyncApiComponentFactory;
 class SyncService;
 
 typedef base::Callback<void(base::Time, base::Time)> ClearBrowsingDataCallback;
@@ -69,9 +69,7 @@ class SyncClient {
   SyncClient();
   virtual ~SyncClient();
 
-  // Initializes the sync client with the specified sync service. This will also
-  // register data type controllers with |service| (via
-  // SyncApiComponentFactory::RegisterDataTypes).
+  // Initializes the sync client with the specified sync service.
   virtual void Initialize(SyncService* service) = 0;
 
   // Returns the current SyncService instance.
@@ -89,6 +87,11 @@ class SyncClient {
   // Returns a callback that will be invoked when the sync service wishes to
   // have browsing data cleared.
   virtual ClearBrowsingDataCallback GetClearBrowsingDataCallback() = 0;
+
+  // Returns a callback that will register the types specific to the current
+  // platform.
+  virtual sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
+  GetRegisterPlatformTypesCallback() = 0;
 
   // Returns a callback that will be invoked when password sync state has
   // potentially been changed.

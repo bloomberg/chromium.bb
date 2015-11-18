@@ -35,7 +35,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
@@ -106,11 +105,12 @@ using testing::_;
 class TestChromeSyncClient : public ChromeSyncClient {
  public:
   TestChromeSyncClient(
-      Profile* profile,
       scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory,
+      Profile* profile,
       sync_driver::ClearBrowsingDataCallback callback)
-      : ChromeSyncClient(profile, component_factory.Pass()),
-        callback_(callback) {}
+      : ChromeSyncClient(profile),
+        callback_(callback),
+        component_factory_(component_factory.Pass()) {}
   ~TestChromeSyncClient() override {}
 
  private:
@@ -119,8 +119,12 @@ class TestChromeSyncClient : public ChromeSyncClient {
       override {
     return callback_;
   }
+  sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
+    return component_factory_.get();
+  }
 
   sync_driver::ClearBrowsingDataCallback callback_;
+  scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
 };
 
 class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
@@ -255,7 +259,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
  protected:
   ProfileSyncServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
+        profile_(NULL),
+        components_factory_(NULL) {}
   ~ProfileSyncServiceTest() override {}
 
   void SetUp() override {
@@ -304,7 +310,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         new SyncApiComponentFactoryMock());
     components_factory_ = components_factory.get();
     scoped_ptr<ChromeSyncClient> sync_client(new TestChromeSyncClient(
-        profile_, components_factory.Pass(),
+        components_factory.Pass(), profile_,
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this))));
     service_.reset(new ProfileSyncService(
@@ -391,14 +397,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncBackendHostCreation(int times) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewSyncBackendHostMock());
   }
 
   void ExpectSyncBackendHostCreationCollectDeleteDir(
       int times, std::vector<bool> *delete_dir_param) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(times)
         .WillRepeatedly(
             ReturnNewMockHostCollectDeleteDirParam(delete_dir_param));
@@ -406,13 +412,13 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   void ExpectSyncBackendHostCreationCaptureClearServerData(
       syncer::SyncManager::ClearServerDataCallback* captured_callback) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(1)
         .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
   }
 
   void PrepareDelayedInitSyncBackendHost() {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .WillOnce(ReturnNewSyncBackendHostNoReturn());
   }
 
