@@ -166,13 +166,21 @@ function write_target_definition {
   echo "      'cflags': [ '-m$4', ]," >> "$2"
   echo "      'xcode_settings': { 'OTHER_CFLAGS': [ '-m$4' ] }," >> "$2"
   fi
+  if [[ -z $DISABLE_AVX && $4 == avx ]]; then
+  echo "      'msvs_settings': {" >> "$2"
+  echo "        'VCCLCompilerTool': {" >> "$2"
+  echo "          'EnableEnhancedInstructionSet': '4', # /arch:AVX" >> "$2"
+  echo "        }," >> "$2"
+  echo "      }," >> "$2"
+  fi
   if [[ -z $DISABLE_AVX && $4 == avx2 ]]; then
   echo "      'msvs_settings': {" >> "$2"
   echo "        'VCCLCompilerTool': {" >> "$2"
   echo "          'EnableEnhancedInstructionSet': '5', # /arch:AVX2" >> "$2"
   echo "        }," >> "$2"
   echo "      }," >> "$2"
-  elif [[ $4 == ssse3 || $4 == sse4.1 ]]; then
+  fi
+  if [[ $4 == ssse3 || $4 == sse4.1 ]]; then
   echo "      'conditions': [" >> "$2"
   echo "        ['OS==\"win\" and clang==1', {" >> "$2"
   echo "          # cl.exe's /arch flag doesn't have a setting for SSSE3/4, and cl.exe" >> "$2"
@@ -232,9 +240,7 @@ function write_intrinsics_gypi {
     write_target_definition sse4_1_sources[@] "$2" libvpx_intrinsics_sse4_1 sse4.1
   fi
   if [[ -z $DISABLE_AVX && 0 -ne ${#avx_sources} ]]; then
-    #write_target_definition avx_sources[@] "$2" libvpx_intrinsics_avx avx
-    echo "ERROR: Uncomment avx sections in libvpx.gyp"
-    exit 1
+    write_target_definition avx_sources[@] "$2" libvpx_intrinsics_avx avx
   fi
   if [[ -z $DISABLE_AVX && 0 -ne ${#avx2_sources} ]]; then
     write_target_definition avx2_sources[@] "$2" libvpx_intrinsics_avx2 avx2

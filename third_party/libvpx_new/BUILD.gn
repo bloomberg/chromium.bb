@@ -156,6 +156,23 @@ static_library("libvpx_intrinsics_sse4_1") {
   }
 }
 
+static_library("libvpx_intrinsics_avx") {
+  configs += [ ":libvpx_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":libvpx_warnings" ]
+  if (is_win) {
+    cflags = [ "/arch:AVX" ]
+  } else {
+    cflags = [ "-mavx" ]
+  }
+  if (current_cpu == "x86") {
+    sources = libvpx_srcs_x86_avx
+  } else if (current_cpu == "x64") {
+    sources = libvpx_srcs_x86_64_avx
+  }
+}
+
 static_library("libvpx_intrinsics_avx2") {
   configs += [ ":libvpx_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -265,6 +282,7 @@ static_library("libvpx_new") {
       ":libvpx_intrinsics_sse2",
       ":libvpx_intrinsics_ssse3",
       ":libvpx_intrinsics_sse4_1",
+      ":libvpx_intrinsics_avx",
       ":libvpx_intrinsics_avx2",
     ]
   }

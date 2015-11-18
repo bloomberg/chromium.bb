@@ -420,7 +420,7 @@ libvpx_srcs_x86_ssse3 = [
 ]
 libvpx_srcs_x86_sse4_1 =
     [ "//third_party/libvpx_new/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
-libvpx_srcs_x86_avx = []
+libvpx_srcs_x86_avx = [ "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
 libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx_new/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
@@ -856,7 +856,7 @@ libvpx_srcs_x86_64_ssse3 = [
 ]
 libvpx_srcs_x86_64_sse4_1 =
     [ "//third_party/libvpx_new/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
-libvpx_srcs_x86_64_avx = []
+libvpx_srcs_x86_64_avx = [ "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
 libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx_new/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx_new/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",

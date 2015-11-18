@@ -51,7 +51,8 @@ int vp9_denoiser_filter_sse2(const uint8_t *sig, int sig_stride, const uint8_t *
 #define vp9_denoiser_filter vp9_denoiser_filter_sse2
 
 int vp9_diamond_search_sad_c(const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv);
-#define vp9_diamond_search_sad vp9_diamond_search_sad_c
+int vp9_diamond_search_sad_avx(const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv);
+RTCD_EXTERN int (*vp9_diamond_search_sad)(const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv);
 
 void vp9_fdct8x8_quant_c(const int16_t *input, int stride, tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
 void vp9_fdct8x8_quant_sse2(const int16_t *input, int stride, tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
@@ -172,6 +173,8 @@ static void setup_rtcd_internal(void)
 
     vp9_block_error = vp9_block_error_sse2;
     if (flags & HAS_AVX2) vp9_block_error = vp9_block_error_avx2;
+    vp9_diamond_search_sad = vp9_diamond_search_sad_c;
+    if (flags & HAS_AVX) vp9_diamond_search_sad = vp9_diamond_search_sad_avx;
     vp9_fdct8x8_quant = vp9_fdct8x8_quant_sse2;
     if (flags & HAS_SSSE3) vp9_fdct8x8_quant = vp9_fdct8x8_quant_ssse3;
     vp9_full_search_sad = vp9_full_search_sad_c;
