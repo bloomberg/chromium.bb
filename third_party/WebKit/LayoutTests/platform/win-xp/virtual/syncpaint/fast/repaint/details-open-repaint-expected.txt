@@ -16,6 +16,9 @@
         "LayoutBlockFlow DIV id='details-content'",
         "LayoutTextControl INPUT",
         "LayoutBlockFlow DIV id='inner-editor'",
+        "HorizontalScrollbar",
+        "VerticalScrollbar",
+        "LayoutBlockFlow DIV id='inner-editor'",
         "LayoutText #text",
         "LayoutText #text"
       ]

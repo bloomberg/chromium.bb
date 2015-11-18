@@ -242,19 +242,6 @@ crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
 
-crbug.com/529938 [ XP ] fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/details-open-repaint.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/text-match-document-change.html [ NeedsRebaseline ]
-crbug.com/529938 [ XP ] virtual/syncpaint/fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
-
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
