@@ -345,14 +345,19 @@ list > .drag-above {
   -webkit-appearance: none;
   -webkit-padding-end: 11px;
   -webkit-padding-start: 0;
-  background: transparent
-      url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg)
-      no-repeat right center;
+  background: transparent no-repeat right center;
   border: 0;
   font: inherit;
   font-weight: bold;
   padding-bottom: 0;
   padding-top: 0;
+}
+
+[i18n-processed] #folders-button,
+[i18n-processed] #organize-button,
+[i18n-processed] .splitter button {
+  background-image:
+      url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg);
 }
 
 #folders-button {
