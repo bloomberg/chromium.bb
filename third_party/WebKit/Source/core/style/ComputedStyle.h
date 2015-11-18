@@ -664,7 +664,8 @@ public:
 
     bool breakWords() const
     {
-        return wordBreak() == BreakWordBreak || overflowWrap() == BreakOverflowWrap;
+        return (wordBreak() == BreakWordBreak || overflowWrap() == BreakOverflowWrap)
+            && whiteSpace() != PRE && whiteSpace() != NOWRAP;
     }
 
     EFillBox backgroundClip() const { return static_cast<EFillBox>(m_background->background().clip()); }
