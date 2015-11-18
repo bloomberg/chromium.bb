@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/non_client_frame_view_impl.h"
+#include "mash/wm/non_client_frame_view_impl.h"
 
-#include "components/mus/example/wm/move_loop.h"
 #include "components/mus/public/cpp/window.h"
+#include "mash/wm/move_loop.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"

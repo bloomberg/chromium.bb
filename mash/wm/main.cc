@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/window_manager_application.h"
+#include "mash/wm/window_manager_application.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
 

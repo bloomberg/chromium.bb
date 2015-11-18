@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
+#ifndef MASH_WM_WINDOW_MANAGER_IMPL_H_
+#define MASH_WM_WINDOW_MANAGER_IMPL_H_
 
 #include "base/macros.h"
 #include "components/mus/common/types.h"
@@ -44,4 +44,4 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_IMPL_H_
+#endif  // MASH_WM_WINDOW_MANAGER_IMPL_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/non_client_frame_controller.h"
+#include "mash/wm/non_client_frame_controller.h"
 
-#include "components/mus/example/wm/non_client_frame_view_impl.h"
-#include "components/mus/example/wm/property_util.h"
 #include "components/mus/public/cpp/window.h"
+#include "mash/wm/non_client_frame_view_impl.h"
+#include "mash/wm/property_util.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
 

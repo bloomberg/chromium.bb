@@ -15,9 +15,9 @@ mojo_native_application("mock_sysui") {
 
   deps = [
     "//base",
-    "//components/mus/example/wm/public/interfaces",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
+    "//mash/wm/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//skia",

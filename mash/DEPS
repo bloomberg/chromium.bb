@@ -1,0 +1,14 @@
+include_rules = [
+  "+components/mus/common/types.h",
+  "+components/mus/common/util.h",
+  "+components/mus/public",
+  "+mojo/application",
+  "+mojo/common",
+  "+mojo/converters",
+  "+mojo/public",
+  "+mojo/services/network/public",
+  "+mojo/services/tracing/public",
+  "+third_party/mojo_services",
+  "+third_party/skia/include",
+  "+ui",
+]

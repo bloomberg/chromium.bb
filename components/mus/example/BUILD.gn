@@ -22,7 +22,7 @@ group("example") {
     "//components/mus/example/mock_sysui",
     "//components/mus/example/views_examples",
     "//components/mus/example/window_type_launcher",
-    "//components/mus/example/wm",
+    "//mash/wm",
     "//mojo/runner",
   ]
 }
@@ -33,7 +33,7 @@ test("mustash_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_config",
     "//base/test:test_support",
-    "//components/mus/example/wm:unittests",
+    "//mash/wm:unittests",
     "//mojo/platform_handle:platform_handle_impl",
   ]
 }

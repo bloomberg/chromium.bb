@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/window_layout.h"
+#include "mash/wm/window_layout.h"
 
-#include "components/mus/example/wm/property_util.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "mash/wm/property_util.h"
 
 WindowLayout::WindowLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);

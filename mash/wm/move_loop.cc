@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/move_loop.h"
+#include "mash/wm/move_loop.h"
 
 #include "base/auto_reset.h"
-#include "components/mus/example/wm/property_util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
+#include "mash/wm/property_util.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 

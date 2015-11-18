@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_BACKGROUND_LAYOUT_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_BACKGROUND_LAYOUT_H_
+#ifndef MASH_WM_BACKGROUND_LAYOUT_H_
+#define MASH_WM_BACKGROUND_LAYOUT_H_
 
 #include "base/macros.h"
-#include "components/mus/example/wm/layout_manager.h"
+#include "mash/wm/layout_manager.h"
 
 // Lays out the desktop background within background containers.
 class BackgroundLayout : public LayoutManager {
@@ -22,4 +22,4 @@ class BackgroundLayout : public LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(BackgroundLayout);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_BACKGROUND_LAYOUT_H_
+#endif  // MASH_WM_BACKGROUND_LAYOUT_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_LAYOUT_MANAGER_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_LAYOUT_MANAGER_H_
+#ifndef MASH_WM_LAYOUT_MANAGER_H_
+#define MASH_WM_LAYOUT_MANAGER_H_
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -50,4 +50,4 @@ class LayoutManager : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(LayoutManager);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_LAYOUT_MANAGER_H_
+#endif  // MASH_WM_LAYOUT_MANAGER_H_

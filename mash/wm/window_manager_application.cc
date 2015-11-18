@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/window_manager_application.h"
+#include "mash/wm/window_manager_application.h"
 
 #include "components/mus/common/util.h"
-#include "components/mus/example/wm/background_layout.h"
-#include "components/mus/example/wm/shelf_layout.h"
-#include "components/mus/example/wm/window_layout.h"
-#include "components/mus/example/wm/window_manager_impl.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "mash/wm/background_layout.h"
+#include "mash/wm/shelf_layout.h"
+#include "mash/wm/window_layout.h"
+#include "mash/wm/window_manager_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
@@ -22,7 +22,7 @@ WindowManagerApplication::WindowManagerApplication()
 WindowManagerApplication::~WindowManagerApplication() {}
 
 mus::Window* WindowManagerApplication::GetWindowForContainer(
-    ash::mojom::Container container) {
+    mash::wm::mojom::Container container) {
   const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
                             static_cast<uint16_t>(container);
   return root_->GetChildById(window_id);
@@ -52,11 +52,11 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_->AddObserver(this);
   CreateContainers();
   background_layout_.reset(new BackgroundLayout(
-      GetWindowForContainer(ash::mojom::CONTAINER_USER_BACKGROUND)));
+      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_BACKGROUND)));
   shelf_layout_.reset(new ShelfLayout(
-      GetWindowForContainer(ash::mojom::CONTAINER_USER_SHELF)));
+      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_SHELF)));
   window_layout_.reset(new WindowLayout(
-      GetWindowForContainer(ash::mojom::CONTAINER_USER_WINDOWS)));
+      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS)));
 
   window_manager_.reset(new WindowManagerImpl(this));
 
@@ -110,9 +110,9 @@ bool WindowManagerApplication::OnWmSetProperty(
 }
 
 void WindowManagerApplication::CreateContainers() {
-  for (uint16_t container =
-           static_cast<uint16_t>(ash::mojom::CONTAINER_ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(ash::mojom::CONTAINER_COUNT);
+  for (uint16_t container = static_cast<uint16_t>(
+           mash::wm::mojom::CONTAINER_ALL_USER_BACKGROUND);
+       container < static_cast<uint16_t>(mash::wm::mojom::CONTAINER_COUNT);
        ++container) {
     mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)

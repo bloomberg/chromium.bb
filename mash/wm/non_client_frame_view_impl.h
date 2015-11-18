@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
+#ifndef MASH_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
+#define MASH_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,4 +46,4 @@ class NonClientFrameViewImpl : public views::CustomFrameView,
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewImpl);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_
+#endif  // MASH_WM_NON_CLIENT_FRAME_VIEW_IMPL_H_

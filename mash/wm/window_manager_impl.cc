@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/window_manager_impl.h"
+#include "mash/wm/window_manager_impl.h"
 
 #include "components/mus/common/types.h"
-#include "components/mus/example/wm/move_loop.h"
-#include "components/mus/example/wm/non_client_frame_controller.h"
-#include "components/mus/example/wm/property_util.h"
-#include "components/mus/example/wm/public/interfaces/container.mojom.h"
-#include "components/mus/example/wm/window_manager_application.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
+#include "mash/wm/move_loop.h"
+#include "mash/wm/non_client_frame_controller.h"
+#include "mash/wm/property_util.h"
+#include "mash/wm/public/interfaces/container.mojom.h"
+#include "mash/wm/window_manager_application.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
@@ -34,7 +34,7 @@ WindowManagerImpl::WindowManagerImpl(WindowManagerApplication* state)
 
 WindowManagerImpl::~WindowManagerImpl() {
   mus::Window* parent =
-      state_->GetWindowForContainer(ash::mojom::CONTAINER_USER_WINDOWS);
+      state_->GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS);
   if (!parent)
     return;
 
@@ -141,6 +141,6 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
 }
 
 mus::Window* WindowManagerImpl::GetContainerForChild(mus::Window* child) {
-  ash::mojom::Container container = GetRequestedContainer(child);
+  mash::wm::mojom::Container container = GetRequestedContainer(child);
   return state_->GetWindowForContainer(container);
 }

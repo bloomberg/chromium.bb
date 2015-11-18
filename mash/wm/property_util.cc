@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/wm/property_util.h"
+#include "mash/wm/property_util.h"
 
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
@@ -12,7 +12,7 @@
 
 mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
   if (window->HasSharedProperty(
-      mus::mojom::WindowManager::kShowState_Property)) {
+          mus::mojom::WindowManager::kShowState_Property)) {
     return static_cast<mus::mojom::ShowState>(
         window->GetSharedProperty<int32_t>(
             mus::mojom::WindowManager::kShowState_Property));
@@ -32,7 +32,7 @@ void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds) {
 
 gfx::Rect GetWindowUserSetBounds(const mus::Window* window) {
   if (window->HasSharedProperty(
-      mus::mojom::WindowManager::kUserSetBounds_Property)) {
+          mus::mojom::WindowManager::kUserSetBounds_Property)) {
     return window->GetSharedProperty<gfx::Rect>(
         mus::mojom::WindowManager::kUserSetBounds_Property);
   }
@@ -46,20 +46,20 @@ void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size) {
 
 gfx::Size GetWindowPreferredSize(const mus::Window* window) {
   if (window->HasSharedProperty(
-      mus::mojom::WindowManager::kPreferredSize_Property)) {
+          mus::mojom::WindowManager::kPreferredSize_Property)) {
     return window->GetSharedProperty<gfx::Size>(
         mus::mojom::WindowManager::kPreferredSize_Property);
   }
   return gfx::Size();
 }
 
-ash::mojom::Container GetRequestedContainer(const mus::Window* window) {
-  if (window->HasSharedProperty(ash::mojom::kWindowContainer_Property)) {
-    return static_cast<ash::mojom::Container>(
+mash::wm::mojom::Container GetRequestedContainer(const mus::Window* window) {
+  if (window->HasSharedProperty(mash::wm::mojom::kWindowContainer_Property)) {
+    return static_cast<mash::wm::mojom::Container>(
         window->GetSharedProperty<int32_t>(
-            ash::mojom::kWindowContainer_Property));
+            mash::wm::mojom::kWindowContainer_Property));
   }
-  return ash::mojom::CONTAINER_USER_WINDOWS;
+  return mash::wm::mojom::CONTAINER_USER_WINDOWS;
 }
 
 mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window) {

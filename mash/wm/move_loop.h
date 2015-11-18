@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_
+#ifndef MASH_WM_MOVE_LOOP_H_
+#define MASH_WM_MOVE_LOOP_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -112,4 +112,4 @@ class MoveLoop : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(MoveLoop);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_
+#endif  // MASH_WM_MOVE_LOOP_H_

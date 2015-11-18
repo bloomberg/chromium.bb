@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_PROPERTY_UTIL_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_PROPERTY_UTIL_H_
+#ifndef MASH_WM_PROPERTY_UTIL_H_
+#define MASH_WM_PROPERTY_UTIL_H_
 
-#include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "mash/wm/public/interfaces/container.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -29,11 +29,11 @@ gfx::Rect GetWindowUserSetBounds(const mus::Window* window);
 void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(const mus::Window* window);
 
-ash::mojom::Container GetRequestedContainer(const mus::Window* window);
+mash::wm::mojom::Container GetRequestedContainer(const mus::Window* window);
 
 mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
 
 void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetRestoreBounds(const mus::Window* window);
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_PROPERTY_UTIL_H_
+#endif  // MASH_WM_PROPERTY_UTIL_H_

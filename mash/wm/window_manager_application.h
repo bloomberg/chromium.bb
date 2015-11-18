@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_APPLICATION_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_APPLICATION_H_
+#ifndef MASH_WM_WINDOW_MANAGER_APPLICATION_H_
+#define MASH_WM_WINDOW_MANAGER_APPLICATION_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/mus/common/types.h"
-#include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
+#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/weak_binding_set.h"
@@ -50,7 +50,7 @@ class WindowManagerApplication
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
 
-  mus::Window* GetWindowForContainer(ash::mojom::Container container);
+  mus::Window* GetWindowForContainer(mash::wm::mojom::Container container);
   mus::Window* GetWindowById(mus::Id id);
 
   mojo::ApplicationImpl* app() { return app_; }
@@ -106,4 +106,4 @@ class WindowManagerApplication
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_WINDOW_MANAGER_APPLICATION_H_
+#endif  // MASH_WM_WINDOW_MANAGER_APPLICATION_H_

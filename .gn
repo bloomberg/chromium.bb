@@ -216,6 +216,7 @@ check_targets = [
 
   #"//jingle/*",
   "//mandoline/*",
+  "//mash/*",
 
   #"//media/*",  # Lots of errors.
   "mojo/*",
