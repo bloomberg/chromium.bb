@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <vector>
@@ -25,6 +26,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
+#include "chrome/browser/devtools/device/cast_device_provider.h"
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
@@ -944,6 +946,7 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
 
   if (scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider())
     device_providers.push_back(provider);
+  device_providers.push_back(new CastDeviceProvider());
   device_providers.push_back(new AdbDeviceProvider());
 
   PrefService* service = profile_->GetPrefs();

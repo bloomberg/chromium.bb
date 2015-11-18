@@ -2042,6 +2042,7 @@ test("unit_tests") {
   }
   if (is_android || is_ios) {
     sources -= [
+      "../browser/devtools/device/cast_device_provider_unittest.cc",
       "../browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc",
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",

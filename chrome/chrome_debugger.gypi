@@ -65,6 +65,8 @@
             'browser/devtools/chrome_devtools_discovery_provider.h',
             'browser/devtools/device/adb/adb_client_socket.cc',
             'browser/devtools/device/adb/adb_client_socket.h',
+            'browser/devtools/device/cast_device_provider.cc',
+            'browser/devtools/device/cast_device_provider.h',
             'browser/devtools/device/adb/adb_device_provider.cc',
             'browser/devtools/device/adb/adb_device_provider.h',
             'browser/devtools/device/android_device_info_query.cc',
