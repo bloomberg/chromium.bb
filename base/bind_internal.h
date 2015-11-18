@@ -5,6 +5,8 @@
 #ifndef BASE_BIND_INTERNAL_H_
 #define BASE_BIND_INTERNAL_H_
 
+#include <type_traits>
+
 #include "base/bind_helpers.h"
 #include "base/callback_internal.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
@@ -77,9 +79,9 @@ struct HasNonConstReferenceParam : false_type {};
 // recursively.
 template <typename R, typename T, typename... Args>
 struct HasNonConstReferenceParam<R(T, Args...)>
-    : SelectType<is_non_const_reference<T>::value,
-                 true_type,
-                 HasNonConstReferenceParam<R(Args...)>>::Type {};
+    : std::conditional<is_non_const_reference<T>::value,
+                       true_type,
+                       HasNonConstReferenceParam<R(Args...)>>::type {};
 
 // HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
 // pointer to a RefCounted type.
@@ -93,9 +95,9 @@ struct HasRefCountedTypeAsRawPtr : false_type {};
 // parameters recursively.
 template <typename T, typename... Args>
 struct HasRefCountedTypeAsRawPtr<T, Args...>
-    : SelectType<NeedsScopedRefptrButGetsRawPtr<T>::value,
-                 true_type,
-                 HasRefCountedTypeAsRawPtr<Args...>>::Type {};
+    : std::conditional<NeedsScopedRefptrButGetsRawPtr<T>::value,
+                       true_type,
+                       HasRefCountedTypeAsRawPtr<Args...>>::type {};
 
 // BindsArrayToFirstArg selects true_type when |is_method| is true and the first
 // item of |Args| is an array type.

@@ -298,6 +298,26 @@ Parameter pack</a></td>
 <td>Note: std::move() is allowed but writing your own move constructors is still only allowed in exceptional cases for now, see 'Rvalue References (and Move Semantics)'. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
 </tr>
 
+<tr>
+<td>Conditional Type Selection</td>
+<td><code>std::enable_if</code> and <code>std::conditional</code></td>
+<td>Enables compile-time conditional type selection</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/enable_if">
+std::enable_if</a> and
+<a href="http://en.cppreference.com/w/cpp/types/conditional">
+conditional</a></td>
+<td>Usage should be rare.<a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Type Traits</td>
+<td>Class templates within <code>&lt;type_traits&gt;</code></td>
+<td>Allows compile-time inspection of the properties of types</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/type_traits">
+Standard library header &lt;type_traits&gt;</a></td>
+<td>Note that not all type traits are available on all platforms (eg std::underlying_type doesn't work in libstdc++4.6). Use judiciously. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
 
@@ -676,17 +696,6 @@ the <code>&lt;complex&gt;</code> library.</td>
 </tr>
 
 <tr>
-<td>Conditional Type Selection</td>
-<td><code>std::enable_if</code> and <code>std::conditional</code></td>
-<td>Enables compile-time conditional type selection</td>
-<td><a href="http://en.cppreference.com/w/cpp/types/enable_if">
-std::enable_if</a> and
-<a href="http://en.cppreference.com/w/cpp/types/conditional">
-conditional</a></td>
-<td></td>
-</tr>
-
-<tr>
 <td>Constant Iterator Methods on Containers</td>
 <td><code>std::cbegin()</code> and <code>std::cend()</code></td>
 <td>Enforces iteration methods that don't change container contents</td>
@@ -963,15 +972,6 @@ std::type_info::hash_code</a></td>
 <td><code>std::type_index</code> is a thin wrapper for
 <code>std::type_info</code>, allowing you to use it directly
 within both associative and unordered containers</td>
-</tr>
-
-<tr>
-<td>Type Traits</td>
-<td>Class templates within <code>&lt;type_traits&gt;</code></td>
-<td>Allows compile-time inspection of the properties of types</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/type_traits">
-Standard library header &lt;type_traits&gt;</a></td>
-<td></td>
 </tr>
 
 <tr>
