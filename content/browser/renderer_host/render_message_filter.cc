@@ -214,6 +214,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderMessageFilter::OnDestruct() const {
+  const_cast<RenderMessageFilter*>(this)->resource_context_ = nullptr;
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
@@ -399,6 +400,9 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
                                       const Referrer& referrer,
                                       const base::string16& suggested_name,
                                       const bool use_prompt) const {
+  if (!resource_context_)
+    return;
+
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
   save_info->prompt_for_save_location = use_prompt;
@@ -566,6 +570,9 @@ void RenderMessageFilter::OnKeygen(uint32 key_size_index,
                                    const std::string& challenge_string,
                                    const GURL& url,
                                    IPC::Message* reply_msg) {
+  if (!resource_context_)
+    return;
+
   // Map displayed strings indicating level of keysecurity in the <keygen>
   // menu to the key size in bits. (See SSLKeyGeneratorChromium.cpp in WebCore.)
   int key_size_in_bits;
