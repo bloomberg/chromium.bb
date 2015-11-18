@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/mash_wm_resources.h" type="rc_header" context="default_100_percent">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="mash_wm_resources_100_percent.pak" type="data_package" context="default_100_percent" />
+    <output filename="mash_wm_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+  </outputs>
+  <release seq="1">
+    <structures fallback_to_low_resolution="true">
+      <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
+           BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
+           SAME CONDITIONALS. -->
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_BACKGROUND_H" file="common/window_control_background_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_BACKGROUND_P" file="common/window_control_background_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_CLOSE_WHITE" file="common/window_control_icon_close_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_LEFT_SNAPPED" file="common/window_control_icon_left_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_LEFT_SNAPPED_WHITE" file="common/window_control_icon_left_snapped_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_MAXIMIZE" file="common/window_control_icon_maximize.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_MAXIMIZE_WHITE" file="common/window_control_icon_maximize_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_MINIMIZE" file="common/window_control_icon_minimize.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_MINIMIZE_WHITE" file="common/window_control_icon_minimize_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_RESTORE" file="common/window_control_icon_restore.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_RESTORE_WHITE" file="common/window_control_icon_restore_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_RIGHT_SNAPPED" file="common/window_control_icon_right_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_CONTROL_ICON_RIGHT_SNAPPED_WHITE" file="common/window_control_icon_right_snapped_white.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_MASH_WM_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
+    </structures>
+  </release>
+</grit>
