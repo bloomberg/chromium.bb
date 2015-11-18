@@ -4,7 +4,6 @@
 
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 
-#include "base/bind.h"
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -52,9 +51,9 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
       client_(client),
       app_locale_(app_locale),
       enable_download_manager_(enable_download_manager) {
-  web_contents->ForEachFrame(
-      base::Bind(&ContentAutofillDriverFactory::CreateDriverForFrame,
-                 base::Unretained(this)));
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  if (main_frame->IsRenderFrameLive())
+    CreateDriverForFrame(main_frame);
 }
 
 ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {

@@ -141,6 +141,8 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
         web_contents(), autofill_client_.get(), "en-US",
         AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+    // Make sure RenderFrame is created.
+    NavigateAndCommit(GURL("about:blank"));
     ContentAutofillDriverFactory* factory =
         ContentAutofillDriverFactory::FromWebContents(web_contents());
     ContentAutofillDriver* driver =
