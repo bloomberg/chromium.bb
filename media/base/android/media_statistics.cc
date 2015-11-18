@@ -53,6 +53,12 @@ void MediaStatistics::StopAndReport(base::TimeDelta current_playback_time) {
   if (start_time_ == kNoTimestamp())
     return;  // skip if there was no prior Start().
 
+  if (current_playback_time == kNoTimestamp()) {
+    // Cancel the start event and skip if current time is unknown.
+    start_time_ = kNoTimestamp();
+    return;
+  }
+
   base::TimeDelta duration = current_playback_time - start_time_;
 
   // Reset start time.

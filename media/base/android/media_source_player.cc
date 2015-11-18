@@ -182,6 +182,8 @@ base::TimeDelta MediaSourcePlayer::GetDuration() {
 void MediaSourcePlayer::Release() {
   DVLOG(1) << __FUNCTION__;
 
+  media_stat_->StopAndReport(GetCurrentTime());
+
   audio_decoder_job_->ReleaseDecoderResources();
   video_decoder_job_->ReleaseDecoderResources();
 
@@ -479,7 +481,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
     DVLOG(1) << __FUNCTION__ << " : decode error";
     Release();
     manager()->OnError(player_id(), MEDIA_ERROR_DECODE);
-    media_stat_->StopAndReport(GetCurrentTime());
+    if (is_clock_manager)
+      media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -499,7 +502,9 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // any other pending events only after handling EOS detection.
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     ProcessPendingEvents();
-    media_stat_->StopAndReport(GetCurrentTime());
+    // In case of Seek GetCurrentTime() already tells the time to seek to.
+    if (is_clock_manager)
+      media_stat_->StopAndReport(current_presentation_timestamp);
     return;
   }
 
@@ -521,7 +526,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
   }
 
   if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
-    media_stat_->StopAndReport(GetCurrentTime());
+    if (is_clock_manager)
+      media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -529,7 +535,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
     if (is_clock_manager)
       interpolator_.StopInterpolating();
 
-    media_stat_->StopAndReport(GetCurrentTime());
+    if (is_clock_manager)
+      media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
@@ -540,7 +547,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
     } else {
       is_waiting_for_key_ = true;
       manager()->OnWaitingForDecryptionKey(player_id());
-      media_stat_->StopAndReport(GetCurrentTime());
+      if (is_clock_manager)
+        media_stat_->StopAndReport(GetCurrentTime());
     }
     return;
   }
@@ -559,7 +567,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // in the middle of a seek or stop event and needs to wait for the IPCs to
   // come.
   if (status == MEDIA_CODEC_ABORT) {
-    media_stat_->StopAndReport(GetCurrentTime());
+    if (is_clock_manager)
+      media_stat_->StopAndReport(GetCurrentTime());
     return;
   }
 
