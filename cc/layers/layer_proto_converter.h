@@ -13,6 +13,7 @@ namespace cc {
 
 namespace proto {
 class LayerNode;
+class LayerUpdate;
 }
 
 // A class to faciliate (de)serialization of a Layer tree to protocol buffers.
@@ -28,8 +29,21 @@ class CC_EXPORT LayerProtoConverter {
   // root Layer after updating the hierarchy (may be the same as
   // |existing_root|).
   static scoped_refptr<Layer> DeserializeLayerHierarchy(
-      scoped_refptr<Layer> existing_root,
+      const scoped_refptr<Layer> existing_root,
       const proto::LayerNode& root_node);
+
+  // Starting at |root_layer|, serializes the properties of all the dirty nodes
+  // in the Layer hierarchy. The proto::LayerUpdate will contain all nodes that
+  // either are dirty or have dirty descendants. Only nodes that are dirty will
+  // contain the list of dirty properties.
+  static void SerializeLayerProperties(Layer* root_layer,
+                                       proto::LayerUpdate* layer_update);
+
+  // Iterate over all updated layers from the LayerUpdate, and update the
+  // local Layers.
+  static void DeserializeLayerProperties(
+      Layer* existing_root,
+      const proto::LayerUpdate& layer_update);
 
   // Returns the Layer with proto.id() as the Layer id, if it exists in
   // |layer_id_map|. Otherwise, a new Layer is constructed of the type given
@@ -41,6 +55,12 @@ class CC_EXPORT LayerProtoConverter {
  private:
   LayerProtoConverter();
   ~LayerProtoConverter();
+
+  // This method is the inner recursive function for SerializeLayerProperties
+  // declared above.
+  static void RecursivelySerializeLayerProperties(
+      Layer* root_layer,
+      proto::LayerUpdate* layer_update);
 
   using LayerIdMap = base::hash_map<int, scoped_refptr<Layer>>;
   // Start at |layer| and recursively add |layer| and all its children and

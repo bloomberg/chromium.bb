@@ -42,6 +42,48 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
 }
 
 // static
+void LayerProtoConverter::SerializeLayerProperties(
+    Layer* root_layer,
+    proto::LayerUpdate* layer_update) {
+  RecursivelySerializeLayerProperties(root_layer, layer_update);
+}
+
+// static
+void LayerProtoConverter::DeserializeLayerProperties(
+    Layer* existing_root,
+    const proto::LayerUpdate& layer_update) {
+  LayerIdMap layer_id_map;
+  RecursivelyFindAllLayers(existing_root, &layer_id_map);
+
+  for (int i = 0; i < layer_update.layers_size(); ++i) {
+    const proto::LayerProperties& layer_properties = layer_update.layers(i);
+
+    Layer::LayerIdMap::const_iterator iter =
+        layer_id_map.find(layer_properties.id());
+    DCHECK(iter != layer_id_map.end());
+
+    iter->second->FromLayerPropertiesProto(layer_properties);
+  }
+}
+
+// static
+void LayerProtoConverter::RecursivelySerializeLayerProperties(
+    Layer* layer,
+    proto::LayerUpdate* layer_update) {
+  bool serialize_descendants = layer->ToLayerPropertiesProto(layer_update);
+  if (!serialize_descendants)
+    return;
+
+  for (const auto& child : layer->children()) {
+    RecursivelySerializeLayerProperties(child.get(), layer_update);
+  }
+  if (layer->mask_layer())
+    RecursivelySerializeLayerProperties(layer->mask_layer(), layer_update);
+  if (layer->replica_layer())
+    RecursivelySerializeLayerProperties(layer->replica_layer(), layer_update);
+}
+
+// static
 void LayerProtoConverter::RecursivelyFindAllLayers(
     const scoped_refptr<Layer>& layer,
     LayerIdMap* layer_id_map) {

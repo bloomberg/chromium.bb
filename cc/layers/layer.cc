@@ -1417,6 +1417,56 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   }
 }
 
+bool Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update) {
+  if (!needs_push_properties_ && num_dependents_need_push_properties_ == 0)
+    return false;
+
+  // Always set properties metadata for serialized layers.
+  proto::LayerProperties* proto = layer_update->add_layers();
+  proto->set_id(layer_id_);
+  proto->set_needs_push_properties(needs_push_properties_);
+  proto->set_num_dependents_need_push_properties(
+      num_dependents_need_push_properties_);
+
+  if (needs_push_properties_)
+    LayerSpecificPropertiesToProto(proto);
+
+  needs_push_properties_ = false;
+
+  bool descendant_needs_push_properties =
+      num_dependents_need_push_properties_ > 0;
+  num_dependents_need_push_properties_ = 0;
+
+  return descendant_needs_push_properties;
+}
+
+void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
+  DCHECK(proto.has_id());
+  DCHECK_EQ(layer_id_, proto.id());
+  DCHECK(proto.has_needs_push_properties());
+  needs_push_properties_ = proto.needs_push_properties();
+  DCHECK(proto.has_num_dependents_need_push_properties());
+  num_dependents_need_push_properties_ =
+      proto.num_dependents_need_push_properties();
+
+  if (!needs_push_properties_)
+    return;
+
+  FromLayerSpecificPropertiesProto(proto);
+}
+
+void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
+  // TODO(nyquist): Write all required properties to |proto|.
+  // Create an empty proto::LayerProperties::base message.
+  proto->mutable_base();
+}
+
+void Layer::FromLayerSpecificPropertiesProto(
+    const proto::LayerProperties& proto) {
+  DCHECK(proto.has_base());
+  // TODO(nyquist): Read all required properties from |proto|.
+}
+
 scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_,
                            new LayerImpl::SyncedScrollOffset);

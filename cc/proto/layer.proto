@@ -28,3 +28,27 @@ message LayerNode {
   optional LayerNode mask_layer = 5;
   optional LayerNode replica_layer = 6;
 }
+
+// A container for a list of dirty layers.
+message LayerUpdate {
+  // A list of dirty layers.
+  repeated LayerProperties layers = 1;
+}
+
+message LayerProperties {
+  // required
+  optional int32 id = 1;
+  // required
+  optional bool needs_push_properties = 3;
+  // required
+  optional int32 num_dependents_need_push_properties = 4;
+
+  // The properties below are only read if |needs_push_properties| is set.
+  // The Layer base class and each descendant have different proto messages
+  // for their specific properties.
+  optional BaseLayerProperties base = 5;
+}
+
+message BaseLayerProperties {
+  // TODO(nyquist): Add all the required properties below. Huzzah!
+}

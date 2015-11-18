@@ -68,6 +68,8 @@ struct AnimationEvent;
 
 namespace proto {
 class LayerNode;
+class LayerProperties;
+class LayerUpdate;
 }  // namespace proto
 
 // Base class for composited layers. Special layer types are derived from
@@ -386,6 +388,22 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void FromLayerNodeProto(const proto::LayerNode& proto,
                           const LayerIdMap& layer_map);
 
+  // This method is similar to PushPropertiesTo, but instead of pushing to
+  // a LayerImpl, it pushes the properties to proto::LayerProperties. It adds
+  // this layer to the proto::LayerUpdate if it or any of its descendants
+  // have changed properties. If this layer contains changed properties, the
+  // properties themselves will also be pushed the proto::LayerProperties.
+  // Similarly to PushPropertiesTo, this method also resets
+  // |needs_push_properties_| and |num_dependents_need_push_properties_|.
+  // Returns whether any of the descendants have changed properties.
+  bool ToLayerPropertiesProto(proto::LayerUpdate* layer_update);
+
+  // Read all property values from the given LayerProperties object and update
+  // the current layer. The values for |needs_push_properties_| and
+  // |num_dependents_need_push_properties_| are always updated, but the rest
+  // of |proto| is only read if |needs_push_properties_| is set.
+  void FromLayerPropertiesProto(const proto::LayerProperties& proto);
+
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
@@ -587,6 +605,22 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   bool IsPropertyChangeAllowed() const;
+
+  // Serialize all the necessary properties to be able to reconstruct this Layer
+  // into proto::LayerProperties. This function must not set values for
+  // |needs_push_properties_| or |num_dependents_need_push_properties_| as they
+  // are dealt with at a higher level. This is only called if
+  // |needs_push_properties_| is set. For descendants of Layer, implementations
+  // must first call their parent class.
+  virtual void LayerSpecificPropertiesToProto(proto::LayerProperties* proto);
+
+  // Deserialize all the necessary properties from proto::LayerProperties into
+  // this Layer. This function must not set values for |needs_push_properties_|
+  // or |num_dependents_need_push_properties_| as they are dealt with at a
+  // higher level. This is only called if |needs_push_properties_| is set. For
+  // descendants of Layer, implementations must first call their parent class.
+  virtual void FromLayerSpecificPropertiesProto(
+      const proto::LayerProperties& proto);
 
   // This flag is set when the layer needs to push properties to the impl
   // side.
