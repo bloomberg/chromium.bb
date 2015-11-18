@@ -11,7 +11,6 @@
 #include "base/task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_error_job.h"
 #include "url/gurl.h"
@@ -34,6 +33,7 @@ URLRequestContentJob::URLRequestContentJob(
       content_path_(content_path),
       stream_(new net::FileStream(content_task_runner)),
       content_task_runner_(content_task_runner),
+      range_parse_result_(net::OK),
       remaining_bytes_(0),
       io_pending_(false),
       weak_ptr_factory_(this) {}
@@ -56,43 +56,28 @@ void URLRequestContentJob::Kill() {
   net::URLRequestJob::Kill();
 }
 
-bool URLRequestContentJob::ReadRawData(net::IOBuffer* dest,
-                                       int dest_size,
-                                       int* bytes_read) {
+int URLRequestContentJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   DCHECK_GT(dest_size, 0);
-  DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0);
 
   if (remaining_bytes_ < dest_size)
-    dest_size = static_cast<int>(remaining_bytes_);
+    dest_size = remaining_bytes_;
 
   // If we should copy zero bytes because |remaining_bytes_| is zero, short
   // circuit here.
-  if (!dest_size) {
-    *bytes_read = 0;
-    return true;
-  }
+  if (!dest_size)
+    return 0;
 
-  int rv =
-      stream_->Read(dest, dest_size, base::Bind(&URLRequestContentJob::DidRead,
-                                                weak_ptr_factory_.GetWeakPtr(),
-                                                make_scoped_refptr(dest)));
-  if (rv >= 0) {
-    // Data is immediately available.
-    *bytes_read = rv;
-    remaining_bytes_ -= rv;
-    DCHECK_GE(remaining_bytes_, 0);
-    return true;
-  }
-
-  // Otherwise, a read error occured.  We may just need to wait...
+  int rv = stream_->Read(dest, dest_size,
+                         base::Bind(&URLRequestContentJob::DidRead,
+                                    weak_ptr_factory_.GetWeakPtr()));
   if (rv == net::ERR_IO_PENDING) {
     io_pending_ = true;
-    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-  } else {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, rv));
+  } else if (rv > 0) {
+    remaining_bytes_ -= rv;
   }
-  return false;
+  DCHECK_GE(remaining_bytes_, 0);
+  return rv;
 }
 
 bool URLRequestContentJob::IsRedirectResponse(GURL* location,
@@ -115,15 +100,16 @@ void URLRequestContentJob::SetExtraRequestHeaders(
   if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header))
     return;
 
-  // We only care about "Range" header here.
+  // Currently this job only cares about the Range header. Note that validation
+  // is deferred to DidOpen(), because NotifyStartError is not legal to call
+  // since the job has not started.
   std::vector<net::HttpByteRange> ranges;
   if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
     if (ranges.size() == 1) {
       byte_range_ = ranges[0];
     } else {
       // We don't support multiple range requests.
-      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+      range_parse_result_ = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
     }
   }
 }
@@ -160,13 +146,20 @@ void URLRequestContentJob::DidFetchMetaInfo(const ContentMetaInfo* meta_info) {
 
 void URLRequestContentJob::DidOpen(int result) {
   if (result != net::OK) {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
+    NotifyStartError(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
+    return;
+  }
+
+  if (range_parse_result_ != net::OK) {
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           range_parse_result_));
     return;
   }
 
   if (!byte_range_.ComputeBounds(meta_info_.content_size)) {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                     net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(net::URLRequestStatus(
+        net::URLRequestStatus::FAILED, net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -193,8 +186,8 @@ void URLRequestContentJob::DidOpen(int result) {
 
 void URLRequestContentJob::DidSeek(int64 result) {
   if (result != byte_range_.first_byte_position()) {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                     net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(net::URLRequestStatus(
+        net::URLRequestStatus::FAILED, net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -202,24 +195,16 @@ void URLRequestContentJob::DidSeek(int64 result) {
   NotifyHeadersComplete();
 }
 
-void URLRequestContentJob::DidRead(scoped_refptr<net::IOBuffer> buf,
-                                   int result) {
+void URLRequestContentJob::DidRead(int result) {
+  DCHECK(io_pending_);
+  io_pending_ = false;
+
   if (result > 0) {
-    SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
     remaining_bytes_ -= result;
     DCHECK_GE(remaining_bytes_, 0);
   }
 
-  DCHECK(io_pending_);
-  io_pending_ = false;
-
-  if (result == 0) {
-    NotifyDone(net::URLRequestStatus());
-  } else if (result < 0) {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
-  }
-
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 }  // namespace content

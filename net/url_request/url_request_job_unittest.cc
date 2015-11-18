@@ -76,6 +76,24 @@ const MockTransaction kRedirect_Transaction = {
     OK,
 };
 
+const MockTransaction kEmptyBodyGzip_Transaction = {
+    "http://www.google.com/empty_body",
+    "GET",
+    base::Time(),
+    "",
+    LOAD_NORMAL,
+    "HTTP/1.1 200 OK",
+    "Content-Encoding: gzip\n",
+    base::Time(),
+    "",
+    TEST_MODE_NORMAL,
+    nullptr,
+    nullptr,
+    0,
+    0,
+    OK,
+};
+
 }  // namespace
 
 TEST(URLRequestJob, TransactionNotifiedWhenDone) {
@@ -185,6 +203,32 @@ TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
   EXPECT_TRUE(network_layer.stop_caching_called());
 
   RemoveMockTransaction(&kGZip_Transaction);
+}
+
+// Makes sure that ReadRawDataComplete correctly updates request status before
+// calling ReadFilteredData.
+// Regression test for crbug.com/553300.
+TEST(URLRequestJob, EmptyBodySkipFilter) {
+  MockNetworkLayer network_layer;
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL(kEmptyBodyGzip_Transaction.url), DEFAULT_PRIORITY, &d));
+  AddMockTransaction(&kEmptyBodyGzip_Transaction);
+
+  req->set_method("GET");
+  req->Start();
+
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(d.request_failed());
+  EXPECT_EQ(200, req->GetResponseCode());
+  EXPECT_TRUE(d.data_received().empty());
+  EXPECT_TRUE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kEmptyBodyGzip_Transaction);
 }
 
 }  // namespace net

@@ -64,6 +64,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
 
   // net::URLRequestJob overrides
   void Start() override;
+  void StartAsync();
   void Kill() override;
   net::LoadState GetLoadState() const override;
   bool GetCharset(std::string* charset) override;
@@ -71,7 +72,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int GetResponseCode() const override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
   const net::HttpResponseInfo* http_info() const;
 
@@ -109,18 +110,22 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   bool CheckPathRestriction(net::URLRequest* request);
 
   // Writes network data back to the script cache if needed, and notifies the
-  // script cache of fetch completion at EOF. This function might need to do
-  // asynchronous IO; if so, it signals this through setting the URLRequestJob's
-  // status to IO_PENDING. After this function returns, if the URLRequestJob
-  // isn't IO_PENDING, all of the data in |io_buffer_| has been written back to
-  // the script cache if necessary.
-  void HandleNetData(int bytes_read);
+  // script cache of fetch completion at EOF. This function returns
+  // net::IO_PENDING if the IO is to be completed asynchronously, returns a
+  // negative number that represents a corresponding net error code (other than
+  // net::IO_PENDING) if an error occurred, or returns a non-negative number
+  // that represents the number of network bytes read. If the return value is
+  // non-negative, all of the data in |io_buffer_| has been written back to the
+  // script cache if necessary.
+  int HandleNetData(int bytes_read);
 
-  void NotifyDoneHelper(const net::URLRequestStatus& status,
-                        const std::string& status_message);
+  void NotifyStartErrorHelper(const net::URLRequestStatus& status,
+                              const std::string& status_message);
 
-  void NotifyFinishedCaching(net::URLRequestStatus status,
-                             const std::string& status_message);
+  // Returns an error code that is passed in through |status| or a new one if an
+  // additional error is found.
+  net::Error NotifyFinishedCaching(net::URLRequestStatus status,
+                                   const std::string& status_message);
 
   scoped_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
   scoped_ptr<ServiceWorkerResponseWriter> CreateCacheResponseWriter();
@@ -140,6 +145,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   bool has_been_killed_;
   bool did_notify_started_;
   bool did_notify_finished_;
+
   base::WeakPtrFactory<ServiceWorkerWriteToCacheJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerWriteToCacheJob);

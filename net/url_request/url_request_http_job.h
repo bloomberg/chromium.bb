@@ -78,9 +78,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Shadows URLRequestJob's version of this method so we can grab cookies.
   void NotifyHeadersComplete();
 
-  // Shadows URLRequestJob's method so we can record histograms.
-  void NotifyDone(const URLRequestStatus& status);
-
   void DestroyTransaction();
 
   void AddExtraHeaders();
@@ -131,7 +128,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void ContinueWithCertificate(X509Certificate* client_cert) override;
   void ContinueDespiteLastError() override;
   void ResumeNetworkStart() override;
-  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(IOBuffer* buf, int buf_size) override;
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64 GetTotalReceivedBytes() const override;

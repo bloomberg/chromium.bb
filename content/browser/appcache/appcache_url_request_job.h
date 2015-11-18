@@ -148,7 +148,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   net::LoadState GetLoadState() const override;
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
-  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
   // Sets extra request headers for Job types that support request headers.
   // This is how we get informed of range-requests.
