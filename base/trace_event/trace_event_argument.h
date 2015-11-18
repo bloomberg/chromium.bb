@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
+#include "base/strings/string_piece.h"
 #include "base/trace_event/trace_event_impl.h"
 
 namespace base {
@@ -30,26 +31,26 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void SetInteger(const char* name, int value);
   void SetDouble(const char* name, double value);
   void SetBoolean(const char* name, bool value);
-  void SetString(const char* name, const std::string& value);
+  void SetString(const char* name, base::StringPiece value);
   void SetValue(const char* name, const TracedValue& value);
   void BeginDictionary(const char* name);
   void BeginArray(const char* name);
 
   // These, instead, can be safely passed a temporary string.
-  void SetIntegerWithCopiedName(const std::string& name, int value);
-  void SetDoubleWithCopiedName(const std::string& name, double value);
-  void SetBooleanWithCopiedName(const std::string& name, bool value);
-  void SetStringWithCopiedName(const std::string& name,
-                               const std::string& value);
-  void SetValueWithCopiedName(const std::string& name,
+  void SetIntegerWithCopiedName(base::StringPiece name, int value);
+  void SetDoubleWithCopiedName(base::StringPiece name, double value);
+  void SetBooleanWithCopiedName(base::StringPiece name, bool value);
+  void SetStringWithCopiedName(base::StringPiece name,
+                               base::StringPiece value);
+  void SetValueWithCopiedName(base::StringPiece name,
                               const TracedValue& value);
-  void BeginDictionaryWithCopiedName(const std::string& name);
-  void BeginArrayWithCopiedName(const std::string& name);
+  void BeginDictionaryWithCopiedName(base::StringPiece name);
+  void BeginArrayWithCopiedName(base::StringPiece name);
 
   void AppendInteger(int);
   void AppendDouble(double);
   void AppendBoolean(bool);
-  void AppendString(const std::string&);
+  void AppendString(base::StringPiece);
   void BeginArray();
   void BeginDictionary();
 
@@ -63,7 +64,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   // TODO(primiano): migrate the (three) existing clients to the cheaper
   // SetValue(TracedValue) API. crbug.com/495628.
   void SetValue(const char* name, scoped_ptr<base::Value> value);
-  void SetBaseValueWithCopiedName(const std::string& name,
+  void SetBaseValueWithCopiedName(base::StringPiece name,
                                   const base::Value& value);
   void AppendBaseValue(const base::Value& value);
 

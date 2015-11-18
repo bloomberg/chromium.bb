@@ -42,7 +42,7 @@ inline void WriteKeyNameAsRawPtr(Pickle& pickle, const char* ptr) {
   pickle.WriteUInt64(static_cast<uint64>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
-inline void WriteKeyNameAsStdString(Pickle& pickle, const std::string& str) {
+inline void WriteKeyNameWithCopy(Pickle& pickle, base::StringPiece str) {
   pickle.WriteBytes(&kTypeString, 1);
   pickle.WriteString(str);
 }
@@ -85,11 +85,11 @@ void TracedValue::SetInteger(const char* name, int value) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::SetIntegerWithCopiedName(const std::string& name, int value) {
+void TracedValue::SetIntegerWithCopiedName(base::StringPiece name, int value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeInt, 1);
   pickle_.WriteInt(value);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
 void TracedValue::SetDouble(const char* name, double value) {
@@ -99,12 +99,12 @@ void TracedValue::SetDouble(const char* name, double value) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::SetDoubleWithCopiedName(const std::string& name,
+void TracedValue::SetDoubleWithCopiedName(base::StringPiece name,
                                           double value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeDouble, 1);
   pickle_.WriteDouble(value);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
 void TracedValue::SetBoolean(const char* name, bool value) {
@@ -114,27 +114,27 @@ void TracedValue::SetBoolean(const char* name, bool value) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::SetBooleanWithCopiedName(const std::string& name,
+void TracedValue::SetBooleanWithCopiedName(base::StringPiece name,
                                            bool value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeBool, 1);
   pickle_.WriteBool(value);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
-void TracedValue::SetString(const char* name, const std::string& value) {
+void TracedValue::SetString(const char* name, base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeString, 1);
   pickle_.WriteString(value);
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::SetStringWithCopiedName(const std::string& name,
-                                          const std::string& value) {
+void TracedValue::SetStringWithCopiedName(base::StringPiece name,
+                                          base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeString, 1);
   pickle_.WriteString(value);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
 void TracedValue::SetValue(const char* name, const TracedValue& value) {
@@ -145,7 +145,7 @@ void TracedValue::SetValue(const char* name, const TracedValue& value) {
   EndDictionary();
 }
 
-void TracedValue::SetValueWithCopiedName(const std::string& name,
+void TracedValue::SetValueWithCopiedName(base::StringPiece name,
                                          const TracedValue& value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   BeginDictionaryWithCopiedName(name);
@@ -161,11 +161,11 @@ void TracedValue::BeginDictionary(const char* name) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::BeginDictionaryWithCopiedName(const std::string& name) {
+void TracedValue::BeginDictionaryWithCopiedName(base::StringPiece name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
   pickle_.WriteBytes(&kTypeStartDict, 1);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
 void TracedValue::BeginArray(const char* name) {
@@ -175,11 +175,11 @@ void TracedValue::BeginArray(const char* name) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::BeginArrayWithCopiedName(const std::string& name) {
+void TracedValue::BeginArrayWithCopiedName(base::StringPiece name) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   DEBUG_PUSH_CONTAINER(kStackTypeArray);
   pickle_.WriteBytes(&kTypeStartArray, 1);
-  WriteKeyNameAsStdString(pickle_, name);
+  WriteKeyNameWithCopy(pickle_, name);
 }
 
 void TracedValue::EndDictionary() {
@@ -206,7 +206,7 @@ void TracedValue::AppendBoolean(bool value) {
   pickle_.WriteBool(value);
 }
 
-void TracedValue::AppendString(const std::string& value) {
+void TracedValue::AppendString(base::StringPiece value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
   pickle_.WriteBytes(&kTypeString, 1);
   pickle_.WriteString(value);
@@ -234,7 +234,7 @@ void TracedValue::SetValue(const char* name, scoped_ptr<base::Value> value) {
   SetBaseValueWithCopiedName(name, *value);
 }
 
-void TracedValue::SetBaseValueWithCopiedName(const std::string& name,
+void TracedValue::SetBaseValueWithCopiedName(base::StringPiece name,
                                              const base::Value& value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   switch (value.GetType()) {
