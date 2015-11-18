@@ -143,4 +143,8 @@ void ProxyOverriddenBubbleDelegate::LogAction(
                             ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 
+const char* ProxyOverriddenBubbleDelegate::GetKey() {
+  return "ProxyOverriddenBubbleDelegate";
+}
+
 }  // namespace extensions

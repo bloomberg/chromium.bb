@@ -84,6 +84,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
                                    gfx::Size client_size,
                                    bool adjust_if_offscreen);
 
+  bool close_button_clicked() const { return close_button_clicked_; }
+
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const;
@@ -93,6 +95,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
   // if the generated window bounds don't fit in the monitor bounds.
@@ -122,6 +125,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // When supplied, this view is placed in the titlebar between the title and
   // (x) close button.
   View* titlebar_extra_view_;
+
+  // Whether the close button was clicked.
+  bool close_button_clicked_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

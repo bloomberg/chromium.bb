@@ -77,8 +77,10 @@ void ExtensionMessageBubbleView::Show() {
 void ExtensionMessageBubbleView::OnWidgetDestroying(views::Widget* widget) {
   // To catch Esc, we monitor destroy message. Unless the link has been clicked,
   // we assume Dismiss was the action taken.
-  if (!link_clicked_ && !action_taken_)
-    controller_->OnBubbleDismiss();
+  if (!link_clicked_ && !action_taken_) {
+    bool closed_on_deactivation = close_reason() == CloseReason::DEACTIVATION;
+    controller_->OnBubbleDismiss(closed_on_deactivation);
+  }
 }
 
 void ExtensionMessageBubbleView::set_bubble_appearance_wait_time_for_testing(

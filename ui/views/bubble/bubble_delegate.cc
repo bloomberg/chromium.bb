@@ -67,9 +67,8 @@ BubbleDelegateView::BubbleDelegateView()
   UpdateColorsFromTheme(GetNativeTheme());
 }
 
-BubbleDelegateView::BubbleDelegateView(
-    View* anchor_view,
-    BubbleBorder::Arrow arrow)
+BubbleDelegateView::BubbleDelegateView(View* anchor_view,
+                                       BubbleBorder::Arrow arrow)
     : close_on_esc_(true),
       close_on_deactivate_(true),
       anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
@@ -81,7 +80,8 @@ BubbleDelegateView::BubbleDelegateView(
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
-      parent_window_(NULL) {
+      parent_window_(NULL),
+      close_reason_(CloseReason::UNKNOWN) {
   SetAnchorView(anchor_view);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   UpdateColorsFromTheme(GetNativeTheme());
@@ -151,6 +151,14 @@ const char* BubbleDelegateView::GetClassName() const {
   return kViewClassName;
 }
 
+void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
+  DCHECK(GetBubbleFrameView());
+  if (widget == GetWidget() && close_reason_ == CloseReason::UNKNOWN &&
+      GetBubbleFrameView()->close_button_clicked()) {
+    close_reason_ = CloseReason::CLOSE_BUTTON;
+  }
+}
+
 void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
     SetAnchorView(NULL);
@@ -175,8 +183,11 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
 
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                    bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active)
+  if (close_on_deactivate() && widget == GetWidget() && !active) {
+    if (close_reason_ == CloseReason::UNKNOWN)
+      close_reason_ = CloseReason::DEACTIVATION;
     GetWidget()->Close();
+  }
 }
 
 void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
@@ -221,6 +232,7 @@ bool BubbleDelegateView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
     return false;
+  close_reason_ = CloseReason::ESCAPE;
   GetWidget()->Close();
   return true;
 }

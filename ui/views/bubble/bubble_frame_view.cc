@@ -70,7 +70,8 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       title_icon_(new views::ImageView()),
       title_(nullptr),
       close_(nullptr),
-      titlebar_extra_view_(nullptr) {
+      titlebar_extra_view_(nullptr),
+      close_button_clicked_(false) {
   AddChildView(title_icon_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -321,8 +322,10 @@ void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (sender == close_)
+  if (sender == close_) {
+    close_button_clicked_ = true;
     GetWidget()->Close();
+  }
 }
 
 void BubbleFrameView::SetBubbleBorder(scoped_ptr<BubbleBorder> border) {

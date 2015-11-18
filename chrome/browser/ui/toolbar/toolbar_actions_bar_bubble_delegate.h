@@ -13,7 +13,8 @@ class ToolbarActionsBarBubbleDelegate {
   enum CloseAction {
     CLOSE_LEARN_MORE,
     CLOSE_EXECUTE,
-    CLOSE_DISMISS
+    CLOSE_DISMISS_USER_ACTION,
+    CLOSE_DISMISS_DEACTIVATION,
   };
 
   virtual ~ToolbarActionsBarBubbleDelegate() {}

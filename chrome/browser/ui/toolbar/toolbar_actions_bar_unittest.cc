@@ -424,7 +424,7 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
       new ExtensionToolbarIconSurfacingBubbleDelegate(profile()));
   bubble_delegate->OnBubbleShown();
   bubble_delegate->OnBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
   EXPECT_FALSE(
     ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
         profile()));
