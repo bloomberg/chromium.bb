@@ -118,6 +118,9 @@
         'ios_chrome_resources.gyp:ios_chrome_ui_string_overrider_factory',
         'ios_chrome_resources.gyp:ios_chrome_ui_string_overrider_factory_gen',
       ],
+      'export_dependent_settings': [
+        '../../components/components.gyp:dom_distiller_core',
+      ],
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
