@@ -16,6 +16,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
+#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
@@ -65,6 +66,40 @@ class FileSurface : public SurfaceOzoneCanvas {
   skia::RefPtr<SkSurface> surface_;
 };
 
+class TestPixmap : public ui::NativePixmap {
+ public:
+  TestPixmap(gfx::BufferFormat format) : format_(format) {}
+
+  void* GetEGLClientBuffer() override { return nullptr; }
+  int GetDmaBufFd() override { return -1; }
+  int GetDmaBufPitch() override { return 0; }
+  gfx::BufferFormat GetBufferFormat() override { return format_; }
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int plane_z_order,
+                            gfx::OverlayTransform plane_transform,
+                            const gfx::Rect& display_bounds,
+                            const gfx::RectF& crop_rect) override {
+    return true;
+  }
+  void SetProcessingCallback(
+      const ProcessingCallback& processing_callback) override {}
+  scoped_refptr<NativePixmap> GetProcessedPixmap(
+      gfx::Size target_size,
+      gfx::BufferFormat target_format) override {
+    return nullptr;
+  }
+  gfx::NativePixmapHandle ExportHandle() override {
+    return gfx::NativePixmapHandle();
+  }
+
+ private:
+  ~TestPixmap() override {}
+
+  gfx::BufferFormat format_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPixmap);
+};
+
 }  // namespace
 
 HeadlessSurfaceFactory::HeadlessSurfaceFactory()
@@ -86,6 +121,14 @@ bool HeadlessSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
+}
+
+scoped_refptr<NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  return new TestPixmap(format);
 }
 
 }  // namespace ui

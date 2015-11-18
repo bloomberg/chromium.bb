@@ -54,6 +54,14 @@
             'wgl_api_unittest.cc',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone',
+          ],
+          'sources': [
+            'gl_image_ozone_native_pixmap_unittest.cc',
+          ],
+        }],
       ],
     }
   ],

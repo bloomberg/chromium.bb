@@ -4,12 +4,51 @@
 
 #include "ui/ozone/platform/cast/client_native_pixmap_factory_cast.h"
 
-#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
+#include "base/logging.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/ozone/public/client_native_pixmap.h"
+#include "ui/ozone/public/client_native_pixmap_factory.h"
 
 namespace ui {
+namespace {
+
+// Dummy ClientNativePixmap implementation for Cast ozone.
+// Our NativePixmaps are just used to plumb an overlay frame through,
+// so they get instantiated, but not used.
+class ClientNativePixmapCast : public ClientNativePixmap {
+ public:
+  // ClientNativePixmap implementation:
+  void* Map() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  void Unmap() override { NOTREACHED(); }
+  void GetStride(int* stride) const override { NOTREACHED(); }
+};
+
+class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
+ public:
+  // ClientNativePixmapFactoryCast implementation:
+  void Initialize(base::ScopedFD device_fd) override {}
+
+  bool IsConfigurationSupported(gfx::BufferFormat format,
+                                gfx::BufferUsage usage) const override {
+    return format == gfx::BufferFormat::RGBA_8888 &&
+           usage == gfx::BufferUsage::SCANOUT;
+  }
+
+  scoped_ptr<ClientNativePixmap> ImportFromHandle(
+      const gfx::NativePixmapHandle& handle,
+      const gfx::Size& size,
+      gfx::BufferUsage usage) override {
+    return make_scoped_ptr(new ClientNativePixmapCast());
+  }
+};
+
+}  // namespace
 
 ClientNativePixmapFactory* CreateClientNativePixmapFactoryCast() {
-  return CreateStubClientNativePixmapFactory();
+  return new ClientNativePixmapFactoryCast();
 }
 
 }  // namespace ui

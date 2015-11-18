@@ -344,6 +344,10 @@ test("gl_unittests") {
     sources += [ "glx_api_unittest.cc" ]
   }
 
+  if (use_ozone) {
+    sources += [ "gl_image_ozone_native_pixmap_unittest.cc" ]
+  }
+
   include_dirs = [ "//third_party/khronos" ]
 
   deps = [
