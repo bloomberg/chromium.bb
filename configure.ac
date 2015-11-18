@@ -85,8 +85,8 @@ AC_ARG_ENABLE(egl, [  --disable-egl],,
 AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
 if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
-	PKG_CHECK_MODULES(EGL, [egl >= 7.10 glesv2])
-        PKG_CHECK_MODULES([EGL_TESTS], [egl >= 7.10 glesv2 wayland-client wayland-egl])
+	PKG_CHECK_MODULES(EGL, [egl glesv2])
+        PKG_CHECK_MODULES([EGL_TESTS], [egl glesv2 wayland-client wayland-egl])
 	PKG_CHECK_MODULES([GL_RENDERER], [libdrm])
 fi
 
@@ -339,7 +339,7 @@ AC_ARG_ENABLE(simple-egl-clients,
 AM_CONDITIONAL(BUILD_SIMPLE_EGL_CLIENTS, test "x$enable_simple_egl_clients" = "xyes")
 if test x$enable_simple_egl_clients = xyes; then
   PKG_CHECK_MODULES(SIMPLE_EGL_CLIENT,
-                    [egl >= 7.10 glesv2 wayland-client wayland-egl wayland-cursor])
+                    [egl glesv2 wayland-client wayland-egl wayland-cursor])
 fi
 
 AC_ARG_ENABLE(simple-intel-dmabuf-client,
@@ -367,7 +367,7 @@ if test x$enable_clients = xyes; then
 
   # Only check for cairo-egl if a GL or GLES renderer requested
   AS_IF([test "x$cairo_modules" = "xcairo-gl" -o "x$cairo_modules" = "xcairo-glesv2"], [
-    PKG_CHECK_MODULES(CAIRO_EGL, [wayland-egl egl >= 7.10 cairo-egl >= 1.11.3 $cairo_modules],
+    PKG_CHECK_MODULES(CAIRO_EGL, [wayland-egl egl cairo-egl >= 1.11.3 $cairo_modules],
                       [have_cairo_egl=yes], [have_cairo_egl=no])
     AS_IF([test "x$have_cairo_egl" = "xyes"],
 	  [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
