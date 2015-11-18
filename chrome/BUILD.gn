@@ -423,6 +423,13 @@ if (is_mac || is_win) {
       ]
 
       if (is_win) {
+        if (symbol_level == 2) {
+          # Incremental linking doesn't work on this target in debug mode with
+          # full symbols, but does work in other cases, including minimal
+          # symbols.
+          configs -= [ "//build/config/win:default_incremental_linking" ]
+          configs += [ "//build/config/win:incremental_linking" ]
+        }
         # TODO(GYP) bug 512851: PGO on Windows.
         # ['chrome_pgo_phase==1', {
         #   'msvs_settings': {
