@@ -1173,7 +1173,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	struct gl_surface_state *gs = get_surface_state(surface);
 	struct weston_buffer *buffer = gs->buffer_ref.buffer;
 	struct weston_view *view;
-	int texture_used;
+	bool texture_used;
 
 #ifdef GL_EXT_unpack_subimage
 	pixman_box32_t *rectangles;
@@ -1192,10 +1192,10 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	 * hold the reference to the buffer, in case the surface
 	 * migrates back to the primary plane.
 	 */
-	texture_used = 0;
+	texture_used = false;
 	wl_list_for_each(view, &surface->views, surface_link) {
 		if (view->plane == &surface->compositor->primary_plane) {
-			texture_used = 1;
+			texture_used = true;
 			break;
 		}
 	}
