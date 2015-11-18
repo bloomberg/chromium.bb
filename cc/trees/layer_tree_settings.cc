@@ -14,12 +14,6 @@
 
 namespace cc {
 
-LayerSettings::LayerSettings() : use_compositor_animation_timelines(false) {
-}
-
-LayerSettings::~LayerSettings() {
-}
-
 LayerTreeSettings::LayerTreeSettings()
     : single_thread_proxy_scheduler(true),
       use_external_begin_frame_source(false),

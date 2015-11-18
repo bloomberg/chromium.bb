@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "cc/base/switches.h"
-#include "cc/trees/layer_tree_settings.h"
+#include "cc/layers/layer_settings.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"

@@ -37,6 +37,7 @@
 #include "cc/base/switches.h"
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"

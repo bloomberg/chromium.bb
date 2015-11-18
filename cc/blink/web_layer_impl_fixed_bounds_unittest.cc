@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "cc/blink/web_layer_impl_fixed_bounds.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"

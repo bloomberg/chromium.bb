@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "cc/layers/append_quads_data.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/test/fake_impl_task_runner_provider.h"

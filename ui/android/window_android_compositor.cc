@@ -5,7 +5,7 @@
 #include "ui/android/window_android_compositor.h"
 
 #include "base/lazy_instance.h"
-#include "cc/trees/layer_tree_settings.h"
+#include "cc/layers/layer_settings.h"
 
 namespace ui {
 

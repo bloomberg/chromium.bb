@@ -6,6 +6,7 @@
 
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/test/fake_delegated_renderer_layer.h"

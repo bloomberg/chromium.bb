@@ -5,6 +5,7 @@
 #include "cc/layers/layer_proto_converter.h"
 
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"

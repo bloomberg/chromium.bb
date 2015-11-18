@@ -8,6 +8,7 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/geometry_test_utils.h"

@@ -18,14 +18,6 @@
 
 namespace cc {
 
-class CC_EXPORT LayerSettings {
- public:
-  LayerSettings();
-  ~LayerSettings();
-
-  bool use_compositor_animation_timelines;
-};
-
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();

@@ -9,6 +9,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "ui/gfx/geometry/size.h"

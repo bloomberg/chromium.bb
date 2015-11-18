@@ -6,6 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/test/fake_display_list_recording_source.h"

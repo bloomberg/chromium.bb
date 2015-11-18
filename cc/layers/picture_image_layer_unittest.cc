@@ -4,9 +4,9 @@
 
 #include "cc/layers/picture_image_layer.h"
 
+#include "cc/layers/layer_settings.h"
 #include "cc/playback/display_item.h"
 #include "cc/test/skia_common.h"
-#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"

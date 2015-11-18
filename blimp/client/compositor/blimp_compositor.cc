@@ -18,6 +18,7 @@
 #include "blimp/client/compositor/test/dummy_layer_driver.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "ui/gl/gl_surface.h"
