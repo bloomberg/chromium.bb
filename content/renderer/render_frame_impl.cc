@@ -477,9 +477,15 @@ base::TimeTicks SanitizeNavigationTiming(
   DCHECK(!browser_navigation_start.is_null());
   base::TimeTicks navigation_start =
       std::min(browser_navigation_start, renderer_navigation_start);
-  // TODO(csharrison) Investigate how big a problem the cross process
-  // monotonicity really is and on what platforms. Log UMA for:
-  // |renderer_navigation_start - browser_navigation_start|
+  base::TimeDelta difference =
+      renderer_navigation_start - browser_navigation_start;
+  if (difference > base::TimeDelta()) {
+    UMA_HISTOGRAM_TIMES("Navigation.Start.RendererBrowserDifference.Positive",
+                        difference);
+  } else {
+    UMA_HISTOGRAM_TIMES("Navigation.Start.RendererBrowserDifference.Negative",
+                        -difference);
+  }
   return navigation_start;
 }
 

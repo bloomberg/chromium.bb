@@ -20984,6 +20984,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Start.RendererBrowserDifference.Negative"
+    units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The difference between Now() in the renderer and browser_navigation_start
+    for browser-initiated navigations if the difference is negative. This value
+    should ideally only reflect the IPC time between the browser process and
+    renderer process, but in practice could be skewed by inter-process timing
+    errors. If the clocks used for TimeTicks are monotonic across processes, all
+    samples should fall into the Positive bucket.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Start.RendererBrowserDifference.Positive"
+    units="milliseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The difference between Now() in the renderer and browser_navigation_start
+    for browser-initiated navigations if the difference is positive. This value
+    should ideally only reflect the IPC time between the browser process and
+    renderer process, but in practice could be skewed by inter-process timing
+    errors. If the clocks used for TimeTicks are monotonic across processes, all
+    samples should fall into the Positive bucket.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.TimeToCommit" units="milliseconds">
   <owner>carlosk@chromium.org</owner>
   <summary>
