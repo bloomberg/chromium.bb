@@ -2063,3 +2063,11 @@ name=https://github.com/DynamoRIO/drmemory/issues/1815
 USER32.dll!InternalEnumProps
 USER32.dll!EnumPropsExW
 SHELL32.dll!CWindowPropStore::GetCount
+
+# Dr. Memory does not yet propagate uninits through ymm registers so we
+# avoid any false positives in the meantime that might show up in
+# libyuv and other code:
+UNINITIALIZED READ
+name=https://github.com/DynamoRIO/drmemory/issues/1485
+instruction=*ymm*
+media.dll!*
