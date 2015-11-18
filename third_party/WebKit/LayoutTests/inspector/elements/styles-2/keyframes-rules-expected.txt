@@ -6,15 +6,15 @@ Running: testInit
 
 Running: testDumpStyles
 [expanded] 
-element.style  { ()
+element.style { ()
     background-color: white;
 
 [expanded] 
-*  { (keyframes-rules.html:9 -> keyframes-rules.html:9:1)
+* { (keyframes-rules.html:9 -> keyframes-rules.html:9:1)
 /-- overloaded --/     background-color: papayawhip;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

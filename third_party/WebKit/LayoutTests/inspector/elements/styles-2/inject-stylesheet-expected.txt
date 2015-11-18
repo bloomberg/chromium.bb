@@ -22,11 +22,10 @@ display: block
 -webkit-border-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElE…s+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==") 100% / 1 / 0px stretch
     url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElE…s+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==") - #main injected stylesheet
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-media="screen" (inject-stylesheet.html)
-#main  { (inject-stylesheet.html:5 -> inject-stylesheet.html:5:3)
+#main { (inject-stylesheet.html:5 -> inject-stylesheet.html:5:3)
     background: blue;
         background-image: initial;
         background-position-x: initial;
@@ -40,12 +39,12 @@ media="screen" (inject-stylesheet.html)
         background-color: blue;
 
 [expanded] 
-#main  { (injected stylesheet)
+#main { (injected stylesheet)
     color: red;
     -webkit-border-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElE…s+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==");
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 iframe style:
@@ -78,10 +77,10 @@ margin-right: 8px
 margin-top: 8px
     8px - body user agent stylesheet
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#iframebody  { (injected stylesheet)
+#iframebody { (injected stylesheet)
     background: red;
         background-image: initial;
         background-position-x: initial;
@@ -95,8 +94,7 @@ element.style  { ()
         background-color: red;
 
 [expanded] 
-media="screen" (inject-stylesheet-iframe-data.html)
-body  { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3)
+body { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3)
 /-- overloaded --/     background: green;
     /-- overloaded --/     background-image: initial;
     /-- overloaded --/     background-position-x: initial;
@@ -110,7 +108,7 @@ body  { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:
     /-- overloaded --/     background-color: green;
 
 [expanded] 
-body  { (user agent stylesheet)
+body { (user agent stylesheet)
     display: block;
     margin: 8px;
         margin-top: 8px;

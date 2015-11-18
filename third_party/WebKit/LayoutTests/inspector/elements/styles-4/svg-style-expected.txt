@@ -2,18 +2,17 @@ Tests that svg:style does not crash when the related element is inspected.
 
  Main style:
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-media="all" (svg-style.xhtml)
-rect  { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
+rect { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
     fill: red;
 
 [expanded] 
-svg:rect[Attributes Style]  { ()
+svg:rect[Attributes Style] { ()
 
 [expanded] 
-*  { (user agent stylesheet)
+* { (user agent stylesheet)
     transform-origin: 0px 0px 0px;
 
 

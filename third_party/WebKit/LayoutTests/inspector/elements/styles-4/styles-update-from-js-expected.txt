@@ -6,7 +6,7 @@ Running: testInit
 Running: testSetStyleAttribute
 <div id="container" style="color: #daC0DE; border: 1px solid black;">…</div>
 [expanded] 
-element.style  { ()
+element.style { ()
     color: #daC0DE;
     border: 1px solid black;
         border-top-color: black;
@@ -23,25 +23,25 @@ element.style  { ()
         border-left-width: 1px;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
 Running: testSetStyleCSSText
 <div id="container" style="color: rgb(192, 255, 238);">…</div>
 [expanded] 
-element.style  { ()
+element.style { ()
     color: rgb(192, 255, 238);
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
 Running: testSetViaParsedAttributes
 <div id="container" style="color: rgb(192, 255, 238); border: 3px dashed green;">…</div>
 [expanded] 
-element.style  { ()
+element.style { ()
     color: rgb(192, 255, 238);
     border: 3px dashed green;
         border-top-color: green;
@@ -58,45 +58,45 @@ element.style  { ()
         border-left-width: 3px;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
 Running: testSetViaAncestorClass
 <div id="child"></div>
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-.red div:first-child  { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:1)
+.red div:first-child { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:1)
     background-color: red;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from div#container.red ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
     color: rgb(192, 255, 238);
 
 
 Running: testSetViaSiblingAttr
 <div id="childSibling"></div>
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div[foo="bar"] + div  { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:1)
+div[foo="bar"] + div { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:1)
     background-color: blue;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from div#container.red ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
     color: rgb(192, 255, 238);
 
 

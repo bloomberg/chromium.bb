@@ -7,14 +7,14 @@ color: rgb(255, 0, 0)
 display: block
     block - p user agent stylesheet
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#p1  { (region-style-crash.html:6 -> region-style-crash.html:6:1)
+#p1 { (region-style-crash.html:6 -> region-style-crash.html:6:1)
     color: #ff0000;
 
 [expanded] 
-p  { (user agent stylesheet)
+p { (user agent stylesheet)
     display: block;
     -webkit-margin-before: 1em;
     -webkit-margin-after: 1em;

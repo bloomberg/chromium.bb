@@ -373,19 +373,23 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
     if (!section)
         return;
     InspectorTest.addResult("[expanded] " + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
-    var chainEntries = section._titleElement.querySelectorAll(".media-list .media");
-    chainEntries = Array.prototype.slice.call(chainEntries);
-    if (section._titleElement.children[1])
-        chainEntries.push(section._titleElement.children[1]);
 
-    for (var j = 0; j < chainEntries.length; ++j) {
-        var chainEntry = chainEntries[j];
-        var entryLine = includeSelectorGroupMarks ? buildMarkedSelectors(chainEntry.children[1]) : chainEntry.children[1].textContent;
-        if (chainEntry.children[2])
-            entryLine += " " + chainEntry.children[2].textContent;
-        entryLine += " (" + extractText(chainEntry.children[0]) + ")";
-        InspectorTest.addResult(entryLine);
+    var medias = section._titleElement.querySelectorAll(".media-list .media");
+    for (var i = 0; i < medias.length; ++i) {
+        var media = medias[i];
+        InspectorTest.addResult(media.textContent);
     }
+    var selector = section._titleElement.querySelector(".selector");
+    var selectorText = includeSelectorGroupMarks ? buildMarkedSelectors(selector) : selector.textContent;
+    // Dump " {".
+    selectorText += selector.nextSibling.textContent;
+    var anchor = section._titleElement.querySelector(".styles-section-subtitle");
+    if (anchor) {
+        var anchorText = extractText(anchor);
+        selectorText += String.sprintf(" (%s)", anchorText);
+    }
+    InspectorTest.addResult(selectorText);
+
     InspectorTest.dumpStyleTreeOutline(section.propertiesTreeOutline, omitLonghands ? 1 : 2);
     InspectorTest.addResult("");
 }

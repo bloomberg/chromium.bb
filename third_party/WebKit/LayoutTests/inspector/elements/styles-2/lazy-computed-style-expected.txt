@@ -2,10 +2,10 @@ Tests that computed styles expand and allow tracing to style rules.
 
 ==== All styles (should be no computed) ====
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
+#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
     background: gray;
         background-image: initial;
         background-position-x: initial;
@@ -19,17 +19,17 @@ element.style  { ()
         background-color: gray;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
+#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
 /-- overloaded --/     background-color: black;
     font-family: Courier;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
+#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
 /-- overloaded --/     background-color: green;
 /-- overloaded --/     font-family: Times;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ==== All styles (computed should be there) ====
@@ -53,10 +53,10 @@ font-family: Courier
     Courier - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:1
     OVERLOADED Times - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:1
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
+#inspected { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
     background: gray;
         background-image: initial;
         background-position-x: initial;
@@ -70,17 +70,17 @@ element.style  { ()
         background-color: gray;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
+#inspected { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
 /-- overloaded --/     background-color: black;
     font-family: Courier;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
+#inspected { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
 /-- overloaded --/     background-color: green;
 /-- overloaded --/     font-family: Times;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

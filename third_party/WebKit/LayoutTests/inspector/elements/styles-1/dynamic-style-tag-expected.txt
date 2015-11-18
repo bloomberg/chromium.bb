@@ -54,35 +54,35 @@ Stylesheet added:
 }
 /*# sourceURL=inlineStyleCreatedByScript.css*/
 [expanded] 
-element.style  { ()
+element.style { ()
     color: red;
 
 [expanded] 
-.inline-style-created-by-script-with-source-url  { (inlineStyleCrea…ByScript.css:1 -> inlineStyleCreatedByScript.css:1:1)
+.inline-style-created-by-script-with-source-url { (inlineStyleCrea…ByScript.css:1 -> inlineStyleCreatedByScript.css:1:1)
 /-- overloaded --/     color: grey;
 
 [expanded] 
-.inline-style-created-by-script  { (<style>…</style>)
+.inline-style-created-by-script { (<style>…</style>)
 /-- overloaded --/     color: orange;
 
 [expanded] 
-.inline-style-added-by-document-write-with-source-url  { (inlineStyleAdde…entWrite.css:2 -> inlineStyleAddedByDocumentWrite.css:2:1)
+.inline-style-added-by-document-write-with-source-url { (inlineStyleAdde…entWrite.css:2 -> inlineStyleAddedByDocumentWrite.css:2:1)
 /-- overloaded --/     color: yellow;
 
 [expanded] 
-.inline-style-added-by-parser-in-document-write  { (<style>…</style>)
+.inline-style-added-by-parser-in-document-write { (<style>…</style>)
 /-- overloaded --/     color: blue;
 
 [expanded] 
-.inline-style-added-by-parser-with-source-url  { (inlineStyleAddedByParser.css:2 -> inlineStyleAddedByParser.css:2:1)
+.inline-style-added-by-parser-with-source-url { (inlineStyleAddedByParser.css:2 -> inlineStyleAddedByParser.css:2:1)
 /-- overloaded --/     color: green;
 
 [expanded] 
-.inline-style-added-by-parser  { (dynamic-style-tag.html:6 -> dynamic-style-tag.html:6:14)
+.inline-style-added-by-parser { (dynamic-style-tag.html:6 -> dynamic-style-tag.html:6:14)
 /-- overloaded --/     color: red;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

@@ -21,14 +21,14 @@ Running: dumpDisabledText
 
 ==Source frame contents end==
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
+#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
 /-- overloaded --/ /-- disabled --/     /* font-weight: bold; */
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
@@ -42,14 +42,14 @@ Running: dumpEnabledText
 
 ==Source frame contents end==
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
+#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
     font-weight: bold;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

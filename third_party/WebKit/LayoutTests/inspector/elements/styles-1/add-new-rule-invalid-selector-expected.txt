@@ -6,10 +6,10 @@ Running: init
 
 Running: keyframesRuleSelector
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

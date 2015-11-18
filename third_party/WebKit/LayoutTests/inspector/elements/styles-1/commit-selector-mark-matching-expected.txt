@@ -5,25 +5,25 @@ Running: setUp
 
 Running: addRule
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-foo, [$#inspected$], .bar, [$#inspected$]  { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
+foo, [$#inspected$], .bar, [$#inspected$] { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
 
 [expanded] 
-[$div$]  { (user agent stylesheet)
+[$div$] { (user agent stylesheet)
     display: block;
 
 
 Running: changeSelector
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-[$#inspected$], a, hr  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
+[$#inspected$], a, hr { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 
 [expanded] 
-[$div$]  { (user agent stylesheet)
+[$div$] { (user agent stylesheet)
     display: block;
 
 

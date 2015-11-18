@@ -30,7 +30,7 @@ text-decoration-line: underline
 text-decoration-style: solid
     initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 [expanded] 
-element.style  { ()
+element.style { ()
 
 ==== Computed style for ID2 ====
 background-color: rgb(0, 0, 255)
@@ -51,14 +51,14 @@ text-decoration-line: underline
 text-decoration-style: solid
     initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 [expanded] 
-element.style  { ()
+element.style { ()
 
 ==== Style for ID3 ====
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-button[Attributes Style]  { ()
+button[Attributes Style] { ()
     display: none;
 
 

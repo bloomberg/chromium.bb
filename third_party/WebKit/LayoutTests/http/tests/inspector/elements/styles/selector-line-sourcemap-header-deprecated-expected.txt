@@ -2,14 +2,14 @@ Tests that sourcemap is applied correctly when specified by the respective HTTP 
 
 Text
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#container #inspected  { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
+#container #inspected { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
     color: green;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

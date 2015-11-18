@@ -5,14 +5,14 @@ Running: testInit
 
 Running: testDumpStyles
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-.red  { (<style>…</style>)
+.red { (<style>…</style>)
     color: red;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

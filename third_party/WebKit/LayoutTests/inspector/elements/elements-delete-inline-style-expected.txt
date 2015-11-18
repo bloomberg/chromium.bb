@@ -2,19 +2,19 @@ Tests that the "style" attribute removal results in the Styles sidebar pane upda
 
 Before style property removal:
 [expanded] 
-element.style  { ()
+element.style { ()
     color: red;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 After style property removal:
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

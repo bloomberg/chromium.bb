@@ -5,19 +5,19 @@ display: block
     block - div user agent stylesheet
 -webkit-font-smoothing: antialiased
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from div#container ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
     CoLoR: blAck;
 
 [expanded] 
-#container  { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:1)
+#container { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:1)
     -webkit-FONT-smoothing: antialiased;
 
 

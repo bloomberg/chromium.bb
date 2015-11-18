@@ -4,23 +4,23 @@ Test text
 
 DIV with :hover and :active
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
+div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
     font-weight: bold;
 
 [expanded] 
-div:hover, a:hover  { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:1)
+div:hover, a:hover { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:1)
     color: red;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
 /-- overloaded --/     font-weight: normal;
 
 - <html> [subtreeMarkerCount:1]
@@ -33,14 +33,14 @@ Style Attribute  { ()
 
 DIV with :active and :focus
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
+div:active, a:active { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
     font-weight: bold;
 
 [expanded] 
-div:focus, a:focus  { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
+div:focus, a:focus { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
     border: 1px solid green;
         border-top-color: green;
         border-top-style: solid;
@@ -56,19 +56,19 @@ div:focus, a:focus  { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
         border-left-width: 1px;
 
 [expanded] 
-:focus  { (user agent stylesheet)
+:focus { (user agent stylesheet)
     outline: -webkit-focus-ring-color auto 5px;
         outline-color: -webkit-focus-ring-color;
         outline-style: auto;
         outline-width: 5px;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
 /-- overloaded --/     font-weight: normal;
 
 - <html> [subtreeMarkerCount:1]
@@ -81,15 +81,15 @@ Style Attribute  { ()
 
 DIV with no forced state
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
-Style Attribute  { ()
+Style Attribute { ()
     font-weight: normal;
 
 - <html>

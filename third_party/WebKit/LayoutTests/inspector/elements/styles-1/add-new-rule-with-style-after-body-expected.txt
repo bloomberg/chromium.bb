@@ -3,16 +3,16 @@ Tests that adding a new rule works when there is a STYLE element after BODY. TIM
 Text
 After adding new rule:
 [expanded] 
-element.style  { ()
+element.style { ()
     font-size: 12px;
 
 [expanded] [no-affect] 
-inspected  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
+inspected { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
     color: maroon;
     : ;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

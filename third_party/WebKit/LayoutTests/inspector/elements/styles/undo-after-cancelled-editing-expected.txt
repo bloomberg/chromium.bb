@@ -8,15 +8,15 @@ Running: addNewProperty
 
 Running: editProperty
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
     color: blue;
     : ;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
@@ -24,26 +24,26 @@ Running: cancelEditing
 
 Running: undoStyles
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
     color: blue;
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 
 Running: onUndoedProperty
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-#inspected  { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
+#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:1)
 
 [expanded] 
-div  { (user agent stylesheet)
+div { (user agent stylesheet)
     display: block;
 
 

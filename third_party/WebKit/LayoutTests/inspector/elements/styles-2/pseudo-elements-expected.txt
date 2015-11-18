@@ -17,32 +17,32 @@ Original elements tree:
 
 Running: dumpNormalNodeStyles
 [expanded] 
-element.style  { ()
+element.style { ()
 
 [expanded] 
-[$div$]  { (user agent stylesheet)
+[$div$] { (user agent stylesheet)
     display: block;
 
 ======== Pseudo ::before element ========
 [expanded] 
-[$#inspected:before$], .some-other-selector  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+[$#inspected:before$], .some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
     content: "BEFORE";
 
 ======== Pseudo ::after element ========
 [expanded] 
-[$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
     content: "AFTER";
 
 
 Running: dumpBeforeStyles
 [expanded] 
-[$#inspected:before$], .some-other-selector  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
+[$#inspected:before$], .some-other-selector { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
     content: "BEFORE";
 
 
 Running: dumpAfterStyles
 [expanded] 
-[$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
+[$#inspected:after$] { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
     content: "AFTER";
 
 
