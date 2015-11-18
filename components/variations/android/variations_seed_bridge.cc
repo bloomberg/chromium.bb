@@ -39,7 +39,9 @@ bool RegisterVariationsSeedBridge(JNIEnv* env) {
 
 void GetVariationsFirstRunSeed(std::string* seed_data,
                                std::string* seed_signature,
-                               std::string* seed_country) {
+                               std::string* seed_country,
+                               std::string* response_date,
+                               bool* is_gzip_compressed) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_seed_data =
       Java_VariationsSeedBridge_getVariationsFirstRunSeedData(
@@ -50,9 +52,17 @@ void GetVariationsFirstRunSeed(std::string* seed_data,
   ScopedJavaLocalRef<jstring> j_seed_country =
       Java_VariationsSeedBridge_getVariationsFirstRunSeedCountry(
           env, GetApplicationContext());
+  ScopedJavaLocalRef<jstring> j_response_date =
+      Java_VariationsSeedBridge_getVariationsFirstRunSeedDate(
+          env, GetApplicationContext());
+  jboolean j_is_gzip_compressed =
+      Java_VariationsSeedBridge_getVariationsFirstRunSeedIsGzipCompressed(
+          env, GetApplicationContext());
   *seed_data = JavaByteArrayToString(env, j_seed_data.obj());
   *seed_signature = ConvertJavaStringToUTF8(j_seed_signature);
   *seed_country = ConvertJavaStringToUTF8(j_seed_country);
+  *response_date = ConvertJavaStringToUTF8(j_response_date);
+  *is_gzip_compressed = static_cast<bool>(j_is_gzip_compressed);
 }
 
 void ClearJavaFirstRunPrefs() {

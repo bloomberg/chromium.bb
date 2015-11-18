@@ -76333,7 +76333,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="VariationsFirstRunResult" type="int">
   <int value="0" label="Seed imported successfully"/>
-  <int value="1" label="Seed import failed - no callback"/>
+  <int value="1" label="Seed import failed - no callback (Obsolete)"/>
   <int value="2" label="Seed import failed - no first run seed"/>
   <int value="3" label="Seed import failed - failed to store seed"/>
 </enum>

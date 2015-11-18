@@ -16,7 +16,9 @@ bool RegisterVariationsSeedBridge(JNIEnv* env);
 // Return the first run seed data pulled from the Java side of application.
 void GetVariationsFirstRunSeed(std::string* seed_data,
                                std::string* seed_signature,
-                               std::string* seed_country);
+                               std::string* seed_country,
+                               std::string* response_date,
+                               bool* is_gzip_compressed);
 
 // Clears first run seed preferences stored on the Java side of Chrome for
 // Android.

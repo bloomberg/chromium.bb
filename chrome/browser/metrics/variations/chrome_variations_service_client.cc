@@ -18,10 +18,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/variations/android/variations_seed_bridge.h"
-#endif  // OS_ANDROID
-
 namespace {
 
 // Gets the version number to use for variations seed simulation. Must be called
@@ -81,15 +77,6 @@ bool ChromeVariationsServiceClient::OverridesRestrictParameter(
 #else
   return false;
 #endif
-}
-
-variations::VariationsFirstRunSeedCallback
-ChromeVariationsServiceClient::GetVariationsFirstRunSeedCallback() {
-#if defined(OS_ANDROID)
-  return base::Bind(&variations::android::GetVariationsFirstRunSeed);
-#else   // OS_ANDROID
-  return variations::VariationsFirstRunSeedCallback();
-#endif  // OS_ANDROID
 }
 
 void ChromeVariationsServiceClient::OnInitialStartup() {

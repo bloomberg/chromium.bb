@@ -66,8 +66,7 @@ public class VariationsSeedService extends IntentService {
             connection.setReadTimeout(READ_TIMEOUT);
             connection.setConnectTimeout(REQUEST_TIMEOUT);
             connection.setDoInput(true);
-            // TODO(agulenko): add gzip compression support.
-            // connection.setRequestProperty("A-IM", "gzip");
+            connection.setRequestProperty("A-IM", "gzip");
             connection.connect();
             int responseCode = connection.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -77,10 +76,12 @@ public class VariationsSeedService extends IntentService {
 
             // Convert the InputStream into a byte array.
             byte[] rawSeed = getRawSeed(connection);
-            String signature = connection.getHeaderField("X-Seed-Signature");
-            String country = connection.getHeaderField("X-Country");
+            String signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
+            String country = getHeaderFieldOrEmpty(connection, "X-Country");
+            String date = getHeaderFieldOrEmpty(connection, "Date");
+            boolean isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
             VariationsSeedBridge.setVariationsFirstRunSeed(
-                    getApplicationContext(), rawSeed, signature, country);
+                    getApplicationContext(), rawSeed, signature, country, date, isGzipCompressed);
             return true;
         } catch (IOException e) {
             Log.w(TAG, "IOException fetching first run seed: ", e);
@@ -90,6 +91,14 @@ public class VariationsSeedService extends IntentService {
                 connection.disconnect();
             }
         }
+    }
+
+    private String getHeaderFieldOrEmpty(HttpURLConnection connection, String name) {
+        String headerField = connection.getHeaderField(name);
+        if (headerField == null) {
+            return "";
+        }
+        return headerField.trim();
     }
 
     private byte[] getRawSeed(HttpURLConnection connection) throws IOException {

@@ -363,27 +363,25 @@ void VariationsSeedStore::ClearPrefs() {
 #if defined(OS_ANDROID)
 void VariationsSeedStore::ImportFirstRunJavaSeed() {
   DVLOG(1) << "Importing first run seed from Java preferences.";
-  if (get_variations_first_run_seed_.is_null()) {
-    RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_NO_CALLBACK);
-    return;
-  }
 
   std::string seed_data;
   std::string seed_signature;
   std::string seed_country;
-  get_variations_first_run_seed_.Run(&seed_data, &seed_signature,
-                                     &seed_country);
+  std::string response_date;
+  bool is_gzip_compressed;
+
+  android::GetVariationsFirstRunSeed(&seed_data, &seed_signature, &seed_country,
+                                     &response_date, &is_gzip_compressed);
   if (seed_data.empty()) {
     RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_NO_FIRST_RUN_SEED);
     return;
   }
 
-  // TODO(agulenko): Pull actual time from the response.
-  base::Time current_time = base::Time::Now();
+  base::Time current_date;
+  base::Time::FromUTCString(response_date.c_str(), &current_date);
 
-  // TODO(agulenko): Support gzip compressed seed.
-  if (!StoreSeedData(seed_data, seed_signature, seed_country, current_time,
-                     false, false, nullptr)) {
+  if (!StoreSeedData(seed_data, seed_signature, seed_country, current_date,
+                     false, is_gzip_compressed, nullptr)) {
     RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_STORE_FAILED);
     LOG(WARNING) << "First run variations seed is invalid.";
     return;

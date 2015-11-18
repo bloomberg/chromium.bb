@@ -8,7 +8,6 @@ source_set("service") {
     "ui_string_overrider.h",
     "variations_service.cc",
     "variations_service.h",
-    "variations_service_client.cc",
     "variations_service_client.h",
   ]
 

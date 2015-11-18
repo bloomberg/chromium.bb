@@ -115,7 +115,6 @@
         'variations/service/variations_service.cc',
         'variations/service/variations_service.h',
         'variations/service/variations_service_client.h',
-        'variations/service/variations_service_client.cc',
       ],
     },
     {

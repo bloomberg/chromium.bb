@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
@@ -20,9 +19,6 @@ class VariationsSeed;
 }
 
 namespace variations {
-
-typedef base::Callback<void(std::string*, std::string*, std::string*)>
-    VariationsFirstRunSeedCallback;
 
 // VariationsSeedStore is a helper class for reading and writing the variations
 // seed from Local State.
@@ -78,13 +74,6 @@ class VariationsSeedStore {
 
   // Registers Local State prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Registers callback for pulling variations first run seed from Java side
-  // in Chrome for Android.
-  void SetVariationsFirstRunSeedCallback(
-      const VariationsFirstRunSeedCallback& callback) {
-    get_variations_first_run_seed_ = callback;
-  }
 
  protected:
   // Note: UMA histogram enum - don't re-order or remove entries.
@@ -150,8 +139,6 @@ class VariationsSeedStore {
 
   // Keeps track of an invalid signature.
   std::string invalid_base64_signature_;
-
-  VariationsFirstRunSeedCallback get_variations_first_run_seed_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedStore);
 };

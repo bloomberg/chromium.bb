@@ -20,6 +20,9 @@ public final class VariationsSeedBridge {
     private static final String VARIATIONS_FIRST_RUN_SEED_BASE64 = "variations_seed_base64";
     private static final String VARIATIONS_FIRST_RUN_SEED_SIGNATURE = "variations_seed_signature";
     private static final String VARIATIONS_FIRST_RUN_SEED_COUNTRY = "variations_seed_country";
+    private static final String VARIATIONS_FIRST_RUN_SEED_DATE = "variations_seed_date";
+    private static final String VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED =
+            "variations_seed_is_gzip_compressed";
 
     // This pref is used to store information about successful seed storing on the C++ side, in
     // order to not fetch the seed again.
@@ -33,14 +36,16 @@ public final class VariationsSeedBridge {
     /**
      * Stores variations seed data (raw data, seed signature and country code) in SharedPreferences.
      */
-    public static void setVariationsFirstRunSeed(
-            Context context, byte[] rawSeed, String signature, String country) {
+    public static void setVariationsFirstRunSeed(Context context, byte[] rawSeed, String signature,
+            String country, String date, boolean isGzipCompressed) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
                 .putString(VARIATIONS_FIRST_RUN_SEED_BASE64,
                         Base64.encodeToString(rawSeed, Base64.NO_WRAP))
                 .putString(VARIATIONS_FIRST_RUN_SEED_SIGNATURE, signature)
                 .putString(VARIATIONS_FIRST_RUN_SEED_COUNTRY, country)
+                .putString(VARIATIONS_FIRST_RUN_SEED_DATE, date)
+                .putBoolean(VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, isGzipCompressed)
                 .apply();
     }
 
@@ -94,5 +99,16 @@ public final class VariationsSeedBridge {
     @CalledByNative
     private static String getVariationsFirstRunSeedCountry(Context context) {
         return getVariationsFirstRunSeedPref(context, VARIATIONS_FIRST_RUN_SEED_COUNTRY);
+    }
+
+    @CalledByNative
+    private static String getVariationsFirstRunSeedDate(Context context) {
+        return getVariationsFirstRunSeedPref(context, VARIATIONS_FIRST_RUN_SEED_DATE);
+    }
+
+    @CalledByNative
+    private static boolean getVariationsFirstRunSeedIsGzipCompressed(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, false);
     }
 }
