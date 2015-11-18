@@ -1853,6 +1853,7 @@ void LayoutBlockFlow::styleWillChange(StyleDifference diff, const ComputedStyle&
 
 void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
+    bool hadSelfPaintingLayer = hasSelfPaintingLayer();
     LayoutBlock::styleDidChange(diff, oldStyle);
 
     // After our style changed, if we lose our ability to propagate floats into next sibling
@@ -1860,7 +1861,20 @@ void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* 
     // then mark its descendants with floats for layout and clear all floats from its next
     // sibling blocks that exist in our floating objects list. See bug 56299 and 62875.
     bool canPropagateFloatIntoSibling = !isFloatingOrOutOfFlowPositioned() && !avoidsFloats();
-    if (diff.needsFullLayout() && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats()) {
+    bool siblingFloatPropagationChanged = diff.needsFullLayout() && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats();
+
+    // When this object's self-painting layer status changed, we should update FloatingObjects::shouldPaint() flags for
+    // descendant overhanging floats in ancestors.
+    bool needsUpdateAncestorFloatObjectShouldPaintFlags = false;
+    if (hasSelfPaintingLayer() != hadSelfPaintingLayer && hasOverhangingFloats()) {
+        setNeedsLayout(LayoutInvalidationReason::StyleChange);
+        if (hadSelfPaintingLayer)
+            markAllDescendantsWithFloatsForLayout();
+        else
+            needsUpdateAncestorFloatObjectShouldPaintFlags = true;
+    }
+
+    if (siblingFloatPropagationChanged || needsUpdateAncestorFloatObjectShouldPaintFlags) {
         LayoutBlockFlow* parentBlockFlow = this;
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
         FloatingObjectSetIterator end = floatingObjectSet.end();
@@ -1882,7 +1896,8 @@ void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* 
         }
 
         parentBlockFlow->markAllDescendantsWithFloatsForLayout();
-        parentBlockFlow->markSiblingsWithFloatsForLayout();
+        if (siblingFloatPropagationChanged)
+            parentBlockFlow->markSiblingsWithFloatsForLayout();
     }
 
     if (diff.needsFullLayout() || !oldStyle)
