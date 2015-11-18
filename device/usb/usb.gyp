@@ -14,6 +14,7 @@
         '../../components/components.gyp:device_event_log_component',
         '../../net/net.gyp:net',
         '../../third_party/libusb/libusb.gyp:libusb',
+        '../core/core.gyp:device_core',
       ],
       'include_dirs': [
         '../..',
