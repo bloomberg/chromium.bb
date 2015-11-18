@@ -15,6 +15,8 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class OobeUI;
@@ -77,7 +79,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void SetDisplayEmail(const std::string& email) override;
   void Signout() override;
   void HandleGetUsers() override;
-  void CheckUserStatus(const std::string& user_id) override;
+  void CheckUserStatus(const AccountId& account_id) override;
   bool IsUserWhitelisted(const std::string& user_id) override;
 
   // AuthStatusConsumer implementation:

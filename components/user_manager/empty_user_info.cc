@@ -31,7 +31,7 @@ std::string EmptyUserInfo::GetEmail() const {
   return std::string();
 }
 
-AccountId EmptyUserInfo::GetAccountId() const {
+const AccountId& EmptyUserInfo::GetAccountId() const {
   NOTIMPLEMENTED();
   return EmptyAccountId();
 }

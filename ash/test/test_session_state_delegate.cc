@@ -56,7 +56,7 @@ class MockUserInfo : public user_manager::UserInfo {
 
   std::string GetEmail() const override { return display_email_; }
 
-  AccountId GetAccountId() const override { return account_id_; }
+  const AccountId& GetAccountId() const override { return account_id_; }
 
   const gfx::ImageSkia& GetImage() const override { return user_image_; }
 

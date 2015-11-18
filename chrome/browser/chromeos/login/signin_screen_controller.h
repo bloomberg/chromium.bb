@@ -43,7 +43,7 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
   void SendUserList();
 
   // Runs OAauth token validity check.
-  void CheckUserStatus(const std::string& user_id);
+  void CheckUserStatus(const AccountId& account_id);
 
   // Query to remove user with specified id.
   // TODO(antrim): move to user selection screen handler.

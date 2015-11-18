@@ -25,7 +25,7 @@ class USER_MANAGER_EXPORT EmptyUserInfo : public UserInfo {
   base::string16 GetDisplayName() const override;
   base::string16 GetGivenName() const override;
   std::string GetEmail() const override;
-  AccountId GetAccountId() const override;
+  const AccountId& GetAccountId() const override;
   const gfx::ImageSkia& GetImage() const override;
 
  private:

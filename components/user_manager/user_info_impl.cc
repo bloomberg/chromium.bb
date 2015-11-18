@@ -10,8 +10,8 @@
 
 namespace user_manager {
 
-UserInfoImpl::UserInfoImpl() {
-}
+UserInfoImpl::UserInfoImpl()
+    : account_id_(AccountId::FromUserEmail("stub-user@domain.com")) {}
 
 UserInfoImpl::~UserInfoImpl() {
 }
@@ -25,11 +25,11 @@ base::string16 UserInfoImpl::GetGivenName() const {
 }
 
 std::string UserInfoImpl::GetEmail() const {
-  return "stub-user@domain.com";
+  return account_id_.GetUserEmail();
 }
 
-AccountId UserInfoImpl::GetAccountId() const {
-  return AccountId::FromUserEmail(GetEmail());
+const AccountId& UserInfoImpl::GetAccountId() const {
+  return account_id_;
 }
 
 const gfx::ImageSkia& UserInfoImpl::GetImage() const {

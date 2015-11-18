@@ -185,7 +185,7 @@ class SigninScreenHandlerDelegate {
   virtual void HandleGetUsers() = 0;
 
   // Runs an OAuth token validation check for user.
-  virtual void CheckUserStatus(const std::string& user_id) = 0;
+  virtual void CheckUserStatus(const AccountId& account_id) = 0;
 
   // Returns true if user is allowed to log in by domain policy.
   virtual bool IsUserWhitelisted(const std::string& user_id) = 0;
@@ -319,18 +319,18 @@ class SigninScreenHandler
 
   // WebUI message handlers.
   void HandleGetUsers();
-  void HandleAuthenticateUser(const std::string& username,
+  void HandleAuthenticateUser(const AccountId& account_id,
                               const std::string& password);
   void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchIncognito();
-  void HandleLaunchPublicSession(const std::string& user_id,
+  void HandleLaunchPublicSession(const AccountId& account_id,
                                  const std::string& locale,
                                  const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem();
-  void HandleLoadWallpaper(const std::string& email);
+  void HandleLoadWallpaper(const AccountId& account_id);
   void HandleRebootSystem();
-  void HandleRemoveUser(const std::string& email);
+  void HandleRemoveUser(const AccountId& account_id);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen();
   void HandleToggleEnableDebuggingScreen();
@@ -342,7 +342,7 @@ class SigninScreenHandler
   void HandleSignOutUser();
   void HandleOpenProxySettings();
   void HandleLoginVisible(const std::string& source);
-  void HandleCancelPasswordChangedFlow(const std::string& user_id);
+  void HandleCancelPasswordChangedFlow(const AccountId& account_id);
   void HandleCancelUserAdding();
   void HandleMigrateUserData(const std::string& password);
   void HandleResyncUserData();
@@ -351,21 +351,22 @@ class SigninScreenHandler
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
   void HandleShowSupervisedUserCreationScreen();
-  void HandleFocusPod(const std::string& user_id);
+  void HandleFocusPod(const AccountId& account_id);
   void HandleHardlockPod(const std::string& user_id);
-  void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
-  void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,
+  void HandleLaunchKioskApp(const AccountId& app_account_id,
+                            bool diagnostic_mode);
+  void HandleGetPublicSessionKeyboardLayouts(const AccountId& account_id,
                                              const std::string& locale);
   void HandleCancelConsumerManagementEnrollment();
   void HandleGetTouchViewState();
   void HandleLogRemoveUserWarningShown();
-  void HandleFirstIncorrectPasswordAttempt(const std::string& email);
-  void HandleMaxIncorrectPasswordAttempts(const std::string& email);
+  void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
+  void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.
   void SendPublicSessionKeyboardLayouts(
-      const std::string& user_id,
+      const AccountId& account_id,
       const std::string& locale,
       scoped_ptr<base::ListValue> keyboard_layouts);
 

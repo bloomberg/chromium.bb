@@ -120,13 +120,13 @@ bool UserMatches(const AccountId& account_id,
                  const base::DictionaryValue& dict) {
   std::string value;
 
-  bool has_email = dict.GetString(kCanonicalEmail, &value);
-  if (has_email && account_id.GetUserEmail() == value)
+  // TODO(alemate): update code once user id is really a struct.
+  bool has_gaia_id = dict.GetString(kGAIAIdKey, &value);
+  if (has_gaia_id && account_id.GetGaiaId() == value)
     return true;
 
-  // TODO(antrim): update code once user id is really a struct.
-  bool has_gaia_id = dict.GetString(kGAIAIdKey, &value);
-  if (has_gaia_id && account_id.GetUserEmail() == value)
+  bool has_email = dict.GetString(kCanonicalEmail, &value);
+  if (has_email && account_id.GetUserEmail() == value)
     return true;
 
   return false;
@@ -582,7 +582,6 @@ void UserManagerBase::UpdateUserAccountData(
   UpdateUserAccountLocale(account_id, account_data.locale());
 }
 
-// static
 void UserManagerBase::ParseUserList(const base::ListValue& users_list,
                                     const std::set<AccountId>& existing_users,
                                     std::vector<AccountId>* users_vector,
@@ -595,7 +594,21 @@ void UserManagerBase::ParseUserList(const base::ListValue& users_list,
       LOG(ERROR) << "Corrupt entry in user list at index " << i << ".";
       continue;
     }
-    const AccountId account_id(AccountId::FromUserEmail(email));
+
+    const AccountId partial_account_id = AccountId::FromUserEmail(email);
+    AccountId account_id = EmptyAccountId();
+
+    const bool lookup_result =
+        GetKnownUserAccountId(partial_account_id, &account_id);
+    // TODO(alemate):
+    // DCHECK(lookup_result) << "KnownUser lookup falied for '" << email << "'";
+    // (tests do not initialize KnownUserData)
+
+    if (!lookup_result) {
+      account_id = partial_account_id;
+      LOG(WARNING) << "KnownUser lookup falied for '" << email << "'";
+    }
+
     if (existing_users.find(account_id) != existing_users.end() ||
         !users_set->insert(account_id).second) {
       LOG(ERROR) << "Duplicate user: " << email;
@@ -849,6 +862,7 @@ void UserManagerBase::EnsureUsersLoaded() {
         ChangeUserChildStatus(user, true /* is child */);
       }
     }
+    const AccountId account_id = user->GetAccountId();
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
     user->set_using_saml(FindUsingSAML(*it));
@@ -1152,15 +1166,25 @@ void UserManagerBase::SetKnownUserIntegerPref(const AccountId& account_id,
 bool UserManagerBase::GetKnownUserAccountId(
     const AccountId& authenticated_account_id,
     AccountId* out_account_id) {
-  DCHECK(!authenticated_account_id.GetGaiaId().empty());
-  std::string canonical_email;
-  if (!GetKnownUserStringPref(
-          AccountId::FromGaiaId(authenticated_account_id.GetGaiaId()),
-          kCanonicalEmail, &canonical_email))
+  if (!authenticated_account_id.GetGaiaId().empty()) {
+    std::string canonical_email;
+    if (!GetKnownUserStringPref(
+            AccountId::FromGaiaId(authenticated_account_id.GetGaiaId()),
+            kCanonicalEmail, &canonical_email)) {
+      return false;
+    }
+
+    *out_account_id = AccountId::FromUserEmailGaiaId(
+        canonical_email, authenticated_account_id.GetGaiaId());
+    return true;
+  }
+  DCHECK(!authenticated_account_id.GetUserEmail().empty());
+  std::string gaia_id;
+  if (!GetKnownUserStringPref(authenticated_account_id, kGAIAIdKey, &gaia_id))
     return false;
 
-  *out_account_id = authenticated_account_id;
-  out_account_id->SetUserEmail(canonical_email);
+  *out_account_id = AccountId::FromUserEmailGaiaId(
+      authenticated_account_id.GetUserEmail(), gaia_id);
   return true;
 }
 
