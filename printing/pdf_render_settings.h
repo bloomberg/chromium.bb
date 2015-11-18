@@ -5,40 +5,59 @@
 #ifndef PRINTING_PDF_RENDER_SETTINGS_H_
 #define PRINTING_PDF_RENDER_SETTINGS_H_
 
-#include "base/tuple.h"
+#include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 
 namespace printing {
 
-// Defining PDF rendering settings here as a Tuple as following:
-// gfx::Rect - render area
-// int - render dpi
-// bool - autorotate pages to fit paper
-typedef base::Tuple<gfx::Rect, int, bool> PdfRenderSettingsBase;
-
-class PdfRenderSettings : public PdfRenderSettingsBase {
+// Defining PDF rendering settings.
+class PdfRenderSettings {
  public:
-  PdfRenderSettings() : PdfRenderSettingsBase() {}
+  PdfRenderSettings() {}
   PdfRenderSettings(gfx::Rect area, int dpi, bool autorotate)
-      : PdfRenderSettingsBase(area, dpi, autorotate) {}
+      : area_(area), dpi_(dpi), autorotate_(autorotate) {}
   ~PdfRenderSettings() {}
 
-  const gfx::Rect& area() const { return base::get<0>(*this); }
-  int dpi() const { return base::get<1>(*this); }
-  bool autorotate() const { return base::get<2>(*this); }
+  const gfx::Rect& area() const { return area_; }
+  int dpi() const { return dpi_; }
+  bool autorotate() const { return autorotate_; }
+
+  gfx::Rect area_;
+  int dpi_;
+  bool autorotate_;
 };
 
 }  // namespace printing
 
 namespace IPC {
 template <>
-struct SimilarTypeTraits<printing::PdfRenderSettings> {
-  typedef printing::PdfRenderSettingsBase Type;
+struct ParamTraits<printing::PdfRenderSettings> {
+  typedef printing::PdfRenderSettings param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.area_);
+    WriteParam(m, p.dpi_);
+    WriteParam(m, p.autorotate_);
+  }
+
+  static bool Read(const Message* m, base::PickleIterator* iter,
+                   param_type* r) {
+    return ReadParam(m, iter, &r->area_) &&
+        ReadParam(m, iter, &r->dpi_) &&
+        ReadParam(m, iter, &r->autorotate_);
+  }
+
+  static void Log(const param_type& p, std::string* l) {
+    LogParam(p.area_, l);
+    l->append(", ");
+    LogParam(p.dpi_, l);
+    l->append(", ");
+    LogParam(p.autorotate_, l);
+  }
 };
 
 }  // namespace IPC
 
 #endif  // PRINTING_PDF_RENDER_SETTINGS_H_
-
