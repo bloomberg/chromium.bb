@@ -9,6 +9,7 @@
 
 #include <windows.h>
 #include <msi.h>
+#include <shlobj.h>
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -16,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/installer/util/app_registration_data.h"
@@ -39,6 +41,8 @@ const wchar_t kBrowserProgIdPrefix[] = L"ChromeHTML";
 const wchar_t kBrowserProgIdDesc[] = L"Chrome HTML Document";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
+const wchar_t kEdgeAppId[] =
+    L"Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -54,6 +58,33 @@ base::string16 GetUninstallSurveyUrl() {
   const wchar_t kSurveyUrl[] = L"https://support.google.com/chrome/"
                                L"contact/chromeuninstall3?hl=$1";
   return LocalizeUrl(kSurveyUrl);
+}
+
+bool NavigateToUrlWithEdge(const base::string16& url) {
+  base::win::ScopedComPtr<IApplicationActivationManager> activator;
+  DWORD pid = 0;
+  return SUCCEEDED(
+             activator.CreateInstance(CLSID_ApplicationActivationManager)) &&
+         SUCCEEDED(activator->ActivateApplication(kEdgeAppId, url.c_str(),
+                                                  AO_NOERRORUI, &pid));
+}
+
+void NavigateToUrlWithIExplore(const base::string16& url) {
+  base::FilePath iexplore;
+  if (!PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))
+    return;
+
+  iexplore = iexplore.AppendASCII("Internet Explorer");
+  iexplore = iexplore.AppendASCII("iexplore.exe");
+
+  base::string16 command = L"\"" + iexplore.value() + L"\" " + url;
+
+  int pid = 0;
+  // The reason we use WMI to launch the process is because the uninstall
+  // process runs inside a Job object controlled by the shell. As long as there
+  // are processes running, the shell will not close the uninstall applet. WMI
+  // allows us to escape from the Job object so the applet will close.
+  installer::WMIProcess::Launch(command, &pid);
 }
 
 }  // namespace
@@ -82,41 +113,34 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // need to escape the string before using it in a URL.
   const base::string16 kVersionParam = L"crversion";
   const base::string16 kOSParam = L"os";
-  base::win::OSInfo::VersionNumber version_number =
-      base::win::OSInfo::GetInstance()->version_number();
-  base::string16 os_version = base::StringPrintf(L"%d.%d.%d",
-      version_number.major, version_number.minor, version_number.build);
 
-  base::FilePath iexplore;
-  if (!PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))
-    return;
+  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  base::win::OSInfo::VersionNumber version_number = os_info->version_number();
+  base::string16 os_version =
+      base::StringPrintf(L"%d.%d.%d", version_number.major,
+                         version_number.minor, version_number.build);
 
-  iexplore = iexplore.AppendASCII("Internet Explorer");
-  iexplore = iexplore.AppendASCII("iexplore.exe");
-
-  base::string16 command = L"\"" + iexplore.value() + L"\" " +
-      GetUninstallSurveyUrl() +
-      L"&" + kVersionParam + L"=" + base::ASCIIToUTF16(version.GetString()) +
-      L"&" + kOSParam + L"=" + os_version;
+  base::string16 url = GetUninstallSurveyUrl() + L"&" + kVersionParam + L"=" +
+                       base::ASCIIToUTF16(version.GetString()) + L"&" +
+                       kOSParam + L"=" + os_version;
 
   base::string16 uninstall_metrics;
   if (installer::ExtractUninstallMetricsFromFile(local_data_path,
                                                  &uninstall_metrics)) {
     // The user has opted into anonymous usage data collection, so append
     // metrics and distribution data.
-    command += uninstall_metrics;
+    url += uninstall_metrics;
     if (!distribution_data.empty()) {
-      command += L"&";
-      command += distribution_data;
+      url += L"&";
+      url += distribution_data;
     }
   }
 
-  int pid = 0;
-  // The reason we use WMI to launch the process is because the uninstall
-  // process runs inside a Job object controlled by the shell. As long as there
-  // are processes running, the shell will not close the uninstall applet. WMI
-  // allows us to escape from the Job object so the applet will close.
-  installer::WMIProcess::Launch(command, &pid);
+  if (os_info->version() >= base::win::VERSION_WIN10 &&
+      NavigateToUrlWithEdge(url)) {
+    return;
+  }
+  NavigateToUrlWithIExplore(url);
 }
 
 base::string16 GoogleChromeDistribution::GetActiveSetupGuid() {
