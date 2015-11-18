@@ -113,7 +113,17 @@ def present(items):
     months.setdefault(month, 0)
     months[month] += count
   for month, count in sorted(months.iteritems()):
-    print('%s: %s' % (month, count))
+    print('%s: %d' % (month, count))
+  years = {}
+  if len(months) > 1:
+    # Also print the total per year.
+    for month, count in months.iteritems():
+      year = month.rsplit('-', 1)[0]
+      years.setdefault(year, 0)
+      years[year] += count
+    for year, count in sorted(years.iteritems()):
+      print('%s   : %d' % (year, count))
+  print('Total  : %d' % sum(months.itervalues()))
   print('')
   graph.print_histogram(items)
 
