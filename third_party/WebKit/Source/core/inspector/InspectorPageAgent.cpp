@@ -528,37 +528,41 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
     m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
 }
 
-void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassRefPtrWillBeRawPtr<SearchInResourceCallback> callback)
+static bool textContentForResource(Resource* cachedResource, String* result)
 {
-    if (!callback->isActive())
-        return;
-
-    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
-    if (!frame) {
-        callback->sendFailure("No frame for given id found");
-        return;
+    if (hasTextContent(cachedResource)) {
+        String content;
+        bool base64Encoded;
+        if (InspectorPageAgent::cachedResourceContent(cachedResource, result, &base64Encoded)) {
+            ASSERT(!base64Encoded);
+            return true;
+        }
     }
-    ErrorString errorString;
-    String content;
-    bool base64Encoded;
-    resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
-    if (!errorString.isEmpty()) {
-        callback->sendFailure(errorString);
-        return;
-    }
-
-    RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> results;
-    results = ContentSearchUtils::searchInTextByLines(content, query, caseSensitive, isRegex);
-    callback->sendSuccess(results);
+    return false;
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* const optionalCaseSensitive, const bool* const optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>& results)
 {
-    if (!m_enabled) {
-        callback->sendFailure("Agent is not enabled.");
+    results = TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>::create();
+
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
+    KURL kurl(ParsedURLString, url);
+
+    FrameLoader* frameLoader = frame ? &frame->loader() : nullptr;
+    DocumentLoader* loader = frameLoader ? frameLoader->documentLoader() : nullptr;
+    if (!loader)
         return;
-    }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, asBool(optionalCaseSensitive), asBool(optionalIsRegex), callback));
+
+    String content;
+    bool success = false;
+    Resource* resource = cachedResource(frame, kurl);
+    if (resource)
+        success = textContentForResource(resource, &content);
+
+    if (!success)
+        return;
+
+    results = ContentSearchUtils::searchInTextByLines(content, query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
 }
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)
