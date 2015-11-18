@@ -208,13 +208,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
     // Just need to update the internal states.
     state_ = MATCHING_PHASE;
   }
+#endif
 
-  // TODO(vasilii): remove the unit test restriction when it's needed in
-  // production code.
   const std::vector<InteractionsStats*>& interactions_stats() const {
     return interactions_stats_.get();
   }
-#endif
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 

@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -34,6 +35,8 @@ namespace {
 
 const int64 kSlowNavigationDelayInMS = 6000;
 const int64 kQuickNavigationDelayInMS = 500;
+// Number of dismissals that for sure supresses the bubble.
+const int kGreatDissmisalCount = 10;
 
 #if !defined(OS_ANDROID)
 class TestManagePasswordsIconView : public ManagePasswordsIconView {
@@ -134,11 +137,11 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
     // ManagePasswordsUIController::FromWebContents in |controller()|.
     new TestManagePasswordsUIController(web_contents(), &client_);
 
-    test_local_form_.origin = GURL("http://example.com");
+    test_local_form_.origin = GURL("http://example.com/login");
     test_local_form_.username_value = base::ASCIIToUTF16("username");
     test_local_form_.password_value = base::ASCIIToUTF16("12345");
 
-    test_federated_form_.origin = GURL("http://example.com");
+    test_federated_form_.origin = GURL("http://example.com/login");
     test_federated_form_.username_value = base::ASCIIToUTF16("username");
     test_federated_form_.federation_url = GURL("https://federation.test/");
 
@@ -275,6 +278,51 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
             controller()->state());
   EXPECT_TRUE(controller()->PasswordPendingUserDecision());
   EXPECT_FALSE(controller()->opened_bubble());
+
+  ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  password_manager::InteractionsStats stats;
+  stats.origin_domain = test_local_form().origin.GetOrigin();
+  stats.username_value = test_local_form().username_value;
+  stats.dismissal_count = kGreatDissmisalCount;
+  ScopedVector<password_manager::InteractionsStats> interactions;
+  interactions.push_back(new password_manager::InteractionsStats(stats));
+  test_form_manager->OnGetSiteStatistics(interactions.Pass());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            controller()->state());
+  EXPECT_FALSE(controller()->opened_bubble());
+  ASSERT_TRUE(controller()->GetCurrentInteractionStats());
+  EXPECT_EQ(stats, *controller()->GetCurrentInteractionStats());
+
+  ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  password_manager::InteractionsStats stats;
+  stats.origin_domain = test_local_form().origin.GetOrigin();
+  stats.username_value = base::ASCIIToUTF16("not my username");
+  stats.dismissal_count = kGreatDissmisalCount;
+  ScopedVector<password_manager::InteractionsStats> interactions;
+  interactions.push_back(new password_manager::InteractionsStats(stats));
+  test_form_manager->OnGetSiteStatistics(interactions.Pass());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            controller()->state());
+  EXPECT_TRUE(controller()->opened_bubble());
+  EXPECT_FALSE(controller()->GetCurrentInteractionStats());
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }

@@ -70,6 +70,11 @@ class ManagePasswordsUIControllerMock
 
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
 
+  void OnBubbleHidden() override;
+
+  password_manager::InteractionsStats* GetCurrentInteractionStats()
+      const override;
+
   // Simulate the pending password state. |best_matches| can't be empty.
   void PretendSubmittedPassword(
     ScopedVector<autofill::PasswordForm> best_matches);

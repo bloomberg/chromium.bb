@@ -69,6 +69,8 @@ void ManagePasswordsUIControllerMock::
   OnBubbleShown();
 }
 
+void ManagePasswordsUIControllerMock::OnBubbleHidden() {}
+
 void ManagePasswordsUIControllerMock::SavePassword() {
   saved_password_ = true;
 }
@@ -87,6 +89,11 @@ void ManagePasswordsUIControllerMock::ChooseCredential(
   EXPECT_FALSE(choose_credential_);
   choose_credential_ = true;
   chosen_credential_ = form;
+}
+
+password_manager::InteractionsStats*
+ManagePasswordsUIControllerMock::GetCurrentInteractionStats() const {
+  return nullptr;
 }
 
 void ManagePasswordsUIControllerMock::PretendSubmittedPassword(

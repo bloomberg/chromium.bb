@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,6 +22,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -45,6 +48,10 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
         new ManagePasswordsUIControllerMock(test_web_contents_);
     browser()->tab_strip_model()->AppendWebContents(
         test_web_contents_, /*foreground=*/true);
+    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), password_manager::BuildPasswordStore<
+                       content::BrowserContext,
+                       testing::NiceMock<password_manager::MockPasswordStore>>);
     // Set the initial state.
     ScopedVector<autofill::PasswordForm> forms;
     forms.push_back(new autofill::PasswordForm);

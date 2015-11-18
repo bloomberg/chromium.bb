@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/statistics_table.h"
 
+#include <algorithm>
+
 #include "sql/connection.h"
 #include "sql/statement.h"
 
@@ -27,6 +29,16 @@ bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs) {
          lhs.username_value == rhs.username_value &&
          lhs.dismissal_count == rhs.dismissal_count &&
          lhs.update_time == rhs.update_time;
+}
+
+InteractionsStats* FindStatsByUsername(
+    const std::vector<InteractionsStats*>& stats,
+    const base::string16& username) {
+  auto it = std::find_if(stats.begin(), stats.end(),
+                         [&username](const InteractionsStats* element) {
+                           return username == element->username_value;
+                         });
+  return it == stats.end() ? nullptr : *it;
 }
 
 StatisticsTable::StatisticsTable() : db_(nullptr) {

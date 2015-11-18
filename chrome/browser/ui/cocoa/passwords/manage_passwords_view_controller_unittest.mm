@@ -25,6 +25,7 @@ class ManagePasswordsBubbleManageViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
+    ui_controller()->SetState(password_manager::ui::MANAGE_STATE);
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
@@ -37,6 +38,10 @@ class ManagePasswordsBubbleManageViewControllerTest
       [controller_ loadView];
     }
     return controller_.get();
+  }
+
+  ManagePasswordsBubbleModel::DisplayReason GetDisplayReason() const override {
+    return ManagePasswordsBubbleModel::USER_ACTION;
   }
 
  private:

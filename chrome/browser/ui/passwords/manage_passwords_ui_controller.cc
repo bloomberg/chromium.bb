@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,6 +41,10 @@ namespace {
 
 // Minimal time span the bubble should survive implicit navigations.
 const int kBubbleMinTime = 5;
+
+// For given site and username the password save bubble is suppressed after
+// the user dismissed it |kMaxShowSaveBubble| times.
+const int kMaxShowSaveBubble = 3;
 
 password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
@@ -102,10 +107,15 @@ base::TimeDelta ManagePasswordsUIController::Elapsed() const {
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
-  bool blacklisted = form_manager->IsBlacklisted();
+  bool show_bubble = !form_manager->IsBlacklisted();
   passwords_data_.OnPendingPassword(form_manager.Pass());
+  if (show_bubble) {
+    password_manager::InteractionsStats* stats = GetCurrentInteractionStats();
+    if (stats && stats->dismissal_count > kMaxShowSaveBubble)
+      show_bubble = false;
+  }
   timer_.reset(new base::ElapsedTimer);
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, !blacklisted);
+  base::AutoReset<bool> resetter(&should_pop_up_bubble_, show_bubble);
   UpdateBubbleAndIconVisibility();
 }
 
@@ -326,6 +336,16 @@ bool ManagePasswordsUIController::PasswordOverridden() const {
   const password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   return form_manager ? form_manager->password_overridden() : false;
+}
+
+password_manager::InteractionsStats*
+ManagePasswordsUIController::GetCurrentInteractionStats() const {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state());
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return password_manager::FindStatsByUsername(
+      form_manager->interactions_stats(),
+      form_manager->pending_credentials().username_value);
 }
 
 #if !defined(OS_ANDROID)

@@ -23,6 +23,7 @@ class WebContents;
 namespace password_manager {
 enum class CredentialType;
 struct CredentialInfo;
+struct InteractionsStats;
 class PasswordFormManager;
 }
 
@@ -123,7 +124,7 @@ class ManagePasswordsUIController
   void OnBubbleShown();
 
   // Called from the model when the bubble is hidden.
-  void OnBubbleHidden();
+  virtual void OnBubbleHidden();
 
   // Called when the user chose not to update password.
   void OnNopeUpdateClicked();
@@ -135,6 +136,7 @@ class ManagePasswordsUIController
 
   // True if a password is sitting around, waiting for a user to decide whether
   // or not to save it.
+  // TODO(vasilii): remove.
   bool PasswordPendingUserDecision() const {
     return state() == password_manager::ui::PENDING_PASSWORD_STATE;
   }
@@ -156,6 +158,11 @@ class ManagePasswordsUIController
   // True if the password for previously stored account was overridden, i.e. in
   // newly submitted form the password is different from stored one.
   bool PasswordOverridden() const;
+
+  // For PENDING_PASSWORD_STATE state returns the current statistics for
+  // the pending username.
+  virtual password_manager::InteractionsStats* GetCurrentInteractionStats()
+      const;
 
  protected:
   explicit ManagePasswordsUIController(

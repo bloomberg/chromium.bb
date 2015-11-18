@@ -25,6 +25,7 @@ class ManagePasswordsBubbleConfirmationViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
+    ui_controller()->SetState(password_manager::ui::CONFIRMATION_STATE);
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }

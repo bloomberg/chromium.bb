@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 
 ManagePasswordsControllerTest::
@@ -24,15 +26,24 @@ void ManagePasswordsControllerTest::SetUp() {
       content::WebContentsTester::CreateTestWebContents(profile(), NULL));
   ui_controller_ =
       new ManagePasswordsUIControllerMock(test_web_contents_.get());
+  PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), password_manager::BuildPasswordStore<
+                     content::BrowserContext,
+                     testing::NiceMock<password_manager::MockPasswordStore>>);
 }
 
 ManagePasswordsBubbleModel*
 ManagePasswordsControllerTest::model() {
   if (!model_) {
-    model_.reset(new ManagePasswordsBubbleModel(
-        test_web_contents_.get(), ManagePasswordsBubbleModel::AUTOMATIC));
+    model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get(),
+                                                GetDisplayReason()));
   }
   return model_.get();
+}
+
+ManagePasswordsBubbleModel::DisplayReason
+ManagePasswordsControllerTest::GetDisplayReason() const {
+  return ManagePasswordsBubbleModel::AUTOMATIC;
 }
 
 @implementation ContentViewDelegateMock

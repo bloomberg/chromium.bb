@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/range/range.h"
@@ -184,6 +185,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
   password_manager::metrics_util::UpdatePasswordSubmissionEvent
       update_password_submission_event_;
+
+  // Current statistics for the save password bubble;
+  password_manager::InteractionsStats interaction_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleModel);
 };

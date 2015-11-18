@@ -70,6 +70,7 @@ class ManagePasswordsBubbleAccountChooserViewControllerTest
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
     avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
+    ui_controller()->SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }

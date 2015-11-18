@@ -26,6 +26,7 @@ class ManagePasswordsBubblePendingViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
+    ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }

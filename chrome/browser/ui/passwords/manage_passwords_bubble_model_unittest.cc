@@ -7,13 +7,17 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -25,9 +29,13 @@
 using password_bubble_experiment::kBrandingExperimentName;
 using password_bubble_experiment::kSmartLockBrandingGroupName;
 using password_bubble_experiment::kSmartLockBrandingSavePromptOnlyGroupName;
+using ::testing::AnyNumber;
+using ::testing::Return;
+using ::testing::_;
 
 namespace {
 
+const char kSiteOrigin[] = "http://example.com/login";
 const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
 
 class TestSyncService : public ProfileSyncServiceMock {
@@ -77,7 +85,15 @@ class ManagePasswordsUIControllerMockWithMockNavigation
   MOCK_METHOD0(NavigateToExternalPasswordManager, void());
   MOCK_METHOD0(NavigateToSmartLockPage, void());
   MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
+  MOCK_CONST_METHOD0(GetCurrentInteractionStats,
+                     password_manager::InteractionsStats*());
 };
+
+// TODO(vasilii): get rid of the matcher when it's possible to test the whole
+// InteractionsStats.
+MATCHER_P(DissmisalCountIs, count, "") {
+  return count == arg.dismissal_count;
+}
 
 }  // namespace
 
@@ -95,6 +111,11 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
     // |test_web_contents_| and therefore accessible to the model.
     new testing::StrictMock<ManagePasswordsUIControllerMockWithMockNavigation>(
         test_web_contents_.get());
+    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(),
+        password_manager::BuildPasswordStore<
+            content::BrowserContext,
+            testing::StrictMock<password_manager::MockPasswordStore>>);
   }
 
   void TearDown() override {
@@ -106,6 +127,22 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   PrefService* prefs() { return profile_.GetPrefs(); }
 
   TestingProfile* profile() { return &profile_; }
+
+  password_manager::MockPasswordStore* GetStore() {
+    return static_cast<password_manager::MockPasswordStore*>(
+        PasswordStoreFactory::GetInstance()
+            ->GetForProfile(profile(), ServiceAccessType::EXPLICIT_ACCESS)
+            .get());
+  }
+
+  password_manager::InteractionsStats GetTestStats() {
+    password_manager::InteractionsStats result;
+    result.origin_domain = GURL(kSiteOrigin);
+    result.username_value = base::ASCIIToUTF16("username");
+    result.dismissal_count = 5;
+    result.update_time = base::Time::FromTimeT(1);
+    return result;
+  }
 
  protected:
   void SetUpWithState(password_manager::ui::State state,
@@ -150,7 +187,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   content::WebContents* test_web_contents() { return test_web_contents_.get(); }
 
   scoped_ptr<ManagePasswordsBubbleModel> model_;
-  autofill::PasswordForm test_form_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -161,11 +197,17 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   base::HistogramTester histogram_tester;
+  password_manager::InteractionsStats stats = GetTestStats();
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(&stats));
   PretendPasswordWaiting();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             model_->state());
+  stats.dismissal_count++;
+  EXPECT_CALL(*GetStore(),
+              AddSiteStatsImpl(DissmisalCountIs(stats.dismissal_count)));
   model_.reset();
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
@@ -178,7 +220,11 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   base::HistogramTester histogram_tester;
+  password_manager::InteractionsStats stats = GetTestStats();
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(&stats));
   PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(_));
   model_->OnSaveClicked();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_SAVE);
@@ -194,7 +240,11 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   base::HistogramTester histogram_tester;
+  password_manager::InteractionsStats stats = GetTestStats();
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(&stats));
   PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(_));
   model_->OnNeverForThisSiteClicked();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_NEVER);
@@ -344,11 +394,13 @@ TEST_F(ManagePasswordsBubbleModelTest, ShowSmartLockWarmWelcome) {
   base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
                                          kSmartLockBrandingGroupName);
 
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_)).Times(AnyNumber());
   PretendPasswordWaiting();
   EXPECT_TRUE(model_->ShouldShowGoogleSmartLockWelcome());
   model_.reset();
-  model_.reset(new ManagePasswordsBubbleModel(
-      test_web_contents(), ManagePasswordsBubbleModel::AUTOMATIC));
+  PretendPasswordWaiting();
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
@@ -362,11 +414,13 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
   base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
                                          kSmartLockBrandingGroupName);
 
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_)).Times(AnyNumber());
   PretendPasswordWaiting();
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
   model_.reset();
-  model_.reset(new ManagePasswordsBubbleModel(
-      test_web_contents(), ManagePasswordsBubbleModel::AUTOMATIC));
+  PretendPasswordWaiting();
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
@@ -400,6 +454,8 @@ TEST_P(ManagePasswordsBubbleModelTitleTest, BrandedTitleOnSaving) {
                                            test_case.experiment_group);
   }
 
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(nullptr));
   PretendPasswordWaiting();
   EXPECT_THAT(base::UTF16ToUTF8(model_->title()),
               testing::HasSubstr(test_case.expected_title));
