@@ -1917,7 +1917,10 @@ void WebViewImpl::updateAllLifecyclePhases()
     if (!mainFrameImpl())
         return;
 
-    PageWidgetDelegate::updateLifecycleToCompositingCleanPlusScrolling(*m_page, *mainFrameImpl()->frame());
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        PageWidgetDelegate::updateLifecycleToCompositingCleanPlusScrolling(*m_page, *mainFrameImpl()->frame());
+    else
+        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 
     updateLayerTreeBackgroundColor();
 
@@ -1949,7 +1952,9 @@ void WebViewImpl::updateAllLifecyclePhases()
         }
     }
 
-    PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
+    // TODO(wangxianzhu): Avoid traversing frame tree for phases (style, layout, etc.) that we are sure no need to update.
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
