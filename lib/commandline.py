@@ -98,6 +98,20 @@ def NormalizeLocalOrGSPath(value):
   return VALID_TYPES[ptype](value)
 
 
+def NormalizeAbUrl(value):
+  """Normalize an androidbuild URL."""
+  if not value.startswith('ab://'):
+    # Give a helpful error message about the format expected.  Putting this
+    # message in the exception is useless because argparse ignores the
+    # exception message and just says the value is invalid.
+    msg = 'Invalid ab:// URL format: [%s].' % value
+    logging.error(msg)
+    raise ValueError(msg)
+
+  # If no errors, just return the unmodified value.
+  return value
+
+
 def ParseBool(value):
   """Parse bool argument into a bool value.
 
@@ -318,6 +332,7 @@ class DeviceParser(object):
 
 
 VALID_TYPES = {
+    'ab_url': NormalizeAbUrl,
     'bool': ParseBool,
     'date': ParseDate,
     'path': osutils.ExpandPath,
