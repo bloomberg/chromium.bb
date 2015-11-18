@@ -52,7 +52,6 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
 
   const bool is_screencast_;
   bool running_;
-  base::TimeDelta first_frame_timestamp_;
 
   class MediaVideoFrameFactory;
 
