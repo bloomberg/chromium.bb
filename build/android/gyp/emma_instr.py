@@ -32,6 +32,7 @@ from util import build_utils
 
 def _AddCommonOptions(option_parser):
   """Adds common options to |option_parser|."""
+  build_utils.AddDepfileOption(option_parser)
   option_parser.add_option('--input-path',
                            help=('Path to input file(s). Either the classes '
                                  'directory, or the path to a jar.'))
@@ -42,15 +43,21 @@ def _AddCommonOptions(option_parser):
   option_parser.add_option('--stamp', help='Path to touch when done.')
   option_parser.add_option('--coverage-file',
                            help='File to create with coverage metadata.')
-  option_parser.add_option('--sources-file',
+  option_parser.add_option('--sources-list-file',
                            help='File to create with the list of sources.')
 
 
 def _AddInstrumentOptions(option_parser):
   """Adds options related to instrumentation to |option_parser|."""
   _AddCommonOptions(option_parser)
-  option_parser.add_option('--sources',
-                           help='Space separated list of sources.')
+  option_parser.add_option('--source-dirs',
+                           help='Space separated list of source directories. '
+                                'source-files should not be specified if '
+                                'source-dirs is specified')
+  option_parser.add_option('--source-files',
+                           help='Space separated list of source files. '
+                                'source-dirs should not be specified if '
+                                'source-files is specified')
   option_parser.add_option('--src-root',
                            help='Root of the src repository.')
   option_parser.add_option('--emma-jar',
@@ -77,39 +84,52 @@ def _RunCopyCommand(_command, options, _, option_parser):
     An exit code.
   """
   if not (options.input_path and options.output_path and
-          options.coverage_file and options.sources_file):
+          options.coverage_file and options.sources_list_file):
     option_parser.error('All arguments are required.')
 
-  coverage_file = os.path.join(os.path.dirname(options.output_path),
-                               options.coverage_file)
-  sources_file = os.path.join(os.path.dirname(options.output_path),
-                              options.sources_file)
-  if os.path.exists(coverage_file):
-    os.remove(coverage_file)
-  if os.path.exists(sources_file):
-    os.remove(sources_file)
+  if os.path.exists(options.coverage_file):
+    os.remove(options.coverage_file)
+  if os.path.exists(options.sources_list_file):
+    os.remove(options.sources_list_file)
 
   shutil.copy(options.input_path, options.output_path)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
 
+  if options.depfile:
+    build_utils.WriteDepfile(options.depfile,
+                             build_utils.GetPythonDependencies())
 
-def _CreateSourcesFile(sources_string, sources_file, src_root):
-  """Adds all normalized source directories to |sources_file|.
+
+def _GetSourceDirsFromSourceFiles(source_files_string):
+  """Returns list of directories for the files in |source_files_string|.
 
   Args:
-    sources_string: String generated from gyp containing the list of sources.
-    sources_file: File into which to write the JSON list of sources.
+    source_files_string: String generated from GN or GYP containing the list
+      of source files.
+
+  Returns:
+    List of source directories.
+  """
+  source_files = build_utils.ParseGypList(source_files_string)
+  return list(set(os.path.dirname(source_file) for source_file in source_files))
+
+
+def _CreateSourcesListFile(source_dirs, sources_list_file, src_root):
+  """Adds all normalized source directories to |sources_list_file|.
+
+  Args:
+    source_dirs: List of source directories.
+    sources_list_file: File into which to write the JSON list of sources.
     src_root: Root which sources added to the file should be relative to.
 
   Returns:
     An exit code.
   """
   src_root = os.path.abspath(src_root)
-  sources = build_utils.ParseGypList(sources_string)
   relative_sources = []
-  for s in sources:
+  for s in source_dirs:
     abs_source = os.path.abspath(s)
     if abs_source[:len(src_root)] != src_root:
       print ('Error: found source directory not under repository root: %s %s'
@@ -119,7 +139,7 @@ def _CreateSourcesFile(sources_string, sources_file, src_root):
 
     relative_sources.append(rel_source)
 
-  with open(sources_file, 'w') as f:
+  with open(sources_list_file, 'w') as f:
     json.dump(relative_sources, f)
 
 
@@ -137,16 +157,13 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
     An exit code.
   """
   if not (options.input_path and options.output_path and
-          options.coverage_file and options.sources_file and options.sources and
+          options.coverage_file and options.sources_list_file and
+          (options.source_files or options.source_dirs) and
           options.src_root and options.emma_jar):
     option_parser.error('All arguments are required.')
 
-  coverage_file = os.path.join(os.path.dirname(options.output_path),
-                               options.coverage_file)
-  sources_file = os.path.join(os.path.dirname(options.output_path),
-                              options.sources_file)
-  if os.path.exists(coverage_file):
-    os.remove(coverage_file)
+  if os.path.exists(options.coverage_file):
+    os.remove(options.coverage_file)
   temp_dir = tempfile.mkdtemp()
   try:
     cmd = ['java', '-cp', options.emma_jar,
@@ -154,20 +171,33 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
            '-ip', options.input_path,
            '-ix', options.filter_string,
            '-d', temp_dir,
-           '-out', coverage_file,
+           '-out', options.coverage_file,
            '-m', 'fullcopy']
     build_utils.CheckOutput(cmd)
 
-    for jar in os.listdir(os.path.join(temp_dir, 'lib')):
-      shutil.copy(os.path.join(temp_dir, 'lib', jar),
-                    options.output_path)
+    temp_jar_dir = os.path.join(temp_dir, 'lib')
+    jars = os.listdir(temp_jar_dir)
+    if len(jars) != 1:
+      print('Error: multiple output files in: %s' % (temp_jar_dir))
+      return 1
+
+    shutil.copy(os.path.join(temp_jar_dir, jars[0]), options.output_path)
   finally:
     shutil.rmtree(temp_dir)
 
-  _CreateSourcesFile(options.sources, sources_file, options.src_root)
+  if options.source_dirs:
+    source_dirs = build_utils.ParseGypList(options.source_dirs)
+  else:
+    source_dirs = _GetSourceDirsFromSourceFiles(options.source_files)
+  _CreateSourcesListFile(source_dirs, options.sources_list_file,
+                         options.src_root)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
+
+  if options.depfile:
+    build_utils.WriteDepfile(options.depfile,
+                             build_utils.GetPythonDependencies())
 
   return 0
 

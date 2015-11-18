@@ -11,14 +11,14 @@
     'output_path%': '',
     'stamp_path%': '',
     'extra_instr_args': [
-      '--coverage-file=<(_target_name).em',
-      '--sources-file=<(_target_name)_sources.txt',
+      '--coverage-file=<(coverage_file)',
+      '--sources-list-file=<(sources_list_file)',
     ],
     'emma_jar': '<(android_sdk_root)/tools/lib/emma.jar',
     'conditions': [
       ['emma_instrument != 0', {
         'extra_instr_args': [
-          '--sources=<(java_in_dir)/src >(additional_src_dirs) >(generated_src_dirs)',
+          '--source-dirs=<(java_in_dir)/src >(additional_src_dirs) >(generated_src_dirs)',
           '--src-root=<(DEPTH)',
           '--emma-jar=<(emma_jar)',
           '--filter-string=<(emma_filter)',
