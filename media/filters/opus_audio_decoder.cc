@@ -317,15 +317,12 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
                               scoped_refptr<AudioBuffer>* output_buffer) {
   // Allocate a buffer for the output samples.
   *output_buffer = AudioBuffer::CreateBuffer(
-      config_.sample_format(),
-      config_.channel_layout(),
+      kSampleFormatF32, config_.channel_layout(),
       ChannelLayoutToChannelCount(config_.channel_layout()),
-      config_.samples_per_second(),
-      kMaxOpusOutputPacketSizeSamples);
-  const int buffer_size =
-      output_buffer->get()->channel_count() *
-      output_buffer->get()->frame_count() *
-      SampleFormatToBytesPerChannel(config_.sample_format());
+      config_.samples_per_second(), kMaxOpusOutputPacketSizeSamples);
+  const int buffer_size = output_buffer->get()->channel_count() *
+                          output_buffer->get()->frame_count() *
+                          SampleFormatToBytesPerChannel(kSampleFormatF32);
 
   float* float_output_buffer = reinterpret_cast<float*>(
       output_buffer->get()->channel_data()[0]);
