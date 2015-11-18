@@ -29,8 +29,8 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(software_device.Pass()), external_stencil_test_(false) {
-}
+    : OutputSurface(std::move(software_device)),
+      external_stencil_test_(false) {}
 
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float scale_factor) {

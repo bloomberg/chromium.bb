@@ -150,7 +150,7 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
         TestDelayBasedTimeSource::Create(now_src, initial_interval,
                                          task_runner);
     return make_scoped_ptr(
-        new TestSyntheticBeginFrameSource(time_source.Pass()));
+        new TestSyntheticBeginFrameSource(std::move(time_source)));
   }
 
  protected:

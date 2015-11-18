@@ -21,7 +21,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                       size_t stride)
       : size_(size),
         format_(format),
-        shared_memory_(shared_memory.Pass()),
+        shared_memory_(std::move(shared_memory)),
         offset_(offset),
         stride_(stride),
         mapped_(false) {}
@@ -96,7 +96,7 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   if (!shared_memory->CreateAnonymous(buffer_size))
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format, shared_memory.Pass(), 0,
+      size, format, std::move(shared_memory), 0,
       base::checked_cast<int>(
           gfx::RowSizeForBufferFormat(size.width(), format, 0))));
 }

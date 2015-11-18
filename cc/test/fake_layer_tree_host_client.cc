@@ -37,7 +37,7 @@ void FakeLayerTreeHostClient::RequestNewOutputSurface() {
   } else {
     surface = FakeOutputSurface::Create3d();
   }
-  host_->SetOutputSurface(surface.Pass());
+  host_->SetOutputSurface(std::move(surface));
 }
 
 void FakeLayerTreeHostClient::DidFailToInitializeOutputSurface() {

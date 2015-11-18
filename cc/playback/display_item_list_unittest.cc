@@ -333,7 +333,7 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   auto* item1 = list->CreateAndAppendItem<DrawingDisplayItem>();
-  item1->SetNew(picture.Pass());
+  item1->SetNew(std::move(picture));
 
   gfx::Rect clip_rect(60, 60, 10, 10);
   auto* item2 = list->CreateAndAppendItem<ClipDisplayItem>();
@@ -348,7 +348,7 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   auto* item3 = list->CreateAndAppendItem<DrawingDisplayItem>();
-  item3->SetNew(picture.Pass());
+  item3->SetNew(std::move(picture));
 
   list->CreateAndAppendItem<EndClipDisplayItem>();
   list->Finalize();

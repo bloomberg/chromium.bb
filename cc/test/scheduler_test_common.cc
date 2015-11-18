@@ -60,8 +60,7 @@ base::TimeTicks TestBackToBackBeginFrameSource::Now() {
 
 TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
     scoped_ptr<DelayBasedTimeSource> time_source)
-    : SyntheticBeginFrameSource(time_source.Pass()) {
-}
+    : SyntheticBeginFrameSource(std::move(time_source)) {}
 
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 }
@@ -69,8 +68,8 @@ TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 scoped_ptr<FakeCompositorTimingHistory> FakeCompositorTimingHistory::Create() {
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation =
       RenderingStatsInstrumentation::Create();
-  return make_scoped_ptr(
-      new FakeCompositorTimingHistory(rendering_stats_instrumentation.Pass()));
+  return make_scoped_ptr(new FakeCompositorTimingHistory(
+      std::move(rendering_stats_instrumentation)));
 }
 
 FakeCompositorTimingHistory::FakeCompositorTimingHistory(
@@ -78,7 +77,7 @@ FakeCompositorTimingHistory::FakeCompositorTimingHistory(
     : CompositorTimingHistory(CompositorTimingHistory::NULL_UMA,
                               rendering_stats_instrumentation.get()),
       rendering_stats_instrumentation_owned_(
-          rendering_stats_instrumentation.Pass()) {}
+          std::move(rendering_stats_instrumentation)) {}
 
 FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 }
@@ -156,8 +155,9 @@ scoped_ptr<TestScheduler> TestScheduler::Create(
       TestBackToBackBeginFrameSource::Create(now_src, task_runner);
   return make_scoped_ptr(new TestScheduler(
       now_src, client, settings, layer_tree_host_id, task_runner,
-      external_frame_source, synthetic_frame_source.Pass(),
-      unthrottled_frame_source.Pass(), compositor_timing_history.Pass()));
+      external_frame_source, std::move(synthetic_frame_source),
+      std::move(unthrottled_frame_source),
+      std::move(compositor_timing_history)));
 }
 
 TestScheduler::TestScheduler(
@@ -175,11 +175,10 @@ TestScheduler::TestScheduler(
                 layer_tree_host_id,
                 task_runner,
                 external_frame_source,
-                synthetic_frame_source.Pass(),
-                unthrottled_frame_source.Pass(),
-                compositor_timing_history.Pass()),
-      now_src_(now_src) {
-}
+                std::move(synthetic_frame_source),
+                std::move(unthrottled_frame_source),
+                std::move(compositor_timing_history)),
+      now_src_(now_src) {}
 
 base::TimeTicks TestScheduler::Now() const {
   return now_src_->NowTicks();

@@ -28,7 +28,7 @@ RenderPass* AddRenderPass(RenderPassList* pass_list,
   scoped_ptr<RenderPass> pass(RenderPass::Create());
   pass->SetNew(id, output_rect, output_rect, root_transform);
   RenderPass* saved = pass.get();
-  pass_list->push_back(pass.Pass());
+  pass_list->push_back(std::move(pass));
   return saved;
 }
 
@@ -197,7 +197,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   TextureMailbox mailbox(
       gpu_mailbox, gpu::SyncToken(*sync_point_for_mailbox_texture), target);
   ResourceId resource8 = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, callback.Pass());
+      mailbox, std::move(callback));
   resource_provider->AllocateForTesting(resource8);
 
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();

@@ -122,7 +122,7 @@ class ThreadProxyForTest : public ThreadProxy {
       scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     return make_scoped_ptr(
         new ThreadProxyForTest(test_hooks, host, task_runner_provider,
-                               external_begin_frame_source.Pass()));
+                               std::move(external_begin_frame_source)));
   }
 
   ~ThreadProxyForTest() override {}
@@ -295,7 +295,7 @@ class ThreadProxyForTest : public ThreadProxy {
 
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) override {
     test_hooks_->ReceivedSetAnimationEvents();
-    ThreadProxy::SetAnimationEvents(events.Pass());
+    ThreadProxy::SetAnimationEvents(std::move(events));
   }
 
   void DidLoseOutputSurface() override {
@@ -325,14 +325,14 @@ class ThreadProxyForTest : public ThreadProxy {
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override {
     test_hooks_->ReceivedPostFrameTimingEventsOnMain();
-    ThreadProxy::PostFrameTimingEventsOnMain(composite_events.Pass(),
-                                             main_frame_events.Pass());
+    ThreadProxy::PostFrameTimingEventsOnMain(std::move(composite_events),
+                                             std::move(main_frame_events));
   }
 
   void BeginMainFrame(scoped_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override {
     test_hooks_->ReceivedBeginMainFrame();
-    ThreadProxy::BeginMainFrame(begin_main_frame_state.Pass());
+    ThreadProxy::BeginMainFrame(std::move(begin_main_frame_state));
   };
 
   ThreadProxyForTest(TestHooks* test_hooks,
@@ -341,7 +341,7 @@ class ThreadProxyForTest : public ThreadProxy {
                      scoped_ptr<BeginFrameSource> external_begin_frame_source)
       : ThreadProxy(host,
                     task_runner_provider,
-                    external_begin_frame_source.Pass()),
+                    std::move(external_begin_frame_source)),
         test_hooks_(test_hooks) {}
 };
 
@@ -356,7 +356,7 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
       scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     return make_scoped_ptr(new SingleThreadProxyForTest(
         test_hooks, host, client, task_runner_provider,
-        external_begin_frame_source.Pass()));
+        std::move(external_begin_frame_source)));
   }
 
   ~SingleThreadProxyForTest() override {}
@@ -416,7 +416,7 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
       : SingleThreadProxy(host,
                           client,
                           task_runner_provider,
-                          external_begin_frame_source.Pass()),
+                          std::move(external_begin_frame_source)),
         test_hooks_(test_hooks) {}
 };
 
@@ -708,17 +708,17 @@ class LayerTreeHostForTesting : public LayerTreeHost {
         TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
     scoped_ptr<Proxy> proxy;
     if (impl_task_runner.get()) {
-      proxy = ThreadProxyForTest::Create(test_hooks, layer_tree_host.get(),
-                                         task_runner_provider.get(),
-                                         external_begin_frame_source.Pass());
+      proxy = ThreadProxyForTest::Create(
+          test_hooks, layer_tree_host.get(), task_runner_provider.get(),
+          std::move(external_begin_frame_source));
     } else {
       proxy = SingleThreadProxyForTest::Create(
           test_hooks, layer_tree_host.get(), client, task_runner_provider.get(),
-          external_begin_frame_source.Pass());
+          std::move(external_begin_frame_source));
     }
-    layer_tree_host->InitializeForTesting(task_runner_provider.Pass(),
-                                          proxy.Pass());
-    return layer_tree_host.Pass();
+    layer_tree_host->InitializeForTesting(std::move(task_runner_provider),
+                                          std::move(proxy));
+    return layer_tree_host;
   }
 
   scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
@@ -930,7 +930,7 @@ void LayerTreeTest::DoBeginTest() {
       gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
       base::ThreadTaskRunnerHandle::Get(),
       impl_thread_ ? impl_thread_->task_runner() : NULL,
-      external_begin_frame_source.Pass());
+      std::move(external_begin_frame_source));
   ASSERT_TRUE(layer_tree_host_);
 
   started_ = true;
@@ -1119,7 +1119,7 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
     DCHECK(external_begin_frame_source_);
     DCHECK(external_begin_frame_source_->is_ready());
   }
-  return output_surface.Pass();
+  return std::move(output_surface);
 }
 
 scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface() {

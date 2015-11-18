@@ -55,7 +55,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
           image_factory));
 
   DCHECK(context);
-  return context.Pass();
+  return context;
 }
 
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {

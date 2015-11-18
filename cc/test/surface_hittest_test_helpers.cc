@@ -65,7 +65,7 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
                       RenderPassList* render_pass_list) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->SetNew(render_pass_id, rect, rect, transform_to_root_target);
-  render_pass_list->push_back(render_pass.Pass());
+  render_pass_list->push_back(std::move(render_pass));
 }
 
 scoped_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
@@ -74,7 +74,7 @@ scoped_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
       new DelegatedFrameData);
   root_delegated_frame_data->render_pass_list.swap(*render_pass_list);
   scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
-  root_frame->delegated_frame_data = root_delegated_frame_data.Pass();
+  root_frame->delegated_frame_data = std::move(root_delegated_frame_data);
   return root_frame;
 }
 

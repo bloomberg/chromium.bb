@@ -37,19 +37,19 @@ int AddOpacityTransition(Target* target,
   if (!use_timing_function)
     func = EaseTimingFunction::Create();
   if (duration > 0.0)
-    curve->AddKeyframe(
-        FloatKeyframe::Create(base::TimeDelta(), start_opacity, func.Pass()));
+    curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
+                                             std::move(func)));
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta::FromSecondsD(duration), end_opacity, nullptr));
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), id, AnimationIdProvider::NextGroupId(),
-                        Animation::OPACITY));
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), id, AnimationIdProvider::NextGroupId(),
+      Animation::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimation(animation.Pass());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
@@ -71,12 +71,12 @@ int AddAnimatedTransform(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), id, AnimationIdProvider::NextGroupId(),
-                        Animation::TRANSFORM));
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), id, AnimationIdProvider::NextGroupId(),
+      Animation::TRANSFORM));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimation(animation.Pass());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
@@ -118,11 +118,12 @@ int AddAnimatedFilter(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(Animation::Create(
-      curve.Pass(), id, AnimationIdProvider::NextGroupId(), Animation::FILTER));
+  scoped_ptr<Animation> animation(
+      Animation::Create(std::move(curve), id,
+                        AnimationIdProvider::NextGroupId(), Animation::FILTER));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimation(animation.Pass());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 
@@ -399,19 +400,19 @@ int AddOpacityStepsToController(LayerAnimationController* target,
   scoped_ptr<TimingFunction> func =
       StepsTimingFunction::Create(num_steps, 0.5f);
   if (duration > 0.0)
-    curve->AddKeyframe(
-        FloatKeyframe::Create(base::TimeDelta(), start_opacity, func.Pass()));
+    curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
+                                             std::move(func)));
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta::FromSecondsD(duration), end_opacity, nullptr));
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(curve.Pass(), id, AnimationIdProvider::NextGroupId(),
-                        Animation::OPACITY));
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), id, AnimationIdProvider::NextGroupId(),
+      Animation::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
-  target->AddAnimation(animation.Pass());
+  target->AddAnimation(std::move(animation));
   return id;
 }
 

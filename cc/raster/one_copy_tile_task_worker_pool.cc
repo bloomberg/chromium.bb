@@ -530,7 +530,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
   }
 
   staging_buffer->last_usage = base::TimeTicks::Now();
-  busy_buffers_.push_back(staging_buffer.Pass());
+  busy_buffers_.push_back(std::move(staging_buffer));
 
   ScheduleReduceMemoryUsage();
 }
@@ -693,7 +693,7 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
     free_buffers_.pop_front();
   }
 
-  return staging_buffer.Pass();
+  return staging_buffer;
 }
 
 base::TimeTicks OneCopyTileTaskWorkerPool::GetUsageTimeForLRUBuffer() {

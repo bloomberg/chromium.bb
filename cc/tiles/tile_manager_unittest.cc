@@ -140,7 +140,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     }
     // The bounds() just mirror the raster source size.
     pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    pending_tree->SetRootLayer(std::move(pending_layer));
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -614,7 +614,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
           host_impl_.pending_tree(), id_ + 1, pending_raster_source);
   FakePictureLayerImpl* pending_child_raw = pending_child.get();
   pending_child_raw->SetDrawsContent(true);
-  pending_layer_->AddChild(pending_child.Pass());
+  pending_layer_->AddChild(std::move(pending_child));
 
   // Set a small viewport, so we have soon and eventually tiles.
   host_impl_.SetViewportSize(gfx::Size(200, 200));
@@ -835,7 +835,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   scoped_ptr<FakePictureLayerImpl> pending_child =
       FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 2,
                                                    pending_raster_source);
-  pending_layer_->AddChild(pending_child.Pass());
+  pending_layer_->AddChild(std::move(pending_child));
 
   FakePictureLayerImpl* pending_child_layer =
       static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0].get());
@@ -952,7 +952,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 2,
                                                    pending_raster_source);
   FakePictureLayerImpl* pending_child_layer = pending_child.get();
-  pending_layer_->AddChild(pending_child.Pass());
+  pending_layer_->AddChild(std::move(pending_child));
 
   // Create a fully transparent child layer so that its tile priorities are not
   // considered to be valid.
@@ -1053,7 +1053,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
         FakePictureLayerImpl::Create(host_impl_.pending_tree(), id_ + i);
     pending_layer->SetDrawsContent(true);
     pending_layer->set_has_valid_tile_priorities(true);
-    pending_layer_->AddChild(pending_layer.Pass());
+    pending_layer_->AddChild(std::move(pending_layer));
   }
 
   queue = host_impl_.BuildRasterQueue(SAME_PRIORITY_FOR_BOTH_TREES,
@@ -1100,7 +1100,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
         FakePictureLayerImpl::Create(host_impl_.pending_tree(), id_ + i);
     pending_layer->SetDrawsContent(true);
     pending_layer->set_has_valid_tile_priorities(true);
-    pending_layer_->AddChild(pending_layer.Pass());
+    pending_layer_->AddChild(std::move(pending_layer));
   }
 
   scoped_ptr<EvictionTilePriorityQueue> queue(
@@ -1509,7 +1509,7 @@ class TileManagerTest : public testing::Test {
     }
     // The bounds() just mirror the raster source size.
     pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    pending_tree->SetRootLayer(std::move(pending_layer));
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;
@@ -1754,7 +1754,7 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
 
   // The bounds() just mirror the raster source size.
   pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-  pending_tree->SetRootLayer(pending_layer.Pass());
+  pending_tree->SetRootLayer(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
@@ -1846,7 +1846,7 @@ void RunPartialRasterCheck(scoped_ptr<LayerTreeHostImpl> host_impl,
 
   // The bounds() just mirror the raster source size.
   pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-  pending_tree->SetRootLayer(pending_layer.Pass());
+  pending_tree->SetRootLayer(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
   host_impl->pending_tree()->BuildPropertyTreesForTesting();
@@ -1871,13 +1871,15 @@ void RunPartialRasterCheck(scoped_ptr<LayerTreeHostImpl> host_impl,
 // Ensures that the tile manager successfully reuses tiles when partial
 // raster is enabled.
 TEST_F(PartialRasterTileManagerTest, PartialRasterSuccessfullyEnabled) {
-  RunPartialRasterCheck(host_impl_.Pass(), true /* partial_raster_enabled */);
+  RunPartialRasterCheck(std::move(host_impl_),
+                        true /* partial_raster_enabled */);
 }
 
 // Ensures that the tile manager does not attempt to reuse tiles when partial
 // raster is disabled.
 TEST_F(TileManagerTest, PartialRasterSuccessfullyDisabled) {
-  RunPartialRasterCheck(host_impl_.Pass(), false /* partial_raster_enabled */);
+  RunPartialRasterCheck(std::move(host_impl_),
+                        false /* partial_raster_enabled */);
 }
 
 }  // namespace

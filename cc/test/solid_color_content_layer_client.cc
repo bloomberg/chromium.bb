@@ -39,7 +39,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
 
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
-  item->SetNew(picture.Pass());
+  item->SetNew(std::move(picture));
 
   display_list->Finalize();
   return display_list;

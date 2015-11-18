@@ -146,7 +146,7 @@ class PerfRasterTaskImpl : public RasterTask {
  public:
   PerfRasterTaskImpl(scoped_ptr<ScopedResource> resource,
                      ImageDecodeTask::Vector* dependencies)
-      : RasterTask(dependencies), resource_(resource.Pass()) {}
+      : RasterTask(dependencies), resource_(std::move(resource)) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -157,7 +157,7 @@ class PerfRasterTaskImpl : public RasterTask {
     raster_buffer_ = client->AcquireBufferForRaster(resource_.get(), 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
-    client->ReleaseBufferForRaster(raster_buffer_.Pass());
+    client->ReleaseBufferForRaster(std::move(raster_buffer_));
     Reset();
   }
 
@@ -209,7 +209,7 @@ class TileTaskWorkerPoolPerfTestBase {
 
       ImageDecodeTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(
-          new PerfRasterTaskImpl(resource.Pass(), &dependencies));
+          new PerfRasterTaskImpl(std::move(resource), &dependencies));
     }
   }
 

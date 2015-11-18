@@ -72,7 +72,7 @@ void CreateTilingSetEvictionQueues(
         new TilingSetEvictionQueue(layer->picture_layer_tiling_set()));
     // Queues will only contain non empty tiling sets.
     if (!tiling_set_queue->IsEmpty())
-      queues->push_back(tiling_set_queue.Pass());
+      queues->push_back(std::move(tiling_set_queue));
   }
   std::make_heap(queues->begin(), queues->end(),
                  EvictionOrderComparator(tree_priority));

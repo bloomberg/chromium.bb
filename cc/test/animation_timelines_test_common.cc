@@ -241,7 +241,7 @@ void AnimationTimelinesTest::AnimateLayersTransferEvents(
 
   host_->animation_registrar()->AnimateLayers(time);
   host_->animation_registrar()->UpdateAnimationState(true, nullptr);
-  host_->animation_registrar()->SetAnimationEvents(events.Pass());
+  host_->animation_registrar()->SetAnimationEvents(std::move(events));
 }
 
 AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(int layer_id) {

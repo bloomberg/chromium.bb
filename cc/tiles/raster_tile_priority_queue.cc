@@ -20,14 +20,14 @@ scoped_ptr<RasterTilePriorityQueue> RasterTilePriorityQueue::Create(
       scoped_ptr<RasterTilePriorityQueueAll> queue(
           new RasterTilePriorityQueueAll);
       queue->Build(active_layers, pending_layers, tree_priority);
-      return queue.Pass();
+      return std::move(queue);
     }
     case Type::REQUIRED_FOR_ACTIVATION:
     case Type::REQUIRED_FOR_DRAW: {
       scoped_ptr<RasterTilePriorityQueueRequired> queue(
           new RasterTilePriorityQueueRequired);
       queue->Build(active_layers, pending_layers, type);
-      return queue.Pass();
+      return std::move(queue);
     }
   }
   NOTREACHED();

@@ -44,14 +44,14 @@ class FakeOutputSurface : public OutputSurface {
   static scoped_ptr<FakeOutputSurface> Create3d(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     return make_scoped_ptr(
-        new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
+        new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
                               TestContextProvider::CreateWorker(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateSoftware(
       scoped_ptr<SoftwareOutputDevice> software_device) {
-    return make_scoped_ptr(new FakeOutputSurface(software_device.Pass(),
-                                                 false));
+    return make_scoped_ptr(
+        new FakeOutputSurface(std::move(software_device), false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
@@ -69,29 +69,29 @@ class FakeOutputSurface : public OutputSurface {
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     return make_scoped_ptr(
-        new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
+        new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
                               TestContextProvider::CreateWorker(), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegatingSoftware(
       scoped_ptr<SoftwareOutputDevice> software_device) {
     return make_scoped_ptr(
-        new FakeOutputSurface(software_device.Pass(), true));
+        new FakeOutputSurface(std::move(software_device), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
       scoped_ptr<TestWebGraphicsContext3D> context) {
-    scoped_ptr<FakeOutputSurface> surface(Create3d(context.Pass()));
+    scoped_ptr<FakeOutputSurface> surface(Create3d(std::move(context)));
     surface->capabilities_.delegated_sync_points_required = false;
-    return surface.Pass();
+    return surface;
   }
 
   static scoped_ptr<FakeOutputSurface> CreateOffscreen(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     scoped_ptr<FakeOutputSurface> surface(new FakeOutputSurface(
-        TestContextProvider::Create(context.Pass()), false));
+        TestContextProvider::Create(std::move(context)), false));
     surface->capabilities_.uses_default_gl_framebuffer = false;
-    return surface.Pass();
+    return surface;
   }
 
   void set_max_frames_pending(int max) {

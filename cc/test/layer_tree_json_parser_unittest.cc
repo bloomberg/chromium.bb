@@ -83,9 +83,9 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   child->SetHaveWheelEventHandlers(true);
   child->SetHaveScrollEventHandlers(true);
 
-  parent->AddChild(child.Pass());
-  root_impl->AddChild(parent.Pass());
-  tree->SetRootLayer(root_impl.Pass());
+  parent->AddChild(std::move(child));
+  root_impl->AddChild(std::move(parent));
+  tree->SetRootLayer(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
@@ -112,8 +112,8 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   touch_region.Union(gfx::Rect(40, 10, 20, 20));
   touch_layer->SetTouchEventHandlerRegion(touch_region);
 
-  root_impl->AddChild(touch_layer.Pass());
-  tree->SetRootLayer(root_impl.Pass());
+  root_impl->AddChild(std::move(touch_layer));
+  tree->SetRootLayer(std::move(root_impl));
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);

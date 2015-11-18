@@ -80,7 +80,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
           tree_, contents_scale, raster_source, client_,
           tiling_interest_area_padding_, skewport_target_time_in_seconds_,
           skewport_extrapolation_limit_in_content_pixels_);
-      tilings_.push_back(new_tiling.Pass());
+      tilings_.push_back(std::move(new_tiling));
       this_tiling = tilings_.back().get();
       tiling_sort_required = true;
     }

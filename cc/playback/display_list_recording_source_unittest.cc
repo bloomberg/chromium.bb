@@ -20,7 +20,7 @@ scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
       FakeDisplayListRecordingSource::CreateRecordingSource(viewport,
                                                             layer_rect.size());
-  return recording_source.Pass();
+  return recording_source;
 }
 
 scoped_refptr<DisplayListRasterSource> CreateRasterSource(

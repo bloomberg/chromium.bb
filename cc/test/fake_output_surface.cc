@@ -44,7 +44,7 @@ FakeOutputSurface::FakeOutputSurface(
 FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
-    : OutputSurface(software_device.Pass()),
+    : OutputSurface(std::move(software_device)),
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),
@@ -58,7 +58,7 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
-    : OutputSurface(context_provider, software_device.Pass()),
+    : OutputSurface(context_provider, std::move(software_device)),
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),

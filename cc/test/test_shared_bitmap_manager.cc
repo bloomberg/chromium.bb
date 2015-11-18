@@ -14,7 +14,7 @@ class OwnedSharedBitmap : public SharedBitmap {
   OwnedSharedBitmap(scoped_ptr<base::SharedMemory> shared_memory,
                     const SharedBitmapId& id)
       : SharedBitmap(static_cast<uint8*>(shared_memory->memory()), id),
-        shared_memory_(shared_memory.Pass()) {}
+        shared_memory_(std::move(shared_memory)) {}
 
   ~OwnedSharedBitmap() override {}
 
@@ -35,7 +35,7 @@ scoped_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
   memory->CreateAndMapAnonymous(size.GetArea() * 4);
   SharedBitmapId id = SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
-  return make_scoped_ptr(new OwnedSharedBitmap(memory.Pass(), id));
+  return make_scoped_ptr(new OwnedSharedBitmap(std::move(memory), id));
 }
 
 scoped_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(

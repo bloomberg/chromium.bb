@@ -49,11 +49,11 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   scoped_ptr<LayerImpl> old_root_layer_impl = active_tree()->DetachLayerTree();
 
   scoped_ptr<LayerImpl> layer_impl = TreeSynchronizer::SynchronizeTrees(
-      root_layer(), old_root_layer_impl.Pass(), active_tree());
+      root_layer(), std::move(old_root_layer_impl), active_tree());
   active_tree()->SetPropertyTrees(*property_trees());
   TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
 
-  active_tree()->SetRootLayer(layer_impl.Pass());
+  active_tree()->SetRootLayer(std::move(layer_impl));
 
   if (page_scale_layer() && inner_viewport_scroll_layer()) {
     active_tree()->SetViewportLayersFromIds(

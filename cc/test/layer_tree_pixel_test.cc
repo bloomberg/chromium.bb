@@ -46,7 +46,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
       software_output_device->set_surface_expansion_size(
           surface_expansion_size);
       output_surface = make_scoped_ptr(
-          new PixelTestOutputSurface(software_output_device.Pass()));
+          new PixelTestOutputSurface(std::move(software_output_device)));
       break;
     }
     case PIXEL_TEST_GL: {
@@ -59,7 +59,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   }
 
   output_surface->set_surface_expansion_size(surface_expansion_size);
-  return output_surface.Pass();
+  return std::move(output_surface);
 }
 
 void LayerTreePixelTest::WillCommitCompleteOnThread(LayerTreeHostImpl* impl) {
@@ -280,7 +280,7 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
     }
   }
 
-  return bitmap.Pass();
+  return bitmap;
 }
 
 void LayerTreePixelTest::Finish() {

@@ -22,7 +22,7 @@ void AppendTilingSetRequiredQueues(
             layer->picture_layer_tiling_set(),
             RasterTilePriorityQueueRequired::Type::REQUIRED_FOR_ACTIVATION));
     if (!tiling_set_queue->IsEmpty())
-      queues->push_back(tiling_set_queue.Pass());
+      queues->push_back(std::move(tiling_set_queue));
   }
 }
 
@@ -55,7 +55,7 @@ void RasterTilePriorityQueueRequired::BuildRequiredForDraw(
         new TilingSetRasterQueueRequired(layer->picture_layer_tiling_set(),
                                          Type::REQUIRED_FOR_DRAW));
     if (!tiling_set_queue->IsEmpty())
-      tiling_set_queues_.push_back(tiling_set_queue.Pass());
+      tiling_set_queues_.push_back(std::move(tiling_set_queue));
   }
 }
 

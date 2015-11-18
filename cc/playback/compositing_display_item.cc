@@ -79,7 +79,7 @@ void CompositingDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
     filter = skia::AdoptRef(static_cast<SkColorFilter*>(flattenable));
   }
 
-  SetNew(alpha, xfermode, bounds.get(), filter.Pass());
+  SetNew(alpha, xfermode, bounds.get(), std::move(filter));
 }
 
 void CompositingDisplayItem::Raster(

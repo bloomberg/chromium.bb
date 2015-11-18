@@ -172,7 +172,7 @@ class TileManagerPerfTest : public testing::Test {
                                                      raster_source);
     pending_layer->SetDrawsContent(true);
     pending_layer->SetHasRenderSurface(true);
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    pending_tree->SetRootLayer(std::move(pending_layer));
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -360,7 +360,7 @@ class TileManagerPerfTest : public testing::Test {
       layer->SetBounds(layer_bounds);
       layer->SetDrawsContent(true);
       layers.push_back(layer.get());
-      pending_root_layer_->AddChild(layer.Pass());
+      pending_root_layer_->AddChild(std::move(layer));
       ++next_id;
     }
 

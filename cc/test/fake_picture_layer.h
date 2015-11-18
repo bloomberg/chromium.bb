@@ -23,7 +23,7 @@ class FakePictureLayer : public PictureLayer {
       ContentLayerClient* client,
       scoped_ptr<DisplayListRecordingSource> source) {
     return make_scoped_refptr(
-        new FakePictureLayer(settings, client, source.Pass()));
+        new FakePictureLayer(settings, client, std::move(source)));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;

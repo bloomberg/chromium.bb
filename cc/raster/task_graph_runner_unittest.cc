@@ -174,7 +174,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
       scoped_ptr<base::DelegateSimpleThread> worker =
           make_scoped_ptr(new base::DelegateSimpleThread(this, "TestWorker"));
       worker->Start();
-      workers_.push_back(worker.Pass());
+      workers_.push_back(std::move(worker));
     }
 
     for (int i = 0; i < kNamespaceCount; ++i)

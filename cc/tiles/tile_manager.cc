@@ -97,7 +97,7 @@ class RasterTaskImpl : public RasterTask {
         resource_, resource_content_id_, previous_content_id_);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
-    client->ReleaseBufferForRaster(raster_buffer_.Pass());
+    client->ReleaseBufferForRaster(std::move(raster_buffer_));
     reply_.Run(analysis_, !HasFinishedRunning());
   }
 
@@ -545,7 +545,7 @@ void TileManager::AssignGpuMemoryToTiles(
         tile_memory_limit - memory_required_by_tile_to_be_scheduled;
     eviction_priority_queue =
         FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
-            eviction_priority_queue.Pass(), scheduled_tile_memory_limit,
+            std::move(eviction_priority_queue), scheduled_tile_memory_limit,
             priority, &memory_usage);
     bool memory_usage_is_within_limit =
         !memory_usage.Exceeds(scheduled_tile_memory_limit);
@@ -567,7 +567,7 @@ void TileManager::AssignGpuMemoryToTiles(
   // didn't reduce memory. This ensures that we always release as many resources
   // as possible to stay within the memory limit.
   eviction_priority_queue = FreeTileResourcesUntilUsageIsWithinLimit(
-      eviction_priority_queue.Pass(), hard_memory_limit, &memory_usage);
+      std::move(eviction_priority_queue), hard_memory_limit, &memory_usage);
 
   UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget",
                         !had_enough_memory_to_schedule_tiles_needed_now);

@@ -22,7 +22,7 @@ FakePictureLayer::FakePictureLayer(
     const LayerSettings& settings,
     ContentLayerClient* client,
     scoped_ptr<DisplayListRecordingSource> source)
-    : PictureLayer(settings, client, source.Pass()),
+    : PictureLayer(settings, client, std::move(source)),
       update_count_(0),
       push_properties_count_(0),
       always_update_resources_(false) {

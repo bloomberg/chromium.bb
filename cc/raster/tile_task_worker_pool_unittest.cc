@@ -75,7 +75,7 @@ class TestRasterTaskImpl : public RasterTask {
     raster_buffer_ = client->AcquireBufferForRaster(resource_, 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
-    client->ReleaseBufferForRaster(raster_buffer_.Pass());
+    client->ReleaseBufferForRaster(std::move(raster_buffer_));
     reply_.Run(DisplayListRasterSource::SolidColorAnalysis(),
                !HasFinishedRunning());
   }

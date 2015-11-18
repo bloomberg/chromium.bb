@@ -28,7 +28,7 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 }
 
 void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
-  picture_ = picture.Pass();
+  picture_ = std::move(picture);
   DisplayItem::SetNew(picture_->suitableForGpuRasterization(NULL),
                       picture_->approximateOpCount(),
                       SkPictureUtils::ApproximateBytesUsed(picture_.get()));
@@ -65,7 +65,7 @@ void DrawingDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
     picture = skia::AdoptRef(SkPicture::CreateFromStream(&stream, nullptr));
   }
 
-  SetNew(picture.Pass());
+  SetNew(std::move(picture));
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
