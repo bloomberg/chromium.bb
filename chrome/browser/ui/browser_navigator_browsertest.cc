@@ -30,13 +30,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
 
 namespace {
 
 const char kExpectedTitle[] = "PASSED!";
-const char kEchoTitleCommand[] = "echotitle";
+const char kEchoTitleCommand[] = "/echotitle";
 
 GURL GetGoogleURL() {
   return GURL("http://www.google.com/");
@@ -1355,14 +1356,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        SendBrowserInitiatedRequestUsingPOST) {
   // Uses a test sever to verify POST request.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Open a browser initiated POST request in new foreground tab.
   base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
   std::string post_data = kExpectedTitle;
   base::string16 title;
   ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
-      test_server()->GetURL(kEchoTitleCommand), post_data, true, &title));
+      embedded_test_server()->GetURL(kEchoTitleCommand), post_data, true,
+      &title));
   EXPECT_EQ(expected_title, title);
 }
 
@@ -1371,14 +1373,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        SendRendererInitiatedRequestUsingPOST) {
   // Uses a test sever to verify POST request.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Open a renderer initiated POST request in new foreground tab.
   base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
   std::string post_data = kExpectedTitle;
   base::string16 title;
   ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
-      test_server()->GetURL(kEchoTitleCommand), post_data, false, &title));
+      embedded_test_server()->GetURL(kEchoTitleCommand), post_data, false,
+      &title));
   EXPECT_NE(expected_title, title);
 }
 

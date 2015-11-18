@@ -571,12 +571,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   // Helper to load interstitial page in a <webview>.
   void InterstitialTeardownTestHelper() {
     // Start a HTTPS server so we can load an interstitial page inside guest.
-    net::SpawnedTestServer::SSLOptions ssl_options;
-    ssl_options.server_certificate =
-        net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+    https_server.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server.Start());
 
     net::HostPortPair host_and_port = https_server.host_port_pair();

@@ -33,7 +33,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -47,11 +47,8 @@ using net::URLRequestMockHTTPJob;
 
 class ContentSettingsTest : public InProcessBrowserTest {
  public:
-  ContentSettingsTest()
-      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
-                      net::SpawnedTestServer::SSLOptions(
-                          net::SpawnedTestServer::SSLOptions::CERT_OK),
-                      base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  ContentSettingsTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
   }
 
   void SetUpOnMainThread() override {
@@ -94,42 +91,42 @@ class ContentSettingsTest : public InProcessBrowserTest {
     ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
   }
 
-  net::SpawnedTestServer https_server_;
+  net::EmbeddedTestServer https_server_;
 };
 
 // Sanity check on cookies before we do other tests. While these can be written
 // in content_browsertests, we want to verify Chrome's cookie storage and how it
 // handles incognito windows.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookies) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL http_url = test_server()->GetURL("files/setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url = embedded_test_server()->GetURL("/setcookie.html");
   PreBasic(http_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookies) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL http_url = test_server()->GetURL("files/setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url = embedded_test_server()->GetURL("/setcookie.html");
   Basic(http_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookiesHttps) {
   ASSERT_TRUE(https_server_.Start());
-  GURL https_url = https_server_.GetURL("files/setcookie.html");
+  GURL https_url = https_server_.GetURL("/setcookie.html");
   PreBasic(https_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookiesHttps) {
   ASSERT_TRUE(https_server_.Start());
-  GURL https_url = https_server_.GetURL("files/setcookie.html");
+  GURL https_url = https_server_.GetURL("/setcookie.html");
   Basic(https_url);
 }
 
 // Verify that cookies are being blocked.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BlockCookies) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  GURL url = test_server()->GetURL("files/setcookie.html");
+  GURL url = embedded_test_server()->GetURL("/setcookie.html");
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
   CookieCheckIncognitoWindow(url, false);
@@ -145,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
 // Verify that cookies can be allowed and set using exceptions for particular
 // website(s) when all others are blocked.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/setcookie.html");
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -164,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
 
 // Verify that cookies can be blocked for a specific website using exceptions.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/setcookie.html");
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetCookieSetting(ContentSettingsPattern::FromURL(url),
@@ -176,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 
   ASSERT_TRUE(https_server_.Start());
-  GURL unblocked_url = https_server_.GetURL("files/cookie1.html");
+  GURL unblocked_url = https_server_.GetURL("/cookie1.html");
 
   ui_test_utils::NavigateToURL(browser(), unblocked_url);
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
@@ -217,9 +214,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
 
 // Regression test for http://crbug.com/63649.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL test_url = test_server()->GetURL("files/redirect-loop.html");
+  GURL test_url = embedded_test_server()->GetURL("/redirect-loop.html");
 
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -255,15 +252,15 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
 // Tests that if redirect across origins occurs, the new process still gets the
 // content settings before the resource headers.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  net::HostPortPair host_port = test_server()->host_port_pair();
+  net::HostPortPair host_port = embedded_test_server()->host_port_pair();
   DCHECK_EQ(host_port.host(), std::string("127.0.0.1"));
 
   std::string redirect(base::StringPrintf(
-      "http://localhost:%d/files/redirect-cross-origin.html",
-      host_port.port()));
-  GURL test_url = test_server()->GetURL("server-redirect?" + redirect);
+      "http://localhost:%d/redirect-cross-origin.html", host_port.port()));
+  GURL test_url =
+      embedded_test_server()->GetURL("/server-redirect?" + redirect);
 
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);

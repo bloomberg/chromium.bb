@@ -51,7 +51,7 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcSimulcastBrowserTest,
                        MAYBE_TestVgaReturnsTwoSimulcastStreams) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSimulcastTestPage));

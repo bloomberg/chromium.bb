@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +27,7 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kCloudPrintURL,
-        "http://www.cloudprintapp.com/files/extensions/api_test/"
+        "http://www.cloudprintapp.com/extensions/api_test/"
         "cloud_print_private");
   }
 
@@ -34,7 +35,7 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
     // Start up the test server and get us ready for calling the install
     // API functions.
     host_resolver()->AddRule("www.cloudprintapp.com", "127.0.0.1");
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
  protected:
@@ -42,8 +43,8 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
    // matches the cloud print app's extent that we set up via command line
    // flags.
   GURL GetTestServerURL(const std::string& path) {
-    GURL url = test_server()->GetURL(
-        "files/extensions/api_test/cloud_print_private/" + path);
+    GURL url = embedded_test_server()->GetURL(
+        "/extensions/api_test/cloud_print_private/" + path);
 
     // Replace the host with 'www.cloudprintapp.com' so it matches the cloud
     // print app's extent.

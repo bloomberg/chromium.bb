@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
   if (!OnWinXp())
     return;  // Flaky timeout on a webrtc Win XP bot. http://crbug.com/368163.
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);

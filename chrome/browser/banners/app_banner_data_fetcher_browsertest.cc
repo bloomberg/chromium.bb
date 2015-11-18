@@ -65,7 +65,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   void SetUpOnMainThread() override {
     AppBannerSettingsHelper::SetEngagementWeights(1, 1);
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(2);
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUpOnMainThread();
   }
 

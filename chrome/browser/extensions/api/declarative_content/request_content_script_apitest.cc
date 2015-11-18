@@ -197,7 +197,7 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
 // http://crbug.com/421118
 IN_PROC_BROWSER_TEST_F(RequestContentScriptAPITest,
                        DISABLED_PermissionMatcherAgreementInjection) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Positive tests: permissions and matcher contain conditions that match URL
   // visited during test.

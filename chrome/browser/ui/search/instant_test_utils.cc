@@ -35,11 +35,9 @@ std::string WrapScript(const std::string& script) {
 // InstantTestBase -----------------------------------------------------------
 
 InstantTestBase::InstantTestBase()
-    : https_test_server_(
-          net::SpawnedTestServer::TYPE_HTTPS,
-          net::BaseTestServer::SSLOptions(),
-          base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+    : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS),
       init_suggestions_url_(false) {
+  https_test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
 }
 
 InstantTestBase::~InstantTestBase() {}

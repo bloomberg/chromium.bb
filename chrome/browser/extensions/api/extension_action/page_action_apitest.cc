@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
 
@@ -37,7 +38,7 @@ class PageActionApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("page_action/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -201,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Getters) {
 
 // Verify triggering page action.
 IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("trigger_actions/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -209,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
 
   // Page action icon is displayed when a tab is created.
   ui_test_utils::NavigateToURL(browser(),
-                               test_server()->GetURL("files/simple.html"));
+                               embedded_test_server()->GetURL("/simple.html"));
   chrome::NewTab(browser());
   browser()->tab_strip_model()->ActivateTabAt(0, true);
 

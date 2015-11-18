@@ -15,7 +15,7 @@ if (location.hash == "#double_redirect")
 
 // Insert a deferred redirect into the document.
 var image = new Image();
-image.src = prefix + "/files/prerender/image-deferred.png";
+image.src = prefix + "/prerender/image-deferred.png";
 image.onload = function() {
   imageWasLoaded = true;
 };
@@ -35,7 +35,7 @@ function DidDisplayPass() {
 // TODO(davidben): Wait on something more reasonable. This should
 // still pass reliably, but will only fail flakily on regression.
 var image2 = new Image();
-image2.src = prefix + "/files/prerender/image-redirect.png";
+image2.src = prefix + "/prerender/image-redirect.png";
 image2.onload = function() {
   document.title = "READY";
 };

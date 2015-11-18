@@ -15,7 +15,7 @@
 class CollectedCookiesViewsTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     // Disable cookies.
     CookieSettingsFactory::GetForProfile(browser()->profile())

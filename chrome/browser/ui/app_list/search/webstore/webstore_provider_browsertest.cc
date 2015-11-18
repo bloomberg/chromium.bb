@@ -28,7 +28,6 @@ using extensions::Manifest;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
-using net::test_server::EmbeddedTestServer;
 
 namespace app_list {
 namespace test {
@@ -135,14 +134,12 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {
-    test_server_.reset(new EmbeddedTestServer);
-
-    ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
-    test_server_->RegisterRequestHandler(
+    embedded_test_server()->RegisterRequestHandler(
         base::Bind(&WebstoreProviderTest::HandleRequest,
                    base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL, test_server_->base_url().spec());
+        ::switches::kAppsGalleryURL, embedded_test_server()->base_url().spec());
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalAppList);
 
@@ -153,11 +150,6 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                    base::Unretained(this)));
     // TODO(mukai): add test cases for throttling.
     webstore_provider_->set_use_throttling(false);
-  }
-
-  void TearDownOnMainThread() override {
-    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
-    test_server_.reset();
   }
 
   void RunQuery(const std::string& query,
@@ -248,7 +240,6 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       run_loop_->Quit();
   }
 
-  scoped_ptr<EmbeddedTestServer> test_server_;
   scoped_ptr<base::RunLoop> run_loop_;
 
   std::string mock_server_response_;

@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using bookmarks::BookmarkModel;
 
@@ -170,16 +171,14 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
                        MAYBE_HideStarOnNonbookmarkedInterstitial) {
   // Start an HTTPS server with a certificate error.
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
-  GURL bookmark_url = test_server()->GetURL("http://example.test");
+  GURL bookmark_url = embedded_test_server()->GetURL("example.test", "/");
   bookmarks::AddIfNotBookmarked(bookmark_model,
                                 bookmark_url,
                                 base::ASCIIToUTF16("Bookmark"));
@@ -198,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
 
   // Now go to a non-bookmarked url which triggers an SSL warning. Bookmark
   // star should disappear.
-  GURL error_url = https_server.GetURL(".");
+  GURL error_url = https_server.GetURL("/");
   ui_test_utils::NavigateToURL(browser(), error_url);
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForInterstitialAttach(web_contents);

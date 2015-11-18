@@ -16,7 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const base::FilePath::CharType kDocRoot[] =
@@ -26,11 +26,8 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     https_server_.reset(
-        new net::SpawnedTestServer(
-            net::SpawnedTestServer::TYPE_HTTPS,
-            net::SpawnedTestServer::SSLOptions(
-                net::SpawnedTestServer::SSLOptions::CERT_OK),
-            base::FilePath(kDocRoot)));
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
     ASSERT_TRUE(https_server_->Start());
   }
 
@@ -39,15 +36,14 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
-  scoped_ptr<net::SpawnedTestServer> https_server_;
+  scoped_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel sends appropriate
 // IPCs to allow the renderer to load unsafe scripts and refresh the page
 // automatically.
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
-  GURL url(https_server_->GetURL(
-      "files/content_setting_bubble/mixed_script.html"));
+  GURL url(https_server_->GetURL("/content_setting_bubble/mixed_script.html"));
 
   // Load a page with mixed content and do quick verification by looking at
   // the title string.
@@ -79,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
 // content shield isn't shown for it).
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, Iframe) {
   GURL url(https_server_->GetURL(
-      "files/content_setting_bubble/mixed_script_in_iframe.html"));
+      "/content_setting_bubble/mixed_script_in_iframe.html"));
 
   ui_test_utils::NavigateToURL(browser(), url);
 

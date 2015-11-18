@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_NavigateAwayFromHungRenderer) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ShowTaskManager();
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
   GURL base_url = embedded_test_server()->GetURL(
@@ -692,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
   GURL base_url =
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
   GURL base_url =
@@ -930,7 +930,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   GURL main_url(embedded_test_server()->GetURL(
@@ -994,7 +994,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate the tab to a page on a.com with cross-process subframes to
@@ -1045,7 +1045,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate to a page on b.com with a simple (same-site) iframe.
@@ -1104,7 +1104,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate the tab to a page on a.com with cross-process subframes to
@@ -1177,7 +1177,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ShowTaskManager();
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate the tab to a page on a.com with cross-process subframes.

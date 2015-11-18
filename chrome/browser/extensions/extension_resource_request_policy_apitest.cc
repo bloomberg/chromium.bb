@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 class ExtensionResourceRequestPolicyTest : public ExtensionApiTest {
@@ -36,17 +37,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
 #endif
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtensionWithFlags(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("extension"),
       // Tests manifest_version 1 behavior, so warnings are expected.
       ExtensionBrowserTest::kFlagIgnoreManifestWarnings));
 
-  GURL web_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "index.html"));
+  GURL web_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "index.html"));
 
   GURL::Replacements make_host_a_com;
   make_host_a_com.SetHostStr("a.com");
@@ -65,10 +65,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   EXPECT_EQ(result, "Loaded");
 
   // A web host that loads a non-existent extension.
-  GURL non_existent_extension(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "non_existent_extension.html"));
+  GURL non_existent_extension(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "non_existent_extension.html"));
   ui_test_utils::NavigateToURL(browser(), non_existent_extension);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -154,15 +153,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, MAYBE_Video) {
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        MAYBE_WebAccessibleResources) {
   std::string result;
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("web_accessible")));
 
-  GURL accessible_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/accessible_resource.html"));
+  GURL accessible_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/accessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -170,10 +168,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("Loaded", result);
 
-  GURL xhr_accessible_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/xhr_accessible_resource.html"));
+  GURL xhr_accessible_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/xhr_accessible_resource.html"));
   ui_test_utils::NavigateToURL(
       browser(), xhr_accessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -182,10 +179,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("XHR completed with status: 200", result);
 
-  GURL xhr_inaccessible_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/xhr_inaccessible_resource.html"));
+  GURL xhr_inaccessible_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/xhr_inaccessible_resource.html"));
   ui_test_utils::NavigateToURL(
       browser(), xhr_inaccessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -194,10 +190,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("XHR failed to load resource", result);
 
-  GURL nonaccessible_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/nonaccessible_resource.html"));
+  GURL nonaccessible_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/nonaccessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -205,10 +200,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("Image failed to load", result);
 
-  GURL nonexistent_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/nonexistent_resource.html"));
+  GURL nonexistent_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/nonexistent_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -216,10 +210,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("Image failed to load", result);
 
-  GURL nonaccessible_cer_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/nonaccessible_chrome_resource_scheme.html"));
+  GURL nonaccessible_cer_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/nonaccessible_chrome_resource_scheme.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_cer_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -228,10 +221,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   EXPECT_EQ("Loading CER:// failed.", result);
 
   GURL newtab_page("chrome://newtab");
-  GURL accessible_newtab_override(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/accessible_history_navigation.html"));
+  GURL accessible_newtab_override(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/accessible_history_navigation.html"));
   ui_test_utils::NavigateToURL(browser(), newtab_page);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), accessible_newtab_override, 2);
@@ -245,15 +237,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        LinkToWebAccessibleResources) {
   std::string result;
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("web_accessible")));
 
-  GURL accessible_linked_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/accessible_link_resource.html"));
+  GURL accessible_linked_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/accessible_link_resource.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
       accessible_linked_resource, 2);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -262,10 +253,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_NE("about:blank", result);
 
-  GURL nonaccessible_linked_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/nonaccessible_link_resource.html"));
+  GURL nonaccessible_linked_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/nonaccessible_link_resource.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
       nonaccessible_linked_resource, 2);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -274,10 +264,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("about:blank", result);
 
-  GURL accessible_client_redirect_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/accessible_redirect_resource.html"));
+  GURL accessible_client_redirect_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/accessible_redirect_resource.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
       accessible_client_redirect_resource, 2);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -286,10 +275,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_NE("about:blank", result);
 
-  GURL nonaccessible_client_redirect_resource(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/nonaccessible_redirect_resource.html"));
+  GURL nonaccessible_client_redirect_resource(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/nonaccessible_redirect_resource.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
       nonaccessible_client_redirect_resource, 2);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -302,15 +290,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        WebAccessibleResourcesWithCSP) {
   std::string result;
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("web_accessible")));
 
-  GURL accessible_resource_with_csp(
-      test_server()->GetURL(
-          "files/extensions/api_test/extension_resource_request_policy/"
-          "web_accessible/accessible_resource_with_csp.html"));
+  GURL accessible_resource_with_csp(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "web_accessible/accessible_resource_with_csp.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource_with_csp);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),

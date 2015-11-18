@@ -178,7 +178,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     oauth2_service_.AddAccount("robot@gmail.com");
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
   }
 
   // testing::Test:
@@ -207,7 +207,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::RunLoop run_loop_;
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   MockOAuth2TokenService oauth2_service_;
 

@@ -8,7 +8,7 @@ window.loadGuest = function(port) {
 
   // This page is not loaded, we just need a https URL.
   var guestSrcHTTPS = 'https://localhost:' + port +
-      '/files/extensions/platform_apps/web_view/' +
+      '/extensions/platform_apps/web_view/' +
       'interstitial_teardown/https_page.html';
   window.console.log('guestSrcHTTPS: ' + guestSrcHTTPS);
   webview.setAttribute('src', guestSrcHTTPS);

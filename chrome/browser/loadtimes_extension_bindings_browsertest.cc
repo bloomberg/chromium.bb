@@ -45,7 +45,7 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
                        LoadTimesSameAfterClientInDocNavigation) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL plain_url = embedded_test_server()->GetURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::WebContents* contents =
@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
 
 IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
                        LoadTimesSameAfterUserInDocNavigation) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL plain_url = embedded_test_server()->GetURL("/simple.html");
   GURL hash_url(plain_url.spec() + "#");
   ui_test_utils::NavigateToURL(browser(), plain_url);

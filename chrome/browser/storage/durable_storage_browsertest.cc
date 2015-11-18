@@ -66,7 +66,7 @@ void DurableStorageBrowserTest::SetUpCommandLine(
 void DurableStorageBrowserTest::SetUpOnMainThread() {
   if (embedded_test_server()->Started())
     return;
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   url_ = embedded_test_server()->GetURL("/durable/durability-permissions.html");
 }
 

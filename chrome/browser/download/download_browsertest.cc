@@ -851,7 +851,7 @@ class DownloadTest : public InProcessBrowserTest {
   // If a Select File dialog opens, will automatically choose the default.
   void DownloadFilesCheckErrorsSetup() {
     embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     std::vector<DownloadItem*> download_items;
     GetDownloads(browser(), &download_items);
     ASSERT_TRUE(download_items.empty());
@@ -1229,7 +1229,7 @@ static scoped_ptr<net::test_server::HttpResponse> RespondWithContentTypeHandler(
 IN_PROC_BROWSER_TEST_F(DownloadTest, MimeTypesToShowNotDownload) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&RespondWithContentTypeHandler));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // These files should all be displayed in the browser.
   const char* mime_types[] = {
@@ -1699,7 +1699,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   // persistence.
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL redirect_url =
       embedded_test_server()->GetURL("/a?" + download_url.spec());
 
@@ -2167,7 +2167,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
@@ -2246,7 +2246,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&FilterPostOnlyURLsHandler));
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
@@ -2635,7 +2635,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&EchoReferrerRequestHandler));
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
@@ -2687,7 +2687,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&EchoReferrerRequestHandler));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
@@ -2744,7 +2744,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&EchoReferrerRequestHandler));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);

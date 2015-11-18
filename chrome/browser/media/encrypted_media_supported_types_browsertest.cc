@@ -20,7 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -163,13 +163,11 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     // Load the test page needed so that checkKeySystemWithMediaMimeType()
     // is available.
-    scoped_ptr<net::SpawnedTestServer> http_test_server(
-        new net::SpawnedTestServer(net::SpawnedTestServer::TYPE_HTTP,
-                                   net::SpawnedTestServer::kLocalhost,
-                                   media::GetTestDataPath()));
+    scoped_ptr<net::EmbeddedTestServer> http_test_server(
+        new net::EmbeddedTestServer);
+    http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
     CHECK(http_test_server->Start());
-    GURL gurl =
-        http_test_server->GetURL("files/test_key_system_instantiation.html");
+    GURL gurl = http_test_server->GetURL("/test_key_system_instantiation.html");
     ui_test_utils::NavigateToURL(browser(), gurl);
   }
 

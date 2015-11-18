@@ -27,7 +27,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 // This test verifies the Desktop implementation of Guest only.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -170,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestClearsCookies) {
   Browser* guest_browser = OpenGuestBrowser();
   Profile* guest_profile = guest_browser->profile();
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("set-cookie?cookie1"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/set-cookie?cookie1"));
 
   // Before navigation there are no cookies for the URL.
   std::string cookie = content::GetCookies(guest_profile, url);

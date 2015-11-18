@@ -103,7 +103,7 @@ class AutofillTest : public InProcessBrowserTest {
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
 
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUpOnMainThread();
   }
 

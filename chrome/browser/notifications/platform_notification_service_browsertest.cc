@@ -24,7 +24,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -85,7 +85,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   const base::FilePath server_root_;
   const std::string test_page_url_;
   scoped_ptr<StubNotificationUIManager> ui_manager_;
-  scoped_ptr<net::SpawnedTestServer> https_server_;
+  scoped_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // -----------------------------------------------------------------------------
@@ -98,15 +98,13 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
     : server_root_(FILE_PATH_LITERAL("chrome/test/data")),
       // The test server has a base directory that doesn't exist in the
       // filesystem.
-      test_page_url_(std::string("files/") + kTestFileName) {
-}
+      test_page_url_(std::string("/") + kTestFileName) {}
 
 void PlatformNotificationServiceBrowserTest::SetUp() {
   ui_manager_.reset(new StubNotificationUIManager);
-  https_server_.reset(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::BaseTestServer::SSLOptions(net::BaseTestServer::SSLOptions::CERT_OK),
-      server_root_));
+  https_server_.reset(
+      new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+  https_server_->ServeFilesFromSourceDirectory(server_root_);
   ASSERT_TRUE(https_server_->Start());
 
   service()->SetNotificationUIManagerForTesting(ui_manager_.get());

@@ -145,12 +145,12 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   void LoadTestPage(const std::string& test_page) {
-    GURL url = test_server()->GetURL(test_page);
+    GURL url = spawned_test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
   void OpenDevToolsWindow(const std::string& test_page, bool is_docked) {
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(spawned_test_server()->Start());
     LoadTestPage(test_page);
 
     window_ = DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(),
@@ -484,8 +484,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   void RunTest(const char* test_name,
                const char* test_page,
                const char* worker_path) {
-    ASSERT_TRUE(test_server()->Start());
-    GURL url = test_server()->GetURL(test_page);
+    ASSERT_TRUE(spawned_test_server()->Start());
+    GURL url = spawned_test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
     scoped_refptr<WorkerData> worker_data =
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // Disabled because of http://crbug.com/410327
 IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
                        DISABLED_TestUndockedDevToolsUnresponsive) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
       GetInspectedTab(), false);
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
 // @see http://crbug.com/323031
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestWorkerWindowClosing) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
       GetInspectedTab(), false);
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // Disabled because of http://crbug.com/497857
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        DISABLED_TestDevToolsOnDevTools) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
   std::vector<DevToolsWindow*> windows;
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
 // DevToolsWindow and results in inspected page navigation.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   OpenDevToolsWindow(kDebuggerTestPage, true);
-  GURL url = test_server()->GetURL(kNavigateBackTestPage);
+  GURL url = spawned_test_server()->GetURL(kNavigateBackTestPage);
   ui_test_utils::UrlLoadObserver observer(url,
       content::NotificationService::AllSources());
   ASSERT_TRUE(content::ExecuteScript(
@@ -936,8 +936,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
 // Disabled, crashes under Dr.Memory and ASan, http://crbug.com/432444.
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
                        DISABLED_PauseInSharedWorkerInitialization) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
+  ASSERT_TRUE(spawned_test_server()->Start());
+  GURL url = spawned_test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   scoped_refptr<WorkerData> worker_data =

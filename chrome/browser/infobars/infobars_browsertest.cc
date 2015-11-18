@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
     return;
 #endif
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/simple.html"));

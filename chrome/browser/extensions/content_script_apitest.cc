@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(
       content::Source<Profile>(browser()->profile()));
 
   // Start with a renderer already open at a URL.
-  GURL url(test_server()->GetURL("file/extensions/test_file.html"));
+  GURL url(embedded_test_server()->GetURL("/extensions/test_file.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   LoadExtension(

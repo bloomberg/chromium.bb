@@ -13,7 +13,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using web_modal::WebContentsModalDialogManager;
 
@@ -21,11 +21,11 @@ typedef InProcessBrowserTest RepostFormWarningTest;
 
 // If becomes flaky, disable on Windows and use http://crbug.com/47228
 IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load a form.
-  ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/form.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/form.html"));
   // Submit it.
   ui_test_utils::NavigateToURL(
       browser(),
@@ -43,7 +43,8 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // Navigate away from the page (this is when the test usually crashes).
-  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("bar"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/bar"));
 
   // The dialog should've been closed.
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -51,11 +52,11 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
 
 // If becomes flaky, disable on Windows and use http://crbug.com/47228
 IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load a form.
-  ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/form.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/form.html"));
   // Submit it.
   ui_test_utils::NavigateToURL(
       browser(),
@@ -73,8 +74,8 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::Source<content::NavigationController>(&controller));
   browser()->OpenURL(content::OpenURLParams(
-        test_server()->GetURL("auth-basic"), content::Referrer(), CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, false));
+      embedded_test_server()->GetURL("/auth-basic"), content::Referrer(),
+      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
   // Try to reload it again.
@@ -85,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // happen while the auth dialog is up.
   content::TestNavigationObserver navigation_observer(web_contents);
   browser()->OpenURL(content::OpenURLParams(
-        test_server()->GetURL("bar"), content::Referrer(), CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, false));
+      embedded_test_server()->GetURL("/bar"), content::Referrer(), CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
   navigation_observer.Wait();
 }

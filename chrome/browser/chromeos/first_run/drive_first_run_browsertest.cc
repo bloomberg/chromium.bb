@@ -109,7 +109,7 @@ void DriveFirstRunTest::TearDownOnMainThread() {
 void DriveFirstRunTest::InitTestServer(const std::string& directory) {
   embedded_test_server()->ServeFilesFromDirectory(
       test_data_dir_.AppendASCII(directory));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Configure the endpoint to use the test server's port.
   const GURL url(kTestEndpointUrl);

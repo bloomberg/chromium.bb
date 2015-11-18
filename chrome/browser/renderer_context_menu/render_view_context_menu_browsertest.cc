@@ -41,6 +41,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/load_flags.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -225,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
       content::NotificationService::AllSources());
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL echoheader(test_server()->GetURL("echoheader?Referer"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL echoheader(embedded_test_server()->GetURL("/echoheader?Referer"));
 
   // Go to a |page| with a link to echoheader URL.
   GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
@@ -276,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
       content::NotificationService::AllSources());
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL echoheader(test_server()->GetURL("echoheader?Referer"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL echoheader(embedded_test_server()->GetURL("/echoheader?Referer"));
 
   // Go to a |page| with a link to echoheader URL.
   GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
@@ -590,12 +591,12 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
   void SetupAndLoadImagePage(const std::string& image_path) {
     // The test server must start first, so that we know the port that the test
     // server is using.
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
     SetupImageSearchEngine();
 
     // Go to a page with an image in it. The test server doesn't serve the image
     // with the right MIME type, so use a data URL to make a page containing it.
-    GURL image_url(test_server()->GetURL(image_path));
+    GURL image_url(embedded_test_server()->GetURL(image_path));
     GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
     ui_test_utils::NavigateToURL(browser(), page);
   }
@@ -612,14 +613,14 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
   }
 
   GURL GetImageSearchURL() {
-    static const char kImageSearchURL[] = "imagesearch";
-    return test_server()->GetURL(kImageSearchURL);
+    static const char kImageSearchURL[] = "/imagesearch";
+    return embedded_test_server()->GetURL(kImageSearchURL);
   }
 
  private:
   void SetupImageSearchEngine() {
     static const char kShortName[] = "test";
-    static const char kSearchURL[] = "search?q={searchTerms}";
+    static const char kSearchURL[] = "/search?q={searchTerms}";
     static const char kImageSearchPostParams[] =
         "thumb={google:imageThumbnail}";
 
@@ -632,7 +633,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16(kShortName));
     data.SetKeyword(data.short_name());
-    data.SetURL(test_server()->GetURL(kSearchURL).spec());
+    data.SetURL(embedded_test_server()->GetURL(kSearchURL).spec());
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;
 
@@ -650,7 +651,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
-  static const char kValidImage[] = "files/image_search/valid.png";
+  static const char kValidImage[] = "/image_search/valid.png";
   SetupAndLoadImagePage(kValidImage);
 
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
@@ -665,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
-  static const char kCorruptImage[] = "files/image_search/corrupt.png";
+  static const char kCorruptImage[] = "/image_search/corrupt.png";
   SetupAndLoadImagePage(kCorruptImage);
 
   content::WebContents* tab =
@@ -748,9 +749,10 @@ class LoadImageRequestInterceptor : public net::URLRequestInterceptor {
 class LoadImageBrowserTest : public InProcessBrowserTest {
  protected:
   void SetupAndLoadImagePage(const std::string& image_path) {
+    ASSERT_TRUE(embedded_test_server()->Start());
     // Go to a page with an image in it. The test server doesn't serve the image
     // with the right MIME type, so use a data URL to make a page containing it.
-    GURL image_url(test_server()->GetURL(image_path));
+    GURL image_url(embedded_test_server()->GetURL(image_path));
     GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
     ui_test_utils::NavigateToURL(browser(), page);
   }
@@ -762,7 +764,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&LoadImageBrowserTest::AddInterceptorForURL,
                    base::Unretained(this),
-                   GURL(test_server()->GetURL(image_path).spec()),
+                   GURL(embedded_test_server()->GetURL(image_path).spec()),
                    base::Passed(&owned_interceptor)));
   }
 
@@ -791,7 +793,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
-  static const char kValidImage[] = "files/load_image/image.png";
+  static const char kValidImage[] = "/load_image/image.png";
   SetupAndLoadImagePage(kValidImage);
   AddLoadImageInterceptor(kValidImage);
   AttemptLoadImage();

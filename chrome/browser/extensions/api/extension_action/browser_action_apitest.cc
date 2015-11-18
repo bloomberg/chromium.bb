@@ -29,6 +29,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/result_catcher.h"
 #include "grit/theme_resources.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -119,7 +120,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -141,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
   // Simulate the browser action being clicked.
-  ui_test_utils::NavigateToURL(browser(),
-      test_server()->GetURL("files/extensions/test_file.txt"));
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
   ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
       extension, browser(), true);
@@ -484,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -586,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/color")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -648,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
 
 // Verify triggering browser action.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("trigger_actions/browser_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -657,9 +658,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
-  ui_test_utils::NavigateToURL(
-     browser(),
-     test_server()->GetURL("files/simple.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/simple.html"));
 
   ExtensionAction* browser_action = GetBrowserAction(*extension);
   EXPECT_TRUE(browser_action != NULL);

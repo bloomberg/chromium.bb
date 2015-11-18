@@ -71,7 +71,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
  public:
   // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {
-     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   bool IsViewFocused(ViewID vid) {

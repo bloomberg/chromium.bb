@@ -99,7 +99,7 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
     embedded_test_server()->ServeFilesFromDirectory(
         test_data.AppendASCII("extensions/content_capabilities"));
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
   }
 

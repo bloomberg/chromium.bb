@@ -90,7 +90,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url =
       embedded_test_server()->GetURL("app.com", "/extensions/test_file.html");
   GURL non_app_url = embedded_test_server()->GetURL(
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(
       "app.com", "/extensions/get_app_details_for_frame.html");
   GURL non_app_url = embedded_test_server()->GetURL(
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningStateFrame) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(
       "app.com", "/extensions/get_app_details_for_frame_reversed.html");
 

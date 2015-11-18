@@ -25,7 +25,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "net/base/load_flags.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 
@@ -203,9 +203,9 @@ class ContentFaviconDriverTest : public InProcessBrowserTest,
 // is redownloaded and (not returned from either the favicon cache or the HTTP
 // cache).
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadIgnoringCache) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/favicon/page_with_favicon.html");
-  GURL icon_url = test_server()->GetURL("files/favicon/icon.png");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/favicon/page_with_favicon.html");
+  GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
 
   scoped_ptr<TestResourceDispatcherHostDelegate> delegate(
       new TestResourceDispatcherHostDelegate(icon_url));

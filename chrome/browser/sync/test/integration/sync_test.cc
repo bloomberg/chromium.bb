@@ -77,7 +77,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/port_util.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"

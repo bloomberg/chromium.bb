@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
   // Navigate to an URL (which matches the explicit host specified in the
   // extension content_scripts_explicit_hosts). All four extensions should
   // inject the script.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
       ActiveScriptController::GetForWebContents(web_contents);
   ASSERT_TRUE(active_script_controller);
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
                                        false /* won't reply */));
   inject_success_listener.set_extension_id(extension->id());
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(FlagOffActiveScriptControllerBrowserTest,
           EXECUTE_SCRIPT),
   };
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 

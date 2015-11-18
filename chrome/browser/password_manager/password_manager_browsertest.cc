@@ -54,7 +54,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -1384,18 +1383,16 @@ IN_PROC_BROWSER_TEST_F(
       ::switches::kIgnoreCertificateErrors);
   const base::FilePath::CharType kDocRoot[] =
       FILE_PATH_LITERAL("chrome/test/data");
-  net::SpawnedTestServer https_test_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_OK),
-      base::FilePath(kDocRoot));
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
 
   // This test case cannot inject the scripts via content::ExecuteScript() in
   // files served through HTTPS. Therefore the scripts are made part of the HTML
   // site and executed on load.
   std::string path =
-      "password/separate_login_form_with_onload_submit_script.html";
+      "/password/separate_login_form_with_onload_submit_script.html";
   GURL https_url(https_test_server.GetURL(path));
   ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
 

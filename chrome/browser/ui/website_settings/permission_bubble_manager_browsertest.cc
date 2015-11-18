@@ -52,7 +52,7 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
                        MAYBE_RequestsBeforeLoad) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 // Requests before the load should not be bundled with a request after the load.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
                        RequestsBeforeAfterLoad) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 #define MAYBE_NavTwice NavTwice
 #endif
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
 #endif
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
                        MAYBE_NavTwiceWithHash) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 
 // Bubble requests should be shown after in-page navigation.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),

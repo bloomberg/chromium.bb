@@ -19,7 +19,7 @@ typedef InProcessBrowserTest CollectedCookiesTest;
 
 // If this crashes on Windows, use http://crbug.com/79331
 IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Disable cookies.
   CookieSettingsFactory::GetForProfile(browser()->profile())
@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
 
 // If this crashes on Windows, use http://crbug.com/79331
 IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Disable cookies.
   CookieSettingsFactory::GetForProfile(browser()->profile())

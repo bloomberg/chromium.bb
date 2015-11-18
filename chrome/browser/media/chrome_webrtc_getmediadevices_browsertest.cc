@@ -184,7 +184,7 @@ INSTANTIATE_TEST_CASE_P(WebRtcGetMediaDevicesBrowserTests,
 // MediaDevices.enumerateDevices. http://crbug.com/388648.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesWithoutAccess) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
 // Disabled, fails due to http://crbug.com/382391.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesWithAccess) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
 // MediaDevices.enumerateDevices. http://crbug.com/388648.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesEqualsGetSourcesWithoutAccess) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
 // Disabled, fails due to http://crbug.com/382391.
 IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
                        DISABLED_GetMediaDevicesEqualsGetSourcesWithAccess) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =

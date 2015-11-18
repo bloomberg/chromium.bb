@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -87,10 +88,10 @@ class StartupBrowserCreatorTriggeredResetTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
                        TestTriggeredReset) {
   // Use a couple same-site HTTP URLs.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   std::vector<GURL> urls;
-  urls.push_back(test_server()->GetURL("files/title1.html"));
-  urls.push_back(test_server()->GetURL("files/title2.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title1.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title2.html"));
 
   Profile* profile = browser()->profile();
   chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
@@ -137,9 +138,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // The presence of First Run tabs (in production code, these commonly come
   // from master_preferences) should suppress the reset UI. Check that this is
   // the case.
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
 
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);

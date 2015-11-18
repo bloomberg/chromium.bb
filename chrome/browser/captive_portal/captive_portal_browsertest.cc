@@ -58,6 +58,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
@@ -78,12 +79,12 @@ using net::URLRequestMockHTTPJob;
 namespace {
 
 // Path of the fake login page, when using the TestServer.
-const char* const kTestServerLoginPath = "files/captive_portal/login.html";
+const char* const kTestServerLoginPath = "/captive_portal/login.html";
 
 // Path of a page with an iframe that has a mock SSL timeout, when using the
 // TestServer.
 const char* const kTestServerIframeTimeoutPath =
-    "files/captive_portal/iframe_timeout.html";
+    "/captive_portal/iframe_timeout.html";
 
 // The following URLs each have two different behaviors, depending on whether
 // URLRequestMockCaptivePortalJobFactory is currently simulating the presence
@@ -540,7 +541,7 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
 
 // Creates a server-side redirect for use with the TestServer.
 std::string CreateServerRedirect(const std::string& dest_url) {
-  const char* const kServerRedirectBase = "server-redirect?";
+  const char* const kServerRedirectBase = "/server-redirect?";
   return kServerRedirectBase + dest_url;
 }
 
@@ -1827,9 +1828,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsNonTimeoutError) {
 // Make sure no captive portal test triggers on HTTPS timeouts of iframes.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsIframeTimeout) {
   // Use an HTTPS server for the top level page.
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL(kTestServerIframeTimeoutPath);
@@ -1867,9 +1867,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Disabled) {
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, InternetConnected) {
   // Can't just use SetBehindCaptivePortal(false), since then there wouldn't
   // be a timeout.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SetUpCaptivePortalService(browser()->profile(),
-                            test_server()->GetURL("nocontent"));
+                            embedded_test_server()->GetURL("/nocontent"));
   SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_INTERNET_CONNECTED);
 }
 
@@ -1877,14 +1877,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, InternetConnected) {
 // SSL certificate error.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   // Need an HTTP TestServer to handle a dynamically created server redirect.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   GURL ssl_login_url = https_server.GetURL(kTestServerLoginPath);
@@ -1892,9 +1889,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(captive_portal_service);
-  SetUpCaptivePortalService(
-      browser()->profile(),
-      test_server()->GetURL(CreateServerRedirect(ssl_login_url.spec())));
+  SetUpCaptivePortalService(browser()->profile(),
+                            embedded_test_server()->GetURL(
+                                CreateServerRedirect(ssl_login_url.spec())));
 
   SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
@@ -1965,12 +1962,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, LoginFastTimeout) {
 // tab.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        ShowCaptivePortalInterstitialOnCertError) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -2053,12 +2047,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 // - Stopping the page load shouldn't result in any interstitials.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        InterstitialTimerStopNavigationWhileLoading) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
@@ -2110,12 +2101,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 // result is the same. (i.e. page load stops, no interstitials shown)
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        InterstitialTimerReloadWhileLoading) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
@@ -2170,12 +2158,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 // interstitials should be shown.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        InterstitialTimerNavigateAwayWhileLoading) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
@@ -2240,12 +2225,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     CaptivePortalBrowserTest,
     InterstitialTimerNavigateWhileLoading_EndWithSSLInterstitial) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
@@ -2291,12 +2273,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     CaptivePortalBrowserTest,
     InterstitialTimerNavigateWhileLoading_EndWithCaptivePortalInterstitial) {
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
@@ -2349,14 +2328,11 @@ IN_PROC_BROWSER_TEST_F(
 // tab.  The user then logs in and the page with the error is reloaded.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   // Need an HTTP TestServer to handle a dynamically created server redirect.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  net::SpawnedTestServer::SSLOptions https_options;
-  https_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, https_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   // Set SSL interstitial delay to zero so that a captive portal result can not
@@ -2774,12 +2750,10 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
 // captive portal is found, and then the user logs in before the original page
 // times out.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SlowLoadBehindCaptivePortal(
-      browser(),
-      true,
-      test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)),
-      1,
+      browser(), true,
+      embedded_test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)), 1,
       1);
   Login(browser(), 1, 0);
   FailLoadsAfterLogin(browser(), 1);
@@ -2788,8 +2762,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
 // An HTTPS page redirects to an HTTP page.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsToHttpRedirect) {
   // Use an HTTPS server for the top level page.
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 

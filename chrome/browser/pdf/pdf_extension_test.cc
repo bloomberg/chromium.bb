@@ -73,7 +73,7 @@ class PDFExtensionTest : public ExtensionApiTest,
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {

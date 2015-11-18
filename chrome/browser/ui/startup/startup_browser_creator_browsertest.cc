@@ -46,6 +46,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -253,10 +254,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        StartupURLsOnNewWindowWithNoTabbedBrowsers) {
   // Use a couple same-site HTTP URLs.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   std::vector<GURL> urls;
-  urls.push_back(test_server()->GetURL("files/title1.html"));
-  urls.push_back(test_server()->GetURL("files/title2.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title1.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title2.html"));
 
   Profile* profile = browser()->profile();
   chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
@@ -527,9 +528,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 #define MAYBE_AddFirstRunTab AddFirstRunTab
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_AddFirstRunTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title2.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title2.html"));
 
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -560,10 +564,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_AddFirstRunTab) {
 #define MAYBE_AddCustomFirstRunTab AddCustomFirstRunTab
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_AddCustomFirstRunTab) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title2.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title2.html"));
   browser_creator.AddFirstRunTab(GURL("http://welcome_page"));
 
   // Do a simple non-process-startup browser launch.
@@ -660,8 +667,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
 
   // The welcome page should not be shown, even if
   // first_run::ShouldShowWelcomePage() says so, when there are already
@@ -697,8 +706,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
 // tabs, but the welcome page was explcitly added to the first run tabs.
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        SyncPromoWithFirstRunTabsIncludingWelcomePage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser_creator.AddFirstRunTab(GURL("http://welcome_page"));
 
   // Do a simple non-process-startup browser launch.
@@ -815,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   // Simulate a browser restart by creating the profiles in the PRE_ part.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Create two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
@@ -834,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
                             browser()->host_desktop_type()));
   chrome::NewTab(browser1);
   ui_test_utils::NavigateToURL(browser1,
-                               test_server()->GetURL("files/empty.html"));
+                               embedded_test_server()->GetURL("/empty.html"));
   CloseBrowserSynchronously(browser1);
 
   Browser* browser2 = new Browser(
@@ -842,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
                             browser()->host_desktop_type()));
   chrome::NewTab(browser2);
   ui_test_utils::NavigateToURL(browser2,
-                               test_server()->GetURL("files/form.html"));
+                               embedded_test_server()->GetURL("/form.html"));
   CloseBrowserSynchronously(browser2);
 
   // Set different startup preferences for the 2 profiles.
@@ -921,8 +932,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("/files/empty.html",
-            tab_strip->GetWebContentsAt(0)->GetURL().path());
+  EXPECT_EQ("/empty.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2,
                                         browser()->host_desktop_type()));
@@ -930,8 +940,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("/files/form.html",
-            tab_strip->GetWebContentsAt(0)->GetURL().path());
+  EXPECT_EQ("/form.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
@@ -942,6 +951,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
           switches::kAshBrowserTests))
     return;
 #endif
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   Profile* default_profile = browser()->profile();
 
@@ -990,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                             browser()->host_desktop_type()));
   chrome::NewTab(browser_last);
   ui_test_utils::NavigateToURL(browser_last,
-                               test_server()->GetURL("files/empty.html"));
+                               embedded_test_server()->GetURL("/empty.html"));
   CloseBrowserAsynchronously(browser_last);
 
   // Close the main browser.
@@ -1053,8 +1063,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("/files/empty.html",
-            tab_strip->GetWebContentsAt(0)->GetURL().path());
+  EXPECT_EQ("/empty.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 
   // profile_home2 was not launched since it would've only opened the home page.
   ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2, original_desktop_type));
@@ -1417,14 +1426,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
-  //    "files/title1.html"
+  //    "/title1.html"
   //  ],
   //  "sync_promo": {
   //    "show_on_first_run_allowed": true
   //  }
   // }
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
@@ -1462,16 +1473,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
-  //    "files/title1.html",
+  //    "/title1.html",
   //    "chrome://signin/?source=0&next_page=chrome%3A%2F%2Fnewtab%2F"
   //  ],
   //  "sync_promo": {
   //    "show_on_first_run_allowed": true
   //  }
   // }
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser_creator.AddFirstRunTab(
       signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false));
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -1514,15 +1526,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // {
   //  "first_run_tabs" : [
   //    "new_tab_page",
-  //    "files/title1.html"
+  //    "/title1.html"
   //  ],
   //  "sync_promo": {
   //    "show_on_first_run_allowed": true
   //  }
   // }
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
@@ -1563,15 +1577,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // {
   //  "first_run_tabs" : [
   //    "new_tab_page",
-  //    "files/title1.html"
+  //    "/title1.html"
   //  ],
   //  "sync_promo": {
   //    "show_on_first_run_allowed": false
   //  }
   // }
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, false);
 
@@ -1610,14 +1626,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
-  //    "files/title1.html"
+  //    "/title1.html"
   //  ],
   //  "sync_promo": {
   //    "show_on_first_run_allowed": false
   //  }
   // }
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, false);
 
@@ -1658,13 +1676,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   //    "show_on_first_run_allowed": true
   //  }
   // }
+  ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs
-  // * RestoreOnStartupURLs = [ "files/title1.html" ]
+  // * RestoreOnStartupURLs = [ "/title1.html" ]
   policy_map_.Set(
       policy::key::kRestoreOnStartup,
       policy::POLICY_LEVEL_MANDATORY,
@@ -1673,8 +1692,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
       new base::FundamentalValue(SessionStartupPref::kPrefValueURLs),
       NULL);
   base::ListValue startup_urls;
-  startup_urls.Append(
-      new base::StringValue(test_server()->GetURL("files/title1.html").spec()));
+  startup_urls.Append(new base::StringValue(
+      embedded_test_server()->GetURL("/title1.html").spec()));
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                   policy::POLICY_SOURCE_CLOUD, startup_urls.DeepCopy(),

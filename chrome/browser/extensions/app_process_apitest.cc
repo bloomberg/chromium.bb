@@ -73,7 +73,7 @@ class AppApiTest : public ExtensionApiTest {
         extensions::ProcessMap::Get(browser()->profile());
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     ASSERT_TRUE(LoadExtension(
         test_data_dir_.AppendASCII(app_name)));
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL base_url = GetTestBaseURL("app_process");
 
   // Load an app as a bookmark app.
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
 // Flaky.  http://crbug.com/341898
 IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcessRedirectBack) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, NavigateIntoAppProcess) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
@@ -607,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL base_url = GetTestBaseURL("app_process");
 
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
 #endif
 IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, MAYBE_OpenAppFromIframe) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load app and start URL (not in the app).
   const Extension* app =
@@ -751,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL base_url = GetTestBaseURL("app_process");
 
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, SameBrowsingInstanceAfterSwap) {
       extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL base_url = GetTestBaseURL("app_process");
 

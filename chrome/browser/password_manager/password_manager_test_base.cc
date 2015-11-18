@@ -193,7 +193,7 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
       browser()->profile(),
       password_manager::BuildPasswordStore<
           content::BrowserContext, password_manager::TestPasswordStore>);
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       password_manager::switches::kEnableAutomaticPasswordSaving));
 }

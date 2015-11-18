@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -102,8 +103,8 @@ class ChromeContentBrowserClientSitePerProcessTest
 // such as http://crbug.com/164223.
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientSitePerProcessTest,
                        SitePerProcessNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-  const GURL url(test_server()->GetURL("files/title1.html"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/title1.html"));
 
   ui_test_utils::NavigateToURL(browser(), url);
   NavigationEntry* entry = GetLastCommittedEntry();

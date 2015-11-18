@@ -29,7 +29,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -37,8 +36,6 @@ namespace {
 
 const base::FilePath::CharType kTranslateRoot[] =
     FILE_PATH_LITERAL("chrome/test/data/translate");
-const char kNonSecurePrefix[] = "translate/";
-const char kSecurePrefix[] = "files/";
 const char kFrenchTestPath[] = "/fr_test.html";
 const char kBasicFrenchTestPath[] = "/basic_fr_test.html";
 const char kRefreshMetaTagTestPath[] = "/refresh_meta_tag.html";
@@ -66,12 +63,9 @@ class TranslateBaseBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    net::test_server::EmbeddedTestServer* test_server = embedded_test_server();
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    test_data_dir = test_data_dir.AppendASCII(kNonSecurePrefix);
-    test_server->ServeFilesFromDirectory(test_data_dir);
-    ASSERT_TRUE(test_server->InitializeAndWaitUntilReady());
+    net::EmbeddedTestServer* test_server = embedded_test_server();
+    test_server->ServeFilesFromSourceDirectory(kTranslateRoot);
+    ASSERT_TRUE(test_server->Start());
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -197,15 +191,15 @@ class TranslateBrowserTest : public TranslateBaseBrowserTest {
 class TranslateWithSecureServerBrowserTest : public TranslateBrowserTest {
  public:
   TranslateWithSecureServerBrowserTest()
-      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
-                      SSLOptions(SSLOptions::CERT_OK),
-                      base::FilePath(kTranslateRoot)) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_.ServeFilesFromSourceDirectory(kTranslateRoot);
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(https_server_.Start());
     // Setup alternate security origin for testing in order to allow XHR against
     // local test server. Note that this flag shows a confirm infobar in tests.
-    GURL base_url = GetSecureURL("");
+    GURL base_url = GetSecureURL("/");
     command_line->AppendSwitchASCII(
         translate::switches::kTranslateSecurityOrigin,
         base_url.GetOrigin().spec());
@@ -214,14 +208,11 @@ class TranslateWithSecureServerBrowserTest : public TranslateBrowserTest {
 
  protected:
   GURL GetSecureURL(const std::string& path) const {
-    std::string prefix(kSecurePrefix);
-    return https_server_.GetURL(prefix + path);
+    return https_server_.GetURL(path);
   }
 
  private:
-  net::SpawnedTestServer https_server_;
-
-  typedef net::SpawnedTestServer::SSLOptions SSLOptions;
+  net::EmbeddedTestServer https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateWithSecureServerBrowserTest);
 };

@@ -22,6 +22,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "url/gurl.h"
@@ -208,8 +209,8 @@ IN_PROC_BROWSER_TEST_F(NavigationAccessibilityTest,
   chrome::ExecuteCommand(browser(), IDC_FOCUS_LOCATION);
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/english_page.html"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(embedded_test_server()->GetURL("/english_page.html"));
 
   OmniboxViewViews* omnibox_view =
       BrowserView::GetBrowserViewForBrowser(browser())->

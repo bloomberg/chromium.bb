@@ -44,7 +44,7 @@
 #include "net/base/net_util.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
@@ -902,10 +902,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
 // is correctly transferred, and that stale cached copied can be loaded
 // from the javascript.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Load cache with entry with "nocache" set, to create stale
   // cache.
-  GURL test_url(test_server()->GetURL("files/nocache.html"));
+  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;
@@ -1145,10 +1145,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 // above.
 IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
                        StaleCacheStatusFailedCorrections) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Load cache with entry with "nocache" set, to create stale
   // cache.
-  GURL test_url(test_server()->GetURL("files/nocache.html"));
+  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;

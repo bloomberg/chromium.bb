@@ -41,7 +41,7 @@ std::string WrapForJavascriptAndExtract(const char* javascript_expression) {
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
-    const net::test_server::EmbeddedTestServer* test_server,
+    const net::EmbeddedTestServer* test_server,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/expect-and-set-cookie?",
                         base::CompareCase::SENSITIVE))
@@ -136,7 +136,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
 #endif
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
 // Ensure that cookies are not isolated if the isolated apps are not installed.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
       base::Bind(&HandleExpectAndSetCookieRequest, embedded_test_server()));
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
 
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
 // where non-app popups may be kept in the hosted app process.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
 
@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
 // removed. http://crbug.com/159932
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));

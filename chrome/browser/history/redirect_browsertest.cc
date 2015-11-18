@@ -33,7 +33,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/events/event_constants.h"
 
 class RedirectTest : public InProcessBrowserTest {
@@ -73,10 +73,10 @@ class RedirectTest : public InProcessBrowserTest {
 
 // Tests a single server redirect
 IN_PROC_BROWSER_TEST_F(RedirectTest, Server) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL final_url = test_server()->GetURL(std::string());
-  GURL first_url = test_server()->GetURL(
-      "server-redirect?" + final_url.spec());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
+  GURL first_url =
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec());
 
   ui_test_utils::NavigateToURL(browser(), first_url);
 
@@ -88,11 +88,11 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, Server) {
 
 // Tests a single client redirect.
 IN_PROC_BROWSER_TEST_F(RedirectTest, Client) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL final_url = test_server()->GetURL(std::string());
-  GURL first_url = test_server()->GetURL(
-      "client-redirect?" + final_url.spec());
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
+  GURL first_url =
+      embedded_test_server()->GetURL("/client-redirect?" + final_url.spec());
 
   // The client redirect appears as two page visits in the browser.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -118,11 +118,11 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, Client) {
 
 // http://code.google.com/p/chromium/issues/detail?id=62772
 IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Create the file contents, which will do a redirect to the
   // test server.
-  GURL final_url = test_server()->GetURL(std::string());
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
   ASSERT_TRUE(final_url.is_valid());
   std::string file_redirect_contents = base::StringPrintf(
       "<html>"
@@ -184,15 +184,15 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
 
 // Tests a client->server->server redirect
 IN_PROC_BROWSER_TEST_F(RedirectTest, ClientServerServer) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL final_url = test_server()->GetURL(std::string());
-  GURL next_to_last = test_server()->GetURL(
-      "server-redirect?" + final_url.spec());
-  GURL second_url = test_server()->GetURL(
-      "server-redirect?" + next_to_last.spec());
-  GURL first_url = test_server()->GetURL(
-      "client-redirect?" + second_url.spec());
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
+  GURL next_to_last =
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec());
+  GURL second_url =
+      embedded_test_server()->GetURL("/server-redirect?" + next_to_last.spec());
+  GURL first_url =
+      embedded_test_server()->GetURL("/client-redirect?" + second_url.spec());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), first_url, 2);
@@ -206,13 +206,13 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientServerServer) {
 
 // Tests that the "#reference" gets preserved across server redirects.
 IN_PROC_BROWSER_TEST_F(RedirectTest, ServerReference) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const std::string ref("reference");
 
-  GURL final_url = test_server()->GetURL(std::string());
-  GURL initial_url = test_server()->GetURL(
-      "server-redirect?" + final_url.spec() + "#" + ref);
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
+  GURL initial_url = embedded_test_server()->GetURL(
+      "/server-redirect?" + final_url.spec() + "#" + ref);
 
   ui_test_utils::NavigateToURL(browser(), initial_url);
 
@@ -227,12 +227,12 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ServerReference) {
 //
 // Flaky on XP and Vista, http://crbug.com/69390.
 IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL file_url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath().AppendASCII("http_to_file.html"));
 
-  GURL initial_url = test_server()->GetURL(
-      "client-redirect?" + file_url.spec());
+  GURL initial_url =
+      embedded_test_server()->GetURL("/client-redirect?" + file_url.spec());
 
   ui_test_utils::NavigateToURL(browser(), initial_url);
   // We make sure the title doesn't match the title from the file, because the
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
 // Ensures that non-user initiated location changes (within page) are
 // flagged as client redirects. See bug 1139823.
 IN_PROC_BROWSER_TEST_F(RedirectTest, ClientFragments) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL first_url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath().AppendASCII("ref_redirect.html"));
   ui_test_utils::NavigateToURL(browser(), first_url);
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientFragments) {
 
 // TODO(timsteele): This is disabled because our current testserver can't
 // handle multiple requests in parallel, making it hang on the first request
-// to /slow?60. It's unable to serve our second request for files/title2.html
+// to /slow?60. It's unable to serve our second request for /title2.html
 // until /slow? completes, which doesn't give the desired behavior. We could
 // alternatively load the second page from disk, but we would need to start
 // the browser for this testcase with --process-per-tab, and I don't think
@@ -269,12 +269,12 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   // which causes it to start a provisional load, and while it is waiting
   // for the response (which means it hasn't committed the load for the client
   // redirect destination page yet), we issue a new navigation request.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL final_url = test_server()->GetURL("files/title2.html");
-  GURL slow = test_server()->GetURL("slow?60");
-  GURL first_url = test_server()->GetURL(
-      "client-redirect?" + slow.spec());
+  GURL final_url = embedded_test_server()->GetURL("/title2.html");
+  GURL slow = embedded_test_server()->GetURL("/slow?60");
+  GURL first_url =
+      embedded_test_server()->GetURL("/client-redirect?" + slow.spec());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
 
   bool final_navigation_not_redirect = true;
   std::vector<GURL> redirects = GetRedirects(first_url);
-  // Check to make sure our request for files/title2.html doesn't get flagged
+  // Check to make sure our request for /title2.html doesn't get flagged
   // as a client redirect from the first (/client-redirect?) page.
   for (std::vector<GURL>::iterator it = redirects.begin();
        it != redirects.end(); ++it) {

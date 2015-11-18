@@ -95,7 +95,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir.AppendASCII("content/test/data/"));
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   // Create and install an extension that has a couple of web-accessible

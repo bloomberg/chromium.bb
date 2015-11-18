@@ -161,7 +161,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
@@ -3703,11 +3703,10 @@ INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
 // Test that when extended reporting opt-in is disabled by policy, the
 // opt-in checkbox does not appear on SSL blocking pages.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
-  net::SpawnedTestServer https_server_expired(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server_expired(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_expired.Start());
 
   // Set the enterprise policy to disallow opt-in.
@@ -3756,11 +3755,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
 // Test that when SSL error overriding is allowed by policy (default), the
 // proceed link appears on SSL blocking pages.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
-  net::SpawnedTestServer https_server_expired(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server_expired(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_expired.Start());
 
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -3787,11 +3785,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
 // proceed link does not appear on SSL blocking pages and users should not
 // be able to proceed.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
-  net::SpawnedTestServer https_server_expired(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server_expired(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_expired.Start());
 
   const PrefService* const prefs = browser()->profile()->GetPrefs();

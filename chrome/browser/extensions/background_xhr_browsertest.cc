@@ -16,7 +16,8 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/ssl/ssl_server_config.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 namespace {
@@ -63,20 +64,20 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, TlsClientAuth) {
   loop.Run();
 
   // Launch HTTPS server.
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.require_client_cert = true;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   ASSERT_NO_FATAL_FAILURE(
-      RunTest("test_tls_client_auth.html", https_server.GetURL("")));
+      RunTest("test_tls_client_auth.html", https_server.GetURL("/")));
 }
 
 // Test that fetching a URL using HTTP auth doesn't crash, hang, or prompt.
 IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, HttpAuth) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_NO_FATAL_FAILURE(
-      RunTest("test_http_auth.html", test_server()->GetURL("auth-basic")));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(RunTest(
+      "test_http_auth.html", embedded_test_server()->GetURL("/auth-basic")));
 }

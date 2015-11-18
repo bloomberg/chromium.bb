@@ -39,20 +39,7 @@
                   "testServer": {
                     "type": "object",
                     "optional": true,
-                    "description": "Details on the test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartTestServer().",
-                    "properties": {
-                      "port": {
-                        "type": "integer",
-                        "description": "The port on which the test server is listening.",
-                        "minimum": 1024,
-                        "maximum": 65535
-                      }
-                    }
-                  },
-                  "spawnedTestServer": {
-                    "type": "object",
-                    "optional": true,
-                    "description": "Details on the spawned test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartSpawnedTestServer().",
+                    "description": "Details on the test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartEmbeddedTestServer().",
                     "properties": {
                       "port": {
                         "type": "integer",

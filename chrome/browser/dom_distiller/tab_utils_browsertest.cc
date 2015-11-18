@@ -94,7 +94,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                        MAYBE_TestSwapWebContents) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                        TestDistillIntoWebContents) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* source_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

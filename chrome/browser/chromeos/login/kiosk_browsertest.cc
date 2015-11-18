@@ -2143,8 +2143,8 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   set_test_app_id(kTestEnterpriseKioskApp);
 
   const char kPrivateStoreUpdate[] = "/private_store_update";
-  net::test_server::EmbeddedTestServer private_server;
-  ASSERT_TRUE(private_server.InitializeAndWaitUntilReady());
+  net::EmbeddedTestServer private_server;
+  ASSERT_TRUE(private_server.Start());
 
   // |private_server| serves crx from test data dir.
   base::FilePath test_data_dir;

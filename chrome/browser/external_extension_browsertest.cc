@@ -17,7 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
 
@@ -40,11 +40,11 @@ class SearchProviderTest : public InProcessBrowserTest {
   SearchProviderTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     // Map all hosts to our local server.
-    std::string host_rule(
-        "MAP * " + test_server()->host_port_pair().ToString());
+    std::string host_rule("MAP * " +
+                          embedded_test_server()->host_port_pair().ToString());
     command_line->AppendSwitchASCII(switches::kHostRules, host_rule);
     // Use no proxy or otherwise this test will fail on a machine that has a
     // proxy configured.
@@ -57,7 +57,7 @@ class SearchProviderTest : public InProcessBrowserTest {
 
     // Get the url for the test page.
     search_provider_test_url_ =
-        test_server()->GetURL("files/is_search_provider_installed.html");
+        embedded_test_server()->GetURL("/is_search_provider_installed.html");
   }
 
   void SetUpOnMainThread() override {
@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(SearchProviderTest,
                        TestIsSearchProviderInstalledWithException) {
   // Change the url for the test page to one that throws an exception when
   // toString is called on the argument given to isSearchProviderInstalled.
-  search_provider_test_url_ = test_server()->GetURL(
-      "files/is_search_provider_installed_with_exception.html");
+  search_provider_test_url_ = embedded_test_server()->GetURL(
+      "/is_search_provider_installed_with_exception.html");
 
   FinishIsSearchProviderInstalledTest(StartIsSearchProviderInstalledTest(
       browser(), "www.google.com", ""));

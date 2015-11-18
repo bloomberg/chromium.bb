@@ -9,13 +9,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace task_management {
 
 namespace {
 
-const char kTestPage1[] = "files/devtools/debugger_test_page.html";
-const char kTestPage2[] = "files/devtools/navigate_back.html";
+const char kTestPage1[] = "/devtools/debugger_test_page.html";
+const char kTestPage2[] = "/devtools/navigate_back.html";
 
 }  // namespace
 
@@ -27,13 +28,13 @@ class DevToolsTagTest : public InProcessBrowserTest {
  public:
   DevToolsTagTest()
       : devtools_window_(nullptr) {
-    CHECK(test_server()->Start());
+    CHECK(embedded_test_server()->Start());
   }
 
   ~DevToolsTagTest() override {}
 
   void LoadTestPage(const std::string& test_page) {
-    GURL url = test_server()->GetURL(test_page);
+    GURL url = embedded_test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
   }
 

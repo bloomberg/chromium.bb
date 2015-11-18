@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_PopupBlockingExtension) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_blocking")
@@ -207,14 +207,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
   replace_host.SetHostStr("a.com");
 
   const std::string popup_app_contents_path(
-    "files/extensions/api_test/window_open/popup_blocking/hosted_app/");
+      "/extensions/api_test/window_open/popup_blocking/hosted_app/");
 
-  GURL open_tab =
-      test_server()->GetURL(popup_app_contents_path + "open_tab.html")
-          .ReplaceComponents(replace_host);
-  GURL open_popup =
-      test_server()->GetURL(popup_app_contents_path + "open_popup.html")
-          .ReplaceComponents(replace_host);
+  GURL open_tab = embedded_test_server()
+                      ->GetURL(popup_app_contents_path + "open_tab.html")
+                      .ReplaceComponents(replace_host);
+  GURL open_popup = embedded_test_server()
+                        ->GetURL(popup_app_contents_path + "open_popup.html")
+                        .ReplaceComponents(replace_host);
 
   browser()->OpenURL(OpenURLParams(
       open_tab, Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,

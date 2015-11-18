@@ -14,6 +14,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
 using ui::PAGE_TRANSITION_TYPED;
@@ -95,8 +96,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
-  GURL url = test_server()->GetURL(kFullscreenMouseLockHTML);
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(kFullscreenMouseLockHTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());

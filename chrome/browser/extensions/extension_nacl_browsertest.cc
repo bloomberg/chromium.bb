@@ -22,6 +22,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::PluginService;
 using content::WebContents;
@@ -147,7 +148,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 // Test that the NaCl plugin isn't blocked for Webstore extensions.
 // Disabled: http://crbug.com/319892
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
   ASSERT_TRUE(extension);
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
 // Test that the NaCl plugin is blocked for non-Webstore extensions.
 // Disabled: http://crbug.com/319892
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonWebStoreExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_NON_WEBSTORE);
   ASSERT_TRUE(extension);
@@ -167,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonWebStoreExtension) {
 // Test that the NaCl plugin isn't blocked for component extensions.
 // Disabled: http://crbug.com/319892
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_ComponentExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_COMPONENT);
   ASSERT_TRUE(extension);
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_ComponentExtension) {
 // Test that the NaCl plugin isn't blocked for unpacked extensions.
 // Disabled: http://crbug.com/319892
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
   ASSERT_TRUE(extension);
@@ -190,21 +191,22 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
 // if it's a content (MIME type) handler.
 // Disabled: http://crbug.com/319892
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonExtensionScheme) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
   ASSERT_TRUE(extension);
   CheckPluginsCreated(
-      test_server()->GetURL("files/extensions/native_client/test.html"),
+      embedded_test_server()->GetURL("/extensions/native_client/test.html"),
       PLUGIN_TYPE_CONTENT_HANDLER);
 }
 
 // Test that NaCl plugin isn't blocked for hosted app URLs.
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, HostedApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL url = test_server()->GetURL("files/extensions/native_client/test.html");
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/native_client/test.html");
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
   replace_host.ClearPort();

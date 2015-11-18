@@ -551,7 +551,7 @@ class ChromeRenderProcessHostBackgroundingTest
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     // Set up the server and get the test pages.
     base::FilePath test_data_dir;

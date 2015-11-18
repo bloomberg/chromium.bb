@@ -55,7 +55,7 @@
 #include "extensions/common/test_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1781,13 +1781,11 @@ class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/identity")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
   ASSERT_TRUE(https_server.Start());
-  GURL auth_url(https_server.GetURL("files/interaction_required.html"));
+  GURL auth_url(https_server.GetURL("/interaction_required.html"));
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
@@ -1807,13 +1805,11 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/identity")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
   ASSERT_TRUE(https_server.Start());
-  GURL auth_url(https_server.GetURL("files/interaction_required.html"));
+  GURL auth_url(https_server.GetURL("/interaction_required.html"));
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
@@ -1829,13 +1825,11 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/identity")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
   ASSERT_TRUE(https_server.Start());
-  GURL auth_url(https_server.GetURL("files/five_hundred.html"));
+  GURL auth_url(https_server.GetURL("/five_hundred.html"));
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
@@ -1905,13 +1899,11 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
                        DISABLED_InteractiveSecondNavigationSuccess) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/identity")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
   ASSERT_TRUE(https_server.Start());
-  GURL auth_url(https_server.GetURL("files/redirect_to_chromiumapp.html"));
+  GURL auth_url(https_server.GetURL("/redirect_to_chromiumapp.html"));
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());

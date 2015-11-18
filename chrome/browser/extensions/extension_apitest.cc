@@ -33,12 +33,11 @@
 namespace {
 
 const char kTestCustomArg[] = "customArg";
-const char kTestServerPort[] = "testServer.port";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kSitePerProcess[] = "sitePerProcess";
 const char kFtpServerPort[] = "ftpServer.port";
-const char kSpawnedTestServerPort[] = "spawnedTestServer.port";
+const char kEmbeddedTestServerPort[] = "testServer.port";
 
 scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
@@ -370,13 +369,13 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
 }
 
 bool ExtensionApiTest::StartEmbeddedTestServer() {
-  if (!embedded_test_server()->InitializeAndWaitUntilReady())
+  if (!embedded_test_server()->Start())
     return false;
 
   // Build a dictionary of values that tests can use to build URLs that
   // access the test server and local file system.  Tests can see these values
   // using the extension API function chrome.test.getConfig().
-  test_config_->SetInteger(kTestServerPort,
+  test_config_->SetInteger(kEmbeddedTestServerPort,
                            embedded_test_server()->port());
 
   return true;
@@ -409,19 +408,6 @@ bool ExtensionApiTest::StartFTPServer(const base::FilePath& root_directory) {
 
   test_config_->SetInteger(kFtpServerPort,
                            ftp_server_->host_port_pair().port());
-
-  return true;
-}
-
-bool ExtensionApiTest::StartSpawnedTestServer() {
-  if (!test_server()->Start())
-    return false;
-
-  // Build a dictionary of values that tests can use to build URLs that
-  // access the test server and local file system.  Tests can see these values
-  // using the extension API function chrome.test.getConfig().
-  test_config_->SetInteger(kSpawnedTestServerPort,
-                           test_server()->host_port_pair().port());
 
   return true;
 }

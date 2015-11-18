@@ -277,7 +277,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,

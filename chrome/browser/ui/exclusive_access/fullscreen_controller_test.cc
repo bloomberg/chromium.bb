@@ -17,7 +17,7 @@
 using content::WebContents;
 
 const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
-    "files/fullscreen_mouselock/fullscreen_mouselock.html";
+    "/fullscreen_mouselock/fullscreen_mouselock.html";
 
 void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,

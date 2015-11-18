@@ -16,7 +16,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 
 using net::test_server::BasicHttpResponse;
-using net::test_server::EmbeddedTestServer;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 
@@ -89,7 +88,7 @@ class SearchEngineTabHelperBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SearchEngineTabHelperBrowserTest::HandleRequest,
                    base::Unretained(this), file_url));
-    return embedded_test_server()->InitializeAndWaitUntilReady();
+    return embedded_test_server()->Start();
   }
 
   void SetUpOnMainThread() override { ASSERT_TRUE(StartTestServer()); }

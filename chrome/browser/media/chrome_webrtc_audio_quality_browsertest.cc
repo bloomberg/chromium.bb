@@ -622,7 +622,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::FilePath& recording,
     const std::string& constraints,
     const base::TimeDelta recording_time) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
@@ -685,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
     return;
   }
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 

@@ -82,7 +82,7 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
 // which webcam or drivers you have on the system.
 IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
                        MANUAL_TestAcquiringAndReacquiringWebcam) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =

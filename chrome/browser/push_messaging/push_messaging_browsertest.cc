@@ -40,6 +40,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(ENABLE_BACKGROUND)
@@ -88,11 +89,9 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
-    https_server_.reset(new net::SpawnedTestServer(
-        net::SpawnedTestServer::TYPE_HTTPS,
-        net::BaseTestServer::SSLOptions(
-            net::BaseTestServer::SSLOptions::CERT_OK),
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data/"))));
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -185,7 +184,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
       const PushMessagingAppIdentifier& app_identifier,
       const gcm::IncomingMessage& message);
 
-  net::SpawnedTestServer* https_server() const { return https_server_.get(); }
+  net::EmbeddedTestServer* https_server() const { return https_server_.get(); }
 
   gcm::FakeGCMProfileService* gcm_service() const { return gcm_service_; }
 
@@ -214,14 +213,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
  protected:
-  virtual std::string GetTestURL() {
-    return "files/push_messaging/test.html";
-  }
+  virtual std::string GetTestURL() { return "/push_messaging/test.html"; }
 
   virtual Browser* GetBrowser() const { return browser(); }
 
  private:
-  scoped_ptr<net::SpawnedTestServer> https_server_;
+  scoped_ptr<net::EmbeddedTestServer> https_server_;
   gcm::FakeGCMProfileService* gcm_service_;
   PushMessagingServiceImpl* push_service_;
 
@@ -235,7 +232,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 class PushMessagingBrowserTestEmptySubscriptionOptions
     : public PushMessagingBrowserTest {
   std::string GetTestURL() override {
-    return "files/push_messaging/test_no_subscription_options.html";
+    return "/push_messaging/test_no_subscription_options.html";
   }
 };
 
@@ -272,7 +269,7 @@ void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
 PushMessagingAppIdentifier
 PushMessagingBrowserTest::GetAppIdentifierForServiceWorkerRegistration(
     int64 service_worker_registration_id) {
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
           GetBrowser()->profile(), origin, service_worker_registration_id);
@@ -382,24 +379,24 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribePersisted) {
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(sw0_identifier.app_id(), gcm_service()->last_registered_app_id());
 
-  LoadTestPage("files/push_messaging/subscope1/test.html");
+  LoadTestPage("/push_messaging/subscope1/test.html");
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  LoadTestPage("files/push_messaging/subscope2/test.html");
+  LoadTestPage("/push_messaging/subscope2/test.html");
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
   // Note that we need to reload the page after registering, otherwise
   // navigator.serviceWorker.ready is going to be resolved with the parent
   // Service Worker which still controls the page.
-  LoadTestPage("files/push_messaging/subscope2/test.html");
+  LoadTestPage("/push_messaging/subscope2/test.html");
   TryToSubscribeSuccessfully("1-1" /* expected_push_subscription_id */);
   PushMessagingAppIdentifier sw2_identifier =
       GetAppIdentifierForServiceWorkerRegistration(2LL);
   EXPECT_EQ(sw2_identifier.app_id(), gcm_service()->last_registered_app_id());
 
-  LoadTestPage("files/push_messaging/subscope1/test.html");
+  LoadTestPage("/push_messaging/subscope1/test.html");
   TryToSubscribeSuccessfully("1-2" /* expected_push_subscription_id */);
   PushMessagingAppIdentifier sw1_identifier =
       GetAppIdentifierForServiceWorkerRegistration(1LL);
@@ -413,11 +410,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribePersisted) {
   // test server uses random port numbers for each test (even PRE_Foo and Foo),
   // so we wouldn't be able to load the test pages with the same origin.
 
-  LoadTestPage("files/push_messaging/subscope1/test.html");
+  LoadTestPage("/push_messaging/subscope1/test.html");
   TryToSubscribeSuccessfully("1-2" /* expected_push_subscription_id */);
   EXPECT_EQ(sw1_identifier.app_id(), gcm_service()->last_registered_app_id());
 
-  LoadTestPage("files/push_messaging/subscope2/test.html");
+  LoadTestPage("/push_messaging/subscope2/test.html");
   TryToSubscribeSuccessfully("1-1" /* expected_push_subscription_id */);
   EXPECT_EQ(sw1_identifier.app_id(), gcm_service()->last_registered_app_id());
 
@@ -856,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
                           ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -890,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
                           ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -953,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
                           ContentSettingsPattern::Wildcard(),
@@ -987,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
                           ContentSettingsPattern::Wildcard(),
@@ -1021,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       base::BarrierClosure(2, message_loop_runner->QuitClosure()));
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
                           ContentSettingsPattern::Wildcard(),
@@ -1065,7 +1062,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       base::BarrierClosure(4, message_loop_runner->QuitClosure()));
 
-  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSetting(ContentSettingsPattern::Wildcard(),
                           ContentSettingsPattern::Wildcard(),

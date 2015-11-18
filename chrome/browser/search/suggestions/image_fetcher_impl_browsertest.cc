@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/suggestions/image_fetcher_delegate.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -23,8 +23,8 @@ namespace suggestions {
 namespace {
 
 const char kTestUrl[] = "http://go.com/";
-const char kTestImagePath[] = "files/image_decoding/droids.png";
-const char kInvalidImagePath[] = "files/DOESNOTEXIST";
+const char kTestImagePath[] = "/image_decoding/droids.png";
+const char kInvalidImagePath[] = "/DOESNOTEXIST";
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
@@ -58,18 +58,14 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
 class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
  protected:
   ImageFetcherImplBrowserTest()
-    : num_callback_valid_called_(0),
-      num_callback_null_called_(0),
-      test_server_(net::SpawnedTestServer::TYPE_HTTP,
-                   net::SpawnedTestServer::kLocalhost,
-                   base::FilePath(kDocRoot)) {}
+      : num_callback_valid_called_(0), num_callback_null_called_(0) {
+    test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server_.Start());
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
-
-  void TearDownInProcessBrowserTestFixture() override { test_server_.Stop(); }
 
   ImageFetcherImpl* CreateImageFetcher() {
     ImageFetcherImpl* fetcher =
@@ -104,7 +100,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
   int num_callback_valid_called_;
   int num_callback_null_called_;
 
-  net::SpawnedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   TestImageFetcherDelegate delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImplBrowserTest);

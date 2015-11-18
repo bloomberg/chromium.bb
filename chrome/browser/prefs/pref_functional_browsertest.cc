@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -48,7 +49,7 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   base::ScopedTempDir new_download_dir;
   ASSERT_TRUE(new_download_dir.CreateUniqueTempDir());
 
@@ -63,8 +64,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   scoped_ptr<content::DownloadTestObserver> downloads_observer(
       CreateWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL("files/downloads/a_zip_file.zip"));
+      browser(), embedded_test_server()->GetURL("/downloads/a_zip_file.zip"));
   // Waits for the download to complete.
   downloads_observer->WaitForFinished();
   EXPECT_TRUE(base::PathExists(downloaded_pkg));
@@ -72,11 +72,10 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
 
 // Verify image content settings show or hide images.
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImageContentSettings) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL("files/settings/image_page.html"));
+      browser(), embedded_test_server()->GetURL("/settings/image_page.html"));
 
   bool result = false;
   std::string script =
@@ -100,8 +99,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImageContentSettings) {
       CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL("files/settings/image_page.html"));
+      browser(), embedded_test_server()->GetURL("/settings/image_page.html"));
 
   result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -113,20 +111,18 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImageContentSettings) {
 
 // Verify that enabling/disabling Javascript in prefs works.
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestJavascriptEnableDisable) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
       prefs::kWebKitJavascriptEnabled));
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL("files/javaScriptTitle.html"));
+      browser(), embedded_test_server()->GetURL("/javaScriptTitle.html"));
   EXPECT_EQ(base::ASCIIToUTF16("Title from script javascript enabled"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kWebKitJavascriptEnabled,
                                                false);
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL("files/javaScriptTitle.html"));
+      browser(), embedded_test_server()->GetURL("/javaScriptTitle.html"));
   EXPECT_EQ(base::ASCIIToUTF16("This is html title"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
@@ -148,8 +144,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest,
 
 // Verify images are not blocked in incognito mode.
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImagesNotBlockedInIncognito) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/settings/image_page.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/settings/image_page.html");
   Browser* incognito_browser = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito_browser, url);
 
@@ -241,4 +237,3 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestPrivacySecurityPrefs) {
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestHaveLocalStatePrefs) {
   EXPECT_TRUE(g_browser_process->local_state()->GetPreferenceValues().get());
 }
-

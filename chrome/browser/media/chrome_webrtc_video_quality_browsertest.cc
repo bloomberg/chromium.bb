@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 150000.";
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(

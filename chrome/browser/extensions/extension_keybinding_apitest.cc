@@ -29,6 +29,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
 
@@ -142,11 +143,11 @@ class CommandsApiTest : public ExtensionApiTest {
 #if defined(OS_CHROMEOS)
   void RunChromeOSConversionTest(const std::string& extension_path) {
     // Setup the environment.
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_TRUE(RunExtensionTest(extension_path)) << message_;
     ui_test_utils::NavigateToURL(
-        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+        browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
     ResultCatcher catcher;
 
@@ -172,7 +173,7 @@ class CommandsApiTest : public ExtensionApiTest {
 // - The shortcut keys taken by one extension are not overwritten by the last
 //   installed extension.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -188,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ASSERT_EQ(2, browser_actions_bar.NumberOfBrowserActions());
 
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
   // activeTab shouldn't have been granted yet.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -215,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -225,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
     // the page action icon.
     ResultCatcher catcher;
     ui_test_utils::NavigateToURL(
-        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+        browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -251,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
 }
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -266,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
     // the page action icon.
     ResultCatcher catcher;
     ui_test_utils::NavigateToURL(
-        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+        browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -285,21 +286,21 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
 // commands as well as synthesized ones and that inactive commands (like the
 // synthesized ones are in nature) have no shortcuts.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/synthesized")) << message_;
 }
 
 // This test validates that an extension cannot request a shortcut that is
 // already in use by Chrome.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   ASSERT_TRUE(RunExtensionTest("keybinding/dont_overwrite_system")) << message_;
 
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
   // Activate the regular shortcut (Alt+Shift+F).
   ExtensionTestMessageListener alt_shift_f_listener("alt_shift_f", false);
@@ -345,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
 // This test validates that an extension can remove the Chrome bookmark shortcut
 // if it has requested to do so.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, RemoveBookmarkShortcut) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, RemoveBookmarkShortcut) {
 // shortcut without being given permission with a feature flag.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest,
                        RemoveBookmarkShortcutWithoutPermission) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -378,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 // Ctrl+D shortcut (i.e. it does not trigger the overwrite functionality).
 IN_PROC_BROWSER_TEST_F(CommandsApiTest,
                        RemoveBookmarkShortcutWithUserKeyBinding) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -406,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 // This test validates that an extension can override the Chrome bookmark
 // shortcut if it has requested to do so.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -418,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
       << message_;
 
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
   // Activate the shortcut (Ctrl+D) to send a test message.
   ExtensionTestMessageListener test_listener(false);  // Won't reply.
@@ -437,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--enable-override-bookmarks-ui", "1");
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
 
@@ -467,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 // shortcut does not supersede the same keybinding by web pages.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest,
                        OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -479,9 +480,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
       << message_;
 
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL(
-          "files/extensions/test_file_with_ctrl-d_keybinding.html"));
+      browser(), embedded_test_server()->GetURL(
+                     "/extensions/test_file_with_ctrl-d_keybinding.html"));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 // web pages.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest,
                        OverwriteBookmarkShortcutByUserOverridesWebKeybinding) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -519,9 +519,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
       kBookmarkKeybinding);
 
   ui_test_utils::NavigateToURL(
-      browser(),
-      test_server()->GetURL(
-          "files/extensions/test_file_with_ctrl-d_keybinding.html"));
+      browser(), embedded_test_server()->GetURL(
+                     "/extensions/test_file_with_ctrl-d_keybinding.html"));
 
   ExtensionTestMessageListener test_listener(false);  // Won't reply.
   // Activate the shortcut (Ctrl+D) which should be handled by the extension.
@@ -914,11 +913,11 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ContinuePropagation) {
   // Setup the environment.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(RunExtensionTest("keybinding/continue_propagation")) << message_;
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
   ResultCatcher catcher;
 
@@ -958,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
 // Make sure component extensions retain keybindings after removal then
 // re-adding.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
 
   extensions::ExtensionSystem::Get(browser()->profile())

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -100,6 +101,8 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
@@ -342,14 +345,14 @@ void ProceedThroughInterstitial(content::WebContents* web_contents) {
   observer.Wait();
 }
 
-bool GetFilePathWithHostAndPortReplacement(
+void GetFilePathWithHostAndPortReplacement(
     const std::string& original_file_path,
     const net::HostPortPair& host_port_pair,
     std::string* replacement_path) {
-  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  base::StringPairs replacement_text;
   replacement_text.push_back(
       make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
-  return net::SpawnedTestServer::GetFilePathWithReplacements(
+  net::test_server::GetFilePathWithReplacements(
       original_file_path, replacement_text, replacement_path);
 }
 
@@ -643,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
 // a pending entry if we start from the NTP but not from a normal page.
 // See http://crbug.com/355537.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL ntp_url(search::GetNewTabPageURL(browser()->profile()));
@@ -651,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 
   // Navigate to a 204 URL (aborts with no content) on the NTP and make sure it
   // sticks around so that the user can edit it.
-  GURL abort_url(test_server()->GetURL("nocontent"));
+  GURL abort_url(embedded_test_server()->GetURL("/nocontent"));
   {
     content::WindowedNotificationObserver stop_observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -665,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
   }
 
   // Navigate to a real URL.
-  GURL real_url(test_server()->GetURL("title1.html"));
+  GURL real_url(embedded_test_server()->GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), real_url);
   EXPECT_EQ(real_url, web_contents->GetVisibleURL());
 
@@ -687,9 +690,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 // cross-process navigation is ready to commit.
 // Flaky test, see https://crbug.com/445155.
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(test_server()->GetURL("empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Test this with multiple alert dialogs to ensure that we can navigate away
@@ -715,9 +718,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
 // Make sure that dialogs are closed after a renderer process dies, and that
 // subsequent navigations work.  See http://crbug/com/343265.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL beforeunload_url(test_server()->GetURL("files/beforeunload.html"));
+  GURL beforeunload_url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), beforeunload_url);
 
   // Start a navigation to trigger the beforeunload dialog.
@@ -739,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   EXPECT_FALSE(dialog_queue->HasActiveDialog());
 
   // Make sure subsequent navigations work.
-  GURL url2("http://www.example.com/files/empty.html");
+  GURL url2("http://www.example.com/empty.html");
   ui_test_utils::NavigateToURL(browser(), url2);
 }
 
@@ -774,8 +777,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
 // page is showing. See crbug.com/482380.
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
   // Navigate to a PDF, which is loaded within a guestview.
-  ASSERT_TRUE(test_server()->Start());
-  GURL pdf_with_dialog(test_server()->GetURL("files/alert_dialog.pdf"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL pdf_with_dialog(embedded_test_server()->GetURL("/alert_dialog.pdf"));
   ui_test_utils::NavigateToURL(browser(), pdf_with_dialog);
 
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -850,10 +853,10 @@ class RedirectObserver : public content::WebContentsObserver {
 // http://crbug.com/243957.
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
   // Create HTTP and HTTPS servers for a cross-site transition.
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
 
   // Temporarily replace ContentBrowserClient with one that will cause a
@@ -862,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
   content::ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&new_client);
 
-  GURL init_url(test_server()->GetURL("files/title1.html"));
+  GURL init_url(embedded_test_server()->GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), init_url);
 
   // Navigate to a same-site page that redirects, causing a transfer.
@@ -871,9 +874,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
   // Create a RedirectObserver that goes away before we close the tab.
   {
     RedirectObserver redirect_observer(contents);
-    GURL dest_url(https_test_server.GetURL("files/title2.html"));
-    GURL redirect_url(test_server()->GetURL("server-redirect?" +
-        dest_url.spec()));
+    GURL dest_url(https_test_server.GetURL("/title2.html"));
+    GURL redirect_url(
+        embedded_test_server()->GetURL("/server-redirect?" + dest_url.spec()));
     ui_test_utils::NavigateToURL(browser(), redirect_url);
 
     // We should immediately see the new committed entry.
@@ -901,10 +904,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
 // handler to run once.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   // Create HTTP and HTTPS servers for a cross-site transition.
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
 
   // Temporarily replace ContentBrowserClient with one that will cause a
@@ -914,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
       SetBrowserClientForTesting(&new_client);
 
   // Navigate to a page with a beforeunload handler.
-  GURL url(test_server()->GetURL("files/beforeunload.html"));
+  GURL url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Navigate to a URL that redirects to another process and approve the
@@ -922,9 +925,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  GURL https_url(https_test_server.GetURL("files/title1.html"));
-  GURL redirect_url(test_server()->GetURL("server-redirect?" +
-      https_url.spec()));
+  GURL https_url(https_test_server.GetURL("/title1.html"));
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/server-redirect?" + https_url.spec()));
   browser()->OpenURL(OpenURLParams(redirect_url, Referrer(), CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -945,8 +948,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Navigate to a page that triggers a cross-site transition.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url2(test_server()->GetURL("files/title1.html"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url2(embedded_test_server()->GetURL("/title1.html"));
   browser()->OpenURL(OpenURLParams(
       url2, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 
@@ -1125,13 +1128,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
       switches::kDisablePopupBlocking);
 
   // Create http and https servers for a cross-site transition.
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
-  GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_test_server.GetURL(std::string()));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL https_url(https_test_server.GetURL(std::string("/")));
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
@@ -1214,13 +1217,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
       switches::kDisablePopupBlocking);
 
   // Create http and https servers for a cross-site transition.
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
-  GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_test_server.GetURL(std::string()));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL https_url(https_test_server.GetURL("/"));
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
@@ -1319,8 +1322,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL http_url(test_server()->GetURL(std::string()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url(embedded_test_server()->GetURL("/"));
   ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -1330,11 +1333,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
 
-  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                     net::SpawnedTestServer::kLocalhost,
-                                     base::FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
-  GURL https_url(test_server.GetURL("/"));
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
+  GURL https_url(https_test_server.GetURL("/"));
   ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
   ui_test_utils::NavigateToURL(browser(), https_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -1375,8 +1379,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 // Change a tab into an application window.
 // DISABLED: http://crbug.com/72310
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL http_url(test_server()->GetURL(std::string()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url(embedded_test_server()->GetURL("/"));
   ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -1428,9 +1432,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
 // to an anchor in javascript body.onload handler.
 IN_PROC_BROWSER_TEST_F(BrowserTest,
                        DISABLED_FaviconOfOnloadRedirectToAnchorPage) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("files/onload_redirect_to_anchor.html"));
-  GURL expected_favicon_url(test_server()->GetURL("files/test.png"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/onload_redirect_to_anchor.html"));
+  GURL expected_favicon_url(embedded_test_server()->GetURL("/test.png"));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -1473,9 +1477,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(test_server()->GetURL("empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
@@ -1516,7 +1520,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
 
 // Open with --app-id=<id>, and see that an application tab opens by default.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // There should be one tab to start with.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -1556,7 +1560,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 // Open an app window and the dev tools window and ensure that the location
 // bar settings are correct.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an app.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
@@ -1609,11 +1613,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 #if !defined(OS_CHROMEOS)
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Add a pinned tab.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(test_server()->GetURL("empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
   ui_test_utils::NavigateToURL(browser(), url);
   model->SetTabPinned(0, true);
@@ -1680,7 +1684,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
 
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an app
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
@@ -2008,9 +2012,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(test_server()->GetURL("empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   CommandUpdater* command_updater =
@@ -2051,9 +2055,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 // Ensure that creating an interstitial page closes any JavaScript dialogs
 // that were present on the previous page.  See http://crbug.com/295695.
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(test_server()->GetURL("empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
@@ -2129,8 +2133,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, UserGesturesReported) {
       browser()->tab_strip_model()->GetActiveWebContents();
   MockWebContentsObserver mock_observer(web_contents);
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("empty.html"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(mock_observer.got_user_gesture());
@@ -2738,11 +2742,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   // visible_url=title1.html)
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kWebKitJavascriptEnabled,
                                                false);
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Create an HTTPS server for cross-site transition.
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
 
   // Start with NTP.
@@ -2759,7 +2763,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
 
   // Navigate to a non-NTP page, without resizing WebContentsView.
   ui_test_utils::NavigateToURL(browser(),
-                               test_server()->GetURL("files/title1.html"));
+                               embedded_test_server()->GetURL("/title1.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   // A new RenderViewHost should be created.
   EXPECT_NE(prev_rvh, web_contents->GetRenderViewHost());
@@ -2797,7 +2801,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
 
   // Navigate to another non-NTP page, without resizing WebContentsView.
   ui_test_utils::NavigateToURL(browser(),
-                               https_test_server.GetURL("files/title2.html"));
+                               https_test_server.GetURL("/title2.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   // A new RenderVieHost should be created.
   EXPECT_NE(prev_rvh, web_contents->GetRenderViewHost());
@@ -2817,7 +2821,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   gfx::Size wcv_resize_insets(1, 1);
   observer.set_wcv_resize_insets(wcv_resize_insets);
   ui_test_utils::NavigateToURL(browser(),
-                               test_server()->GetURL("files/title2.html"));
+                               embedded_test_server()->GetURL("/title2.html"));
   ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   gfx::Size rwhv_create_size2, rwhv_commit_size2, wcv_commit_size2;
   observer.GetSizeForRenderViewHost(web_contents->GetRenderViewHost(),
@@ -2906,25 +2910,25 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CanDuplicateTab) {
 // Tests that the WebContentsObserver::SecurityStyleChanged event fires
 // with the current style on HTTP, broken HTTPS, and valid HTTPS pages.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
-  net::SpawnedTestServer https_test_server_expired(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath(kDocRoot));
-
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
+
+  net::EmbeddedTestServer https_test_server_expired(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_test_server_expired.ServeFilesFromSourceDirectory(
+      base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server_expired.Start());
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStyleTestObserver observer(web_contents);
 
   // Visit an HTTP url.
-  GURL http_url(test_server()->GetURL(std::string()));
+  GURL http_url(embedded_test_server()->GetURL("/"));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
             observer.latest_security_style());
@@ -2937,9 +2941,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path;
-  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
-      "files/ssl/page_displays_insecure_content.html",
-      test_server()->host_port_pair(), &replacement_path));
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_displays_insecure_content.html",
+      embedded_test_server()->host_port_pair(), &replacement_path);
 
   GURL mixed_content_url(https_test_server.GetURL(replacement_path));
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
@@ -2961,7 +2965,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
             mixed_content_explanation.ran_insecure_content_style);
 
   // Visit a broken HTTPS url.
-  GURL expired_url(https_test_server_expired.GetURL(std::string()));
+  GURL expired_url(https_test_server_expired.GetURL(std::string("/")));
   ui_test_utils::NavigateToURL(browser(), expired_url);
 
   // An interstitial should show, and an event for the lock icon on the
@@ -2977,7 +2981,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
 
   // Before clicking through, navigate to a different page, and then go
   // back to the interstitial.
-  GURL valid_https_url(https_test_server.GetURL(std::string()));
+  GURL valid_https_url(https_test_server.GetURL(std::string("/")));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
@@ -3021,20 +3025,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
 // and test that the observed security style matches.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
-  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
-                                           net::SpawnedTestServer::kLocalhost,
-                                           base::FilePath(kDocRoot));
-
-  // Use a separate server to work around a mysterious SSL handshake
-  // timeout when both requests go to the same server. See
-  // https://crbug.com/515906.
-  net::SpawnedTestServer https_test_server_expired(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath(kDocRoot));
-
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
+
+  net::EmbeddedTestServer https_test_server_expired(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_test_server_expired.ServeFilesFromSourceDirectory(
+      base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server_expired.Start());
 
   content::WebContents* web_contents =
@@ -3042,7 +3042,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   SecurityStyleTestObserver observer(web_contents);
 
   // Visit a valid HTTPS url.
-  GURL valid_https_url(https_test_server.GetURL(std::string()));
+  GURL valid_https_url(https_test_server.GetURL(std::string("/")));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
@@ -3056,7 +3056,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 
   // Navigate to a bad HTTPS page on a different host, and then click
   // Back to verify that the previous good security style is seen again.
-  GURL expired_https_url(https_test_server_expired.GetURL(std::string()));
+  GURL expired_https_url(https_test_server_expired.GetURL(std::string("/")));
   host_resolver()->AddRule("www.example_broken.test", "127.0.0.1");
   GURL::Replacements replace_host;
   replace_host.SetHostStr("www.example_broken.test");

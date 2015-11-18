@@ -781,7 +781,7 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
     SavePageBrowserTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
 

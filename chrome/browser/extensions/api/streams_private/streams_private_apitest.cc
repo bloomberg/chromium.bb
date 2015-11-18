@@ -43,7 +43,6 @@ using extensions::ResultCatcher;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
-using net::test_server::EmbeddedTestServer;
 using testing::_;
 
 namespace streams_private = extensions::api::streams_private;
@@ -136,8 +135,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     // Init test server.
-    test_server_.reset(new EmbeddedTestServer);
-    ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
+    test_server_.reset(new net::EmbeddedTestServer);
+    ASSERT_TRUE(test_server_->Start());
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
 
     ExtensionApiTest::SetUpOnMainThread();
@@ -235,7 +234,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
  protected:
   std::string test_extension_id_;
   // The HTTP server used in the tests.
-  scoped_ptr<EmbeddedTestServer> test_server_;
+  scoped_ptr<net::EmbeddedTestServer> test_server_;
   base::ScopedTempDir downloads_dir_;
 };
 

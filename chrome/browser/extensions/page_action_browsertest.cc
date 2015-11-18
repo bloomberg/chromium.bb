@@ -15,23 +15,24 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 namespace {
 
-const std::string kFeedPage = "files/feeds/feed.html";
-const std::string kNoFeedPage = "files/feeds/no_feed.html";
+const std::string kFeedPage = "/feeds/feed.html";
+const std::string kNoFeedPage = "/feeds/no_feed.html";
 const std::string kLocalization =
-    "files/extensions/browsertest/title_localized_pa/simple.html";
+    "/extensions/browsertest/title_localized_pa/simple.html";
 
 const std::string kHashPageA =
-    "files/extensions/api_test/page_action/hash_change/test_page_A.html";
+    "/extensions/api_test/page_action/hash_change/test_page_A.html";
 const std::string kHashPageAHash = kHashPageA + "#asdf";
 const std::string kHashPageB =
-    "files/extensions/api_test/page_action/hash_change/test_page_B.html";
+    "/extensions/api_test/page_action/hash_change/test_page_B.html";
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowLegacyExtensionManifests);
@@ -43,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
                     .AppendASCII("crash_25562")));
 
   // Navigate to the feed page.
-  GURL feed_url = test_server()->GetURL(kFeedPage);
+  GURL feed_url = embedded_test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
@@ -51,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
 
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -59,13 +60,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  GURL feed_url = test_server()->GetURL(kFeedPage);
+  GURL feed_url = embedded_test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Navigate to a page with no feed.
-  GURL no_feed = test_server()->GetURL(kNoFeedPage);
+  GURL no_feed = embedded_test_server()->GetURL(kNoFeedPage);
   ui_test_utils::NavigateToURL(browser(), no_feed);
   // Make sure the page action goes away.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 
 // Tests that we don't lose the page action icon on in-page navigations.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   base::FilePath extension_path(test_data_dir_.AppendASCII("api_test")
                                         .AppendASCII("page_action")
@@ -81,31 +82,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Page action should become visible when we navigate here.
-  GURL feed_url = test_server()->GetURL(kHashPageA);
+  GURL feed_url = embedded_test_server()->GetURL(kHashPageA);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // In-page navigation, page action should remain.
-  feed_url = test_server()->GetURL(kHashPageAHash);
+  feed_url = embedded_test_server()->GetURL(kHashPageAHash);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Not an in-page navigation, page action should go away.
-  feed_url = test_server()->GetURL(kHashPageB);
+  feed_url = embedded_test_server()->GetURL(kHashPageB);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
 
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   base::FilePath extension_path(
       test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
-  GURL feed_url = test_server()->GetURL(kFeedPage);
+  GURL feed_url = embedded_test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -175,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
@@ -187,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(extension);
 
   // Any navigation prompts the location bar to load the page action.
-  GURL url = test_server()->GetURL(kLocalization);
+  GURL url = embedded_test_server()->GetURL(kLocalization);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 

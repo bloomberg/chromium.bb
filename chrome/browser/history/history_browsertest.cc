@@ -26,7 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -67,10 +67,9 @@ class WaitForHistoryTask : public history::HistoryDBTask {
 
 class HistoryBrowserTest : public InProcessBrowserTest {
  protected:
-  HistoryBrowserTest()
-      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
-                     base::FilePath(kDocRoot)) {}
+  HistoryBrowserTest() : test_server_() {
+    test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  }
 
   void SetUp() override {
     ASSERT_TRUE(test_server_.Start());
@@ -120,11 +119,11 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadAndWaitForFile(const char* filename) {
-    GURL url = test_server_.GetURL(std::string("History") + filename);
+    GURL url = test_server_.GetURL(std::string("/History") + filename);
     LoadAndWaitForURL(url);
   }
 
-  net::SpawnedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
 };
 
 // Test that the browser history is saved (default setting).

@@ -27,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 using content::WebContents;
@@ -55,12 +56,12 @@ void WebstoreInstallerTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   // We start the test server now instead of in
   // SetUpInProcessBrowserTestFixture so that we can get its port number.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  net::HostPortPair host_port = test_server()->host_port_pair();
-  test_gallery_url_ = base::StringPrintf(
-      "http://%s:%d/files/%s",
-      webstore_domain_.c_str(), host_port.port(), test_data_path_.c_str());
+  net::HostPortPair host_port = embedded_test_server()->host_port_pair();
+  test_gallery_url_ =
+      base::StringPrintf("http://%s:%d/%s", webstore_domain_.c_str(),
+                         host_port.port(), test_data_path_.c_str());
   command_line->AppendSwitchASCII(
       switches::kAppsGalleryURL, test_gallery_url_);
 
@@ -90,10 +91,8 @@ void WebstoreInstallerTest::SetUpOnMainThread() {
 GURL WebstoreInstallerTest::GenerateTestServerUrl(
     const std::string& domain,
     const std::string& page_filename) {
-  GURL page_url = test_server()->GetURL(
-      base::StringPrintf("files/%s/%s",
-                         test_data_path_.c_str(),
-                         page_filename.c_str()));
+  GURL page_url = embedded_test_server()->GetURL(base::StringPrintf(
+      "/%s/%s", test_data_path_.c_str(), page_filename.c_str()));
 
   GURL::Replacements replace_host;
   replace_host.SetHostStr(domain);

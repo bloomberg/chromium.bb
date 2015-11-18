@@ -13,7 +13,7 @@ function dropFrame() {
     // an x-frame-options header for the error page.
     var f = document.createElement('iframe');
     s = s.replace('127.0.0.1', 'www.example.com');
-    s = s.replace('/files/', '/nonesuch/');
+    s = s.replace('/extensions/', '/nonesuch/extensions/');
     f.src = s;
     f.onload = checkFrame;
     f.onerror = checkFrame;

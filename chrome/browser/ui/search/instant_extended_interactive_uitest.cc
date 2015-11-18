@@ -73,6 +73,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -145,10 +146,10 @@ class InstantExtendedTest : public InProcessBrowserTest,
   void SetUpInProcessBrowserTestFixture() override {
     search::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
+    GURL instant_url =
+        https_test_server().GetURL("/instant_extended.html?strk=1&");
+    GURL ntp_url =
+        https_test_server().GetURL("/instant_extended_ntp.html?strk=1&");
     InstantTestBase::Init(instant_url, ntp_url, false);
   }
 
@@ -257,10 +258,10 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
   void SetUpInProcessBrowserTestFixture() override {
     search::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
+    GURL instant_url =
+        https_test_server().GetURL("/instant_extended.html?strk=1&");
+    GURL ntp_url =
+        https_test_server().GetURL("/instant_extended_ntp.html?strk=1&");
     InstantTestBase::Init(instant_url, ntp_url, true);
   }
 
@@ -315,10 +316,10 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
+    GURL instant_url =
+        https_test_server().GetURL("/instant_extended.html?strk=1&");
+    GURL ntp_url =
+        https_test_server().GetURL("/instant_extended_ntp.html?strk=1&");
     InstantTestBase::Init(instant_url, ntp_url, false);
   }
 
@@ -983,9 +984,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_ShowURL) {
 
 // Check that clicking on a result sends the correct referrer.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL result_url =
-      test_server()->GetURL("files/referrer_policy/referrer-policy-log.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL result_url = embedded_test_server()->GetURL(
+      "/referrer_policy/referrer-policy-log.html");
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 

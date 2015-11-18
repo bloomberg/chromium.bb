@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/search_types.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 class BrowserInstantController;
@@ -64,7 +64,7 @@ class InstantTestBase {
 
   const GURL& ntp_url() const { return ntp_url_; }
 
-  net::SpawnedTestServer& https_test_server() { return https_test_server_; }
+  net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
   void KillInstantRenderView();
 
@@ -106,7 +106,7 @@ class InstantTestBase {
   Browser* browser_;
 
   // HTTPS Testing server, started on demand.
-  net::SpawnedTestServer https_test_server_;
+  net::EmbeddedTestServer https_test_server_;
 
   // Set to true to initialize suggestions URL in default search provider.
   bool init_suggestions_url_;

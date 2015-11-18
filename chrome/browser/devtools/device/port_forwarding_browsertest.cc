@@ -23,10 +23,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
-const char kPortForwardingTestPage[] =
-    "files/devtools/port_forwarding/main.html";
+const char kPortForwardingTestPage[] = "/devtools/port_forwarding/main.html";
 
 const int kDefaultDebuggingPort = 9223;
 const int kAlternativeDebuggingPort = 9224;
@@ -88,8 +88,8 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
       set_device_providers_for_test(device_providers);
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL original_url = test_server()->GetURL(kPortForwardingTestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL original_url = embedded_test_server()->GetURL(kPortForwardingTestPage);
 
   std::string forwarding_port("8000");
   GURL forwarding_url(original_url.scheme() + "://" +
@@ -159,8 +159,8 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
       set_device_providers_for_test(device_providers);
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL original_url = test_server()->GetURL(kPortForwardingTestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL original_url = embedded_test_server()->GetURL(kPortForwardingTestPage);
 
   std::string forwarding_port("8000");
   GURL forwarding_url(original_url.scheme() + "://" +

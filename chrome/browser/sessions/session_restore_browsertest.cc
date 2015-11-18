@@ -50,6 +50,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/page_transition_types.h"
 
@@ -965,9 +966,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
 // This test fails. See http://crbug.com/237497.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        DISABLED_RestoresCrossSiteForwardAndBackwardNavs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
+  GURL cross_site_url(embedded_test_server()->GetURL("/title2.html"));
 
   // Visit URLs on different sites.
   ui_test_utils::NavigateToURL(browser(), url1_);

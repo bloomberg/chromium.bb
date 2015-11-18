@@ -104,7 +104,7 @@ class ExtensionRequestLimitingThrottleBrowserTest
     // Requests to 127.0.0.1 bypass throttling, so set up a host resolver rule
     // to use a fake domain.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     extension_ =
         LoadExtension(test_data_dir_.AppendASCII("extension_throttle"));
     ASSERT_TRUE(extension_);

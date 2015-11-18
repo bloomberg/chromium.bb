@@ -294,8 +294,7 @@ void GeolocationBrowserTest::TearDownInProcessBrowserTestFixture() {
 }
 
 void GeolocationBrowserTest::Initialize(InitializationOptions options) {
-  if (!embedded_test_server()->Started() &&
-      !embedded_test_server()->InitializeAndWaitUntilReady()) {
+  if (!embedded_test_server()->Started() && !embedded_test_server()->Start()) {
     ADD_FAILURE() << "Test server failed to start.";
     return;
   }

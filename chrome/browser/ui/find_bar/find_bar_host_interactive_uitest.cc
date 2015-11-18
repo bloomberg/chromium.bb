@@ -17,7 +17,6 @@
 
 using base::WideToUTF16;
 using content::WebContents;
-using net::test_server::EmbeddedTestServer;
 
 namespace {
 
@@ -67,7 +66,7 @@ bool FocusedOnPage(WebContents* web_contents, std::string* result) {
 #define MAYBE_FindInPageEndState FindInPageEndState
 #endif
 IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, MAYBE_FindInPageEndState) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.

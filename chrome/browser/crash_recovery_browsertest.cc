@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
 
   // Use the test server so as not to bypass cache behavior. The title of the
   // active tab should change only when this URL is reloaded.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&CacheMaxAgeHandler::HandleRequest,
                  base::Owned(new CacheMaxAgeHandler(kTestPath))));

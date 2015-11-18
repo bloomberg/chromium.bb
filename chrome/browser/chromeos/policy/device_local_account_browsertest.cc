@@ -1075,7 +1075,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -1150,7 +1150,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Pre-populate the device local account's extension cache with a hosted app
   // and an extension.
@@ -1245,7 +1245,7 @@ static void CreateFile(const base::FilePath& file,
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Make it possible to force-install a hosted app and an extension.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -1431,7 +1431,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
@@ -2086,7 +2086,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Specify Terms of Service URL.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
       embedded_test_server()->GetURL(
           std::string("/") + kExistentTermsOfServicePath).spec());
@@ -2213,7 +2213,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -2317,7 +2317,7 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
 
 IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   // Specify Terms of Service URL.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
       embedded_test_server()->GetURL(
             std::string("/") +

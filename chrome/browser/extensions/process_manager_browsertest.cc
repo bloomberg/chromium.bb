@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
   ASSERT_TRUE(extension.get());
   const std::string& aliased_host = extension->id();
   host_resolver()->AddRule(aliased_host, "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url =
       embedded_test_server()->GetURL("/extensions/test_file_with_body.html");
   GURL::Replacements replace_host;

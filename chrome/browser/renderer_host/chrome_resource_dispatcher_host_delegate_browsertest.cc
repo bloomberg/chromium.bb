@@ -105,7 +105,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleTestRequest));
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     // Tell chrome that this is our DM server.
     dm_url_ = embedded_test_server()->GetURL("/DeviceManagement");
 

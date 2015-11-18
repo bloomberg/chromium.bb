@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
                        UpgradeAfterNavigatingFromOverriddenNewTabPage) {
   embedded_test_server()->ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir extension_dir;
   const char manifest_template[] =
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
                        KeepAliveWithDevToolsOpenOnReload) {
   embedded_test_server()->ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir extension_dir;
   const char manifest_contents[] =

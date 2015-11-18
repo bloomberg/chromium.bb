@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/test/result_catcher.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 
@@ -28,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ContextMenus) {
 // crbug.com/51436 -- creating context menus from multiple script contexts
 // should work.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenusFromMultipleContexts) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("context_menus/add_from_multiple_contexts"))
       << message_;
   const extensions::Extension* extension = GetSingleLoadedExtension();

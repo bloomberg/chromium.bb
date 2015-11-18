@@ -461,7 +461,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   // This will setup the "url" prefix in database and prepare protocol manager
@@ -1175,7 +1175,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
 
   void SetUp() override {
     // We need to start the test server to get the host&port in the url.
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
 

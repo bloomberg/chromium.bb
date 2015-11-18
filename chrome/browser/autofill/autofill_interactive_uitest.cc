@@ -159,7 +159,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
 
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUpOnMainThread();
   }
 

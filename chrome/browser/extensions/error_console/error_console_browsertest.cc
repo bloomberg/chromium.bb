@@ -221,7 +221,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
 
   const GURL& GetTestURL() {
     if (test_url_.is_empty()) {
-      CHECK(embedded_test_server()->InitializeAndWaitUntilReady());
+      CHECK(embedded_test_server()->Start());
       test_url_ = embedded_test_server()->GetURL(kTestingPage);
     }
     return test_url_;

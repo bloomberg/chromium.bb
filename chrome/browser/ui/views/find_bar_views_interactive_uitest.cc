@@ -19,7 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager.h"
@@ -30,7 +30,7 @@ using content::WebContents;
 
 namespace {
 
-static const char kSimplePage[] = "files/find_in_page/simple.html";
+static const char kSimplePage[] = "/find_in_page/simple.html";
 
 class FindInPageTest : public InProcessBrowserTest {
  public:
@@ -57,10 +57,10 @@ class FindInPageTest : public InProcessBrowserTest {
 
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
 IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // First we navigate to our test page (tab A).
-  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   chrome::Find(browser());
@@ -91,12 +91,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   // First we navigate to any page.
-  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kSimplePage));
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(
@@ -136,9 +137,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
 
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
 IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL url = test_server()->GetURL("title1.html");
+  GURL url = embedded_test_server()->GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus the location bar, open and close the find-in-page, focus should
@@ -187,14 +188,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
 // interactive_ui_tests.
 // http://crbug.com/311363
 IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_SelectionRestoreOnTabSwitch) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // First we navigate to any page in the current tab (tab A).
-  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Show the Find bar.
@@ -266,10 +267,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_SelectionRestoreOnTabSwitch) {
 
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
 IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // First we navigate to our test page (tab A).
-  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   chrome::Find(browser());
@@ -322,14 +323,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121. For Aura see bug http://crbug.com/292299.
 IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // First we navigate to any page.
-  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Show the Find bar.
@@ -384,14 +385,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // First we navigate to any page.
-  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Show the Find bar.

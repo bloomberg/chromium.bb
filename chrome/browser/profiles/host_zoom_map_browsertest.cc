@@ -140,7 +140,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
 
   // BrowserTestBase:
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &HostZoomMapBrowserTest::HandleRequest, base::Unretained(this)));
     host_resolver()->AddRule("*", "127.0.0.1");

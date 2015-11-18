@@ -69,7 +69,7 @@ class WakeEventPageTest : public ExtensionBrowserTest {
                BackgroundPageConfiguration bg_config,
                bool should_close,
                bool will_be_open) {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL web_url = embedded_test_server()->GetURL("example.com", "/empty.html");
     host_resolver()->AddRule(web_url.host(), "127.0.0.1");

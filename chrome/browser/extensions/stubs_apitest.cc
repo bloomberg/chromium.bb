@@ -18,7 +18,7 @@
 #define MAYBE_Stubs Stubs
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Stubs) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("stubs")) << message_;
 

@@ -517,7 +517,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   if (GetGuestModeParam() != IN_GUEST_MODE) {
     // Install the web server to serve the mocked share dialog.
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()];

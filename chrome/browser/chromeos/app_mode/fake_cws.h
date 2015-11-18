@@ -26,15 +26,14 @@ class FakeCWS {
 
   // Initializes as CWS request handler and overrides app gallery command line
   // switches.
-  void Init(net::test_server::EmbeddedTestServer* embedded_test_server);
+  void Init(net::EmbeddedTestServer* embedded_test_server);
 
   // Initializes as a private store handler using the given server and URL end
   // point. Private store does not override app gallery command lines and use a
   // slightly different template (as documented on
   // https://developer.chrome.com/extensions/autoupdate).
-  void InitAsPrivateStore(
-      net::test_server::EmbeddedTestServer* embedded_test_server,
-      const std::string& update_check_end_point);
+  void InitAsPrivateStore(net::EmbeddedTestServer* embedded_test_server,
+                          const std::string& update_check_end_point);
 
   // Sets up the update check response with has_update template.
   void SetUpdateCrx(const std::string& app_id,
