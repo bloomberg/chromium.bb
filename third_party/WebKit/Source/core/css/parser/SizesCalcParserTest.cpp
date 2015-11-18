@@ -10,8 +10,7 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSTokenizer.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

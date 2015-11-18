@@ -7,8 +7,7 @@
 
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

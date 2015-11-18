@@ -20,7 +20,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/SkiaForCoreTesting.h"
 #include "platform/text/TextStream.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

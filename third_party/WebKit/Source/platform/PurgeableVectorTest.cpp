@@ -33,10 +33,10 @@
 
 #include "platform/TestingPlatformSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
 #include <algorithm>
 #include <cstdlib>
-#include <gtest/gtest.h>
 
 namespace blink {
 

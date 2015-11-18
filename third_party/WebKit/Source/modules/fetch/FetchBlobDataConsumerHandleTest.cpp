@@ -17,11 +17,10 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <string.h>
 
 namespace blink {

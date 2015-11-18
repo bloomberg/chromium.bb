@@ -6,7 +6,7 @@
 #include "core/animation/animatable/AnimatableLength.h"
 
 #include "platform/CalculationValue.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

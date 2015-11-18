@@ -32,12 +32,12 @@
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/SkNullGLContext.h"
 #include "wtf/RefPtr.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 using testing::InSequence;
 using testing::Return;

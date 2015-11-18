@@ -6,7 +6,7 @@
 #include "core/css/CSSTestHelper.h"
 #include "core/css/RuleSet.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -43,11 +43,11 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/OwnPtr.h"
 #include <functional>
-#include <gtest/gtest.h>
 #include <list>
 
 using namespace blink;

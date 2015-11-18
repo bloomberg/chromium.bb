@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FileInputType.h"
+#include "core/html/forms/FileInputType.h"
 
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/DragData.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/DateMath.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

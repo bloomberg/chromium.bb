@@ -6,8 +6,7 @@
 #include "platform/fonts/SmallCapsIterator.h"
 
 #include "platform/Logging.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <string>
 
 namespace blink {

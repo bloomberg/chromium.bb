@@ -35,9 +35,8 @@
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

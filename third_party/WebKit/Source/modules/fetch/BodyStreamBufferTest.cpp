@@ -8,10 +8,9 @@
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableColor.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

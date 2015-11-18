@@ -37,9 +37,8 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

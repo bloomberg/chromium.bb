@@ -19,8 +19,8 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/frame/RootFrameViewport.h"
 
 #include "core/layout/ScrollAlignment.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/scroll/ScrollableArea.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define EXPECT_POINT_EQ(expected, actual) \
     do { \

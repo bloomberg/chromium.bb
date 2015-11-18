@@ -33,9 +33,9 @@
 
 #include "platform/text/BidiTestHarness.h"
 #include "platform/text/TextRunIterator.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include <fstream>
-#include <gtest/gtest.h>
 
 namespace blink {
 

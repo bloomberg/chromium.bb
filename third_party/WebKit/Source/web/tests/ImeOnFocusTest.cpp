@@ -13,9 +13,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 using blink::FrameTestHelpers::loadFrame;
 using blink::testing::runPendingTasks;

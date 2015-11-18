@@ -7,7 +7,7 @@
 
 #include "core/layout/ClipPathOperation.h"
 #include "core/style/ShapeValue.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

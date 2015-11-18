@@ -6,9 +6,8 @@
 #include "core/css/MediaValues.h"
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

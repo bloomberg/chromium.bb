@@ -32,10 +32,9 @@
 #include "core/xml/parser/SharedBufferReader.h"
 
 #include "platform/SharedBuffer.h"
-
+#include "testing/gtest/include/gtest/gtest.h"
 #include <algorithm>
 #include <cstdlib>
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -13,9 +13,8 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceLoadPriority.h"
-
+#include "testing/gtest/include/gtest/gtest.h"
 #include <base/macros.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

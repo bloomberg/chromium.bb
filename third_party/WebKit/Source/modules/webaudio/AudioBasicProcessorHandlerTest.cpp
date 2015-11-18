@@ -8,7 +8,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/audio/AudioProcessor.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

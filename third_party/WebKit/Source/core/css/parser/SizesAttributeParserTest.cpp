@@ -7,8 +7,7 @@
 
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

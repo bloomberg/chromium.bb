@@ -17,9 +17,9 @@
 #include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "core/testing/DummyPageHolder.h"
-#include <gmock/gmock-more-actions.h>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock-more-actions.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

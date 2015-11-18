@@ -10,9 +10,9 @@
 #include "platform/image-decoders/ImageFrame.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StringHasher.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -36,7 +36,7 @@
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

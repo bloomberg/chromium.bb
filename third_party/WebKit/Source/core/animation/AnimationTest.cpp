@@ -40,7 +40,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

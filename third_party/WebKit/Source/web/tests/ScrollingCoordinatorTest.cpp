@@ -40,10 +40,10 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

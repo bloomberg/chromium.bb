@@ -8,7 +8,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "public/platform/Platform.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

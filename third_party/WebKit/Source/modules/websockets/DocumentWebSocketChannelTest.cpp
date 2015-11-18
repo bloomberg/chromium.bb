@@ -20,13 +20,12 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <stdint.h>
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 using testing::_;
 using testing::InSequence;

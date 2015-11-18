@@ -8,8 +8,8 @@
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "public/platform/modules/mediasession/WebMediaSession.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::Invoke;

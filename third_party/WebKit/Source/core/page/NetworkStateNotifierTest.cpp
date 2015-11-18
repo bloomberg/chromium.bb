@@ -36,8 +36,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebThread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Functional.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

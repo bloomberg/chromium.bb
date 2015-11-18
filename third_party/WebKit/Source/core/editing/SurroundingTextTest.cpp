@@ -12,7 +12,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

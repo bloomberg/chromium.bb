@@ -10,11 +10,11 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebHitTestResult.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

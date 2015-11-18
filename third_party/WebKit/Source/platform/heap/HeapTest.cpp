@@ -41,10 +41,9 @@
 #include "platform/heap/Visitor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashTraits.h"
 #include "wtf/LinkedHashSet.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

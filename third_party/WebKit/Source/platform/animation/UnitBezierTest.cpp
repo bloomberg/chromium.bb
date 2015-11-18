@@ -25,7 +25,7 @@
 #include "config.h"
 #include "platform/animation/UnitBezier.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

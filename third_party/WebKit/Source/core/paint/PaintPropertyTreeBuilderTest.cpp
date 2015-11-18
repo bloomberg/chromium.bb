@@ -12,9 +12,9 @@
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

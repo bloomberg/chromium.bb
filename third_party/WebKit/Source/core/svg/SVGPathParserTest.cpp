@@ -7,8 +7,7 @@
 
 #include "core/svg/SVGPathStringBuilder.h"
 #include "core/svg/SVGPathStringSource.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

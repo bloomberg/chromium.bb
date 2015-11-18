@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/HTMLDimension.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

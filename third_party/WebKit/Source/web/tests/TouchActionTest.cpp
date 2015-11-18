@@ -53,9 +53,9 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 using blink::testing::runPendingTasks;
 

@@ -6,8 +6,7 @@
 #include "platform/fonts/OrientationIterator.h"
 
 #include "platform/Logging.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <string>
 
 namespace blink {

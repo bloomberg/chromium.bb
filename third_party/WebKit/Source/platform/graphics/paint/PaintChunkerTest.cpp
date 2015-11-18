@@ -6,8 +6,8 @@
 #include "platform/graphics/paint/PaintChunker.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ElementsAre;
 

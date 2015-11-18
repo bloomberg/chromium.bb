@@ -21,10 +21,10 @@
 #include "modules/fetch/Response.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 
 #include <algorithm>
-#include <gtest/gtest.h>
 #include <string>
 
 namespace blink {

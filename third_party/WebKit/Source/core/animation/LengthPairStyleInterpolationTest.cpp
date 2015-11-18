@@ -9,8 +9,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/StylePropertySet.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

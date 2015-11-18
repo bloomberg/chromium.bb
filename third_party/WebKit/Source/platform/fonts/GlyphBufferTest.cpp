@@ -6,9 +6,9 @@
 #include "platform/fonts/GlyphBuffer.h"
 
 #include "platform/fonts/SimpleFontData.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

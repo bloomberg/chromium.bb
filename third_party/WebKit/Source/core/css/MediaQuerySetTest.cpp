@@ -6,10 +6,9 @@
 #include "core/css/MediaQuery.h"
 
 #include "core/css/MediaList.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

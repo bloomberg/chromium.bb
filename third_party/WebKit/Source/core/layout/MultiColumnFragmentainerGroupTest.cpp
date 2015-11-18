@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/LayoutTestHelper.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -15,6 +15,8 @@
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebSettings.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -22,8 +24,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 using testing::_;
 using testing::AtLeast;

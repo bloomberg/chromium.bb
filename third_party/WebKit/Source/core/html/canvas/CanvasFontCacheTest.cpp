@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/html/canvas/CanvasFontCache.h"
 
-
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
@@ -13,8 +12,8 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Mock;
 

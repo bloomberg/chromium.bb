@@ -5,9 +5,9 @@
 #include "config.h"
 #include "platform/graphics/ContiguousContainer.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/TypeTraits.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 namespace {

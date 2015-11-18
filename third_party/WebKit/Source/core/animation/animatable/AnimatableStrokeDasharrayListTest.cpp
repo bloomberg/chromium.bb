@@ -32,7 +32,7 @@
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
 #include "core/style/SVGComputedStyleDefs.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

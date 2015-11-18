@@ -8,9 +8,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

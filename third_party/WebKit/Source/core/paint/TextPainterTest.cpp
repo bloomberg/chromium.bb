@@ -14,7 +14,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/style/ShadowData.h"
 #include "core/style/ShadowList.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {

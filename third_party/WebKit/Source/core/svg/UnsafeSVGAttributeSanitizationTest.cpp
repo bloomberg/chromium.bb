@@ -24,10 +24,10 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 // Test that SVG content with JavaScript URLs is sanitized by removing
 // the URLs. This sanitization happens when the content is pasted or

@@ -26,11 +26,10 @@
 // Tests for the Font class.
 
 #include "config.h"
-
-#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 
-#include <gtest/gtest.h>
+#include "platform/fonts/Character.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

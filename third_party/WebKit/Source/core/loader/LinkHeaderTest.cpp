@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/loader/LinkHeader.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include <base/macros.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

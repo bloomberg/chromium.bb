@@ -8,7 +8,7 @@
 #include "core/fileapi/File.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 
 namespace blink {

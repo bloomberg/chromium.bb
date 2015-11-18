@@ -8,7 +8,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutTestHelper.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

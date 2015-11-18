@@ -5,9 +5,8 @@
 #include "config.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/TypeTraits.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLParagraphElement.h"
 #include "core/html/HTMLTableElement.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 

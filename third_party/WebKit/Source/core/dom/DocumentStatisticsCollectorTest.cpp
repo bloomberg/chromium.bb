@@ -12,10 +12,9 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "public/platform/WebDistillability.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/painting/PaintAggregator.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace blink;
 

@@ -31,8 +31,7 @@
 #include "core/css/RuleSet.h"
 
 #include "core/css/CSSTestHelper.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

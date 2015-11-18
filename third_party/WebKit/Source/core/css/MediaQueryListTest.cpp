@@ -9,7 +9,7 @@
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/dom/Document.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "public/web/WebDocument.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

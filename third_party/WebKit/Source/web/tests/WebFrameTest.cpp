@@ -119,14 +119,14 @@
 #include "public/web/WebTextCheckingCompletion.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebViewClient.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
 #include "wtf/dtoa/utils.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <map>
 #include <stdarg.h>
 #include <v8.h>

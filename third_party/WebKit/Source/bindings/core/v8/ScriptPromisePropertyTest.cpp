@@ -19,11 +19,11 @@
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "core/testing/RefCountedScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <gtest/gtest.h>
 #include <v8.h>
 
 using namespace blink;

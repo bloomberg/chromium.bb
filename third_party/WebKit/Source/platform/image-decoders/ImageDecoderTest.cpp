@@ -32,10 +32,10 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "platform/image-decoders/ImageFrame.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

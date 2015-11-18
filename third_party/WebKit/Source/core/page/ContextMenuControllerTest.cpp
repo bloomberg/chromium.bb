@@ -12,8 +12,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/ContextMenu.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -46,9 +46,9 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

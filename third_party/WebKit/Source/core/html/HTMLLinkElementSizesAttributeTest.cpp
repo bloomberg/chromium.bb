@@ -8,7 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/DOMSettableTokenList.h"
 #include "core/dom/Document.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

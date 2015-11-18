@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebURLResponse.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

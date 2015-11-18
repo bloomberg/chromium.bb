@@ -10,10 +10,9 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/frame/FrameView.h"
 #include "core/testing/DummyPageHolder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

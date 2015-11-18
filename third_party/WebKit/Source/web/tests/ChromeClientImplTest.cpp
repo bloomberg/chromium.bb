@@ -36,9 +36,9 @@
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

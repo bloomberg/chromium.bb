@@ -49,13 +49,13 @@
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FakeWebPlugin.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 using blink::testing::runPendingTasks;
 

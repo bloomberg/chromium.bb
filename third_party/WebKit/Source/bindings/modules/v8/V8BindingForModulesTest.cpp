@@ -32,7 +32,7 @@
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace blink;
 

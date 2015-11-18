@@ -10,8 +10,8 @@
 #include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/text/TextRun.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 #include <unicode/uscript.h>
 
 namespace blink {

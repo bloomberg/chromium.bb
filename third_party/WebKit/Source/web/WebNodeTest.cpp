@@ -10,7 +10,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

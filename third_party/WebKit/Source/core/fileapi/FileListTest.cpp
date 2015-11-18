@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FileList.h"
+#include "core/fileapi/FileList.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

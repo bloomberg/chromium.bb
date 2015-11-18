@@ -5,7 +5,7 @@
 #include "config.h"
 #include "platform/weborigin/SchemeRegistry.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {

@@ -10,7 +10,7 @@
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
 
 namespace blink {

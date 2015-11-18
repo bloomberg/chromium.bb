@@ -32,7 +32,7 @@
 #include "core/layout/OverflowModel.h"
 
 #include "platform/geometry/LayoutRect.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {

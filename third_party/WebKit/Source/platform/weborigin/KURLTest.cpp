@@ -34,9 +34,9 @@
 #include "config.h"
 #include "platform/weborigin/KURL.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Test;
 

@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "platform/fonts/shaping/CachingWordShaper.h"
 
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

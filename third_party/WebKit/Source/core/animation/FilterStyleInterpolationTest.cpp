@@ -6,8 +6,7 @@
 #include "core/animation/FilterStyleInterpolation.h"
 
 #include "core/css/CSSPrimitiveValue.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "platform/Decimal.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
 #include <float.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

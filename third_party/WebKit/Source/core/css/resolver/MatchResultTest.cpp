@@ -6,7 +6,7 @@
 #include "core/css/resolver/MatchResult.h"
 
 #include "core/css/StylePropertySet.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

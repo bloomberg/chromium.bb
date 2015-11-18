@@ -6,8 +6,7 @@
 #include "core/animation/AnimationInputHelpers.h"
 
 #include "platform/animation/TimingFunction.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

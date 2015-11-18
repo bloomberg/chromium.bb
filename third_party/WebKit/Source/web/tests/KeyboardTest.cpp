@@ -37,8 +37,8 @@
 #include "core/frame/Settings.h"
 #include "platform/KeyboardCodes.h"
 #include "public/web/WebInputEvent.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebInputEventConversion.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

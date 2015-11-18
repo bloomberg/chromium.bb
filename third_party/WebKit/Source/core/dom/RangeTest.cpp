@@ -14,10 +14,10 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "platform/heap/Handle.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Compiler.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

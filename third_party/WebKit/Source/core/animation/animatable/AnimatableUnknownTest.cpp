@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableNeutral.h"
 #include "core/css/CSSValuePool.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

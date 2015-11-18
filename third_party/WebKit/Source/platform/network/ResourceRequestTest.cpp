@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebURLRequest.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -27,11 +27,11 @@
 
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -6,8 +6,7 @@
 #include "core/animation/ListStyleInterpolation.h"
 
 #include "core/animation/LengthStyleInterpolation.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

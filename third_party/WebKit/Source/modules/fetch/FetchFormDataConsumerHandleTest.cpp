@@ -14,13 +14,12 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-
-#include <gtest/gtest.h>
 #include <string.h>
 
 namespace blink {

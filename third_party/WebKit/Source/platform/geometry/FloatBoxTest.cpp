@@ -26,7 +26,7 @@
 #include "platform/geometry/FloatBox.h"
 
 #include "platform/geometry/FloatBoxTestHelpers.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

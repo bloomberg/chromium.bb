@@ -15,10 +15,9 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebWaitableEvent.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-
-#include <gtest/gtest.h>
 #include <string.h>
 #include <v8.h>
 

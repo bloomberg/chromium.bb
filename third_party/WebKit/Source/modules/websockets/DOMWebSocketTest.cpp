@@ -16,12 +16,12 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <v8.h>
 
 using testing::_;

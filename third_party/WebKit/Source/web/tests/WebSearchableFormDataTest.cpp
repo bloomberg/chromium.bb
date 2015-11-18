@@ -36,9 +36,9 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

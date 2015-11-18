@@ -8,9 +8,9 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FakeWebPlugin.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 

@@ -35,7 +35,7 @@
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/SkewTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

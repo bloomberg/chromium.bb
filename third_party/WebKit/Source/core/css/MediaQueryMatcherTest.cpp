@@ -8,8 +8,7 @@
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/testing/DummyPageHolder.h"
-
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

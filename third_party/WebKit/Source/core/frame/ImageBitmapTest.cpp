@@ -44,11 +44,10 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/OwnPtr.h"
-
-#include <gtest/gtest.h>
 
 namespace blink {
 

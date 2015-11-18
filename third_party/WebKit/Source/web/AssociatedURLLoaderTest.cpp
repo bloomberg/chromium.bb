@@ -44,10 +44,10 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebURLLoaderOptions.h"
 #include "public/web/WebView.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;

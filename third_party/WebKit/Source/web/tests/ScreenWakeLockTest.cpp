@@ -15,9 +15,9 @@
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/platform/modules/wake_lock/WebWakeLockClient.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <gtest/gtest.h>
 
 namespace {
 

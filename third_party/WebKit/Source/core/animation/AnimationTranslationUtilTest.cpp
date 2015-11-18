@@ -33,9 +33,9 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebTransformOperations.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace blink {
 

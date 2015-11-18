@@ -36,12 +36,12 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 using testing::_;
 using testing::Mock;

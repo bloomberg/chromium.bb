@@ -10,8 +10,8 @@
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "core/testing/RefCountedScriptWrappable.h"
 #include "platform/heap/Heap.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 #include <limits>
 
 #define TEST_TOV8(expected, value) testToV8(expected, value, __FILE__, __LINE__)
