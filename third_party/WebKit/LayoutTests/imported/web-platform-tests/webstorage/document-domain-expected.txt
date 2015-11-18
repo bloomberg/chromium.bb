@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL localStorage and document.domain Failed to set the 'domain' property on 'Document': '' is an empty domain.
+Harness: the test ran to completion.
+
