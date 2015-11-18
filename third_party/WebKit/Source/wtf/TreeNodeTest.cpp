@@ -26,10 +26,10 @@
 #include "config.h"
 #include "wtf/TreeNode.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

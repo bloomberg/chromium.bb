@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "AtomicString.h"
+#include "wtf/text/AtomicString.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "wtf/SaturatedArithmetic.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <limits.h>
 
 namespace WTF {

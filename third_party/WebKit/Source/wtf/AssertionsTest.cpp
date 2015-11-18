@@ -7,9 +7,8 @@
 #include "config.h"
 #include "wtf/Assertions.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
-
-#include <gtest/gtest.h>
 #include <stdio.h>
 
 namespace WTF {

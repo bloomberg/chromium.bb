@@ -31,12 +31,12 @@
 #include "config.h"
 #include "wtf/PartitionAlloc.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/BitwiseOperations.h"
 #include "wtf/CPU.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>
 

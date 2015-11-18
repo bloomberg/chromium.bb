@@ -29,8 +29,8 @@
 
 static int wtfStringCopyCount;
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

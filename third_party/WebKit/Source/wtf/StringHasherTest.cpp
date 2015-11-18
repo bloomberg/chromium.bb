@@ -26,7 +26,7 @@
 #include "config.h"
 #include "wtf/StringHasher.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
 

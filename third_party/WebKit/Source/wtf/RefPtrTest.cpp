@@ -5,8 +5,8 @@
 #include "config.h"
 #include "wtf/RefPtr.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringImpl.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

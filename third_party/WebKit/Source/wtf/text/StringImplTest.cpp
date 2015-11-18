@@ -26,8 +26,8 @@
 #include "config.h"
 #include "wtf/text/StringImpl.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

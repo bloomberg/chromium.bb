@@ -26,10 +26,10 @@
 #include "config.h"
 #include "wtf/Deque.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

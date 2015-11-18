@@ -26,9 +26,9 @@
 #include "config.h"
 #include "wtf/text/WTFString.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
-#include <gtest/gtest.h>
 #include <limits>
 
 namespace WTF {

@@ -29,15 +29,14 @@
  */
 
 #include "config.h"
-
 #include "wtf/text/TextCodecUTF8.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

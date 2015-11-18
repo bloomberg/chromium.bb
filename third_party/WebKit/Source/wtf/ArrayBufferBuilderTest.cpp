@@ -31,8 +31,8 @@
 #include "config.h"
 #include "wtf/ArrayBufferBuilder.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"
-#include <gtest/gtest.h>
 #include <limits.h>
 #include <string.h>
 

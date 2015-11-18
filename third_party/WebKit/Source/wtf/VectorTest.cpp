@@ -26,11 +26,11 @@
 #include "config.h"
 #include "wtf/Vector.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

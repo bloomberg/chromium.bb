@@ -26,11 +26,11 @@
 #include "config.h"
 #include "wtf/ListHashSet.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

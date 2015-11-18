@@ -26,12 +26,12 @@
 #include "config.h"
 #include "wtf/HashMap.h"
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

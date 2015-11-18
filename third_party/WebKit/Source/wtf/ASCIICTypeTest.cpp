@@ -5,7 +5,7 @@
 #include "config.h"
 #include "wtf/ASCIICType.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
 

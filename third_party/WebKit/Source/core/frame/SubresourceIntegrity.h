@@ -5,6 +5,7 @@
 #ifndef SubresourceIntegrity_h
 #define SubresourceIntegrity_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "platform/Crypto.h"
@@ -40,12 +41,10 @@ public:
     static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, IntegrityMetadataSet&, Document*);
 
 private:
-    // FIXME: After the merge with the Chromium repo, this should be refactored
-    // to use FRIEND_TEST in base/gtest_prod_util.h.
     friend class SubresourceIntegrityTest;
-    friend class SubresourceIntegrityTest_Parsing_Test;
-    friend class SubresourceIntegrityTest_ParseAlgorithm_Test;
-    friend class SubresourceIntegrityTest_Prioritization_Test;
+    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Parsing);
+    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, ParseAlgorithm);
+    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Prioritization);
 
     enum AlgorithmParseResult {
         AlgorithmValid,
