@@ -144,9 +144,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
-  // Returns the bounds of the client area for the specified view size.
-  gfx::Rect CalculateClientAreaBounds(int width, int height) const;
-
   // Our layout manager also calculates various bounds.
   OpaqueBrowserFrameViewLayout* layout_;
 

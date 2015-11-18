@@ -332,14 +332,14 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->Translate(gfx::Vector2d(0, height() - kNewTabButtonHeight));
 
-  const float scale = canvas->image_scale();
-
-  // Draw the fill.
   const bool pressed = state() == views::CustomButton::STATE_PRESSED;
   double hover_value =
       (state() == views::CustomButton::STATE_HOVERED) ? 1 : 0;
   if (hover_animation_->is_animating())
     hover_value = hover_animation_->GetCurrentValue();
+  const float scale = canvas->image_scale();
+
+  // Fill.
   gfx::ImageSkia* mask =
       GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   // The canvas and mask have to use the same scale factor.
@@ -351,8 +351,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawImageInt(
       gfx::ImageSkiaOperations::CreateMaskedImage(image, *mask), 0, 0);
 
-  // Draw the stroke.
-  // Draw the button border with a slight alpha.
+  // Stroke.  Draw the button border with a slight alpha.
   static const SkAlpha kGlassFrameOverlayAlpha = 178;
   static const SkAlpha kOpaqueFrameOverlayAlpha = 230;
   const SkAlpha alpha = GetWidget()->ShouldWindowContentsBeTransparent() ?

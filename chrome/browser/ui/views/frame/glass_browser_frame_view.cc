@@ -51,7 +51,7 @@ const int kNonClientRestoredExtraThickness = 11;
 const int kResizeCornerWidth = 16;
 // How far the new avatar button is from the left of the minimize button.
 const int kNewAvatarButtonOffset = 5;
-// The content left/right images have a shadow built into them.
+// The content edge images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
 // In restored mode, the New Tab button isn't at the same height as the caption
 // buttons, but the space will look cluttered if it actually slides under them,
@@ -343,138 +343,117 @@ int GlassBrowserFrameView::NonClientTopBorderHeight(bool restored) const {
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
-  ui::ThemeProvider* tp = GetThemeProvider();
-
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   gfx::Point toolbar_origin(toolbar_bounds.origin());
-  View::ConvertPointToTarget(browser_view(), this, &toolbar_origin);
+  ConvertPointToTarget(browser_view(), this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
+  const int h = toolbar_bounds.height();
+  ui::ThemeProvider* tp = GetThemeProvider();
+
+  // Background.
+  gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   int x = toolbar_bounds.x();
+  const int y = toolbar_bounds.y();
   int w = toolbar_bounds.width();
 
-  // Toolbar background.
-  int y = toolbar_bounds.y();
-  // Tile the toolbar image starting at the frame edge on the left and where
-  // the tabstrip is on the top.
-  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  int dest_y = y;
-  // In the pre-MD world, the toolbar top edge is drawn using the
-  // IDR_CONTENT_TOP_XXX images, which overlay the toolbar.  The top 2 px of
-  // these images is the actual top edge, and is partly transparent, so the
-  // toolbar background shouldn't be drawn over it.
-  const int kPreMDToolbarTopEdgeExclusion = 2;
-  if (browser_view()->IsTabStripVisible())
-    dest_y += kPreMDToolbarTopEdgeExclusion;
-  canvas->TileImageInt(
-      *theme_toolbar, x + GetThemeBackgroundXInset(),
-      dest_y - GetTopInset(false) - Tab::GetYInsetForActiveTabBackground(),
-      x, dest_y, w, theme_toolbar->height());
+  const int split_point = kContentEdgeShadowThickness;
+  const int split_y =
+      y + (browser_view()->IsTabStripVisible() ? split_point : 0);
+  const int bg_y = GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
+  canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y, x,
+                       split_y, w, bg->height());
 
-  // Toolbar edges.
   if (browser_view()->IsTabStripVisible()) {
-    // Pre-Windows 10, we draw toolbar left and right edges and top corners,
-    // partly atop the window border.  In Windows 10+, we don't draw our own
-    // window border but rather go right to the system border, so we need only
-    // draw the toolbar top edge.
-    int center_x = x;
-    int center_w = w;
+    // On Windows 10+ where we don't draw our own window border but rather go
+    // right to the system border, the toolbar has no corners or side strokes.
     if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-      // Mask out the top left corner and draw left corner and edge.
-      const int left_x = center_x - kContentEdgeShadowThickness;
+      // Mask out the corners.
+      gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+      const int img_w = left->width();
+      x -= kContentEdgeShadowThickness;
       SkPaint paint;
       paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
       canvas->DrawImageInt(
-          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), left_x, y,
+          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), x, y,
           paint);
-      gfx::ImageSkia* toolbar_left =
-          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-      canvas->DrawImageInt(*toolbar_left, left_x, y);
-      center_x = left_x + toolbar_left->width();
+      const int right_x =
+          toolbar_bounds.right() + kContentEdgeShadowThickness - img_w;
+      canvas->DrawImageInt(
+          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK), right_x, y,
+          paint);
 
-      // Mask out the top right corner and draw right corner and edge.
-      gfx::ImageSkia* toolbar_right_mask =
-          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
-      const int right_x = toolbar_bounds.right() +
-          kContentEdgeShadowThickness - toolbar_right_mask->width();
-      canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
+      // Corner and side strokes.
+      canvas->DrawImageInt(*left, x, y);
       canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
                            right_x, y);
-      center_w = right_x - center_x;
+
+      x += img_w;
+      w = right_x - x;
     }
 
-    // Top edge.
+    // Top stroke.
     gfx::ImageSkia* toolbar_center =
         tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    canvas->TileImageInt(*toolbar_center, center_x, y, center_w,
-                         toolbar_center->height());
+    canvas->TileImageInt(*toolbar_center, x, y, w, toolbar_center->height());
   }
 
   // Toolbar/content separator.
+  const SkColor separator_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
   if (ui::MaterialDesignController::IsModeMaterial()) {
     toolbar_bounds.Inset(kClientEdgeThickness, 0);
-    BrowserView::Paint1pxHorizontalLine(
-        canvas,
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
-        toolbar_bounds);
+    BrowserView::Paint1pxHorizontalLine(canvas, separator_color,
+                                        toolbar_bounds);
   } else {
-    canvas->FillRect(
-        gfx::Rect(x + kClientEdgeThickness,
-                  toolbar_bounds.bottom() - kClientEdgeThickness,
-                  w - (2 * kClientEdgeThickness), kClientEdgeThickness),
-        ThemeProperties::GetDefaultColor(
-            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+    toolbar_bounds.Inset(kClientEdgeThickness, h - kClientEdgeThickness,
+                         kClientEdgeThickness, 0);
+    canvas->FillRect(toolbar_bounds, separator_color);
   }
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
+  int y = frame()->client_view()->y();
+
+  gfx::Rect client_bounds = CalculateClientAreaBounds();
+  const int x = client_bounds.x();
+  const int w = client_bounds.width();
+  const int right = client_bounds.right();
+  const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   // The client edges start below the toolbar upper corner images regardless
   // of how tall the toolbar itself is.
-  int client_area_top = frame()->client_view()->y() +
-      browser_view()->GetToolbarBounds().y() +
+  y += browser_view()->GetToolbarBounds().y() +
       tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
-  int client_area_bottom =
-      std::max(client_area_top, height() - NonClientBorderThickness(false));
-  int client_area_height = client_area_bottom - client_area_top;
+
+  const int bottom = std::max(y, height() - NonClientBorderThickness(false));
+  int height = bottom - y;
 
   // Draw the client edge images.
-  gfx::ImageSkia* right = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-  canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
-                       right->width(), client_area_height);
-  canvas->DrawImageInt(
-      *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
-      client_area_bounds.right(), client_area_bottom);
-  gfx::ImageSkia* bottom = tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
-  canvas->TileImageInt(*bottom, client_area_bounds.x(),
-      client_area_bottom, client_area_bounds.width(),
-      bottom->height());
-  gfx::ImageSkia* bottom_left =
-      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  canvas->DrawImageInt(*bottom_left,
-      client_area_bounds.x() - bottom_left->width(), client_area_bottom);
-  gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
-  canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
-      client_area_top, left->width(), client_area_height);
+  gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+  const int img_w = right_image->width();
+  canvas->TileImageInt(*right_image, right, y, img_w, height);
+  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
+                       right, bottom);
+  gfx::ImageSkia* bottom_image =
+      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+  canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
+  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
+                       x - img_w, bottom);
+  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
+                       y, img_w, height);
 
   // Draw the toolbar color so that the client edges show the right color even
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
-  SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  canvas->FillRect(gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
-      client_area_top, kClientEdgeThickness,
-      client_area_bottom + kClientEdgeThickness - client_area_top),
-      toolbar_color);
-  canvas->FillRect(gfx::Rect(client_area_bounds.x(), client_area_bottom,
-                             client_area_bounds.width(), kClientEdgeThickness),
+  gfx::Rect side(x - kClientEdgeThickness, y, kClientEdgeThickness,
+                 bottom + kClientEdgeThickness - y);
+  canvas->FillRect(side, toolbar_color);
+  canvas->FillRect(gfx::Rect(x, bottom, w, kClientEdgeThickness),
                    toolbar_color);
-  canvas->FillRect(gfx::Rect(client_area_bounds.right(), client_area_top,
-       kClientEdgeThickness,
-       client_area_bottom + kClientEdgeThickness - client_area_top),
-       toolbar_color);
+  side.set_x(right);
+  canvas->FillRect(side, toolbar_color);
 }
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {
@@ -540,7 +519,7 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
 }
 
 void GlassBrowserFrameView::LayoutClientView() {
-  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
+  client_view_bounds_ = CalculateClientAreaBounds();
 }
 
 gfx::Insets GlassBrowserFrameView::GetClientAreaInsets(bool restored) const {
@@ -555,9 +534,8 @@ gfx::Insets GlassBrowserFrameView::GetClientAreaInsets(bool restored) const {
                      border_thickness);
 }
 
-gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds(int width,
-                                                           int height) const {
-  gfx::Rect bounds(0, 0, width, height);
+gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds() const {
+  gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(GetClientAreaInsets(false));
   return bounds;
 }

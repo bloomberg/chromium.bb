@@ -330,16 +330,14 @@ void BrowserNonClientFrameViewAsh::Layout() {
   // position of the window controls.
   header_painter_->LayoutHeader();
 
-  int painted_height = 0;
+  int painted_height = GetTopInset(false);
   if (browser_view()->IsTabStripVisible()) {
-    painted_height = GetTopInset(false) +
-        browser_view()->tabstrip()->GetPreferredSize().height();
+    painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
   } else if (browser_view()->IsToolbarVisible()) {
     // Paint the header so that it overlaps with the top few pixels of the
     // toolbar because the top few pixels of the toolbar are not opaque.
-    painted_height = GetTopInset(false) + kFrameShadowThickness * 2;
-  } else {
-    painted_height = GetTopInset(false);
+    const int kToolbarTopEdgeExclusion = 2;
+    painted_height += kToolbarTopEdgeExclusion;
   }
   header_painter_->SetHeaderHeightForPainting(painted_height);
 

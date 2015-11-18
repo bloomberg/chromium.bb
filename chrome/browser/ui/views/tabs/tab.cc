@@ -1197,7 +1197,9 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
-  // image is a composited foreground + frame image.
+  // image is a composited foreground + frame image.  Note that if the theme is
+  // only providing a custom frame image, |has_custom_image| will be true, but
+  // we should use the |background_offset_| here.
   const int y_offset = GetThemeProvider()->HasCustomImage(fill_id) ?
       -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
 
@@ -1515,11 +1517,6 @@ void Tab::LoadTabImages() {
   // We're not letting people override tab images just yet.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  mask_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
-  mask_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
-  mask_images_.l_width = mask_images_.image_l->width();
-  mask_images_.r_width = mask_images_.image_r->width();
-
   active_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
   active_images_.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
   active_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
@@ -1531,6 +1528,11 @@ void Tab::LoadTabImages() {
   inactive_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
   inactive_images_.l_width = inactive_images_.image_l->width();
   inactive_images_.r_width = inactive_images_.image_r->width();
+
+  mask_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
+  mask_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
+  mask_images_.l_width = mask_images_.image_l->width();
+  mask_images_.r_width = mask_images_.image_r->width();
 }
 
 // static
