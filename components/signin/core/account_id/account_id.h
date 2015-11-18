@@ -45,13 +45,8 @@ class AccountId {
   static AccountId FromUserEmailGaiaId(const std::string& user_email,
                                        const std::string& gaia_id);
 
-  // These are (for now) unstable and cannot be used to store serialized data to
-  // persistent storage. Only in-memory storage is safe.
-  // Serialize() returns JSON dictionary,
-  // Deserialize() restores AccountId after serialization.
-  std::string Serialize() const;
-  static bool Deserialize(const std::string& serialized,
-                          AccountId* out_account_id);
+  // std::string Serialize() const;
+  // static AccountId Deserialize(const std::string& serialized);
 
  private:
   AccountId();

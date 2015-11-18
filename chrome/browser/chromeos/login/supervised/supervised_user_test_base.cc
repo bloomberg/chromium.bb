@@ -294,8 +294,7 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
 
   // Next button is now enabled.
   JSExpect("!$('supervised-user-creation-next-button').disabled");
-  UserContext user_context(AccountId::FromUserEmailGaiaId(
-      kTestManager, GetGaiaIDForUserID(kTestManager)));
+  UserContext user_context(AccountId::FromUserEmail(kTestManager));
   user_context.SetGaiaID(GetGaiaIDForUserID(kTestManager));
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);

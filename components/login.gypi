@@ -8,7 +8,6 @@
     'type': '<(component)',
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/components/components.gyp:signin_core_account_id',
       '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
     ],
     'export_dependent_settings': [

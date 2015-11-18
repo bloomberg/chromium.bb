@@ -14,7 +14,6 @@
 #include "base/tuple.h"
 #include "base/values.h"
 #include "components/login/login_export.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace login {
 
@@ -41,7 +40,6 @@ bool LOGIN_EXPORT ParseValue(const base::Value* value,
                              const base::DictionaryValue** out_value);
 bool LOGIN_EXPORT ParseValue(const base::Value* value, StringList* out_value);
 bool LOGIN_EXPORT ParseValue(const base::Value* value, String16List* out_value);
-bool LOGIN_EXPORT ParseValue(const base::Value* value, AccountId* out_value);
 
 template <typename T>
 inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
@@ -56,29 +54,17 @@ base::FundamentalValue LOGIN_EXPORT MakeValue(int v);
 base::FundamentalValue LOGIN_EXPORT MakeValue(double v);
 base::StringValue LOGIN_EXPORT MakeValue(const std::string& v);
 base::StringValue LOGIN_EXPORT MakeValue(const base::string16& v);
-base::StringValue LOGIN_EXPORT MakeValue(const AccountId& v);
 
 template <typename T>
 inline const T& MakeValue(const T& v) {
   return v;
 }
 
-template <typename T>
-struct ParsedValueContainer {
-  T value;
-};
-
-template <>
-struct LOGIN_EXPORT ParsedValueContainer<AccountId> {
-  ParsedValueContainer();
-  AccountId value = EmptyAccountId();
-};
-
 template <typename Arg, size_t index>
 typename UnwrapConstRef<Arg>::Type ParseArg(const base::ListValue* args) {
-  ParsedValueContainer<typename UnwrapConstRef<Arg>::Type> parsed;
-  CHECK(GetArg(args, index, &parsed.value));
-  return parsed.value;
+  typename UnwrapConstRef<Arg>::Type parsed;
+  CHECK(GetArg(args, index, &parsed));
+  return parsed;
 }
 
 template <typename... Args, size_t... Ns>

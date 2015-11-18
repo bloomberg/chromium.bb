@@ -858,11 +858,9 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   context.is_enrolling_consumer_management = is_enrolling_consumer_management_;
 
   std::string gaia_id;
-  if (!context.email.empty() &&
-      user_manager::UserManager::Get()->FindGaiaID(
-          AccountId::FromUserEmail(context.email), &gaia_id)) {
+  if (user_manager::UserManager::Get()->FindGaiaID(
+          AccountId::FromUserEmail(context.email), &gaia_id))
     context.gaia_id = gaia_id;
-  }
 
   if (Delegate()) {
     context.show_users = Delegate()->IsShowUsers();

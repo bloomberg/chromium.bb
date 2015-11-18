@@ -16,7 +16,6 @@ component("login") {
 
   deps = [
     "//ui/base",
-    "//components/signin/core/account_id",
   ]
 
   public_deps = [

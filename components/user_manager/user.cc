@@ -123,8 +123,9 @@ const gfx::ImageSkia& User::GetImage() const {
   return user_image_.image();
 }
 
-const AccountId& User::GetAccountId() const {
-  return account_id_;
+AccountId User::GetAccountId() const {
+  return AccountId::FromUserEmail(
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(email())));
 }
 
 void User::SetIsChild(bool is_child) {

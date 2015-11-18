@@ -4,8 +4,6 @@
 
 #include "components/login/base_screen_handler_utils.h"
 
-#include "components/signin/core/account_id/account_id.h"
-
 namespace login {
 
 namespace {
@@ -58,20 +56,6 @@ bool ParseValue(const base::Value* value, String16List* out_value) {
   return ParseStringList(value, out_value);
 }
 
-bool ParseValue(const base::Value* value, AccountId* out_value) {
-  std::string serialized;
-  const bool has_string = value->GetAsString(&serialized);
-  if (!has_string)
-    return false;
-
-  if (AccountId::Deserialize(serialized, out_value))
-    return true;
-
-  LOG(ERROR) << "Failed to deserialize '" << serialized << "'";
-  *out_value = AccountId::FromUserEmail(serialized);
-  return true;
-}
-
 base::FundamentalValue MakeValue(bool v) {
   return base::FundamentalValue(v);
 }
@@ -90,13 +74,6 @@ base::StringValue MakeValue(const std::string& v) {
 
 base::StringValue MakeValue(const base::string16& v) {
   return base::StringValue(v);
-}
-
-base::StringValue MakeValue(const AccountId& v) {
-  return base::StringValue(v.Serialize());
-}
-
-ParsedValueContainer<AccountId>::ParsedValueContainer() {
 }
 
 }  // namespace login
