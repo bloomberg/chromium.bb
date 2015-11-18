@@ -11,7 +11,8 @@
               android:layout_height="wrap_content"
               android:orientation="horizontal"
               android:paddingStart="@dimen/contextual_search_peek_promo_padding"
-              android:paddingEnd="@dimen/contextual_search_peek_promo_padding">
+              android:paddingEnd="@dimen/contextual_search_peek_promo_padding"
+              android:visibility="invisible">
     <TextView
         android:id="@+id/contextual_search_peek_promo_new"
         android:layout_width="wrap_content"
