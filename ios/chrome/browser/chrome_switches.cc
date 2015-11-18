@@ -94,4 +94,8 @@ const char kUserAgent[] = "user-agent";
 // These mappings only apply to the host resolver.
 const char kIOSHostResolverRules[] = "host-resolver-rules";
 
+// Allows for forcing socket connections to http/https to use fixed ports.
+const char kIOSTestingFixedHttpPort[] = "testing-fixed-http-port";
+const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
+
 }  // namespace switches

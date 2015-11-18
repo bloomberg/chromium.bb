@@ -36,6 +36,8 @@ extern const char kIOSMetricsRecordingOnly[];
 extern const char kUserAgent[];
 
 extern const char kIOSHostResolverRules[];
+extern const char kIOSTestingFixedHttpPort[];
+extern const char kIOSTestingFixedHttpsPort[];
 
 }  // namespace switches
 
