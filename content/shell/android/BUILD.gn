@@ -100,9 +100,6 @@ android_assets("content_shell_assets") {
 
 android_apk("content_shell_apk") {
   testonly = true
-  data_deps = [
-    # "//tools/android/forwarder",
-  ]
   deps = [
     ":content_shell_apk_java",
     ":content_shell_apk_resources",

@@ -396,13 +396,6 @@ shared_library("chrome_public") {
           "scope",
           [ "chrome_apk.gyp" ])
   sources = gypi_values.chrome_public_app_native_sources
-
-  # TODO(GYP):
-  #'target_conditions': [
-  #['component != "shared_library"', {
-  #'product_extension': '<(version_libchrome_short).so',
-  #}],
-  #],
 }
 
 chrome_public_apk_tmpl("chrome_public_apk") {

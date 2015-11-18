@@ -199,4 +199,3 @@ junit_binary("content_junit_tests") {
     "//base:base_java_test_support",
   ]
 }
-# TODO(GYP): content_icudata
