@@ -82,7 +82,6 @@ bootstrap=
 with_android=yes
 chrome_tools="plugins;blink_gc_plugin"
 gcc_toolchain=
-with_patches=yes
 
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
@@ -112,9 +111,6 @@ while [[ $# > 0 ]]; do
       ;;
     --without-android)
       with_android=
-      ;;
-    --without-patches)
-      with_patches=
       ;;
     --with-chrome-tools)
       shift
@@ -153,7 +149,6 @@ while [[ $# > 0 ]]; do
       echo "--gcc-toolchain: Set the prefix for which GCC version should"
       echo "    be used for building. For example, to use gcc in"
       echo "    /opt/foo/bin/gcc, use '--gcc-toolchain '/opt/foo"
-      echo "--without-patches: Don't apply local patches."
       echo
       exit 1
       ;;
@@ -168,9 +163,6 @@ done
 
 if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   force_local_build=yes
-
-  # Skip local patches when using HEAD: they probably don't apply anymore.
-  with_patches=
 
   if ! [[ "$GYP_DEFINES" =~ .*OS=android.* ]]; then
     # Only build the Android ASan rt when targetting Android.
@@ -309,40 +301,6 @@ if ! which ninja > /dev/null; then
   exit 1
 fi
 
-echo Reverting previously patched files
-for i in \
-      "${CLANG_DIR}/test/Index/crash-recovery-modules.m" \
-      "${CLANG_DIR}/unittests/libclang/LibclangTest.cpp" \
-      "${COMPILER_RT_DIR}/lib/asan/asan_rtl.cc" \
-      "${COMPILER_RT_DIR}/test/asan/TestCases/Linux/new_array_cookie_test.cc" \
-      "${LLVM_DIR}/test/DebugInfo/gmlt.ll" \
-      "${LLVM_DIR}/lib/CodeGen/SpillPlacement.cpp" \
-      "${LLVM_DIR}/lib/CodeGen/SpillPlacement.h" \
-      "${LLVM_DIR}/lib/Transforms/Instrumentation/MemorySanitizer.cpp" \
-      "${CLANG_DIR}/test/Driver/env.c" \
-      "${CLANG_DIR}/lib/Frontend/InitPreprocessor.cpp" \
-      "${CLANG_DIR}/test/Frontend/exceptions.c" \
-      "${CLANG_DIR}/test/Preprocessor/predefined-exceptions.m" \
-      "${LLVM_DIR}/test/Bindings/Go/go.test" \
-      "${CLANG_DIR}/lib/Parse/ParseExpr.cpp" \
-      "${CLANG_DIR}/lib/Parse/ParseTemplate.cpp" \
-      "${CLANG_DIR}/lib/Sema/SemaDeclCXX.cpp" \
-      "${CLANG_DIR}/lib/Sema/SemaExprCXX.cpp" \
-      "${CLANG_DIR}/test/SemaCXX/default2.cpp" \
-      "${CLANG_DIR}/test/SemaCXX/typo-correction-delayed.cpp" \
-      "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc" \
-      "${COMPILER_RT_DIR}/test/tsan/signal_segv_handler.cc" \
-      "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_coverage_libcdep.cc" \
-      "${COMPILER_RT_DIR}/cmake/config-ix.cmake" \
-      "${COMPILER_RT_DIR}/CMakeLists.txt" \
-      "${COMPILER_RT_DIR}/lib/ubsan/ubsan_platform.h" \
-      ; do
-  if [[ -e "${i}" ]]; then
-    rm -f "${i}"  # For unversioned files.
-    svn revert "${i}"
-  fi;
-done
-
 echo Remove the Clang tools shim dir
 CHROME_TOOLS_SHIM_DIR=${ABS_LLVM_DIR}/tools/chrometools
 rm -rfv ${CHROME_TOOLS_SHIM_DIR}
@@ -380,11 +338,6 @@ if [ "${OS}" = "Darwin" ]; then
   echo Getting libc++abi r"${CLANG_REVISION}" in "${LIBCXXABI_DIR}"
   svn co --force "${LLVM_REPO_URL}/libcxxabi/trunk@${CLANG_REVISION}" \
                  "${LIBCXXABI_DIR}"
-fi
-
-if [[ -n "$with_patches" ]]; then
-  # No patches.
-  true
 fi
 
 # Echo all commands.

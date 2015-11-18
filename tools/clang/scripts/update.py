@@ -195,55 +195,6 @@ def Checkout(name, url, dir):
   RunCommand(command)
 
 
-def RevertPreviouslyPatchedFiles():
-  print 'Reverting previously patched files'
-  files = [
-    '%(clang)s/test/Index/crash-recovery-modules.m',
-    '%(clang)s/unittests/libclang/LibclangTest.cpp',
-    '%(compiler_rt)s/lib/asan/asan_rtl.cc',
-    '%(compiler_rt)s/test/asan/TestCases/Linux/new_array_cookie_test.cc',
-    '%(llvm)s/test/DebugInfo/gmlt.ll',
-    '%(llvm)s/lib/CodeGen/SpillPlacement.cpp',
-    '%(llvm)s/lib/CodeGen/SpillPlacement.h',
-    '%(llvm)s/lib/Transforms/Instrumentation/MemorySanitizer.cpp',
-    '%(clang)s/test/Driver/env.c',
-    '%(clang)s/lib/Frontend/InitPreprocessor.cpp',
-    '%(clang)s/test/Frontend/exceptions.c',
-    '%(clang)s/test/Preprocessor/predefined-exceptions.m',
-    '%(llvm)s/test/Bindings/Go/go.test',
-    '%(clang)s/lib/Parse/ParseExpr.cpp',
-    '%(clang)s/lib/Parse/ParseTemplate.cpp',
-    '%(clang)s/lib/Sema/SemaDeclCXX.cpp',
-    '%(clang)s/lib/Sema/SemaExprCXX.cpp',
-    '%(clang)s/test/SemaCXX/default2.cpp',
-    '%(clang)s/test/SemaCXX/typo-correction-delayed.cpp',
-    '%(compiler_rt)s/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc',
-    '%(compiler_rt)s/test/tsan/signal_segv_handler.cc',
-    '%(compiler_rt)s/lib/sanitizer_common/sanitizer_coverage_libcdep.cc',
-    '%(compiler_rt)s/cmake/config-ix.cmake',
-    '%(compiler_rt)s/CMakeLists.txt',
-    '%(compiler_rt)s/lib/ubsan/ubsan_platform.h',
-    ]
-  for f in files:
-    f = f % {
-        'clang': CLANG_DIR,
-        'compiler_rt': COMPILER_RT_DIR,
-        'llvm': LLVM_DIR,
-        }
-    if os.path.exists(f):
-      os.remove(f)  # For unversioned files.
-      RunCommand(['svn', 'revert', f])
-
-
-def ApplyLocalPatches():
-  # There's no patch program on Windows by default.  We don't need patches on
-  # Windows yet, and maybe this not working on Windows will motivate us to
-  # remove patches over time.
-  assert sys.platform != 'win32'
-
-  # No patches.
-
-
 def DeleteChromeToolsShim():
   OLD_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'zzz-chrometools')
   shutil.rmtree(OLD_SHIM_DIR, ignore_errors=True)
@@ -356,7 +307,6 @@ def UpdateClang(args):
 
   AddCMakeToPath()
 
-  RevertPreviouslyPatchedFiles()
   DeleteChromeToolsShim()
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
@@ -371,9 +321,6 @@ def UpdateClang(args):
     # While we're bundling our own libc++ on OS X, we need to compile libc++abi
     # into it too (since OS X 10.6 doesn't have libc++abi.dylib either).
     Checkout('libcxxabi', LLVM_REPO_URL + '/libcxxabi/trunk', LIBCXXABI_DIR)
-
-  if args.with_patches and sys.platform != 'win32':
-    ApplyLocalPatches()
 
   cc, cxx = None, None
   libstdcpp = None
@@ -688,9 +635,6 @@ def main():
   parser.add_argument('--tools', nargs='*',
                       help='select which chrome tools to build',
                       default=['plugins', 'blink_gc_plugin'])
-  parser.add_argument('--without-patches', action='store_false',
-                      help="don't apply patches (default)", dest='with_patches',
-                      default=True)
 
   # For now, these flags are only used for the non-Windows flow, but argparser
   # gets mad if it sees a flag it doesn't recognize.
@@ -741,8 +685,6 @@ def main():
     PACKAGE_VERSION = LLVM_WIN_REVISION + '-0'
 
     args.force_local_build = True
-    # Skip local patches when using HEAD: they probably don't apply anymore.
-    args.with_patches = False
 
   return UpdateClang(args)
 
