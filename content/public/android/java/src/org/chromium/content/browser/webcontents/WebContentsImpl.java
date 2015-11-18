@@ -198,13 +198,13 @@ import java.util.UUID;
         // Unselect may get triggered when certain selection-related widgets
         // are destroyed. As the timing for such destruction is unpredictable,
         // safely guard against this case.
-        if (mNativeWebContentsAndroid == 0) return;
+        if (isDestroyed()) return;
         nativeUnselect(mNativeWebContentsAndroid);
     }
 
     @Override
     public void insertCSS(String css) {
-        if (mNativeWebContentsAndroid == 0) return;
+        if (isDestroyed()) return;
         nativeInsertCSS(mNativeWebContentsAndroid, css);
     }
 
@@ -307,6 +307,7 @@ import java.util.UUID;
 
     @Override
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
+        if (isDestroyed()) return;
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
 
