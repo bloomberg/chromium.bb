@@ -70,8 +70,9 @@ public class NotificationTransportControl
 
         @Override
         public void onCreate() {
-            checkState(sInstance != null);
-            checkState(sInstance.mService == null);
+            // If Android recreates the service the state can be wrong, see
+            // https://crbug.com/555266
+            if (sInstance == null || sInstance.mService != null) return;
             super.onCreate();
 
             sInstance.mService = this;
@@ -89,8 +90,7 @@ public class NotificationTransportControl
 
         @Override
         public void onDestroy() {
-            checkState(sInstance != null);
-            checkState(sInstance.mService != null);
+            if (sInstance == null || sInstance.mService == null) return;
             stop();
             sInstance.mService = null;
         }
@@ -102,7 +102,11 @@ public class NotificationTransportControl
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            checkState(sInstance != null);
+            if (sInstance == null) {
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+
             if (intent != null) {
                 String action = intent.getAction();
                 if (action != null && action.startsWith(ACTION_PREFIX)) {
@@ -330,19 +334,6 @@ public class NotificationTransportControl
     @VisibleForTesting
     static NotificationTransportControl getIfExists() {
         return sInstance;
-    }
-
-    /**
-     * Ensures the truth of an expression involving the state of the calling instance, but not
-     * involving any parameters to the calling method.
-     *
-     * @param expression a boolean expression
-     * @throws IllegalStateException if {@code expression} is false
-     */
-    private static void checkState(boolean expression) {
-        if (!expression) {
-            throw new IllegalStateException();
-        }
     }
 
     /**
