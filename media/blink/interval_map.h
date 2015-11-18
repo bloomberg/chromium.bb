@@ -124,8 +124,6 @@ class IntervalMapConstIterator {
 
   // Needed to make the following construct work:
   // for (const auto& interval_value_pair : interval_map)
-  // Note however that this will skip the "end" interval, which
-  // is usually ok since it generally has the default value.
   std::pair<Interval<KeyType>, ValueType> operator*() const {
     return std::make_pair(interval(), value());
   }
@@ -182,8 +180,7 @@ class IntervalMap {
 
   // Increase [from..to) by |how_much|.
   void IncrementInterval(KeyType from, KeyType to, ValueType how_much) {
-    DCHECK_GT(to, from);
-    if (how_much == 0)
+    if (to <= from || how_much == 0)
       return;
     typename MapType::iterator a = MakeEntry(from);
     typename MapType::iterator b = MakeEntry(to);
@@ -197,7 +194,8 @@ class IntervalMap {
 
   // Set [from..to) to |how_much|.
   void SetInterval(KeyType from, KeyType to, ValueType how_much) {
-    DCHECK_GT(to, from);
+    if (to <= from)
+      return;
     typename MapType::iterator a = MakeEntry(from);
     typename MapType::iterator b = MakeEntry(to);
     a->second = how_much;
