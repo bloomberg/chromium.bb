@@ -119,8 +119,7 @@ Background = function() {
 
   cvox.ExtensionBridge.addMessageListener(this.onMessage_);
 
-  document.addEventListener(
-      'keydown', cvox.ChromeVoxKbHandler.basicKeyDownActionsListener, true);
+  document.addEventListener('keydown', this.onKeyDown.bind(this), true);
   cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
 
   // Classic keymap.
@@ -410,6 +409,18 @@ Background.prototype = {
     }
 
     return false;
+  },
+
+  /**
+   * Handles key down events.
+   * @param {Event} evt The key down event to process.
+   * @return {boolean} True if the default action should be performed.
+   */
+  onKeyDown: function(evt) {
+    if (!cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
   },
 
   /**
