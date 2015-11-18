@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -151,7 +150,6 @@ class NET_EXPORT HostResolverImpl
   class Request;
   typedef HostCache::Key Key;
   typedef std::map<Key, Job*> JobMap;
-  typedef ScopedVector<Request> RequestsList;
 
   // Number of consecutive failures of DnsTask (with successful fallback to
   // ProcTask) before the DnsClient is disabled until the next DNS change.

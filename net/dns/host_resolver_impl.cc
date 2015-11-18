@@ -1286,9 +1286,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     // else CompleteRequests logged EndEvent.
 
     // Log any remaining Requests as cancelled.
-    for (RequestsList::const_iterator it = requests_.begin();
-         it != requests_.end(); ++it) {
-      Request* req = *it;
+    for (const scoped_ptr<Request>& req : requests_) {
       if (req->was_canceled())
         continue;
       DCHECK_EQ(this, req->job());
@@ -1730,10 +1728,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       resolver_->CacheResult(key_, entry, ttl);
 
     // Complete all of the requests that were attached to the job.
-    for (RequestsList::const_iterator it = requests_.begin();
-         it != requests_.end(); ++it) {
-      Request* req = *it;
-
+    for (const scoped_ptr<Request>& req : requests_) {
       if (req->was_canceled())
         continue;
 
@@ -1807,7 +1802,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   scoped_ptr<DnsTask> dns_task_;
 
   // All Requests waiting for the result of this Job. Some can be canceled.
-  RequestsList requests_;
+  std::vector<scoped_ptr<Request>> requests_;
 
   // A handle used in |HostResolverImpl::dispatcher_|.
   PrioritizedDispatcher::Handle handle_;
