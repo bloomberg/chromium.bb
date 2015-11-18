@@ -104,8 +104,14 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
       input->surface_quad_state->surface.To<cc::SurfaceId>().id);
   WindowId other_window_id = WindowIdFromTransportId(id);
   ServerWindow* other_window = window()->GetChildWindow(other_window_id);
-  if (!other_window)
-    return false;
+  if (!other_window) {
+    DVLOG(2) << "The window ID '" << id << "' does not exist.";
+    // TODO(fsamuel): We return true here so that the CompositorFrame isn't
+    // entirely rejected. We just drop this SurfaceDrawQuad. This failure
+    // can happen if the client has an out of date view of the window tree.
+    // It would be nice if we can avoid reaching this state in the future.
+    return true;
+  }
 
   referenced_window_ids_.insert(other_window_id);
 
