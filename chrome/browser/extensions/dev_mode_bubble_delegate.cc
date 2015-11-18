@@ -19,6 +19,13 @@
 
 namespace extensions {
 
+namespace {
+
+base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
     : ExtensionMessageBubbleController::Delegate(profile) {
 }
@@ -98,12 +105,13 @@ void DevModeBubbleDelegate::LogAction(
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 
-const char* DevModeBubbleDelegate::GetKey() {
-  return "DevModeBubbleDelegate";
+std::set<Profile*>* DevModeBubbleDelegate::GetProfileSet() {
+  return g_shown_for_profiles.Pointer();
 }
 
-bool DevModeBubbleDelegate::ClearProfileSetAfterAction() {
-  return false;
+// static
+void DevModeBubbleDelegate::ClearProfileListForTesting() {
+  g_shown_for_profiles.Get().clear();
 }
 
 }  // namespace extensions

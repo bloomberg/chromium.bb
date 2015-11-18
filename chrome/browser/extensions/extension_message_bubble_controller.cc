@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -25,18 +24,12 @@
 namespace extensions {
 
 namespace {
-
 // How many extensions to show in the bubble (max).
 const int kMaxExtensionsToShow = 7;
 
 // Whether or not to ignore the learn more link navigation for testing.
 bool g_should_ignore_learn_more_for_testing = false;
-
-using ProfileSetMap = std::map<std::string, std::set<Profile*>>;
-base::LazyInstance<ProfileSetMap> g_shown_for_profiles =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController::Delegate
@@ -53,10 +46,6 @@ ExtensionMessageBubbleController::Delegate::~Delegate() {
 base::string16 ExtensionMessageBubbleController::Delegate::GetLearnMoreLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool ExtensionMessageBubbleController::Delegate::ClearProfileSetAfterAction() {
-  return true;
 }
 
 bool ExtensionMessageBubbleController::Delegate::HasBubbleInfoBeenAcknowledged(
@@ -80,6 +69,11 @@ void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
   prefs->UpdateExtensionPref(extension_id,
                              pref_name,
                              value ? new base::FundamentalValue(value) : NULL);
+}
+
+std::set<Profile*>*
+ExtensionMessageBubbleController::Delegate::GetProfileSet() {
+  return nullptr;
 }
 
 std::string
@@ -114,8 +108,8 @@ Profile* ExtensionMessageBubbleController::profile() {
 }
 
 bool ExtensionMessageBubbleController::ShouldShow() {
-  std::set<Profile*>* profiles = GetProfileSet();
-  return !profiles->count(profile()->GetOriginalProfile()) &&
+  std::set<Profile*>* profiles = delegate_->GetProfileSet();
+  return (!profiles || !profiles->count(profile()->GetOriginalProfile())) &&
          !GetExtensionList().empty();
 }
 
@@ -176,7 +170,9 @@ void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
 }
 
 void ExtensionMessageBubbleController::OnShown() {
-  GetProfileSet()->insert(profile()->GetOriginalProfile());
+  std::set<Profile*>* profiles = delegate_->GetProfileSet();
+  if (profiles)
+    profiles->insert(profile()->GetOriginalProfile());
 }
 
 void ExtensionMessageBubbleController::OnBubbleAction() {
@@ -189,21 +185,18 @@ void ExtensionMessageBubbleController::OnBubbleAction() {
   OnClose();
 }
 
-void ExtensionMessageBubbleController::OnBubbleDismiss(
-    bool closed_by_deactivation) {
+void ExtensionMessageBubbleController::OnBubbleDismiss() {
   // OnBubbleDismiss() can be called twice when we receive multiple
   // "OnWidgetDestroying" notifications (this can at least happen when we close
   // a window with a notification open). Handle this gracefully.
   if (user_action_ != ACTION_BOUNDARY) {
-    DCHECK(user_action_ == ACTION_DISMISS_USER_ACTION ||
-           user_action_ == ACTION_DISMISS_DEACTIVATION);
+    DCHECK(user_action_ == ACTION_DISMISS);
     return;
   }
 
-  user_action_ = closed_by_deactivation ? ACTION_DISMISS_DEACTIVATION
-                                        : ACTION_DISMISS_USER_ACTION;
+  user_action_ = ACTION_DISMISS;
 
-  delegate_->LogAction(user_action_);
+  delegate_->LogAction(ACTION_DISMISS);
 
   OnClose();
 }
@@ -222,10 +215,6 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
                                false));
   }
   OnClose();
-}
-
-void ExtensionMessageBubbleController::ClearProfileListForTesting() {
-  GetProfileSet()->clear();
 }
 
 // static
@@ -263,22 +252,9 @@ ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
 }
 
 void ExtensionMessageBubbleController::OnClose() {
-  DCHECK_NE(ACTION_BOUNDARY, user_action_);
-  // If the bubble was closed due to deactivation, don't treat it as
-  // acknowledgment so that the user will see the bubble again (until they
-  // explicitly take an action).
-  if (user_action_ != ACTION_DISMISS_DEACTIVATION) {
-    AcknowledgeExtensions();
-    if (delegate_->ClearProfileSetAfterAction())
-      GetProfileSet()->clear();
-  }
-
+  AcknowledgeExtensions();
   if (did_highlight_)
     ToolbarActionsModel::Get(profile())->StopHighlighting();
-}
-
-std::set<Profile*>* ExtensionMessageBubbleController::GetProfileSet() {
-  return &g_shown_for_profiles.Get()[delegate_->GetKey()];
 }
 
 }  // namespace extensions

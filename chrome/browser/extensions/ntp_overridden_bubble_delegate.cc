@@ -129,8 +129,4 @@ void NtpOverriddenBubbleDelegate::LogAction(
       ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 
-const char* NtpOverriddenBubbleDelegate::GetKey() {
-  return "NtpOverriddenBubbleDelegate";
-}
-
 }  // namespace extensions

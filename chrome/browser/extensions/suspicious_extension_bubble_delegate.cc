@@ -26,6 +26,9 @@ namespace {
 // Whether the user has been notified about extension being wiped out.
 const char kWipeoutAcknowledged[] = "ack_wiped";
 
+base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
+  LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace extensions {
@@ -129,8 +132,13 @@ void SuspiciousExtensionBubbleDelegate::LogAction(
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 
-const char* SuspiciousExtensionBubbleDelegate::GetKey() {
-  return "SuspiciousExtensionBubbleDelegate";
+std::set<Profile*>* SuspiciousExtensionBubbleDelegate::GetProfileSet() {
+  return g_shown_for_profiles.Pointer();
+}
+
+// static
+void SuspiciousExtensionBubbleDelegate::ClearProfileListForTesting() {
+  g_shown_for_profiles.Get().clear();
 }
 
 }  // namespace extensions

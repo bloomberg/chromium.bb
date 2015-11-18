@@ -48,12 +48,9 @@ void ExtensionMessageBubbleBridge::OnBubbleShown() {
 
 void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
   switch(action) {
-    case CLOSE_DISMISS_USER_ACTION:
-    case CLOSE_DISMISS_DEACTIVATION: {
-      bool close_by_deactivate = action == CLOSE_DISMISS_DEACTIVATION;
-      controller_->OnBubbleDismiss(close_by_deactivate);
+    case CLOSE_DISMISS:
+      controller_->OnBubbleDismiss();
       break;
-    }
     case CLOSE_EXECUTE:
       controller_->OnBubbleAction();
       break;

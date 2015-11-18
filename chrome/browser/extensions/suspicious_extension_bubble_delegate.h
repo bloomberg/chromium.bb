@@ -38,7 +38,11 @@ class SuspiciousExtensionBubbleDelegate
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
-  const char* GetKey() override;
+  std::set<Profile*>* GetProfileSet() override;
+
+  // Clears the list of profiles the bubble has been shown for. Should only be
+  // used during testing.
+  static void ClearProfileListForTesting();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
