@@ -354,6 +354,8 @@ group("both_gn_and_gyp") {
   if (is_linux) {
     # The following are definitely linux-only.
     deps += [
+      "//chrome:manpage",
+      "//chrome:xdg_mime",
       "//dbus:dbus_test_server",
       "//dbus:dbus_unittests",
       "//net:disk_cache_memory_test",
@@ -367,6 +369,11 @@ group("both_gn_and_gyp") {
 
     if (is_chromeos || use_ash) {
       deps += [ "//components/session_manager/core" ]
+    }
+
+    if (is_chrome_branded && is_official_build) {
+      # TODO(dpranke): add the linux_dump_symbols flag?
+      deps += [ "//chrome:linux_symbols" ]
     }
   }
 
@@ -442,6 +449,14 @@ group("both_gn_and_gyp") {
 
     if (enable_nacl) {
       deps += [ "//components/nacl:nacl_loader_unittests" ]
+
+      if (is_linux) {
+        # TODO(dpranke): Figure out what platforms should actually have this.
+        deps += [
+          "//components/nacl:nacl_helper",
+          "//components/nacl:helper_nonsfi",
+        ]
+      }
     }
 
     if (media_use_ffmpeg) {
