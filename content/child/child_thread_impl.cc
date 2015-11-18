@@ -73,11 +73,6 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
-#include "content/common/mojo/mojo_messages.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
-#endif
-
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -659,9 +654,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
-#if defined(MOJO_SHELL_CLIENT)
-    IPC_MESSAGE_HANDLER(MojoMsg_BindControllerHandle, OnBindControllerHandle)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -723,21 +715,6 @@ void ChildThreadImpl::OnGetTcmallocStats() {
   base::allocator::GetStats(buffer, sizeof(buffer));
   result.append(buffer);
   Send(new ChildProcessHostMsg_TcmallocStats(result));
-}
-#endif
-
-#if defined(MOJO_SHELL_CLIENT)
-void ChildThreadImpl::OnBindControllerHandle(
-    const IPC::PlatformFileForTransit& file) {
-#if defined(OS_POSIX)
-  base::PlatformFile handle = file.fd;
-#elif defined(OS_WIN)
-  base::PlatformFile handle = file;
-#endif
-  mojo::ScopedMessagePipeHandle message_pipe =
-      mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
-  DCHECK(message_pipe.is_valid());
-  MojoShellConnectionImpl::CreateWithMessagePipe(message_pipe.Pass());
 }
 #endif
 

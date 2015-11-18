@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace runner {
@@ -21,7 +20,8 @@ class RunnerConnection;
 
 namespace content {
 
-// Returns true for processes launched from an external mojo shell.
+// Returns true if the Chrome browser process was launched from the external
+// Mojo shell.
 bool IsRunningInMojoShell();
 
 class MojoShellConnectionImpl : public MojoShellConnection,
@@ -32,9 +32,6 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   // thread until calling GetApplication() will return an Initialized()
   // application with a bound ShellPtr.
   static void Create();
-  // Same as Create(), but receives a handle instead of looking for one on the
-  // command line.
-  static void CreateWithMessagePipe(mojo::ScopedMessagePipeHandle handle);
 
  private:
   MojoShellConnectionImpl();
@@ -53,7 +50,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   // Blocks the calling thread until a connection to the spawning shell is
   // established, an Application request from it is bound, and the Initialize()
   // method on that application is called.
-  void WaitForShell(mojo::ScopedMessagePipeHandle handle);
+  void WaitForShell();
 
   bool initialized_;
   scoped_ptr<mojo::runner::RunnerConnection> runner_connection_;
