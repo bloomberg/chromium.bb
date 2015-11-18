@@ -216,8 +216,10 @@ void CacaEventSource::OnInputEvent(caca_event_t* event, CacaWindow* window) {
         flags = modifier_flags_ | changed_flags;
       }
       gfx::PointF location = TranslateLocation(last_cursor_location_, window);
-      ui::MouseEvent mouse_event(type, location, location, EventTimeForNow(),
-                                 flags, changed_flags);
+      ui::MouseEvent mouse_event(type, gfx::Point(), gfx::Point(),
+                                 EventTimeForNow(), flags, changed_flags);
+      mouse_event.set_location_f(location);
+      mouse_event.set_root_location_f(location);
       window->OnCacaEvent(&mouse_event);
       break;
     }

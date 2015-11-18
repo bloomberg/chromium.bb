@@ -62,6 +62,7 @@ class CacaWindow : public PlatformWindow, public PlatformEventDispatcher {
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   PlatformImeController* GetPlatformImeController() override;
+  void SetTitle(const base::string16& title) override;
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;

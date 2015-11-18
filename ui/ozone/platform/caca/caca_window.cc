@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -138,6 +139,10 @@ void CacaWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
 PlatformImeController* CacaWindow::GetPlatformImeController() {
   return nullptr;
+}
+
+void CacaWindow::SetTitle(const base::string16& title) {
+  caca_set_display_title(display_.get(), UTF16ToUTF8(title).c_str());
 }
 
 bool CacaWindow::CanDispatchEvent(const PlatformEvent& event) { return true; }
