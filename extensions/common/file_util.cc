@@ -67,9 +67,13 @@ bool ValidateFilePath(const base::FilePath& path) {
 // Returns true if the extension installation should flush all files and the
 // directory.
 bool UseSafeInstallation() {
-  const char kFieldTrialName[] = "ExtensionUseSafeInstallation";
-  const char kEnable[] = "Enable";
-  return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
+  if (g_use_safe_installation == DEFAULT) {
+    const char kFieldTrialName[] = "ExtensionUseSafeInstallation";
+    const char kEnable[] = "Enable";
+    return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
+  }
+
+  return g_use_safe_installation == ENABLED;
 }
 
 enum FlushOneOrAllFiles {
