@@ -60,8 +60,9 @@ public:
 
     void unregisterClient(MemoryPurgeClient* client)
     {
+        // Don't assert m_clients.contains() so that clients can unregister
+        // unconditionally.
         ASSERT(isMainThread());
-        ASSERT(m_clients.contains(client));
         m_clients.remove(client);
     }
 

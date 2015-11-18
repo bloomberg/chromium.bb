@@ -129,13 +129,12 @@ Page::Page(PageClients& pageClients)
 
     ASSERT(!allPages().contains(this));
     allPages().add(this);
-    memoryPurgeController().registerClient(this);
 }
 
 Page::~Page()
 {
 #if !ENABLE(OILPAN)
-    memoryPurgeController().unregisterClient(this);
+    ASSERT(!ordinaryPages().contains(this));
 #endif
     // willBeDestroyed() must be called before Page destruction.
     ASSERT(!m_mainFrame);
@@ -145,6 +144,7 @@ void Page::makeOrdinary()
 {
     ASSERT(!ordinaryPages().contains(this));
     ordinaryPages().add(this);
+    memoryPurgeController().registerClient(this);
 }
 
 ViewportDescription Page::viewportDescription() const
@@ -395,11 +395,11 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     // TODO(alexclarke): Move throttling of timers to chromium.
     if (visibilityState == PageVisibilityStateVisible) {
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
-        m_memoryPurgeController->pageBecameActive();
+        memoryPurgeController().pageBecameActive();
     } else {
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
         if (!isInitialState)
-            m_memoryPurgeController->pageBecameInactive();
+            memoryPurgeController().pageBecameInactive();
     }
 
     if (!isInitialState)
@@ -595,6 +595,10 @@ void Page::willBeDestroyed()
     ASSERT(allPages().contains(this));
     allPages().remove(this);
     ordinaryPages().remove(this);
+#if !ENABLE(OILPAN)
+    if (m_memoryPurgeController)
+        m_memoryPurgeController->unregisterClient(this);
+#endif
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();
