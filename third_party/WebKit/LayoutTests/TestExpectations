@@ -1326,10 +1326,6 @@ crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ Failure ]
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
-crbug.com/373502 fast/text/word-break.html [ NeedsRebaseline ]
-crbug.com/373502 fast/forms/basic-textareas.html [ NeedsRebaseline ]
-crbug.com/373502 fast/text/whitespace/tab-character-basics.html [ NeedsRebaseline ]
-
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
 crbug.com/240576 fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Failure Pass ]
