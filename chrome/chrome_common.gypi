@@ -156,6 +156,8 @@
       'common/extensions/features/chrome_channel_feature_filter.h',
       'common/extensions/features/feature_channel.cc',
       'common/extensions/features/feature_channel.h',
+      'common/extensions/features/feature_util.cc',
+      'common/extensions/features/feature_util.h',
       'common/extensions/image_writer/image_writer_util_mac.cc',
       'common/extensions/image_writer/image_writer_util_mac.h',
       'common/extensions/manifest_handlers/app_icon_color_info.cc',

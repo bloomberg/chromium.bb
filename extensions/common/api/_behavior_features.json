@@ -18,9 +18,6 @@
 // hashes back to ids.
 
 {
-  "service_worker": {
-    "channel": "trunk"
-  },
   "whitelisted_for_incognito": {
     "channel": "stable",
     "extension_types": "all",
