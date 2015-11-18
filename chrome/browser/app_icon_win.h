@@ -9,14 +9,21 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace gfx {
+class ImageFamily;
+class Size;
+}
+
 class SkBitmap;
 
 HICON GetAppIcon();
 HICON GetSmallAppIcon();
 
-// Retrieve the application icon for the given size. Note that if you specify a
-// size other than what is contained in chrome.dll (16x16, 32x32, 48x48), this
-// might return a poorly resized icon.
-scoped_ptr<SkBitmap> GetAppIconForSize(int size);
+gfx::Size GetAppIconSize();
+gfx::Size GetSmallAppIconSize();
+
+// Retrieve the application icon for the current process. This returns all of
+// the different sizes of the icon as an ImageFamily.
+scoped_ptr<gfx::ImageFamily> GetAppIconImageFamily();
 
 #endif  // CHROME_BROWSER_APP_ICON_WIN_H_

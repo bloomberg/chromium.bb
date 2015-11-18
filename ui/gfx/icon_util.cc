@@ -239,24 +239,12 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, s));
 }
 
-scoped_ptr<SkBitmap> IconUtil::CreateSkBitmapFromIconResource(HMODULE module,
-                                                              int resource_id,
-                                                              int size) {
-  DCHECK_LE(size, kLargeIconSize);
-
-  // For everything except the Vista+ 256x256 icons, use |LoadImage()|.
-  if (size != kLargeIconSize) {
-    HICON icon_handle =
-        static_cast<HICON>(LoadImage(module, MAKEINTRESOURCE(resource_id),
-                                     IMAGE_ICON, size, size,
-                                     LR_DEFAULTCOLOR | LR_DEFAULTSIZE));
-    scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon_handle));
-    DestroyIcon(icon_handle);
-    return bitmap.Pass();
-  }
-
-  // For Vista+ 256x256 PNG icons, read the resource directly and find
-  // the corresponding icon entry to get its PNG bytes.
+// static
+scoped_ptr<gfx::ImageFamily> IconUtil::CreateImageFamilyFromIconResource(
+    HMODULE module,
+    int resource_id) {
+  // Read the resource directly so we can get the icon image sizes. This data
+  // will also be used to directly get the PNG bytes for large images.
   void* icon_dir_data = NULL;
   size_t icon_dir_size = 0;
   if (!base::win::GetResourceFromModule(module, resource_id, RT_GROUP_ICON,
@@ -268,31 +256,39 @@ scoped_ptr<SkBitmap> IconUtil::CreateSkBitmapFromIconResource(HMODULE module,
 
   const GRPICONDIR* icon_dir =
       reinterpret_cast<const GRPICONDIR*>(icon_dir_data);
-  const GRPICONDIRENTRY* large_icon_entry = NULL;
+  scoped_ptr<gfx::ImageFamily> result(new gfx::ImageFamily);
   for (size_t i = 0; i < icon_dir->idCount; ++i) {
     const GRPICONDIRENTRY* entry = &icon_dir->idEntries[i];
-    // 256x256 icons are stored with width and height set to 0.
-    // See: http://en.wikipedia.org/wiki/ICO_(file_format)
-    if (entry->bWidth == 0 && entry->bHeight == 0) {
-      large_icon_entry = entry;
-      break;
+    if (entry->bWidth != 0 || entry->bHeight != 0) {
+      // Ignore the low-bit-depth versions of the icon.
+      if (entry->wBitCount != 32)
+        continue;
+
+      // For everything except the Vista+ 256x256 icons, use |LoadImage()|.
+      HICON icon_handle = static_cast<HICON>(LoadImage(
+          module, MAKEINTRESOURCE(resource_id), IMAGE_ICON, entry->bWidth,
+          entry->bHeight, LR_DEFAULTCOLOR | LR_DEFAULTSIZE));
+      scoped_ptr<SkBitmap> bitmap(
+          IconUtil::CreateSkBitmapFromHICON(icon_handle));
+      DestroyIcon(icon_handle);
+      result->Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
+    } else {
+      // 256x256 icons are stored with width and height set to 0.
+      // See: http://en.wikipedia.org/wiki/ICO_(file_format)
+      void* png_data = NULL;
+      size_t png_size = 0;
+      if (!base::win::GetResourceFromModule(module, entry->nID, RT_ICON,
+                                            &png_data, &png_size)) {
+        return nullptr;
+      }
+      DCHECK(png_data);
+      DCHECK_EQ(png_size, entry->dwBytesInRes);
+
+      result->Add(gfx::Image::CreateFrom1xPNGBytes(
+          new base::RefCountedStaticMemory(png_data, png_size)));
     }
   }
-  if (!large_icon_entry)
-    return nullptr;
-
-  void* png_data = NULL;
-  size_t png_size = 0;
-  if (!base::win::GetResourceFromModule(module, large_icon_entry->nID, RT_ICON,
-                                        &png_data, &png_size)) {
-    return nullptr;
-  }
-  DCHECK(png_data);
-  DCHECK_EQ(png_size, large_icon_entry->dwBytesInRes);
-
-  gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
-      new base::RefCountedStaticMemory(png_data, png_size));
-  return make_scoped_ptr(new SkBitmap(image.AsBitmap()));
+  return result;
 }
 
 SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {

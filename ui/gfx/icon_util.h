@@ -103,9 +103,9 @@ class GFX_EXPORT IconUtil {
   // loaded .dll or .exe |module|. Supports loading smaller icon sizes as well
   // as the Vista+ 256x256 PNG icon size. If the icon could not be loaded or
   // found, returns a NULL scoped_ptr.
-  static scoped_ptr<SkBitmap> CreateSkBitmapFromIconResource(HMODULE module,
-                                                             int resource_id,
-                                                             int size);
+  static scoped_ptr<gfx::ImageFamily> CreateImageFamilyFromIconResource(
+      HMODULE module,
+      int resource_id);
 
   // Given a valid HICON handle representing an icon, this function converts
   // the icon into an SkBitmap object containing an ARGB bitmap using the

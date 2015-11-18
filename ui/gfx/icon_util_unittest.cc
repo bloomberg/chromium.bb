@@ -4,6 +4,8 @@
 
 #include "ui/gfx/icon_util.h"
 
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -404,22 +406,23 @@ TEST_F(IconUtilTest, TestCreateIconFileFromImageFamily) {
   CheckAllIconSizes(icon_filename, 48);
 }
 
-TEST_F(IconUtilTest, TestCreateSkBitmapFromIconResource48x48) {
+TEST_F(IconUtilTest, TestCreateImageFamilyFromIconResource) {
   HMODULE module = GetModuleHandle(NULL);
-  scoped_ptr<SkBitmap> bitmap(
-      IconUtil::CreateSkBitmapFromIconResource(module, IDR_MAINFRAME, 48));
-  ASSERT_TRUE(bitmap.get());
-  EXPECT_EQ(48, bitmap->width());
-  EXPECT_EQ(48, bitmap->height());
-}
+  scoped_ptr<gfx::ImageFamily> family(
+      IconUtil::CreateImageFamilyFromIconResource(module, IDR_MAINFRAME));
+  ASSERT_TRUE(family.get());
+  EXPECT_FALSE(family->empty());
+  std::vector<gfx::Image> images;
+  for (const auto& image : *family)
+    images.push_back(image);
 
-TEST_F(IconUtilTest, TestCreateSkBitmapFromIconResource256x256) {
-  HMODULE module = GetModuleHandle(NULL);
-  scoped_ptr<SkBitmap> bitmap(
-      IconUtil::CreateSkBitmapFromIconResource(module, IDR_MAINFRAME, 256));
-  ASSERT_TRUE(bitmap.get());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
+  // Assert that the family contains all of the images from the icon resource.
+  EXPECT_EQ(5, images.size());
+  EXPECT_EQ(16, images[0].Width());
+  EXPECT_EQ(24, images[1].Width());
+  EXPECT_EQ(32, images[2].Width());
+  EXPECT_EQ(48, images[3].Width());
+  EXPECT_EQ(256, images[4].Width());
 }
 
 // This tests that kNumIconDimensionsUpToMediumSize has the correct value.
