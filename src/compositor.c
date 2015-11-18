@@ -726,6 +726,63 @@ weston_transformed_rect(int width, int height,
 	return ret;
 }
 
+/** Transform a region by a matrix, restricted to axis-aligned transformations
+ *
+ * Warning: This function does not work for projective, affine, or matrices
+ * that encode arbitrary rotations. Only 90-degree step rotations are
+ * supported.
+ */
+WL_EXPORT void
+weston_matrix_transform_region(pixman_region32_t *dest,
+			       struct weston_matrix *matrix,
+			       pixman_region32_t *src)
+{
+	pixman_box32_t *src_rects, *dest_rects;
+	int nrects, i;
+
+	src_rects = pixman_region32_rectangles(src, &nrects);
+	dest_rects = malloc(nrects * sizeof(*dest_rects));
+	if (!dest_rects)
+		return;
+
+	for (i = 0; i < nrects; i++) {
+		struct weston_vector vec1 = {{
+			src_rects[i].x1, src_rects[i].y1, 0, 1
+		}};
+		weston_matrix_transform(matrix, &vec1);
+		vec1.f[0] /= vec1.f[3];
+		vec1.f[1] /= vec1.f[3];
+
+		struct weston_vector vec2 = {{
+			src_rects[i].x2, src_rects[i].y2, 0, 1
+		}};
+		weston_matrix_transform(matrix, &vec2);
+		vec2.f[0] /= vec2.f[3];
+		vec2.f[1] /= vec2.f[3];
+
+		if (vec1.f[0] < vec2.f[0]) {
+			dest_rects[i].x1 = floor(vec1.f[0]);
+			dest_rects[i].x2 = ceil(vec2.f[0]);
+		} else {
+			dest_rects[i].x1 = floor(vec2.f[0]);
+			dest_rects[i].x2 = ceil(vec1.f[0]);
+		}
+
+
+		if (vec1.f[1] < vec2.f[1]) {
+			dest_rects[i].y1 = floor(vec1.f[1]);
+			dest_rects[i].y2 = ceil(vec2.f[1]);
+		} else {
+			dest_rects[i].y1 = floor(vec2.f[1]);
+			dest_rects[i].y2 = ceil(vec1.f[1]);
+		}
+	}
+
+	pixman_region32_clear(dest);
+	pixman_region32_init_rects(dest, dest_rects, nrects);
+	free(dest_rects);
+}
+
 WL_EXPORT void
 weston_transformed_region(int width, int height,
 			  enum wl_output_transform transform,
