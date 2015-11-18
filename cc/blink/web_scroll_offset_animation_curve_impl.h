@@ -21,7 +21,8 @@ class WebScrollOffsetAnimationCurveImpl
  public:
   CC_BLINK_EXPORT WebScrollOffsetAnimationCurveImpl(
       blink::WebFloatPoint target_value,
-      TimingFunctionType timing_function);
+      TimingFunctionType timing_function,
+      ScrollDurationBehavior duration_behavior);
   ~WebScrollOffsetAnimationCurveImpl() override;
 
   // blink::WebCompositorAnimationCurve implementation.

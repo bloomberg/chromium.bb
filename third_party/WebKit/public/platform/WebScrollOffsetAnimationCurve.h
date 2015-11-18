@@ -14,9 +14,16 @@ class WebScrollOffsetAnimationCurve : public WebCompositorAnimationCurve {
 public:
     virtual ~WebScrollOffsetAnimationCurve() { }
 
+    enum ScrollDurationBehavior {
+        ScrollDurationDeltaBased = 0,
+        ScrollDurationConstant
+    };
+
     virtual void setInitialValue(WebFloatPoint) = 0;
     virtual WebFloatPoint getValue(double time) const = 0;
     virtual double duration() const = 0;
+    virtual WebFloatPoint targetValue() const = 0;
+    virtual void updateTarget(double time, WebFloatPoint newTarget) = 0;
 };
 
 } // namespace blink

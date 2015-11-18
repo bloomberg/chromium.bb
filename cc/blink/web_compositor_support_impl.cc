@@ -110,8 +110,10 @@ WebFloatAnimationCurve* WebCompositorSupportImpl::createFloatAnimationCurve() {
 WebScrollOffsetAnimationCurve*
 WebCompositorSupportImpl::createScrollOffsetAnimationCurve(
     blink::WebFloatPoint target_value,
-    blink::WebCompositorAnimationCurve::TimingFunctionType timing_function) {
-  return new WebScrollOffsetAnimationCurveImpl(target_value, timing_function);
+    WebCompositorAnimationCurve::TimingFunctionType timing_function,
+    WebScrollOffsetAnimationCurve::ScrollDurationBehavior duration_behavior) {
+  return new WebScrollOffsetAnimationCurveImpl(target_value, timing_function,
+                                               duration_behavior);
 }
 
 WebTransformAnimationCurve*

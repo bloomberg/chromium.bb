@@ -71,7 +71,10 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
 {
     m_startTime = 0.0;
     m_targetOffset = offset;
-    m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(m_targetOffset, WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut));
+    m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(
+        m_targetOffset,
+        WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
+        WebScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
 
     m_animationCurve->setInitialValue(FloatPoint(m_scrollableArea->scrollPosition()));
     m_scrollableArea->registerForAnimation();

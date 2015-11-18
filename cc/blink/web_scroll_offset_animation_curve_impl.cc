@@ -9,16 +9,32 @@
 #include "cc/blink/web_animation_curve_common.h"
 
 using blink::WebFloatPoint;
+using blink::WebScrollOffsetAnimationCurve;
+using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
 
 namespace cc_blink {
 
+static DurationBehavior GetDurationBehavior(
+    WebScrollOffsetAnimationCurve::ScrollDurationBehavior webDurationBehavior) {
+  switch (webDurationBehavior) {
+    case WebScrollOffsetAnimationCurve::ScrollDurationDeltaBased:
+      return DurationBehavior::DELTA_BASED;
+
+    case WebScrollOffsetAnimationCurve::ScrollDurationConstant:
+      return DurationBehavior::CONSTANT;
+  }
+  NOTREACHED();
+  return DurationBehavior::DELTA_BASED;
+}
+
 WebScrollOffsetAnimationCurveImpl::WebScrollOffsetAnimationCurveImpl(
     WebFloatPoint target_value,
-    TimingFunctionType timing_function)
+    TimingFunctionType timing_function,
+    ScrollDurationBehavior duration_behavior)
     : curve_(cc::ScrollOffsetAnimationCurve::Create(
           gfx::ScrollOffset(target_value.x, target_value.y),
-          CreateTimingFunction(timing_function))) {
-}
+          CreateTimingFunction(timing_function),
+          GetDurationBehavior(duration_behavior))) {}
 
 WebScrollOffsetAnimationCurveImpl::~WebScrollOffsetAnimationCurveImpl() {
 }

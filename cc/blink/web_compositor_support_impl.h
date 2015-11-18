@@ -49,8 +49,9 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   blink::WebFloatAnimationCurve* createFloatAnimationCurve() override;
   blink::WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
       blink::WebFloatPoint target_value,
-      blink::WebCompositorAnimationCurve::TimingFunctionType timing_function)
-      override;
+      blink::WebCompositorAnimationCurve::TimingFunctionType timing_function,
+      blink::WebScrollOffsetAnimationCurve::ScrollDurationBehavior
+          duration_behavior) override;
   blink::WebTransformAnimationCurve* createTransformAnimationCurve() override;
   blink::WebTransformOperations* createTransformOperations() override;
   blink::WebFilterOperations* createFilterOperations() override;
