@@ -4,6 +4,7 @@
 
 package org.chromium.device.bluetooth;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanFilter;
@@ -18,7 +19,9 @@ import org.chromium.base.annotations.JNINamespace;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -33,6 +36,7 @@ class Fakes {
      * Fakes android.bluetooth.BluetoothAdapter.
      */
     static class FakeBluetoothAdapter extends Wrappers.BluetoothAdapterWrapper {
+        private final FakeContext mFakeContext;
         private final FakeBluetoothLeScanner mFakeScanner;
         final long mNativeBluetoothTestAndroid;
 
@@ -46,9 +50,15 @@ class Fakes {
         }
 
         private FakeBluetoothAdapter(long nativeBluetoothTestAndroid) {
-            super(null, new FakeBluetoothLeScanner());
+            super(null, new FakeContext(), new FakeBluetoothLeScanner());
             mNativeBluetoothTestAndroid = nativeBluetoothTestAndroid;
+            mFakeContext = (FakeContext) mContext;
             mFakeScanner = (FakeBluetoothLeScanner) mScanner;
+        }
+
+        @CalledByNative("FakeBluetoothAdapter")
+        public void denyPermission() {
+            mFakeContext.mPermissions.clear();
         }
 
         /**
@@ -130,19 +140,30 @@ class Fakes {
     }
 
     /**
+     * Fakes android.content.Context.
+     */
+    static class FakeContext extends Wrappers.ContextWrapper {
+        public final Set<String> mPermissions = new HashSet<String>();
+
+        public FakeContext() {
+            super(null);
+            mPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+
+        @Override
+        public boolean checkPermission(String permission) {
+            return mPermissions.contains(permission);
+        }
+    }
+
+    /**
      * Fakes android.bluetooth.le.BluetoothLeScanner.
      */
     static class FakeBluetoothLeScanner extends Wrappers.BluetoothLeScannerWrapper {
         public Wrappers.ScanCallbackWrapper mScanCallback;
-        public boolean mCanScan = true;
 
         private FakeBluetoothLeScanner() {
-            super(null, null);
-        }
-
-        @Override
-        public boolean canScan() {
-            return mCanScan;
+            super(null);
         }
 
         @Override

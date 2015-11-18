@@ -57,6 +57,12 @@ void BluetoothTestAndroid::InitWithFakeAdapter() {
       BluetoothAdapterAndroid::Create(j_fake_bluetooth_adapter_.obj()).get();
 }
 
+bool BluetoothTestAndroid::DenyPermission() {
+  Java_FakeBluetoothAdapter_denyPermission(AttachCurrentThread(),
+                                           j_fake_bluetooth_adapter_.obj());
+  return true;
+}
+
 BluetoothDevice* BluetoothTestAndroid::DiscoverLowEnergyDevice(
     int device_ordinal) {
   TestBluetoothAdapterObserver observer(adapter_);

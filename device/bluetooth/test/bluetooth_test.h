@@ -65,6 +65,10 @@ class BluetoothTestBase : public testing::Test {
   // controlled by this test fixture.
   virtual void InitWithFakeAdapter(){};
 
+  // Configures the fake adapter to lack the necessary permissions to scan for
+  // devices.  Returns false if the current platform always has permission.
+  virtual bool DenyPermission();
+
   // Create a fake Low Energy device and discover it.
   // |device_ordinal| selects between multiple fake device data sets to produce:
   //   1: kTestDeviceName with advertised UUIDs kTestUUIDGenericAccess,

@@ -38,6 +38,10 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   base::RunLoop().RunUntilIdle();
 }
 
+bool BluetoothTestBase::DenyPermission() {
+  return false;
+}
+
 BluetoothDevice* BluetoothTestBase::DiscoverLowEnergyDevice(
     int device_ordinal) {
   NOTIMPLEMENTED();
