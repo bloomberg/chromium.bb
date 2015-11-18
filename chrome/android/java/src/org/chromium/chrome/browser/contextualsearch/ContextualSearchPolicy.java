@@ -375,7 +375,7 @@ class ContextualSearchPolicy {
             // If the panel has never been opened before, getPromoOpenCount() will be 0.
             // Once the panel has been opened, regardless of whether or not the user has opted-in or
             // opted-out, the promo open count will be greater than zero.
-            return getPromoOpenCount() == 0;
+            return isUserUndecided() && getPromoOpenCount() == 0;
         }
 
         return false;
