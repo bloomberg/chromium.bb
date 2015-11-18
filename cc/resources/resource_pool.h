@@ -20,7 +20,7 @@ namespace cc {
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
-  static scoped_ptr<ResourcePool> CreateForImageTextureTarget(
+  static scoped_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
       ResourceProvider* resource_provider,
       base::SingleThreadTaskRunner* task_runner) {
     return make_scoped_ptr(
@@ -69,7 +69,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  protected:
   ResourcePool(ResourceProvider* resource_provider,
                base::SingleThreadTaskRunner* task_runner,
-               bool use_image_texture_target);
+               bool use_gpu_memory_buffers);
 
   bool ResourceUsageTooHigh();
 
@@ -108,7 +108,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
   ResourceProvider* resource_provider_;
-  bool use_image_texture_target_;
+  bool use_gpu_memory_buffers_;
   size_t max_memory_usage_bytes_;
   size_t max_resource_count_;
   size_t in_use_memory_usage_bytes_;

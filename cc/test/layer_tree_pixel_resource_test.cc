@@ -126,8 +126,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     case BITMAP_TILE_TASK_WORKER_POOL:
       EXPECT_FALSE(context_provider);
       EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
-      *resource_pool = ResourcePool::CreateForImageTextureTarget(
-          resource_provider, task_runner);
+      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
       *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), resource_provider);
@@ -135,8 +134,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     case GPU_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
-      *resource_pool = ResourcePool::CreateForImageTextureTarget(
-          resource_provider, task_runner);
+      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
       *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,
@@ -146,8 +144,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
-      *resource_pool = ResourcePool::CreateForImageTextureTarget(
-          resource_provider, task_runner);
+      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
       *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), resource_provider, false);
@@ -156,8 +153,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
-      *resource_pool = ResourcePool::CreateForImageTextureTarget(
-          resource_provider, task_runner);
+      *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,

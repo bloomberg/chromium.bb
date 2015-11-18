@@ -632,7 +632,7 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Vector2dF& viewport_delta);
 
   void CreateAndSetRenderer();
-  void CleanUpTileManager();
+  void CleanUpTileManagerAndUIResources();
   void CreateTileManagerResources();
   void ReleaseTreeResources();
   void RecreateTreeResources();
@@ -685,6 +685,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   void MarkUIResourceNotEvicted(UIResourceId uid);
+  void ClearUIResources();
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   void NotifySwapPromiseMonitorsOfForwardingToMainThread();

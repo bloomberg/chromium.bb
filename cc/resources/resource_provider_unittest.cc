@@ -369,6 +369,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        uint8_t* pixels) {
   resource_provider->WaitSyncTokenIfNeeded(id);
   switch (resource_provider->default_resource_type()) {
+    case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {
       ResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
       ASSERT_NE(0U, lock_gl.texture_id());
@@ -396,6 +397,7 @@ class ResourceProviderTest
         child_context_(NULL),
         main_thread_task_runner_(BlockingTaskRunner::Create(NULL)) {
     switch (GetParam()) {
+      case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
       case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {
         scoped_ptr<ResourceProviderContext> context3d(
             ResourceProviderContext::Create(shared_data_.get()));

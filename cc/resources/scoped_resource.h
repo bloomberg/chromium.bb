@@ -28,8 +28,8 @@ class CC_EXPORT ScopedResource : public Resource {
   void Allocate(const gfx::Size& size,
                 ResourceProvider::TextureHint hint,
                 ResourceFormat format);
-  void AllocateWithImageTextureTarget(const gfx::Size& size,
-                                      ResourceFormat format);
+  void AllocateWithGpuMemoryBuffer(const gfx::Size& size,
+                                   ResourceFormat format);
   void Free();
 
  protected:

@@ -65,6 +65,10 @@ class IdAllocator {
 
 namespace {
 
+bool IsGpuResourceType(ResourceProvider::ResourceType type) {
+  return type != ResourceProvider::RESOURCE_TYPE_BITMAP;
+}
+
 GLenum TextureToStorageFormat(ResourceFormat format) {
   GLenum storage_format = GL_RGBA8_OES;
   switch (format) {
@@ -202,6 +206,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
                                      GLenum target,
                                      GLenum filter,
                                      TextureHint hint,
+                                     ResourceType type,
                                      ResourceFormat format)
     : child_id(0),
       gl_id(texture_id),
@@ -229,11 +234,10 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       image_id(0),
       bound_image_id(0),
       hint(hint),
-      type(RESOURCE_TYPE_GL_TEXTURE),
+      type(type),
       format(format),
       shared_bitmap(NULL),
-      gpu_memory_buffer(NULL) {
-}
+      gpu_memory_buffer(NULL) {}
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
                                      SharedBitmap* bitmap,
@@ -344,7 +348,7 @@ ResourceProvider::~ResourceProvider() {
     DeleteResourceInternal(resources_.begin(), FOR_SHUTDOWN);
 
   GLES2Interface* gl = ContextGL();
-  if (default_resource_type_ != RESOURCE_TYPE_GL_TEXTURE) {
+  if (!IsGpuResourceType(default_resource_type_)) {
     // We are not in GL mode, but double check before returning.
     DCHECK(!gl);
     return;
@@ -355,7 +359,7 @@ ResourceProvider::~ResourceProvider() {
   // Check that all GL resources has been deleted.
   for (ResourceMap::const_iterator itr = resources_.begin();
        itr != resources_.end(); ++itr) {
-    DCHECK_NE(RESOURCE_TYPE_GL_TEXTURE, itr->second.type);
+    DCHECK(!IsGpuResourceType(itr->second.type));
   }
 #endif  // DCHECK_IS_ON()
 
@@ -386,11 +390,9 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
                                             ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
+    case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case RESOURCE_TYPE_GL_TEXTURE:
-      return CreateGLTexture(size, use_gpu_memory_buffer_resources_
-                                       ? GetImageTextureTarget(format)
-                                       : GL_TEXTURE_2D,
-                             hint, format);
+      return CreateGLTexture(size, hint, default_resource_type_, format);
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size);
@@ -400,14 +402,16 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
   return 0;
 }
 
-ResourceId ResourceProvider::CreateResourceWithImageTextureTarget(
+ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
     const gfx::Size& size,
     TextureHint hint,
     ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
+    case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case RESOURCE_TYPE_GL_TEXTURE: {
-      return CreateGLTexture(size, GetImageTextureTarget(format), hint, format);
+      return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
+                             format);
     }
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
@@ -419,17 +423,21 @@ ResourceId ResourceProvider::CreateResourceWithImageTextureTarget(
 }
 
 ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
-                                             GLenum target,
                                              TextureHint hint,
+                                             ResourceType type,
                                              ResourceFormat format) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  GLenum target = type == RESOURCE_TYPE_GPU_MEMORY_BUFFER
+                      ? GetImageTextureTarget(format)
+                      : GL_TEXTURE_2D;
+
   ResourceId id = next_id_++;
-  Resource* resource = InsertResource(
-      id,
-      Resource(0, size, Resource::INTERNAL, target, GL_LINEAR, hint, format));
+  Resource* resource =
+      InsertResource(id, Resource(0, size, Resource::INTERNAL, target,
+                                  GL_LINEAR, hint, type, format));
   resource->allocated = false;
   return id;
 }
@@ -458,7 +466,8 @@ ResourceId ResourceProvider::CreateResourceFromIOSurface(
   ResourceId id = next_id_++;
   Resource* resource = InsertResource(
       id, Resource(0, gfx::Size(), Resource::INTERNAL, GL_TEXTURE_RECTANGLE_ARB,
-                   GL_LINEAR, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+                   GL_LINEAR, TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
+                   RGBA_8888));
   LazyCreate(resource);
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
@@ -480,9 +489,10 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   Resource* resource = nullptr;
   if (mailbox.IsTexture()) {
     resource = InsertResource(
-        id, Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
-                     mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
-                     TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+        id,
+        Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
+                 mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
+                 TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE, RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
     SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
@@ -564,7 +574,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (resource->origin == Resource::EXTERNAL) {
     DCHECK(resource->mailbox.IsValid());
     gpu::SyncToken sync_token = resource->mailbox.sync_token();
-    if (resource->type == RESOURCE_TYPE_GL_TEXTURE) {
+    if (IsGpuResourceType(resource->type)) {
       DCHECK(resource->mailbox.IsTexture());
       lost_resource |= lost_output_surface_;
       GLES2Interface* gl = ContextGL();
@@ -688,7 +698,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
   LazyCreate(resource);
 
-  if (resource->type == RESOURCE_TYPE_GL_TEXTURE && !resource->gl_id) {
+  if (IsGpuResourceType(resource->type) && !resource->gl_id) {
     DCHECK(resource->origin != Resource::INTERNAL);
     DCHECK(resource->mailbox.IsTexture());
 
@@ -868,7 +878,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
                                    ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
-  DCHECK_EQ(RESOURCE_TYPE_GL_TEXTURE, resource_->type);
+  DCHECK(IsGpuResourceType(resource_->type));
   gpu_memory_buffer_.reset(resource_->gpu_memory_buffer);
   resource_->gpu_memory_buffer = nullptr;
 }
@@ -1001,8 +1011,9 @@ ResourceProvider::ResourceProvider(
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(RESOURCE_TYPE_BITMAP),
-      use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
+      default_resource_type_(use_gpu_memory_buffer_resources
+                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
+                                 : RESOURCE_TYPE_GL_TEXTURE),
       use_texture_storage_ext_(false),
       use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
@@ -1045,7 +1056,7 @@ void ResourceProvider::Initialize() {
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
-  default_resource_type_ = RESOURCE_TYPE_GL_TEXTURE;
+  DCHECK(IsGpuResourceType(default_resource_type_));
   use_texture_storage_ext_ = caps.gpu.texture_storage;
   use_texture_format_bgra_ = caps.gpu.texture_format_bgra8888;
   use_texture_usage_hint_ = caps.gpu.texture_usage;
@@ -1185,7 +1196,8 @@ void ResourceProvider::ReceiveFromChild(
       resource = InsertResource(
           local_id, Resource(0, it->size, Resource::DELEGATED,
                              it->mailbox_holder.texture_target, it->filter,
-                             TEXTURE_HINT_IMMUTABLE, it->format));
+                             TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
+                             it->format));
       resource->mailbox = TextureMailbox(it->mailbox_holder.mailbox,
                                          it->mailbox_holder.sync_token,
                                          it->mailbox_holder.texture_target);
@@ -1354,9 +1366,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     ResourceId child_id = child_info->parent_to_child_map[local_id];
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
-    bool is_lost =
-        resource.lost ||
-        (resource.type == RESOURCE_TYPE_GL_TEXTURE && lost_output_surface_);
+    bool is_lost = resource.lost ||
+                   (IsGpuResourceType(resource.type) && lost_output_surface_);
     if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
       if (style != FOR_SHUTDOWN) {
         // Defer this resource deletion.
@@ -1391,8 +1402,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     ReturnedResource returned;
     returned.id = child_id;
     returned.sync_token = resource.mailbox.sync_token();
-    need_sync_token |= (!returned.sync_token.HasData() &&
-                        resource.type == RESOURCE_TYPE_GL_TEXTURE);
+    need_sync_token |=
+        (!returned.sync_token.HasData() && IsGpuResourceType(resource.type));
     returned.count = resource.imported_count;
     returned.lost = is_lost;
     to_return.push_back(returned);
@@ -1453,7 +1464,7 @@ void ResourceProvider::CreateForTesting(ResourceId id) {
 }
 
 void ResourceProvider::LazyCreate(Resource* resource) {
-  if (resource->type != RESOURCE_TYPE_GL_TEXTURE ||
+  if (!IsGpuResourceType(resource->type) ||
       resource->origin != Resource::INTERNAL)
     return;
 
@@ -1497,7 +1508,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gfx::Size& size = resource->size;
   ResourceFormat format = resource->format;
   gl->BindTexture(resource->target, resource->gl_id);
-  if (use_gpu_memory_buffer_resources_) {
+  if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER) {
     resource->gpu_memory_buffer =
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
                                       size, BufferFormat(format),
@@ -1561,7 +1572,7 @@ void ResourceProvider::WaitSyncTokenIfNeeded(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(resource->allocated);
-  if (resource->type != RESOURCE_TYPE_GL_TEXTURE || resource->gl_id)
+  if (!IsGpuResourceType(resource->type) || resource->gl_id)
     return;
   if (resource->mailbox.sync_token().HasData()) {
     DCHECK(resource->mailbox.IsValid());

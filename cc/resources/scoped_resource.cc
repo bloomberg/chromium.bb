@@ -29,13 +29,13 @@ void ScopedResource::Allocate(const gfx::Size& size,
 #endif
 }
 
-void ScopedResource::AllocateWithImageTextureTarget(const gfx::Size& size,
-                                                    ResourceFormat format) {
+void ScopedResource::AllocateWithGpuMemoryBuffer(const gfx::Size& size,
+                                                 ResourceFormat format) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->CreateResourceWithImageTextureTarget(
+  set_id(resource_provider_->CreateGpuMemoryBufferResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format));
 
 #if DCHECK_IS_ON()

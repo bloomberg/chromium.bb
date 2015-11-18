@@ -56,9 +56,9 @@ void ResourcePool::PoolResource::OnMemoryDump(
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
-                           bool use_image_texture_target)
+                           bool use_gpu_memory_buffers)
     : resource_provider_(resource_provider),
-      use_image_texture_target_(use_image_texture_target),
+      use_gpu_memory_buffers_(use_gpu_memory_buffers),
       max_memory_usage_bytes_(0),
       max_resource_count_(0),
       in_use_memory_usage_bytes_(0),
@@ -116,8 +116,8 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
   scoped_ptr<PoolResource> pool_resource =
       PoolResource::Create(resource_provider_);
 
-  if (use_image_texture_target_) {
-    pool_resource->AllocateWithImageTextureTarget(size, format);
+  if (use_gpu_memory_buffers_) {
+    pool_resource->AllocateWithGpuMemoryBuffer(size, format);
   } else {
     pool_resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                             format);

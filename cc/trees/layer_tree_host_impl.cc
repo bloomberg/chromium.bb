@@ -271,7 +271,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     animation_host_->SetMutatorHostClient(nullptr);
   }
 
-  CleanUpTileManager();
+  CleanUpTileManagerAndUIResources();
   renderer_ = nullptr;
   resource_provider_ = nullptr;
 
@@ -1365,7 +1365,7 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   if (!policy.bytes_limit_when_visible && resource_pool_ &&
       settings_.using_synchronous_renderer_compositor) {
     ReleaseTreeResources();
-    CleanUpTileManager();
+    CleanUpTileManagerAndUIResources();
 
     // Force a call to NotifyAllTileTasks completed - otherwise this logic may
     // be skipped if no work was enqueued at the time the tile manager was
@@ -1774,7 +1774,7 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   // one.
   ReleaseTreeResources();
   if (resource_pool_) {
-    CleanUpTileManager();
+    CleanUpTileManagerAndUIResources();
     CreateTileManagerResources();
   }
   RecreateTreeResources();
@@ -2184,7 +2184,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   if (use_zero_copy) {
-    *resource_pool = ResourcePool::CreateForImageTextureTarget(
+    *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_.get(), GetTaskRunner());
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
@@ -2227,7 +2227,8 @@ void LayerTreeHostImpl::PostFrameTimingEvents(
                                              main_frame_events.Pass());
 }
 
-void LayerTreeHostImpl::CleanUpTileManager() {
+void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
+  ClearUIResources();
   tile_manager_->FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
   tile_task_worker_pool_ = nullptr;
@@ -2244,7 +2245,7 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
 
   // Note: order is important here.
   renderer_ = nullptr;
-  CleanUpTileManager();
+  CleanUpTileManagerAndUIResources();
   resource_provider_ = nullptr;
 
   // Detach from the old output surface and reset |output_surface_| pointer
@@ -3399,10 +3400,7 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
   MarkUIResourceNotEvicted(uid);
 }
 
-void LayerTreeHostImpl::EvictAllUIResources() {
-  if (ui_resource_map_.empty())
-    return;
-
+void LayerTreeHostImpl::ClearUIResources() {
   for (UIResourceMap::const_iterator iter = ui_resource_map_.begin();
       iter != ui_resource_map_.end();
       ++iter) {
@@ -3410,6 +3408,12 @@ void LayerTreeHostImpl::EvictAllUIResources() {
     resource_provider_->DeleteResource(iter->second.resource_id);
   }
   ui_resource_map_.clear();
+}
+
+void LayerTreeHostImpl::EvictAllUIResources() {
+  if (ui_resource_map_.empty())
+    return;
+  ClearUIResources();
 
   client_->SetNeedsCommitOnImplThread();
   client_->OnCanDrawStateChanged(CanDraw());
