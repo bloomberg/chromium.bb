@@ -35,12 +35,28 @@ href="https://groups.google.com/a/chromium.org/forum/#!forum/cxx">cxx@chromium.o
 Ideally include a short blurb on what the feature is, and why you think it
 should or should not be allowed.  Ideally, the list will arrive at some
 consensus and the wiki page will be updated to mention that consensus. If
-there's no consensus, <code>src/styleguide/C++/OWNERS</code> get to decide --
+there's no consensus, <code>src/styleguide/c++/OWNERS</code> get to decide --
 for divisive features, we expect the decision to be to not use the feature yet
 and possibly discuss it again a few months later, when we have more experience
 with the language.</p>
 
-<h2 id="whitelist">C++11 Allowed Features</h2>
+<h2>Table of Contents</h2>
+<ol class="toc">
+<li>Allowed Features<ol>
+    <li><a href="#core-whitelist">Language</a></li>
+    <li><a href="#library-whitelist">Library</a></li>
+</ol></li>
+<li>Banned Features<ol>
+    <li><a href="#core-blacklist">Language</a></li>
+    <li><a href="#library-blacklist">Library</a></li>
+</ol></li>
+<li>To Be Discussed<ol>
+    <li><a href="#core-review">Language</a></li>
+    <li><a href="#library-review">Library</a></li>
+</ol></li>
+</ol>
+
+<h2 id="whitelist"><a name="core-whitelist"></a>C++11 Allowed Features</h2>
 
 <p>The following features are currently allowed.</p>
 
@@ -258,7 +274,7 @@ Parameter pack</a></td>
 </tbody>
 </table>
 
-<h2 id="whitelist">C++11 Allowed Library Features</h2>
+<h2 id="whitelist"><a name="library-whitelist"></a>C++11 Allowed Library Features</h2>
 
 <p>The following library features are currently allowed.</p>
 
@@ -325,7 +341,7 @@ Standard library header &lt;type_traits&gt;</a></td>
 
 <p>This section lists features that are not allowed to be used yet.
 
-<h3 id="blacklist_banned">C++11 Banned Features</h3>
+<h3 id="blacklist_banned"><a name="core-blacklist"></a>C++11 Banned Features</h3>
 
 <p>This section lists C++11 features that are not allowed in the Chromium
 codebase.
@@ -448,7 +464,7 @@ string literal</a></td>
 </tbody>
 </table>
 
-<h3 id="whitelist">C++11 Banned Library Features</h3>
+<h3 id="blacklist_stdlib"><a name="library-blacklist"></a>C++11 Banned Library Features</h3>
 
 <p>This section lists C++11 library features that are not allowed in the Chromium codebase.</p>
 
@@ -492,7 +508,7 @@ string literal</a></td>
 </table>
 
 
-<h3 id="blacklist_review">C++11 Features To Be Discussed</h3>
+<h3 id="blacklist_review"><a name="core-review"></a>C++11 Features To Be Discussed</h3>
 
 <p>The following C++ language features are currently disallowed.
 See the top of this page on how to propose moving a feature from this list
@@ -590,7 +606,7 @@ User-defined literals</a></td>
 </tbody>
 </table>
 
-<h3 id="blacklist_stdlib">C++11 Standard Library Features To Be Discussed</h3>
+<h3 id="blacklist_stdlib_review"><a name="library-review"></a>C++11 Standard Library Features To Be Discussed</h3>
 
 <p>The following C++ library features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections. Note that not all of these features work in all our compilers yet.</p>
 
