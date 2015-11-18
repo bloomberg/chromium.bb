@@ -54,6 +54,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kDiagnostics,
        "diagnostics",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kDisplaySource, "displaySource"},
       {APIPermission::kDns, "dns"},
       {APIPermission::kDocumentScan, "documentScan"},
       {APIPermission::kExtensionView,

@@ -633,6 +633,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_USERS_PRIVATE,
        {APIPermission::kUsersPrivate},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_DISPLAY_SOURCE,
+       {APIPermission::kDisplaySource},
+       {}},
   };
 
   return std::vector<ChromePermissionMessageRule>(

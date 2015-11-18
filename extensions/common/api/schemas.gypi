@@ -20,6 +20,7 @@
       'bluetooth_socket.idl',
       'cast_channel.idl',
       'document_scan.idl',
+      'display_source.idl',
       'dns.idl',
       'events.json',
       'extensions_manifest_types.json',

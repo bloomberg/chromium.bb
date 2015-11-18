@@ -1156,6 +1156,8 @@ enum HistogramValue {
   SETTINGSPRIVATE_SETDEFAULTZOOMPERCENTFUNCTION,
   BLUETOOTHPRIVATE_CONNECT,
   BLUETOOTHPRIVATE_FORGETDEVICE,
+  DISPLAYSOURCE_GETAVAILABLESINKS,
+  DISPLAYSOURCE_REQUESTAUTHENTICATION,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

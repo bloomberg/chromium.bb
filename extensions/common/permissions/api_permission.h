@@ -243,6 +243,7 @@ class APIPermission {
     kEnterpriseDeviceAttributes,
     kCertificateProvider,
     kResourcesPrivate,
+    kDisplaySource,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/histograms.xml
     // (by running update_extension_permission.py).

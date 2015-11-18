@@ -7,6 +7,7 @@
     'extensions_browsertests_sources': [
       'browser/api/audio/audio_apitest.cc',
       'browser/api/bluetooth_socket/bluetooth_socket_apitest.cc',
+      'browser/api/display_source/display_source_apitest.cc',
       'browser/api/dns/dns_apitest.cc',
       'browser/api/hid/hid_apitest.cc',
       'browser/api/printer_provider/printer_provider_apitest.cc',

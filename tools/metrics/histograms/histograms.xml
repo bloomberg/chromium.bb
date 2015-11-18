@@ -59445,6 +59445,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="389" label="EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED"/>
   <int value="390" label="EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED"/>
   <int value="391" label="EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED"/>
+  <int value="392" label="DISPLAY_SOURCE_ON_SINKS_UPDATED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -60588,6 +60589,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1095" label="SETTINGSPRIVATE_SETDEFAULTZOOMPERCENTFUNCTION"/>
   <int value="1096" label="BLUETOOTHPRIVATE_CONNECT"/>
   <int value="1097" label="BLUETOOTHPRIVATE_FORGETDEVICE"/>
+  <int value="1098" label="DISPLAYSOURCE_GETAVAILABLESINKS"/>
+  <int value="1099" label="DISPLAYSOURCE_REQUESTAUTHENTICATION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
