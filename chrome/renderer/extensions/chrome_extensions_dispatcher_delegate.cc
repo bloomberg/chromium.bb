@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/features/feature_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_bindings.h"
@@ -262,7 +261,7 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 
 void ChromeExtensionsDispatcherDelegate::SetChannel(int channel) {
   extensions::SetCurrentChannel(static_cast<version_info::Channel>(channel));
-  if (extensions::feature_util::ExtensionServiceWorkersEnabled()) {
+  if (extensions::GetCurrentChannel() == version_info::Channel::UNKNOWN) {
     // chrome-extension: resources should be allowed to register ServiceWorkers.
     blink::WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(
         blink::WebString::fromUTF8(extensions::kExtensionScheme));
