@@ -63,7 +63,6 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscri
     // different contexts can succeed.
     if (scriptState->executionContext()->isDocument()) {
         Document* document = toDocument(scriptState->executionContext());
-        // FIXME: add test coverage for this condition - https://crbug.com/440431
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
         PushController::clientFrom(document->frame()).subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
@@ -87,7 +86,6 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushS
 {
     if (scriptState->executionContext()->isDocument()) {
         Document* document = toDocument(scriptState->executionContext());
-        // FIXME: add test coverage for this condition - https://crbug.com/440431
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
     }
