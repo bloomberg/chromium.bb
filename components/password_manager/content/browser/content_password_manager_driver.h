@@ -66,6 +66,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
                          const base::string16& password) override;
   void ClearPreviewedForm() override;
   void ForceSavePassword() override;
+  void SendLoggingAvailability() override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;

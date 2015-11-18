@@ -8,7 +8,8 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 
 namespace password_manager {
 
@@ -24,9 +25,9 @@ std::string ScrubNonDigit(std::string str) {
 }  // namespace
 
 BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
-    const PasswordManagerClient* client)
-    : client_(client) {
-  DCHECK(client_);
+    const LogManager* log_manager)
+    : log_manager_(log_manager) {
+  DCHECK(log_manager_);
 }
 
 void BrowserSavePasswordProgressLogger::LogFormSignatures(
@@ -47,7 +48,7 @@ BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {
 }
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
-  client_->LogSavePasswordProgress(log);
+  log_manager_->LogSavePasswordProgress(log);
 }
 
 }  // namespace password_manager

@@ -77,8 +77,11 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
 void ContentPasswordManagerDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   // This is called twice for the main frame.
-  if (!ContainsKey(frame_driver_map_, render_frame_host))
-    CreateDriverForFrame(render_frame_host);
+  if (!ContainsKey(frame_driver_map_, render_frame_host)) {
+    ContentPasswordManagerDriver* new_driver =
+        CreateDriverForFrame(render_frame_host);
+    new_driver->SendLoggingAvailability();
+  }
 }
 
 void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
@@ -101,19 +104,28 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
       ->second->DidNavigateFrame(details, params);
 }
 
-void ContentPasswordManagerDriverFactory::CreateDriverForFrame(
+ContentPasswordManagerDriver*
+ContentPasswordManagerDriverFactory::CreateDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(!ContainsKey(frame_driver_map_, render_frame_host));
-  frame_driver_map_.set(
-      render_frame_host,
-      make_scoped_ptr(new ContentPasswordManagerDriver(
-          render_frame_host, password_client_, autofill_client_)));
+  scoped_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(render_frame_host, password_client_,
+                                       autofill_client_));
+  ContentPasswordManagerDriver* weak_return_pointer = driver.get();
+  frame_driver_map_.set(render_frame_host, driver.Pass());
+  return weak_return_pointer;
 }
 
 void ContentPasswordManagerDriverFactory::TestingSetDriverForFrame(
     content::RenderFrameHost* render_frame_host,
     scoped_ptr<ContentPasswordManagerDriver> driver) {
   frame_driver_map_.set(render_frame_host, driver.Pass());
+}
+
+void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {
+  for (auto key_val_iterator : frame_driver_map_) {
+    key_val_iterator.second->SendLoggingAvailability();
+  }
 }
 
 }  // namespace password_manager

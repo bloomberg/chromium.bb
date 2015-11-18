@@ -2734,4 +2734,37 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_EQ("mypassword", actual_password);
 }
 
+// Check that the internals page contains logs both from the renderer and the
+// browser.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://password-manager-internals"), CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* internals_web_contents = WebContents();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/password/password_form.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  std::string find_renderer_logs =
+      "var text = document.getElementById('log-entries').innerText;"
+      "var logs_found = /PasswordAutofillAgent::/.test(text);"
+      "window.domAutomationController.send(logs_found);";
+  bool renderer_logs_found;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      internals_web_contents->GetRenderViewHost(), find_renderer_logs,
+      &renderer_logs_found));
+  EXPECT_TRUE(renderer_logs_found);
+
+  std::string find_browser_logs =
+      "var text = document.getElementById('log-entries').innerText;"
+      "var logs_found = /PasswordManager::/.test(text);"
+      "window.domAutomationController.send(logs_found);";
+  bool browser_logs_found;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      internals_web_contents->GetRenderViewHost(), find_browser_logs,
+      &browser_logs_found));
+  EXPECT_TRUE(browser_logs_found);
+}
+
 }  // namespace password_manager

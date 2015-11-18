@@ -63,6 +63,8 @@
         'password_manager/core/browser/import/csv_reader.cc',
         'password_manager/core/browser/import/csv_reader.h',
         'password_manager/core/browser/keychain_migration_status_mac.h',
+        'password_manager/core/browser/log_manager.cc',
+        'password_manager/core/browser/log_manager.h',
         'password_manager/core/browser/log_receiver.h',
         'password_manager/core/browser/log_router.cc',
         'password_manager/core/browser/log_router.h',
@@ -168,7 +170,6 @@
         '..',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
         'password_manager/core/browser/fake_affiliation_api.cc',
         'password_manager/core/browser/fake_affiliation_api.h',
         'password_manager/core/browser/fake_affiliation_fetcher.cc',
@@ -179,6 +180,9 @@
         'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_manager_test_utils.cc',
         'password_manager/core/browser/password_manager_test_utils.h',
+        # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/stub_log_manager.cc',
+        'password_manager/core/browser/stub_log_manager.h',
         'password_manager/core/browser/stub_password_manager_client.cc',
         'password_manager/core/browser/stub_password_manager_client.h',
         'password_manager/core/browser/stub_password_manager_driver.cc',

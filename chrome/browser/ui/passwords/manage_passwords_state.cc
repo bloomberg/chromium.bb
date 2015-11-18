@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
@@ -293,8 +295,9 @@ void ManagePasswordsState::DeleteForm(const autofill::PasswordForm& form) {
 
 void ManagePasswordsState::SetState(password_manager::ui::State state) {
   DCHECK(client_);
-  if (client_->IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(client_);
+  if (client_->GetLogManager()->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        client_->GetLogManager());
     logger.LogNumber(
         autofill::SavePasswordProgressLogger::STRING_NEW_UI_STATE,
         state);

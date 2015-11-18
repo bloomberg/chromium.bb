@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/log_router.h"
 
 #include "components/password_manager/core/browser/log_receiver.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,14 +19,22 @@ const char kTestText[] = "abcd1234";
 
 class MockLogReceiver : public LogReceiver {
  public:
-  MockLogReceiver() {}
+  MockLogReceiver() = default;
 
   MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLogReceiver);
 };
 
-class MockClient : public StubPasswordManagerClient {
+class MockLogManager : public StubLogManager {
  public:
+  MockLogManager() = default;
+
   MOCK_METHOD1(OnLogRouterAvailabilityChanged, void(bool));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLogManager);
 };
 
 }  // namespace
@@ -35,7 +43,7 @@ class LogRouterTest : public testing::Test {
  protected:
   testing::StrictMock<MockLogReceiver> receiver_;
   testing::StrictMock<MockLogReceiver> receiver2_;
-  testing::StrictMock<MockClient> client_;
+  testing::StrictMock<MockLogManager> manager_;
 };
 
 TEST_F(LogRouterTest, ProcessLog_NoReceiver) {
@@ -99,59 +107,59 @@ TEST_F(LogRouterTest, ProcessLog_TwoReceiversNoUpdateAfterUnregistering) {
   router.UnregisterReceiver(&receiver2_);
 }
 
-TEST_F(LogRouterTest, RegisterClient_NoReceivers) {
+TEST_F(LogRouterTest, RegisterManager_NoReceivers) {
   LogRouter router;
-  EXPECT_FALSE(router.RegisterClient(&client_));
-  router.UnregisterClient(&client_);
+  EXPECT_FALSE(router.RegisterManager(&manager_));
+  router.UnregisterManager(&manager_);
 }
 
-TEST_F(LogRouterTest, RegisterClient_OneReceiverBeforeClient) {
+TEST_F(LogRouterTest, RegisterManager_OneReceiverBeforeManager) {
   LogRouter router;
   // First register a receiver.
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver_));
-  // The client should be told the LogRouter has some receivers.
-  EXPECT_TRUE(router.RegisterClient(&client_));
-  // Now unregister the reciever. The client should be told the LogRouter has no
-  // receivers.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(false)).Times(1);
+  // The manager should be told the LogRouter has some receivers.
+  EXPECT_TRUE(router.RegisterManager(&manager_));
+  // Now unregister the reciever. The manager should be told the LogRouter has
+  // no receivers.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false));
   router.UnregisterReceiver(&receiver_);
-  router.UnregisterClient(&client_);
+  router.UnregisterManager(&manager_);
 }
 
-TEST_F(LogRouterTest, RegisterClient_OneClientBeforeReceiver) {
+TEST_F(LogRouterTest, RegisterManager_OneManagerBeforeReceiver) {
   LogRouter router;
-  // First register a client; the client should be told the LogRouter has no
+  // First register a manager; the manager should be told the LogRouter has no
   // receivers.
-  EXPECT_FALSE(router.RegisterClient(&client_));
-  // Now register the receiver. The client should be notified.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(true)).Times(1);
+  EXPECT_FALSE(router.RegisterManager(&manager_));
+  // Now register the receiver. The manager should be notified.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(true));
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver_));
-  // Now unregister the client.
-  router.UnregisterClient(&client_);
-  // Now unregister the reciever. The client should not hear about it.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(_)).Times(0);
+  // Now unregister the manager.
+  router.UnregisterManager(&manager_);
+  // Now unregister the reciever. The manager should not hear about it.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(_)).Times(0);
   router.UnregisterReceiver(&receiver_);
 }
 
-TEST_F(LogRouterTest, RegisterClient_OneClientTwoReceivers) {
+TEST_F(LogRouterTest, RegisterManager_OneManagerTwoReceivers) {
   LogRouter router;
-  // First register a client; the client should be told the LogRouter has no
+  // First register a manager; the manager should be told the LogRouter has no
   // receivers.
-  EXPECT_FALSE(router.RegisterClient(&client_));
-  // Now register the 1st receiver. The client should be notified.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(true)).Times(1);
+  EXPECT_FALSE(router.RegisterManager(&manager_));
+  // Now register the 1st receiver. The manager should be notified.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(true));
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver_));
-  // Now register the 2nd receiver. The client should not be notified.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(true)).Times(0);
+  // Now register the 2nd receiver. The manager should not be notified.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(true)).Times(0);
   EXPECT_EQ(std::string(), router.RegisterReceiver(&receiver2_));
-  // Now unregister the 1st reciever. The client should not hear about it.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(false)).Times(0);
+  // Now unregister the 1st reciever. The manager should not hear about it.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false)).Times(0);
   router.UnregisterReceiver(&receiver_);
-  // Now unregister the 2nd reciever. The client should hear about it.
-  EXPECT_CALL(client_, OnLogRouterAvailabilityChanged(false)).Times(1);
+  // Now unregister the 2nd reciever. The manager should hear about it.
+  EXPECT_CALL(manager_, OnLogRouterAvailabilityChanged(false));
   router.UnregisterReceiver(&receiver2_);
-  // Now unregister the client.
-  router.UnregisterClient(&client_);
+  // Now unregister the manager.
+  router.UnregisterManager(&manager_);
 }
 
 }  // namespace password_manager

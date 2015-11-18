@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -20,7 +22,9 @@
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
+#include "components/password_manager/core/browser/log_router.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -47,13 +51,6 @@ const char kPasswordManagerSettingsBehaviourChangeEnabledGroupName[] =
 const char kPasswordManagerSettingsBehaviourChangeDisabledGroupName[] =
     "PasswordManagerSettingsBehaviourChange.NotActive";
 
-const char kTestText[] = "abcd1234";
-
-class MockLogReceiver : public password_manager::LogReceiver {
- public:
-  MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
-};
-
 // TODO(vabr): Get rid of the mocked client in the client's own test, see
 // http://crbug.com/474577.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
@@ -71,12 +68,21 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
   DISALLOW_COPY_AND_ASSIGN(MockChromePasswordManagerClient);
 };
 
+class DummyLogReceiver : public password_manager::LogReceiver {
+ public:
+  DummyLogReceiver() = default;
+
+  void LogSavePasswordProgress(const std::string& text) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyLogReceiver);
+};
+
 }  // namespace
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
-  ChromePasswordManagerClientTest()
-      : service_(nullptr), field_trial_list_(nullptr) {}
+  ChromePasswordManagerClientTest() : field_trial_list_(nullptr) {}
   void SetUp() override;
 
   syncable_prefs::TestingPrefServiceSyncable* prefs() {
@@ -97,9 +103,6 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   // returns false.
   bool WasLoggingActivationMessageSent(bool* activation_flag);
 
-  password_manager::PasswordManagerInternalsService* service_;
-
-  testing::StrictMock<MockLogReceiver> receiver_;
   TestingPrefServiceSimple prefs_;
   base::FieldTrialList field_trial_list_;
 };
@@ -110,9 +113,6 @@ void ChromePasswordManagerClientTest::SetUp() {
       password_manager::prefs::kPasswordManagerSavingEnabled, true);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), nullptr);
-  service_ = password_manager::PasswordManagerInternalsServiceFactory::
-      GetForBrowserContext(profile());
-  ASSERT_TRUE(service_);
 }
 
 ChromePasswordManagerClient* ChromePasswordManagerClientTest::GetClient() {
@@ -133,86 +133,25 @@ bool ChromePasswordManagerClientTest::WasLoggingActivationMessageSent(
   return true;
 }
 
-TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNoReceiver) {
-  ChromePasswordManagerClient* client = GetClient();
-
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(kTestText)).Times(0);
-  // Before attaching the receiver, no text should be passed.
-  client->LogSavePasswordProgress(kTestText);
-  EXPECT_FALSE(client->IsLoggingActive());
-}
-
-TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressAttachReceiver) {
-  ChromePasswordManagerClient* client = GetClient();
-  EXPECT_FALSE(client->IsLoggingActive());
-
-  // After attaching the logger, text should be passed.
-  service_->RegisterReceiver(&receiver_);
-  EXPECT_TRUE(client->IsLoggingActive());
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(kTestText)).Times(1);
-  client->LogSavePasswordProgress(kTestText);
-  service_->UnregisterReceiver(&receiver_);
-  EXPECT_FALSE(client->IsLoggingActive());
-}
-
-TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressDetachReceiver) {
-  ChromePasswordManagerClient* client = GetClient();
-
-  service_->RegisterReceiver(&receiver_);
-  EXPECT_TRUE(client->IsLoggingActive());
-  service_->UnregisterReceiver(&receiver_);
-  EXPECT_FALSE(client->IsLoggingActive());
-
-  // After detaching the logger, no text should be passed.
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(kTestText)).Times(0);
-  client->LogSavePasswordProgress(kTestText);
-}
-
 TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
-  ChromePasswordManagerClient* client = GetClient();
-  bool logging_active = false;
+  bool logging_active = true;
+  // Ensure the existence of a driver, which will send the IPCs we listen for
+  // below.
+  NavigateAndCommit(GURL("about:blank"));
 
   // Initially, the logging should be off, so no IPC messages.
-  EXPECT_FALSE(WasLoggingActivationMessageSent(&logging_active));
+  EXPECT_TRUE(!WasLoggingActivationMessageSent(&logging_active) ||
+              !logging_active)
+      << "logging_active=" << logging_active;
 
-  service_->RegisterReceiver(&receiver_);
-  EXPECT_TRUE(client->IsLoggingActive());
+  DummyLogReceiver log_receiver;
+  password_manager::LogRouter* log_router = password_manager::
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
+  EXPECT_EQ(std::string(), log_router->RegisterReceiver(&log_receiver));
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_TRUE(logging_active);
 
-  service_->UnregisterReceiver(&receiver_);
-  EXPECT_FALSE(client->IsLoggingActive());
-  EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
-  EXPECT_FALSE(logging_active);
-}
-
-TEST_F(ChromePasswordManagerClientTest, AnswerToPingsAboutLoggingState_Active) {
-  service_->RegisterReceiver(&receiver_);
-
-  process()->sink().ClearMessages();
-
-  // Ping the client for logging activity update.
-  AutofillHostMsg_PasswordAutofillAgentConstructed msg(0);
-  static_cast<content::WebContentsObserver*>(GetClient())->OnMessageReceived(
-      msg, web_contents()->GetMainFrame());
-
-  bool logging_active = false;
-  EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
-  EXPECT_TRUE(logging_active);
-
-  service_->UnregisterReceiver(&receiver_);
-}
-
-TEST_F(ChromePasswordManagerClientTest,
-       AnswerToPingsAboutLoggingState_Inactive) {
-  process()->sink().ClearMessages();
-
-  // Ping the client for logging activity update.
-  AutofillHostMsg_PasswordAutofillAgentConstructed msg(0);
-  static_cast<content::WebContentsObserver*>(GetClient())->OnMessageReceived(
-      msg, web_contents()->GetMainFrame());
-
-  bool logging_active = true;
+  log_router->UnregisterReceiver(&log_receiver);
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_FALSE(logging_active);
 }
@@ -230,18 +169,6 @@ TEST_F(ChromePasswordManagerClientTest,
     EXPECT_TRUE(GetClient()->IsAutomaticPasswordSavingEnabled());
   else
     EXPECT_FALSE(GetClient()->IsAutomaticPasswordSavingEnabled());
-}
-
-TEST_F(ChromePasswordManagerClientTest, LogToAReceiver) {
-  ChromePasswordManagerClient* client = GetClient();
-  service_->RegisterReceiver(&receiver_);
-  EXPECT_TRUE(client->IsLoggingActive());
-
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(kTestText)).Times(1);
-  client->LogSavePasswordProgress(kTestText);
-
-  service_->UnregisterReceiver(&receiver_);
-  EXPECT_FALSE(client->IsLoggingActive());
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
@@ -403,4 +330,18 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
       "https://passwords.google.com/settings");
   NavigateAndCommit(kUrl);
   EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
+}
+
+TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {
+  // Make sure that logging is active.
+  password_manager::LogRouter* log_router = password_manager::
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
+  DummyLogReceiver log_receiver;
+  EXPECT_EQ(std::string(), log_router->RegisterReceiver(&log_receiver));
+
+  // But then navigate to a WebUI, there the logging should not be active.
+  NavigateAndCommit(GURL("about:password-manager-internals"));
+  EXPECT_FALSE(GetClient()->GetLogManager()->IsLoggingActive());
+
+  log_router->UnregisterReceiver(&log_receiver);
 }

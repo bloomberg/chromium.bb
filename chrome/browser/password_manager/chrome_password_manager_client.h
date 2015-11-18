@@ -68,9 +68,6 @@ class ChromePasswordManagerClient
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   password_manager::PasswordSyncState GetPasswordSyncState() const override;
-  void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
-  void LogSavePasswordProgress(const std::string& text) const override;
-  bool IsLoggingActive() const override;
   bool WasLastNavigationHTTPError() const override;
   bool DidLastPageLoadEncounterSSLErrors() const override;
   bool IsOffTheRecord() const override;
@@ -81,6 +78,7 @@ class ChromePasswordManagerClient
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
+  const password_manager::LogManager* GetLogManager() const override;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();
@@ -110,6 +108,8 @@ class ChromePasswordManagerClient
   // content::WebContentsObserver overrides.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
@@ -137,10 +137,6 @@ class ChromePasswordManagerClient
   // for UMA stats.
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
-  // Sends a message to the renderer with the current value of
-  // |can_use_log_router_|.
-  void NotifyRendererOfLoggingAvailability();
-
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
@@ -157,14 +153,13 @@ class ChromePasswordManagerClient
   base::WeakPtr<
     autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
 
-  // True if |this| is registered with some LogRouter which can accept logs.
-  bool can_use_log_router_;
-
   // Set to false to disable password saving (will no longer ask if you
   // want to save passwords and also won't fill the passwords).
   BooleanPrefMember saving_and_filling_passwords_enabled_;
 
   const password_manager::SyncStoreResultFilter credentials_filter_;
+
+  scoped_ptr<password_manager::LogManager> log_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

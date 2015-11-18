@@ -8,6 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/navigation_details.h"
 
@@ -89,9 +92,9 @@ class ManagePasswordsUIControllerMock
   autofill::PasswordForm chosen_credential_;
   autofill::PasswordForm pending_password_;
 
-  scoped_ptr<password_manager::PasswordManagerClient> client_;
-  scoped_ptr<password_manager::PasswordManagerDriver> driver_;
-  scoped_ptr<password_manager::PasswordManager> password_manager_;
+  password_manager::StubPasswordManagerClient client_;
+  password_manager::StubPasswordManagerDriver driver_;
+  password_manager::PasswordManager password_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
 };

@@ -8,22 +8,24 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace password_manager {
 
+class LogManager;
 class LogReceiver;
-class PasswordManagerClient;
 
-// The router stands between PasswordManagerClient instances and log receivers.
-// During the process of saving a password, the password manager code generates
-// the log strings, and passes them to the router. The router distributes the
-// logs to the receivers for displaying.
+// The router stands between LogManager and LogReceiver instances. Both managers
+// and receivers need to register (and unregister) with the router. After that,
+// the following communication is enabled:
+//   * LogManagers are notified when logging starts or stops being possible
+//   * LogReceivers are sent logs routed through LogRouter
 class LogRouter {
  public:
   LogRouter();
-  virtual ~LogRouter();
+  ~LogRouter();
 
   // Passes logs to the router. Only call when there are receivers registered.
   void ProcessLog(const std::string& text);
@@ -32,26 +34,26 @@ class LogRouter {
   // constructor of the registered object, because they do not call that object,
   // and the router only runs on a single thread.
 
-  // The clients must register to be notified about whether there are some
-  // receivers or not. RegisterClient adds |client| to the right observer list
+  // The managers must register to be notified about whether there are some
+  // receivers or not. RegisterManager adds |manager| to the right observer list
   // and returns true iff there are some receivers registered.
-  bool RegisterClient(PasswordManagerClient* client);
-  // Remove |client| from the observers list.
-  void UnregisterClient(PasswordManagerClient* client);
+  bool RegisterManager(LogManager* manager);
+  // Remove |manager| from the observers list.
+  void UnregisterManager(LogManager* manager);
 
   // The receivers must register to get updates with new logs in the future.
   // RegisterReceiver adds |receiver| to the right observer list, and returns
   // the logs accumulated so far. (It returns by value, not const ref, to
   // provide a snapshot as opposed to a link to |accumulated_logs_|.)
-  std::string RegisterReceiver(LogReceiver* receiver);
+  std::string RegisterReceiver(LogReceiver* receiver) WARN_UNUSED_RESULT;
   // Remove |receiver| from the observers list.
   void UnregisterReceiver(LogReceiver* receiver);
 
  private:
-  // Observer lists for clients and receivers. The |true| in the template
+  // Observer lists for managers and receivers. The |true| in the template
   // specialisation means that they will check that all observers were removed
   // on destruction.
-  base::ObserverList<PasswordManagerClient, true> clients_;
+  base::ObserverList<LogManager, true> managers_;
   base::ObserverList<LogReceiver, true> receivers_;
 
   // Logs accumulated since the first receiver was registered.

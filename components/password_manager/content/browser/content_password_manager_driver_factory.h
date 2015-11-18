@@ -49,6 +49,10 @@ class ContentPasswordManagerDriverFactory
       content::RenderFrameHost* render_frame_host,
       scoped_ptr<ContentPasswordManagerDriver> driver);
 
+  // Requests all drivers to inform their renderers whether
+  // chrome://password-manager-internals is available.
+  void RequestSendLoggingAvailability();
+
   // content::WebContentsObserver:
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
@@ -64,7 +68,10 @@ class ContentPasswordManagerDriverFactory
       PasswordManagerClient* client,
       autofill::AutofillClient* autofill_client);
 
-  void CreateDriverForFrame(content::RenderFrameHost* render_frame_host);
+  // Creates a driver for |render_frame_host|, saves it in the frame_driver_map_
+  // and returns a (non-owning) pointer to it.
+  ContentPasswordManagerDriver* CreateDriverForFrame(
+      content::RenderFrameHost* render_frame_host);
 
   base::ScopedPtrMap<content::RenderFrameHost*,
                      scoped_ptr<ContentPasswordManagerDriver>>

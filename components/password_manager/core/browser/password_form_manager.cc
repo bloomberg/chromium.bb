@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -312,8 +313,9 @@ void PasswordFormManager::FetchDataFromPasswordStore(
   }
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->IsLoggingActive()) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+  if (client_->GetLogManager()->IsLoggingActive()) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
     logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE, state_);
   }
@@ -382,8 +384,9 @@ void PasswordFormManager::OnRequestDone(
   const size_t logins_result_size = logins_result.size();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->IsLoggingActive()) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+  if (client_->GetLogManager()->IsLoggingActive()) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
   }
 
@@ -585,8 +588,9 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   }
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->IsLoggingActive()) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+  if (client_->GetLogManager()->IsLoggingActive()) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }

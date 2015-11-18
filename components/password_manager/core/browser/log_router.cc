@@ -5,16 +5,14 @@
 #include "components/password_manager/core/browser/log_router.h"
 
 #include "base/stl_util.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 
 namespace password_manager {
 
-LogRouter::LogRouter() {
-}
+LogRouter::LogRouter() = default;
 
-LogRouter::~LogRouter() {
-}
+LogRouter::~LogRouter() = default;
 
 void LogRouter::ProcessLog(const std::string& text) {
   // This may not be called when there are no receivers (i.e., the router is
@@ -24,15 +22,15 @@ void LogRouter::ProcessLog(const std::string& text) {
   FOR_EACH_OBSERVER(LogReceiver, receivers_, LogSavePasswordProgress(text));
 }
 
-bool LogRouter::RegisterClient(PasswordManagerClient* client) {
-  DCHECK(client);
-  clients_.AddObserver(client);
+bool LogRouter::RegisterManager(LogManager* manager) {
+  DCHECK(manager);
+  managers_.AddObserver(manager);
   return receivers_.might_have_observers();
 }
 
-void LogRouter::UnregisterClient(PasswordManagerClient* client) {
-  DCHECK(clients_.HasObserver(client));
-  clients_.RemoveObserver(client);
+void LogRouter::UnregisterManager(LogManager* manager) {
+  DCHECK(managers_.HasObserver(manager));
+  managers_.RemoveObserver(manager);
 }
 
 std::string LogRouter::RegisterReceiver(LogReceiver* receiver) {
@@ -40,8 +38,8 @@ std::string LogRouter::RegisterReceiver(LogReceiver* receiver) {
   DCHECK(accumulated_logs_.empty() || receivers_.might_have_observers());
 
   if (!receivers_.might_have_observers()) {
-    FOR_EACH_OBSERVER(
-        PasswordManagerClient, clients_, OnLogRouterAvailabilityChanged(true));
+    FOR_EACH_OBSERVER(LogManager, managers_,
+                      OnLogRouterAvailabilityChanged(true));
   }
   receivers_.AddObserver(receiver);
   return accumulated_logs_;
@@ -51,9 +49,11 @@ void LogRouter::UnregisterReceiver(LogReceiver* receiver) {
   DCHECK(receivers_.HasObserver(receiver));
   receivers_.RemoveObserver(receiver);
   if (!receivers_.might_have_observers()) {
-    accumulated_logs_.clear();
-    FOR_EACH_OBSERVER(
-        PasswordManagerClient, clients_, OnLogRouterAvailabilityChanged(false));
+    // |accumulated_logs_| can become very long; use the swap instead of clear()
+    // to ensure that the memory is freed.
+    std::string().swap(accumulated_logs_);
+    FOR_EACH_OBSERVER(LogManager, managers_,
+                      OnLogRouterAvailabilityChanged(false));
   }
 }
 

@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,9 +148,10 @@ void ShowLoginPrompt(const GURL& request_url,
     return;
   }
 
-  if (password_manager && password_manager->client()->IsLoggingActive()) {
+  if (password_manager &&
+      password_manager->client()->GetLogManager()->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
-        password_manager->client());
+        password_manager->client()->GetLogManager());
     logger.LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
   }
@@ -246,9 +248,10 @@ void LoginHandler::SetAuth(const base::string16& username,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_ && password_manager_->client()->IsLoggingActive()) {
+  if (password_manager_ &&
+      password_manager_->client()->GetLogManager()->IsLoggingActive()) {
     logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
-        password_manager_->client()));
+        password_manager_->client()->GetLogManager()));
     logger->LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SET_AUTH_METHOD);
   }

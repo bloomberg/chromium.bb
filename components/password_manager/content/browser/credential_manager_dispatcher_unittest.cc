@@ -18,7 +18,6 @@
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -140,11 +139,6 @@ TestCredentialManagerDispatcher::GetDriver() {
   return driver_;
 }
 
-class MockPasswordManagerDriver : public StubPasswordManagerDriver {
- public:
-  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
-};
-
 void RunAllPendingTasks() {
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
@@ -163,11 +157,8 @@ class CredentialManagerDispatcherTest
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
     client_.reset(new MockPasswordManagerClient(store_.get()));
-    password_manager_.reset(new PasswordManager(client_.get()));
-    ON_CALL(mock_driver_, GetPasswordManager())
-        .WillByDefault(testing::Return(password_manager_.get()));
     dispatcher_.reset(new TestCredentialManagerDispatcher(
-        web_contents(), client_.get(), &mock_driver_));
+        web_contents(), client_.get(), &stub_driver_));
     ON_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
@@ -276,9 +267,8 @@ class CredentialManagerDispatcherTest
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<MockPasswordManagerClient> client_;
-  MockPasswordManagerDriver mock_driver_;
+  StubPasswordManagerDriver stub_driver_;
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
-  scoped_ptr<PasswordManager> password_manager_;
 };
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {

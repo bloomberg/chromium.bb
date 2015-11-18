@@ -29,18 +29,6 @@ PasswordSyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING_PASSWORDS;
 }
 
-void PasswordManagerClient::OnLogRouterAvailabilityChanged(
-    bool router_can_be_used) {
-}
-
-void PasswordManagerClient::LogSavePasswordProgress(
-    const std::string& text) const {
-}
-
-bool PasswordManagerClient::IsLoggingActive() const {
-  return false;
-}
-
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
@@ -89,6 +77,10 @@ const GURL& PasswordManagerClient::GetMainFrameURL() const {
 
 bool PasswordManagerClient::IsUpdatePasswordUIEnabled() const {
   return false;
+}
+
+const LogManager* PasswordManagerClient::GetLogManager() const {
+  return nullptr;
 }
 
 }  // namespace password_manager

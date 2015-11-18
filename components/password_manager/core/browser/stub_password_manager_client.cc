@@ -66,4 +66,8 @@ const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()
   return &credentials_filter_;
 }
 
+const LogManager* StubPasswordManagerClient::GetLogManager() const {
+  return &log_manager_;
+}
+
 }  // namespace password_manager

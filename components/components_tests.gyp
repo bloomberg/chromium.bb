@@ -421,6 +421,7 @@
       'page_load_metrics/renderer/page_timing_metrics_sender_unittest.cc',
     ],
     'password_manager_unittest_sources': [
+      'password_manager/content/browser/content_password_manager_driver_unittest.cc',
       'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
       'password_manager/core/browser/affiliated_match_helper_unittest.cc',
       'password_manager/core/browser/affiliation_backend_unittest.cc',
@@ -433,6 +434,7 @@
       'password_manager/core/browser/export/csv_writer_unittest.cc',
       'password_manager/core/browser/facet_manager_unittest.cc',
       'password_manager/core/browser/import/csv_reader_unittest.cc',
+      'password_manager/core/browser/log_manager_unittest.cc',
       'password_manager/core/browser/log_router_unittest.cc',
       'password_manager/core/browser/login_database_ios_unittest.cc',
       'password_manager/core/browser/login_database_unittest.cc',

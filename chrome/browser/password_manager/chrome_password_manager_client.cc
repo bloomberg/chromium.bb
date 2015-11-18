@@ -33,6 +33,7 @@
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
@@ -64,7 +65,6 @@
 
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
-using password_manager::PasswordManagerInternalsServiceFactory;
 
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
@@ -136,7 +136,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       driver_factory_(nullptr),
       credential_manager_dispatcher_(web_contents, this),
       observer_(nullptr),
-      can_use_log_router_(false),
       credentials_filter_(this,
                           base::Bind(&GetSyncService, profile_),
                           base::Bind(&GetSigninManager, profile_)) {
@@ -144,22 +143,20 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
                                                             autofill_client);
   driver_factory_ =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  log_manager_ = password_manager::LogManager::Create(
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(profile_),
+      base::Bind(
+          &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
+          base::Unretained(driver_factory_)));
 
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
-  if (service)
-    can_use_log_router_ = service->RegisterClient(this);
   saving_and_filling_passwords_enabled_.Init(
       password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
   ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
+  driver_factory_->RequestSendLoggingAvailability();
 }
 
-ChromePasswordManagerClient::~ChromePasswordManagerClient() {
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
-  if (service)
-    service->UnregisterClient(this);
-}
+ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
 bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -184,8 +181,9 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     // this is effectively their master password.
     is_enabled = entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
   }
-  if (IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(this);
+  if (log_manager_->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        log_manager_.get());
     logger.LogBoolean(
         Logger::STRING_PASSWORD_MANAGEMENT_ENABLED_FOR_CURRENT_PAGE,
         is_enabled);
@@ -322,37 +320,13 @@ ChromePasswordManagerClient::GetPasswordSyncState() const {
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
-void ChromePasswordManagerClient::OnLogRouterAvailabilityChanged(
-    bool router_can_be_used) {
-  if (can_use_log_router_ == router_can_be_used)
-    return;
-  can_use_log_router_ = router_can_be_used;
-
-  NotifyRendererOfLoggingAvailability();
-}
-
-void ChromePasswordManagerClient::LogSavePasswordProgress(
-    const std::string& text) const {
-  if (!IsLoggingActive())
-    return;
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
-  if (service)
-    service->ProcessLog(text);
-}
-
-bool ChromePasswordManagerClient::IsLoggingActive() const {
-  // WebUI tabs do not need to log password saving progress. In particular, the
-  // internals page itself should not send any logs.
-  return can_use_log_router_ && !web_contents()->GetWebUI();
-}
-
 bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   DCHECK(web_contents());
 
   scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
-  if (IsLoggingActive()) {
-    logger.reset(new password_manager::BrowserSavePasswordProgressLogger(this));
+  if (log_manager_->IsLoggingActive()) {
+    logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
+        log_manager_.get()));
     logger->LogMessage(
         Logger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD);
   }
@@ -380,8 +354,9 @@ bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() const {
   } else {
     ssl_errors = net::IsCertStatusError(entry->GetSSL().cert_status);
   }
-  if (IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(this);
+  if (log_manager_->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        log_manager_.get());
     logger.LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
   }
   return ssl_errors;
@@ -429,13 +404,17 @@ bool ChromePasswordManagerClient::OnMessageReceived(
                         HidePasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_GenerationAvailableForForm,
                         GenerationAvailableForForm)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordAutofillAgentConstructed,
-                        NotifyRendererOfLoggingAvailability)
     // Default:
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void ChromePasswordManagerClient::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Logging has no sense on WebUI sites.
+  log_manager_->SetSuspended(web_contents()->GetWebUI() != nullptr);
 }
 
 gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
@@ -480,15 +459,6 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
 void ChromePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {
   password_manager_.GenerationAvailableForForm(form);
-}
-
-void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {
-  if (!web_contents())
-    return;
-
-  web_contents()->GetRenderViewHost()->Send(new AutofillMsg_SetLoggingState(
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
-      can_use_log_router_));
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
@@ -554,4 +524,9 @@ const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
 const password_manager::CredentialsFilter*
 ChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
+}
+
+const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
+    const {
+  return log_manager_.get();
 }

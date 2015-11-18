@@ -120,30 +120,19 @@ void TestManagePasswordsUIController::NeverSavePasswordInternal() {
   OnLoginsChanged(list);
 }
 
-// TODO(crbug.com/554886) Centralise mock clients.
-class MockPasswordManagerClient
-    : public password_manager::StubPasswordManagerClient {
- public:
-  MOCK_CONST_METHOD0(GetPasswordManager,
-                     const password_manager::PasswordManager*());
-};
-
 }  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  ManagePasswordsUIControllerTest() : password_manager_(&mock_client_) {}
+  ManagePasswordsUIControllerTest() : password_manager_(&client_) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    ON_CALL(mock_client_, GetPasswordManager())
-        .WillByDefault(testing::Return(&password_manager_));
-
     // Create the test UIController here so that it's bound to
     // |test_web_contents_|, and will be retrieved correctly via
     // ManagePasswordsUIController::FromWebContents in |controller()|.
-    new TestManagePasswordsUIController(web_contents(), &mock_client_);
+    new TestManagePasswordsUIController(web_contents(), &client_);
 
     test_local_form_.origin = GURL("http://example.com");
     test_local_form_.username_value = base::ASCIIToUTF16("username");
@@ -195,7 +184,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
 
  private:
-  MockPasswordManagerClient mock_client_;
+  password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;
   password_manager::PasswordManager password_manager_;
 
@@ -209,9 +198,9 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const autofill::PasswordForm& observed_form,
     ScopedVector<autofill::PasswordForm> best_matches) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(
-          &password_manager_, &mock_client_, driver_.AsWeakPtr(), observed_form,
-          true));
+      new password_manager::PasswordFormManager(&password_manager_, &client_,
+                                                driver_.AsWeakPtr(),
+                                                observed_form, true));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   test_form_manager->OnGetPasswordStoreResults(best_matches.Pass());
   return test_form_manager.Pass();

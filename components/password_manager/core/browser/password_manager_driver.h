@@ -81,6 +81,10 @@ class PasswordManagerDriver
   // Returns the PasswordAutofillManager associated with this instance.
   virtual PasswordAutofillManager* GetPasswordAutofillManager() = 0;
 
+  // Sends a message to the renderer whether logging to
+  // chrome://password-manager-internals is available.
+  virtual void SendLoggingAvailability() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };

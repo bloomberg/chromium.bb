@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,13 +17,13 @@ const char kTestText[] = "test";
 // The only purpose of TestLogger is to expose SendLog for the test.
 class TestLogger : public BrowserSavePasswordProgressLogger {
  public:
-  explicit TestLogger(PasswordManagerClient* client)
-      : BrowserSavePasswordProgressLogger(client) {}
+  explicit TestLogger(LogManager* log_manager)
+      : BrowserSavePasswordProgressLogger(log_manager) {}
 
   using BrowserSavePasswordProgressLogger::SendLog;
 };
 
-class MockPasswordManagerClient : public StubPasswordManagerClient {
+class MockLogManager : public StubLogManager {
  public:
   MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
 };
@@ -31,9 +31,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 }  // namespace
 
 TEST(BrowserSavePasswordProgressLoggerTest, SendLog) {
-  MockPasswordManagerClient client;
-  TestLogger logger(&client);
-  EXPECT_CALL(client, LogSavePasswordProgress(kTestText)).Times(1);
+  MockLogManager log_manager;
+  TestLogger logger(&log_manager);
+  EXPECT_CALL(log_manager, LogSavePasswordProgress(kTestText));
   logger.SendLog(kTestText);
 }
 
