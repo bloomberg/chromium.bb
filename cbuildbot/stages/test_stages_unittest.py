@@ -193,7 +193,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     to_raise = None
 
-    if cmd_fail_mode == 'timeout':
+    if cmd_fail_mode == None:
+      to_raise = None
+    elif cmd_fail_mode == 'timeout':
       to_raise = timeout_util.TimeoutError('Timed out')
     elif cmd_fail_mode == 'suite_timeout':
       to_raise = failures_lib.SuiteTimedOut('Suite timed out')
@@ -205,10 +207,14 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       to_raise = failures_lib.TestWarning('Suite passed with warnings')
     elif cmd_fail_mode == 'test_fail':
       to_raise = failures_lib.TestFailure('HWTest failed.')
-    elif cmd_fail_mode is not None:
+    else:
       raise ValueError('cmd_fail_mode %s not supported' % cmd_fail_mode)
 
-    self.run_suite_mock.side_effect = to_raise
+    if cmd_fail_mode == 'timeout':
+      self.run_suite_mock.side_effect = to_raise
+    else:
+      self.run_suite_mock.return_value = commands.HWTestSuiteResult(
+          to_raise, None)
 
     if fails:
       self.assertRaises(failures_lib.StepFailure, self.RunStage)

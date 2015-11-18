@@ -1700,7 +1700,9 @@ The suite job has another 2:39:39.789250 till timeout.
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
-        retry=True, wait_for_results=True, suite_min_duts=2, debug=False)
+        retry=True, wait_for_results=True,
+        suite_min_duts=2, debug=False).AndReturn(
+            commands.HWTestSuiteResult(None, None))
 
     self.mox.ReplayAll()
 
@@ -1721,13 +1723,14 @@ The suite job has another 2:39:39.789250 till timeout.
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    to_raise = failures_lib.TestWarning(
+        '** Suite passed with a warning code **')
     paygen_build_lib.commands.RunHWTestSuite(
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, suite_min_duts=2,
-        debug=False).AndRaise(
-            failures_lib.TestWarning('** Suite passed with a warning code **'))
+        debug=False).AndReturn(commands.HWTestSuiteResult(to_raise, None))
 
     self.mox.ReplayAll()
 

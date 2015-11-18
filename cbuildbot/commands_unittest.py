@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import base64
+import json
 import mock
 import os
 from StringIO import StringIO
@@ -220,6 +221,14 @@ ERROR: Encountered swarming internal error
 The suite job has another 3:09:50.012887 till timeout.
 The suite job has another 2:39:39.789250 till timeout.
 '''
+  JSON_OUTPUT = '''
+{"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite",
+                                                     "subsystem:light",
+                                                     "subsystem:bluetooth"]},
+           "test_2":{"status":"other", "attributes": ["suite:test-suite",
+                                                      "subsystem:network"]}
+}}
+'''
   SWARMING_TIMEOUT_DEFAULT = str(
       commands._DEFAULT_HWTEST_TIMEOUT_MINS * 60 +
       commands._SWARMING_ADDITIONAL_TIMEOUT)
@@ -240,8 +249,10 @@ The suite job has another 2:39:39.789250 till timeout.
     self._max_retries = 3
     self._minimum_duts = 2
     self._suite_min_duts = 2
+    self._subsystems = {'light', 'network'}
     self.create_cmd = None
     self.wait_cmd = None
+    self.json_dump_cmd = None
     self.temp_json_path = os.path.join(self.tempdir, 'temp_summary.json')
     # Bot died
     self.retriable_swarming_code = 80
@@ -255,13 +266,14 @@ The suite job has another 2:39:39.789250 till timeout.
     kwargs.setdefault('debug', False)
     with cros_test_lib.LoggingCapturer() as logs:
       try:
-        commands.RunHWTestSuite(self._build, self._suite, self._board,
-                                *args, **kwargs)
+        cmd_result = commands.RunHWTestSuite(self._build, self._suite,
+                                             self._board, *args, **kwargs)
+        return cmd_result
       finally:
         print(logs.messages)
 
   def SetCmdResults(self, create_return_code=0, wait_return_code=0,
-                    wait_retry=False, args=(),
+                    dump_json_return_code=0, wait_retry=False, args=(),
                     swarming_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
                     swarming_io_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
                     swarming_hard_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
@@ -271,6 +283,7 @@ The suite job has another 2:39:39.789250 till timeout.
     Args:
       create_return_code: Return code from create command.
       wait_return_code: Return code from wait command.
+      dump_json_return_code: Return code from json_dump command.
       wait_retry: Boolean, if wait command should be retried.
       args: Additional args to pass to create and wait commands.
       swarming_timeout_secs: swarming client timeout.
@@ -291,10 +304,21 @@ The suite job has another 2:39:39.789250 till timeout.
                 '--hard-timeout', swarming_hard_timeout_secs,
                 '--expiration', swarming_expiration_secs,
                 '--', commands._RUN_SUITE_PATH,
-                '--build', 'test-build', '--board', 'test-board',
-                '--suite_name', 'test-suite'] + list(args)
+                '--build', 'test-build', '--board', 'test-board']
+    args = list(args)
+    if '--subsystems' in args:
+      i = [i for i, val in enumerate(args) if val == '--subsystems'][0]
+      args[i] = '--suite_args'
+      subsys_lst = ['subsystem:%s' % x for x in json.loads(args[i+1])]
+      subsys_str = ' or '.join(subsys_lst)
+      args[i+1] = "{'attr_filter': '(suite:test-suite) and (%s)'}" % subsys_str
+      base_cmd = base_cmd + ['--suite_name', 'suite_attr_wrapper'] + args
+    else:
+      base_cmd = base_cmd + ['--suite_name', 'test-suite'] + args
+
     self.create_cmd = base_cmd + ['-c']
     self.wait_cmd = base_cmd + ['-m', '26960110']
+    self.json_dump_cmd = base_cmd + ['--json_dump', '-m', '26960110']
     create_results = iter([
         self.rc.CmdResult(returncode=create_return_code,
                           output=self.JOB_ID_OUTPUT,
@@ -324,6 +348,15 @@ The suite job has another 2:39:39.789250 till timeout.
         side_effect=lambda *args, **kwargs: wait_results.next(),
     )
 
+    dump_json_results = iter([
+        self.rc.CmdResult(returncode=dump_json_return_code,
+                          output=self.JSON_OUTPUT,
+                          error=''),
+    ])
+    self.rc.AddCmdResult(
+        self.json_dump_cmd,
+        side_effect=lambda *args, **kwargs: dump_json_results.next(),
+    )
   def PatchJson(self, task_outputs):
     """Mock out the code that loads from json.
 
@@ -364,12 +397,12 @@ The suite job has another 2:39:39.789250 till timeout.
   def testRunHWTestSuiteMinimal(self):
     """Test RunHWTestSuite without optional arguments."""
     self.SetCmdResults()
-    # When run without optional arguments, wait_for_result default to None.
-    # the wait cmd will not run.
+    # When run without optional arguments, wait and dump_json cmd will not run.
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
 
     with self.OutputCapturer() as output:
-      self.RunHWTestSuite()
+      cmd_result = self.RunHWTestSuite()
+    self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True)
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -384,23 +417,33 @@ The suite job has another 2:39:39.789250 till timeout.
             '--file_bugs', 'True',
             '--priority', 'test-priority', '--timeout_mins', '23',
             '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
-            '--suite_min_duts', '2'
+            '--suite_min_duts', '2', '--subsystems', '["light", "network"]'
         ],
         swarming_timeout_secs=swarming_timeout,
         swarming_io_timeout_secs=swarming_timeout,
         swarming_hard_timeout_secs=swarming_timeout)
 
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None),
-                    (self.WAIT_OUTPUT, False, None)])
+                    (self.WAIT_OUTPUT, False, None),
+                    (self.JSON_OUTPUT, False, None)])
     with self.OutputCapturer() as output:
-      self.RunHWTestSuite(self._pool, self._num, self._file_bugs,
-                          self._wait_for_results, self._priority,
-                          self._timeout_mins, self._retry,
-                          self._max_retries,
-                          self._minimum_duts, self._suite_min_duts)
+      cmd_result = self.RunHWTestSuite(pool=self._pool, num=self._num,
+                                       file_bugs=self._file_bugs,
+                                       wait_for_results=self._wait_for_results,
+                                       priority=self._priority,
+                                       timeout_mins=self._timeout_mins,
+                                       retry=self._retry,
+                                       max_retries=self._max_retries,
+                                       minimum_duts=self._minimum_duts,
+                                       suite_min_duts=self._suite_min_duts,
+                                       subsystems=self._subsystems)
+    expect_result = json.loads(self.JSON_OUTPUT)
+    self.assertEqual(cmd_result, (None, expect_result))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True)
     self.assertCommandCalled(self.wait_cmd, capture_output=True,
+                             combine_stdout_stderr=True)
+    self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
                              combine_stdout_stderr=True)
     self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -410,35 +453,40 @@ The suite job has another 2:39:39.789250 till timeout.
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
     self.rc.SetDefaultCmdResult(returncode=1, output=self.JOB_ID_OUTPUT)
     with self.OutputCapturer():
-      self.assertRaises(failures_lib.TestFailure, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.TestFailure)
 
   def testRunHWTestSuiteTimedOut(self):
     """Test RunHWTestSuite when SUITE_TIMEOUT is returned."""
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
     self.rc.SetDefaultCmdResult(returncode=4, output=self.JOB_ID_OUTPUT)
     with self.OutputCapturer():
-      self.assertRaises(failures_lib.SuiteTimedOut, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.SuiteTimedOut)
 
   def testRunHWTestSuiteInfraFail(self):
     """Test RunHWTestSuite when INFRA_FAILURE is returned."""
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
     self.rc.SetDefaultCmdResult(returncode=3, output=self.JOB_ID_OUTPUT)
     with self.OutputCapturer():
-      self.assertRaises(failures_lib.TestLabFailure, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.TestLabFailure)
 
   def testRunHWTestBoardNotAvailable(self):
     """Test RunHWTestSuite when BOARD_NOT_AVAILABLE is returned."""
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
     self.rc.SetDefaultCmdResult(returncode=5, output=self.JOB_ID_OUTPUT)
     with self.OutputCapturer():
-      self.assertRaises(failures_lib.BoardNotAvailable, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.BoardNotAvailable)
 
   def testRunHWTestTestWarning(self):
     """Test RunHWTestSuite when WARNING is returned."""
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])
     self.rc.SetDefaultCmdResult(returncode=2, output=self.JOB_ID_OUTPUT)
     with self.OutputCapturer():
-      self.assertRaises(failures_lib.TestWarning, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.TestWarning)
 
   def testRunHWTestTestSwarmingClientNoSummaryFile(self):
     """Test RunHWTestSuite when no summary file is generated."""
@@ -446,7 +494,9 @@ The suite job has another 2:39:39.789250 till timeout.
     self.PatchJson(task_outputs=[])
     self.rc.SetDefaultCmdResult(returncode=1, output=unknown_failure)
     with self.OutputCapturer() as output:
-      self.assertRaises(failures_lib.SwarmingProxyFailure, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise,
+                            failures_lib.SwarmingProxyFailure)
       self.assertIn(unknown_failure, '\n'.join(output.GetStdoutLines()))
 
   def testRunHWTestTestSwarmingClientInternalFailure(self):
@@ -456,7 +506,9 @@ The suite job has another 2:39:39.789250 till timeout.
         task_outputs=[(self.JOB_ID_OUTPUT, True, self.swarming_code)])
     self.rc.SetDefaultCmdResult(returncode=1, output=unknown_failure)
     with self.OutputCapturer() as output:
-      self.assertRaises(failures_lib.SwarmingProxyFailure, self.RunHWTestSuite)
+      cmd_result = self.RunHWTestSuite()
+      self.assertIsInstance(cmd_result.to_raise,
+                            failures_lib.SwarmingProxyFailure)
       self.assertIn(unknown_failure, '\n'.join(output.GetStdoutLines()))
       self.assertIn('summary json content', '\n'.join(output.GetStdoutLines()))
 
@@ -467,12 +519,15 @@ The suite job has another 2:39:39.789250 till timeout.
         [(self.JOB_ID_OUTPUT, False, None),
          (self.WAIT_RETRY_OUTPUT, True, self.retriable_swarming_code),
          (self.WAIT_OUTPUT, False, None),
+         (self.JSON_OUTPUT, False, None),
         ])
     with self.OutputCapturer() as output:
       self.RunHWTestSuite(wait_for_results=self._wait_for_results)
       self.assertCommandCalled(self.create_cmd, capture_output=True,
                                combine_stdout_stderr=True)
       self.assertCommandCalled(self.wait_cmd, capture_output=True,
+                               combine_stdout_stderr=True)
+      self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
                                combine_stdout_stderr=True)
       self.assertIn(self.WAIT_RETRY_OUTPUT.strip(),
                     '\n'.join(output.GetStdoutLines()))

@@ -1179,20 +1179,24 @@ class _PaygenBuild(object):
       return
     timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     if self._run_on_builder:
-      try:
-        commands.RunHWTestSuite(board=self._archive_board,
-                                build=self._archive_build,
-                                suite=suite_name,
-                                file_bugs=True,
-                                pool='bvt',
-                                priority=constants.HWTEST_BUILD_PRIORITY,
-                                retry=True,
-                                wait_for_results=True,
-                                timeout_mins=timeout_mins,
-                                suite_min_duts=2,
-                                debug=bool(self._drm))
-      except failures_lib.TestWarning as e:
-        logging.warning('Warning running test suite; error output:\n%s', e)
+      cmd_result = commands.RunHWTestSuite(
+          board=self._archive_board,
+          build=self._archive_build,
+          suite=suite_name,
+          file_bugs=True,
+          pool='bvt',
+          priority=constants.HWTEST_BUILD_PRIORITY,
+          retry=True,
+          wait_for_results=True,
+          timeout_mins=timeout_mins,
+          suite_min_duts=2,
+          debug=bool(self._drm))
+      if cmd_result.to_raise:
+        if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
+          logging.warning('Warning running test suite; error output:\n%s',
+                          cmd_result.to_raise)
+        else:
+          raise cmd_result.to_raise
     else:
       # Run run_suite.py locally.
       cmd = [

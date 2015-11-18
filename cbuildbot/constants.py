@@ -473,6 +473,12 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
 HWTEST_PRIORITIES_MAP = dict(
     (p, i) for i, p in enumerate(HWTEST_VALID_PRIORITIES))
 
+# Define HWTEST subsystem logic constants.
+SUBSYSTEMS = 'subsystems'
+SUBSYSTEM_PASS = 'subsystem_pass'
+SUBSYSTEM_FAIL = 'subsystem_fail'
+SUBSYSTEM_UNUSED = 'subsystem_unused'
+
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'

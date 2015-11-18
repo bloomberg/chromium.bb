@@ -868,6 +868,9 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return tar_files
 
 
+HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
+                                           ['to_raise', 'json_dump_result'])
+
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
@@ -903,6 +906,11 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     debug: Whether we are in debug mode.
     subsystems: A set of subsystems that the relevant changes affect, for
                 testing purposes.
+
+  Returns:
+    An instance of named tuple HWTestSuiteResult, the first element is the
+    exception to be raised; the second element is the json dump cmd result,
+    if json_dump cmd is not called, None will be returned.
   """
   try:
     cmd = [_RUN_SUITE_PATH]
@@ -911,15 +919,20 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                             minimum_duts, suite_min_duts, offload_failures_only,
                             subsystems)
     swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
-    job_id = _HWTestCreate(cmd, swarming_args, debug)
+    running_json_dump_flag = False
+    json_dump_result = None
+    job_id = _HWTestCreate(cmd, debug, **swarming_args)
     if wait_for_results and job_id:
-      _HWTestWait(cmd, job_id, swarming_args)
+      _HWTestWait(cmd, job_id, **swarming_args)
+      running_json_dump_flag = True
+      json_dump_result = _HWTestDumpJson(cmd, job_id, **swarming_args)
+    return HWTestSuiteResult(None, json_dump_result)
   except cros_build_lib.RunCommandError as e:
     result = e.result
     if not result.task_summary_json:
       # swarming client has failed.
       logging.error('No task summary json generated, output:%s', result.output)
-      raise failures_lib.SwarmingProxyFailure(
+      to_raise = failures_lib.SwarmingProxyFailure(
           '** Failed to fullfill request with proxy server, code(%d) **'
           % result.returncode)
     elif result.task_summary_json['shards'][0]['internal_failure']:
@@ -927,7 +940,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                     'stdout: \n%s\n'
                     'summary json content:\n%s',
                     result.output, str(result.task_summary_json))
-      raise failures_lib.SwarmingProxyFailure(
+      to_raise = failures_lib.SwarmingProxyFailure(
           '** Failed to fullfill request with proxy server, code(%d) **'
           % result.returncode)
     else:
@@ -935,9 +948,16 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                     result.task_summary_json['shards'][0]['name'],
                     result.task_summary_json['shards'][0]['bot_id'],
                     result.task_summary_json['shards'][0]['created_ts'])
-      for output in result.task_summary_json['shards'][0]['outputs']:
-        sys.stdout.write(output)
-      sys.stdout.flush()
+      # If running json_dump cmd, write the pass/fail subsys dict into console,
+      # otherwise, write the cmd output to the console.
+      if running_json_dump_flag:
+        s = ''.join(result.task_summary_json['shards'][0]['outputs'])
+        sys.stdout.write(s)
+        json_dump_result = json.loads(s)
+      else:
+        for output in result.task_summary_json['shards'][0]['outputs']:
+          sys.stdout.write(output)
+        sys.stdout.flush()
       # swarming client has submitted task and returned task information.
       lab_warning_codes = (2,)
       infra_error_codes = (3,)
@@ -946,21 +966,23 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
       proxy_failure_codes = (241,)
 
       if result.returncode in lab_warning_codes:
-        raise failures_lib.TestWarning('** Suite passed with a warning code **')
+        to_raise = failures_lib.TestWarning(
+            '** Suite passed with a warning code **')
       elif (result.returncode in infra_error_codes or
             result.returncode in proxy_failure_codes):
-        raise failures_lib.TestLabFailure(
+        to_raise = failures_lib.TestLabFailure(
             '** HWTest did not complete due to infrastructure issues '
             '(code %d) **' % result.returncode)
       elif result.returncode in timeout_codes:
-        raise failures_lib.SuiteTimedOut(
+        to_raise = failures_lib.SuiteTimedOut(
             '** Suite timed out before completion **')
       elif result.returncode in board_not_available_codes:
-        raise failures_lib.BoardNotAvailable(
+        to_raise = failures_lib.BoardNotAvailable(
             '** Board was not availble in the lab **')
       elif result.returncode != 0:
-        raise failures_lib.TestFailure(
+        to_raise = failures_lib.TestFailure(
             '** HWTest failed (code %d) **' % result.returncode)
+    return HWTestSuiteResult(to_raise, json_dump_result)
 
 
 # pylint: disable=docstring-missing-args
@@ -1065,7 +1087,7 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
   return swarming_args
 
 
-def _HWTestCreate(cmd, swarming_args, debug=False):
+def _HWTestCreate(cmd, debug=False, **kwargs):
   """Start a suite in the HWTest lab, and return its id.
 
   This method runs a command to create the suite. Since we are using
@@ -1076,7 +1098,7 @@ def _HWTestCreate(cmd, swarming_args, debug=False):
   Args:
     cmd: Proxied run_suite command.
     debug: If True, log command rather than running it.
-    swarming_args: A dictionary of args to passed to RunSwarmingCommand.
+    kwargs: args to be passed to RunSwarmingCommand.
 
   Returns:
     Job id of created suite. Returned id will be None if no job id was created.
@@ -1090,7 +1112,7 @@ def _HWTestCreate(cmd, swarming_args, debug=False):
   else:
     result = swarming_lib.RunSwarmingCommand(
         start_cmd, capture_output=True, combine_stdout_stderr=True,
-        **swarming_args)
+        **kwargs)
     # If the command succeeds, result.task_summary_json
     # should have the right content.
     for output in result.task_summary_json['shards'][0]['outputs']:
@@ -1102,24 +1124,60 @@ def _HWTestCreate(cmd, swarming_args, debug=False):
       return m.group('job_id')
   return None
 
-def _HWTestWait(cmd, job_id, swarming_args):
+def _HWTestWait(cmd, job_id, **kwargs):
   """Wait for HWTest suite to complete.
 
   Args:
     cmd: Proxied run_suite command.
     job_id: The job id of the suite that was created.
-    swarming_args: A dictionary of args to passed to RunSwarmingCommand.
+    kwargs: args to be passed to RunSwarmingCommand.
   """
   # Wait on the suite
   wait_cmd = list(cmd) + ['-m', str(job_id)]
-  result = swarming_lib.RunSwarmingCommandWithRetries(
-      max_retry=_MAX_HWTEST_CMD_RETRY,
-      error_check=swarming_lib.SwarmingRetriableErrorCheck,
-      cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
-      **swarming_args)
+  try:
+    result = swarming_lib.RunSwarmingCommandWithRetries(
+        max_retry=_MAX_HWTEST_CMD_RETRY,
+        error_check=swarming_lib.SwarmingRetriableErrorCheck,
+        cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
+        **kwargs)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    # Delay the lab-related exceptions, since those will be raised in the next
+    # json_dump cmd run.
+    if (not result.task_summary_json or
+        result.task_summary_json['shards'][0]['internal_failure']):
+      raise
+    else:
+      logging.error('wait_cmd has lab failures: %s.\nException will be raised '
+                    'in the next json_dump run.', e.msg)
   for output in result.task_summary_json['shards'][0]['outputs']:
     sys.stdout.write(output)
   sys.stdout.flush()
+
+
+def _HWTestDumpJson(cmd, job_id, **kwargs):
+  """Consume HWTest suite json output and return passed/failed subsystems dict.
+
+  Args:
+    cmd: Proxied run_suite command.
+    job_id: The job id of the suite that was created.
+    kwargs: args to be passed to RunSwarmingCommand.
+
+  Returns:
+    The parsed json_dump dictionary.
+  """
+  dump_json_cmd = list(cmd) + ['--json_dump', '-m', str(job_id)]
+  result = swarming_lib.RunSwarmingCommandWithRetries(
+      max_retry=_MAX_HWTEST_CMD_RETRY,
+      error_check=swarming_lib.SwarmingRetriableErrorCheck,
+      cmd=dump_json_cmd, capture_output=True, combine_stdout_stderr=True,
+      **kwargs)
+  json_str = ''
+  for output in result.task_summary_json['shards'][0]['outputs']:
+    json_str += output
+    sys.stdout.write(output)
+  sys.stdout.flush()
+  return json.loads(json_str)
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):

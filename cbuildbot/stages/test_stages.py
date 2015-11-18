@@ -260,6 +260,35 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 
+  def GenerateSubsysResult(self, json_dump_dict, subsystems):
+    """Generate the pass/fail subsystems dict.
+
+    Args:
+      json_dump_dict: the parsed json_dump dictionary.
+      subsystems: A set of subsystems that current board will test.
+
+    Returns:
+      A tuple, first element is the pass subsystem set; the second is the fail
+      subsystem set
+    """
+    if not subsystems:
+      return None
+
+    pass_subsystems = set()
+    fail_subsystems = set()
+    for test_result in json_dump_dict.get('tests', dict()).values():
+      test_subsys = set([attr[10:] for attr in test_result.get('attributes')
+                         if attr.startswith('subsystem:')])
+      # Only track the test result of the subsystems current board tests.
+      target_subsys = subsystems & test_subsys
+      if test_result.get('status') == 'GOOD':
+        pass_subsystems |= target_subsys
+      else:
+        fail_subsystems |= target_subsys
+    pass_subsystems -= fail_subsystems
+    return (pass_subsystems, fail_subsystems)
+
+
   def PerformStage(self):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('payloads_generated', pretty_name='payloads'):
@@ -296,7 +325,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       subsystems = None
 
-    commands.RunHWTestSuite(
+    build_id, db = self._run.GetCIDBHandle()
+    cmd_result = commands.RunHWTestSuite(
         build, self.suite_config.suite, self._current_board,
         pool=self.suite_config.pool, num=self.suite_config.num,
         file_bugs=self.suite_config.file_bugs,
@@ -309,6 +339,26 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
         debug=debug, subsystems=subsystems)
+    subsys_tuple = self.GenerateSubsysResult(cmd_result.json_dump_result,
+                                             subsystems)
+    if db:
+      if not subsys_tuple:
+        db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
+                              message_subtype=constants.SUBSYSTEM_UNUSED,
+                              board=self._current_board)
+      else:
+        logging.info('pass_subsystems: %s, fail_subsystems: %s',
+                     subsys_tuple[0], subsys_tuple[1])
+        for s in subsys_tuple[0]:
+          db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
+                                message_subtype=constants.SUBSYSTEM_PASS,
+                                message_value=str(s), board=self._current_board)
+        for s in subsys_tuple[1]:
+          db.InsertBuildMessage(build_id, message_type=constants.SUBSYSTEMS,
+                                message_subtype=constants.SUBSYSTEM_FAIL,
+                                message_value=str(s), board=self._current_board)
+    if cmd_result.to_raise:
+      raise cmd_result.to_raise
 
 
 class AUTestStage(HWTestStage):
