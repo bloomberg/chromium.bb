@@ -14,7 +14,7 @@
     <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
       Add additional accessibility features
     </message>
-    <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibilitly options in the system menu.">
+    <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
       Show accessibility options in the system menu
     </message>
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL" desc="Label for checkbox which enables showing a larger mouse cursor than normal.">
@@ -233,6 +233,12 @@
   </message>
   <message name="IDS_SETTINGS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
     the beginning of time
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that some data types will not be cleared.">
+    Some settings that may reflect browsing habits will not be cleared.
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
+    This clears synced data from all devices.
   </message>
 
   <!-- Downloads Page -->

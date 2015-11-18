@@ -208,6 +208,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CLEAR_DATA_4WEEKS);
   html_source->AddLocalizedString("clearDataEverything",
                                   IDS_SETTINGS_CLEAR_DATA_EVERYTHING);
+  html_source->AddLocalizedString(
+      "warnAboutNonClearedData",
+      IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS);
+  html_source->AddLocalizedString(
+      "clearsSyncedData",
+      IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA);
 }
 
 #if !defined(OS_CHROMEOS)
