@@ -256,13 +256,15 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   // picked up.
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
-  aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  // For Chrome, we need the GpuProcessTransportFactory so that renderer and
+  // browser pixels are composited into a single backing
+  // SoftwareOutputDeviceMus.
+  if (!default_context_factory)
+    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   window_tree_host_.reset(
       new WindowTreeHostMus(shell_, this, window_, surface_type_));
   window_tree_host_->InitHost();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
-  DCHECK_EQ(context_factory_.get(),
-            window_tree_host_->compositor()->context_factory());
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
 

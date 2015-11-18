@@ -12,6 +12,10 @@
 
 class SkBitmap;
 
+namespace bitmap_uploader {
+class BitmapUploader;
+}
+
 namespace mojo {
 class Shell;
 }
@@ -22,6 +26,7 @@ class Window;
 
 namespace ui {
 class Compositor;
+class ViewProp;
 }
 
 namespace views {
@@ -39,6 +44,9 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   ~WindowTreeHostMus() override;
 
   PlatformWindowMus* platform_window();
+  bitmap_uploader::BitmapUploader* bitmap_uploader() {
+    return bitmap_uploader_.get();
+  };
   ui::PlatformWindowState show_state() const { return show_state_; }
 
  private:
@@ -51,6 +59,8 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   NativeWidgetMus* native_widget_;
   scoped_ptr<InputMethodMUS> input_method_;
   ui::PlatformWindowState show_state_;
+  scoped_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
+  scoped_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };
