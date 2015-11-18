@@ -179,12 +179,16 @@ class MockTabDataUseEntryTest : public testing::Test {
  public:
   MockTabDataUseEntryTest() { tab_entry_.reset(new MockTabDataUseEntry()); }
 
-  static unsigned int GetClosedTabExpirationDurationSecondsForTests() {
-    return TabDataUseEntry::GetClosedTabExpirationDurationSecondsForTests();
+  const size_t GetMaxSessionsPerTab() const {
+    return tab_entry_->max_sessions_per_tab_;
   }
 
-  static unsigned int GetOpenTabExpirationDurationSecondsForTests() {
-    return TabDataUseEntry::GetOpenTabExpirationDurationSecondsForTests();
+  const base::TimeDelta& GetClosedTabExpirationDuration() const {
+    return tab_entry_->closed_tab_expiration_duration_;
+  }
+
+  const base::TimeDelta& GetOpenTabExpirationDuration() const {
+    return tab_entry_->open_tab_expiration_duration_;
   }
 
   // Checks if there are |expected_size| tracking session entries in
@@ -317,12 +321,11 @@ TEST_F(MockTabDataUseEntryTest, TabSessionLabelDataUse) {
   ExpectEmptyDataUseLabelAtOffsetTime(41);
 }
 
-// Checks that open tab entries expire after
-// GetOpenTabExpirationDurationSecondsForTests seconds from their latest
-// tracking session start time.
+// Checks that open tab entries expire after open tab expiration duration from
+// their latest tracking session start time.
 TEST_F(MockTabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionStart) {
   const unsigned int open_tab_expiration_seconds =
-      GetOpenTabExpirationDurationSecondsForTests();
+      GetOpenTabExpirationDuration().InSeconds();
 
   // Initial tab entry with no sessions is considered expired.
   EXPECT_TRUE(tab_entry_->IsExpired());
@@ -343,12 +346,11 @@ TEST_F(MockTabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionStart) {
   EXPECT_TRUE(tab_entry_->IsExpired());
 }
 
-// Checks that open tab entries expire after
-// GetOpenTabExpirationDurationSecondsForTests seconds from their latest
-// tracking session end time.
+// Checks that open tab entries expire after open tab expiration duration from
+// their latest tracking session end time.
 TEST_F(MockTabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionEnd) {
   const unsigned int open_tab_expiration_seconds =
-      GetOpenTabExpirationDurationSecondsForTests();
+      GetOpenTabExpirationDuration().InSeconds();
 
   // Initial tab entry with no sessions is considered expired.
   EXPECT_TRUE(tab_entry_->IsExpired());
@@ -371,12 +373,11 @@ TEST_F(MockTabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionEnd) {
   EXPECT_TRUE(tab_entry_->IsExpired());
 }
 
-// Checks that closed tab entries expire after
-// GetClosedTabExpirationDurationSecondsForTests seconds from their closing
-// time.
+// Checks that closed tab entries expire after closed tab expiration duration
+// from their closing time.
 TEST_F(MockTabDataUseEntryTest, ClosedTabSessionExpiry) {
   const unsigned int closed_tab_expiration_seconds =
-      GetClosedTabExpirationDurationSecondsForTests();
+      GetClosedTabExpirationDuration().InSeconds();
 
   // Initial tab entry with no sessions is considered expired.
   EXPECT_TRUE(tab_entry_->IsExpired());
@@ -407,8 +408,6 @@ TEST_F(MockTabDataUseEntryTest, ClosedTabSessionExpiry) {
 // GetMaxSessionsPerTabForTests entries, and automatically compacts itself by
 // removing the oldest tracking sessions.
 TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
-  const size_t max_sessions_per_tab =
-      TabDataUseEntry::GetMaxSessionsPerTabForTests();
   const uint32_t per_session_duration = 10;
   const uint32_t next_session_start_gap = 10;
   uint32_t session_start_time = 10;
@@ -416,7 +415,7 @@ TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
 
   ExpectTabEntrySessionsSize(TabEntrySessionSize::ZERO);
 
-  while (num_sessions <= max_sessions_per_tab) {
+  while (num_sessions <= GetMaxSessionsPerTab()) {
     // Start tracking session at time=|session_start_time| and end after
     // time=|per_session_duration|.
     std::string session_label = base::StringPrintf("label_%d", num_sessions);
@@ -435,9 +434,9 @@ TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
 
   int oldest_session = 1;  // Oldest session ID that will be removed first.
 
-  // Check if session history size stays at |max_sessions_per_tab|, when more
+  // Check if session history size stays at GetMaxSessionsPerTab, when more
   // sessions are added.
-  while (num_sessions < max_sessions_per_tab + 10) {
+  while (num_sessions < GetMaxSessionsPerTab() + 10) {
     std::string oldest_session_label =
         base::StringPrintf("label_%d", oldest_session);
     EXPECT_TRUE(IsTabEntrySessionExists(oldest_session_label));
@@ -453,7 +452,7 @@ TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
 
     // Oldest entry got removed.
     EXPECT_FALSE(IsTabEntrySessionExists(oldest_session_label));
-    ExpectTabEntrySessionsSize(max_sessions_per_tab);
+    ExpectTabEntrySessionsSize(GetMaxSessionsPerTab());
 
     // Update next session start time.
     session_start_time += per_session_duration + next_session_start_gap;

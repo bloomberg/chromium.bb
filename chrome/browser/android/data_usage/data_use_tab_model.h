@@ -123,10 +123,6 @@ class DataUseTabModel {
 
   typedef base::hash_map<int32_t, TabDataUseEntry> TabEntryMap;
 
-  // Returns the maximum number of tab entries to maintain session information
-  // about.
-  static size_t GetMaxTabEntriesForTests();
-
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|.
   void NotifyObserversOfTrackingStarting(int32_t tab_id);
@@ -157,6 +153,9 @@ class DataUseTabModel {
 
   // Maintains the tracking sessions of multiple tabs.
   TabEntryMap active_tabs_;
+
+  // Maximum number of tab entries to maintain session information about.
+  const size_t max_tab_entries_;
 
   base::ThreadChecker thread_checker_;
 

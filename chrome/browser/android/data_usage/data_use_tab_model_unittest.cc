@@ -287,7 +287,7 @@ TEST_F(DataUseTabModelTest, TabCloseEventEndsTracking) {
 // Checks that |active_tabs_| does not grow beyond GetMaxTabEntriesForTests tab
 // entries.
 TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
-  const size_t max_tab_entries = DataUseTabModel::GetMaxTabEntriesForTests();
+  const size_t max_tab_entries = data_use_tab_model_.max_tab_entries_;
   uint32_t tab_id = 1;
 
   ExpectTabEntrySize(TabEntrySize::ZERO);

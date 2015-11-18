@@ -87,15 +87,6 @@ class TabDataUseEntry {
 
   typedef std::deque<TabDataUseTrackingSession> TabSessions;
 
-  // Returns the maximum number of tracking sessions to maintain per tab, for
-  // testing purposes.
-  static size_t GetMaxSessionsPerTabForTests();
-
-  // Returns the expiration duration in seconds for a closed tab entry and an
-  // open tab entry respectively, for testing purposes.
-  static unsigned int GetClosedTabExpirationDurationSecondsForTests();
-  static unsigned int GetOpenTabExpirationDurationSecondsForTests();
-
   // Virtualized for unit test support.
   virtual base::TimeTicks Now() const;
 
@@ -111,6 +102,14 @@ class TabDataUseEntry {
   // Indicates the time the tab was closed. |tab_close_time_| will be null if
   // the tab is still open.
   base::TimeTicks tab_close_time_;
+
+  // Maximum number of tracking sessions to maintain per tab.
+  const size_t max_sessions_per_tab_;
+
+  // Expiration duration for a closed tab entry and an open tab entry
+  // respectively.
+  const base::TimeDelta closed_tab_expiration_duration_;
+  const base::TimeDelta open_tab_expiration_duration_;
 };
 
 }  // namespace android

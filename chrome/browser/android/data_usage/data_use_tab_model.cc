@@ -4,19 +4,35 @@
 
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace {
 
-// TODO(rajendrant): To be changeable via field trial.
-// Indicates the maximum number of tabs to maintain session information about.
-const size_t kMaxTabEntries = 200;
+// Indicates the default maximum number of tabs to maintain session information
+// about. May be overridden by the field trial.
+const size_t kDefaultMaxTabEntries = 200;
 
 // Returns true if |tab_id| is a valid tab ID.
 bool IsValidTabID(int32_t tab_id) {
   return tab_id >= 0;
+}
+
+// Returns various parameters from the values specified in the field trial.
+size_t GetMaxTabEntries() {
+  size_t max_tab_entries = -1;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "max_tab_entries");
+  if (!variation_value.empty() &&
+      base::StringToSizeT(variation_value, &max_tab_entries)) {
+    return max_tab_entries;
+  }
+  return kDefaultMaxTabEntries;
 }
 
 }  // namespace
@@ -25,15 +41,12 @@ namespace chrome {
 
 namespace android {
 
-size_t DataUseTabModel::GetMaxTabEntriesForTests() {
-  return kMaxTabEntries;
-}
-
 DataUseTabModel::DataUseTabModel(
     const ExternalDataUseObserver* data_use_observer,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : data_use_observer_(data_use_observer),
       observer_list_(new base::ObserverListThreadSafe<TabDataUseObserver>),
+      max_tab_entries_(GetMaxTabEntries()),
       weak_factory_(this) {}
 
 DataUseTabModel::~DataUseTabModel() {
@@ -174,11 +187,11 @@ void DataUseTabModel::CompactTabEntries() {
       ++tab_entry_iterator;
   }
 
-  if (active_tabs_.size() <= kMaxTabEntries)
+  if (active_tabs_.size() <= max_tab_entries_)
     return;
 
   // Remove oldest unexpired tab entries.
-  while (active_tabs_.size() > kMaxTabEntries) {
+  while (active_tabs_.size() > max_tab_entries_) {
     // Find oldest tab entry.
     TabEntryMap::iterator oldest_tab_entry_iterator = active_tabs_.begin();
     for (TabEntryMap::iterator tab_entry_iterator = active_tabs_.begin();
