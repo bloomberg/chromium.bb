@@ -142,7 +142,6 @@ public class LayoutManagerDocument extends LayoutManager
 
         // Initialize Contextual Search Panel
         mContextualSearchPanel.setManagementDelegate(contextualSearchDelegate);
-        mContextualSearchPanel.setDynamicResourceLoader(dynamicResourceLoader);
 
         // Set back flow communication
         if (contextualSearchDelegate != null) {
@@ -150,12 +149,12 @@ public class LayoutManagerDocument extends LayoutManager
         }
 
         mReaderModePanel.setManagerDelegate(readerModeDelegate);
-        // TODO(mdjones): The manager should be responsible for passing the resource loader to all
-        // panels.
-        mReaderModePanel.setDynamicResourceLoader(dynamicResourceLoader);
         if (readerModeDelegate != null) {
             readerModeDelegate.setReaderModePanel(mReaderModePanel);
         }
+
+        // Set the dynamic resource loader for all overlay panels.
+        mOverlayPanelManager.setDynamicResourceLoader(dynamicResourceLoader);
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
