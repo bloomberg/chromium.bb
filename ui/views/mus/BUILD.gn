@@ -42,7 +42,6 @@ component("mus") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
-    "//components/bitmap_uploader",
     "//components/mus/gles2:lib",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",

@@ -2,7 +2,6 @@ include_rules = [
   "+cc",
   "-cc/blink",
   "+components/font_service/public",
-  "+components/bitmap_uploader",
   "+components/gpu",
   "+components/mus",
   "+components/resource_provider",

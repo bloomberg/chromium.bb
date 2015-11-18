@@ -427,13 +427,7 @@ source_set("browser") {
       "//ui/strings",
       "//ui/views/mus:for_component",
       "//ui/wm",
-      "//components/bitmap_uploader",
     ]
-    sources += [
-      "compositor/software_output_device_mus.cc",
-      "compositor/software_output_device_mus.h",
-    ]
-    defines += [ "MOJO_RUNNER_CLIENT" ]
   } else {  # Not aura.
     sources -= [
       "media/capture/cursor_renderer_aura.cc",
