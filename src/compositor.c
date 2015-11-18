@@ -2044,12 +2044,12 @@ compositor_accumulate_damage(struct weston_compositor *ec)
 	pixman_region32_fini(&clip);
 
 	wl_list_for_each(ev, &ec->view_list, link)
-		ev->surface->touched = 0;
+		ev->surface->touched = false;
 
 	wl_list_for_each(ev, &ec->view_list, link) {
 		if (ev->surface->touched)
 			continue;
-		ev->surface->touched = 1;
+		ev->surface->touched = true;
 
 		surface_flush_damage(ev->surface);
 

@@ -1347,13 +1347,13 @@ rpi_renderer_repaint_output(struct weston_output *base,
 
 	/* Swap resources on surfaces as needed */
 	wl_list_for_each_reverse(wv, &compositor->view_list, link)
-		wv->surface->touched = 0;
+		wv->surface->touched = false;
 
 	wl_list_for_each_reverse(wv, &compositor->view_list, link) {
 		view = to_rpir_view(wv);
 
 		if (!wv->surface->touched) {
-			wv->surface->touched = 1;
+			wv->surface->touched = true;
 
 			if (view->surface->buffer_type == BUFFER_TYPE_EGL ||
 			    view->surface->need_swap)

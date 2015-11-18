@@ -968,7 +968,7 @@ struct weston_surface {
 	/* Not for long-term storage.  This exists for book-keeping while
 	 * iterating over surfaces and views
 	 */
-	int32_t touched;
+	bool touched;
 
 	void *renderer_state;
 
