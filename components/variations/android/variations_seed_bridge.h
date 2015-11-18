@@ -18,6 +18,14 @@ void GetVariationsFirstRunSeed(std::string* seed_data,
                                std::string* seed_signature,
                                std::string* seed_country);
 
+// Clears first run seed preferences stored on the Java side of Chrome for
+// Android.
+void ClearJavaFirstRunPrefs();
+
+// Marks variations seed as stored to avoid repeated fetches of the seed at
+// the Java side.
+void MarkVariationsSeedAsStored();
+
 }  // namespace android
 }  // namespace variations
 

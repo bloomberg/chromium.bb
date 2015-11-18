@@ -5,7 +5,6 @@
 package org.chromium.components.variations.firstrun;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 
@@ -22,9 +21,13 @@ public final class VariationsSeedBridge {
     private static final String VARIATIONS_FIRST_RUN_SEED_SIGNATURE = "variations_seed_signature";
     private static final String VARIATIONS_FIRST_RUN_SEED_COUNTRY = "variations_seed_country";
 
+    // This pref is used to store information about successful seed storing on the C++ side, in
+    // order to not fetch the seed again.
+    private static final String VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED =
+            "variations_seed_native_stored";
+
     private static String getVariationsFirstRunSeedPref(Context context, String prefName) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(prefName, "");
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(prefName, "");
     }
 
     /**
@@ -32,12 +35,47 @@ public final class VariationsSeedBridge {
      */
     public static void setVariationsFirstRunSeed(
             Context context, byte[] rawSeed, String signature, String country) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit()
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
                 .putString(VARIATIONS_FIRST_RUN_SEED_BASE64,
                         Base64.encodeToString(rawSeed, Base64.NO_WRAP))
                 .putString(VARIATIONS_FIRST_RUN_SEED_SIGNATURE, signature)
                 .putString(VARIATIONS_FIRST_RUN_SEED_COUNTRY, country)
+                .apply();
+    }
+
+    @CalledByNative
+    private static void clearFirstRunPrefs(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .remove(VARIATIONS_FIRST_RUN_SEED_BASE64)
+                .remove(VARIATIONS_FIRST_RUN_SEED_SIGNATURE)
+                .remove(VARIATIONS_FIRST_RUN_SEED_COUNTRY)
+                .apply();
+    }
+
+    /**
+     * Returns the status of the variations first run fetch: was it successful or not.
+     */
+    public static boolean hasJavaPref(Context context) {
+        return !PreferenceManager.getDefaultSharedPreferences(context)
+                        .getString(VARIATIONS_FIRST_RUN_SEED_BASE64, "")
+                        .isEmpty();
+    }
+
+    /**
+     * Returns the status of the variations seed storing on the C++ side: was it successful or not.
+     */
+    public static boolean hasNativePref(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED, false);
+    }
+
+    @CalledByNative
+    private static void markVariationsSeedAsStored(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED, true)
                 .apply();
     }
 

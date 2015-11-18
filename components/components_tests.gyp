@@ -1312,6 +1312,7 @@
             'components.gyp:data_reduction_proxy_content',
             'components.gyp:data_usage_android',
             'components.gyp:safe_json_java',
+            'components.gyp:variations_java',
             '../content/content.gyp:content_java',
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
