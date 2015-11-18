@@ -814,9 +814,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 }
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
-  ScopedPtrVector<SwapPromise>::iterator it = info->swap_promises.begin();
-  for (; it != info->swap_promises.end(); ++it) {
-    scoped_ptr<SwapPromise> swap_promise(info->swap_promises.take(it));
+  for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark",
                            "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
@@ -1030,13 +1028,13 @@ void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
 }
 
 void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
 }
 
 void LayerTreeHost::OnCommitForSwapPromises() {
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->OnCommit();
 }
 

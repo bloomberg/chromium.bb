@@ -26,7 +26,6 @@
       'base/region_unittest.cc',
       'base/rolling_time_delta_history_unittest.cc',
       'base/rtree_unittest.cc',
-      'base/scoped_ptr_vector_unittest.cc',
       'base/simple_enclosed_region_unittest.cc',
       'base/tiling_data_unittest.cc',
       'base/unique_notifier_unittest.cc',

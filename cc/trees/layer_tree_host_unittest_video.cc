@@ -70,7 +70,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     VideoLayerImpl* video = static_cast<VideoLayerImpl*>(
-        host_impl->active_tree()->root_layer()->children()[0]);
+        host_impl->active_tree()->root_layer()->children()[0].get());
 
     EXPECT_EQ(media::VIDEO_ROTATION_90, video->video_rotation());
 

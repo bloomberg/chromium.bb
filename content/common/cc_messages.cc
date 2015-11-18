@@ -679,8 +679,7 @@ void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
 
   size_t to_reserve = sizeof(p.device_scale_factor);
   to_reserve += p.resource_list.size() * sizeof(cc::TransferableResource);
-  for (size_t i = 0; i < p.render_pass_list.size(); ++i) {
-    const cc::RenderPass* pass = p.render_pass_list[i];
+  for (const auto& pass : p.render_pass_list) {
     to_reserve += sizeof(size_t) * 2;
     to_reserve += ReserveSizeForRenderPassWrite(*pass);
   }
@@ -689,7 +688,7 @@ void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
   WriteParam(m, p.device_scale_factor);
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
-  for (const auto* pass : p.render_pass_list) {
+  for (const auto& pass : p.render_pass_list) {
     WriteParam(m, pass->quad_list.size());
     WriteParam(m, pass->shared_quad_state_list.size());
     WriteParam(m, *pass);

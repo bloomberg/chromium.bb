@@ -479,13 +479,11 @@ TEST_F(CCMessagesTest, AllQuads) {
       &iter, &frame_out));
 
   // Make sure the out and cmp RenderPasses match.
-  scoped_ptr<RenderPass> child_pass_out =
-      frame_out.render_pass_list.take(frame_out.render_pass_list.begin());
+  scoped_ptr<RenderPass> child_pass_out = frame_out.render_pass_list[0].Pass();
   Compare(child_pass_cmp.get(), child_pass_out.get());
   ASSERT_EQ(0u, child_pass_out->shared_quad_state_list.size());
   ASSERT_EQ(0u, child_pass_out->quad_list.size());
-  scoped_ptr<RenderPass> pass_out =
-      frame_out.render_pass_list.take(frame_out.render_pass_list.begin() + 1);
+  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list[1].Pass();
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(9u, pass_out->quad_list.size());
@@ -600,8 +598,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   EXPECT_TRUE(
       IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
-  scoped_ptr<RenderPass> pass_out =
-      frame_out.render_pass_list.take(frame_out.render_pass_list.begin());
+  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list[0].Pass();
 
   // 2 SharedQuadStates come out. The first and fourth SharedQuadStates were
   // used by quads, and so serialized. Others were not.

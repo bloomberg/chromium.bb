@@ -14,7 +14,6 @@
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/animation/layer_animation_value_provider.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/transform.h"
@@ -53,16 +52,6 @@ void LayerAnimationController::PauseAnimation(int animation_id,
   }
 }
 
-struct HasAnimationId {
-  explicit HasAnimationId(int id) : id_(id) {}
-  bool operator()(Animation* animation) const {
-    return animation->id() == id_;
-  }
-
- private:
-  int id_;
-};
-
 void LayerAnimationController::UpdatePotentiallyAnimatingTransform() {
   bool was_potentially_animating_transform_for_active_observers =
       potentially_animating_transform_for_active_observers_;
@@ -72,7 +61,7 @@ void LayerAnimationController::UpdatePotentiallyAnimatingTransform() {
   potentially_animating_transform_for_active_observers_ = false;
   potentially_animating_transform_for_pending_observers_ = false;
 
-  for (Animation* animation : animations_) {
+  for (const auto& animation : animations_) {
     if (!animation->is_finished() &&
         animation->target_property() == Animation::TRANSFORM) {
       potentially_animating_transform_for_active_observers_ |=
@@ -98,8 +87,14 @@ void LayerAnimationController::UpdatePotentiallyAnimatingTransform() {
 
 void LayerAnimationController::RemoveAnimation(int animation_id) {
   bool removed_transform_animation = false;
-  auto animations_to_remove =
-      animations_.remove_if(HasAnimationId(animation_id));
+  // Since we want to use the animations that we're going to remove, we need to
+  // use a stable_parition here instead of remove_if. Remove_if leaves the
+  // removed items in an unspecified state.
+  auto animations_to_remove = std::stable_partition(
+      animations_.begin(), animations_.end(),
+      [animation_id](const scoped_ptr<Animation>& animation) {
+        return animation->id() != animation_id;
+      });
   for (auto it = animations_to_remove; it != animations_.end(); ++it) {
     if ((*it)->target_property() == Animation::SCROLL_OFFSET) {
       scroll_offset_animation_was_interrupted_ = true;
@@ -115,25 +110,20 @@ void LayerAnimationController::RemoveAnimation(int animation_id) {
     UpdatePotentiallyAnimatingTransform();
 }
 
-struct HasAnimationIdAndProperty {
-  HasAnimationIdAndProperty(int id, Animation::TargetProperty target_property)
-      : id_(id), target_property_(target_property) {}
-  bool operator()(Animation* animation) const {
-    return animation->id() == id_ &&
-        animation->target_property() == target_property_;
-  }
-
- private:
-  int id_;
-  Animation::TargetProperty target_property_;
-};
-
 void LayerAnimationController::RemoveAnimation(
     int animation_id,
     Animation::TargetProperty target_property) {
   bool removed_transform_animation = false;
-  auto animations_to_remove = animations_.remove_if(
-      HasAnimationIdAndProperty(animation_id, target_property));
+  auto does_not_have_id_or_property = [animation_id, target_property](
+      const scoped_ptr<Animation>& animation) {
+    return animation->id() != animation_id ||
+           animation->target_property() != target_property;
+  };
+  // Since we want to use the animations that we're going to remove, we need to
+  // use a stable_parition here instead of remove_if. Remove_if leaves the
+  // removed items in an unspecified state.
+  auto animations_to_remove = std::stable_partition(
+      animations_.begin(), animations_.end(), does_not_have_id_or_property);
   if (animations_to_remove == animations_.end())
     return;
 
@@ -202,7 +192,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     return;
 
   for (size_t i = 0; i < animations_.size(); ++i) {
-    Animation* animation = animations_[i];
+    Animation* animation = animations_[i].get();
     if (!animation->is_impl_only())
       continue;
 
@@ -288,13 +278,6 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   UpdateActivation(NORMAL_ACTIVATION);
 }
 
-struct AffectsNoObservers {
-  bool operator()(Animation* animation) const {
-    return !animation->affects_active_observers() &&
-           !animation->affects_pending_observers();
-  }
-};
-
 void LayerAnimationController::ActivateAnimations() {
   bool changed_transform_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -305,10 +288,12 @@ void LayerAnimationController::ActivateAnimations() {
     animations_[i]->set_affects_active_observers(
         animations_[i]->affects_pending_observers());
   }
-  animations_.erase(cc::remove_if(&animations_,
-                                  animations_.begin(),
-                                  animations_.end(),
-                                  AffectsNoObservers()),
+  auto affects_no_observers = [](const scoped_ptr<Animation>& animation) {
+    return !animation->affects_active_observers() &&
+           !animation->affects_pending_observers();
+  };
+  animations_.erase(std::remove_if(animations_.begin(), animations_.end(),
+                                   affects_no_observers),
                     animations_.end());
   scroll_offset_animation_was_interrupted_ = false;
   UpdateActivation(NORMAL_ACTIVATION);
@@ -331,15 +316,15 @@ Animation* LayerAnimationController::GetAnimation(
   for (size_t i = 0; i < animations_.size(); ++i) {
     size_t index = animations_.size() - i - 1;
     if (animations_[index]->target_property() == target_property)
-      return animations_[index];
+      return animations_[index].get();
   }
-  return 0;
+  return nullptr;
 }
 
 Animation* LayerAnimationController::GetAnimationById(int animation_id) const {
   for (size_t i = 0; i < animations_.size(); ++i)
     if (animations_[i]->id() == animation_id)
-      return animations_[i];
+      return animations_[i].get();
   return nullptr;
 }
 
@@ -737,11 +722,6 @@ static bool IsCompleted(
   }
 }
 
-static bool AffectsActiveOnlyAndIsWaitingForDeletion(Animation* animation) {
-  return animation->run_state() == Animation::WAITING_FOR_DELETION &&
-         !animation->affects_pending_observers();
-}
-
 void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
     LayerAnimationController* controller_impl) const {
   bool removed_transform_animation = false;
@@ -749,19 +729,23 @@ void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
   // observers, and should stop affecting active observers after the next call
   // to ActivateAnimations. If already WAITING_FOR_DELETION, they can be removed
   // immediately.
-  ScopedPtrVector<Animation>& animations = controller_impl->animations_;
-  for (size_t i = 0; i < animations.size(); ++i) {
-    if (IsCompleted(animations[i], this)) {
-      animations[i]->set_affects_pending_observers(false);
-      if (animations[i]->target_property() == Animation::TRANSFORM)
+  auto& animations = controller_impl->animations_;
+  for (const auto& animation : animations) {
+    if (IsCompleted(animation.get(), this)) {
+      animation->set_affects_pending_observers(false);
+      if (animation->target_property() == Animation::TRANSFORM)
         removed_transform_animation = true;
     }
   }
-  animations.erase(cc::remove_if(&animations,
-                                 animations.begin(),
-                                 animations.end(),
-                                 AffectsActiveOnlyAndIsWaitingForDeletion),
-                   animations.end());
+  auto affects_active_only_and_is_waiting_for_deletion = [](
+      const scoped_ptr<Animation>& animation) {
+    return animation->run_state() == Animation::WAITING_FOR_DELETION &&
+           !animation->affects_pending_observers();
+  };
+  animations.erase(
+      std::remove_if(animations.begin(), animations.end(),
+                     affects_active_only_and_is_waiting_for_deletion),
+      animations.end());
 
   if (removed_transform_animation)
     controller_impl->UpdatePotentiallyAnimatingTransform();
@@ -810,7 +794,8 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
       // Collect all properties for animations with the same group id (they
       // should all also be in the list of animations).
     size_t animation_index = animations_waiting_for_target[i];
-    Animation* animation_waiting_for_target = animations_[animation_index];
+    Animation* animation_waiting_for_target =
+        animations_[animation_index].get();
     // Check for the run state again even though the animation was waiting
     // for target because it might have changed the run state while handling
     // previous animation in this loop (if they belong to same group).
@@ -1009,15 +994,12 @@ void LayerAnimationController::MarkAnimationsForDeletion(
     NotifyObserversAnimationWaitingForDeletion();
 }
 
-static bool IsWaitingForDeletion(Animation* animation) {
-  return animation->run_state() == Animation::WAITING_FOR_DELETION;
-}
-
 void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {
-  animations_.erase(cc::remove_if(&animations_,
-                                  animations_.begin(),
-                                  animations_.end(),
-                                  IsWaitingForDeletion),
+  animations_.erase(std::remove_if(animations_.begin(), animations_.end(),
+                                   [](const scoped_ptr<Animation>& animation) {
+                                     return animation->run_state() ==
+                                            Animation::WAITING_FOR_DELETION;
+                                   }),
                     animations_.end());
 }
 

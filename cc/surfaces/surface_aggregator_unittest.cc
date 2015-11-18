@@ -139,7 +139,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
     // Ensure no duplicate pass ids output.
     std::set<RenderPassId> used_passes;
-    for (auto* pass : frame_data->render_pass_list) {
+    for (const auto& pass : frame_data->render_pass_list) {
       EXPECT_TRUE(used_passes.insert(pass->id).second);
     }
 
@@ -365,7 +365,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
   ASSERT_EQ(2u, frame_data->render_pass_list.size());
   ASSERT_EQ(1u, frame_data->render_pass_list[0]->copy_requests.size());
   DCHECK_EQ(copy_request_ptr,
-            frame_data->render_pass_list[0]->copy_requests[0]);
+            frame_data->render_pass_list[0]->copy_requests[0].get());
 
   SurfaceId surface_ids[] = {root_surface_id_, embedded_surface_id};
   EXPECT_EQ(arraysize(surface_ids),
@@ -451,10 +451,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   ASSERT_EQ(2u, frame_data->render_pass_list.size());
   ASSERT_EQ(1u, frame_data->render_pass_list[0]->copy_requests.size());
   DCHECK_EQ(copy_request_ptr,
-            frame_data->render_pass_list[0]->copy_requests[0]);
+            frame_data->render_pass_list[0]->copy_requests[0].get());
   ASSERT_EQ(1u, frame_data->render_pass_list[1]->copy_requests.size());
   DCHECK_EQ(copy_request2_ptr,
-            frame_data->render_pass_list[1]->copy_requests[0]);
+            frame_data->render_pass_list[1]->copy_requests[0].get());
 
   SurfaceId surface_ids[] = {root_surface_id_, embedded_surface_id};
   EXPECT_EQ(arraysize(surface_ids),
@@ -542,7 +542,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     SCOPED_TRACE("First pass");
     // The first pass will just be the first pass from the root surfaces quad
     // with no render pass quads to remap.
-    TestPassMatchesExpectations(root_passes[0], aggregated_pass_list[0]);
+    TestPassMatchesExpectations(root_passes[0], aggregated_pass_list[0].get());
   }
 
   {
@@ -552,7 +552,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     // quad embedded into the root surface's second pass.
     // First, there's the first embedded pass which doesn't reference anything
     // else.
-    TestPassMatchesExpectations(embedded_passes[0], aggregated_pass_list[1]);
+    TestPassMatchesExpectations(embedded_passes[0],
+                                aggregated_pass_list[1].get());
   }
 
   {
@@ -1021,13 +1022,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
     AddPasses(&child_pass_list, gfx::Rect(SurfaceSize()), child_passes,
               arraysize(child_passes));
 
-    RenderPass* child_nonroot_pass = child_pass_list.at(0u);
+    RenderPass* child_nonroot_pass = child_pass_list[0].get();
     child_nonroot_pass->transform_to_root_target.Translate(8, 0);
     SharedQuadState* child_nonroot_pass_sqs =
         child_nonroot_pass->shared_quad_state_list.front();
     child_nonroot_pass_sqs->quad_to_target_transform.Translate(5, 0);
 
-    RenderPass* child_root_pass = child_pass_list.at(1u);
+    RenderPass* child_root_pass = child_pass_list[1].get();
     SharedQuadState* child_root_pass_sqs =
         child_root_pass->shared_quad_state_list.front();
     child_root_pass_sqs->quad_to_target_transform.Translate(8, 0);
@@ -1060,7 +1061,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
     AddPasses(&middle_pass_list, gfx::Rect(SurfaceSize()), middle_passes,
               arraysize(middle_passes));
 
-    RenderPass* middle_root_pass = middle_pass_list.at(0u);
+    RenderPass* middle_root_pass = middle_pass_list[0].get();
     middle_root_pass->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(0, 1, 100, 7);
     SharedQuadState* middle_root_pass_sqs =
@@ -1092,13 +1093,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
             root_passes,
             arraysize(root_passes));
 
-  root_pass_list.at(0)
+  root_pass_list[0]
       ->shared_quad_state_list.front()
       ->quad_to_target_transform.Translate(0, 7);
-  root_pass_list.at(0)
+  root_pass_list[0]
       ->shared_quad_state_list.ElementAt(1)
       ->quad_to_target_transform.Translate(0, 10);
-  root_pass_list.at(0)->quad_list.ElementAt(1)->visible_rect =
+  root_pass_list[0]->quad_list.ElementAt(1)->visible_rect =
       gfx::Rect(0, 0, 8, 100);
 
   root_pass_list[0]->transform_to_root_target.Translate(10, 5);
@@ -1213,7 +1214,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
             child_passes,
             arraysize(child_passes));
 
-  RenderPass* child_root_pass = child_pass_list.at(0u);
+  RenderPass* child_root_pass = child_pass_list[0].get();
   SharedQuadState* child_root_pass_sqs =
       child_root_pass->shared_quad_state_list.front();
   child_root_pass_sqs->quad_to_target_transform.Translate(8, 0);
@@ -1274,11 +1275,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
             root_passes,
             arraysize(root_passes));
 
-  root_pass_list.at(0)
+  root_pass_list[0]
       ->shared_quad_state_list.front()
       ->quad_to_target_transform.Translate(0, 10);
-  root_pass_list.at(0)->damage_rect = gfx::Rect(5, 5, 10, 10);
-  root_pass_list.at(1)->damage_rect = gfx::Rect(5, 5, 100, 100);
+  root_pass_list[0]->damage_rect = gfx::Rect(5, 5, 10, 10);
+  root_pass_list[1]->damage_rect = gfx::Rect(5, 5, 100, 100);
 
   scoped_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
   root_pass_list.swap(root_frame_data->render_pass_list);
@@ -1319,7 +1320,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
               child_passes,
               arraysize(child_passes));
 
-    RenderPass* child_root_pass = child_pass_list.at(0u);
+    RenderPass* child_root_pass = child_pass_list[0].get();
     SharedQuadState* child_root_pass_sqs =
         child_root_pass->shared_quad_state_list.front();
     child_root_pass_sqs->quad_to_target_transform.Translate(8, 0);
@@ -1368,10 +1369,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
               root_passes,
               arraysize(root_passes));
 
-    root_pass_list.at(0)
+    root_pass_list[0]
         ->shared_quad_state_list.front()
         ->quad_to_target_transform.Translate(0, 10);
-    root_pass_list.at(0)->damage_rect = gfx::Rect(0, 0, 1, 1);
+    root_pass_list[0]->damage_rect = gfx::Rect(0, 0, 1, 1);
 
     scoped_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
     root_pass_list.swap(root_frame_data->render_pass_list);
@@ -1390,10 +1391,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
               root_passes,
               arraysize(root_passes));
 
-    root_pass_list.at(0)
+    root_pass_list[0]
         ->shared_quad_state_list.front()
         ->quad_to_target_transform.Translate(0, 10);
-    root_pass_list.at(0)->damage_rect = gfx::Rect(1, 1, 1, 1);
+    root_pass_list[0]->damage_rect = gfx::Rect(1, 1, 1, 1);
 
     scoped_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
     root_pass_list.swap(root_frame_data->render_pass_list);
@@ -1516,14 +1517,14 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     AddPasses(&child_pass_list, gfx::Rect(SurfaceSize()), child_passes,
               arraysize(child_passes));
 
-    child_pass_list.at(0u)->quad_list.ElementAt(0)->visible_rect =
+    child_pass_list[0]->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(1, 1, 2, 2);
     SharedQuadState* child_sqs =
-        child_pass_list.at(0u)->shared_quad_state_list.ElementAt(0u);
+        child_pass_list[0]->shared_quad_state_list.ElementAt(0u);
     child_sqs->quad_to_target_transform.Translate(1, 1);
     child_sqs->quad_to_target_transform.Scale(2, 2);
 
-    child_pass_list.at(1u)->quad_list.ElementAt(0)->visible_rect =
+    child_pass_list[1]->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(0, 0, 2, 2);
 
     SubmitPassListAsFrame(child_surface_id, &child_pass_list);
@@ -1538,7 +1539,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
 
-    RenderPass* root_pass = root_pass_list.at(0u);
+    RenderPass* root_pass = root_pass_list[0].get();
     root_pass->shared_quad_state_list.front()
         ->quad_to_target_transform.Translate(10, 10);
     root_pass->damage_rect = gfx::Rect(0, 0, 1, 1);
@@ -1579,7 +1580,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
 
-    RenderPass* root_pass = root_pass_list.at(0u);
+    RenderPass* root_pass = root_pass_list[0].get();
     root_pass->shared_quad_state_list.front()
         ->quad_to_target_transform.Translate(10, 10);
     root_pass->damage_rect = gfx::Rect(10, 10, 2, 2);
@@ -1629,17 +1630,17 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     AddPasses(&child_pass_list, gfx::Rect(SurfaceSize()), child_passes,
               arraysize(child_passes));
 
-    child_pass_list.at(0u)->quad_list.ElementAt(0)->visible_rect =
+    child_pass_list[0]->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(1, 1, 2, 2);
     SharedQuadState* child_sqs =
-        child_pass_list.at(0u)->shared_quad_state_list.ElementAt(0u);
+        child_pass_list[0]->shared_quad_state_list.ElementAt(0u);
     child_sqs->quad_to_target_transform.Translate(1, 1);
     child_sqs->quad_to_target_transform.Scale(2, 2);
 
-    child_pass_list.at(1u)->quad_list.ElementAt(0)->visible_rect =
+    child_pass_list[1]->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(0, 0, 2, 2);
 
-    RenderPass* child_root_pass = child_pass_list.at(1u);
+    RenderPass* child_root_pass = child_pass_list[1].get();
 
     child_root_pass->copy_requests.push_back(
         CopyOutputRequest::CreateEmptyRequest());

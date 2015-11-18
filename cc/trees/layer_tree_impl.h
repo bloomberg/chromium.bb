@@ -12,7 +12,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/values.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/synced_property.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_impl.h"
@@ -306,7 +305,7 @@ class CC_EXPORT LayerTreeImpl {
   void QueuePinnedSwapPromise(scoped_ptr<SwapPromise> swap_promise);
 
   // Take the |new_swap_promise| and append it to |swap_promise_list_|.
-  void PassSwapPromises(ScopedPtrVector<SwapPromise>* new_swap_promise);
+  void PassSwapPromises(std::vector<scoped_ptr<SwapPromise>>* new_swap_promise);
   void FinishSwapPromises(CompositorFrameMetadata* metadata);
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 
@@ -482,8 +481,8 @@ class CC_EXPORT LayerTreeImpl {
 
   bool has_ever_been_drawn_;
 
-  ScopedPtrVector<SwapPromise> swap_promise_list_;
-  ScopedPtrVector<SwapPromise> pinned_swap_promise_list_;
+  std::vector<scoped_ptr<SwapPromise>> swap_promise_list_;
+  std::vector<scoped_ptr<SwapPromise>> pinned_swap_promise_list_;
 
   UIResourceRequestQueue ui_resource_request_queue_;
 

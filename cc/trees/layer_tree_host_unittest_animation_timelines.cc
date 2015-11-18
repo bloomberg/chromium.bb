@@ -658,7 +658,7 @@ class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
         timeline_impl->GetPlayerById(player_child_id_);
 
     LayerImpl* scroll_layer_impl =
-        host_impl->active_tree()->root_layer()->children()[0];
+        host_impl->active_tree()->root_layer()->children()[0].get();
     Animation* animation = player_impl->element_animations()
                                ->layer_animation_controller()
                                ->GetAnimation(Animation::SCROLL_OFFSET);
@@ -681,7 +681,7 @@ class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
     if (host_impl->pending_tree()->source_frame_number() != 1)
       return;
     LayerImpl* scroll_layer_impl =
-        host_impl->pending_tree()->root_layer()->children()[0];
+        host_impl->pending_tree()->root_layer()->children()[0].get();
     EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
   }
 
@@ -689,7 +689,7 @@ class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
     if (host_impl->active_tree()->source_frame_number() != 1)
       return;
     LayerImpl* scroll_layer_impl =
-        host_impl->active_tree()->root_layer()->children()[0];
+        host_impl->active_tree()->root_layer()->children()[0].get();
     EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
     EndTest();
   }
@@ -970,7 +970,7 @@ class LayerTreeHostTimelinesTestAnimationFinishesDuringCommit
         gfx::Transform expected_transform;
         expected_transform.Translate(5.f, 5.f);
         LayerImpl* layer_impl =
-            host_impl->sync_tree()->root_layer()->children()[0];
+            host_impl->sync_tree()->root_layer()->children()[0].get();
         EXPECT_EQ(expected_transform, layer_impl->draw_transform());
         EndTest();
         break;

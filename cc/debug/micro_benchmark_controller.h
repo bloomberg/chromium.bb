@@ -6,10 +6,10 @@
 #define CC_DEBUG_MICRO_BENCHMARK_CONTROLLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/micro_benchmark.h"
 
 namespace base {
@@ -42,7 +42,7 @@ class CC_EXPORT MicroBenchmarkController {
   int GetNextIdAndIncrement();
 
   LayerTreeHost* host_;
-  ScopedPtrVector<MicroBenchmark> benchmarks_;
+  std::vector<scoped_ptr<MicroBenchmark>> benchmarks_;
   static int next_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_controller_task_runner_;
 

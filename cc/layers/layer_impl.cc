@@ -135,11 +135,11 @@ scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
   for (OwnedLayerImplList::iterator it = children_.begin();
        it != children_.end();
        ++it) {
-    if (*it == child) {
-      scoped_ptr<LayerImpl> ret = children_.take(it);
+    if (it->get() == child) {
+      scoped_ptr<LayerImpl> ret = it->Pass();
       children_.erase(it);
       layer_tree_impl()->set_needs_update_draw_properties();
-      return ret.Pass();
+      return ret;
     }
   }
   return nullptr;
@@ -260,7 +260,8 @@ void LayerImpl::SetEffectTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
+void LayerImpl::PassCopyRequests(
+    std::vector<scoped_ptr<CopyOutputRequest>>* requests) {
   // In the case that a layer still has a copy request, this means that there's
   // a commit to the active tree without a draw.  This only happens in some
   // edge cases during lost context or visibility changes, so don't try to
@@ -276,7 +277,8 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
 
   DCHECK(render_surface());
   bool was_empty = copy_requests_.empty();
-  copy_requests_.insert_and_take(copy_requests_.end(), requests);
+  for (auto& request : *requests)
+    copy_requests_.push_back(std::move(request));
   requests->clear();
 
   if (was_empty && layer_tree_impl()->IsActiveTree())
@@ -285,17 +287,18 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
 }
 
 void LayerImpl::TakeCopyRequestsAndTransformToTarget(
-    ScopedPtrVector<CopyOutputRequest>* requests) {
+    std::vector<scoped_ptr<CopyOutputRequest>>* requests) {
   DCHECK(!copy_requests_.empty());
   DCHECK(layer_tree_impl()->IsActiveTree());
   DCHECK_EQ(render_target(), this);
 
   size_t first_inserted_request = requests->size();
-  requests->insert_and_take(requests->end(), &copy_requests_);
+  for (auto& request : copy_requests_)
+    requests->push_back(std::move(request));
   copy_requests_.clear();
 
   for (size_t i = first_inserted_request; i < requests->size(); ++i) {
-    CopyOutputRequest* request = requests->at(i);
+    CopyOutputRequest* request = (*requests)[i].get();
     if (!request->has_area())
       continue;
 

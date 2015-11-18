@@ -210,7 +210,7 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void AddCopyRequest(LayerImpl* layer) {
-    ScopedPtrVector<CopyOutputRequest> requests;
+    std::vector<scoped_ptr<CopyOutputRequest>> requests;
     requests.push_back(CopyOutputRequest::CreateBitmapRequest(base::Bind(
         &OcclusionTrackerTest::CopyOutputCallback, base::Unretained(this))));
     layer->SetHasRenderSurface(true);

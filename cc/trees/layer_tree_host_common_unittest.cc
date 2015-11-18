@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <vector>
 
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -3289,7 +3290,7 @@ TEST_F(LayerTreeHostCommonTest,
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   LayerImpl* grand_child_ptr =
-      host_impl.active_tree()->root_layer()->children()[0]->children()[0];
+      host_impl.active_tree()->root_layer()->children()[0]->children()[0].get();
 
   // Though all layers have invertible transforms, matrix multiplication using
   // floating-point math makes the draw transform uninvertible.
@@ -5371,7 +5372,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_grand_parent_sibling_before_layer->SetHideLayerAndSubtree(true);
   copy_grand_parent_sibling_after_layer->SetHideLayerAndSubtree(true);
 
-  ScopedPtrVector<CopyOutputRequest> copy_requests;
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   copy_layer->PassCopyRequests(&copy_requests);
@@ -5463,7 +5464,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
                                true, false, false);
   copy_child->SetDrawsContent(true);
 
-  ScopedPtrVector<CopyOutputRequest> copy_requests;
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   copy_layer->PassCopyRequests(&copy_requests);
@@ -8523,7 +8524,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  ScopedPtrVector<CopyOutputRequest> requests;
+  std::vector<scoped_ptr<CopyOutputRequest>> requests;
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   greatgrandchild_ptr->PassCopyRequests(&requests);

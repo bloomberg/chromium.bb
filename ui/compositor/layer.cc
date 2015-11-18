@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -983,22 +982,6 @@ void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
     pending_threaded_animations_.push_back(animation.Pass());
 }
 
-namespace{
-
-struct HasAnimationId {
-  HasAnimationId(int id): id_(id) {
-  }
-
-  bool operator()(cc::Animation* animation) const {
-    return animation->id() == id_;
-  }
-
- private:
-  int id_;
-};
-
-}
-
 void Layer::RemoveThreadedAnimation(int animation_id) {
   DCHECK(cc_layer_);
   if (pending_threaded_animations_.size() == 0) {
@@ -1007,10 +990,12 @@ void Layer::RemoveThreadedAnimation(int animation_id) {
   }
 
   pending_threaded_animations_.erase(
-      cc::remove_if(&pending_threaded_animations_,
-                    pending_threaded_animations_.begin(),
-                    pending_threaded_animations_.end(),
-                    HasAnimationId(animation_id)),
+      std::remove_if(
+          pending_threaded_animations_.begin(),
+          pending_threaded_animations_.end(),
+          [animation_id](const scoped_ptr<cc::Animation>& animation) {
+            return animation->id() == animation_id;
+          }),
       pending_threaded_animations_.end());
 }
 
@@ -1020,16 +1005,12 @@ LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
 }
 
 void Layer::SendPendingThreadedAnimations() {
-  for (cc::ScopedPtrVector<cc::Animation>::iterator it =
-           pending_threaded_animations_.begin();
-       it != pending_threaded_animations_.end();
-       ++it)
-    cc_layer_->AddAnimation(pending_threaded_animations_.take(it));
-
+  for (auto& animation : pending_threaded_animations_)
+    cc_layer_->AddAnimation(std::move(animation));
   pending_threaded_animations_.clear();
 
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->SendPendingThreadedAnimations();
+  for (auto* child : children_)
+    child->SendPendingThreadedAnimations();
 }
 
 void Layer::CreateCcLayer() {

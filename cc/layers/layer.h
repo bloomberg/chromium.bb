@@ -17,7 +17,6 @@
 #include "cc/animation/layer_animation_value_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/frame_timing_request.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer_lists.h"
@@ -729,7 +728,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   LayerClient* client_;
 
-  ScopedPtrVector<CopyOutputRequest> copy_requests_;
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests_;
 
   base::Closure did_scroll_callback_;
 

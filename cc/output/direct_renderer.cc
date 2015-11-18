@@ -151,7 +151,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
     render_passes_in_frame.insert(std::pair<RenderPassId, gfx::Size>(
         render_passes_in_draw_order[i]->id,
-        RenderPassTextureSize(render_passes_in_draw_order[i])));
+        RenderPassTextureSize(render_passes_in_draw_order[i].get())));
 
   std::vector<RenderPassId> passes_to_delete;
   for (auto pass_iter = render_pass_textures_.begin();
@@ -198,7 +198,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       "Renderer4.renderPassCount",
       base::saturated_cast<int>(render_passes_in_draw_order->size()));
 
-  const RenderPass* root_render_pass = render_passes_in_draw_order->back();
+  const RenderPass* root_render_pass =
+      render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
   DrawingFrame frame;
@@ -256,7 +257,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       // overlays and dont have any copy requests.
       if (frame.root_damage_rect.IsEmpty()) {
         bool handle_copy_requests = false;
-        for (auto* pass : *render_passes_in_draw_order) {
+        for (const auto& pass : *render_passes_in_draw_order) {
           if (!pass->copy_requests.empty()) {
             handle_copy_requests = true;
             break;
@@ -276,20 +277,17 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     }
   }
 
-  for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
-    RenderPass* pass = render_passes_in_draw_order->at(i);
-    DrawRenderPass(&frame, pass);
+  for (const auto& pass : *render_passes_in_draw_order) {
+    DrawRenderPass(&frame, pass.get());
 
-    for (ScopedPtrVector<CopyOutputRequest>::iterator it =
-             pass->copy_requests.begin();
-         it != pass->copy_requests.end();
-         ++it) {
-      if (it != pass->copy_requests.begin()) {
-        // Doing a readback is destructive of our state on Mac, so make sure
-        // we restore the state between readbacks. http://crbug.com/99393.
-        UseRenderPass(&frame, pass);
-      }
-      CopyCurrentRenderPassToBitmap(&frame, pass->copy_requests.take(it));
+    bool first_request = true;
+    for (auto& copy_request : pass->copy_requests) {
+      // Doing a readback is destructive of our state on Mac, so make sure
+      // we restore the state between readbacks. http://crbug.com/99393.
+      if (!first_request)
+        UseRenderPass(&frame, pass.get());
+      CopyCurrentRenderPassToBitmap(&frame, std::move(copy_request));
+      first_request = false;
     }
   }
   FinishDrawingFrame(&frame);

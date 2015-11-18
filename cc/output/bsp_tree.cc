@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/container_util.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
 

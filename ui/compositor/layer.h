@@ -15,7 +15,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/surface_layer.h"
@@ -505,7 +504,7 @@ class COMPOSITOR_EXPORT Layer
 
   // Animations that are passed to AddThreadedAnimation before this layer is
   // added to a tree.
-  cc::ScopedPtrVector<cc::Animation> pending_threaded_animations_;
+  std::vector<scoped_ptr<cc::Animation>> pending_threaded_animations_;
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.

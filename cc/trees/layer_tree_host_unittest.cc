@@ -1649,7 +1649,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     FakePictureLayerImpl* root =
         static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
     FakePictureLayerImpl* child = static_cast<FakePictureLayerImpl*>(
-        impl->active_tree()->root_layer()->children()[0]);
+        impl->active_tree()->root_layer()->children()[0].get());
 
     // Positions remain in layout pixels.
     EXPECT_EQ(gfx::PointF(), root->position());
@@ -2443,7 +2443,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     if (host_impl->GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
       EXPECT_EQ(1u, frame_data->render_passes.size());
       // Has at least 3 quads for each layer.
-      RenderPass* render_pass = frame_data->render_passes[0];
+      RenderPass* render_pass = frame_data->render_passes[0].get();
       EXPECT_GE(render_pass->quad_list.size(), 3u);
     } else {
       EXPECT_EQ(2u, frame_data->render_passes.size());
@@ -3014,21 +3014,21 @@ class LayerTreeHostTestImplLayersPushProperties
 
     if (root_impl_ && root_impl_->children().size() > 0) {
       child_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-          root_impl_->children()[0]);
+          root_impl_->children()[0].get());
 
       if (child_impl_ && child_impl_->children().size() > 0)
         grandchild_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-            child_impl_->children()[0]);
+            child_impl_->children()[0].get());
     }
 
     if (root_impl_ && root_impl_->children().size() > 1) {
       child2_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-          root_impl_->children()[1]);
+          root_impl_->children()[1].get());
 
       if (child2_impl_ && child2_impl_->children().size() > 0)
         leaf_always_pushing_layer_impl_ =
             static_cast<PushPropertiesCountingLayerImpl*>(
-                child2_impl_->children()[0]);
+                child2_impl_->children()[0].get());
     }
 
     if (root_impl_)
@@ -3770,8 +3770,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* parent = root->children()[0];
-    LayerImpl* child = parent->children()[0];
+    LayerImpl* parent = root->children()[0].get();
+    LayerImpl* child = parent->children()[0].get();
 
     switch (impl->active_tree()->source_frame_number()) {
       case 1:
@@ -5071,7 +5071,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     if (frame_data->has_no_damage)
       return 0.f;
     float frame_scale = 0.f;
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     for (const auto& draw_quad : root_pass->quad_list) {
       // Checkerboards mean an incomplete frame.
       if (draw_quad->material != DrawQuad::TILED_CONTENT)
@@ -5367,7 +5367,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     if (frame_data->has_no_damage)
       return 0.f;
     float frame_scale = 0.f;
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     for (const auto& draw_quad : root_pass->quad_list) {
       const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
@@ -5816,7 +5816,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -5900,7 +5900,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -5988,7 +5988,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -6079,7 +6079,7 @@ class LayerTreeTestReflectionMaskLayerWithDifferentBounds
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(3u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -6177,7 +6177,7 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back();
+    RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(3u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.

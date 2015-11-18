@@ -554,7 +554,7 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
                                      : InnerViewportScrollLayer();
   if (!root_scroll_layer || root_scroll_layer->children().empty())
     return gfx::Rect();
-  LayerImpl* layer = root_scroll_layer->children()[0];
+  LayerImpl* layer = root_scroll_layer->children()[0].get();
   return MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
                                            gfx::Rect(layer->bounds()));
 }
@@ -865,7 +865,7 @@ void LayerTreeImpl::DidBecomeActive() {
         root_layer(), [](LayerImpl* layer) { layer->DidBecomeActive(); });
   }
 
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidActivate();
   devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
                                                  source_frame_number_);
@@ -1078,12 +1078,12 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndArray();
 
   state->BeginArray("swap_promise_trace_ids");
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     state->AppendDouble(swap_promise->TraceId());
   state->EndArray();
 
   state->BeginArray("pinned_swap_promise_trace_ids");
-  for (auto* swap_promise : pinned_swap_promise_list_)
+  for (const auto& swap_promise : pinned_swap_promise_list_)
     state->AppendDouble(swap_promise->TraceId());
   state->EndArray();
 }
@@ -1133,27 +1133,27 @@ void LayerTreeImpl::QueuePinnedSwapPromise(
 }
 
 void LayerTreeImpl::PassSwapPromises(
-    ScopedPtrVector<SwapPromise>* new_swap_promise) {
-  for (auto* swap_promise : swap_promise_list_)
+    std::vector<scoped_ptr<SwapPromise>>* new_swap_promise) {
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS);
   swap_promise_list_.clear();
   swap_promise_list_.swap(*new_swap_promise);
 }
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidSwap(metadata);
   swap_promise_list_.clear();
-  for (auto* swap_promise : pinned_swap_promise_list_)
+  for (const auto& swap_promise : pinned_swap_promise_list_)
     swap_promise->DidSwap(metadata);
   pinned_swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (auto* swap_promise : swap_promise_list_)
+  for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
-  for (auto* swap_promise : pinned_swap_promise_list_)
+  for (const auto& swap_promise : pinned_swap_promise_list_)
     swap_promise->DidNotSwap(reason);
   pinned_swap_promise_list_.clear();
 }
@@ -1492,8 +1492,8 @@ static void FindClosestMatchingLayer(
   size_t children_size = layer->children().size();
   for (size_t i = 0; i < children_size; ++i) {
     size_t index = children_size - 1 - i;
-    FindClosestMatchingLayer(screen_space_point, layer->children()[index], func,
-                             transform_tree, use_property_trees,
+    FindClosestMatchingLayer(screen_space_point, layer->children()[index].get(),
+                             func, transform_tree, use_property_trees,
                              data_for_recursion);
   }
 

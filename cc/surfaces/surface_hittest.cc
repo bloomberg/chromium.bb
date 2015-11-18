@@ -231,11 +231,11 @@ const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
     return nullptr;
 
   if (!render_pass_id.IsValid())
-    return frame_data->render_pass_list.back();
+    return frame_data->render_pass_list.back().get();
 
-  for (const auto* render_pass : frame_data->render_pass_list) {
+  for (const auto& render_pass : frame_data->render_pass_list) {
     if (render_pass->id == render_pass_id)
-      return render_pass;
+      return render_pass.get();
   }
 
   return nullptr;

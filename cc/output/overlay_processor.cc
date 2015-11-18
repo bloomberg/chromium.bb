@@ -31,7 +31,7 @@ bool OverlayProcessor::ProcessForCALayers(
     RenderPassList* render_passes,
     CALayerOverlayList* ca_layer_overlays,
     OverlayCandidateList* overlay_candidates) {
-  RenderPass* root_render_pass = render_passes->back();
+  RenderPass* root_render_pass = render_passes->back().get();
 
   OverlayCandidateValidator* overlay_validator =
       surface_->GetOverlayCandidateValidator();
@@ -55,7 +55,7 @@ void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
                                           RenderPassList* render_passes,
                                           OverlayCandidateList* candidates,
                                           gfx::Rect* damage_rect) {
-  for (auto strategy : strategies_) {
+  for (const auto& strategy : strategies_) {
     if (strategy->Attempt(resource_provider, render_passes, candidates,
                           damage_rect)) {
       return;

@@ -187,8 +187,8 @@ void ExpectTreesAreIdentical(Layer* layer,
 
   for (size_t i = 0; i < layer_children.size(); ++i) {
     SCOPED_TRACE(base::StringPrintf("child layer %" PRIuS, i).c_str());
-    ExpectTreesAreIdentical(
-        layer_children[i].get(), layer_impl_children[i], tree_impl);
+    ExpectTreesAreIdentical(layer_children[i].get(),
+                            layer_impl_children[i].get(), tree_impl);
   }
 }
 

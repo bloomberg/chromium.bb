@@ -248,7 +248,8 @@ class PictureLayerImplTest : public testing::Test {
       pending_layer->SetDrawsContent(true);
     } else {
       pending_layer.reset(static_cast<FakePictureLayerImpl*>(
-          pending_root->RemoveChild(pending_root->children()[0]).release()));
+          pending_root->RemoveChild(pending_root->children()[0].get())
+              .release()));
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }
@@ -3974,7 +3975,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partial occlusion.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0];
+  LayerImpl* layer1 = pending_layer_->children()[0].get();
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4068,7 +4069,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partial occlusion.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0];
+  LayerImpl* layer1 = pending_layer_->children()[0].get();
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4164,7 +4165,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   ASSERT_TRUE(pending_layer_->CanHaveTilings());
 
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0];
+  LayerImpl* layer1 = pending_layer_->children()[0].get();
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4239,7 +4240,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
 
   // Partially occlude the active layer.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
-  LayerImpl* layer1 = pending_layer_->children()[0];
+  LayerImpl* layer1 = pending_layer_->children()[0].get();
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4332,7 +4333,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partially occlude the active layer.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
-  LayerImpl* active_occluding_layer = pending_layer_->children()[0];
+  LayerImpl* active_occluding_layer = pending_layer_->children()[0].get();
   active_occluding_layer->SetBounds(layer_bounds);
   active_occluding_layer->SetDrawsContent(true);
   active_occluding_layer->SetContentsOpaque(true);
@@ -4347,7 +4348,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partially occlude the pending layer in a different way.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 3));
-  LayerImpl* pending_occluding_layer = pending_layer_->children()[0];
+  LayerImpl* pending_occluding_layer = pending_layer_->children()[0].get();
   pending_occluding_layer->SetBounds(layer_bounds);
   pending_occluding_layer->SetDrawsContent(true);
   pending_occluding_layer->SetContentsOpaque(true);

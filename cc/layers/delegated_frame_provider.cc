@@ -15,7 +15,7 @@ DelegatedFrameProvider::DelegatedFrameProvider(
     const scoped_refptr<DelegatedFrameResourceCollection>& resource_collection,
     scoped_ptr<DelegatedFrameData> frame)
     : resource_collection_(resource_collection) {
-  RenderPass* root_pass = frame->render_pass_list.back();
+  RenderPass* root_pass = frame->render_pass_list.back().get();
   frame_size_ = root_pass->output_rect.size();
   DCHECK(!frame_size_.IsEmpty());
   SetFrameData(frame.Pass());
@@ -66,7 +66,7 @@ void DelegatedFrameProvider::SetFrameData(
   resource_collection_->ReceivedResources(frame_->resource_list);
   resource_collection_->RefResources(frame_->resource_list);
 
-  RenderPass* root_pass = frame_->render_pass_list.back();
+  RenderPass* root_pass = frame_->render_pass_list.back().get();
   DCHECK_EQ(frame_size_.ToString(), root_pass->output_rect.size().ToString())
       << "All frames in a single DelegatedFrameProvider must have the same "
       << "size. Use a new frame provider for frames of a different size.";

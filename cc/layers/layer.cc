@@ -413,9 +413,10 @@ void Layer::RequestCopyOfOutput(
   DCHECK(IsPropertyChangeAllowed());
   bool had_no_copy_requests = copy_requests_.empty();
   if (void* source = request->source()) {
-    auto it = std::find_if(
-        copy_requests_.begin(), copy_requests_.end(),
-        [source](const CopyOutputRequest* x) { return x->source() == source; });
+    auto it = std::find_if(copy_requests_.begin(), copy_requests_.end(),
+                           [source](const scoped_ptr<CopyOutputRequest>& x) {
+                             return x->source() == source;
+                           });
     if (it != copy_requests_.end())
       copy_requests_.erase(it);
   }
@@ -1296,13 +1297,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
   bool had_copy_requests = !copy_requests_.empty();
-  ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;
-  for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
-       it != copy_requests_.end();
-       ++it) {
+  std::vector<scoped_ptr<CopyOutputRequest>> main_thread_copy_requests;
+  for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
         layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
-    scoped_ptr<CopyOutputRequest> original_request = copy_requests_.take(it);
+    scoped_ptr<CopyOutputRequest> original_request = std::move(*it);
     const CopyOutputRequest& original_request_ref = *original_request;
     scoped_ptr<CopyOutputRequest> main_thread_request =
         CopyOutputRequest::CreateRelayRequest(

@@ -222,6 +222,9 @@ class CC_EXPORT LayerTreeHostImpl
 
     // RenderPassSink implementation.
     void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FrameData);
   };
 
   virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
@@ -738,7 +741,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
-  ScopedPtrVector<SwapPromise> swap_promises_for_main_thread_scroll_update_;
+  std::vector<scoped_ptr<SwapPromise>>
+      swap_promises_for_main_thread_scroll_update_;
 
   // An object to implement the ScrollElasticityHelper interface and
   // hold all state related to elasticity. May be NULL if never requested.

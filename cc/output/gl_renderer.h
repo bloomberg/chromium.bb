@@ -6,10 +6,10 @@
 #define CC_OUTPUT_GL_RENDERER_H_
 
 #include <deque>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
@@ -260,8 +260,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
 
-  typedef ScopedPtrVector<ResourceProvider::ScopedReadLockGL>
-      OverlayResourceLockList;
+  using OverlayResourceLockList =
+      std::vector<scoped_ptr<ResourceProvider::ScopedReadLockGL>>;
   OverlayResourceLockList pending_overlay_resources_;
   OverlayResourceLockList in_use_overlay_resources_;
   OverlayResourceLockList previous_swap_overlay_resources_;
@@ -501,7 +501,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   int highp_threshold_cache_;
 
   struct PendingAsyncReadPixels;
-  ScopedPtrVector<PendingAsyncReadPixels> pending_async_read_pixels_;
+  std::vector<scoped_ptr<PendingAsyncReadPixels>> pending_async_read_pixels_;
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
 

@@ -13,8 +13,8 @@ class EvictionOrderComparator {
   explicit EvictionOrderComparator(TreePriority tree_priority)
       : tree_priority_(tree_priority) {}
 
-  bool operator()(const TilingSetEvictionQueue* a_queue,
-                  const TilingSetEvictionQueue* b_queue) const {
+  bool operator()(const scoped_ptr<TilingSetEvictionQueue>& a_queue,
+                  const scoped_ptr<TilingSetEvictionQueue>& b_queue) const {
     // Note that in this function, we have to return true if and only if
     // b is strictly lower priority than a.
     const PrioritizedTile& a_tile = a_queue->Top();
@@ -64,7 +64,7 @@ class EvictionOrderComparator {
 void CreateTilingSetEvictionQueues(
     const std::vector<PictureLayerImpl*>& layers,
     TreePriority tree_priority,
-    ScopedPtrVector<TilingSetEvictionQueue>* queues) {
+    std::vector<scoped_ptr<TilingSetEvictionQueue>>* queues) {
   DCHECK(queues->empty());
 
   for (auto* layer : layers) {
@@ -74,7 +74,8 @@ void CreateTilingSetEvictionQueues(
     if (!tiling_set_queue->IsEmpty())
       queues->push_back(tiling_set_queue.Pass());
   }
-  queues->make_heap(EvictionOrderComparator(tree_priority));
+  std::make_heap(queues->begin(), queues->end(),
+                 EvictionOrderComparator(tree_priority));
 }
 
 }  // namespace
@@ -102,32 +103,38 @@ bool EvictionTilePriorityQueue::IsEmpty() const {
 
 const PrioritizedTile& EvictionTilePriorityQueue::Top() const {
   DCHECK(!IsEmpty());
-  const ScopedPtrVector<TilingSetEvictionQueue>& next_queues = GetNextQueues();
+  const auto& next_queues = GetNextQueues();
   return next_queues.front()->Top();
 }
 
 void EvictionTilePriorityQueue::Pop() {
   DCHECK(!IsEmpty());
 
-  ScopedPtrVector<TilingSetEvictionQueue>& next_queues = GetNextQueues();
-  next_queues.pop_heap(EvictionOrderComparator(tree_priority_));
-  TilingSetEvictionQueue* queue = next_queues.back();
+  auto& next_queues = GetNextQueues();
+  std::pop_heap(next_queues.begin(), next_queues.end(),
+                EvictionOrderComparator(tree_priority_));
+  TilingSetEvictionQueue* queue = next_queues.back().get();
   queue->Pop();
 
   // Remove empty queues.
-  if (queue->IsEmpty())
+  if (queue->IsEmpty()) {
     next_queues.pop_back();
-  else
-    next_queues.push_heap(EvictionOrderComparator(tree_priority_));
+  } else {
+    std::push_heap(next_queues.begin(), next_queues.end(),
+                   EvictionOrderComparator(tree_priority_));
+  }
 }
 
-ScopedPtrVector<TilingSetEvictionQueue>&
+std::vector<scoped_ptr<TilingSetEvictionQueue>>&
 EvictionTilePriorityQueue::GetNextQueues() {
-  return const_cast<ScopedPtrVector<TilingSetEvictionQueue>&>(
-      static_cast<const EvictionTilePriorityQueue*>(this)->GetNextQueues());
+  const EvictionTilePriorityQueue* const_this =
+      static_cast<const EvictionTilePriorityQueue*>(this);
+  const auto& const_queues = const_this->GetNextQueues();
+  return const_cast<std::vector<scoped_ptr<TilingSetEvictionQueue>>&>(
+      const_queues);
 }
 
-const ScopedPtrVector<TilingSetEvictionQueue>&
+const std::vector<scoped_ptr<TilingSetEvictionQueue>>&
 EvictionTilePriorityQueue::GetNextQueues() const {
   DCHECK(!IsEmpty());
 

@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_factory.h"

@@ -78,7 +78,7 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
   }
 
   for (unsigned i = 0; i < layer->children().size(); ++i)
-    SavePaintRects(layer->children()[i]);
+    SavePaintRects(layer->children()[i].get());
 }
 
 void DebugRectHistory::SavePropertyChangedRects(

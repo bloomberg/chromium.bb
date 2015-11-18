@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect.h"
@@ -149,7 +149,7 @@ class CC_EXPORT LayerTreeHostCommon {
 
   static LayerImpl* get_layer_as_raw_ptr(const OwnedLayerImplList& layers,
                                          size_t index) {
-    return layers[index];
+    return layers[index].get();
   }
 
   static LayerImpl* get_layer_as_raw_ptr(const LayerImplList& layers,
@@ -173,7 +173,10 @@ struct CC_EXPORT ScrollAndScaleSet {
   float page_scale_delta;
   gfx::Vector2dF elastic_overscroll_delta;
   float top_controls_delta;
-  ScopedPtrVector<SwapPromise> swap_promises;
+  std::vector<scoped_ptr<SwapPromise>> swap_promises;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);
 };
 
 template <typename LayerType>

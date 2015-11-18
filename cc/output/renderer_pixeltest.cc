@@ -2833,8 +2833,7 @@ TEST_F(GLRendererPixelTestWithFlippedOutputSurface, CheckChildPassUnflipped) {
 
   // Check that the child pass remains unflipped.
   EXPECT_TRUE(this->RunPixelTestWithReadbackTarget(
-      &pass_list,
-      pass_list.front(),
+      &pass_list, pass_list.front().get(),
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
       ExactPixelComparator(true)));
 }
@@ -2887,11 +2886,9 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
                          this->device_viewport_size_.width() / 2,
                          this->device_viewport_size_.height() / 2);
   EXPECT_TRUE(this->RunPixelTestWithReadbackTargetAndArea(
-      &pass_list,
-      pass_list.front(),
+      &pass_list, pass_list.front().get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")),
-      ExactPixelComparator(true),
-      &capture_rect));
+      ExactPixelComparator(true), &capture_rect));
 }
 
 TEST_F(GLRendererPixelTest, TextureQuadBatching) {

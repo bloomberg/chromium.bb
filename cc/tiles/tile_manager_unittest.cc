@@ -838,7 +838,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   pending_layer_->AddChild(pending_child.Pass());
 
   FakePictureLayerImpl* pending_child_layer =
-      static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0]);
+      static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0].get());
   pending_child_layer->SetDrawsContent(true);
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -851,7 +851,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   SetupPendingTree(pending_raster_source);
 
   FakePictureLayerImpl* active_child_layer =
-      static_cast<FakePictureLayerImpl*>(active_layer_->children()[0]);
+      static_cast<FakePictureLayerImpl*>(active_layer_->children()[0].get());
 
   std::set<Tile*> all_tiles;
   size_t tile_count = 0;

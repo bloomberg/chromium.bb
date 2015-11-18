@@ -212,7 +212,7 @@ bool Display::DrawAndSwap() {
                                       stored_latency_info_.end());
   stored_latency_info_.clear();
   bool have_copy_requests = false;
-  for (const auto* pass : frame_data->render_pass_list) {
+  for (const auto& pass : frame_data->render_pass_list) {
     have_copy_requests |= !pass->copy_requests.empty();
   }
 

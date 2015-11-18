@@ -247,9 +247,7 @@ def CheckNamespace(input_api, output_api):
     contents = input_api.ReadFile(f, 'rb')
     match = re.search(r'namespace\s*cc\s*{', contents)
     if match:
-      whitelist = [
-        r"cc::remove_if\b",
-        ]
+      whitelist = []
       if FindNamespaceInBlock(match.end(), 'cc', contents, whitelist=whitelist):
         errors.append(f.LocalPath())
 

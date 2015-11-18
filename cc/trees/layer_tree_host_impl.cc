@@ -760,9 +760,10 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
 
 static RenderPass* FindRenderPassById(const RenderPassList& list,
                                       RenderPassId id) {
-  auto it = std::find_if(list.begin(), list.end(),
-                         [id](const RenderPass* p) { return p->id == id; });
-  return it == list.end() ? nullptr : *it;
+  auto it = std::find_if(
+      list.begin(), list.end(),
+      [id](const scoped_ptr<RenderPass>& p) { return p->id == id; });
+  return it == list.end() ? nullptr : it->get();
 }
 
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(
@@ -827,7 +828,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // damage visualizations are done off the LayerImpls and RenderSurfaceImpls,
   // changing the RenderPass does not affect them.
   if (active_tree_->hud_layer()) {
-    RenderPass* root_pass = frame->render_passes.back();
+    RenderPass* root_pass = frame->render_passes.back().get();
     root_pass->damage_rect = root_pass->output_rect;
   }
 
@@ -994,7 +995,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     frame->render_passes.back()->has_transparent_background = false;
     AppendQuadsToFillScreen(
         active_tree_->RootScrollLayerDeviceViewportBounds(),
-        frame->render_passes.back(), active_tree_->root_layer(),
+        frame->render_passes.back().get(), active_tree_->root_layer(),
         active_tree_->background_color(), unoccluded_screen_space_region);
   }
 
@@ -1003,7 +1004,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   // Any copy requests left in the tree are not going to get serviced, and
   // should be aborted.
-  ScopedPtrVector<CopyOutputRequest> requests_to_abort;
+  std::vector<scoped_ptr<CopyOutputRequest>> requests_to_abort;
   while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
     LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
     layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
@@ -1139,7 +1140,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
-    RenderPass* pass = frame->render_passes[i];
+    RenderPass* pass = frame->render_passes[i].get();
 
     // Remove orphan RenderPassDrawQuads.
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();) {
@@ -1182,7 +1183,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     // back-most (root) pass, in order to remove each qualified RenderPass, and
     // drop references to earlier RenderPasses allowing them to be removed to.
     RenderPass* pass =
-        frame->render_passes[frame->render_passes.size() - 2 - i];
+        frame->render_passes[frame->render_passes.size() - 2 - i].get();
     if (!pass->copy_requests.empty())
       continue;
     if (pass_references[pass->id])
@@ -3012,7 +3013,7 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
   }
 
   for (size_t i = 0; i < layer_impl->children().size(); ++i)
-    CollectScrollDeltas(scroll_info, layer_impl->children()[i]);
+    CollectScrollDeltas(scroll_info, layer_impl->children()[i].get());
 }
 
 scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {

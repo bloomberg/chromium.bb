@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
@@ -310,8 +309,8 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
                                    const RenderPassList& actual_list) {
   EXPECT_EQ(expected_list.size(), actual_list.size());
   for (size_t i = 0; i < actual_list.size(); ++i) {
-    RenderPass* expected = expected_list[i];
-    RenderPass* actual = actual_list[i];
+    RenderPass* expected = expected_list[i].get();
+    RenderPass* actual = actual_list[i].get();
 
     EXPECT_EQ(expected->id, actual->id);
     EXPECT_EQ(expected->output_rect, actual->output_rect);
@@ -419,7 +418,7 @@ TEST_F(SandwichTest, SuccessfulSingleOverlay) {
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
 
-  RenderPass* main_pass = pass_list.back();
+  RenderPass* main_pass = pass_list.back().get();
   // Check that the quad is gone.
   EXPECT_EQ(2U, main_pass->quad_list.size());
   const QuadList& quad_list = main_pass->quad_list;
@@ -558,7 +557,7 @@ TEST_F(SandwichTest, SuccessfulSandwichOverlay) {
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(2U, candidate_list.size());
 
-  RenderPass* main_pass = pass_list.back();
+  RenderPass* main_pass = pass_list.back().get();
   // Check that the quad is gone.
   EXPECT_EQ(3U, main_pass->quad_list.size());
   const QuadList& quad_list = main_pass->quad_list;
@@ -605,7 +604,7 @@ TEST_F(SandwichTest, MultiQuadOverlay) {
   pass_list.push_back(pass.Pass());
 
   // Run the overlay strategy on that input.
-  RenderPass* main_pass = pass_list.back();
+  RenderPass* main_pass = pass_list.back().get();
   OverlayCandidateList candidate_list;
   EXPECT_EQ(4U, main_pass->quad_list.size());
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
@@ -699,7 +698,7 @@ TEST_F(SingleOverlayOnTopTest, SuccessfullOverlay) {
   ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
 
-  RenderPass* main_pass = pass_list.back();
+  RenderPass* main_pass = pass_list.back().get();
   // Check that the quad is gone.
   EXPECT_EQ(2U, main_pass->quad_list.size());
   const QuadList& quad_list = main_pass->quad_list;
@@ -1346,7 +1345,8 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
   ASSERT_EQ(1U, pass_list.size());
@@ -1366,7 +1366,8 @@ TEST_F(CALayerOverlayTest, Disallow3DTransform) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
   ASSERT_EQ(1U, pass_list.size());
@@ -1386,7 +1387,8 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
   ASSERT_EQ(1U, pass_list.size());
@@ -1407,7 +1409,8 @@ TEST_F(CALayerOverlayTest, SkipDisjointClip) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
   ASSERT_EQ(1U, pass_list.size());
@@ -1427,7 +1430,8 @@ TEST_F(CALayerOverlayTest, DisallowNontrivialClip) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
 
@@ -1447,7 +1451,8 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(BackbufferOverlayList(pass_list.back()));
+  OverlayCandidateList overlay_list(
+      BackbufferOverlayList(pass_list.back().get()));
   overlay_processor_->ProcessForCALayers(resource_provider_.get(), &pass_list,
                                          &ca_layer_list, &overlay_list);
   ASSERT_EQ(1U, pass_list.size());

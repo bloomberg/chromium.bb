@@ -4,7 +4,6 @@
 
 #include "cc/layers/delegated_renderer_layer_impl.h"
 
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"

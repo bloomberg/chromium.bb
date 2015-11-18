@@ -5,6 +5,8 @@
 #ifndef CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 #define CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -14,7 +16,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
 
@@ -224,7 +225,7 @@ class CC_EXPORT LayerAnimationController
 
   AnimationRegistrar* registrar_;
   int id_;
-  ScopedPtrVector<Animation> animations_;
+  std::vector<scoped_ptr<Animation>> animations_;
 
   // This is used to ensure that we don't spam the registrar.
   bool is_active_;

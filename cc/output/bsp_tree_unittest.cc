@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/bsp_tree.h"
 #include "cc/output/bsp_walk_action.h"
 #include "cc/quads/draw_polygon.h"

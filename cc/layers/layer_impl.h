@@ -19,7 +19,6 @@
 #include "cc/animation/layer_animation_value_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/synced_property.h"
 #include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
@@ -127,7 +126,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const LayerImpl* parent() const { return parent_; }
   const OwnedLayerImplList& children() const { return children_; }
   OwnedLayerImplList& children() { return children_; }
-  LayerImpl* child_at(size_t index) const { return children_[index]; }
+  LayerImpl* child_at(size_t index) const { return children_[index].get(); }
   void AddChild(scoped_ptr<LayerImpl> child);
   scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
   void SetParent(LayerImpl* parent);
@@ -221,10 +220,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return clip_children_.get();
   }
 
-  void PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests);
+  void PassCopyRequests(std::vector<scoped_ptr<CopyOutputRequest>>* requests);
   // Can only be called when the layer has a copy request.
   void TakeCopyRequestsAndTransformToTarget(
-      ScopedPtrVector<CopyOutputRequest>* request);
+      std::vector<scoped_ptr<CopyOutputRequest>>* request);
   bool HasCopyRequest() const { return !copy_requests_.empty(); }
 
   void SetMaskLayer(scoped_ptr<LayerImpl> mask_layer);
@@ -848,7 +847,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Manages animations for this layer.
   scoped_refptr<LayerAnimationController> layer_animation_controller_;
 
-  ScopedPtrVector<CopyOutputRequest> copy_requests_;
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests_;
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.

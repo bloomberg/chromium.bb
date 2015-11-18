@@ -319,7 +319,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     std::vector<uint32_t>* satisfies_sequences) {
   DCHECK(!frame_data->render_pass_list.empty());
 
-  cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+  cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
 
   gfx::Size frame_size = root_pass->output_rect.size();
   gfx::Size frame_size_in_dip =
@@ -349,7 +349,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     damage_rect_in_dip = gfx::Rect(frame_size_in_dip);
 
     // Give the same damage rect to the compositor.
-    cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+    cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
     root_pass->damage_rect = damage_rect;
   }
 

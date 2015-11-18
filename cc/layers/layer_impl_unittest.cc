@@ -116,9 +116,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   clip_children->insert(root);
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->children()[0].get();
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
-  LayerImpl* grand_child = child->children()[0];
+  LayerImpl* grand_child = child->children()[0].get();
 
   root->SetScrollClipLayer(root_clip->id());
 
@@ -451,7 +451,7 @@ class LayerImplScrollTest : public testing::Test {
   }
 
   LayerImpl* layer() {
-    return host_impl_.active_tree()->root_layer()->children()[0];
+    return host_impl_.active_tree()->root_layer()->children()[0].get();
   }
 
   LayerTreeHostImpl& host_impl() { return host_impl_; }

@@ -755,9 +755,9 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
     root->AddChild(child2.Pass());
   }
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
-  LayerImpl* grand_child1 = child1->children()[0];
+  LayerImpl* child1 = root->children()[0].get();
+  LayerImpl* child2 = root->children()[1].get();
+  LayerImpl* grand_child1 = child1->children()[0].get();
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
@@ -983,9 +983,9 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
     root->AddChild(child2.Pass());
   }
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
-  LayerImpl* grand_child1 = child1->children()[0];
+  LayerImpl* child1 = root->children()[0].get();
+  LayerImpl* child2 = root->children()[1].get();
+  LayerImpl* grand_child1 = child1->children()[0].get();
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
@@ -1215,9 +1215,9 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
     root->AddChild(child2.Pass());
   }
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
-  LayerImpl* grand_child1 = child1->children()[0];
+  LayerImpl* child1 = root->children()[0].get();
+  LayerImpl* child2 = root->children()[1].get();
+  LayerImpl* grand_child1 = child1->children()[0].get();
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
@@ -1558,7 +1558,7 @@ TEST_F(LayerTreeImplTest,
   // The visible content rect for test_layer is actually 100x100, even though
   // its layout size is 50x50, positioned at 25x25.
   LayerImpl* test_layer =
-      host_impl().active_tree()->root_layer()->children()[0];
+      host_impl().active_tree()->root_layer()->children()[0].get();
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
@@ -1850,7 +1850,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   LayerImpl* test_layer =
-      host_impl().active_tree()->root_layer()->children()[0];
+      host_impl().active_tree()->root_layer()->children()[0].get();
   // As test_layer doesn't draw content, the layer list of root's render surface
   // should contain only the root layer.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -1881,7 +1881,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
 
   // We change the position of the test layer such that the test point is now
   // inside the test_layer.
-  test_layer = host_impl().active_tree()->root_layer()->children()[0];
+  test_layer = host_impl().active_tree()->root_layer()->children()[0].get();
   test_layer->SetPosition(gfx::PointF(10.f, 10.f));
   expected_screen_space_transform.MakeIdentity();
   expected_screen_space_transform.Translate(10.f, 10.f);

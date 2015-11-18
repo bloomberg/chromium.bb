@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "cc/base/container_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_factory.h"
@@ -116,8 +117,9 @@ void Surface::TakeCopyOutputRequests(
          current_frame_->delegated_frame_data->render_pass_list) {
       while (!render_pass->copy_requests.empty()) {
         scoped_ptr<CopyOutputRequest> request =
-            render_pass->copy_requests.take_back();
-        render_pass->copy_requests.pop_back();
+            PopBack(&render_pass->copy_requests);
+        // TODO(vmpstr): |copy_requests| should store scoped_ptrs.
+        // crbug.com/557388.
         copy_requests->insert(
             std::make_pair(render_pass->id, request.release()));
       }

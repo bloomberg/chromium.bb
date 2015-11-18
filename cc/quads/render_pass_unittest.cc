@@ -5,7 +5,6 @@
 #include "cc/quads/render_pass.h"
 
 #include "cc/base/math_util.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -28,15 +27,15 @@ struct RenderPassSize {
   gfx::Rect damage_rect;
   bool has_transparent_background;
   std::vector<SurfaceId> referenced_surfaces;
-  ScopedPtrVector<CopyOutputRequest> copy_callbacks;
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_callbacks;
 };
 
 static void CompareRenderPassLists(const RenderPassList& expected_list,
                                    const RenderPassList& actual_list) {
   EXPECT_EQ(expected_list.size(), actual_list.size());
   for (size_t i = 0; i < actual_list.size(); ++i) {
-    RenderPass* expected = expected_list[i];
-    RenderPass* actual = actual_list[i];
+    RenderPass* expected = expected_list[i].get();
+    RenderPass* actual = actual_list[i].get();
 
     EXPECT_EQ(expected->id, actual->id);
     EXPECT_EQ(expected->output_rect, actual->output_rect);

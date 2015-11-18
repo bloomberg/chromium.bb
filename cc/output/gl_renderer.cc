@@ -377,7 +377,8 @@ GLRenderer::GLRenderer(RendererClient* client,
 
 GLRenderer::~GLRenderer() {
   while (!pending_async_read_pixels_.empty()) {
-    PendingAsyncReadPixels* pending_read = pending_async_read_pixels_.back();
+    PendingAsyncReadPixels* pending_read =
+        pending_async_read_pixels_.back().get();
     pending_read->finished_read_pixels_callback.Cancel();
     pending_async_read_pixels_.pop_back();
   }
@@ -2833,7 +2834,7 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
     ++iter;
 
   DCHECK(iter != reverse_end);
-  PendingAsyncReadPixels* current_read = *iter;
+  PendingAsyncReadPixels* current_read = iter->get();
 
   uint8* src_pixels = NULL;
   scoped_ptr<SkBitmap> bitmap;

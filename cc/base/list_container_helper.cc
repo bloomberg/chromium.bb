@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "cc/base/scoped_ptr_vector.h"
+#include "base/logging.h"
 
 namespace {
 const size_t kDefaultNumElementTypesToReserve = 32;
@@ -103,19 +103,19 @@ class ListContainerHelper::CharAllocator {
       : element_size_(element_size),
         size_(0),
         last_list_index_(0),
-        last_list_(NULL) {
+        last_list_(nullptr) {
     AllocateNewList(kDefaultNumElementTypesToReserve);
-    last_list_ = storage_[last_list_index_];
+    last_list_ = storage_[last_list_index_].get();
   }
 
   CharAllocator(size_t element_size, size_t element_count)
       : element_size_(element_size),
         size_(0),
         last_list_index_(0),
-        last_list_(NULL) {
+        last_list_(nullptr) {
     AllocateNewList(element_count > 0 ? element_count
                                       : kDefaultNumElementTypesToReserve);
-    last_list_ = storage_[last_list_index_];
+    last_list_ = storage_[last_list_index_].get();
   }
 
   ~CharAllocator() {}
@@ -128,7 +128,7 @@ class ListContainerHelper::CharAllocator {
         AllocateNewList(last_list_->capacity * 2);
 
       ++last_list_index_;
-      last_list_ = storage_[last_list_index_];
+      last_list_ = storage_[last_list_index_].get();
     }
 
     ++size_;
@@ -152,7 +152,7 @@ class ListContainerHelper::CharAllocator {
     DCHECK(!storage_.empty());
     storage_.erase(storage_.begin() + 1, storage_.end());
     last_list_index_ = 0;
-    last_list_ = storage_[0];
+    last_list_ = storage_[0].get();
     last_list_->size = 0;
     size_ = 0;
   }
@@ -162,7 +162,7 @@ class ListContainerHelper::CharAllocator {
     last_list_->RemoveLast();
     if (last_list_->IsEmpty() && last_list_index_ > 0) {
       --last_list_index_;
-      last_list_ = storage_[last_list_index_];
+      last_list_ = storage_[last_list_index_].get();
 
       // If there are now two empty inner lists, free one of them.
       if (last_list_index_ + 2 < storage_.size())
@@ -175,7 +175,7 @@ class ListContainerHelper::CharAllocator {
     DCHECK_EQ(this, position->ptr_to_container);
 
     // Update |position| to point to the element after the erased element.
-    InnerList* list = storage_[position->vector_index];
+    InnerList* list = storage_[position->vector_index].get();
     char* item_iterator = position->item_iterator;
     if (item_iterator == list->LastElement())
       position->Increment();
@@ -208,7 +208,7 @@ class ListContainerHelper::CharAllocator {
 
   InnerList* InnerListById(size_t id) const {
     DCHECK_LT(id, storage_.size());
-    return storage_[id];
+    return storage_[id].get();
   }
 
   size_t FirstInnerListId() const {
@@ -245,7 +245,7 @@ class ListContainerHelper::CharAllocator {
     storage_.push_back(new_list.Pass());
   }
 
-  ScopedPtrVector<InnerList> storage_;
+  std::vector<scoped_ptr<InnerList>> storage_;
   const size_t element_size_;
 
   // The number of elements in the list.

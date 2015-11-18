@@ -1477,7 +1477,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
     // Compute the frame size based on the root render pass rect size.
     cc::RenderPass* root_pass =
-        frame->delegated_frame_data->render_pass_list.back();
+        frame->delegated_frame_data->render_pass_list.back().get();
     gfx::Size pixel_size = root_pass->output_rect.size();
     gfx::Size dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 

@@ -16,7 +16,8 @@ namespace {
 
 class LargestToSmallestScaleFunctor {
  public:
-  bool operator() (PictureLayerTiling* left, PictureLayerTiling* right) {
+  bool operator()(const scoped_ptr<PictureLayerTiling>& left,
+                  const scoped_ptr<PictureLayerTiling>& right) {
     return left->contents_scale() > right->contents_scale();
   }
 };
@@ -71,7 +72,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
   }
 
   bool tiling_sort_required = false;
-  for (PictureLayerTiling* pending_twin_tiling : pending_twin_set->tilings_) {
+  for (const auto& pending_twin_tiling : pending_twin_set->tilings_) {
     float contents_scale = pending_twin_tiling->contents_scale();
     PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
     if (!this_tiling) {
@@ -80,15 +81,17 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
           tiling_interest_area_padding_, skewport_target_time_in_seconds_,
           skewport_extrapolation_limit_in_content_pixels_);
       tilings_.push_back(new_tiling.Pass());
-      this_tiling = tilings_.back();
+      this_tiling = tilings_.back().get();
       tiling_sort_required = true;
     }
-    this_tiling->TakeTilesAndPropertiesFrom(pending_twin_tiling,
+    this_tiling->TakeTilesAndPropertiesFrom(pending_twin_tiling.get(),
                                             layer_invalidation);
   }
 
-  if (tiling_sort_required)
-    tilings_.sort(LargestToSmallestScaleFunctor());
+  if (tiling_sort_required) {
+    std::sort(tilings_.begin(), tilings_.end(),
+              LargestToSmallestScaleFunctor());
+  }
 }
 
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
@@ -107,7 +110,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
 
   // If the tiling is not shared (FindTilingWithScale returns nullptr), then
   // invalidate tiles and update them to the new raster source.
-  for (PictureLayerTiling* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     if (pending_twin_set->FindTilingWithScale(tiling->contents_scale()))
       continue;
 
@@ -139,7 +142,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
   RemoveTilingsAboveScale(maximum_contents_scale);
 
   // Invalidate tiles and update them to the new raster source.
-  for (PictureLayerTiling* tiling : tilings_) {
+  for (const scoped_ptr<PictureLayerTiling>& tiling : tilings_) {
     DCHECK(tree_ != PENDING_TREE || !tiling->has_tiles());
     tiling->SetRasterSourceAndResize(raster_source);
 
@@ -159,7 +162,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
 void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
     const scoped_refptr<DisplayListRasterSource>& raster_source,
     const Region& layer_invalidation) {
-  for (PictureLayerTiling* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
     // Since the invalidation changed, we need to create any missing tiles in
@@ -171,7 +174,7 @@ void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
 void PictureLayerTilingSet::VerifyTilings(
     const PictureLayerTilingSet* pending_twin_set) const {
 #if DCHECK_IS_ON()
-  for (PictureLayerTiling* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     DCHECK(tiling->tile_size() ==
            client_->CalculateTileSize(tiling->tiling_size()))
         << "tile_size: " << tiling->tile_size().ToString()
@@ -202,7 +205,7 @@ void PictureLayerTilingSet::CleanUpTilings(
     const std::vector<PictureLayerTiling*>& needed_tilings,
     PictureLayerTilingSet* twin_set) {
   std::vector<PictureLayerTiling*> to_remove;
-  for (auto* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     // Keep all tilings within the min/max scales.
     if (tiling->contents_scale() >= min_acceptable_high_res_scale &&
         tiling->contents_scale() <= max_acceptable_high_res_scale) {
@@ -214,12 +217,12 @@ void PictureLayerTilingSet::CleanUpTilings(
       continue;
 
     // Don't remove tilings that are required.
-    if (std::find(needed_tilings.begin(), needed_tilings.end(), tiling) !=
+    if (std::find(needed_tilings.begin(), needed_tilings.end(), tiling.get()) !=
         needed_tilings.end()) {
       continue;
     }
 
-    to_remove.push_back(tiling);
+    to_remove.push_back(tiling.get());
   }
 
   for (auto* tiling : to_remove) {
@@ -229,14 +232,16 @@ void PictureLayerTilingSet::CleanUpTilings(
 }
 
 void PictureLayerTilingSet::RemoveNonIdealTilings() {
-  auto to_remove = tilings_.remove_if([](PictureLayerTiling* t) {
-    return t->resolution() == NON_IDEAL_RESOLUTION;
-  });
+  auto to_remove =
+      std::remove_if(tilings_.begin(), tilings_.end(),
+                     [](const scoped_ptr<PictureLayerTiling>& t) {
+                       return t->resolution() == NON_IDEAL_RESOLUTION;
+                     });
   tilings_.erase(to_remove, tilings_.end());
 }
 
 void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
-  for (auto* tiling : tilings_)
+  for (const auto& tiling : tilings_)
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
 }
 
@@ -252,50 +257,53 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
       tree_, contents_scale, raster_source, client_,
       tiling_interest_area_padding_, skewport_target_time_in_seconds_,
       skewport_extrapolation_limit_in_content_pixels_));
-  PictureLayerTiling* appended = tilings_.back();
+  PictureLayerTiling* appended = tilings_.back().get();
 
-  tilings_.sort(LargestToSmallestScaleFunctor());
+  std::sort(tilings_.begin(), tilings_.end(), LargestToSmallestScaleFunctor());
   return appended;
 }
 
 int PictureLayerTilingSet::NumHighResTilings() const {
   return std::count_if(tilings_.begin(), tilings_.end(),
-                       [](PictureLayerTiling* tiling) {
-    return tiling->resolution() == HIGH_RESOLUTION;
-  });
+                       [](const scoped_ptr<PictureLayerTiling>& tiling) {
+                         return tiling->resolution() == HIGH_RESOLUTION;
+                       });
 }
 
 PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScale(
     float scale) const {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     if (tilings_[i]->contents_scale() == scale)
-      return tilings_[i];
+      return tilings_[i].get();
   }
-  return NULL;
+  return nullptr;
 }
 
 PictureLayerTiling* PictureLayerTilingSet::FindTilingWithResolution(
     TileResolution resolution) const {
-  auto iter = std::find_if(tilings_.begin(), tilings_.end(),
-                           [resolution](const PictureLayerTiling* tiling) {
-    return tiling->resolution() == resolution;
-  });
+  auto iter =
+      std::find_if(tilings_.begin(), tilings_.end(),
+                   [resolution](const scoped_ptr<PictureLayerTiling>& tiling) {
+                     return tiling->resolution() == resolution;
+                   });
   if (iter == tilings_.end())
-    return NULL;
-  return *iter;
+    return nullptr;
+  return iter->get();
 }
 
 void PictureLayerTilingSet::RemoveTilingsBelowScale(float minimum_scale) {
-  auto to_remove =
-      tilings_.remove_if([minimum_scale](PictureLayerTiling* tiling) {
+  auto to_remove = std::remove_if(
+      tilings_.begin(), tilings_.end(),
+      [minimum_scale](const scoped_ptr<PictureLayerTiling>& tiling) {
         return tiling->contents_scale() < minimum_scale;
       });
   tilings_.erase(to_remove, tilings_.end());
 }
 
 void PictureLayerTilingSet::RemoveTilingsAboveScale(float maximum_scale) {
-  auto to_remove =
-      tilings_.remove_if([maximum_scale](PictureLayerTiling* tiling) {
+  auto to_remove = std::remove_if(
+      tilings_.begin(), tilings_.end(),
+      [maximum_scale](const scoped_ptr<PictureLayerTiling>& tiling) {
         return tiling->contents_scale() > maximum_scale;
       });
   tilings_.erase(to_remove, tilings_.end());
@@ -306,8 +314,11 @@ void PictureLayerTilingSet::RemoveAllTilings() {
 }
 
 void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
-  ScopedPtrVector<PictureLayerTiling>::iterator iter =
-    std::find(tilings_.begin(), tilings_.end(), tiling);
+  auto iter =
+      std::find_if(tilings_.begin(), tilings_.end(),
+                   [tiling](const scoped_ptr<PictureLayerTiling>& candidate) {
+                     return candidate.get() == tiling;
+                   });
   if (iter == tilings_.end())
     return;
   tilings_.erase(iter);
@@ -324,7 +335,7 @@ float PictureLayerTilingSet::GetSnappedContentsScale(
   // If a tiling exists within the max snapping ratio, snap to its scale.
   float snapped_contents_scale = start_scale;
   float snapped_ratio = snap_to_existing_tiling_ratio;
-  for (const auto* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     float tiling_contents_scale = tiling->contents_scale();
     float ratio = LargerRatio(tiling_contents_scale, start_scale);
     if (ratio < snapped_ratio) {
@@ -349,7 +360,7 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
     const Occlusion& occlusion_in_layer_space,
     bool can_require_tiles_for_activation) {
   bool updated = false;
-  for (auto* tiling : tilings_) {
+  for (const auto& tiling : tilings_) {
     tiling->set_can_require_tiles_for_activation(
         can_require_tiles_for_activation);
     updated |= tiling->ComputeTilePriorityRects(
@@ -361,7 +372,7 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
 
 void PictureLayerTilingSet::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
-  for (auto* tiling : tilings_)
+  for (const auto& tiling : tilings_)
     tiling->GetAllPrioritizedTilesForTracing(prioritized_tiles);
 }
 
@@ -378,7 +389,7 @@ PictureLayerTilingSet::CoverageIterator::CoverageIterator(
 
   size_t tilings_size = set_->tilings_.size();
   for (ideal_tiling_ = 0; ideal_tiling_ < tilings_size; ++ideal_tiling_) {
-    PictureLayerTiling* tiling = set_->tilings_[ideal_tiling_];
+    PictureLayerTiling* tiling = set_->tilings_[ideal_tiling_].get();
     if (tiling->contents_scale() < ideal_contents_scale_) {
       if (ideal_tiling_ > 0)
         ideal_tiling_--;
@@ -412,13 +423,13 @@ gfx::RectF PictureLayerTilingSet::CoverageIterator::texture_rect() const {
 
 Tile* PictureLayerTilingSet::CoverageIterator::operator->() const {
   if (!tiling_iter_)
-    return NULL;
+    return nullptr;
   return *tiling_iter_;
 }
 
 Tile* PictureLayerTilingSet::CoverageIterator::operator*() const {
   if (!tiling_iter_)
-    return NULL;
+    return nullptr;
   return *tiling_iter_;
 }
 
@@ -431,10 +442,10 @@ TileResolution PictureLayerTilingSet::CoverageIterator::resolution() const {
 PictureLayerTiling* PictureLayerTilingSet::CoverageIterator::CurrentTiling()
     const {
   if (current_tiling_ == std::numeric_limits<size_t>::max())
-    return NULL;
+    return nullptr;
   if (current_tiling_ >= set_->tilings_.size())
-    return NULL;
-  return set_->tilings_[current_tiling_];
+    return nullptr;
+  return set_->tilings_[current_tiling_].get();
 }
 
 size_t PictureLayerTilingSet::CoverageIterator::NextTiling() const {
@@ -505,9 +516,7 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
     // Construct a new iterator for the next tiling, but we need to loop
     // again until we get to a valid one.
     tiling_iter_ = PictureLayerTiling::CoverageIterator(
-        set_->tilings_[current_tiling_],
-        contents_scale_,
-        last_rect);
+        set_->tilings_[current_tiling_].get(), contents_scale_, last_rect);
   }
 
   return *this;
@@ -542,7 +551,7 @@ PictureLayerTilingSet::TilingRange PictureLayerTilingSet::GetTilingRange(
   TilingRange high_res_range(0, 0);
   TilingRange low_res_range(tilings_.size(), tilings_.size());
   for (size_t i = 0; i < tilings_size; ++i) {
-    const PictureLayerTiling* tiling = tilings_[i];
+    const PictureLayerTiling* tiling = tilings_[i].get();
     if (tiling->resolution() == HIGH_RESOLUTION)
       high_res_range = TilingRange(i, i + 1);
     if (tiling->resolution() == LOW_RESOLUTION)

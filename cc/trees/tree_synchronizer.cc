@@ -25,10 +25,8 @@ void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
     return;
 
   OwnedLayerImplList& children = layer_impl->children();
-  for (OwnedLayerImplList::iterator it = children.begin();
-       it != children.end();
-       ++it)
-    CollectExistingLayerImplRecursive(old_layers, children.take(it));
+  for (auto& child : children)
+    CollectExistingLayerImplRecursive(old_layers, std::move(child));
 
   CollectExistingLayerImplRecursive(old_layers, layer_impl->TakeMaskLayer());
   CollectExistingLayerImplRecursive(old_layers, layer_impl->TakeReplicaLayer());
@@ -163,8 +161,7 @@ void TreeSynchronizer::PushPropertiesInternal(
     DCHECK_EQ(layer->children().size(), impl_children.size());
 
     for (size_t i = 0; i < layer->children().size(); ++i) {
-      PushPropertiesInternal(layer->child_at(i),
-                             impl_children[i],
+      PushPropertiesInternal(layer->child_at(i), impl_children[i].get(),
                              &num_dependents_need_push_properties);
     }
 

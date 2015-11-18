@@ -87,7 +87,8 @@ scoped_ptr<CompositorFrame> CreateCompositorFrame(const gfx::Rect& root_rect,
   scoped_ptr<CompositorFrame> root_frame =
       CreateCompositorFrameWithRenderPassList(&render_pass_list);
 
-  *render_pass = root_frame->delegated_frame_data->render_pass_list.back();
+  *render_pass =
+      root_frame->delegated_frame_data->render_pass_list.back().get();
   return root_frame;
 }
 

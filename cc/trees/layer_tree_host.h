@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
@@ -491,7 +490,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   TaskGraphRunner* task_graph_runner_;
 
-  ScopedPtrVector<SwapPromise> swap_promise_list_;
+  std::vector<scoped_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
   PropertyTrees property_trees_;

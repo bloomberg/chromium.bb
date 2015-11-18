@@ -92,11 +92,9 @@ scoped_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
 }
 
 // static
-void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
-                         ScopedPtrVector<RenderPass>* out) {
-  for (size_t i = 0; i < in.size(); ++i) {
-    RenderPass* source = in[i];
-
+void RenderPass::CopyAll(const std::vector<scoped_ptr<RenderPass>>& in,
+                         std::vector<scoped_ptr<RenderPass>>* out) {
+  for (const auto& source : in) {
     // Since we can't copy these, it's wrong to use CopyAll in a situation where
     // you may have copy_requests present.
     DCHECK_EQ(source->copy_requests.size(), 0u);

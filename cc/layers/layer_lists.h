@@ -8,15 +8,15 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 
 namespace cc {
 class Layer;
 class LayerImpl;
 
 typedef std::vector<scoped_refptr<Layer>> LayerList;
-typedef ScopedPtrVector<LayerImpl> OwnedLayerImplList;
+typedef std::vector<scoped_ptr<LayerImpl>> OwnedLayerImplList;
 typedef std::vector<LayerImpl*> LayerImplList;
 
 }  // namespace cc

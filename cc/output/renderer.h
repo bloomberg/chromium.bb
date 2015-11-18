@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,7 +20,7 @@ class RenderPassId;
 class ScopedResource;
 class Task;
 
-typedef ScopedPtrVector<RenderPass> RenderPassList;
+typedef std::vector<scoped_ptr<RenderPass>> RenderPassList;
 
 struct RendererCapabilitiesImpl {
   RendererCapabilitiesImpl();

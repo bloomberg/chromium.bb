@@ -49,7 +49,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = root->children()[0].get();
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->IsDrawnRenderSurfaceLayerListMember());
@@ -102,7 +102,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = root->children()[0].get();
     RenderSurfaceImpl* surface = child->render_surface();
 
     // Verify the draw properties are valid.
@@ -165,7 +165,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = root->children()[0].get();
     RenderSurfaceImpl* surface = child->render_surface();
     LayerImpl* mask = child->mask_layer();
 
@@ -237,7 +237,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = root->children()[0].get();
     RenderSurfaceImpl* surface = child->render_surface();
     LayerImpl* mask = child->mask_layer();
 

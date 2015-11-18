@@ -5,12 +5,13 @@
 #ifndef CC_ANIMATION_ANIMATION_PLAYER_H_
 #define CC_ANIMATION_ANIMATION_PLAYER_H_
 
+#include <vector>
+
 #include "base/containers/linked_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 
 namespace cc {
 
@@ -94,8 +95,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   // We accumulate added animations in animations_ container
   // if element_animations_ is a nullptr. It allows us to add/remove animations
   // to non-attached AnimationPlayers.
-  typedef ScopedPtrVector<Animation> AnimationList;
-  AnimationList animations_;
+  std::vector<scoped_ptr<Animation>> animations_;
 
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;

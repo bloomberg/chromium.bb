@@ -91,11 +91,9 @@ scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
 
 void HeadsUpDisplayLayerImpl::AcquireResource(
     ResourceProvider* resource_provider) {
-  for (ScopedPtrVector<ScopedResource>::iterator it = resources_.begin();
-       it != resources_.end();
-       ++it) {
-    if (!resource_provider->InUseByConsumer((*it)->id())) {
-      resources_.swap(it, resources_.end() - 1);
+  for (auto& resource : resources_) {
+    if (!resource_provider->InUseByConsumer(resource->id())) {
+      resource.swap(resources_.back());
       return;
     }
   }
@@ -108,23 +106,13 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   resources_.push_back(resource.Pass());
 }
 
-class ResourceSizeIsEqualTo {
- public:
-  explicit ResourceSizeIsEqualTo(const gfx::Size& size_)
-      : compare_size_(size_) {}
-
-  bool operator()(const ScopedResource* resource) {
-    return resource->size() == compare_size_;
-  }
-
- private:
-  const gfx::Size compare_size_;
-};
-
 void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(
     ResourceProvider* resource_provider) {
-  ScopedPtrVector<ScopedResource>::iterator it_erase =
-      resources_.partition(ResourceSizeIsEqualTo(internal_content_bounds_));
+  auto it_erase =
+      std::remove_if(resources_.begin(), resources_.end(),
+                     [this](const scoped_ptr<ScopedResource>& resource) {
+                       return internal_content_bounds_ != resource->size();
+                     });
   resources_.erase(it_erase, resources_.end());
 }
 

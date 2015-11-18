@@ -5,7 +5,6 @@
 #ifndef CC_TEST_RENDER_PASS_TEST_UTILS_H_
 #define CC_TEST_RENDER_PASS_TEST_UTILS_H_
 
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"

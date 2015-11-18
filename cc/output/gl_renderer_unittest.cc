@@ -59,7 +59,9 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
 
 class GLRendererTest : public testing::Test {
  protected:
-  RenderPass* root_render_pass() { return render_passes_in_draw_order_.back(); }
+  RenderPass* root_render_pass() {
+    return render_passes_in_draw_order_.back().get();
+  }
 
   RenderPassList render_passes_in_draw_order_;
 };

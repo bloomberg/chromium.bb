@@ -105,9 +105,10 @@ void AnimationPlayer::BindElementAnimations() {
   DCHECK(element_animations_);
 
   // Pass all accumulated animations to LAC.
-  for (auto it = animations_.begin(); it != animations_.end(); ++it)
+  for (auto& animation : animations_) {
     element_animations_->layer_animation_controller()->AddAnimation(
-        animations_.take(it));
+        std::move(animation));
+  }
   if (!animations_.empty())
     SetNeedsCommit();
   animations_.clear();
@@ -144,8 +145,11 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
         animation_id);
     SetNeedsCommit();
   } else {
-    auto animations_to_remove = animations_.remove_if([animation_id](
-        Animation* animation) { return animation->id() == animation_id; });
+    auto animations_to_remove =
+        std::remove_if(animations_.begin(), animations_.end(),
+                       [animation_id](const scoped_ptr<Animation>& animation) {
+                         return animation->id() == animation_id;
+                       });
     animations_.erase(animations_to_remove, animations_.end());
   }
 }

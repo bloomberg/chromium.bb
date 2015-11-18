@@ -225,7 +225,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   }
 
   cc::RenderPass* root_pass =
-      frame->delegated_frame_data->render_pass_list.back();
+      frame->delegated_frame_data->render_pass_list.back().get();
 
   gfx::Size frame_size = root_pass->output_rect.size();
   float scale_factor = frame->metadata.device_scale_factor;

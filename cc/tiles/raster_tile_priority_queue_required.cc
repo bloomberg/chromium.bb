@@ -12,7 +12,7 @@ namespace {
 
 void AppendTilingSetRequiredQueues(
     const std::vector<PictureLayerImpl*>& layers,
-    ScopedPtrVector<TilingSetRasterQueueRequired>* queues) {
+    std::vector<scoped_ptr<TilingSetRasterQueueRequired>>* queues) {
   for (auto* layer : layers) {
     if (!layer->HasValidTilePriorities())
       continue;

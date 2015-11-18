@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -79,9 +78,9 @@ class CC_EXPORT PictureLayerTilingSet {
       scoped_refptr<DisplayListRasterSource> raster_source);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;
-  PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx]; }
+  PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx].get(); }
   const PictureLayerTiling* tiling_at(size_t idx) const {
-    return tilings_[idx];
+    return tilings_[idx].get();
   }
   WhichTree tree() const { return tree_; }
 
@@ -188,7 +187,7 @@ class CC_EXPORT PictureLayerTilingSet {
   void Remove(PictureLayerTiling* tiling);
   void VerifyTilings(const PictureLayerTilingSet* pending_twin_set) const;
 
-  ScopedPtrVector<PictureLayerTiling> tilings_;
+  std::vector<scoped_ptr<PictureLayerTiling>> tilings_;
 
   const size_t tiling_interest_area_padding_;
   const float skewport_target_time_in_seconds_;

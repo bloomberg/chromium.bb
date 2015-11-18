@@ -29,7 +29,7 @@ namespace {
 void MoveMatchingRequests(
     RenderPassId id,
     std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests,
-    ScopedPtrVector<CopyOutputRequest>* output_requests) {
+    std::vector<scoped_ptr<CopyOutputRequest>>* output_requests) {
   auto request_range = copy_requests->equal_range(id);
   for (auto it = request_range.first; it != request_range.second; ++it) {
     DCHECK(it->second);
@@ -576,7 +576,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
 
   gfx::Rect damage_rect;
   if (!frame_data->render_pass_list.empty()) {
-    RenderPass* last_pass = frame_data->render_pass_list.back();
+    RenderPass* last_pass = frame_data->render_pass_list.back().get();
     damage_rect =
         DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
   }

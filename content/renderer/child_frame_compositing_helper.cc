@@ -215,7 +215,7 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     return;
 
   DCHECK(!frame_data->render_pass_list.empty());
-  cc::RenderPass* root_pass = frame_data->render_pass_list.back();
+  cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
   gfx::Size frame_size = root_pass->output_rect.size();
 
   if (last_route_id_ != route_id ||

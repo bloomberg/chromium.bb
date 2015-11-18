@@ -5,7 +5,8 @@
 #ifndef CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 #define CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 
-#include "cc/base/scoped_ptr_vector.h"
+#include <vector>
+
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
@@ -18,7 +19,7 @@ class RenderPass;
 class Surface;
 class TestRenderPass;
 
-typedef ScopedPtrVector<RenderPass> RenderPassList;
+typedef std::vector<scoped_ptr<RenderPass>> RenderPassList;
 
 namespace test {
 

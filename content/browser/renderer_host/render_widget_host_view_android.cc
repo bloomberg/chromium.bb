@@ -1146,7 +1146,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   DCHECK(!frame->delegated_frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass =
-      frame->delegated_frame_data->render_pass_list.back();
+      frame->delegated_frame_data->render_pass_list.back().get();
   texture_size_in_layer_ = root_pass->output_rect.size();
 
   cc::CompositorFrameMetadata metadata = frame->metadata;

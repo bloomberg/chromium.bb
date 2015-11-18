@@ -32,7 +32,7 @@ class CC_EXPORT OverlayProcessor {
                          OverlayCandidateList* candidates,
                          gfx::Rect* damage_rect) = 0;
   };
-  typedef ScopedPtrVector<Strategy> StrategyList;
+  using StrategyList = std::vector<scoped_ptr<Strategy>>;
 
   explicit OverlayProcessor(OutputSurface* surface);
   virtual ~OverlayProcessor();

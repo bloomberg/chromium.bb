@@ -15,7 +15,7 @@ namespace {
 
 template <class KeyframeType>
 void InsertKeyframe(scoped_ptr<KeyframeType> keyframe,
-                    ScopedPtrVector<KeyframeType>* keyframes) {
+                    std::vector<scoped_ptr<KeyframeType>>* keyframes) {
   // Usually, the keyframes will be added in order, so this loop would be
   // unnecessary and we should skip it if possible.
   if (!keyframes->empty() && keyframe->Time() < keyframes->back()->Time()) {
@@ -32,7 +32,7 @@ void InsertKeyframe(scoped_ptr<KeyframeType> keyframe,
 
 template <typename KeyframeType>
 base::TimeDelta TransformedAnimationTime(
-    const ScopedPtrVector<KeyframeType>& keyframes,
+    const std::vector<scoped_ptr<KeyframeType>>& keyframes,
     const scoped_ptr<TimingFunction>& timing_function,
     base::TimeDelta time) {
   if (timing_function) {
@@ -49,7 +49,7 @@ base::TimeDelta TransformedAnimationTime(
 }
 
 template <typename KeyframeType>
-size_t GetActiveKeyframe(const ScopedPtrVector<KeyframeType>& keyframes,
+size_t GetActiveKeyframe(const std::vector<scoped_ptr<KeyframeType>>& keyframes,
                          base::TimeDelta time) {
   DCHECK_GE(keyframes.size(), 2ul);
   size_t i = 0;
@@ -63,7 +63,7 @@ size_t GetActiveKeyframe(const ScopedPtrVector<KeyframeType>& keyframes,
 
 template <typename KeyframeType>
 double TransformedKeyframeProgress(
-    const ScopedPtrVector<KeyframeType>& keyframes,
+    const std::vector<scoped_ptr<KeyframeType>>& keyframes,
     base::TimeDelta time,
     size_t i) {
   double progress =

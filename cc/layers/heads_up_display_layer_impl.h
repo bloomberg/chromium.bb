@@ -123,7 +123,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void AcquireResource(ResourceProvider* resource_provider);
   void ReleaseUnmatchedSizeResources(ResourceProvider* resource_provider);
 
-  ScopedPtrVector<ScopedResource> resources_;
+  std::vector<scoped_ptr<ScopedResource>> resources_;
   skia::RefPtr<SkSurface> hud_surface_;
 
   skia::RefPtr<SkTypeface> typeface_;

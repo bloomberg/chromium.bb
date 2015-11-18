@@ -78,7 +78,7 @@ int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
   int num_children_that_draw_content = 0;
   for (size_t i = 0; i < layer->children().size(); ++i) {
     num_children_that_draw_content +=
-        RecursiveUpdateNumChildren(layer->children()[i]);
+        RecursiveUpdateNumChildren(layer->children()[i].get());
   }
   if (layer->DrawsContent() && layer->HasDelegatedContent())
     num_children_that_draw_content += 1000;
