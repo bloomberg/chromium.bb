@@ -15,6 +15,16 @@ namespace mojo {
 class ApplicationConnection;
 class ApplicationImpl;
 
+// Connects to mojo:tracing during your Application's Initialize() call once
+// per process.
+//
+// We need to deal with multiple ways of packaging mojo applications
+// together. We'll need to deal with packages that use the mojo.ContentHandler
+// interface to bundle several Applciations into a single physical on disk
+// mojo binary, and with those same services each in their own mojo binary.
+//
+// Have your bundle ContentHandler own a TracingImpl, and each Application own
+// a TracingImpl. In bundles, the second TracingImpl will be a no-op.
 class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
  public:
   TracingImpl();

@@ -16,6 +16,7 @@
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace sql {
 class ScopedMojoFilesystemVFS;
@@ -69,6 +70,7 @@ class NetworkServiceDelegate : public ApplicationDelegate,
 
  private:
   ApplicationImpl* app_;
+  mojo::TracingImpl tracing_;
 
   // Observers that want notifications that our worker thread is going away.
   base::ObserverList<NetworkServiceDelegateObserver> observers_;

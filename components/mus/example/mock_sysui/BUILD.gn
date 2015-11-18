@@ -20,6 +20,7 @@ mojo_native_application("mock_sysui") {
     "//mash/wm/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
+    "//mojo/services/tracing/public/cpp",
     "//skia",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",

@@ -48,6 +48,7 @@ source_set("example_wm_lib") {
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
+    "//mojo/services/tracing/public/cpp",
     "//skia",
     "//ui/mojo/init",
     "//ui/views",

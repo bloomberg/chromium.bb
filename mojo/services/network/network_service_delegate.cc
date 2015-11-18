@@ -129,6 +129,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   worker_thread = io_worker_thread_->task_runner();
 #endif
   context_.reset(new NetworkContext(base_path, worker_thread, this));
+  tracing_.Initialize(app);
 }
 
 bool NetworkServiceDelegate::ConfigureIncomingConnection(

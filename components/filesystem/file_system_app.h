@@ -11,6 +11,7 @@
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -59,6 +60,7 @@ class FileSystemApp : public mojo::ApplicationDelegate,
   std::vector<Client> client_mapping_;
 
   mojo::ApplicationImpl* app_;
+  mojo::TracingImpl tracing_;
 
   // Set to true when our shell connection is closed. On connection error, we
   // then broadcast a notification to all FileSystemClients that they should

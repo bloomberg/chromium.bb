@@ -17,6 +17,7 @@ FileSystemApp::~FileSystemApp() {}
 
 void FileSystemApp::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  tracing_.Initialize(app);
 }
 
 bool FileSystemApp::ConfigureIncomingConnection(

@@ -91,6 +91,7 @@ class MandolineUIServicesApp
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
+  mojo::TracingImpl tracing_;
   using WindowManagerRequests =
       std::vector<scoped_ptr<mojo::InterfaceRequest<mojom::WindowManager>>>;
   WindowManagerRequests pending_window_manager_requests_;

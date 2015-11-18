@@ -18,6 +18,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 class BackgroundLayout;
 class ShelfLayout;
@@ -87,6 +88,8 @@ class WindowManagerApplication
   int window_count_;
 
   mojo::ApplicationImpl* app_;
+
+  mojo::TracingImpl tracing_;
 
   mus::mojom::WindowTreeHostPtr host_;
 

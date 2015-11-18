@@ -10,6 +10,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace web_view {
 
@@ -36,6 +37,7 @@ class WebViewApplicationDelegate
               mojo::InterfaceRequest<mojom::WebViewFactory> request) override;
 
   mojo::ApplicationImpl* app_;
+  mojo::TracingImpl tracing_;
 
   mojo::WeakBindingSet<WebViewFactory> factory_bindings_;
 

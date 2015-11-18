@@ -4,6 +4,7 @@ include_rules = [
   "+mojo/message_pump",
   "+mojo/platform_handle",
   "+mojo/public",
+  "+mojo/services/tracing/public/cpp",
   "+skia",
   "+third_party/skia/include",
 ]

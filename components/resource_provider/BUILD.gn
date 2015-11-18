@@ -92,6 +92,7 @@ source_set("lib") {
     "//components/resource_provider/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
+    "//mojo/services/tracing/public/cpp",
     "//url",
   ]
 }

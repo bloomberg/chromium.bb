@@ -4,4 +4,5 @@ include_rules = [
   "+mojo/converters",
   "+mojo/platform_handle",
   "+mojo/public",
+  "+mojo/services/tracing/public/cpp",
 ]

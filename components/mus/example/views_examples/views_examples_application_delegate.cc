@@ -17,6 +17,7 @@ ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 }
 
 void ViewsExamplesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  tracing_.Initialize(app);
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
 
   views::WindowManagerConnection::Create(app);

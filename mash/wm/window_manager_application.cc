@@ -13,6 +13,7 @@
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
@@ -34,6 +35,7 @@ mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
 
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  tracing_.Initialize(app);
   mus::mojom::WindowManagerPtr window_manager;
   requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
       mojo::GetProxy(&window_manager)));

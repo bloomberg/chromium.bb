@@ -13,6 +13,7 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -53,6 +54,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
+  mojo::TracingImpl tracing_;
   mus::mojom::WindowTreeHostFactoryPtr host_factory_;
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
   std::set<BrowserWindow*> browsers_;

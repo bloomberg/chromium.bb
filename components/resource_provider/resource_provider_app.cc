@@ -20,6 +20,7 @@ ResourceProviderApp::~ResourceProviderApp() {
 }
 
 void ResourceProviderApp::Initialize(mojo::ApplicationImpl* app) {
+  tracing_.Initialize(app);
 }
 
 bool ResourceProviderApp::ConfigureIncomingConnection(

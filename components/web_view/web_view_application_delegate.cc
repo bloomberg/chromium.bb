@@ -14,6 +14,7 @@ WebViewApplicationDelegate::~WebViewApplicationDelegate() {}
 
 void WebViewApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  tracing_.Initialize(app);
 }
 
 bool WebViewApplicationDelegate::ConfigureIncomingConnection(

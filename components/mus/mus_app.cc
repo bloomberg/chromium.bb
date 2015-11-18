@@ -70,6 +70,8 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   if (!gpu_state_.get())
     gpu_state_ = new GpuState(hardware_rendering_available);
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
+
+  tracing_.Initialize(app);
 }
 
 bool MandolineUIServicesApp::ConfigureIncomingConnection(

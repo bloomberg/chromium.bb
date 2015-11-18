@@ -49,6 +49,7 @@ void BrowserManager::LaunchURL(const mojo::String& url) {
 
 void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  tracing_.Initialize(app);
 
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:mus";

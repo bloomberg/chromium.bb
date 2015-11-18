@@ -56,7 +56,9 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::Initialize(mojo::ApplicationImpl* app) {}
+void FontServiceApp::Initialize(mojo::ApplicationImpl* app) {
+  tracing_.Initialize(app);
+}
 
 bool FontServiceApp::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {

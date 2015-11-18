@@ -17,6 +17,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//mojo/public/cpp/bindings",
+    "//mojo/services/tracing/public/cpp",
   ]
 
   public_deps = [

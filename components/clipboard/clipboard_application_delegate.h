@@ -9,6 +9,7 @@
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
 class ApplicationConnection;
@@ -24,6 +25,7 @@ class ClipboardApplicationDelegate
   ~ClipboardApplicationDelegate() override;
 
   // mojo::ApplicationDelegate implementation.
+  void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -32,6 +34,8 @@ class ClipboardApplicationDelegate
               mojo::InterfaceRequest<mojo::Clipboard> request) override;
 
  private:
+  mojo::TracingImpl tracing_;
+
   DISALLOW_COPY_AND_ASSIGN(ClipboardApplicationDelegate);
 };
 

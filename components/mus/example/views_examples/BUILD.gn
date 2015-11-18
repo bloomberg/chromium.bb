@@ -23,6 +23,7 @@ mojo_native_application("views_examples") {
     "//mojo/application/public/cpp:sources",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
+    "//mojo/services/tracing/public/cpp",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",

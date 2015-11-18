@@ -97,7 +97,6 @@ void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
 }
 
 void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  base::PlatformThread::SetName("CoreServicesDispatcher");
   mojo::logging::InitLogging();
   tracing_.Initialize(app);
 }

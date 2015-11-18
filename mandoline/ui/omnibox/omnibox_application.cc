@@ -82,6 +82,7 @@ OmniboxApplication::~OmniboxApplication() {}
 
 void OmniboxApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  tracing_.Initialize(app);
 }
 
 bool OmniboxApplication::ConfigureIncomingConnection(

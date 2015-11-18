@@ -13,6 +13,10 @@ ClipboardApplicationDelegate::ClipboardApplicationDelegate() {}
 
 ClipboardApplicationDelegate::~ClipboardApplicationDelegate() {}
 
+void ClipboardApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  tracing_.Initialize(app);
+}
+
 bool ClipboardApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService(this);

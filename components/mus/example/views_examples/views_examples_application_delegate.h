@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
 class AuraInit;
@@ -23,6 +24,8 @@ class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
+
+  mojo::TracingImpl tracing_;
 
   scoped_ptr<views::AuraInit> aura_init_;
 
