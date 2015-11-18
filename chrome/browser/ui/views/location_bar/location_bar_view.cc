@@ -1241,8 +1241,10 @@ const char* LocationBarView::GetClassName() const {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  InstantServiceFactory::GetForProfile(profile())->OnOmniboxStartMarginChanged(
-      bounds().x());
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  if (instant_service)
+    instant_service->OnOmniboxStartMarginChanged(bounds().x());
 
   OmniboxPopupView* popup = omnibox_view_->model()->popup_model()->view();
   if (popup->IsOpen())
