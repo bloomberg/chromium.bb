@@ -713,6 +713,9 @@
     'streams': {
       'filepath': 'content/browser/streams/',
     },
+    'styleguide': {
+      'filepath': '^styleguide/',
+    },
     'supervised_users': {
       'filepath': 'chrome/browser/.*managed_mode'\
                   '|chrome/browser/.*managed_user'\
@@ -1457,6 +1460,7 @@
                    'rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
+    'styleguide': ['vmpstr+watch@chromium.org'],
     'sync': ['tim+watch@chromium.org',
              'maxbogue+watch@chromium.org',
              'plaree+watch@chromium.org',
