@@ -30,9 +30,6 @@ pkgconfig_DATA += src/wayland-scanner.pc
 
 src/dtddata.o: protocol/wayland.dtd
 
-%.o: %.S
-	$(AM_V_GEN)$(CC) $(ASFLAGS) $(CPPFLAGS) $(TARGET_MACH) -c -o $@ $<
-
 if USE_HOST_SCANNER
 wayland_scanner = wayland-scanner
 else
