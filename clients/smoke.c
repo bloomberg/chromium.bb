@@ -201,8 +201,6 @@ redraw_handler(struct widget *widget, void *data)
 
 	render(smoke, surface);
 
-	window_damage(smoke->window, 0, 0, smoke->width, smoke->height);
-
 	cairo_surface_destroy(surface);
 
 	widget_schedule_redraw(smoke->widget);
