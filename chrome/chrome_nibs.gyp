@@ -55,6 +55,8 @@
         'browser/ui/cocoa/animatable_view.mm',
         'browser/ui/cocoa/app_menu/app_menu_controller.h',
         'browser/ui/cocoa/app_menu/app_menu_controller.mm',
+        'browser/ui/cocoa/app_menu/menu_tracked_root_view.h',
+        'browser/ui/cocoa/app_menu/menu_tracked_root_view.mm',
         'browser/ui/cocoa/background_gradient_view.h',
         'browser/ui/cocoa/background_gradient_view.mm',
         'browser/ui/cocoa/base_bubble_controller.h',
@@ -235,8 +237,6 @@
         'browser/ui/cocoa/vertical_gradient_view.mm',
         'browser/ui/cocoa/view_id_util.h',
         'browser/ui/cocoa/view_id_util.mm',
-        'browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h',
-        'browser/ui/cocoa/wrench_menu/menu_tracked_root_view.mm',
       ],
       'mac_bundle_resources': [
         '<@(mac_all_xibs)',

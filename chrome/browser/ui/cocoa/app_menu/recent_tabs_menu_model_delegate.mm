@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
+#import "chrome/browser/ui/cocoa/app_menu/recent_tabs_menu_model_delegate.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
 
