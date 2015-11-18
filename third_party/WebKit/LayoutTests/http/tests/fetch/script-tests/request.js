@@ -595,6 +595,15 @@ async_test(function(t) {
             'Creating a Request with FormData body should success.');
         })
       .then(function() {
+          var params = new URLSearchParams();
+          params.append('sample string', '1234567890');
+          request = new Request(URL, {method: 'POST', body: params});
+          return request.text();
+        })
+      .then(function(result) {
+          assert_equals(result, "sample+string=1234567890");
+        })
+      .then(function() {
           t.done();
         })
       .catch(unreached_rejection(t));

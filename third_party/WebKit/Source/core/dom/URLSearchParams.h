@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 #include <utility>
@@ -43,9 +44,14 @@ public:
     void set(const String& name, const String& value);
     void setInput(const String&);
 
+    // Internal helpers
+    PassRefPtr<EncodedFormData> encodeFormData() const;
+
     DECLARE_TRACE();
 
 private:
+    friend class URLSearchParamsTest_EncodedFormData_Test;
+
     explicit URLSearchParams(const String&);
     explicit URLSearchParams(URLSearchParams*);
     Vector<std::pair<String, String>> m_params;

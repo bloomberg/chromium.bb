@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
+#include "bindings/core/v8/V8URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
@@ -77,6 +78,10 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
+        body = FetchFormDataConsumerHandle::create(context, formData.release());
+    } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
+        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeFormData();
+        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (v8Body->IsString()) {
         contentType = "text/plain;charset=UTF-8";

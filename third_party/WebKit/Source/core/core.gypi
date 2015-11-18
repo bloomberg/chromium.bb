@@ -3816,6 +3816,7 @@
             'dom/StyleElementTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',
+            'dom/URLSearchParamsTest.cpp',
             'dom/shadow/ComposedTreeTraversalTest.cpp',
             'editing/EditingStrategyTest.cpp',
             'editing/EditingTestBase.cpp',

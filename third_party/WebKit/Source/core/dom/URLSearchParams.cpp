@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/dom/URLSearchParams.h"
 
+#include "platform/network/FormDataEncoder.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
@@ -174,6 +175,16 @@ void URLSearchParams::set(const String& name, const String& value)
     // Otherwise, append a new name-value pair to the list.
     if (!foundMatch)
         append(name, value);
+}
+
+PassRefPtr<EncodedFormData> URLSearchParams::encodeFormData() const
+{
+    RefPtr<EncodedFormData> data = EncodedFormData::create();
+    Vector<char> encodedData;
+    for (const auto& param : m_params)
+        FormDataEncoder::addKeyValuePairAsFormData(encodedData, param.first.utf8(), param.second.utf8(), EncodedFormData::FormURLEncoded);
+    data->appendData(encodedData.data(), encodedData.size());
+    return data.release();
 }
 
 DEFINE_TRACE(URLSearchParams)
