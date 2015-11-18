@@ -121,4 +121,3 @@ class Scheduler {
 extern Scheduler* g_scheduler;
 
 #endif  // TOOLS_GN_SCHEDULER_H_
-

@@ -156,7 +156,7 @@ TestParseInput::TestParseInput(const std::string& input)
 TestParseInput::~TestParseInput() {
 }
 
-TestTarget::TestTarget(TestWithScope& setup,
+TestTarget::TestTarget(const TestWithScope& setup,
                        const std::string& label_string,
                        Target::OutputType type)
     : Target(setup.settings(), setup.ParseLabel(label_string)) {

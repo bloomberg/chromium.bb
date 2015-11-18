@@ -5,6 +5,7 @@
 #ifndef TOOLS_GN_TEST_WITH_SCOPE_H_
 #define TOOLS_GN_TEST_WITH_SCOPE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -29,7 +30,9 @@ class TestWithScope {
 
   BuildSettings* build_settings() { return &build_settings_; }
   Settings* settings() { return &settings_; }
+  const Settings* settings() const { return &settings_; }
   Toolchain* toolchain() { return &toolchain_; }
+  const Toolchain* toolchain() const { return &toolchain_; }
   Scope* scope() { return &scope_; }
 
   // This buffer accumulates output from any print() commands executed in the
@@ -101,7 +104,7 @@ class TestParseInput {
 // default to public visibility.
 class TestTarget : public Target {
  public:
-  TestTarget(TestWithScope& setup,
+  TestTarget(const TestWithScope& setup,
              const std::string& label_string,
              Target::OutputType type);
   ~TestTarget() override;
