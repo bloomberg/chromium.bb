@@ -707,14 +707,19 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
                "Thread ID", thread_id,
                "Provider ID", provider_id);
 
+  // Adopt the reference sent from the browser process and pass it to the
+  // provider context if it exists.
+  scoped_ptr<ServiceWorkerHandleReference> handle_ref =
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end())
-    provider->second->OnSetControllerServiceWorker(info);
+    provider->second->OnSetControllerServiceWorker(handle_ref.Pass());
 
   ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   if (found != provider_clients_.end()) {
-    // Populate the .controller field with the new worker object.
-    scoped_refptr<WebServiceWorkerImpl> worker = GetOrAdoptServiceWorker(info);
+    // Get the existing worker object or create a new one with a new reference
+    // to populate the .controller field.
+    scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorker(info);
     found->second->setController(WebServiceWorkerImpl::CreateHandle(worker),
                                  should_notify_controllerchange);
   }

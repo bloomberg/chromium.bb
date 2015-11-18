@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace base {
@@ -39,18 +40,20 @@ class ThreadSafeSender;
 //
 // These operations are actually done in delegate classes owned by this class:
 // ControlleeDelegate and ControllerDelegate.
-class ServiceWorkerProviderContext
+class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter> {
  public:
   ServiceWorkerProviderContext(int provider_id,
-                               ServiceWorkerProviderType provider_type);
+                               ServiceWorkerProviderType provider_type,
+                               ThreadSafeSender* thread_safe_sender);
 
   // Called from ServiceWorkerDispatcher.
   void OnAssociateRegistration(const ServiceWorkerRegistrationObjectInfo& info,
                                const ServiceWorkerVersionAttributes& attrs);
   void OnDisassociateRegistration();
-  void OnSetControllerServiceWorker(const ServiceWorkerObjectInfo& info);
+  void OnSetControllerServiceWorker(
+      scoped_ptr<ServiceWorkerHandleReference> controller);
 
   // Called on the worker thread. Used for initializing
   // ServiceWorkerGlobalScope.

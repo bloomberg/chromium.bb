@@ -138,17 +138,15 @@ class ServiceWorkerProviderContext::ControllerDelegate
 
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
-    ServiceWorkerProviderType provider_type)
+    ServiceWorkerProviderType provider_type,
+    ThreadSafeSender* thread_safe_sender)
     : provider_id_(provider_id),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      thread_safe_sender_(thread_safe_sender) {
   if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER)
     delegate_.reset(new ControllerDelegate);
   else
     delegate_.reset(new ControlleeDelegate);
-
-  if (!ChildThreadImpl::current())
-    return;  // May be null in some tests.
-  thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
 
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
@@ -185,14 +183,9 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
+    scoped_ptr<ServiceWorkerHandleReference> controller) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  if (info.version_id == kInvalidServiceWorkerVersionId) {
-    delegate_->SetController(scoped_ptr<ServiceWorkerHandleReference>());
-    return;
-  }
-  delegate_->SetController(
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get()));
+  delegate_->SetController(controller.Pass());
 }
 
 void ServiceWorkerProviderContext::GetAssociatedRegistration(

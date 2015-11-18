@@ -110,9 +110,11 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     : provider_id_(browser_provider_id) {
   if (provider_id_ == kInvalidServiceWorkerProviderId)
     return;
-  context_ = new ServiceWorkerProviderContext(provider_id_, provider_type);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
+  context_ = new ServiceWorkerProviderContext(
+      provider_id_, provider_type,
+      ChildThreadImpl::current()->thread_safe_sender());
   ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
       provider_id_, route_id, provider_type));
 }
