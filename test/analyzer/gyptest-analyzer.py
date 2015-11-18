@@ -297,19 +297,19 @@ EnsureContains(matched=True, compile_targets={'exe'})
 _CreateConfigFile(['subdir2/d.cc'], ['all'], ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
 EnsureContains(matched=True, test_targets={'exe', 'foo'},
-               compile_targets={'exe'})
+               compile_targets={'exe', 'foo'})
 
 _CreateConfigFile(['subdir2/subdir.includes.gypi'], ['all'],
                 ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
 EnsureContains(matched=True, test_targets={'exe', 'foo'},
-               compile_targets={'exe'})
+               compile_targets={'exe', 'foo'})
 
 _CreateConfigFile(['subdir2/subdir.gyp'], ['all'],
                   ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
 EnsureContains(matched=True, test_targets={'exe', 'foo'},
-               compile_targets={'exe'})
+               compile_targets={'exe', 'foo'})
 
 _CreateConfigFile(['test2.includes.gypi'], ['all'],
                   ['exe', 'exe2', 'foo', 'exe3'])
@@ -414,11 +414,12 @@ EnsureContains(matched=False)
 # Assertions with 'all' listed as a test_target.
 _CreateConfigFile(['exe3.c'], [], ['all'])
 run_analyzer()
-EnsureContains(matched=True, compile_targets={'exe3'}, test_targets={'all'})
+EnsureContains(matched=True, compile_targets={'exe3', 'all'},
+               test_targets={'all'})
 
 _CreateConfigFile(['exe2.c'], [], ['all', 'exe2'])
 run_analyzer()
-EnsureContains(matched=True, compile_targets={'exe2'},
+EnsureContains(matched=True, compile_targets={'exe2', 'all'},
                test_targets={'all', 'exe2'})
 
 test.pass_test()

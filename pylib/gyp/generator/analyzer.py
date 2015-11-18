@@ -20,7 +20,8 @@ error: only supplied if there is an error.
 compile_targets: minimal set of targets that directly or indirectly (for
   targets of type none) depend on the files in |files| and is one of the
   supplied targets or a target that one of the supplied targets depends on.
-  The expectation is this set of targets is passed into a build step.
+  The expectation is this set of targets is passed into a build step. This list
+  always contains the output of test_targets as well.
 test_targets: set of targets from the supplied |test_targets| that either
   directly or indirectly depend upon a file in |files|. This list if useful
   if additional processing needs to be done for certain targets after the
@@ -832,7 +833,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     result_dict = { 'test_targets': test_target_names,
                     'status': found_dependency_string if
                         found_at_least_one_target else no_dependency_string,
-                    'compile_targets': compile_target_names}
+                    'compile_targets': list(
+                        set(compile_target_names) |
+                        set(test_target_names)) }
     if calculator.invalid_targets:
       result_dict['invalid_targets'] = calculator.invalid_targets
     _WriteOutput(params, **result_dict)
