@@ -102,6 +102,7 @@ static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 
 // MakePlatformMouseEvent -----------------------------------------------------
 
+// TODO(mustaq): Add tests for this.
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
 {
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
@@ -114,6 +115,8 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
+
+    m_pointerProperties = static_cast<WebPointerProperties>(e);
 
     switch (e.type) {
     case WebInputEvent::MouseMove:
@@ -382,6 +385,7 @@ inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
     return WebTouchPoint::StateUndefined;
 }
 
+// TODO(mustaq): Add tests for this.
 PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTouchPoint& point)
 {
     m_pointerProperties = point;

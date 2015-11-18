@@ -28,6 +28,7 @@
 
 #include "platform/PlatformEvent.h"
 #include "platform/geometry/IntPoint.h"
+#include "public/platform/WebPointerProperties.h"
 
 namespace blink {
 
@@ -75,6 +76,7 @@ public:
     {
     }
 
+    const WebPointerProperties& pointerProperties() const { return m_pointerProperties; }
     const IntPoint& position() const { return m_position; }
     const IntPoint& globalPosition() const { return m_globalPosition; }
     const IntPoint& movementDelta() const { return m_movementDelta; }
@@ -85,6 +87,8 @@ public:
     SyntheticEventType syntheticEventType() const { return m_synthesized; }
 
 protected:
+    WebPointerProperties m_pointerProperties;
+
     IntPoint m_position;
     IntPoint m_globalPosition;
     IntPoint m_movementDelta;

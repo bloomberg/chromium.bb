@@ -39,8 +39,8 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEvent::create(const AtomicString& ty
 
     // TODO(crbug.com/537319): Define a constant somewhere for mouse id.
     pointerEventInit.setPointerId(0);
-
-    pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerType::Mouse));
+    pointerEventInit.setPointerType(
+        pointerTypeNameForWebPointPointerType(mouseEvent.pointerProperties().pointerType));
     pointerEventInit.setIsPrimary(true);
 
     pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
@@ -50,6 +50,10 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEvent::create(const AtomicString& ty
 
     pointerEventInit.setButton(mouseEvent.button());
     pointerEventInit.setButtons(MouseEvent::platformModifiersToButtons(mouseEvent.modifiers()));
+
+    pointerEventInit.setPressure(mouseEvent.pointerProperties().force);
+    pointerEventInit.setTiltX(mouseEvent.pointerProperties().tiltX);
+    pointerEventInit.setTiltY(mouseEvent.pointerProperties().tiltY);
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.modifiers());
 
@@ -76,20 +80,20 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEvent::create(const AtomicString& ty
 
     bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
         || pointState == PlatformTouchPoint::TouchCancelled;
-    const WebPointerProperties::PointerType pointerType = touchPoint.pointerProperties().pointerType;
-    const String& pointerTypeStr = pointerTypeNameForWebPointPointerType(pointerType);
 
     bool isEnterOrLeave = false;
 
     PointerEventInit pointerEventInit;
     pointerEventInit.setPointerId(pointerId);
+    pointerEventInit.setPointerType(
+        pointerTypeNameForWebPointPointerType(touchPoint.pointerProperties().pointerType));
+    pointerEventInit.setIsPrimary(isPrimary);
+
     pointerEventInit.setWidth(width);
     pointerEventInit.setHeight(height);
     pointerEventInit.setPressure(touchPoint.force());
     pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
     pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
-    pointerEventInit.setPointerType(pointerTypeStr);
-    pointerEventInit.setIsPrimary(isPrimary);
     pointerEventInit.setScreenX(touchPoint.screenPos().x());
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
     pointerEventInit.setClientX(clientX);
