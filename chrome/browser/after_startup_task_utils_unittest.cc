@@ -139,7 +139,7 @@ TEST_F(AfterStartupTaskTest, IsStartupComplete) {
   // the DCHECK in CancellationFlag::Set().
   EXPECT_FALSE(GetIsBrowserStartupCompleteFromDBThread());
   EXPECT_FALSE(AfterStartupTaskUtils::IsBrowserStartupComplete());
-  AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+  AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
   EXPECT_TRUE(AfterStartupTaskUtils::IsBrowserStartupComplete());
   EXPECT_TRUE(GetIsBrowserStartupCompleteFromDBThread());
 }
@@ -167,7 +167,7 @@ TEST_F(AfterStartupTaskTest, PostTask) {
   EXPECT_EQ(0, db_thread_->total_task_count() + ui_thread_->total_task_count());
 
   // Queued tasks should be posted upon setting the flag.
-  AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+  AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
   EXPECT_EQ(2, db_thread_->posted_task_count());
   EXPECT_EQ(2, ui_thread_->posted_task_count());
   FlushDBThread();

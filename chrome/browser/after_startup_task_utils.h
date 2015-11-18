@@ -7,10 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-
-class ExtensionServiceTest;
 
 namespace android {
 class AfterStartupTaskUtilsJNI;
@@ -40,16 +37,19 @@ class AfterStartupTaskUtils {
   // PostTask() API instead.
   static bool IsBrowserStartupComplete();
 
+  // For use by unit tests where we don't have normal content loading
+  // infrastructure and thus StartMonitoringStartup() is unsuitable.
+  static void SetBrowserStartupIsCompleteForTesting();
+
+  static void UnsafeResetForTesting();
+
  private:
-  friend class AfterStartupTaskTest;
+  // TODO(wkorman): Look into why Android calls
+  // SetBrowserStartupIsComplete() directly. Ideally it would use
+  // StartMonitoringStartup() as the normal approach.
   friend class android::AfterStartupTaskUtilsJNI;
-  friend class ::ExtensionServiceTest;
-  friend class InProcessBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, IsStartupComplete);
-  FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, PostTask);
 
   static void SetBrowserStartupIsComplete();
-  static void UnsafeResetForTesting();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AfterStartupTaskUtils);
 };

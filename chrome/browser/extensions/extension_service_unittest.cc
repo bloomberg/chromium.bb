@@ -438,7 +438,7 @@ class ExtensionServiceTest
     // browser startup. There's no StartupObserver as there normally
     // would be since we're in a unit test, so we have to explicitly
     // note tasks should be processed.
-    AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+    AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
   }
 
   void AddMockExternalProvider(

@@ -207,6 +207,10 @@ void AfterStartupTaskUtils::PostTask(
   QueueTask(queued_task.Pass());
 }
 
+void AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting() {
+  ::SetBrowserStartupIsComplete();
+}
+
 void AfterStartupTaskUtils::SetBrowserStartupIsComplete() {
   ::SetBrowserStartupIsComplete();
 }

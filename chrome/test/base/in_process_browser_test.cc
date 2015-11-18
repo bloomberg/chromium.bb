@@ -537,7 +537,7 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
 #endif
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
-  AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+  AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
