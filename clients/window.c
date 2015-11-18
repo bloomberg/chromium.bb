@@ -4473,13 +4473,6 @@ window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
 				    wl_fixed_from_int(y));
 }
 
-void
-window_damage(struct window *window, int32_t x, int32_t y,
-	      int32_t width, int32_t height)
-{
-	wl_surface_damage(window->main_surface->surface, x, y, width, height);
-}
-
 static void
 surface_enter(void *data,
 	      struct wl_surface *wl_surface, struct wl_output *wl_output)

@@ -343,10 +343,6 @@ window_schedule_redraw(struct window *window);
 void
 window_schedule_resize(struct window *window, int width, int height);
 
-void
-window_damage(struct window *window, int32_t x, int32_t y,
-	      int32_t width, int32_t height);
-
 cairo_surface_t *
 window_get_surface(struct window *window);
 
