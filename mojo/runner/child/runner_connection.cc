@@ -23,6 +23,8 @@ namespace mojo {
 namespace runner {
 namespace {
 
+void DidCreateChannel(embedder::ChannelInfo* channel_info) {}
+
 // Blocks a thread until another thread unblocks it, at which point it unblocks
 // and runs a closure provided by that thread.
 class Blocker {
@@ -89,7 +91,8 @@ class RunnerConnectionImpl : public RunnerConnection {
 
   // Returns true if a connection to the runner has been established and
   // |request| has been modified, false if no connection was established.
-  bool WaitForApplicationRequest(InterfaceRequest<Application>* request);
+  bool WaitForApplicationRequest(InterfaceRequest<Application>* request,
+                                 ScopedMessagePipeHandle handle);
 
   ChildControllerImpl* controller() const { return controller_.get(); }
 
@@ -133,23 +136,15 @@ class ChildControllerImpl : public ChildController {
   // etc.
   static void Create(RunnerConnectionImpl* connection,
                      const GotApplicationRequestCallback& callback,
-                     embedder::ScopedPlatformHandle platform_channel,
+                     ScopedMessagePipeHandle runner_handle,
                      const Blocker::Unblocker& unblocker) {
     DCHECK(connection);
-    DCHECK(platform_channel.is_valid());
-
     DCHECK(!connection->controller());
 
     scoped_ptr<ChildControllerImpl> impl(
         new ChildControllerImpl(connection, callback, unblocker));
 
-    ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
-        platform_channel.Pass(),
-        base::Bind(&ChildControllerImpl::DidCreateChannel,
-                   base::Unretained(impl.get())),
-        base::ThreadTaskRunnerHandle::Get()));
-
-    impl->Bind(host_message_pipe.Pass());
+    impl->Bind(runner_handle.Pass());
 
     connection->set_controller(impl.Pass());
   }
@@ -191,13 +186,6 @@ class ChildControllerImpl : public ChildController {
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
-  // Callback for |embedder::CreateChannel()|.
-  void DidCreateChannel(embedder::ChannelInfo* channel_info) {
-    DVLOG(2) << "ChildControllerImpl::DidCreateChannel()";
-    DCHECK(thread_checker_.CalledOnValidThread());
-    channel_info_ = channel_info;
-  }
-
   static void ReturnApplicationRequestOnMainThread(
       const GotApplicationRequestCallback& callback,
       InterfaceRequest<Application> application_request) {
@@ -217,12 +205,20 @@ class ChildControllerImpl : public ChildController {
 };
 
 bool RunnerConnectionImpl::WaitForApplicationRequest(
-    InterfaceRequest<Application>* request) {
-  embedder::ScopedPlatformHandle platform_channel =
-      embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
-  if (!platform_channel.is_valid())
-    return false;
+    InterfaceRequest<Application>* request,
+    ScopedMessagePipeHandle handle) {
+  // If a valid message pipe to the runner was not provided, look for one on the
+  // command line.
+  if (!handle.is_valid()) {
+    embedder::ScopedPlatformHandle platform_channel =
+        embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
+            *base::CommandLine::ForCurrentProcess());
+    if (!platform_channel.is_valid())
+      return false;
+    handle = embedder::CreateChannel(platform_channel.Pass(),
+                                     base::Bind(&DidCreateChannel),
+                                     base::ThreadTaskRunnerHandle::Get());
+  }
 
   Blocker blocker;
   controller_runner_->PostTask(
@@ -230,7 +226,7 @@ bool RunnerConnectionImpl::WaitForApplicationRequest(
       base::Bind(
           &ChildControllerImpl::Create, base::Unretained(this),
           base::Bind(&OnGotApplicationRequest, base::Unretained(request)),
-          base::Passed(&platform_channel), blocker.GetUnblocker()));
+          base::Passed(&handle), blocker.GetUnblocker()));
   blocker.Block();
 
   return true;
@@ -242,9 +238,10 @@ RunnerConnection::~RunnerConnection() {}
 
 // static
 RunnerConnection* RunnerConnection::ConnectToRunner(
-    InterfaceRequest<Application>* request) {
+    InterfaceRequest<Application>* request,
+    ScopedMessagePipeHandle handle) {
   RunnerConnectionImpl* connection = new RunnerConnectionImpl;
-  if (!connection->WaitForApplicationRequest(request)) {
+  if (!connection->WaitForApplicationRequest(request, handle.Pass())) {
     delete connection;
     return nullptr;
   }

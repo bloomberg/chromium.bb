@@ -56,18 +56,16 @@ int TestNativeMain(mojo::ApplicationDelegate* application_delegate) {
         mojo::embedder::ProcessType::NONE, &process_delegate,
         io_thread.task_runner().get(), mojo::embedder::ScopedPlatformHandle());
 
+    base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
     mojo::InterfaceRequest<mojo::Application> application_request;
     scoped_ptr<mojo::runner::RunnerConnection> connection(
-        mojo::runner::RunnerConnection::ConnectToRunner(&application_request));
-
-    base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
+        mojo::runner::RunnerConnection::ConnectToRunner(
+            &application_request, ScopedMessagePipeHandle()));
     {
       mojo::ApplicationImpl impl(application_delegate,
                                  application_request.Pass());
       loop.Run();
     }
-
-    connection.reset();
 
     mojo::embedder::ShutdownIPCSupport();
   }

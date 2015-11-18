@@ -221,6 +221,10 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/browser/mojo/mojo_shell_client_host.h"
+#endif
+
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
 #else
@@ -2449,6 +2453,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   NotificationService::current()->Notify(NOTIFICATION_RENDERER_PROCESS_CREATED,
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
+
+#if defined(MOJO_SHELL_CLIENT)
+  // Send a handle that the external Mojo shell can use to pass an Application
+  // request to the child.
+  RegisterChildWithExternalShell(id_, GetHandle(), this);
+#endif
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
   // is fixed.

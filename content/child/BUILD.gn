@@ -15,7 +15,10 @@ source_set("child") {
                         ".",
                         "//content")
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//content/public/common:mojo_shell_client",
+  ]
 
   public_deps = [
     "//third_party/mojo/src/mojo/edk/system",

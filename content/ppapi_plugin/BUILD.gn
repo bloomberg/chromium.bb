@@ -32,7 +32,10 @@ source_set("ppapi_plugin_sources") {
     "ppapi_thread.h",
   ]
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//content/public/common:mojo_shell_client",
+  ]
 
   deps = [
     "//base",
