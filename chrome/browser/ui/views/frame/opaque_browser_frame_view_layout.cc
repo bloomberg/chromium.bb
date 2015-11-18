@@ -26,7 +26,8 @@ const int kNonClientRestoredExtraThickness = 11;
 
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
-const int kCaptionButtonHeightWithPadding = 19;
+const int kCaptionButtonHeight = 18;
+const int kTitleBarAdditionalPadding = 3;
 
 // There is a 5 px gap between the title text and the caption buttons.
 const int kTitleLogoSpacing = 5;
@@ -215,7 +216,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
     bool restored) const {
   if (delegate_->ShouldShowWindowTitle()) {
     return std::max(FrameBorderThickness(restored) + delegate_->GetIconSize(),
-        CaptionButtonY(restored) + kCaptionButtonHeightWithPadding) +
+                    CaptionButtonY(restored) + kCaptionButtonHeight) +
         TitlebarBottomThickness(restored);
   }
 
@@ -237,9 +238,14 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
-  const int edge = kTitlebarTopAndBottomEdgeThickness;
+  int thickness = kTitleBarAdditionalPadding;
+  // If there's a non-empty toolbar, it will render the bottom portion of the
+  // titlebar.
+  if (delegate_->IsToolbarVisible())
+    return thickness;
+  thickness += kTitlebarTopAndBottomEdgeThickness;
   return (!restored && IsTitleBarCondensed()) ?
-      edge : (edge + views::NonClientFrameView::kClientEdgeThickness);
+      thickness : (thickness + views::NonClientFrameView::kClientEdgeThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
@@ -412,9 +418,8 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
         GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) + kNewTabCaptionNormalSpacing;
   }
 
-  // Do not include the 1px padding that is added for the caption buttons.
-  new_avatar_button_->SetBounds(
-      button_x, button_y, button_width, kCaptionButtonHeightWithPadding - 1);
+  new_avatar_button_->SetBounds(button_x, button_y, button_width,
+                                kCaptionButtonHeight);
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {

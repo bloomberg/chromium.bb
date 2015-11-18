@@ -437,6 +437,11 @@ bool OpaqueBrowserFrameView::IsTabStripVisible() const {
   return browser_view()->IsTabStripVisible();
 }
 
+bool OpaqueBrowserFrameView::IsToolbarVisible() const {
+  return browser_view()->IsToolbarVisible() &&
+      !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
+}
+
 int OpaqueBrowserFrameView::GetTabStripHeight() const {
   return browser_view()->GetTabStripHeight();
 }
@@ -467,10 +472,9 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
    * So we'd need to sample the background color at the right location and
    * synthesize a good shadow color. */
 
-  if (browser_view()->IsToolbarVisible())
+  if (IsToolbarVisible())
     PaintToolbarBackground(canvas);
-  if (!layout_->IsTitleBarCondensed())
-    PaintRestoredClientEdge(canvas);
+  PaintClientEdge(canvas);
 }
 
 // BrowserNonClientFrameView:
@@ -744,7 +748,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   }
 }
 
-void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
   int y = frame()->client_view()->y();
 
@@ -755,12 +759,11 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   const int right = client_bounds.right();
   const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
-  if (browser_view()->IsToolbarVisible()) {
+  if (IsToolbarVisible()) {
     // The client edge images start below the toolbar.
     y += browser_view()->GetToolbarBounds().bottom();
-  } else if (!browser_view()->IsTabStripVisible()) {
-    // The toolbar isn't going to draw a client edge for us, so draw one
-    // ourselves.
+  } else {
+    // The toolbar isn't going to draw a top edge for us, so draw one ourselves.
     gfx::ImageSkia* top_left = tp->GetImageSkiaNamed(IDR_APP_TOP_LEFT);
     const int img_w = top_left->width();
     const int height = top_left->height();
@@ -775,6 +778,10 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
                         -kClientEdgeThickness, client_bounds.height());
     canvas->FillRect(client_bounds, toolbar_color);
   }
+
+  // In maximized mode, the only edge to draw is the top one, so we're done.
+  if (layout_->IsTitleBarCondensed())
+    return;
 
   const int bottom = std::max(y, height() - NonClientBorderThickness());
   int height = bottom - y;
