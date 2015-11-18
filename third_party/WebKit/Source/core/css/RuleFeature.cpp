@@ -296,6 +296,8 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoOptional:
         case CSSSelector::PseudoPlaceholderShown:
         case CSSSelector::PseudoRequired:
+        case CSSSelector::PseudoReadOnly:
+        case CSSSelector::PseudoReadWrite:
         case CSSSelector::PseudoValid:
         case CSSSelector::PseudoInvalid:
         case CSSSelector::PseudoIndeterminate:

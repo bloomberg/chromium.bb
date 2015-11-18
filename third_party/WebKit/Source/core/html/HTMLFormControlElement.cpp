@@ -172,7 +172,8 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         m_isReadOnly = !value.isNull();
         if (wasReadOnly != m_isReadOnly) {
             setNeedsWillValidateCheck();
-            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
+            pseudoStateChanged(CSSSelector::PseudoReadOnly);
+            pseudoStateChanged(CSSSelector::PseudoReadWrite);
             if (layoutObject())
                 LayoutTheme::theme().controlStateChanged(*layoutObject(), ReadOnlyControlState);
         }
