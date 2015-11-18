@@ -762,7 +762,7 @@ struct FuzzTraits<cc::RenderPassList> {
   static bool Fuzz(cc::RenderPassList* p, Fuzzer* fuzzer) {
     if (!fuzzer->ShouldGenerate()) {
       for (size_t i = 0; i < p->size(); ++i) {
-        if (!FuzzParam(p->at(i), fuzzer))
+        if (!FuzzParam(p->at(i).get(), fuzzer))
           return false;
       }
       return true;
