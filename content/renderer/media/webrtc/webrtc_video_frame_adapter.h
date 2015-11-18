@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_FRAME_ADAPTER_H_
 
 #include "media/base/video_frame.h"
-#include "third_party/webrtc/common_video/interface/video_frame_buffer.h"
+#include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 
 namespace content {
 // Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer. This

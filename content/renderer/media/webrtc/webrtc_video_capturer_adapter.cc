@@ -15,7 +15,7 @@
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
-#include "third_party/webrtc/common_video/interface/video_frame_buffer.h"
+#include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/common_video/rotation.h"
 
 namespace content {
