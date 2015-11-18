@@ -32,18 +32,35 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
              const net::CompletionCallback& callback,
              scoped_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
-    // Mark certificate as invalid as we didn't check it.
     verify_result->Reset();
     verify_result->verified_cert = cert;
-    verify_result->cert_status = net::CERT_STATUS_INVALID;
 
-    auto it = fingerprints_.find(hostname);
-    if (it == fingerprints_.end())
-      return net::ERR_CERT_INVALID;
+    // Because no trust anchor checking is being performed, don't indicate that
+    // it came from an OS-trusted root.
+    verify_result->is_issued_by_known_root = false;
+    // Because no trust anchor checking is being performed, don't indicate that
+    // it came from a supplemental trust anchor.
+    verify_result->is_issued_by_additional_trust_anchor = false;
+    // Because no name checking is being performed, don't indicate that it the
+    // common name was used.
+    verify_result->common_name_fallback_used = false;
+    // Because the signature is not checked, do not indicate any deprecated
+    // signature algorithms were used, even if they might be present.
+    verify_result->has_md2 = false;
+    verify_result->has_md4 = false;
+    verify_result->has_md5 = false;
+    verify_result->has_sha1 = false;
+    verify_result->has_sha1_leaf = false;
+    // Because no chain hashes calculation is being performed, keep hashes
+    // container clean.
+    verify_result->public_key_hashes.clear();
 
-    auto fingerprint =
-        net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle());
-    return it->second.Equals(fingerprint) ? net::OK : net::ERR_CERT_INVALID;
+    verify_result->cert_status = CheckFingerprint(cert, hostname)
+                                     ? 0
+                                     : net::CERT_STATUS_AUTHORITY_INVALID;
+    return net::IsCertStatusError(verify_result->cert_status)
+               ? net::MapCertStatusToNetError(verify_result->cert_status)
+               : net::OK;
   }
 
   void AddPairedHost(const std::string& host,
@@ -52,6 +69,16 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
   }
 
  private:
+  bool CheckFingerprint(net::X509Certificate* cert,
+                        const std::string& hostname) const {
+    auto it = fingerprints_.find(hostname);
+    if (it == fingerprints_.end())
+      return false;
+
+    return it->second.Equals(
+        net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle()));
+  }
+
   std::map<std::string, net::SHA256HashValue> fingerprints_;
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifier);
