@@ -46,7 +46,8 @@ scoped_ptr<Label> CreateLabelRange(
     result.reset(new Label(text));
   }
 
-  result->SetEnabledColor(style_info.color);
+  if (style_info.color != SK_ColorTRANSPARENT)
+    result->SetEnabledColor(style_info.color);
   result->SetFontList(font_list);
 
   if (!style_info.tooltip.empty())
@@ -66,8 +67,7 @@ scoped_ptr<Label> CreateLabelRange(
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo()
     : font_style(gfx::Font::NORMAL),
-      color(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelEnabledColor)),
+      color(SK_ColorTRANSPARENT),
       disable_line_wrapping(false),
       is_link(false) {}
 
@@ -78,8 +78,6 @@ StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
   RangeStyleInfo result;
   result.disable_line_wrapping = true;
   result.is_link = true;
-  result.color = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LinkEnabled);
   return result;
 }
 
