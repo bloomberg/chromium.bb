@@ -33,7 +33,7 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        mSnackbarManager = new SnackbarManager(getWindow());
+        mSnackbarManager = new SnackbarManager(this);
         mBookmarkManager = new EnhancedBookmarkManager(this);
         setContentView(mBookmarkManager.getView());
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(
@@ -42,6 +42,12 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
 
         // Hack to work around inferred theme false lint error: http://crbug.com/445633
         assert (R.layout.eb_main_content != 0);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mSnackbarManager.dismissAllSnackbars(false);
     }
 
     @Override
