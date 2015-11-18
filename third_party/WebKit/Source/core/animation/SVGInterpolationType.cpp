@@ -11,10 +11,10 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
 {
     if (keyframe.isNeutral())
-        return maybeConvertNeutral();
+        return maybeConvertNeutral(underlyingValue, conversionCheckers);
 
     RefPtrWillBeRawPtr<SVGPropertyBase> svgValue = environment.svgBaseValue().cloneForAnimation(toSVGPropertySpecificKeyframe(keyframe).value());
     return maybeConvertSVGValue(*svgValue);

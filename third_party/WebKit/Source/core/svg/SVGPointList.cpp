@@ -29,8 +29,6 @@
 
 namespace blink {
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPointList);
-
 SVGPointList::SVGPointList()
 {
 }

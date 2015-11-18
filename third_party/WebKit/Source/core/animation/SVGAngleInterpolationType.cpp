@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGAngleInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> SVGAngleInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return InterpolationValue::create(*this, InterpolableNumber::create(0));
 }

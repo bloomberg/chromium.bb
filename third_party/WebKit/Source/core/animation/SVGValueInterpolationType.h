@@ -23,7 +23,7 @@ private:
         return nullptr;
     }
 
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral() const final
+    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final
     {
         return nullptr;
     }

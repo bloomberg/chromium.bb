@@ -1,0 +1,105 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "core/animation/SVGPointListInterpolationType.h"
+
+#include "core/animation/InterpolationEnvironment.h"
+#include "core/svg/SVGPointList.h"
+
+namespace blink {
+
+static size_t getUnderlyingLength(const UnderlyingValue& underlyingValue)
+{
+    if (!underlyingValue)
+        return 0;
+    return toInterpolableList(underlyingValue->interpolableValue()).length();
+}
+
+class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
+public:
+    static PassOwnPtr<UnderlyingLengthChecker> create(const InterpolationType& type, size_t underlyingLength)
+    {
+        return adoptPtr(new UnderlyingLengthChecker(type, underlyingLength));
+    }
+
+    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
+    {
+        return m_underlyingLength == getUnderlyingLength(underlyingValue);
+    }
+
+private:
+    UnderlyingLengthChecker(const InterpolationType& type, size_t underlyingLength)
+        : ConversionChecker(type)
+        , m_underlyingLength(underlyingLength)
+    {}
+
+    size_t m_underlyingLength;
+};
+
+PassOwnPtr<InterpolationValue> SVGPointListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+{
+    size_t underlyingLength = getUnderlyingLength(underlyingValue);
+    conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
+    if (underlyingLength == 0)
+        return nullptr;
+    OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
+    for (size_t i = 0; i < underlyingLength; i++)
+        result->set(i, InterpolableNumber::create(0));
+    return InterpolationValue::create(*this, result.release());
+}
+
+PassOwnPtr<InterpolationValue> SVGPointListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+{
+    if (svgValue.type() != AnimatedPoints)
+        return nullptr;
+
+    const SVGPointList& pointList = toSVGPointList(svgValue);
+    OwnPtr<InterpolableList> result = InterpolableList::create(pointList.length() * 2);
+    for (size_t i = 0; i < pointList.length(); i++) {
+        const SVGPoint& point = *pointList.at(i);
+        result->set(2 * i, InterpolableNumber::create(point.x()));
+        result->set(2 * i + 1, InterpolableNumber::create(point.y()));
+    }
+
+    return InterpolationValue::create(*this, result.release());
+}
+
+PassOwnPtr<PairwisePrimitiveInterpolation> SVGPointListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+{
+    size_t startLength = toInterpolableList(startValue.interpolableValue()).length();
+    size_t endLength = toInterpolableList(endValue.interpolableValue()).length();
+    if (startLength != endLength)
+        return nullptr;
+
+    return InterpolationType::mergeSingleConversions(startValue, endValue);
+}
+
+void SVGPointListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+{
+    size_t startLength = toInterpolableList(underlyingValue->interpolableValue()).length();
+    size_t endLength = toInterpolableList(value.interpolableValue()).length();
+    if (startLength != endLength)
+        underlyingValue.set(&value);
+
+    InterpolationType::composite(underlyingValue, underlyingFraction, value);
+}
+
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+{
+    RefPtrWillBeRawPtr<SVGPointList> result = SVGPointList::create();
+
+    const InterpolableList& list = toInterpolableList(interpolableValue);
+    ASSERT(list.length() % 2 == 0);
+    for (size_t i = 0; i < list.length(); i += 2) {
+        FloatPoint point = FloatPoint(
+            toInterpolableNumber(list.get(i))->value(),
+            toInterpolableNumber(list.get(i + 1))->value());
+        result->append(SVGPoint::create(point));
+    }
+
+    return result.release();
+}
+
+} // namespace blink
