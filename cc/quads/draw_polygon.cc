@@ -10,9 +10,6 @@
 #include "cc/quads/draw_quad.h"
 
 namespace {
-// This allows for some imperfection in the normal comparison when checking if
-// two pieces of geometry are coplanar.
-static const float coplanar_dot_epsilon = 0.001f;
 // This threshold controls how "thick" a plane is. If a point's distance is
 // <= |compare_threshold|, then it is considered on the plane. Only when this
 // boundary is crossed do we consider doing splitting.
@@ -101,44 +98,15 @@ float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {
 // Assumes that layers are split and there are no intersecting planes.
 BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
                                           const DrawPolygon& b) {
-  // Let's make sure that both of these are normalized.
-  DCHECK_GE(normalized_threshold, std::abs(a.normal_.LengthSquared() - 1.0f));
+  // Let's make sure that this is normalized.  Without this SignedPointDistance
+  // will not be right, but putting the check in there will validate it
+  // redundantly for each point.
   DCHECK_GE(normalized_threshold, std::abs(b.normal_.LengthSquared() - 1.0f));
-  // Right away let's check if they're coplanar
-  double dot = gfx::DotProduct(a.normal_, b.normal_);
-  float sign = 0.0f;
-  // This check assumes that the normals are normalized.
-  if (std::abs(dot) >= 1.0f - coplanar_dot_epsilon) {
-    // The normals are matching enough that we only have to test one point.
-    sign = b.SignedPointDistance(a.points_[0]);
-    // Is it on either side of the splitter?
-    if (sign < -compare_threshold) {
-      return BSP_BACK;
-    }
-
-    if (sign > compare_threshold) {
-      return BSP_FRONT;
-    }
-
-    // No it wasn't, so the sign of the dot product of the normals
-    // along with document order determines which side it goes on.
-    if (dot >= 0.0f) {
-      if (a.order_index_ < b.order_index_) {
-        return BSP_COPLANAR_FRONT;
-      }
-      return BSP_COPLANAR_BACK;
-    }
-
-    if (a.order_index_ < b.order_index_) {
-      return BSP_COPLANAR_BACK;
-    }
-    return BSP_COPLANAR_FRONT;
-  }
 
   int pos_count = 0;
   int neg_count = 0;
   for (size_t i = 0; i < a.points_.size(); i++) {
-    sign = gfx::DotProduct(a.points_[i] - b.points_[0], b.normal_);
+    float sign = b.SignedPointDistance(a.points_[i]);
 
     if (sign < -compare_threshold) {
       ++neg_count;
@@ -154,7 +122,19 @@ BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
   if (pos_count) {
     return BSP_FRONT;
   }
-  return BSP_BACK;
+  if (neg_count) {
+    return BSP_BACK;
+  }
+
+  double dot = gfx::DotProduct(a.normal_, b.normal_);
+  if ((dot >= 0.0f && a.order_index_ >= b.order_index_) ||
+      (dot <= 0.0f && a.order_index_ <= b.order_index_)) {
+    // The sign of the dot product of the normals along with document order
+    // determine which side it goes on, the vertices are ambiguous.
+    return BSP_COPLANAR_BACK;
+  }
+
+  return BSP_COPLANAR_FRONT;
 }
 
 static bool LineIntersectPlane(const gfx::Point3F& line_start,

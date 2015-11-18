@@ -54,6 +54,32 @@ TEST(DrawPolygonSplitTest, NearlyTouchingOrder) {
 }
 
 // Two quads are definitely not touching and so no split should occur.
+TEST(DrawPolygonSplitTest, NotClearlyInFront) {
+  std::vector<gfx::Point3F> vertices_a;
+  vertices_a.push_back(gfx::Point3F(87.2f, 1185.0f, 0.9f));
+  vertices_a.push_back(gfx::Point3F(288.3f, 1185.0f, -0.7f));
+  vertices_a.push_back(gfx::Point3F(288.3f, 1196.0f, -0.7f));
+  vertices_a.push_back(gfx::Point3F(87.2f, 1196.0f, 0.9f));
+  gfx::Vector3dF normal_a = gfx::CrossProduct(vertices_a[1] - vertices_a[0],
+                                              vertices_a[1] - vertices_a[2]);
+  normal_a.Scale(1.0 / normal_a.Length());
+
+  std::vector<gfx::Point3F> vertices_b;
+  vertices_b.push_back(gfx::Point3F(62.1f, 1034.7f, 1.0f));
+  vertices_b.push_back(gfx::Point3F(313.4f, 1035.3f, -1.0f));
+  vertices_b.push_back(gfx::Point3F(313.4f, 1196.0f, -1.0f));
+  vertices_b.push_back(gfx::Point3F(62.1f, 1196.0f, 1.0f));
+  gfx::Vector3dF normal_b = gfx::CrossProduct(vertices_b[1] - vertices_b[0],
+                                              vertices_b[1] - vertices_b[2]);
+  normal_b.Scale(1.0 / normal_b.Length());
+
+  CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal_a, 0);
+  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal_b, 1);
+
+  EXPECT_EQ(BSP_FRONT, DrawPolygon::SideCompare(polygon_b, polygon_a));
+}
+
+// Two quads are definitely not touching and so no split should occur.
 TEST(DrawPolygonSplitTest, NotTouchingNoSplit) {
   std::vector<gfx::Point3F> vertices_a;
   vertices_a.push_back(gfx::Point3F(0.0f, 10.0f, 0.0f));
