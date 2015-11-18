@@ -200,6 +200,12 @@
       Do you want Chromium to save this card?
     </message>
   </if>
+  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_TO_CLOUD" desc="Title text for the Autofill save card bubble when the card is to be saved by uploading it to Google Payments.">
+    Do you want Google to save this card?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card bubble when the card is to be saved by uploading it to Google Payments.">
+    Pay quickly on sites and apps across devices using cards you have saved with Google.
+  </message>
 
   <!-- Autofill credit card unmask prompt -->
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt.">

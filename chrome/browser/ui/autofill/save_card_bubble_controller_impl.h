@@ -16,18 +16,22 @@ namespace autofill {
 
 // Implementation of per-tab class to control the save credit card bubble and
 // Omnibox icon.
-//
-// TODO(bondd): Add text strings so different dialog contents can be shown
-// depending upon whether upstreaming is available.
 class SaveCardBubbleControllerImpl
     : public SaveCardBubbleController,
       public content::WebContentsObserver,
       public content::WebContentsUserData<SaveCardBubbleControllerImpl> {
  public:
-  // |save_card_callback| will be invoked if/when the Save button is pressed.
-  void SetCallback(const base::Closure& save_card_callback);
+  // Sets up the controller for local save. |save_card_callback| will be invoked
+  // if and when the Save button is pressed.
+  void InitializeForLocalSave(const base::Closure& save_card_callback);
 
-  // SetCallback() must be called first.
+  // Sets up the controller for upload. |save_card_callback| will be invoked if
+  // and when the Save button is pressed. The contents of |legal_message| will
+  // be displayed in the bubble.
+  void InitializeForUpload(const base::Closure& save_card_callback,
+                           scoped_ptr<base::DictionaryValue> legal_message);
+
+  // InitializeForLocalSave() or InitializeForUpload() must be called first.
   void ShowBubble(bool user_action);
 
   // Returns true if Omnibox save credit card icon should be visible.
@@ -37,6 +41,8 @@ class SaveCardBubbleControllerImpl
   SaveCardBubbleView* save_card_bubble_view() const;
 
   // SaveCardBubbleController:
+  base::string16 GetWindowTitle() const override;
+  base::string16 GetExplanatoryMessage() const override;
   void OnSaveButton() override;
   void OnCancelButton() override;
   void OnLearnMoreClicked() override;
@@ -63,6 +69,9 @@ class SaveCardBubbleControllerImpl
   // If save_card_callback_.is_null() is true then no bubble is available to
   // show and the icon is not visible.
   base::Closure save_card_callback_;
+
+  // Governs whether the upload or local save version of the UI should be shown.
+  bool is_uploading_;
 
   // Used to measure the amount of time on a page; if it's less than some
   // reasonable limit, then don't close the bubble upon navigation.

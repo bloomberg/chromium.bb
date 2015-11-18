@@ -160,7 +160,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->SetCallback(callback);
+  controller->InitializeForLocalSave(callback);
   controller->ShowBubble(false);
 #else
   AutofillCCInfoBarDelegate::Create(
@@ -171,8 +171,15 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const base::Closure& callback,
     scoped_ptr<base::DictionaryValue> legal_message) {
-  // TODO(bondd): Implement upload UI.
-  ConfirmSaveCreditCardLocally(callback);
+// TODO(bondd): Implement save card bubble for OS_MACOSX.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+  // Do lazy initialization of SaveCardBubbleControllerImpl.
+  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+  controller->InitializeForUpload(callback, legal_message.Pass());
+  controller->ShowBubble(false);
+#endif
 }
 
 void ChromeAutofillClient::LoadRiskData(

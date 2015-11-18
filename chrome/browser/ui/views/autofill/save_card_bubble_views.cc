@@ -11,6 +11,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -19,8 +20,8 @@ using views::GridLayout;
 
 namespace {
 
-// Fixed width of the column holding the message text.
-const int kWidthOfMessageText = 375;
+// Fixed width of the bubble.
+const int kBubbleWidth = 395;
 
 // TODO(bondd): BubbleManager will eventually move this logic somewhere else,
 // and then kIsOkButtonOnLeftSide can be removed from here and
@@ -63,7 +64,7 @@ views::View* SaveCardBubbleViews::GetInitiallyFocusedView() {
 }
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL);
+  return controller_->GetWindowTitle();
 }
 
 bool SaveCardBubbleViews::ShouldShowWindowTitle() const {
@@ -93,21 +94,40 @@ void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
 
 void SaveCardBubbleViews::Init() {
   enum {
-    COLUMN_SET_ID_MESSAGE,
+    COLUMN_SET_ID_SPACER,
+    COLUMN_SET_ID_EXPLANATION,
     COLUMN_SET_ID_BUTTONS,
   };
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  // Set up ColumnSet that will contain the full-width message text.
+  // Add a column set with padding to establish a minimum width.
+  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_SPACER);
+  cs->AddPaddingColumn(0, kBubbleWidth);
+  layout->StartRow(0, COLUMN_SET_ID_SPACER);
+
   int horizontal_inset = GetBubbleFrameView()->GetTitleInsets().left();
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_MESSAGE);
-  cs->AddPaddingColumn(0, horizontal_inset);
-  // TODO(bondd): Current dialog layout has no message text, but future layouts
-  // will. This padding column is used until then to set the dialog width.
-  cs->AddPaddingColumn(1, kWidthOfMessageText);
-  cs->AddPaddingColumn(0, horizontal_inset);
+  // Optionally set up ColumnSet and label that will contain an explanation for
+  // upload.
+  base::string16 explanation = controller_->GetExplanatoryMessage();
+  if (!explanation.empty()) {
+    cs = layout->AddColumnSet(COLUMN_SET_ID_EXPLANATION);
+    cs->AddPaddingColumn(0, horizontal_inset);
+    // Fix the width of the label to ensure it breaks within the preferred size
+    // of the bubble.
+    cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::FIXED,
+                  kBubbleWidth - (2 * horizontal_inset), 0);
+    cs->AddPaddingColumn(0, horizontal_inset);
+
+    layout->StartRow(0, COLUMN_SET_ID_EXPLANATION);
+    views::Label* explanation_label = new views::Label(explanation);
+    explanation_label->SetMultiLine(true);
+    explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->AddView(explanation_label);
+
+    layout->AddPaddingRow(0, views::kUnrelatedControlLargeHorizontalSpacing);
+  }
 
   // Set up ColumnSet that will contain the buttons and "learn more" link.
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);

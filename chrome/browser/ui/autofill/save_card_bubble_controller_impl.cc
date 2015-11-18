@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "content/public/browser/navigation_details.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::SaveCardBubbleControllerImpl);
 
@@ -28,7 +30,8 @@ namespace autofill {
 SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      save_card_bubble_view_(nullptr) {
+      save_card_bubble_view_(nullptr),
+      is_uploading_(false) {
   DCHECK(web_contents);
 }
 
@@ -37,9 +40,18 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
     save_card_bubble_view_->Hide();
 }
 
-void SaveCardBubbleControllerImpl::SetCallback(
+void SaveCardBubbleControllerImpl::InitializeForLocalSave(
     const base::Closure& save_card_callback) {
+  is_uploading_ = false;
   save_card_callback_ = save_card_callback;
+}
+
+void SaveCardBubbleControllerImpl::InitializeForUpload(
+    const base::Closure& save_card_callback,
+    scoped_ptr<base::DictionaryValue> legal_message) {
+  is_uploading_ = true;
+  save_card_callback_ = save_card_callback;
+  // TODO(bondd): Store legal_message here.
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble(bool user_action) {
@@ -68,6 +80,18 @@ bool SaveCardBubbleControllerImpl::IsIconVisible() const {
 SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
     const {
   return save_card_bubble_view_;
+}
+
+base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(
+      is_uploading_ ? IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_TO_CLOUD
+                    : IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL);
+}
+
+base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
+  return is_uploading_ ? l10n_util::GetStringUTF16(
+                             IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_EXPLANATION)
+                       : base::string16();
 }
 
 void SaveCardBubbleControllerImpl::OnSaveButton() {
