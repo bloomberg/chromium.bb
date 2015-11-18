@@ -8,8 +8,6 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "components/data_usage/core/data_use.h"
-#include "components/data_usage/core/data_use_amortizer.h"
-#include "components/data_usage/core/data_use_annotator.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
@@ -34,6 +32,10 @@ DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
 
 DataUseAggregator::~DataUseAggregator() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+
+  // Reset the callbacks to remove any WeakPtr references to |this| inside them.
+  annotation_callback_.Reset();
+  amortization_callback_.Reset();
 }
 
 void DataUseAggregator::AddObserver(Observer* observer) {
@@ -64,11 +66,14 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
     return;
   }
 
-  // TODO(sclittle): Instead of binding a new callback every time, re-use the
-  // same callback every time.
-  annotator_->Annotate(
-      request, data_use.Pass(),
-      base::Bind(&DataUseAggregator::PassDataUseToAmortizer, GetWeakPtr()));
+  // As an optimization, re-use a lazily initialized callback object for every
+  // call into |annotator_|, so that a new callback object doesn't have to be
+  // allocated and held onto every time.
+  if (annotation_callback_.is_null()) {
+    annotation_callback_ =
+        base::Bind(&DataUseAggregator::PassDataUseToAmortizer, GetWeakPtr());
+  }
+  annotator_->Annotate(request, data_use.Pass(), annotation_callback_);
 }
 
 void DataUseAggregator::ReportOffTheRecordDataUse(int64_t tx_bytes,
@@ -109,11 +114,14 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
     return;
   }
 
-  // TODO(sclittle): Instead of binding a new callback every time, re-use the
-  // same callback every time.
-  amortizer_->AmortizeDataUse(
-      data_use.Pass(),
-      base::Bind(&DataUseAggregator::OnAmortizationComplete, GetWeakPtr()));
+  // As an optimization, re-use a lazily initialized callback object for every
+  // call into |amortizer_|, so that a new callback object doesn't have to be
+  // allocated and held onto every time.
+  if (amortization_callback_.is_null()) {
+    amortization_callback_ =
+        base::Bind(&DataUseAggregator::OnAmortizationComplete, GetWeakPtr());
+  }
+  amortizer_->AmortizeDataUse(data_use.Pass(), amortization_callback_);
 }
 
 void DataUseAggregator::OnAmortizationComplete(

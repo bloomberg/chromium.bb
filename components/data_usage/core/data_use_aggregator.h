@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "components/data_usage/core/data_use_amortizer.h"
+#include "components/data_usage/core/data_use_annotator.h"
 #include "net/base/network_change_notifier.h"
 
 namespace net {
@@ -23,8 +25,6 @@ class URLRequest;
 
 namespace data_usage {
 
-class DataUseAmortizer;
-class DataUseAnnotator;
 struct DataUse;
 
 // Class that collects and aggregates network usage, reporting the usage to
@@ -95,6 +95,12 @@ class DataUseAggregator
   // provider.  Set to empty string if SIM is not present. |mcc_mnc_| is set
   // even if the current active network is not a cellular network.
   std::string mcc_mnc_;
+
+  // As an optimization, re-use the same callbacks to avoid creating and
+  // allocating a new Callback object for each call into the |annotator_| or
+  // |amortizer_|. These callbacks are lazily initialized.
+  DataUseAnnotator::DataUseConsumerCallback annotation_callback_;
+  DataUseAmortizer::AmortizationCompleteCallback amortization_callback_;
 
   base::WeakPtrFactory<DataUseAggregator> weak_ptr_factory_;
 
