@@ -224,14 +224,6 @@ public:
     void setTextJustify(TextJustify textJustify) { m_textJustify = static_cast<unsigned>(textJustify); }
     TextJustify textJustify() const { return static_cast<TextJustify>(m_textJustify); }
 
-    class RenderingContext : public RefCounted<RenderingContext> {
-    public:
-        virtual ~RenderingContext() { }
-    };
-
-    RenderingContext* renderingContext() const { return m_renderingContext.get(); }
-    void setRenderingContext(PassRefPtr<RenderingContext> context) { m_renderingContext = context; }
-
 private:
     union {
         const LChar* characters8;
@@ -255,8 +247,7 @@ private:
     unsigned m_directionalOverride : 1; // Was this direction set by an override character.
     unsigned m_disableSpacing : 1;
     unsigned m_textJustify : 2;
-    bool m_normalizeSpace;
-    RefPtr<RenderingContext> m_renderingContext;
+    unsigned m_normalizeSpace : 1;
     TabSize m_tabSize;
 };
 

@@ -36,9 +36,7 @@ struct ExpectedTextRunSize {
     float float1;
     float float2;
     float float3;
-    uint32_t bitfields : 10;
-    bool b;
-    RefPtr<TextRun::RenderingContext> renderingContext;
+    uint32_t bitfields : 12;
     TabSize tabSize;
 };
 
