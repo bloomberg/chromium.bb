@@ -52,21 +52,27 @@ h2 {
   margin-top: 25px;
 }
 
-.settings-row {
+.settings-box {
   @apply(--layout-center);
-  @apply(--layout-horizontal);
   border-top: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
+  display: block;
   min-height: 20px;
   padding: 8px 16px;
 }
 
-.settings-row:first-of-type {
+.settings-box:first-of-type {
   border-top: none;
 }
 
-.settings-row paper-item iron-icon {
+.split {
+  display: flex;
+}
+
+.split .start {
+  flex: auto;
+}
+
+.settings-box paper-item iron-icon {
   /* Same padding as paper-icon-button. */
   padding: 8px;
 }

@@ -28,59 +28,61 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
       <neon-animatable id="main">
-        <h2 i18n-content="languagesListTitle"></h2>
-        <div>
-          <array-selector id="languageSelector" selected="{{detailLanguage}}"
-              items="{{languages.enabledLanguages}}"></array-selector>
-          <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-            <paper-item class="settings-row" on-tap="onLanguageTap_">
-              <div class="flex" title="[[item.language.nativeDisplayName]]"
-                  >[[item.language.displayName]]</div>
-              <iron-icon icon="done"
-                  hidden$="[[!isUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
-              </iron-icon>
-              <paper-icon-button icon="settings"
-                  on-tap="onShowLanguageDetailTap_"></paper-icon-button>
-            </paper-item>
-          </template>
-        </div>
-        <div class="manage">
-          <paper-button i18n-content="manageLanguages"
-              on-tap="onManageLanguagesTap_"></paper-button>
-        </div>
+        <div class="settings-box">
+          <h2 i18n-content="languagesListTitle"></h2>
+          <div>
+            <array-selector id="languageSelector" selected="{{detailLanguage}}"
+                items="{{languages.enabledLanguages}}"></array-selector>
+            <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+              <paper-item class="split" on-tap="onLanguageTap_">
+                <div class="flex" title="[[item.language.nativeDisplayName]]"
+                    >[[item.language.displayName]]</div>
+                <iron-icon icon="done"
+                    hidden$="[[!isUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+                </iron-icon>
+                <paper-icon-button icon="settings"
+                    on-tap="onShowLanguageDetailTap_"></paper-icon-button>
+              </paper-item>
+            </template>
+          </div>
+          <div class="manage">
+            <paper-button i18n-content="manageLanguages"
+                on-tap="onManageLanguagesTap_"></paper-button>
+          </div>
 <if expr="chromeos">
-        <h2 i18n-content="inputMethodsListTitle"></h2>
-        <div>
-          <template is="dom-repeat" items="{{languages.inputMethods}}">
-            <paper-item class="settings-row">
-              <div class="flex">[[item.name]]</div>
-              <iron-icon icon="done"
-                  hidden$="[[
-                      !isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
-              </iron-icon>
-              <paper-icon-button icon="settings"></paper-icon-button>
-            </paper-item>
-          </template>
-        </div>
-        <div class="manage">
-          <paper-button i18n-content="manageInputMethods"></paper-button>
-        </div>
+          <h2 i18n-content="inputMethodsListTitle"></h2>
+          <div>
+            <template is="dom-repeat" items="{{languages.inputMethods}}">
+              <paper-item class="split">
+                <div class="flex">[[item.name]]</div>
+                <iron-icon icon="done"
+                    hidden$="[[
+                        !isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
+                </iron-icon>
+                <paper-icon-button icon="settings"></paper-icon-button>
+              </paper-item>
+            </template>
+          </div>
+          <div class="manage">
+            <paper-button i18n-content="manageInputMethods"></paper-button>
+          </div>
 </if>
 <if expr="not is_macosx">
-        <h2 i18n-content="spellCheckListTitle"></h2>
-        <div class="layout vertical">
-          <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-            <paper-checkbox hidden="[[!item.language.supportsSpellcheck]]"
-                checked="[[item.state.spellCheckEnabled]]"
-                on-change="onSpellCheckChange_"
-                >[[item.language.displayName]]</paper-checkbox>
-          </template>
-        </div>
-        <div class="manage">
-          <paper-button i18n-content="manageSpellCheck"
-              on-tap="onEditDictionaryTap_"></paper-button>
-        </div>
+          <h2 i18n-content="spellCheckListTitle"></h2>
+          <div class="layout vertical">
+            <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+              <paper-checkbox hidden="[[!item.language.supportsSpellcheck]]"
+                  checked="[[item.state.spellCheckEnabled]]"
+                  on-change="onSpellCheckChange_"
+                  >[[item.language.displayName]]</paper-checkbox>
+            </template>
+          </div>
+          <div class="manage">
+            <paper-button i18n-content="manageSpellCheck"
+                on-tap="onEditDictionaryTap_"></paper-button>
+          </div>
 </if>
+        </div>
       </neon-animatable>
       <neon-animatable id="manage-languages">
         <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">

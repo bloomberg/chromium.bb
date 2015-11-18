@@ -14,19 +14,22 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="search">
       <neon-animatable id="main">
-        <p i18n-content="searchExplanation"></p>
+        <div class="settings-box">
+          <p i18n-content="searchExplanation"></p>
 
-        <div class="search-engines">
-          <select id="searchEnginesMenu" on-change="defaultEngineGuidChanged_">
-            <template is="dom-repeat" items="[[searchEngines]]">
-              <option value="[[item.guid]]">{{item.name}}</option>
-            </template>
-          </select>
+          <div class="search-engines">
+            <select id="searchEnginesMenu"
+                  on-change="defaultEngineGuidChanged_">
+              <template is="dom-repeat" items="[[searchEngines]]">
+                <option value="[[item.guid]]">{{item.name}}</option>
+              </template>
+            </select>
 
-          <paper-button class="search-engines"
-              i18n-content="searchManageButtonLabel"
-              on-tap="onSearchEnginesTap_" raised>
-          </paper-button>
+            <paper-button class="search-engines"
+                i18n-content="searchManageButtonLabel"
+                on-tap="onSearchEnginesTap_" raised>
+            </paper-button>
+          </div>
         </div>
       </neon-animatable>
       <neon-animatable id="search-engines">

@@ -6,7 +6,7 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <div>
+    <div class="settings-box">
       <div class="entries">
         <template is="dom-repeat" items="{{prefs.session.startup_urls.value}}">
           <paper-icon-item>
@@ -17,21 +17,23 @@
           </paper-icon-item>
         </template>
       </div>
-      <paper-icon-item>
+    </div>
+    <div class="settings-box">
+      <paper-icon-item class="start">
         <div i18n-content="onStartupAddPage"></div>&nbsp;
         <paper-input class="flex" no-label-float
             i18n-values="label:onStartupEnterUrl" value="{{newUrl}}">
         </paper-input>
       </paper-icon-item>
-      <div class="button-row">
-        <div class="flex">
-          <paper-button on-tap="onUseCurrentPagesTap_"
-              i18n-content="onStartupUseCurrent">
-          </paper-button>
-        </div>
-        <paper-button on-tap="onCancelTap_" i18n-content="cancelButton">
-        </paper-button>
-        <paper-button on-tap="onOkTap_" raised i18n-content="okButton">
+      <paper-button on-tap="onCancelTap_" i18n-content="cancelButton">
+      </paper-button>
+      <paper-button on-tap="onOkTap_" raised i18n-content="okButton">
+      </paper-button>
+    </div>
+    <div class="settings-box">
+      <div class="flex">
+        <paper-button on-tap="onUseCurrentPagesTap_"
+            i18n-content="onStartupUseCurrent">
         </paper-button>
       </div>
     </div>

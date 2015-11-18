@@ -18,55 +18,57 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="privacy">
       <neon-animatable id="main">
-        <p class="privacy-explanation"
-            i18n-values=".innerHTML:improveBrowsingExperience">
-        </p>
-        <settings-checkbox
-            pref="{{prefs.alternate_error_pages.enabled}}"
-            i18n-values="label:linkDoctorPref">
-        </settings-checkbox>
-        <settings-checkbox
-            pref="{{prefs.search.suggest_enabled}}"
-            i18n-values="label:searchSuggestPref">
-        </settings-checkbox>
-        <settings-checkbox
-            pref="{{prefs.net.network_prediction_options}}"
-            i18n-values="label:networkPredictionEnabled">
-        </settings-checkbox>
-        <settings-checkbox
-            pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
-            i18n-values="label:safeBrowsingEnableExtendedReporting">
-        </settings-checkbox>
-        <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
-            i18n-values="label:safeBrowsingEnableProtection">
-        </settings-checkbox>
+        <div class="settings-box">
+          <p class="privacy-explanation"
+              i18n-values=".innerHTML:improveBrowsingExperience">
+          </p>
+          <settings-checkbox
+              pref="{{prefs.alternate_error_pages.enabled}}"
+              i18n-values="label:linkDoctorPref">
+          </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.search.suggest_enabled}}"
+              i18n-values="label:searchSuggestPref">
+          </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.net.network_prediction_options}}"
+              i18n-values="label:networkPredictionEnabled">
+          </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
+              i18n-values="label:safeBrowsingEnableExtendedReporting">
+          </settings-checkbox>
+          <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
+              i18n-values="label:safeBrowsingEnableProtection">
+          </settings-checkbox>
 <if expr="_google_chrome">
-        <settings-checkbox
-            pref="{{prefs.spellcheck.use_spelling_service}}"
-            i18n-values="label:spellingPref">
-        </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.spellcheck.use_spelling_service}}"
+              i18n-values="label:spellingPref">
+          </settings-checkbox>
 <if expr="chromeos">
         <settings-checkbox
-            pref="{{prefs.cros.metrics.reportingEnabled}}"
-            i18n-values="label:enableLogging">
-        </settings-checkbox>
+              pref="{{prefs.cros.metrics.reportingEnabled}}"
+              i18n-values="label:enableLogging">
+          </settings-checkbox>
 </if>
-        <!-- TODO(jlklein): Add non-chromeos metrics box. -->
+          <!-- TODO(jlklein): Add non-chromeos metrics box. -->
 </if>
-        <settings-checkbox pref="{{prefs.enable_do_not_track}}"
-            i18n-values="label:doNotTrack">
-        </settings-checkbox>
+          <settings-checkbox pref="{{prefs.enable_do_not_track}}"
+              i18n-values="label:doNotTrack">
+          </settings-checkbox>
 <if expr="chromeos">
-        <settings-checkbox
-            pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-            i18n-values="label:enableContentProtectionAttestation">
-        </settings-checkbox>
-        <settings-checkbox
-            pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
-            i18n-values="label:wakeOnWifi">
-        </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
+              i18n-values="label:enableContentProtectionAttestation">
+          </settings-checkbox>
+          <settings-checkbox
+              pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
+              i18n-values="label:wakeOnWifi">
+          </settings-checkbox>
 </if>
-        <div class="privacy-buttons layout horizontal end-justified">
+        </div>
+        <div class="settings-box end-justified">
           <paper-button
               on-tap="onManageCertificatesTap_"
               i18n-content="manageCertificates">

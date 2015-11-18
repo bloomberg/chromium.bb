@@ -16,7 +16,7 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
       <neon-animatable id="main">
-        <div class="settings-row" hidden="[[!isStatusTextSet_(syncStatus)]]">
+        <div class="settings-box split" hidden="[[!isStatusTextSet_(syncStatus)]]">
           <span id="syncStatusText"></span>
           <paper-button on-tap="onActionLinkTap_">
             [[syncStatus.actionLinkText]]
@@ -24,8 +24,8 @@
         </div>
 
         <template is="dom-if" if="[[!syncStatus.signedIn]]">
-          <div class="settings-row">[[i18n('syncOverview')]]</div>
-          <div class="settings-row button-strip">
+          <div class="settings-box">[[i18n('syncOverview')]]</div>
+          <div class="settings-box button-strip">
             <paper-button on-tap="onSigninTap_" raised
                 disabled="[[syncStatus.setupInProgress]]">
                 [[i18n('syncSignin')]]

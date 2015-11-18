@@ -12,29 +12,31 @@
       <cr-expand-button expanded="{{opened}}"></cr-expand-button>
     </div>
     <cr-collapse opened="{{opened}}">
-      <div class="container layout horizontal">
-        <div class="input-field flex two">
-          <div class="input-label" i18n-content="searchEnginesDomainLabel">
+      <div class="settings-box">
+        <div class="container layout horizontal">
+          <div class="input-field flex two">
+            <div class="input-label" i18n-content="searchEnginesDomainLabel">
+            </div>
+            <paper-input id="domainField" auto-validate="false" required>
+            </paper-input>
           </div>
-          <paper-input id="domainField" auto-validate="false" required>
-          </paper-input>
-        </div>
-        <div class="input-field flex two">
-          <div class="input-label" i18n-content="searchEnginesKeywordLabel">
+          <div class="input-field flex two">
+            <div class="input-label" i18n-content="searchEnginesKeywordLabel">
+            </div>
+            <paper-input id="keywordField" auto-validate="false" required>
+            </paper-input>
           </div>
-          <paper-input id="keywordField" auto-validate="false" required>
-          </paper-input>
-        </div>
-        <div class="input-field flex four">
-          <div class="input-label" i18n-content="searchEnginesQueryURLLabel">
+          <div class="input-field flex four">
+            <div class="input-label" i18n-content="searchEnginesQueryURLLabel">
+            </div>
+            <paper-input id="queryURLField" auto-validate="false" required>
+            </paper-input>
           </div>
-          <paper-input id="queryURLField" auto-validate="false" required>
-          </paper-input>
-        </div>
-        <div class="layout horizontal center">
-          <paper-button i18n-content="searchEnginesAddButtonLabel"
-              on-click="{{add_}}" raised>
-          </paper-button>
+          <div class="layout horizontal center">
+            <paper-button i18n-content="searchEnginesAddButtonLabel"
+                on-click="{{add_}}" raised>
+            </paper-button>
+          </div>
         </div>
       </div>
     </cr-collapse>

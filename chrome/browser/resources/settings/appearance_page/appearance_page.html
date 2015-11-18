@@ -23,32 +23,30 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="appearance">
       <neon-animatable id="main">
-        <div class="settings-row">
-          <div>
+        <div class="settings-box split">
+          <div class="start">
             <iron-icon icon="image:brightness-1"></iron-icon>
             <paper-button i18n-content="setWallpaper"></paper-button>
           </div>
           <iron-icon icon="exit-to-app" disabled></iron-icon>
         </div>
-        <div class="settings-row">
-          <div>
+        <div class="settings-box split">
+          <div class="start">
             <iron-icon icon="image:brightness-1"></iron-icon>
             <paper-button id="get-themes"
                 on-tap="openThemesGallery_"
                 >[[i18n('getThemes')]]</paper-button>
           </div>
-          <div>
-            <template is="dom-if" if="[[!allowResetTheme_]]">
-              <iron-icon icon="exit-to-app"></iron-icon>
-            </template>
-            <template is="dom-if" if="[[allowResetTheme_]]">
-              <paper-button on-tap="resetTheme_"
-                  >[[i18n('resetToDefaultTheme')]]</paper-button>
-            </template>
-          </div>
+          <template is="dom-if" if="[[!allowResetTheme_]]">
+            <iron-icon icon="exit-to-app"></iron-icon>
+          </template>
+          <template is="dom-if" if="[[allowResetTheme_]]">
+            <paper-button on-tap="resetTheme_"
+                >[[i18n('resetToDefaultTheme')]]</paper-button>
+          </template>
         </div>
-        <div class="settings-row">
-          <div i18n-content="showHomeButton"></div>
+        <div class="settings-box split">
+          <div class="start" i18n-content="showHomeButton"></div>
           <paper-toggle-button
               checked="{{prefs.browser.show_home_button.value}}">
           </paper-toggle-button>
@@ -66,26 +64,26 @@
             </settings-input>
           </div>
         </template>
-        <div class="settings-row">
-          <div i18n-content="showBookmarksBar"></div>
+        <div class="settings-box split">
+          <div class="start" i18n-content="showBookmarksBar"></div>
           <paper-toggle-button
               checked="{{prefs.bookmark_bar.show_on_all_tabs.value}}">
           </paper-toggle-button>
         </div>
-        <div class="settings-row">
-          <div i18n-content="fontSize"></div>
+        <div class="settings-box split">
+          <div class="start" i18n-content="fontSize"></div>
           <settings-dropdown-menu id="defaultFontSize" disabled
               pref="{{prefs.webkit.webprefs.default_font_size}}"
               menuOptions="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <div class="settings-row">
-          <div class="flex" i18n-content="customizeFonts"></div>
+        <div class="settings-box split">
+          <div class="start" i18n-content="customizeFonts"></div>
           <paper-button on-tap="onCustomizeFontsTap_"
               i18n-content="customizeFonts"></paper-button>
         </div>
-        <div class="settings-row">
-          <div i18n-content="pageZoom"></div>
+        <div class="settings-box split">
+          <div class="start" i18n-content="pageZoom"></div>
           <settings-dropdown-menu id="pageZoom" disabled
               pref="{{prefs.partition.default_zoom_level}}"
               menuOptions="[[pageZoomOptions_]]">

@@ -8,15 +8,17 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="default_browser_page.css">
   <template>
-    <div>[[message_]]</div>
-    <template is="dom-if" if="[[showButton_]]">
-      <paper-button on-tap="onSetDefaultBrowserTap_"
-          >[[i18n('defaultBrowserMakeDefault')]]</paper-button>
-      <template is="dom-if" if="[[showError_]]">
-        <iron-icon icon="error" class="error-icon"
-            title="[[i18n('unableToSetDefaultBrowser')]]"></iron-icon>
+    <div class="settings-box">[[message_]]</div>
+    <div class="settings-box">
+      <template is="dom-if" if="[[showButton_]]">
+        <paper-button on-tap="onSetDefaultBrowserTap_"
+            >[[i18n('defaultBrowserMakeDefault')]]</paper-button>
+        <template is="dom-if" if="[[showError_]]">
+          <iron-icon icon="error" class="error-icon"
+              title="[[i18n('unableToSetDefaultBrowser')]]"></iron-icon>
+        </template>
       </template>
-    </template>
+    </div>
   </template>
   <script src="default_browser_page.js"></script>
 </dom-module>
