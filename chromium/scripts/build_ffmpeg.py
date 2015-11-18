@@ -320,7 +320,7 @@ def main(argv):
 
       # Common codecs.
       '--enable-decoder=vorbis',
-      '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le',
+      '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le',
       '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
       '--enable-demuxer=ogg,matroska,wav',
       '--enable-parser=opus,vorbis',
