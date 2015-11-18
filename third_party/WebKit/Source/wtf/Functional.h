@@ -308,6 +308,38 @@ private:
     typename ParamStorageTraits<P6>::StorageType m_p6;
 };
 
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename... UnboundParams>
+class PartBoundFunctionImpl<7, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, P7, UnboundParams...)> final : public Function<typename FunctionWrapper::ResultType(UnboundParams...)> {
+public:
+    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6, const P7& p7)
+        : m_functionWrapper(functionWrapper)
+        , m_p1(ParamStorageTraits<P1>::wrap(p1))
+        , m_p2(ParamStorageTraits<P2>::wrap(p2))
+        , m_p3(ParamStorageTraits<P3>::wrap(p3))
+        , m_p4(ParamStorageTraits<P4>::wrap(p4))
+        , m_p5(ParamStorageTraits<P5>::wrap(p5))
+        , m_p6(ParamStorageTraits<P6>::wrap(p6))
+        , m_p7(ParamStorageTraits<P7>::wrap(p7))
+    {
+    }
+
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
+    {
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), ParamStorageTraits<P7>::unwrap(m_p7), params...);
+    }
+
+private:
+    FunctionWrapper m_functionWrapper;
+    typename ParamStorageTraits<P1>::StorageType m_p1;
+    typename ParamStorageTraits<P2>::StorageType m_p2;
+    typename ParamStorageTraits<P3>::StorageType m_p3;
+    typename ParamStorageTraits<P4>::StorageType m_p4;
+    typename ParamStorageTraits<P5>::StorageType m_p5;
+    typename ParamStorageTraits<P6>::StorageType m_p6;
+    typename ParamStorageTraits<P7>::StorageType m_p7;
+};
+
+
 template<typename... UnboundArgs, typename FunctionType, typename... BoundArgs>
 PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundArgs...)>> bind(FunctionType function, const BoundArgs&... boundArgs)
 {

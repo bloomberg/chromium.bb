@@ -19,7 +19,7 @@ function test()
 
     function step3(error, searchMatches)
     {
-        InspectorTest.dumpSearchMatches(searchMatches);
+        InspectorTest.addResult(error);
         InspectorTest.completeTest();
     }
 }
