@@ -371,26 +371,6 @@ BookmarkModelAssociator::~BookmarkModelAssociator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(bookmark_model_->loaded());
-
-  BookmarkNode::Type bookmark_node_types[] = {
-    BookmarkNode::BOOKMARK_BAR,
-    BookmarkNode::OTHER_NODE,
-    BookmarkNode::MOBILE,
-  };
-  for (size_t i = 0; i < arraysize(bookmark_node_types); ++i) {
-    int64 id = bookmark_model_->PermanentNode(bookmark_node_types[i])->id();
-    bookmark_model_->SetPermanentNodeVisible(
-      bookmark_node_types[i],
-      id_map_.find(id) != id_map_.end());
-  }
-
-  // Note: the root node may have additional extra nodes. Currently their
-  // visibility is not affected by sync.
-}
-
 syncer::SyncError BookmarkModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
@@ -436,10 +416,6 @@ void BookmarkModelAssociator::AddAssociation(const BookmarkNode* node,
 void BookmarkModelAssociator::Associate(const BookmarkNode* node,
                                         const syncer::BaseNode& sync_node) {
   AddAssociation(node, sync_node.GetId());
-
-  // TODO(stanisc): crbug.com/456876: consider not doing this on every single
-  // association.
-  UpdatePermanentNodeVisibility();
 
   // The same check exists in PersistAssociations. However it is better to
   // do the check earlier to avoid the cost of decrypting nodes again

@@ -733,9 +733,6 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     foster_parent = NULL;
   }
 
-  // The visibility of the mobile node may need to change.
-  model_associator_->UpdatePermanentNodeVisibility();
-
   // Notify UI intensive observers of BookmarkModel that all updates have been
   // applied, and that they may now be consumed. This prevents issues like the
   // one described in crbug.com/281562, where old and new items on the bookmarks

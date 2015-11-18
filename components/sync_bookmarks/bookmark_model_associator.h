@@ -60,9 +60,6 @@ class BookmarkModelAssociator
       bool expect_mobile_bookmarks_folder);
   ~BookmarkModelAssociator() override;
 
-  // Updates the visibility of the permanents node in the BookmarkModel.
-  void UpdatePermanentNodeVisibility();
-
   // AssociatorInterface implementation.
   //
   // AssociateModels iterates through both the sync and the browser
