@@ -962,7 +962,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param reason Reason of failure reported by android DownloadManager
      */
     protected void onDownloadFailed(String fileName, int reason) {
-        String reasonString = mContext.getString(R.string.download_failed_reason_unknown_error);
+        String reasonString = mContext.getString(
+                R.string.download_failed_reason_unknown_error, fileName);
         switch (reason) {
             case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
                 reasonString = mContext.getString(
