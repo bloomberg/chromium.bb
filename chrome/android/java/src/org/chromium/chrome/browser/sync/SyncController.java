@@ -14,6 +14,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -90,6 +91,12 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 }
             }
         });
+
+        GmsCoreSyncListener gmsCoreSyncListener =
+                ((ChromeApplication) context.getApplicationContext()).createGmsCoreSyncListener();
+        if (gmsCoreSyncListener != null) {
+            mProfileSyncService.addSyncStateChangedListener(gmsCoreSyncListener);
+        }
     }
 
     /**

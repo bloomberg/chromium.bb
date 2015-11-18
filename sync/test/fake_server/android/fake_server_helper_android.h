@@ -114,6 +114,9 @@ class FakeServerHelperAndroid {
                     jlong fake_server,
                     jstring id);
 
+  // Simulates a dashboard stop and clear.
+  void ClearServerData(JNIEnv* env, jobject obj, jlong fake_server);
+
  private:
   virtual ~FakeServerHelperAndroid();
 

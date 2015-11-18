@@ -153,6 +153,9 @@ class FakeServer {
   typedef base::ScopedPtrMap<std::string, scoped_ptr<FakeServerEntity>>
       EntityMap;
 
+  // Gets FakeServer ready for syncing.
+  void Init();
+
   // Processes a GetUpdates call.
   bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
                                sync_pb::GetUpdatesResponse* response);

@@ -186,12 +186,9 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Triggers a sync and waits till it is complete.
+     * Triggers a sync cycle.
      */
-    public static void triggerSyncAndWaitForCompletion(final Context context)
-            throws InterruptedException {
-        final long oldSyncTime = getCurrentSyncTime(context);
-        // Request sync.
+    public static void triggerSync() throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -199,6 +196,16 @@ public final class SyncTestUtil {
                         .requestSyncFromNativeChromeForAllTypes();
             }
         });
+    }
+
+    /**
+     * Triggers a sync and waits till it is complete.
+     */
+    public static void triggerSyncAndWaitForCompletion(final Context context)
+            throws InterruptedException {
+        final long oldSyncTime = getCurrentSyncTime(context);
+
+        triggerSync();
 
         // Wait till lastSyncedTime > oldSyncTime.
         Assert.assertTrue("Timed out waiting for syncing to complete.",

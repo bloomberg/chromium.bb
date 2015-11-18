@@ -64,6 +64,9 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   jboolean IsPassphraseRequired(JNIEnv* env, jobject obj);
   jboolean IsPassphraseRequiredForDecryption(JNIEnv* env, jobject obj);
   jboolean IsUsingSecondaryPassphrase(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetCustomPassphraseKey(
+      JNIEnv* env,
+      jobject obj);
   jint GetPassphraseType(JNIEnv* env, jobject obj);
   void SetEncryptionPassphrase(JNIEnv* env,
                                jobject obj,

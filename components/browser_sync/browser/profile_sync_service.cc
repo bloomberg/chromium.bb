@@ -1863,6 +1863,13 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
          passphrase_type == syncer::CUSTOM_PASSPHRASE;
 }
 
+std::string ProfileSyncService::GetCustomPassphraseKey() const {
+  sync_driver::SystemEncryptor encryptor;
+  syncer::Cryptographer cryptographer(&encryptor);
+  cryptographer.Bootstrap(sync_prefs_.GetEncryptionBootstrapToken());
+  return cryptographer.GetDefaultNigoriKeyData();
+}
+
 syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
   return backend_->GetPassphraseType();
 }

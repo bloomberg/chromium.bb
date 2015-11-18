@@ -361,6 +361,19 @@ public class FakeServerHelper {
         });
     }
 
+    /**
+     * Clear the server data (perform dashboard stop and clear).
+     */
+    public void clearServerData() {
+        checkFakeServerInitialized("useFakeServer must be called before clearing data");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                nativeClearServerData(mNativeFakeServerHelperAndroid, sNativeFakeServer);
+            }
+        });
+    }
+
     private static void checkFakeServerInitialized(String failureMessage) {
         if (sNativeFakeServer == 0L) {
             throw new IllegalStateException(failureMessage);
@@ -399,4 +412,6 @@ public class FakeServerHelper {
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String id);
+    private native void nativeClearServerData(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer);
 }

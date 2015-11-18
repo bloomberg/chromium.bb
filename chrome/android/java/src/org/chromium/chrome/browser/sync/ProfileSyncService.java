@@ -195,6 +195,11 @@ public class ProfileSyncService {
         return nativeIsUsingSecondaryPassphrase(mNativeProfileSyncServiceAndroid);
     }
 
+    public byte[] getCustomPassphraseKey() {
+        assert isUsingSecondaryPassphrase();
+        return nativeGetCustomPassphraseKey(mNativeProfileSyncServiceAndroid);
+    }
+
     /**
      * Checks if we need a passphrase to decrypt a currently-enabled data type. This returns false
      * if a passphrase is needed for a type that is not currently enabled.
@@ -496,6 +501,7 @@ public class ProfileSyncService {
     private native boolean nativeIsPassphraseRequiredForDecryption(
             long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsUsingSecondaryPassphrase(long nativeProfileSyncServiceAndroid);
+    private native byte[] nativeGetCustomPassphraseKey(long nativeProfileSyncServiceAndroid);
     private native boolean nativeSetDecryptionPassphrase(
             long nativeProfileSyncServiceAndroid, String passphrase);
     private native void nativeSetEncryptionPassphrase(

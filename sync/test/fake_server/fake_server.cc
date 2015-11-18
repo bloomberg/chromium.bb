@@ -186,13 +186,17 @@ FakeServer::FakeServer() : version_(0),
                            network_enabled_(true),
                            enable_implicit_permanent_folder_creation_(false),
                            weak_ptr_factory_(this) {
+  Init();
+}
+
+FakeServer::~FakeServer() {}
+
+void FakeServer::Init() {
   keystore_keys_.push_back(kDefaultKeystoreKey);
 
   const bool create_result = CreateDefaultPermanentItems();
   DCHECK(create_result) << "Permanent items were not created successfully.";
 }
-
-FakeServer::~FakeServer() {}
 
 bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
                                                const std::string& name) {
@@ -619,6 +623,7 @@ void FakeServer::ClearServerData() {
   entities_.clear();
   keystore_keys_.clear();
   ++store_birthday_;
+  Init();
 }
 
 void FakeServer::SetAuthenticated() {

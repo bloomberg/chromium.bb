@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
@@ -23,6 +25,8 @@ import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for common functionality between sync tests.
@@ -125,7 +129,6 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     protected Account setUpTestAccountAndSignInToSync() throws InterruptedException {
         Account account = setUpTestAccount();
         signIn(account);
-        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
         assertTrue("Sync everything should be enabled",
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
         return account;
@@ -151,22 +154,43 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         getInstrumentation().waitForIdleSync();
     }
 
-    protected void signIn(final Account account) {
+    protected void signIn(final Account account) throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mSyncController.signIn(getActivity(), account.name);
             }
         });
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
     protected void signOut() throws InterruptedException {
+        final Semaphore s = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get(mContext).signOut(getActivity(), null);
+                SigninManager.get(mContext).signOut(getActivity(), new Runnable() {
+                    @Override
+                    public void run() {
+                        s.release();
+                    }
+                });
             }
         });
+        assertTrue(s.tryAcquire(SyncTestUtil.UI_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SyncTestUtil.verifySyncIsSignedOut(mContext);
+    }
+
+    protected void clearServerData() throws InterruptedException {
+        mFakeServerHelper.clearServerData();
+        SyncTestUtil.triggerSync();
+        boolean syncStopped = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !ProfileSyncService.get().isSyncRequested();
+            }
+        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        assertTrue("Timed out waiting for sync to stop.", syncStopped);
     }
 
     protected void disableDataType(final int modelType) {

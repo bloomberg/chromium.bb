@@ -241,6 +241,13 @@ jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(
   return sync_service_->IsUsingSecondaryPassphrase();
 }
 
+ScopedJavaLocalRef<jbyteArray>
+ProfileSyncServiceAndroid::GetCustomPassphraseKey(JNIEnv* env, jobject obj) {
+  std::string key = sync_service_->GetCustomPassphraseKey();
+  return base::android::ToJavaByteArray(
+      env, reinterpret_cast<const uint8_t*>(key.data()), key.size());
+}
+
 jint ProfileSyncServiceAndroid::GetPassphraseType(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->GetPassphraseType();

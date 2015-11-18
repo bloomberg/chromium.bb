@@ -294,6 +294,14 @@ void FakeServerHelperAndroid::DeleteEntity(
       fake_server::TombstoneEntity::Create(native_id));
 }
 
+void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,
+                                              jobject obj,
+                                              jlong fake_server) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+  fake_server_ptr->ClearServerData();
+}
+
 // static
 bool FakeServerHelperAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);

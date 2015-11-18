@@ -565,6 +565,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // killed in the near future.
   void FlushDirectory() const;
 
+  // Returns a serialized NigoriKey proto generated from the bootstrap token in
+  // SyncPrefs. Will return the empty string if no bootstrap token exists.
+  std::string GetCustomPassphraseKey() const;
+
   // Needed to test whether the directory is deleted properly.
   base::FilePath GetDirectoryPathForTest() const;
 

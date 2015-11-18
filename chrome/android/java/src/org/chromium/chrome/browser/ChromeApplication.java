@@ -84,6 +84,7 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
+import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
@@ -785,6 +786,14 @@ public class ChromeApplication extends ContentApplication {
      *         a generator is unavailable.
      */
     public RequestGenerator createOmahaRequestGenerator() {
+        return null;
+    }
+
+    /**
+     * @return An instance of GmsCoreSyncListener to notify GmsCore of sync encryption key changes.
+     *         Will be null if one is unavailable.
+     */
+    public GmsCoreSyncListener createGmsCoreSyncListener() {
         return null;
     }
 
