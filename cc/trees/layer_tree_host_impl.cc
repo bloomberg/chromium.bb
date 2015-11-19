@@ -68,6 +68,7 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/trees/damage_tracker.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -2575,17 +2576,35 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   return scroll_status;
 }
 
+const gfx::Transform LayerTreeHostImpl::LayerScreenSpaceTransform(
+    const LayerImpl* layer) {
+  const bool use_property_trees =
+      settings_.use_property_trees || settings_.verify_property_trees;
+  if (!use_property_trees)
+    return layer->screen_space_transform();
+  const bool is_active_tree = layer->layer_tree_impl() == active_tree();
+  LayerTreeImpl* layer_tree_impl =
+      is_active_tree ? active_tree() : pending_tree();
+  DCHECK(layer_tree_impl);
+  return layer->IsDrawnRenderSurfaceLayerListMember()
+             ? layer->screen_space_transform()
+             : ScreenSpaceTransformFromPropertyTrees(
+                   layer, layer_tree_impl->property_trees()->transform_tree);
+}
+
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     LayerImpl* layer_impl,
     const gfx::PointF& viewport_point,
     const gfx::Vector2dF& viewport_delta) {
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
-  DCHECK(layer_impl->screen_space_transform().IsInvertible());
+  const gfx::Transform screen_space_transform =
+      LayerScreenSpaceTransform(layer_impl);
+  DCHECK(screen_space_transform.IsInvertible());
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
-  bool did_invert = layer_impl->screen_space_transform().GetInverse(
-      &inverse_screen_space_transform);
+  bool did_invert =
+      screen_space_transform.GetInverse(&inverse_screen_space_transform);
   // TODO(shawnsingh): With the advent of impl-side scrolling for non-root
   // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
@@ -2629,9 +2648,8 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
       local_start_point + gfx::Vector2dF(scrolled.x(), scrolled.y());
 
   // Calculate the applied scroll delta in viewport space coordinates.
-  gfx::PointF actual_screen_space_end_point =
-      MathUtil::MapPoint(layer_impl->screen_space_transform(),
-                         actual_local_end_point, &end_clipped);
+  gfx::PointF actual_screen_space_end_point = MathUtil::MapPoint(
+      screen_space_transform, actual_local_end_point, &end_clipped);
   DCHECK(!end_clipped);
   if (end_clipped)
     return gfx::Vector2dF();
@@ -2897,7 +2915,7 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
   gfx::Rect layer_impl_bounds(layer_impl->bounds());
 
   gfx::RectF device_viewport_layer_impl_bounds = MathUtil::MapClippedRect(
-      layer_impl->screen_space_transform(), gfx::RectF(layer_impl_bounds));
+      LayerScreenSpaceTransform(layer_impl), gfx::RectF(layer_impl_bounds));
 
   return device_viewport_layer_impl_bounds.ManhattanDistanceToPoint(
       device_viewport_point);

@@ -548,6 +548,20 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
                         1.0f / current_page_scale_factor());
 }
 
+static const gfx::Transform LayerScreenSpaceTransform(
+    const LayerImpl* layer,
+    const TransformTree& transform_tree,
+    const bool use_property_trees) {
+  if (!use_property_trees)
+    return layer->screen_space_transform();
+  // When we use property trees, UpdateDrawProperties does not update the draw
+  // properties of a layer that is not in render surface layer list, so we need
+  // to compute the screen space transform.
+  return layer->IsDrawnRenderSurfaceLayerListMember()
+             ? layer->screen_space_transform()
+             : ScreenSpaceTransformFromPropertyTrees(layer, transform_tree);
+}
+
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
                                      ? OuterViewportScrollLayer()
@@ -555,8 +569,12 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   if (!root_scroll_layer || root_scroll_layer->children().empty())
     return gfx::Rect();
   LayerImpl* layer = root_scroll_layer->children()[0].get();
-  return MathUtil::MapEnclosingClippedRect(layer->screen_space_transform(),
-                                           gfx::Rect(layer->bounds()));
+  bool use_property_trees =
+      settings().verify_property_trees || settings().use_property_trees;
+  return MathUtil::MapEnclosingClippedRect(
+      LayerScreenSpaceTransform(layer, property_trees_.transform_tree,
+                                use_property_trees),
+      gfx::Rect(layer->bounds()));
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
@@ -1388,20 +1406,6 @@ static const LayerImpl* GetNextClippingLayer(const LayerImpl* layer) {
   if (layer->clip_parent())
     return layer->clip_parent();
   return layer->parent();
-}
-
-static const gfx::Transform LayerScreenSpaceTransform(
-    const LayerImpl* layer,
-    const TransformTree& transform_tree,
-    const bool use_property_trees) {
-  if (!use_property_trees)
-    return layer->screen_space_transform();
-  // When we use property trees, UpdateDrawProperties does not update the draw
-  // properties of a layer that is not in render surface layer list, so we need
-  // to compute the screen space transform.
-  return layer->IsDrawnRenderSurfaceLayerListMember()
-             ? layer->screen_space_transform()
-             : ScreenSpaceTransformFromPropertyTrees(layer, transform_tree);
 }
 
 static const gfx::Transform SurfaceScreenSpaceTransform(

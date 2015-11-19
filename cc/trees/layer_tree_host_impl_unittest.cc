@@ -4741,7 +4741,6 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
 TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   LayerImpl* scroll_layer =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  scroll_layer->SetDrawsContent(true);
 
   // Scale the layer to twice its normal size.
   int scale = 2;
