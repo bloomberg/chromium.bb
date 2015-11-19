@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_pref_value_map.h"
 
 #include "base/prefs/pref_value_map.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 
 using extensions::ExtensionPrefsScope;
@@ -38,7 +37,6 @@ ExtensionPrefValueMap::~ExtensionPrefValueMap() {
     NotifyOfDestruction();
     destroyed_ = true;
   }
-  STLDeleteValues(&entries_);
 }
 
 void ExtensionPrefValueMap::Shutdown() {
@@ -93,19 +91,16 @@ void ExtensionPrefValueMap::ClearAllIncognitoSessionOnlyPreferences() {
   typedef std::set<std::string> KeySet;
   KeySet deleted_keys;
 
-  ExtensionEntryMap::iterator i;
-  for (i = entries_.begin(); i != entries_.end(); ++i) {
+  for (const auto& entry : entries_) {
     PrefValueMap& inc_prefs =
-        i->second->incognito_profile_preferences_session_only;
-    PrefValueMap::iterator j;
-    for (j = inc_prefs.begin(); j != inc_prefs.end(); ++j)
-      deleted_keys.insert(j->first);
+        entry.second->incognito_profile_preferences_session_only;
+    for (const auto& pref : inc_prefs)
+      deleted_keys.insert(pref.first);
     inc_prefs.Clear();
   }
 
-  KeySet::iterator k;
-  for (k = deleted_keys.begin(); k != deleted_keys.end(); ++k)
-    NotifyPrefValueChanged(*k);
+  for (const auto& key : deleted_keys)
+    NotifyPrefValueChanged(key);
 }
 
 bool ExtensionPrefValueMap::DoesExtensionControlPref(
@@ -125,7 +120,7 @@ void ExtensionPrefValueMap::RegisterExtension(const std::string& ext_id,
                                               bool is_enabled,
                                               bool is_incognito_enabled) {
   if (entries_.find(ext_id) == entries_.end()) {
-    entries_[ext_id] = new ExtensionEntry;
+    entries_[ext_id] = make_scoped_ptr(new ExtensionEntry);
 
     // Only update the install time if the extension is newly installed.
     entries_[ext_id]->install_time = install_time;
@@ -140,9 +135,8 @@ void ExtensionPrefValueMap::UnregisterExtension(const std::string& ext_id) {
   if (i == entries_.end())
     return;
   std::set<std::string> keys;  // keys set by this extension
-  GetExtensionControlledKeys(*(i->second), &keys);
+  GetExtensionControlledKeys(*(i->second.get()), &keys);
 
-  delete i->second;
   entries_.erase(i);
 
   NotifyPrefValueChanged(keys);
@@ -389,9 +383,8 @@ void ExtensionPrefValueMap::NotifyInitializationCompleted() {
 
 void ExtensionPrefValueMap::NotifyPrefValueChanged(
     const std::set<std::string>& keys) {
-  std::set<std::string>::const_iterator i;
-  for (i = keys.begin(); i != keys.end(); ++i)
-    NotifyPrefValueChanged(*i);
+  for (const auto& key : keys)
+    NotifyPrefValueChanged(key);
 }
 
 void ExtensionPrefValueMap::NotifyPrefValueChanged(const std::string& key) {
