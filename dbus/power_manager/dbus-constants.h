@@ -37,6 +37,7 @@ const char kHandlePowerButtonAcknowledgmentMethod[] =
 const char kRecordDarkResumeWakeReasonMethod[] = "RecordDarkResumeWakeReason";
 const char kAcquireDisplayWakeLockMethod[] = "AcquireDisplayWakeLock";
 const char kReleaseDisplayWakeLockMethod[] = "ReleaseDisplayWakeLock";
+const char kReleaseAllDisplayWakeLocksMethod[] = "ReleaseAllDisplayWakeLocks";
 // Signals emitted by powerd.
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
