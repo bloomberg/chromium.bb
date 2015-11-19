@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_MOJO_MOJO_SHELL_CLIENT_HOST_H_
 #define CONTENT_BROWSER_MOJO_MOJO_SHELL_CLIENT_HOST_H_
 
+#include <string>
+
 #include "base/process/process_handle.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace content {
+
+class RenderProcessHost;
 
 // Creates a communication channel between the external Mojo shell and the
 // child. The server handle of this channel is shared with the external shell
@@ -20,7 +20,13 @@ namespace content {
 // instance map.
 void RegisterChildWithExternalShell(int child_process_id,
                                     base::ProcessHandle process_handle,
-                                    IPC::Sender* sender);
+                                    RenderProcessHost* render_process_host);
+
+// Returns the URL associated with an instance corresponding to the renderer
+// process in the external shell. This URL can be passed to
+// ConnectToApplication() to open a new connection to this renderer.
+std::string GetMojoApplicationInstanceURL(
+    RenderProcessHost* render_process_host);
 
 }  // namespace content
 

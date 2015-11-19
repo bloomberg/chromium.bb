@@ -36,8 +36,7 @@ class ShellApplicationDelegate
 
   // Overridden from mojom::ApplicationManager:
   void CreateInstanceForHandle(ScopedHandle channel,
-                               const String& url,
-                               const String& qualifier) override;
+                               const String& url) override;
 
   mojo::shell::ApplicationManager* manager_;
 

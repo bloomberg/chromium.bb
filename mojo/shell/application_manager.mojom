@@ -16,5 +16,5 @@ interface ApplicationManager {
   //             otherwise child processes registered with the shell will be
   //             able to request any application/service.
   //             http://crbug.com/555392
-  CreateInstanceForHandle(handle channel, string url, string qualifier);
+  CreateInstanceForHandle(handle channel, string url);
 };
