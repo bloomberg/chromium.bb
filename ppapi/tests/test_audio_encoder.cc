@@ -31,7 +31,7 @@ std::string TestAudioEncoder::TestAvailableCodecs() {
   pp::AudioEncoder audio_encoder(instance_);
   ASSERT_FALSE(audio_encoder.is_null());
 
-  TestCompletionCallbackWithOutput<std::vector<PP_AudioProfileDescription>>
+  TestCompletionCallbackWithOutput<std::vector<PP_AudioProfileDescription> >
       callback(instance_->pp_instance(), false);
   callback.WaitForResult(
       audio_encoder.GetSupportedProfiles(callback.GetCallback()));
