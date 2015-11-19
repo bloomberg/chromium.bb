@@ -176,19 +176,37 @@ def main_mac(options, args, results_collector):
         print_si_fail_hint('tools/mac/dump-static-initializers.py')
         print stdout
 
+      results_collector.add_result(
+          print_dict['app_name'], print_dict['app_name'],
+          print_dict['app_size'], 'bytes')
+      results_collector.add_result(
+          '%s-__TEXT' % print_dict['app_name'], '__TEXT',
+          print_dict['app_text'], 'bytes')
+      results_collector.add_result(
+          '%s-__DATA' % print_dict['app_name'], '__DATA',
+          print_dict['app_data'], 'bytes')
+      results_collector.add_result(
+          '%s-__OBJC' % print_dict['app_name'], '__OBJC',
+          print_dict['app_objc'], 'bytes')
+      results_collector.add_result(
+          print_dict['framework_name'], print_dict['framework_name'],
+          print_dict['framework_size'], 'bytes')
+      results_collector.add_result(
+          '%s-__TEXT' % print_dict['framework_name'], '__TEXT',
+          print_dict['framework_text'], 'bytes')
+      results_collector.add_result(
+          '%s-__DATA' % print_dict['framework_name'], '__DATA',
+          print_dict['framework_data'], 'bytes')
+      results_collector.add_result(
+          '%s-__OBJC' % print_dict['framework_name'], '__OBJC',
+          print_dict['framework_objc'], 'bytes')
+      results_collector.add_result(
+          print_dict['app_bundle'], print_dict['app_bundle'],
+          print_dict['app_bundle_size'], 'bytes')
+      results_collector.add_result(
+          'chrome-si', 'initializers',
+          print_dict['initializers'], 'files')
 
-      print ("""RESULT %(app_name)s: %(app_name)s= %(app_size)s bytes
-RESULT %(app_name)s-__TEXT: __TEXT= %(app_text)s bytes
-RESULT %(app_name)s-__DATA: __DATA= %(app_data)s bytes
-RESULT %(app_name)s-__OBJC: __OBJC= %(app_objc)s bytes
-RESULT %(framework_name)s: %(framework_name)s= %(framework_size)s bytes
-RESULT %(framework_name)s-__TEXT: __TEXT= %(framework_text)s bytes
-RESULT %(framework_name)s-__DATA: __DATA= %(framework_data)s bytes
-RESULT %(framework_name)s-__OBJC: __OBJC= %(framework_objc)s bytes
-RESULT %(app_bundle)s: %(app_bundle)s= %(app_bundle_size)s bytes
-RESULT chrome-si: initializers= %(initializers)d files
-""") % (
-        print_dict)
       # Found a match, don't check the other base_names.
       return result
   # If no base_names matched, fail script.

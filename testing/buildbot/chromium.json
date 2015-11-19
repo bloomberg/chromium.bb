@@ -34,5 +34,19 @@
         "script": "sizes.py"
       }
     ]
+  },
+  "Mac": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "args": [
+          "mac-release/sizes"
+        ],
+        "name": "sizes",
+        "script": "sizes.py"
+      }
+    ]
   }
 }
