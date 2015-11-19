@@ -58,7 +58,7 @@ def GetObjDir(libchrome):
   Assumes libchrome is in for example .../Release/lib/libchrome.so and object
   files are in .../Release/obj.
   """
-  # TODO(azarchs): Pass obj path in explicitly where needed rather than relying
-  # on the above assumption.
+  # TODO(lizeb,pasko): Pass obj path in explicitly where needed rather than
+  # relying on the above assumption.
   return os.path.abspath(os.path.join(
       os.path.dirname(libchrome), '../obj'))

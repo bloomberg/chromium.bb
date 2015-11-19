@@ -137,7 +137,8 @@ def CreateNameToSymbolInfo(symbol_infos):
     If a symbol name corresponds to more than one symbol_info, the symbol_info
     with the lowest offset is chosen.
   """
-  #TODO(azarchs): move the functionality in this method into check_orderfile.
+  # TODO(lizeb,pasko): move the functionality in this method into
+  # check_orderfile.
   symbol_infos_by_name = {}
   warnings = cygprofile_utils.WarningCollector(_MAX_WARNINGS_TO_PRINT)
   for infos in GroupSymbolInfosByName(symbol_infos).itervalues():

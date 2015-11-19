@@ -187,7 +187,7 @@ def GetSymbolsFromOrderfile(filename, section_to_symbols_map):
   Yields:
     A list of symbol names.
   """
-  # TODO(azarchs): Move this method to symbol_extractor.py
+  # TODO(lizeb,pasko): Move this method to symbol_extractor.py
   for section in GetSectionsFromOrderfile(filename):
     for symbol in _SectionNameToSymbols(RemoveSuffixes(section),
                                         section_to_symbols_map):
@@ -250,7 +250,7 @@ def _SectionMatchingRules(section_name, name_to_symbol_infos,
     # suffixes, don't emit the wildcards for ones where it won't be helpful.
     # Otherwise linking takes too long.
     if name in suffixed_sections:
-      # TODO(azarchs): instead of just appending .*, append .suffix.* for
+      # TODO(lizeb,pasko): instead of just appending .*, append .suffix.* for
       # _SUFFIXES.  We can't do this right now because that many wildcards
       # seems to kill the linker (linking libchrome takes 3 hours).  This gets
       # almost all the benefit at a much lower link-time cost, but could cause
