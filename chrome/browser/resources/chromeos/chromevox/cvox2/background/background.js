@@ -134,10 +134,12 @@ Background.prototype = {
     this.setChromeVoxMode(ChromeVoxMode.FORCE_NEXT);
   },
 
+  /** @type {ChromeVoxMode} */
   get mode() {
     return this.mode_;
   },
 
+  /** @type {cursors.Range} */
   get currentRange() {
     return this.currentRange_;
   },
@@ -606,7 +608,8 @@ Background.prototype = {
       } else {
         // When in compat mode, if the focus is within the desktop tree proper,
         // then do not disable content scripts.
-        if (this.currentRange_.start.node.root.role == 'desktop')
+        if (this.currentRange_ &&
+            this.currentRange_.start.node.root.role == RoleType.desktop)
           return;
 
         this.disableClassicChromeVox_();
