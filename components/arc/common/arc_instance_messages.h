@@ -10,6 +10,8 @@
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_message_macros.h"
 
+#include "components/arc/common/arc_message_types.h"
+
 #define IPC_MESSAGE_START ArcInstanceMsgStart
 
 // Registers a virtual input device on the container side.

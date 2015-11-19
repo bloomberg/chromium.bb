@@ -231,13 +231,16 @@ void ArcBridgeService::OnInstanceStarted(bool success) {
   }
 }
 
-void ArcBridgeService::OnInstanceReady() {
+void ArcBridgeService::OnInstanceBootPhase(InstanceBootPhase phase) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   if (state_ != State::STARTING) {
     VLOG(1) << "StopInstance() called while connecting";
     return;
   }
-  SetState(State::READY);
+  if (phase == InstanceBootPhase::BRIDGE_READY) {
+    SetState(State::READY);
+  }
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceBootPhase(phase));
 }
 
 void ArcBridgeService::SetState(State state) {
@@ -253,7 +256,8 @@ bool ArcBridgeService::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ArcBridgeService, message)
-    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_InstanceReady, OnInstanceReady)
+    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_InstanceBootPhase,
+                        OnInstanceBootPhase)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

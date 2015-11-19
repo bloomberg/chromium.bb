@@ -68,8 +68,12 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     }
   }
 
-  bool ready() const { return ready_; }
+  void OnInstanceBootPhase(InstanceBootPhase boot_phase) {
+    boot_phase_ = boot_phase;
+  }
 
+  bool ready() const { return ready_; }
+  InstanceBootPhase boot_phase() const { return boot_phase_; }
   ArcBridgeService::State state() const { return state_; }
 
  protected:
@@ -82,6 +86,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     chromeos::DBusThreadManager::Initialize();
 
     ready_ = false;
+    boot_phase_ = InstanceBootPhase::NOT_RUNNING;
 
     ipc_thread_.reset(new base::Thread("IPC thread"));
     ipc_thread_->StartWithOptions(
@@ -117,6 +122,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   }
 
   bool ready_;
+  InstanceBootPhase boot_phase_;
   ArcBridgeService::State state_;
   base::MessageLoopForUI message_loop_;
 
@@ -126,17 +132,17 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
 };
 
-// Shuts down the ArcBridgeService when it is ready.
-class ScopedShutdownWhenReady : public ArcBridgeService::Observer {
+// Shuts down the instance reports booted.
+class ScopedShutdownWhenBooted : public ArcBridgeService::Observer {
  public:
-  ScopedShutdownWhenReady(ArcBridgeService* service) : service_(service) {
+  ScopedShutdownWhenBooted(ArcBridgeService* service) : service_(service) {
     service_->AddObserver(this);
   }
 
-  ~ScopedShutdownWhenReady() override { service_->RemoveObserver(this); }
+  ~ScopedShutdownWhenBooted() override { service_->RemoveObserver(this); }
 
-  void OnStateChanged(ArcBridgeService::State state) override {
-    if (state == ArcBridgeService::State::READY) {
+  void OnInstanceBootPhase(InstanceBootPhase boot_phase) override {
+    if (boot_phase == InstanceBootPhase::BOOT_COMPLETED) {
       service_->Shutdown();
     }
   }
@@ -144,7 +150,7 @@ class ScopedShutdownWhenReady : public ArcBridgeService::Observer {
  private:
   ArcBridgeService* service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWhenReady);
+  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWhenBooted);
 };
 
 // Exercises the basic functionality of the ARC Bridge Service.  A message from
@@ -153,15 +159,19 @@ TEST_F(ArcBridgeTest, Basic) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(ArcBridgeService::State::STARTING, state());
 
-  ScopedShutdownWhenReady shutdown(service_.get());
+  ScopedShutdownWhenBooted shutdown(service_.get());
 
-  ASSERT_TRUE(fake_sender_->Send(new ArcInstanceHostMsg_InstanceReady()));
+  ASSERT_TRUE(fake_sender_->Send(new ArcInstanceHostMsg_InstanceBootPhase(
+      InstanceBootPhase::BRIDGE_READY)));
+  ASSERT_TRUE(fake_sender_->Send(new ArcInstanceHostMsg_InstanceBootPhase(
+      InstanceBootPhase::BOOT_COMPLETED)));
 
   base::RunLoop run_loop;
   run_loop.Run();
 
   EXPECT_TRUE(ready());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  ASSERT_EQ(InstanceBootPhase::BOOT_COMPLETED, boot_phase());
 }
 
 // If the ArcBridgeService is shut down, it should be stopped, even

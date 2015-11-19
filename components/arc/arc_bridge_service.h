@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
+#include "components/arc/common/arc_message_types.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
@@ -63,6 +64,9 @@ class ArcBridgeService : public IPC::Listener {
    public:
     // Called whenever the state of the bridge has changed.
     virtual void OnStateChanged(State state) {}
+
+    // Called when the instance has reached a boot phase
+    virtual void OnInstanceBootPhase(InstanceBootPhase phase) {}
 
     // Called whenever ARC's availability has changed for this system.
     virtual void OnAvailableChanged(bool available) {}
@@ -144,9 +148,8 @@ class ArcBridgeService : public IPC::Listener {
   // Stops the running instance.
   void StopInstance();
 
-  // Called when the ARC instance has finished setting up and is ready for user
-  // interaction.
-  void OnInstanceReady();
+  // Called when the instance has reached a boot phase
+  void OnInstanceBootPhase(InstanceBootPhase phase);
 
   // Changes the current state and notifies all observers.
   void SetState(State state);
