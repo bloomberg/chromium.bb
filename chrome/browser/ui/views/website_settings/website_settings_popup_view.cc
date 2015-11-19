@@ -5,11 +5,15 @@
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/devtools/devtools_toggle_action.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,6 +47,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -74,7 +79,8 @@ const int kIconMarginLeft = 6;
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 12;
 const int kHeaderPaddingLeft = 18;
-const int kHeaderPaddingRight = 8;
+const int kHeaderPaddingRightForCloseButton = 8;
+const int kHeaderPaddingRightForText = kHeaderPaddingLeft;
 const int kHeaderPaddingTop = 12;
 
 // Spacing between the site identity label and the site identity status text in
@@ -118,7 +124,8 @@ const int kSiteDataIconColumnWidth = 20;
 // identity check and the name of the site's identity.
 class PopupHeaderView : public views::View {
  public:
-  explicit PopupHeaderView(views::ButtonListener* close_button_listener);
+  explicit PopupHeaderView(views::ButtonListener* close_button_listener,
+                           views::StyledLabelListener* styled_label_listener);
   ~PopupHeaderView() override;
 
   // Sets the name of the site's identity.
@@ -134,7 +141,8 @@ class PopupHeaderView : public views::View {
   // The label that displays the name of the site's identity.
   views::Label* name_;
   // The label that displays the status of the identity check for this site.
-  views::Label* status_;
+  // Includes a link to open the DevTools Security panel.
+  views::StyledLabel* status_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupHeaderView);
 };
@@ -163,7 +171,9 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
 // Popup Header
 ////////////////////////////////////////////////////////////////////////////////
 
-PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
+PopupHeaderView::PopupHeaderView(
+    views::ButtonListener* close_button_listener,
+    views::StyledLabelListener* styled_label_listener)
     : name_(nullptr), status_(nullptr) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -184,7 +194,7 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, kHeaderPaddingRight);
+  column_set->AddPaddingColumn(0, kHeaderPaddingRightForCloseButton);
 
   layout->AddPaddingRow(0, kHeaderPaddingTop);
 
@@ -207,10 +217,16 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
 
   layout->AddPaddingRow(0, kHeaderRowSpacing);
 
-  layout->StartRow(1, label_column);
-  status_ = new views::Label(base::string16());
-  status_->SetMultiLine(true);
-  status_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  const int label_column_status = 1;
+  views::ColumnSet* column_set_status =
+      layout->AddColumnSet(label_column_status);
+  column_set_status->AddPaddingColumn(0, kHeaderPaddingLeft);
+  column_set_status->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                               1, views::GridLayout::USE_PREF, 0, 0);
+  column_set_status->AddPaddingColumn(0, kHeaderPaddingRightForText);
+
+  layout->StartRow(0, label_column_status);
+  status_ = new views::StyledLabel(base::string16(), styled_label_listener);
   layout->AddView(status_,
                   1,
                   1,
@@ -233,8 +249,33 @@ void PopupHeaderView::SetIdentityName(const base::string16& name) {
 
 void PopupHeaderView::SetIdentityStatus(const base::string16& status,
                                         SkColor text_color) {
-  status_->SetText(status);
-  status_->SetEnabledColor(text_color);
+  base::string16 details_string =
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
+
+  std::vector<base::string16> subst;
+  subst.push_back(status);
+  subst.push_back(details_string);
+
+  std::vector<size_t> offsets;
+
+  base::string16 text = base::ReplaceStringPlaceholders(
+      base::ASCIIToUTF16("$1 $2"), subst, &offsets);
+  status_->SetText(text);
+  gfx::Range details_range(offsets[1], text.length());
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+  link_style.disable_line_wrapping = false;
+  // TODO(lgarron): Remove the following color override once the default link
+  // color for StyledLabel is fixed (https://crbug.com/556772).
+  link_style.color =
+      GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+
+  status_->AddStyleRange(details_range, link_style);
+
+  // Fit the styled label to occupy available width.
+  status_->SizeToFit(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -357,7 +398,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
                         0,
                         0);
 
-  header_ = new PopupHeaderView(this);
+  header_ = new PopupHeaderView(this, this);
   layout->StartRow(1, content_column);
   layout->AddView(header_);
 
@@ -867,4 +908,12 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
   } else {
     NOTREACHED();
   }
+}
+
+void WebsiteSettingsPopupView::StyledLabelLinkClicked(const gfx::Range& range,
+                                                      int event_flags) {
+  presenter_->RecordWebsiteSettingsAction(
+      WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
+  DevToolsWindow::OpenDevToolsWindow(web_contents_,
+                                     DevToolsToggleAction::ShowSecurityPanel());
 }

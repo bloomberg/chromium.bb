@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 class GURL;
@@ -43,6 +44,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
                                  public views::BubbleDelegateView,
                                  public views::ButtonListener,
                                  public views::LinkListener,
+                                 public views::StyledLabelListener,
                                  public views::TabbedPaneListener,
                                  public WebsiteSettingsUI {
  public:
@@ -84,6 +86,10 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // views::LinkListener implementation.
   void LinkClicked(views::Link* source, int event_flags) override;
+
+  // views::StyledLabelListener implementation.
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // views::TabbedPaneListener implementations.
   void TabSelectedAt(int index) override;
