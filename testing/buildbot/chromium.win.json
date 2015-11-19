@@ -2021,10 +2021,6 @@
     ],
     "scripts": [
       {
-        "name": "telemetry_perf_unittests",
-        "script": "telemetry_perf_unittests.py"
-      },
-      {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
       }
