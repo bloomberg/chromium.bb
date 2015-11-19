@@ -14,6 +14,7 @@ function test()
     }
     MockProject.prototype.isServiceProject = function() { return false; };
     MockProject.prototype.type = function() { return WebInspector.projectTypes.Debugger; }
+    MockProject.prototype.url = function() { return "mock://debugger-ui/"; }
 
     InspectorTest.runTestSuite([
         function testUISourceCode(next)
