@@ -584,6 +584,11 @@ Background.prototype = {
    *                                     defaults to false.
    */
   setChromeVoxMode: function(mode, opt_injectClassic) {
+    // Switching key maps potentially affects the key codes that involve
+    // sequencing. Without resetting this list, potentially stale key codes
+    // remain. The key codes themselves get pushed in
+    // cvox.KeySequence.deserialize which gets called by cvox.KeyMap.
+    cvox.ChromeVox.sequenceSwitchKeyCodes = [];
     if (mode === ChromeVoxMode.CLASSIC || mode === ChromeVoxMode.COMPAT)
       cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
     else
