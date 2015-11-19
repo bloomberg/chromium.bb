@@ -4,7 +4,7 @@
 
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
 
-#include "ios/web/public/url_scheme_util.h"
+#import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #include "net/url_request/url_request_context_getter.h"
