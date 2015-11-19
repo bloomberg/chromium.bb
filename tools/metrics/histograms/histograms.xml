@@ -6567,6 +6567,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2015/11. Renamed to DefaultBrowser.SetDefaultAsyncDuration.
+  </obsolete>
   <owner>pmonette@chromium.org</owner>
   <summary>
     How long it took to set Chrome as the default browser asynchronously in
@@ -6577,10 +6580,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DefaultBrowser.AsyncSetAsDefault.Result"
     enum="DefaultBrowserAsyncAttemptResult">
+  <obsolete>
+    Deprecated 2015/11. Renamed to DefaultBrowser.SetDefaultResult.
+  </obsolete>
   <owner>pmonette@chromium.org</owner>
   <summary>
     The count of how many times users were successfully able to set Chrome as
     the default browser asynchronously in Windows 10+.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.InfoBar.UserInteraction"
+    enum="DefaultBrowserInfoBarUserInteraction">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Possible user interactions with the default browser info bar.
   </summary>
 </histogram>
 
@@ -6592,12 +6606,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DefaultBrowser.SetDefaultAsyncDuration" units="milliseconds">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    How long it took to set Chrome as the default browser asynchronously in
+    Windows 10+. The duration is recorded only on Success, Failure, Abandoned,
+    Retry and NoErrorsNotDefault result codes.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.SetDefaultResult"
+    enum="SetDefaultAttemptResult">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The outcome of an attempt to set Chrome as the user's default browser.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.State" enum="DefaultBrowserState">
   <owner>gab@chromium.org</owner>
   <summary>Whether Chrome was the default browser when it started up.</summary>
 </histogram>
 
 <histogram name="DefaultBrowserWarning.DontSetAsDefault" enum="BooleanHit">
+  <obsolete>
+    Deprecated 2015/11. The same information is available as the value Failure
+    in DefaultBrowser.SetDefaultResult.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     In the make-default infobar, the user explicitly declined to set Chrome as
@@ -6608,6 +6643,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DefaultBrowserWarning.Ignored" enum="BooleanHit">
+  <obsolete>
+    Deprecated 2015/11. Renamed to DefaultBrowser.InfoBar.UserInteraction.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     The user ignored the make-default infobar (it was eventually dismissed along
@@ -6616,6 +6654,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DefaultBrowserWarning.SetAsDefault" enum="BooleanHit">
+  <obsolete>
+    Deprecated 2015/11. Renamed to DefaultBrowser.Infobar.UserInteraction. There
+    is no longer a distinction between interactive or not.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     In the make-default infobar, the user clicked a button making Chrome the
@@ -6624,6 +6666,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DefaultBrowserWarning.SetAsDefaultUI" enum="BooleanHit">
+  <obsolete>
+    Deprecated 2015/11. Renamed to DefaultBrowser.Infobar.UserInteraction. There
+    is no longer a distinction between interactive or not.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Same as SetAsDefault, but in Win8+ (resulting in interactive UI instead of
@@ -6634,10 +6680,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DefaultBrowserWarning.SetAsDefaultUIFailed" enum="BooleanHit">
+  <obsolete>
+    Deprecated 2015/11. The same information is available as the value Failure
+    in DefaultBrowser.SetDefaultResult.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     The user dismissed the interactive SetAsDefaultUI without making an explicit
     choice (or the UI failed to come up for another reason).
+  </summary>
+</histogram>
+
+<histogram name="DefaultProtocolClient.SetDefaultResult"
+    enum="SetDefaultAttemptResult">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The outcome of an attempt to set Chrome as the user's default client for a
+    protocol.
   </summary>
 </histogram>
 
@@ -42909,6 +42968,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Settings.StartSetAsDefault" enum="BooleanHit">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The user clicked &quot;Make Google Chrome the default browser&quot; on the
+    settings page.
+  </summary>
+</histogram>
+
 <histogram name="Settings.StartupPageDomains" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Replaced by Settings.StartupPageEngineTypes.
@@ -57059,6 +57126,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult" type="int">
+  <obsolete>
+    Deprecated 2015/11. Renamed to SetDefaultAttemptResult.
+  </obsolete>
   <int value="0" label="Success">No errors encountered.</int>
   <int value="1" label="Already default">
     Chrome was already the default web client. This counts as a successful
@@ -57080,6 +57150,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="Retry">
     The user initiated another attempt while the asynchronous operation was
     already in progress.
+  </int>
+</enum>
+
+<enum name="DefaultBrowserInfoBarUserInteraction" type="int">
+  <int value="0" label="Start set as default">
+    The user clicked the &quot;Set as default&quot; button.
+  </int>
+  <int value="1" label="Don't ask again">
+    The user doesn't want to be reminded again.
+  </int>
+  <int value="2" label="Ignore info bar">
+    The user did not interact with the info bar.
   </int>
 </enum>
 
@@ -73634,6 +73716,34 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
 </enum>
 
+<enum name="SetDefaultAttemptResult" type="int">
+  <int value="0" label="Success">Chrome was set as the default web client.</int>
+  <int value="1" label="Already default">
+    Chrome was already the default web client. This counts as a successful
+    attempt.
+  </int>
+  <int value="2" label="Failure">
+    Chrome was not set as the default web client.
+  </int>
+  <int value="3" label="Abandoned">
+    The attempt was abandoned because the observer was destroyed.
+  </int>
+  <int value="4" label="Launch failure">
+    Failed to launch the process to set Chrome as the default web client
+    asynchronously.
+  </int>
+  <int value="5" label="Other worker">
+    Another worker is already in progress to make Chrome the default web client.
+  </int>
+  <int value="6" label="Retry">
+    The user initiated another attempt while the asynchronous operation was
+    already in progress.
+  </int>
+  <int value="7" label="No errors, not default">
+    No errors were encountered yet Chrome is still not the default web client.
+  </int>
+</enum>
+
 <enum name="SHA1Status" type="int">
   <summary>
     Whether or not SHA-1 was present in a certificate chain and, if it was, when
@@ -77464,7 +77574,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Failure"/>
   <suffix name="Abandoned"/>
   <suffix name="Retry"/>
+  <suffix name="NoErrorsNotDefault"/>
   <affected-histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"/>
+  <affected-histogram name="DefaultBrowser.SetDefaultAsyncDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillDataAvailability" separator=".">

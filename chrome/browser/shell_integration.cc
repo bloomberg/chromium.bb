@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
@@ -176,12 +177,12 @@ ShellIntegration::DefaultWebClientWorker::DefaultWebClientWorker(
     : observer_(observer) {}
 
 void ShellIntegration::DefaultWebClientWorker::StartCheckIsDefault() {
-  if (observer_) {
+  if (observer_)
     observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DefaultWebClientWorker::CheckIsDefault, this));
-  }
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this));
 }
 
 void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
@@ -196,14 +197,13 @@ void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
   }
 
   set_as_default_in_progress_ = true;
-  bool interactive_permitted = false;
+  bool interactive_permitted = true;
   if (observer_) {
     observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
     interactive_permitted = observer_->IsInteractiveSetDefaultPermitted();
-
-    // The initialization is only useful when there is an observer.
-    set_as_default_initialized_ = InitializeSetAsDefault();
   }
+
+  set_as_default_initialized_ = InitializeSetAsDefault();
 
   // Remember the start time.
   start_time_ = base::TimeTicks::Now();
@@ -237,6 +237,15 @@ void ShellIntegration::DefaultWebClientWorker::OnCheckIsDefaultComplete(
     DefaultWebClientState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UpdateUI(state);
+
+  if (check_default_should_report_success_) {
+    check_default_should_report_success_ = false;
+
+    ReportAttemptResult(state == DefaultWebClientState::IS_DEFAULT
+                            ? AttemptResult::SUCCESS
+                            : AttemptResult::NO_ERRORS_NOT_DEFAULT);
+  }
+
   // The worker has finished everything it needs to do, so free the observer
   // if we own it.
   if (observer_ && observer_->IsOwnedByWorker()) {
@@ -250,7 +259,7 @@ void ShellIntegration::DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Hold on to a reference because if this was called via the default browser
   // callback in StartupBrowserCreator, clearing the callback in
-  // FinalizeSetAsDefault would otherwise remove the last reference and delete
+  // FinalizeSetAsDefault() would otherwise remove the last reference and delete
   // us in the middle of this function.
   scoped_refptr<DefaultWebClientWorker> scoped_ref(this);
 
@@ -267,7 +276,11 @@ void ShellIntegration::DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
       observer_->OnSetAsDefaultConcluded(succeeded);
     }
 
-    ReportAttemptResult(result);
+    // Report failures here. Successes are reported in
+    // OnCheckIsDefaultComplete() after checking that the change is verified.
+    check_default_should_report_success_ = result == AttemptResult::SUCCESS;
+    if (!check_default_should_report_success_)
+      ReportAttemptResult(result);
 
     // Start the default browser check which will notify the observer as to
     // whether Chrome is really the default browser. This is needed because
@@ -280,35 +293,24 @@ void ShellIntegration::DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
 
 void ShellIntegration::DefaultWebClientWorker::ReportAttemptResult(
     AttemptResult result) {
-  if (!ShouldReportAttemptResults())
-    return;
+  const char* histogram_prefix = GetHistogramPrefix();
 
-  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.AsyncSetAsDefault.Result", result,
-                            AttemptResult::NUM_ATTEMPT_RESULT_TYPES);
+  // Report result.
+  base::LinearHistogram::FactoryGet(
+      base::StringPrintf("%s.SetDefaultResult", histogram_prefix), 1,
+      AttemptResult::NUM_ATTEMPT_RESULT_TYPES,
+      AttemptResult::NUM_ATTEMPT_RESULT_TYPES + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(result);
 
-  switch (result) {
-    case SUCCESS:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "DefaultBrowser.AsyncSetAsDefault.Duration_Success",
-          base::TimeTicks::Now() - start_time_);
-      break;
-    case FAILURE:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "DefaultBrowser.AsyncSetAsDefault.Duration_Failure",
-          base::TimeTicks::Now() - start_time_);
-      break;
-    case ABANDONED:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "DefaultBrowser.AsyncSetAsDefault.Duration_Abandoned",
-          base::TimeTicks::Now() - start_time_);
-      break;
-    case RETRY:
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "DefaultBrowser.AsyncSetAsDefault.Duration_Retry",
-          base::TimeTicks::Now() - start_time_);
-      break;
-    default:
-      break;
+  // Report asynchronous duration.
+  if (IsSetAsDefaultAsynchronous() && ShouldReportDurationForResult(result)) {
+    base::Histogram::FactoryTimeGet(
+        base::StringPrintf("%s.SetDefaultAsyncDuration_%s", histogram_prefix,
+                           AttemptResultToString(result)),
+        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(3),
+        50, base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->AddTime(base::TimeTicks::Now() - start_time_);
   }
 }
 
@@ -317,13 +319,6 @@ bool ShellIntegration::DefaultWebClientWorker::InitializeSetAsDefault() {
 }
 
 void ShellIntegration::DefaultWebClientWorker::FinalizeSetAsDefault() {}
-
-#if !defined(OS_WIN)
-// static
-bool ShellIntegration::DefaultWebClientWorker::ShouldReportAttemptResults() {
-  return false;
-}
-#endif  // !defined(OS_WIN)
 
 void ShellIntegration::DefaultWebClientWorker::UpdateUI(
     DefaultWebClientState state) {
@@ -342,6 +337,40 @@ void ShellIntegration::DefaultWebClientWorker::UpdateUI(
         break;
     }
   }
+}
+
+// static
+bool ShellIntegration::DefaultWebClientWorker::ShouldReportDurationForResult(
+    AttemptResult result) {
+  return result == SUCCESS || result == FAILURE || result == ABANDONED ||
+         result == RETRY;
+}
+
+// static
+const char* ShellIntegration::DefaultWebClientWorker::AttemptResultToString(
+    AttemptResult result) {
+  switch (result) {
+    case SUCCESS:
+      return "Success";
+    case ALREADY_DEFAULT:
+      return "AlreadyDefault";
+    case FAILURE:
+      return "Failure";
+    case ABANDONED:
+      return "Abandoned";
+    case LAUNCH_FAILURE:
+      return "LaunchFailure";
+    case OTHER_WORKER:
+      return "OtherWorker";
+    case RETRY:
+      return "Retry";
+    case NO_ERRORS_NOT_DEFAULT:
+      return "NoErrorsNotDefault";
+    case NUM_ATTEMPT_RESULT_TYPES:
+      break;
+  }
+  NOTREACHED();
+  return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -408,6 +437,10 @@ void ShellIntegration::DefaultBrowserWorker::SetAsDefault(
                  result));
 }
 
+const char* ShellIntegration::DefaultBrowserWorker::GetHistogramPrefix() {
+  return "DefaultBrowser";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ShellIntegration::DefaultProtocolClientWorker
 //
@@ -456,4 +489,9 @@ void ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DefaultProtocolClientWorker::OnSetAsDefaultAttemptComplete,
                  this, result));
+}
+
+const char*
+ShellIntegration::DefaultProtocolClientWorker::GetHistogramPrefix() {
+  return "DefaultProtocolClient";
 }

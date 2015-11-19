@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_command_controller.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -165,7 +167,6 @@ class SwitchToMetroUIHandler
       return;
     }
     first_check_ = false;
-    default_browser_worker_->StartCheckIsDefault();
   }
 
   bool IsInteractiveSetDefaultPermitted() override {

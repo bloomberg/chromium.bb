@@ -1083,8 +1083,10 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
     return;
 
   content::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
-  default_browser_worker_->StartSetAsDefault();
+  UMA_HISTOGRAM_COUNTS("Settings.StartSetAsDefault", true);
+
   // Callback takes care of updating UI.
+  default_browser_worker_->StartSetAsDefault();
 
   // If the user attempted to make Chrome the default browser, notify
   // them when this changes.

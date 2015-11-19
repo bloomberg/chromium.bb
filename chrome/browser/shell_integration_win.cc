@@ -642,12 +642,6 @@ base::FilePath ShellIntegration::GetStartMenuShortcut(
   return base::FilePath();
 }
 
-// static
-bool ShellIntegration::DefaultWebClientWorker::ShouldReportAttemptResults() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         IsSetAsDefaultAsynchronous();
-}
-
 bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

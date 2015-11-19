@@ -239,7 +239,7 @@ class ShellIntegration {
     // Possible result codes for a set-as-default operation.
     // Do not modify the ordering as it is important for UMA.
     enum AttemptResult {
-      // No errors encountered.
+      // Chrome was set as the default web client.
       SUCCESS,
       // Chrome was already the default web client. This counts as a successful
       // attempt.
@@ -257,6 +257,9 @@ class ShellIntegration {
       // The user initiated another attempt while the asynchronous operation was
       // already in progress.
       RETRY,
+      // No errors were encountered yet Chrome is still not the default web
+      // client.
+      NO_ERRORS_NOT_DEFAULT,
       NUM_ATTEMPT_RESULT_TYPES
     };
 
@@ -295,6 +298,10 @@ class ShellIntegration {
     // OnSetAsDefaultAttemptComplete() on the UI thread.
     virtual void SetAsDefault(bool interactive_permitted) = 0;
 
+    // Returns the prefix used for metrics to differentiate UMA metrics for
+    // setting the default browser and setting the default protocol client.
+    virtual const char* GetHistogramPrefix() = 0;
+
     // Invoked on the UI thread prior to starting a set-as-default operation.
     // Returns true if the initialization succeeded and a subsequent call to
     // FinalizeSetAsDefault() is required.
@@ -303,15 +310,19 @@ class ShellIntegration {
     // Invoked on the UI thread following a set-as-default operation.
     virtual void FinalizeSetAsDefault();
 
-    // Returns true if the attempt results should be reported to UMA.
-    static bool ShouldReportAttemptResults();
-
     // Reports the result and duration for one set-as-default attempt.
     void ReportAttemptResult(AttemptResult result);
 
     // Updates the UI in our associated view with the current default web
     // client state.
     void UpdateUI(DefaultWebClientState state);
+
+    // Returns true if the duration of an attempt to set the default web client
+    // should be reported to UMA for |result|.
+    static bool ShouldReportDurationForResult(AttemptResult result);
+
+    // Returns a string based on |result|. This is used for UMA reports.
+    static const char* AttemptResultToString(AttemptResult result);
 
     DefaultWebClientObserver* observer_;
 
@@ -322,6 +333,10 @@ class ShellIntegration {
 
     // Records the time it takes to set the default browser.
     base::TimeTicks start_time_;
+
+    // Wait until Chrome has been confirmed as the default browser before
+    // reporting a successful attempt.
+    bool check_default_should_report_success_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultWebClientWorker);
   };
@@ -340,6 +355,9 @@ class ShellIntegration {
     // Set Chrome as the default browser.
     void SetAsDefault(bool interactive_permitted) override;
 
+    // Returns the histogram prefix for DefaultBrowserWorker.
+    const char* GetHistogramPrefix() override;
+
 #if defined(OS_WIN)
     // On Windows 10+, adds the default browser callback and starts the timer
     // that determines if the operation was successful or not.
@@ -355,7 +373,7 @@ class ShellIntegration {
 
     // Used to determine if setting the default browser was unsuccesful.
     scoped_ptr<base::OneShotTimer> async_timer_;
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };
@@ -380,6 +398,9 @@ class ShellIntegration {
 
     // Set Chrome as the default handler for this protocol.
     void SetAsDefault(bool interactive_permitted) override;
+
+    // Returns the histogram prefix for DefaultProtocolClientWorker.
+    const char* GetHistogramPrefix() override;
 
     std::string protocol_;
 

@@ -2589,6 +2589,20 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DefaultBrowserInfoBar_Accept">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked &quot;Set as default&quot; on the info bar.
+  </description>
+</action>
+
+<action name="DefaultBrowserInfoBar_DontAskAgain">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked &quot;Don't ask again&quot; on the info bar.
+  </description>
+</action>
+
 <action name="Delete">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -10270,8 +10284,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_SetAsDefaultBrowser">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked &quot;Make Chrome the default browser&quot; in the settings
+    page.
+  </description>
 </action>
 
 <action name="Options_SetDownloadDirectory">
