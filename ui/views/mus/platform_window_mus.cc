@@ -13,6 +13,11 @@
 
 namespace views {
 
+namespace {
+static uint32_t accelerated_widget_count = 1;
+
+}  // namespace
+
 PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                                      mus::Window* mus_window)
     : delegate_(delegate),
@@ -23,9 +28,18 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   DCHECK(mus_window_);
   mus_window_->AddObserver(this);
 
+  // We need accelerated widget numbers to be different for each
+  // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
+  // has this property.
+#if defined(OS_WIN)
   delegate_->OnAcceleratedWidgetAvailable(
-      gfx::kNullAcceleratedWidget,
+      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++),
       mus_window_->viewport_metrics().device_pixel_ratio);
+#else
+  delegate_->OnAcceleratedWidgetAvailable(
+      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++),
+      mus_window_->viewport_metrics().device_pixel_ratio);
+#endif
 }
 
 PlatformWindowMus::~PlatformWindowMus() {

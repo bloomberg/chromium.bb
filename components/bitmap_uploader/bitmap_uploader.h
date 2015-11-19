@@ -20,6 +20,8 @@ class Shell;
 
 namespace bitmap_uploader {
 
+extern const char kBitmapUploaderForAcceleratedWidget[];
+
 // BitmapUploader is useful if you want to draw a bitmap or color in a
 // mus::Window.
 class BitmapUploader : public mus::mojom::SurfaceClient {

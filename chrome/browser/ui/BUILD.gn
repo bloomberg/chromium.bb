@@ -154,6 +154,10 @@ source_set("ui") {
     }
   }
 
+  if (use_aura) {
+    defines += [ "MOJO_RUNNER_CLIENT" ]
+  }
+
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
   }

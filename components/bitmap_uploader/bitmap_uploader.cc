@@ -29,6 +29,9 @@ void OnGotContentHandlerID(uint32_t content_handler_id) {}
 
 }  // namespace
 
+const char kBitmapUploaderForAcceleratedWidget[] =
+    "__BITMAP_UPLOADER_ACCELERATED_WIDGET__";
+
 BitmapUploader::BitmapUploader(mus::Window* window)
     : window_(window),
       color_(g_transparent_color),

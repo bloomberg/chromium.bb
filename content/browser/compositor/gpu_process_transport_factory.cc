@@ -28,6 +28,7 @@
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
+#include "content/browser/compositor/software_output_device_mus.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -148,6 +149,14 @@ GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
 scoped_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
+#if defined(MOJO_RUNNER_CLIENT)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "mojo-platform-channel-handle")) {
+    return scoped_ptr<cc::SoftwareOutputDevice>(
+        new SoftwareOutputDeviceMus(compositor));
+  }
+#endif
+
 #if defined(OS_WIN)
   return scoped_ptr<cc::SoftwareOutputDevice>(
       new SoftwareOutputDeviceWin(software_backing_.get(), compositor));
@@ -192,6 +201,16 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 }
 
 static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
+#if defined(MOJO_RUNNER_CLIENT)
+  // Chrome running as a mojo app currently can only use software compositing.
+  // TODO(rjkroege): http://crbug.com/548451
+  // TODO(rjkroege): Make IsRunningInMojoRunner callable from content.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "mojo-platform-channel-handle")) {
+    return false;
+  }
+#endif
+
 #if defined(OS_CHROMEOS)
   // Software fallback does not happen on Chrome OS.
   return true;

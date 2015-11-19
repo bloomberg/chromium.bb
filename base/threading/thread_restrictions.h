@@ -42,6 +42,7 @@ class GpuChannelHost;
 class NestedMessagePumpAndroid;
 class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
+class SoftwareOutputDeviceMus;
 class TextInputClientMac;
 }  // namespace content
 namespace dbus {
@@ -217,7 +218,10 @@ class BASE_EXPORT ThreadRestrictions {
   friend class net::NetworkChangeNotifierMac;     // http://crbug.com/125097
   friend class ::BrowserProcessImpl;              // http://crbug.com/125207
   friend class ::NativeBackendKWallet;            // http://crbug.com/125331
-  // END USAGE THAT NEEDS TO BE FIXED.
+#if !defined(OFFICIAL_BUILD)
+  friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
+#endif
+// END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_THREAD_RESTRICTIONS
   static bool SetWaitAllowed(bool allowed);
