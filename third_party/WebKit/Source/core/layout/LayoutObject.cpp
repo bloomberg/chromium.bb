@@ -2685,7 +2685,7 @@ void LayoutObject::updateDragState(bool dragOn)
     setIsDragging(dragOn);
     if (valueChanged && node()) {
         if (node()->isElementNode() && toElement(node())->childrenOrSiblingsAffectedByDrag())
-            node()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Drag));
+            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoDrag, *toElement(node()));
         else if (style()->affectedByDrag())
             node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Drag));
     }

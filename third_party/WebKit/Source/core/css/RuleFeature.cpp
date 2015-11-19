@@ -288,6 +288,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoAnyLink:
         case CSSSelector::PseudoAutofill:
         case CSSSelector::PseudoHover:
+        case CSSSelector::PseudoDrag:
         case CSSSelector::PseudoFocus:
         case CSSSelector::PseudoActive:
         case CSSSelector::PseudoChecked:
