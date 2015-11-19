@@ -1053,8 +1053,8 @@ void ProfileIOData::Init(
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
-  network_delegate->set_data_use_aggregator(io_thread->data_use_aggregator(),
-                                            IsOffTheRecord());
+  network_delegate->set_data_use_aggregator(
+      io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.

@@ -19,7 +19,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -46,6 +45,10 @@ class ExternalDataUseObserver;
 
 namespace chrome_browser_net {
 class DnsProbeService;
+}
+
+namespace data_usage {
+class DataUseAggregator;
 }
 
 namespace extensions {
@@ -132,6 +135,14 @@ class IOThread : public content::BrowserThreadDelegate {
     Globals();
     ~Globals();
 
+    // Global aggregator of data use. It must outlive the
+    // |system_network_delegate|.
+    scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator;
+#if defined(OS_ANDROID)
+    // An external observer of data use.
+    scoped_ptr<chrome::android::ExternalDataUseObserver>
+        external_data_use_observer;
+#endif  // defined(OS_ANDROID)
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;
@@ -260,17 +271,9 @@ class IOThread : public content::BrowserThreadDelegate {
 
   base::TimeTicks creation_time() const;
 
-  data_usage::DataUseAggregator* data_use_aggregator() const;
-
   // Returns true if QUIC should be enabled for data reduction proxy, either as
   // a result of a field trial or a command line flag.
   static bool ShouldEnableQuicForDataReductionProxy();
-
-#if defined(OS_ANDROID)
-chrome::android::ExternalDataUseObserver* external_data_use_observer() const {
-  return external_data_use_observer_.get();
-}
-#endif  // defined(OS_ANDROID)
 
  private:
   // Map from name to value for all parameters associate with a field trial.
@@ -531,15 +534,6 @@ chrome::android::ExternalDataUseObserver* external_data_use_observer() const {
 
   // True if QUIC is allowed by policy.
   bool is_quic_allowed_by_policy_;
-
-  // Global aggregator of data use. It must outlive the
-  // |system_network_delegate|.
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
-  // An external observer of data use.
-#if defined(OS_ANDROID)
-  scoped_ptr<chrome::android::ExternalDataUseObserver>
-      external_data_use_observer_;
-#endif  // defined(OS_ANDROID)
 
   const base::TimeTicks creation_time_;
 

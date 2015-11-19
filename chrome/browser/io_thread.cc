@@ -43,7 +43,9 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
+#include "components/data_usage/core/data_use_annotator.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
@@ -613,7 +615,7 @@ void IOThread::Init() {
   data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
 #endif
 
-  data_use_aggregator_.reset(new data_usage::DataUseAggregator(
+  globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator(
       scoped_ptr<data_usage::DataUseAnnotator>(
           new chrome_browser_data_usage::TabIdAnnotator()),
       data_use_amortizer.Pass()));
@@ -628,12 +630,13 @@ void IOThread::Init() {
                                 &system_enable_referrers_));
   // By default, data usage is considered off the record.
   chrome_network_delegate->set_data_use_aggregator(
-      data_use_aggregator(), true /* is_data_usage_off_the_record */);
+      globals_->data_use_aggregator.get(),
+      true /* is_data_usage_off_the_record */);
 
 #if defined(OS_ANDROID)
-  external_data_use_observer_.reset(
+  globals_->external_data_use_observer.reset(
       new chrome::android::ExternalDataUseObserver(
-          data_use_aggregator(),
+          globals_->data_use_aggregator.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
 #endif
@@ -1127,10 +1130,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
 
 base::TimeTicks IOThread::creation_time() const {
   return creation_time_;
-}
-
-data_usage::DataUseAggregator* IOThread::data_use_aggregator() const {
-  return data_use_aggregator_.get();
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {
