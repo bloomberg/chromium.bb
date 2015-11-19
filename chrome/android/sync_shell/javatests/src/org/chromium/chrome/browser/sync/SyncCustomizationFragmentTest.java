@@ -99,7 +99,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testSyncSwitch() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         final SwitchPreference syncSwitch = getSyncSwitch(fragment);
 
@@ -160,7 +160,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOnThenOff() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
         togglePreference(getSyncSwitch(fragment));
@@ -171,7 +171,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testSyncEverythingAndDataTypes() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
         Collection<CheckBoxPreference> dataTypes = getDataTypes(fragment).values();
@@ -196,7 +196,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testSettingDataTypes() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
         Map<Integer, CheckBoxPreference> dataTypes = getDataTypes(fragment);
@@ -234,7 +234,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDefaultEncryptionOptions() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         Preference encryption = getEncryption(fragment);
         clickPreference(encryption);
@@ -268,7 +268,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testChoosePassphraseTypeWhenSyncIsOff() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         Preference encryption = getEncryption(fragment);
         clickPreference(encryption);
@@ -292,7 +292,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testEnterPassphraseWhenSyncIsOff() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         stopSync();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -313,7 +313,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         final FakeProfileSyncService pss = overrideProfileSyncService();
 
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         // Trigger PassphraseDialogFragment to be shown when taping on Encryption.
         pss.setPassphraseRequiredForDecryption(true);
 
@@ -344,7 +344,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testPassphraseCreation() throws Exception {
         setUpTestAccountAndSignInToSync();
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -528,7 +528,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             public boolean isSatisfied() {
                 return mProfileSyncService.isBackendInitialized();
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Timed out waiting for sync's backend to be initialized.", success);
     }
 

@@ -69,7 +69,7 @@ public class AutofillTest extends SyncTestBase {
     public void testDownloadAutofill() throws Exception {
         addServerAutofillProfile(STREET, CITY, STATE, ZIP);
         assertServerAutofillProfileCountWithName(1, STREET);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
 
         // Verify data synced to client.
         List<Autofill> autofills = getClientAutofillProfiles();
@@ -88,7 +88,7 @@ public class AutofillTest extends SyncTestBase {
     public void testDownloadAutofillModification() throws Exception {
         // Add the entity to test modifying.
         EntitySpecifics specifics = addServerAutofillProfile(STREET, CITY, STATE, ZIP);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertServerAutofillProfileCountWithName(1, STREET);
         assertClientAutofillProfileCount(1);
 
@@ -96,7 +96,7 @@ public class AutofillTest extends SyncTestBase {
         Autofill autofill = getClientAutofillProfiles().get(0);
         specifics.autofillProfile.addressHomeCity = MODIFIED_CITY;
         mFakeServerHelper.modifyEntitySpecifics(autofill.id, specifics);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         Autofill modifiedAutofill = getClientAutofillProfiles().get(0);
         assertEquals("The city was not modified.", MODIFIED_CITY, modifiedAutofill.city);
     }
@@ -107,7 +107,7 @@ public class AutofillTest extends SyncTestBase {
     public void testDownloadDeletedAutofill() throws Exception {
         // Add the entity to test deleting.
         addServerAutofillProfile(STREET, CITY, STATE, ZIP);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertServerAutofillProfileCountWithName(1, STREET);
         assertClientAutofillProfileCount(1);
 
@@ -115,7 +115,7 @@ public class AutofillTest extends SyncTestBase {
         Autofill autofill = getClientAutofillProfiles().get(0);
         mFakeServerHelper.deleteEntity(autofill.id);
         waitForServerAutofillProfileCountWithName(0, STREET);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForClientAutofillProfileCount(0);
     }
 
@@ -127,7 +127,7 @@ public class AutofillTest extends SyncTestBase {
         disableDataType(ModelType.AUTOFILL);
         addServerAutofillProfile(STREET, CITY, STATE, ZIP);
         assertServerAutofillProfileCountWithName(1, STREET);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertClientAutofillProfileCount(0);
     }
 
@@ -183,7 +183,7 @@ public class AutofillTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected " + count + " local autofill profiles.", success);
     }
 
@@ -199,7 +199,7 @@ public class AutofillTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
                 success);
     }

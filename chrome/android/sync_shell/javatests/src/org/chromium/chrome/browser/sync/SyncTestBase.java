@@ -129,8 +129,6 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     protected Account setUpTestAccountAndSignInToSync() throws InterruptedException {
         Account account = setUpTestAccount();
         signIn(account);
-        assertTrue("Sync everything should be enabled",
-                SyncTestUtil.isSyncEverythingEnabled(mContext));
         return account;
     }
 
@@ -141,7 +139,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 SyncController.get(mContext).start();
             }
         });
-        SyncTestUtil.waitForSyncActive(mContext);
+        SyncTestUtil.waitForSyncActive();
     }
 
     protected void stopSync() {
@@ -177,7 +175,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 });
             }
         });
-        assertTrue(s.tryAcquire(SyncTestUtil.UI_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
         SyncTestUtil.verifySyncIsSignedOut(mContext);
     }
 
@@ -189,7 +187,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             public boolean isSatisfied() {
                 return !ProfileSyncService.get().isSyncRequested();
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Timed out waiting for sync to stop.", syncStopped);
     }
 

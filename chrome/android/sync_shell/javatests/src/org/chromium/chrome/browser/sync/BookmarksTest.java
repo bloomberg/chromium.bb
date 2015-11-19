@@ -83,7 +83,7 @@ public class BookmarksTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadBookmark() throws Exception {
         addServerBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         List<Bookmark> bookmarks = getClientBookmarks();
         assertEquals("Only the injected bookmark should exist on the client.",
                 1, bookmarks.size());
@@ -98,14 +98,14 @@ public class BookmarksTest extends SyncTestBase {
     public void testDownloadBookmarkModification() throws Exception {
         // Add the entity to test modifying.
         addServerBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
         // Modify on server, sync, and verify the modification locally.
         Bookmark bookmark = getClientBookmarks().get(0);
         modifyServerBookmark(bookmark.id, MODIFIED_TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         bookmark = getClientBookmarks().get(0);
         assertEquals("The bookmark title was not modified.", MODIFIED_TITLE, bookmark.title);
     }
@@ -116,7 +116,7 @@ public class BookmarksTest extends SyncTestBase {
     public void testDownloadBookmarkTombstone() throws Exception {
         // Add the entity to test deleting.
         addServerBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
@@ -124,7 +124,7 @@ public class BookmarksTest extends SyncTestBase {
         Bookmark bookmark = getClientBookmarks().get(0);
         mFakeServerHelper.deleteEntity(bookmark.id);
         waitForServerBookmarkCountWithName(0, TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForClientBookmarkCount(0);
     }
 
@@ -134,13 +134,13 @@ public class BookmarksTest extends SyncTestBase {
     public void testDownloadMovedBookmark() throws Exception {
         // Add the entity to test moving.
         addServerBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
         // Add the folder to move to.
         addServerBookmarkFolder(FOLDER_TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, FOLDER_TITLE);
         waitForClientBookmarkCount(2);
 
@@ -152,7 +152,7 @@ public class BookmarksTest extends SyncTestBase {
 
         // Move on server, sync, and verify the move locally.
         mFakeServerHelper.modifyBookmarkEntity(bookmark.id, TITLE, URL, folder.id);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         bookmark = getClientBookmarks().get(1);
         // The "s" is prepended because the server adds one to the parentId.
         assertEquals("The bookmark was not moved.", "s" + folder.id, bookmark.parentId);
@@ -163,7 +163,7 @@ public class BookmarksTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadBookmarkFolder() throws Exception {
         addServerBookmarkFolder(TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         List<Bookmark> bookmarks = getClientBookmarks();
         assertEquals("Only the injected bookmark folder should exist on the client.", 1,
                 bookmarks.size());
@@ -178,7 +178,7 @@ public class BookmarksTest extends SyncTestBase {
     public void testDownloadBookmarkFolderModification() throws Exception {
         // Add the entity to test modifying.
         addServerBookmarkFolder(TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
@@ -186,7 +186,7 @@ public class BookmarksTest extends SyncTestBase {
         Bookmark folder = getClientBookmarks().get(0);
         assertTrue(folder.isFolder());
         modifyServerBookmarkFolder(folder.id, MODIFIED_TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         folder = getClientBookmarks().get(0);
         assertTrue(folder.isFolder());
         assertEquals("The folder title was not modified.", MODIFIED_TITLE, folder.title);
@@ -198,7 +198,7 @@ public class BookmarksTest extends SyncTestBase {
     public void testDownloadBookmarkFolderTombstone() throws Exception {
         // Add the entity to test deleting.
         addServerBookmarkFolder(TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
@@ -207,7 +207,7 @@ public class BookmarksTest extends SyncTestBase {
         assertTrue(folder.isFolder());
         mFakeServerHelper.deleteEntity(folder.id);
         waitForServerBookmarkCountWithName(0, TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForClientBookmarkCount(0);
     }
 
@@ -255,13 +255,13 @@ public class BookmarksTest extends SyncTestBase {
     public void testUploadMovedBookmark() throws Exception {
         // Add the entity to test moving.
         BookmarkId bookmarkId = addClientBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
         // Add the folder to move to.
         BookmarkId folderId = addClientBookmarkFolder(FOLDER_TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, FOLDER_TITLE);
         waitForClientBookmarkCount(2);
 
@@ -278,7 +278,7 @@ public class BookmarksTest extends SyncTestBase {
 
         // Move on client, sync, and verify the move on the server.
         moveClientBookmark(bookmarkId, folderId);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         bookmarks = getServerBookmarks();
         if (bookmarks.get(0).isFolder()) {
             bookmark = getServerBookmarks().get(1);
@@ -331,9 +331,9 @@ public class BookmarksTest extends SyncTestBase {
     public void testDisabledNoDownloadBookmark() throws Exception {
         disableDataType(ModelType.BOOKMARKS);
         addServerBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForServerBookmarkCountWithName(1, TITLE);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertClientBookmarkCount(0);
     }
 
@@ -343,7 +343,7 @@ public class BookmarksTest extends SyncTestBase {
     public void testDisabledNoUploadBookmark() throws Exception {
         disableDataType(ModelType.BOOKMARKS);
         addClientBookmark(TITLE, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertServerBookmarkCountWithName(0, TITLE);
     }
 
@@ -465,7 +465,7 @@ public class BookmarksTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("There should be " + n + " local bookmarks.", success);
     }
 
@@ -481,7 +481,7 @@ public class BookmarksTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected " + count + " remote bookmarks with name " + name + ".", success);
     }
 }

@@ -71,7 +71,7 @@ public class TypedUrlsTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadTypedUrl() throws Exception {
         addServerTypedUrl(URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
 
         // Verify data synced to client.
         List<TypedUrl> typedUrls = getClientTypedUrls();
@@ -87,7 +87,7 @@ public class TypedUrlsTest extends SyncTestBase {
     public void testDownloadDeletedTypedUrl() throws Exception {
         // Add the entity to test deleting.
         addServerTypedUrl(URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertServerTypedUrlCountWithName(1, URL);
         assertClientTypedUrlCount(1);
 
@@ -95,7 +95,7 @@ public class TypedUrlsTest extends SyncTestBase {
         TypedUrl typedUrl = getClientTypedUrls().get(0);
         mFakeServerHelper.deleteEntity(typedUrl.id);
         waitForServerTypedUrlCountWithName(0, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForClientTypedUrlCount(0);
     }
 
@@ -151,7 +151,7 @@ public class TypedUrlsTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected " + count + " local typed URL entities.", success);
     }
 
@@ -167,7 +167,7 @@ public class TypedUrlsTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected " + count + " server typed URLs with name " + name + ".", success);
     }
 }

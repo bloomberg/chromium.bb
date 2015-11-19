@@ -93,7 +93,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         });
         waitForCryptographer();
         // Make sure the new encryption settings make it to the server.
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
     }
 
     private void decryptWithPassphrase(final String passphrase) throws InterruptedException {

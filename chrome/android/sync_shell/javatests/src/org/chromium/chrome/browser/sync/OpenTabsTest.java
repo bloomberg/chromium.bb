@@ -128,7 +128,7 @@ public class OpenTabsTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadOpenTab() throws Exception {
         addFakeServerTabs(FAKE_CLIENT, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
 
         // Verify data synced to client.
         OpenTabs openTabs = getLocalTabsForClient(FAKE_CLIENT);
@@ -142,7 +142,7 @@ public class OpenTabsTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadMultipleOpenTabs() throws Exception {
         addFakeServerTabs(FAKE_CLIENT, URL, URL2, URL3);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
 
         // Verify data synced to client.
         OpenTabs openTabs = getLocalTabsForClient(FAKE_CLIENT);
@@ -159,12 +159,12 @@ public class OpenTabsTest extends SyncTestBase {
     public void testDownloadDeletedOpenTab() throws Exception {
         // Add the entity to test deleting.
         addFakeServerTabs(FAKE_CLIENT, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForLocalTabsForClient(FAKE_CLIENT, URL);
 
         // Delete on server, sync, and verify deleted locally.
         deleteServerTabsForClient(FAKE_CLIENT);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForLocalTabsForClient(FAKE_CLIENT);
     }
 
@@ -174,12 +174,12 @@ public class OpenTabsTest extends SyncTestBase {
     public void testDownloadMultipleDeletedOpenTabs() throws Exception {
         // Add the entity to test deleting.
         addFakeServerTabs(FAKE_CLIENT, URL, URL2, URL3);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForLocalTabsForClient(FAKE_CLIENT, URL, URL2, URL3);
 
         // Delete on server, sync, and verify deleted locally.
         deleteServerTabsForClient(FAKE_CLIENT);
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
         waitForLocalTabsForClient(FAKE_CLIENT);
     }
 
@@ -254,7 +254,7 @@ public class OpenTabsTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected local open tabs for client " + clientName + ": "
                 + Arrays.toString(urls), success);
     }
@@ -270,7 +270,7 @@ public class OpenTabsTest extends SyncTestBase {
                     throw new RuntimeException(e);
                 }
             }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
         assertTrue("Expected server open tabs: " + Arrays.toString(urls), success);
     }
 
