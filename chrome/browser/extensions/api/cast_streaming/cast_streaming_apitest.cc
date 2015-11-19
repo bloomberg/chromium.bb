@@ -335,7 +335,8 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
 //
 // TODO(miu): Now that this test has been long-stable on Release build bots, it
 // should be enabled for the Debug build bots.  http://crbug.com/396413
-#if defined(NDEBUG)
+// Disabled in MacOS: https://crbug.com/557929
+#if defined(NDEBUG) && !defined(OS_MACOSX)
 #define MAYBE_EndToEnd EndToEnd
 #else
 #define MAYBE_EndToEnd DISABLED_EndToEnd

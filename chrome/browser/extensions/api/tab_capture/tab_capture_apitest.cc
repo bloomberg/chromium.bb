@@ -174,7 +174,13 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MaxOffscreenTabs) {
 }
 
 // Tests that tab capture video frames can be received in a VIDEO element.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndWithoutRemoting) {
+// Disabled in MacOS: https://crbug.com/557929
+#if defined(OS_MACOSX)
+#define MAYBE_EndToEndWithoutRemoting DISABLED_EndToEndWithoutRemoting
+#else
+#define MAYBE_EndToEndWithoutRemoting EndToEndWithoutRemoting
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_EndToEndWithoutRemoting) {
   if (IsTooIntensiveForThisPlatform()) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
@@ -189,7 +195,13 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndWithoutRemoting) {
 // received in a VIDEO element.  More allowance is provided for color deviation
 // because of the additional layers of video processing performed within
 // WebRTC.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndThroughWebRTC) {
+// Disabled in MacOS: https://crbug.com/557929
+#if defined(OS_MACOSX)
+#define MAYBE_EndToEndThroughWebRTC DISABLED_EndToEndThroughWebRTC
+#else
+#define MAYBE_EndToEndThroughWebRTC EndToEndThroughWebRTC
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_EndToEndThroughWebRTC) {
   if (IsTooIntensiveForThisPlatform()) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
