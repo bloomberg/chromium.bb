@@ -125,7 +125,7 @@ void ArcBridgeService::StopInstance() {
 bool ArcBridgeService::RegisterInputDevice(const std::string& name,
                                            const std::string& device_type,
                                            base::ScopedFD fd) {
-  DCHECK(ipc_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   if (state_ != State::READY) {
     LOG(ERROR) << "Called RegisterInputDevice when the service is not ready";
     return false;
