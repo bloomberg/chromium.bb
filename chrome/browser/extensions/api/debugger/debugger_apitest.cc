@@ -193,6 +193,8 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
       new Browser(Browser::CreateParams(profile(), chrome::GetActiveDesktop()));
   AddBlankTabAndShow(another_browser);
   AddBlankTabAndShow(another_browser);
+  int tab_id2 = SessionTabHelper::IdForTab(
+      another_browser->tab_strip_model()->GetActiveWebContents());
 
   InfoBarService* service1 = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -208,6 +210,27 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
       RunFunction(attach_function.get(),
                   base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id),
                   browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
+
+  // Second attach should not create infobars.
+  attach_function = new DebuggerAttachFunction();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(
+      RunFunction(attach_function.get(),
+                  base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id2),
+                  browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
+
+  // Detach from one of the tabs should not remove infobars.
+  detach_function = new DebuggerDetachFunction();
+  detach_function->set_extension(extension());
+  ASSERT_TRUE(RunFunction(detach_function.get(),
+                          base::StringPrintf("[{\"tabId\": %d}]", tab_id2),
+                          browser(), extension_function_test_utils::NONE));
   EXPECT_EQ(1u, service1->infobar_count());
   EXPECT_EQ(1u, service2->infobar_count());
   EXPECT_EQ(1u, service3->infobar_count());
