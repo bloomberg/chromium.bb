@@ -21,7 +21,7 @@ V8PerformanceObserverCallback::V8PerformanceObserverCallback(v8::Local<v8::Funct
     , m_callback(scriptState->isolate(), callback)
     , m_scriptState(scriptState)
 {
-    V8HiddenValue::setHiddenValue(scriptState->isolate(), owner, V8HiddenValue::callback(scriptState->isolate()), callback);
+    V8HiddenValue::setHiddenValue(scriptState, owner, V8HiddenValue::callback(scriptState->isolate()), callback);
     m_callback.setWeak(this, &setWeakCallback);
 }
 

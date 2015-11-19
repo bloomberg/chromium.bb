@@ -45,7 +45,7 @@ public:
     {
         return adoptRefWillBeNoop(new V8ErrorHandler(listener, isInline, scriptState));
     }
-    static void storeExceptionOnErrorEventWrapper(v8::Isolate*, ErrorEvent*, v8::Local<v8::Value>, v8::Local<v8::Object> creationContext);
+    static void storeExceptionOnErrorEventWrapper(ScriptState*, ErrorEvent*, v8::Local<v8::Value>, v8::Local<v8::Object> creationContext);
 
 private:
     V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState*);

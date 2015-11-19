@@ -47,7 +47,7 @@ V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter, v8::Lo
     // We'll make sure m_filter is either usable by acceptNode or empty.
     // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
     if (!filter.IsEmpty() && filter->IsObject()) {
-        V8HiddenValue::setHiddenValue(scriptState->isolate(), owner, V8HiddenValue::condition(scriptState->isolate()), filter);
+        V8HiddenValue::setHiddenValue(scriptState, owner, V8HiddenValue::condition(scriptState->isolate()), filter);
         m_filter.set(scriptState->isolate(), filter);
         m_filter.setWeak(this, &setWeakCallback);
     }

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 
@@ -22,25 +23,25 @@ v8::Local<v8::String> V8HiddenValue::name(v8::Isolate* isolate)    \
 
 V8_HIDDEN_VALUES(V8_DEFINE_METHOD);
 
-v8::Local<v8::Value> V8HiddenValue::getHiddenValue(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::String> key)
+v8::Local<v8::Value> V8HiddenValue::getHiddenValue(ScriptState* scriptState, v8::Local<v8::Object> object, v8::Local<v8::String> key)
 {
     return object->GetHiddenValue(key);
 }
 
-bool V8HiddenValue::setHiddenValue(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::String> key, v8::Local<v8::Value> value)
+bool V8HiddenValue::setHiddenValue(ScriptState* scriptState, v8::Local<v8::Object> object, v8::Local<v8::String> key, v8::Local<v8::Value> value)
 {
     return object->SetHiddenValue(key, value);
 }
 
-bool V8HiddenValue::deleteHiddenValue(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::String> key)
+bool V8HiddenValue::deleteHiddenValue(ScriptState* scriptState, v8::Local<v8::Object> object, v8::Local<v8::String> key)
 {
     return object->DeleteHiddenValue(key);
 }
 
-v8::Local<v8::Value> V8HiddenValue::getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, ScriptWrappable* wrappable, v8::Local<v8::String> key)
+v8::Local<v8::Value> V8HiddenValue::getHiddenValueFromMainWorldWrapper(ScriptState* scriptState, ScriptWrappable* wrappable, v8::Local<v8::String> key)
 {
-    v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(isolate);
-    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getHiddenValue(isolate, wrapper, key);
+    v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(scriptState->isolate());
+    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getHiddenValue(scriptState, wrapper, key);
 }
 
 } // namespace blink

@@ -479,7 +479,7 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
+        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
     }
 }

@@ -426,7 +426,7 @@ void WindowProxy::updateDocumentProperty()
     // We also stash a reference to the document on the inner global object so that
     // LocalDOMWindow objects we obtain from JavaScript references are guaranteed to have
     // live Document objects.
-    V8HiddenValue::setHiddenValue(m_isolate, toInnerGlobalObject(context), V8HiddenValue::document(m_isolate), documentWrapper);
+    V8HiddenValue::setHiddenValue(m_scriptState.get(), toInnerGlobalObject(context), V8HiddenValue::document(m_isolate), documentWrapper);
 }
 
 void WindowProxy::updateActivityLogger()

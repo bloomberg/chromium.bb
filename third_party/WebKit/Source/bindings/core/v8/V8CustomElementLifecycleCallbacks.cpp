@@ -55,9 +55,9 @@ PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecyc
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_VALUE(Value, Name) \
-    ASSERT(V8HiddenValue::getHiddenValue(isolate, prototype, V8HiddenValue::customElement##Name(isolate)).IsEmpty()); \
+    ASSERT(V8HiddenValue::getHiddenValue(scriptState, prototype, V8HiddenValue::customElement##Name(isolate)).IsEmpty()); \
     if (!Value.IsEmpty()) \
-        V8HiddenValue::setHiddenValue(isolate, prototype, V8HiddenValue::customElement##Name(isolate), Value.ToLocalChecked());
+        V8HiddenValue::setHiddenValue(scriptState, prototype, V8HiddenValue::customElement##Name(isolate), Value.ToLocalChecked());
 
     CALLBACK_LIST(SET_HIDDEN_VALUE)
 #undef SET_HIDDEN_VALUE

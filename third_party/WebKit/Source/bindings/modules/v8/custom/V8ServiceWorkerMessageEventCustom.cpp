@@ -14,7 +14,8 @@ void V8ServiceWorkerMessageEvent::dataAttributeGetterCustom(const v8::FunctionCa
 {
     ServiceWorkerMessageEvent* event = V8ServiceWorkerMessageEvent::toImpl(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::data(isolate));
+    ScriptState* scriptState = ScriptState::current(isolate);
+    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::data(isolate));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -26,11 +27,11 @@ void V8ServiceWorkerMessageEvent::dataAttributeGetterCustom(const v8::FunctionCa
         MessagePortArray ports = event->ports();
         data = serializedValue->deserialize(isolate, &ports);
     } else {
-        data = event->data().v8ValueFor(ScriptState::current(isolate));
+        data = event->data().v8ValueFor(scriptState);
     }
     if (data.IsEmpty())
         data = v8::Null(isolate);
-    V8HiddenValue::setHiddenValue(isolate, info.Holder(), V8HiddenValue::data(isolate), data);
+    V8HiddenValue::setHiddenValue(scriptState, info.Holder(), V8HiddenValue::data(isolate), data);
     v8SetReturnValue(info, data);
 }
 

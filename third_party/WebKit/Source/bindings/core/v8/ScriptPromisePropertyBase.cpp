@@ -46,7 +46,7 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     v8::Local<v8::Object> wrapper = ensureHolderWrapper(scriptState);
     ASSERT(wrapper->CreationContext() == context);
 
-    v8::Local<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName());
+    v8::Local<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(scriptState, wrapper, promiseName());
     if (!cachedPromise.IsEmpty())
         return ScriptPromise(scriptState, cachedPromise);
 
@@ -55,12 +55,12 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     if (!v8::Promise::Resolver::New(context).ToLocal(&resolver))
         return ScriptPromise();
     v8::Local<v8::Promise> promise = resolver->GetPromise();
-    V8HiddenValue::setHiddenValue(m_isolate, wrapper, promiseName(), promise);
+    V8HiddenValue::setHiddenValue(scriptState, wrapper, promiseName(), promise);
 
     switch (m_state) {
     case Pending:
         // Cache the resolver too
-        V8HiddenValue::setHiddenValue(m_isolate, wrapper, resolverName(), resolver);
+        V8HiddenValue::setHiddenValue(scriptState, wrapper, resolverName(), resolver);
         break;
     case Resolved:
     case Rejected:
@@ -91,11 +91,12 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState)
             continue;
         }
         v8::Local<v8::Object> wrapper = persistent->newLocal(m_isolate);
-        ScriptState::Scope scope(ScriptState::from(wrapper->CreationContext()));
+        ScriptState* scriptState = ScriptState::from(wrapper->CreationContext());
+        ScriptState::Scope scope(scriptState);
 
-        v8::Local<v8::Promise::Resolver> resolver = V8HiddenValue::getHiddenValue(m_isolate, wrapper, resolverName()).As<v8::Promise::Resolver>();
+        v8::Local<v8::Promise::Resolver> resolver = V8HiddenValue::getHiddenValue(scriptState, wrapper, resolverName()).As<v8::Promise::Resolver>();
 
-        V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, resolverName());
+        V8HiddenValue::deleteHiddenValue(scriptState, wrapper, resolverName());
         resolveOrRejectInternal(resolver);
         ++i;
     }
@@ -159,8 +160,9 @@ void ScriptPromisePropertyBase::clearWrappers()
     for (WeakPersistentSet::iterator i = m_wrappers.begin(); i != m_wrappers.end(); ++i) {
         v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
         if (!wrapper.IsEmpty()) {
-            V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, resolverName());
-            V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, promiseName());
+            ScriptState* scriptState = ScriptState::from(wrapper->CreationContext());
+            V8HiddenValue::deleteHiddenValue(scriptState, wrapper, resolverName());
+            V8HiddenValue::deleteHiddenValue(scriptState, wrapper, promiseName());
         }
     }
     m_wrappers.clear();

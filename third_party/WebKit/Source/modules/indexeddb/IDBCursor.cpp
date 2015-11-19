@@ -87,7 +87,7 @@ v8::Local<v8::Object> IDBCursor::associateWithWrapper(v8::Isolate* isolate, cons
 {
     wrapper = ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
     if (!wrapper.IsEmpty())
-        V8HiddenValue::setHiddenValue(isolate, wrapper, V8HiddenValue::idbCursorRequest(isolate), toV8(m_request.get(), wrapper, isolate));
+        V8HiddenValue::setHiddenValue(ScriptState::current(isolate), wrapper, V8HiddenValue::idbCursorRequest(isolate), toV8(m_request.get(), wrapper, isolate));
     return wrapper;
 }
 

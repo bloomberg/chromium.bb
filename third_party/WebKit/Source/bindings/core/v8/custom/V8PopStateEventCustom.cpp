@@ -41,15 +41,16 @@
 namespace blink {
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
-static v8::Local<v8::Value> cacheState(v8::Local<v8::Object> popStateEvent, v8::Local<v8::Value> state, v8::Isolate* isolate)
+static v8::Local<v8::Value> cacheState(ScriptState* scriptState, v8::Local<v8::Object> popStateEvent, v8::Local<v8::Value> state)
 {
-    V8HiddenValue::setHiddenValue(isolate, popStateEvent, V8HiddenValue::state(isolate), state);
+    V8HiddenValue::setHiddenValue(scriptState, popStateEvent, V8HiddenValue::state(scriptState->isolate()), state);
     return state;
 }
 
 void V8PopStateEvent::stateAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::state(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -65,10 +66,10 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::FunctionCallbackInfo<
         if (event->serializedState())
             result = event->serializedState()->deserialize();
         else
-            result = event->state().v8ValueFor(ScriptState::current(info.GetIsolate()));
+            result = event->state().v8ValueFor(scriptState);
         if (result.IsEmpty())
             result = v8::Null(info.GetIsolate());
-        v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
+        v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
         return;
     }
 
@@ -86,19 +87,19 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::FunctionCallbackInfo<
             return;
         v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
         if (!history->stateChanged()) {
-            result = V8HiddenValue::getHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()));
+            result = V8HiddenValue::getHiddenValue(scriptState, v8History, V8HiddenValue::state(info.GetIsolate()));
             if (!result.IsEmpty()) {
-                v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
+                v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
                 return;
             }
         }
         result = event->serializedState()->deserialize(info.GetIsolate());
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()), result);
+        V8HiddenValue::setHiddenValue(scriptState, v8History, V8HiddenValue::state(info.GetIsolate()), result);
     } else {
         result = event->serializedState()->deserialize(info.GetIsolate());
     }
 
-    v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
+    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
 }
 
 } // namespace blink

@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ScriptState;
 class ScriptWrappable;
 
 #define V8_HIDDEN_VALUES(V) \
@@ -57,10 +58,10 @@ public:
     V8_HIDDEN_VALUES(V8_DECLARE_METHOD);
 #undef V8_DECLARE_METHOD
 
-    static v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>);
-    static bool setHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>, v8::Local<v8::Value>);
-    static bool deleteHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>);
-    static v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Local<v8::String>);
+    static v8::Local<v8::Value> getHiddenValue(ScriptState*, v8::Local<v8::Object>, v8::Local<v8::String>);
+    static bool setHiddenValue(ScriptState*, v8::Local<v8::Object>, v8::Local<v8::String>, v8::Local<v8::Value>);
+    static bool deleteHiddenValue(ScriptState*, v8::Local<v8::Object>, v8::Local<v8::String>);
+    static v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(ScriptState*, ScriptWrappable*, v8::Local<v8::String>);
 
 private:
     V8HiddenValue() { }

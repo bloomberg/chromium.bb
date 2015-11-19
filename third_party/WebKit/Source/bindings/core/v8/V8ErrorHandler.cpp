@@ -67,7 +67,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
     v8::Local<v8::Object> eventObject;
     if (!jsEvent->ToObject(scriptState->context()).ToLocal(&eventObject))
         return v8::Null(isolate());
-    v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), eventObject, V8HiddenValue::error(isolate()));
+    v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(scriptState, eventObject, V8HiddenValue::error(isolate()));
     if (error.IsEmpty())
         error = v8::Null(isolate());
 
@@ -88,12 +88,12 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
 }
 
 // static
-void V8ErrorHandler::storeExceptionOnErrorEventWrapper(v8::Isolate* isolate, ErrorEvent* event, v8::Local<v8::Value> data, v8::Local<v8::Object> creationContext)
+void V8ErrorHandler::storeExceptionOnErrorEventWrapper(ScriptState* scriptState, ErrorEvent* event, v8::Local<v8::Value> data, v8::Local<v8::Object> creationContext)
 {
-    v8::Local<v8::Value> wrappedEvent = toV8(event, creationContext, isolate);
+    v8::Local<v8::Value> wrappedEvent = toV8(event, creationContext, scriptState->isolate());
     if (!wrappedEvent.IsEmpty()) {
         ASSERT(wrappedEvent->IsObject());
-        V8HiddenValue::setHiddenValue(isolate, v8::Local<v8::Object>::Cast(wrappedEvent), V8HiddenValue::error(isolate), data);
+        V8HiddenValue::setHiddenValue(scriptState, v8::Local<v8::Object>::Cast(wrappedEvent), V8HiddenValue::error(scriptState->isolate()), data);
     }
 }
 

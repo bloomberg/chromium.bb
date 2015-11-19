@@ -170,7 +170,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
     LocalFrame* frame = enteredWindow->document()->frame();
     if (frame && frame->script().existingWindowProxy(scriptState->world())) {
-        V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate, event.get(), data, scriptState->context()->Global());
+        V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event.get(), data, scriptState->context()->Global());
     }
 
     if (scriptState->world().isPrivateScriptIsolatedWorld()) {
@@ -227,7 +227,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
         ASSERT(exception->IsObject());
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(exception);
-        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate, obj, V8HiddenValue::error(isolate));
+        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(ScriptState::current(isolate), obj, V8HiddenValue::error(isolate));
         if (!error.IsEmpty())
             exception = error;
     }
@@ -439,7 +439,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
         // If execution termination has been triggered as part of constructing
         // the error event from the v8::Message, quietly leave.
         if (!v8::V8::IsExecutionTerminating(isolate)) {
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate, event.get(), data, scriptState->context()->Global());
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event.get(), data, scriptState->context()->Global());
             context->reportException(event.release(), scriptId, callStack, corsStatus);
         }
     }

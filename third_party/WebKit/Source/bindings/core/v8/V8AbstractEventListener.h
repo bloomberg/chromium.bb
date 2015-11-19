@@ -129,7 +129,7 @@ protected:
 
     virtual void prepareListenerObject(ExecutionContext*) { }
 
-    void setListenerObject(v8::Local<v8::Object>);
+    void setListenerObject(v8::Local<v8::Object>, ScriptState*);
 
     void invokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
 
@@ -148,6 +148,8 @@ private:
 
     static void setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>&);
 
+    // The ScriptState the m_listener below was created in.
+    RefPtr<ScriptState> m_scriptStateForListener;
     ScopedPersistent<v8::Object> m_listener;
 
     // Indicates if this is an HTML type listener.

@@ -6864,13 +6864,13 @@ void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, 
         name.length()).ToLocalChecked();
     if (targetObject) {
         V8HiddenValue::setHiddenValue(
-            isolate,
+            scriptState,
             sourceObject->newLocalWrapper(isolate),
             jsName,
             targetObject->newLocalWrapper(isolate));
     } else {
         V8HiddenValue::deleteHiddenValue(
-            isolate,
+            scriptState,
             sourceObject->newLocalWrapper(isolate),
             jsName);
     }

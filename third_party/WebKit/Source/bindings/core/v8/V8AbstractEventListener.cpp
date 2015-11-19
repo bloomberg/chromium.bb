@@ -56,8 +56,10 @@ V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, DOMWrapperWor
 V8AbstractEventListener::~V8AbstractEventListener()
 {
     if (!m_listener.isEmpty()) {
-        v8::HandleScope scope(m_isolate);
-        V8EventListenerList::clearWrapper(m_listener.newLocal(isolate()), m_isAttribute, isolate());
+        v8::HandleScope scope(isolate());
+        // We can't use a ScriptState::Scope here as the per-context data might already be gone at this point.
+        v8::Context::Scope contextScope(m_scriptStateForListener->context());
+        V8EventListenerList::clearWrapper(m_listener.newLocal(isolate()), m_isAttribute, m_scriptStateForListener.get());
     }
     if (isMainThread())
         InstanceCounters::decrementCounter(InstanceCounters::JSEventListenerCounter);
@@ -100,10 +102,11 @@ void V8AbstractEventListener::handleEvent(ScriptState* scriptState, Event* event
     invokeEventHandler(scriptState, event, v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
-void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener)
+void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener, ScriptState* scriptState)
 {
     m_listener.set(isolate(), listener);
     m_listener.setWeak(this, &setWeakCallback);
+    m_scriptStateForListener = scriptState;
 }
 
 void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event* event, v8::Local<v8::Value> jsEvent)
@@ -118,11 +121,11 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event
         tryCatch.SetVerbose(true);
 
         // Save the old 'event' property so we can restore it later.
-        v8::Local<v8::Value> savedEvent = V8HiddenValue::getHiddenValue(isolate(), scriptState->context()->Global(), V8HiddenValue::event(isolate()));
+        v8::Local<v8::Value> savedEvent = V8HiddenValue::getHiddenValue(scriptState, scriptState->context()->Global(), V8HiddenValue::event(isolate()));
         tryCatch.Reset();
 
         // Make the event available in the global object, so LocalDOMWindow can expose it.
-        V8HiddenValue::setHiddenValue(isolate(), scriptState->context()->Global(), V8HiddenValue::event(isolate()), jsEvent);
+        V8HiddenValue::setHiddenValue(scriptState, scriptState->context()->Global(), V8HiddenValue::event(isolate()), jsEvent);
         tryCatch.Reset();
 
         returnValue = callListenerFunction(scriptState, jsEvent, event);
@@ -138,9 +141,9 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event
 
         // Restore the old event. This must be done for all exit paths through this method.
         if (savedEvent.IsEmpty())
-            V8HiddenValue::setHiddenValue(isolate(), scriptState->context()->Global(), V8HiddenValue::event(isolate()), v8::Undefined(isolate()));
+            V8HiddenValue::setHiddenValue(scriptState, scriptState->context()->Global(), V8HiddenValue::event(isolate()), v8::Undefined(isolate()));
         else
-            V8HiddenValue::setHiddenValue(isolate(), scriptState->context()->Global(), V8HiddenValue::event(isolate()), savedEvent);
+            V8HiddenValue::setHiddenValue(scriptState, scriptState->context()->Global(), V8HiddenValue::event(isolate()), savedEvent);
         tryCatch.Reset();
     }
 
@@ -184,6 +187,7 @@ bool V8AbstractEventListener::belongsToTheCurrentWorld() const
 void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener> &data)
 {
     data.GetParameter()->m_listener.clear();
+    data.GetParameter()->m_scriptStateForListener.clear();
 }
 
 } // namespace blink

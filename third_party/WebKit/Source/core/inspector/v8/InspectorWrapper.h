@@ -5,6 +5,7 @@
 #ifndef InspectorWrapper_h
 #define InspectorWrapper_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -86,7 +87,7 @@ public:
         typename blink::InspectorWrapperTypeTrait<T>::Type impl(object);
         v8::Isolate* isolate = context->GetIsolate();
         v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, impl, result));
-        V8HiddenValue::setHiddenValue(isolate, result, v8InternalizedString(isolate, hiddenPropertyName), objectReference);
+        V8HiddenValue::setHiddenValue(ScriptState::from(context), result, v8InternalizedString(isolate, hiddenPropertyName), objectReference);
         return result;
     }
     static T* unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object)

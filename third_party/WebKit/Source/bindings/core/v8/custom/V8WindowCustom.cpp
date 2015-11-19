@@ -80,7 +80,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
     if (context.IsEmpty())
         return;
 
-    v8::Local<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()));
+    v8::Local<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), context->Global(), V8HiddenValue::event(info.GetIsolate()));
     if (jsEvent.IsEmpty())
         return;
     v8SetReturnValue(info, jsEvent);
@@ -101,7 +101,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
     if (context.IsEmpty())
         return;
 
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()), value);
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), context->Global(), V8HiddenValue::event(info.GetIsolate()), value);
 }
 
 void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -268,10 +268,11 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     AtomicString propName = toCoreAtomicString(name);
 
-    v8::Local<v8::Value> interfaces = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate));
+    ScriptState* scriptState = ScriptState::from(context);
+    v8::Local<v8::Value> interfaces = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::testInterfaces(isolate));
     if (interfaces.IsEmpty()) {
         interfaces = v8::Map::New(isolate);
-        V8HiddenValue::setHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate), interfaces);
+        V8HiddenValue::setHiddenValue(scriptState, info.Holder(), V8HiddenValue::testInterfaces(isolate), interfaces);
     }
 
     v8::Local<v8::Map> interfacesMap = interfaces.As<v8::Map>();

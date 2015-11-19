@@ -32,6 +32,7 @@
 #include "bindings/core/v8/V8CustomEvent.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -44,20 +45,20 @@
 
 namespace blink {
 
-static v8::Local<v8::Value> cacheState(v8::Isolate* isolate, v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail)
+static v8::Local<v8::Value> cacheState(ScriptState* scriptState, v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail)
 {
-    V8HiddenValue::setHiddenValue(isolate, customEvent, V8HiddenValue::detail(isolate), detail);
+    V8HiddenValue::setHiddenValue(scriptState, customEvent, V8HiddenValue::detail(scriptState->isolate()), detail);
     return detail;
 }
 
-static void storeDetail(v8::Isolate* isolate, CustomEvent* impl, v8::Local<v8::Object> wrapper, v8::Local<v8::Value> detail)
+static void storeDetail(ScriptState* scriptState, CustomEvent* impl, v8::Local<v8::Object> wrapper, v8::Local<v8::Value> detail)
 {
-    cacheState(isolate, wrapper, detail);
+    cacheState(scriptState, wrapper, detail);
     // When a custom event is created in an isolated world, serialize
     // |detail| and store it in |impl| so that we can clone |detail|
     // when the getter of |detail| is called in the main world later.
-    if (DOMWrapperWorld::current(isolate).isIsolatedWorld())
-        impl->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(isolate, detail));
+    if (DOMWrapperWorld::current(scriptState->isolate()).isIsolatedWorld())
+        impl->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(scriptState->isolate(), detail));
 }
 
 void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -93,7 +94,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     // |detail| as a hidden value to avoid cycle references.
     if (eventInitDict.hasDetail()) {
         v8::Local<v8::Value> v8Detail = eventInitDict.detail().v8Value();
-        storeDetail(info.GetIsolate(), impl.get(), wrapper, v8Detail);
+        storeDetail(ScriptState::current(info.GetIsolate()), impl.get(), wrapper, v8Detail);
     }
     v8SetReturnValue(info, wrapper);
 }
@@ -103,14 +104,15 @@ void V8CustomEvent::initCustomEventMethodEpilogueCustom(const v8::FunctionCallba
     ASSERT(info.Length() >= 3);
     v8::Local<v8::Value> detail = info[3];
     if (!detail.IsEmpty())
-        storeDetail(info.GetIsolate(), impl, info.Holder(), detail);
+        storeDetail(ScriptState::current(info.GetIsolate()), impl, info.Holder(), detail);
 }
 
 void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
 
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
+    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -122,7 +124,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     if (SerializedScriptValue* serializedValue = event->serializedDetail()) {
         detail = serializedValue->deserialize();
     } else if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
-        v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::detail(info.GetIsolate()));
+        v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(scriptState, event, V8HiddenValue::detail(info.GetIsolate()));
         if (!mainWorldDetail.IsEmpty()) {
             event->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldDetail));
             detail = event->serializedDetail()->deserialize();
@@ -132,7 +134,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     // |detail| should be null when it is an empty handle because its default value is null.
     if (detail.IsEmpty())
         detail = v8::Null(info.GetIsolate());
-    v8SetReturnValue(info, cacheState(info.GetIsolate(), info.Holder(), detail));
+    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), detail));
 }
 
 } // namespace blink

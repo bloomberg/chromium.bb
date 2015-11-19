@@ -105,7 +105,7 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scri
 
 static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::toStringString(info.GetIsolate())));
+    v8SetReturnValue(info, V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), info.Holder(), V8HiddenValue::toStringString(info.GetIsolate())));
 }
 
 void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionContext)
@@ -188,7 +188,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     if (toStringFunction.IsEmpty())
         return;
     String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
-    V8HiddenValue::setHiddenValue(isolate(), wrappedFunction, V8HiddenValue::toStringString(isolate()), v8String(isolate(), toStringString));
+    V8HiddenValue::setHiddenValue(scriptState, wrappedFunction, V8HiddenValue::toStringString(isolate()), v8String(isolate(), toStringString));
     if (!v8CallBoolean(wrappedFunction->Set(scriptState->context(), v8AtomicString(isolate(), "toString"), toStringFunction)))
         return;
     wrappedFunction->SetName(v8String(isolate(), m_functionName));
@@ -203,7 +203,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     // m_code = String();
     // m_eventParameterName = String();
     // m_sourceURL = String();
-    setListenerObject(wrappedFunction);
+    setListenerObject(wrappedFunction, scriptState);
 }
 
 void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, ExecutionContext* executionContext, v8::Local<v8::Message> message)

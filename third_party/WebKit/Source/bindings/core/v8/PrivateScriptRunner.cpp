@@ -190,7 +190,7 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
     v8::Local<v8::Object> holderObject = v8::Local<v8::Object>::Cast(holder);
     v8::Isolate* isolate = scriptState->isolate();
     v8::Local<v8::Context> context = scriptState->context();
-    v8::Local<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
+    v8::Local<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(scriptState, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
     if (isInitialized.IsEmpty()) {
         v8::TryCatch block;
         v8::Local<v8::Value> initializeFunction;
@@ -222,7 +222,7 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
         }
 
         isInitialized = v8Boolean(true, isolate);
-        V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
+        V8HiddenValue::setHiddenValue(scriptState, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
     }
 }
 

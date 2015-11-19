@@ -33,7 +33,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
+        v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
         if (!v8Value.IsEmpty()) {
             v8SetReturnValue(info, v8Value);
             return;
@@ -116,7 +116,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     v8::Local<v8::Value> v8Value({{attribute.cpp_value_to_v8_value}});
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName, v8Value);
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
@@ -124,7 +124,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
         return;
     v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
+        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
         {{attribute.v8_set_return_value}};
     }
     {% elif world_suffix %}
@@ -378,7 +378,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
+    V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
 {% endfilter %}

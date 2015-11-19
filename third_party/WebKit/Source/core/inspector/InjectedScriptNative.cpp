@@ -6,6 +6,7 @@
 
 #include "core/inspector/InjectedScriptNative.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"
@@ -26,14 +27,14 @@ void InjectedScriptNative::setOnInjectedScriptHost(v8::Local<v8::Object> injecte
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::External> external = v8::External::New(m_isolate, this);
-    V8HiddenValue::setHiddenValue(m_isolate, injectedScriptHost, V8HiddenValue::injectedScriptNative(m_isolate), external);
+    V8HiddenValue::setHiddenValue(ScriptState::current(m_isolate), injectedScriptHost, V8HiddenValue::injectedScriptNative(m_isolate), external);
 }
 
 InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Local<v8::Object> injectedScriptObject)
 {
     v8::Isolate* isolate = injectedScriptObject->GetIsolate();
     v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, injectedScriptObject, V8HiddenValue::injectedScriptNative(isolate));
+    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(ScriptState::current(isolate), injectedScriptObject, V8HiddenValue::injectedScriptNative(isolate));
     ASSERT(!value.IsEmpty());
     v8::Local<v8::External> external = value.As<v8::External>();
     void* ptr = external->Value();

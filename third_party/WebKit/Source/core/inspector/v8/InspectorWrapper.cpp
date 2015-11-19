@@ -54,7 +54,7 @@ void* InspectorWrapperBase::unwrap(v8::Local<v8::Context> context, v8::Local<v8:
 {
     ASSERT(context != v8::Debug::GetDebugContext());
     v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, object, v8InternalizedString(isolate, name));
+    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(ScriptState::from(context), object, v8InternalizedString(isolate, name));
     if (value.IsEmpty())
         return nullptr;
     if (!value->IsExternal())

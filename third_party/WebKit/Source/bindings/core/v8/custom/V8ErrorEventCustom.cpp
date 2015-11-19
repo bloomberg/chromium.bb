@@ -43,27 +43,28 @@
 
 namespace blink {
 
-static void setHiddenValueAndReturnValue(const v8::FunctionCallbackInfo<v8::Value>& info, v8::Local<v8::Value> error)
+static void setHiddenValueAndReturnValue(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& info, v8::Local<v8::Value> error)
 {
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::error(info.GetIsolate()), error);
+    V8HiddenValue::setHiddenValue(scriptState, info.Holder(), V8HiddenValue::error(info.GetIsolate()), error);
     v8SetReturnValue(info, error);
 }
 
 void V8ErrorEvent::errorAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Value> cachedError = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::error(isolate));
+    v8::Local<v8::Value> cachedError = V8HiddenValue::getHiddenValue(ScriptState::current(isolate), info.Holder(), V8HiddenValue::error(isolate));
     if (!cachedError.IsEmpty()) {
         v8SetReturnValue(info, cachedError);
         return;
     }
 
     ErrorEvent* event = V8ErrorEvent::toImpl(info.Holder());
-    ScriptValue error = event->error(ScriptState::current(isolate));
+    ScriptState* scriptState = ScriptState::current(isolate);
+    ScriptValue error = event->error(scriptState);
     if (!error.isEmpty())
-        setHiddenValueAndReturnValue(info, error.v8Value());
+        setHiddenValueAndReturnValue(scriptState, info, error.v8Value());
     else
-        setHiddenValueAndReturnValue(info, v8::Null(isolate));
+        setHiddenValueAndReturnValue(scriptState, info, v8::Null(isolate));
 }
 
 } // namespace blink
