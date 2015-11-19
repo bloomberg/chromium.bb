@@ -344,6 +344,8 @@ int GlassBrowserFrameView::NonClientTopBorderHeight(bool restored) const {
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
+  if (toolbar_bounds.IsEmpty())
+    return;
   gfx::Point toolbar_origin(toolbar_bounds.origin());
   ConvertPointToTarget(browser_view(), this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
@@ -351,17 +353,26 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
 
   // Background.
-  gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   int x = toolbar_bounds.x();
   const int y = toolbar_bounds.y();
   int w = toolbar_bounds.width();
 
-  const int split_point = kContentEdgeShadowThickness;
-  const int split_y =
-      y + (browser_view()->IsTabStripVisible() ? split_point : 0);
-  const int bg_y = GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
-  canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y, x,
-                       split_y, w, bg->height());
+  // The top stroke is drawn using the IDR_CONTENT_TOP_XXX images, which overlay
+  // the toolbar.  The top 2 px of these images is the actual top stroke +
+  // shadow, and is partly transparent, so the toolbar background shouldn't be
+  // drawn over it.
+  const int split_point = std::min(kContentEdgeShadowThickness, h);
+  if (h > split_point) {
+    // Tile the toolbar image starting at the frame edge on the left and where
+    // the tabstrip is on the top.
+    const int split_y =
+        y + (browser_view()->IsTabStripVisible() ? split_point : 0);
+    const int bg_y =
+        GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+                         x + GetThemeBackgroundXInset(), split_y - bg_y, x,
+                         split_y, w, h - split_point);
+  }
 
   if (browser_view()->IsTabStripVisible()) {
     // On Windows 10+ where we don't draw our own window border but rather go
@@ -374,27 +385,26 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       SkPaint paint;
       paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
       canvas->DrawImageInt(
-          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), x, y,
-          paint);
+          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK), 0, 0, img_w,
+          h, x, y, img_w, h, false, paint);
       const int right_x =
           toolbar_bounds.right() + kContentEdgeShadowThickness - img_w;
       canvas->DrawImageInt(
-          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK), right_x, y,
-          paint);
+          *tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK), 0, 0,
+          img_w, h, right_x, y, img_w, h, false, paint);
 
       // Corner and side strokes.
-      canvas->DrawImageInt(*left, x, y);
+      canvas->DrawImageInt(*left, 0, 0, img_w, h, x, y, img_w, h, false);
       canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-                           right_x, y);
+                           0, 0, img_w, h, right_x, y, img_w, h, false);
 
       x += img_w;
       w = right_x - x;
     }
 
     // Top stroke.
-    gfx::ImageSkia* toolbar_center =
-        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    canvas->TileImageInt(*toolbar_center, x, y, w, toolbar_center->height());
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER), x, y,
+                         w, split_point);
   }
 
   // Toolbar/content separator.
@@ -421,10 +431,8 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   const int right = client_bounds.right();
   const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
-  // The client edges start below the toolbar upper corner images regardless
-  // of how tall the toolbar itself is.
-  y += browser_view()->GetToolbarBounds().y() +
-      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
+  // The client edges start below the toolbar.
+  y += browser_view()->GetToolbarBounds().bottom();
 
   const int bottom = std::max(y, height() - NonClientBorderThickness(false));
   int height = bottom - y;
