@@ -102,9 +102,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // is torn down after the root.
   void OnRootDestroyed(Window* root);
 
-  void SetPreferredSize(Id window_id, const gfx::Size& size);
-  void SetResizeBehavior(Id window_id, mojom::ResizeBehavior resize_behavior);
-
  private:
   friend class WindowTreeClientImplPrivate;
 

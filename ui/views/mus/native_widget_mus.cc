@@ -7,6 +7,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -380,7 +381,8 @@ ui::InputMethod* NativeWidgetMus::GetInputMethod() {
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
   // TODO(beng): clear user-placed property and set preferred size property.
-  window_->SetPreferredSize(size);
+  window_->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, size);
 }
 
 void NativeWidgetMus::GetWindowPlacement(
@@ -644,7 +646,8 @@ bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMus::OnSizeConstraintsChanged() {
-  window_->SetResizeBehavior(
+  window_->SetSharedProperty<int32_t>(
+      mus::mojom::WindowManager::kResizeBehavior_Property,
       ResizeBehaviorFromDelegate(GetWidget()->widget_delegate()));
 }
 

@@ -168,11 +168,6 @@ class Window {
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
-  // The following make their way to the WindowManager. See
-  // window_manager.mojom for details.
-  void SetPreferredSize(const gfx::Size& size);
-  void SetResizeBehavior(mojom::ResizeBehavior resize_behavior);
-
   // Focus.
   void SetFocus();
   bool HasFocus() const;

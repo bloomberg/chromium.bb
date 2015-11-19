@@ -85,29 +85,6 @@ void WindowManagerImpl::OpenWindow(
   state_->IncrementWindowCount();
 }
 
-void WindowManagerImpl::SetPreferredSize(
-    mus::Id window_id,
-    mojo::SizePtr size,
-    const WindowManagerErrorCodeCallback& callback) {
-  mus::Window* window = state_->GetWindowById(window_id);
-  if (window)
-    SetWindowPreferredSize(window, size.To<gfx::Size>());
-
-  callback.Run(window
-                   ? mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS
-                   : mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
-}
-
-void WindowManagerImpl::SetResizeBehavior(
-    uint32_t window_id,
-    mus::mojom::ResizeBehavior resize_behavior) {
-  mus::Window* window = state_->GetWindowById(window_id);
-  if (window) {
-    window->SetSharedProperty<int32_t>(
-        mus::mojom::WindowManager::kResizeBehavior_Property, resize_behavior);
-  }
-}
-
 void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
   mus::mojom::WindowManagerConfigPtr config(
       mus::mojom::WindowManagerConfig::New());

@@ -33,12 +33,5 @@ interface WindowManager {
 
   OpenWindow(WindowTreeClient client, map<string, array<uint8>> properties);
 
-  // Updates the window's preferred size and triggers a relayout of the window
-  // within its container.
-  SetPreferredSize(uint32 window_id, mojo.Size size) =>
-      (WindowManagerErrorCode result);
-
-  SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);
-
   GetConfig() => (WindowManagerConfig config);
 };

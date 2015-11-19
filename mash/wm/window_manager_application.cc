@@ -108,7 +108,9 @@ bool WindowManagerApplication::OnWmSetProperty(
     scoped_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed
   // values.
-  return name == mus::mojom::WindowManager::kShowState_Property;
+  return name == mus::mojom::WindowManager::kShowState_Property ||
+      name == mus::mojom::WindowManager::kPreferredSize_Property ||
+      name == mus::mojom::WindowManager::kResizeBehavior_Property;
 }
 
 void WindowManagerApplication::CreateContainers() {

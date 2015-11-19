@@ -21,11 +21,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace mus {
-namespace {
-
-void WindowManagerCallback(mojom::WindowManagerErrorCode error_code) {}
-
-}  // namespace
 
 Id MakeTransportId(ConnectionSpecificId connection_id,
                    ConnectionSpecificId local_id) {
@@ -307,18 +302,6 @@ void WindowTreeClientImpl::OnRootDestroyed(Window* root) {
   // When the root is gone we can't do anything useful.
   if (!in_destructor_)
     delete this;
-}
-
-void WindowTreeClientImpl::SetPreferredSize(Id window_id,
-                                            const gfx::Size& size) {
-  tree_->SetPreferredSize(window_id, mojo::Size::From(size),
-                          base::Bind(&WindowManagerCallback));
-}
-
-void WindowTreeClientImpl::SetResizeBehavior(
-    Id window_id,
-    mojom::ResizeBehavior resize_behavior) {
-  tree_->SetResizeBehavior(window_id, resize_behavior);
 }
 
 InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(

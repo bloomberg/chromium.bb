@@ -70,11 +70,6 @@ class TestWindowTree : public mojom::WindowTree {
   void SetImeVisibility(uint32_t window_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
-  void SetPreferredSize(uint32_t window_id,
-                        mojo::SizePtr size,
-                        const SetPreferredSizeCallback& callback) override;
-  void SetResizeBehavior(uint32_t window_id,
-                         mojom::ResizeBehavior resize_behavior) override;
   void WmResponse(uint32_t change_id, bool response) override;
 
   bool got_change_;

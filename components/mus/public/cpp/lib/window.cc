@@ -344,16 +344,6 @@ void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
     tree_client()->SetImeVisibility(id_, visible, state.Pass());
 }
 
-void Window::SetPreferredSize(const gfx::Size& size) {
-  if (connection_)
-    tree_client()->SetPreferredSize(id_, size);
-}
-
-void Window::SetResizeBehavior(mojom::ResizeBehavior resize_behavior) {
-  if (connection_)
-    tree_client()->SetResizeBehavior(id_, resize_behavior);
-}
-
 void Window::SetFocus() {
   if (connection_)
     tree_client()->SetFocus(id_);

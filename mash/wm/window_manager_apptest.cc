@@ -44,33 +44,9 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAppTest);
 };
 
-TEST_F(WindowManagerAppTest, SetPreferredSize) {
-  // TODO(beng): right now this only verifies that requests from other
-  //             connections are blocked. We need to be able to reliably
-  //             configure the size of the window manager's display before we
-  //             can properly validate that centering actually happened.
-  mus::mojom::WindowManagerPtr connection1, connection2;
-  ConnectToWindowManager(&connection1);
-  ConnectToWindowManager(&connection2);
+TEST_F(WindowManagerAppTest, OpenWindow) {
+  mus::mojom::WindowManagerPtr connection;
+  ConnectToWindowManager(&connection);
 
-  mus::Window* window_from_connection1 = OpenWindow(connection1.get());
-  mus::Window* window_from_connection2 = OpenWindow(connection2.get());
-
-  bool succeeded = false;
-  connection1->SetPreferredSize(
-      window_from_connection1->id(), mojo::Size::New(),
-      [&succeeded](mus::mojom::WindowManagerErrorCode result) {
-        succeeded = result == mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS;
-      });
-  ASSERT_TRUE(connection1.WaitForIncomingResponse());
-  EXPECT_TRUE(succeeded);
-
-  succeeded = false;
-  connection1->SetPreferredSize(
-      window_from_connection2->id(), mojo::Size::New(),
-      [&succeeded](mus::mojom::WindowManagerErrorCode result) {
-        succeeded = result == mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS;
-      });
-  ASSERT_TRUE(connection1.WaitForIncomingResponse());
-  EXPECT_FALSE(succeeded);
+  ASSERT_TRUE(OpenWindow(connection.get()));
 }

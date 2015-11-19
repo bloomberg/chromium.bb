@@ -94,14 +94,6 @@ void TestWindowTree::SetImeVisibility(uint32_t window_id,
                                       bool visible,
                                       mojo::TextInputStatePtr state) {}
 
-void TestWindowTree::SetPreferredSize(
-    uint32_t window_id,
-    mojo::SizePtr size,
-    const SetPreferredSizeCallback& callback) {}
-
-void TestWindowTree::SetResizeBehavior(uint32_t window_id,
-                                       mojom::ResizeBehavior resize_behavior) {}
-
 void TestWindowTree::WmResponse(uint32_t change_id, bool response) {}
 
 }  // namespace mus

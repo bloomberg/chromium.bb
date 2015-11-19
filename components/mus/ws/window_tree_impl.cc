@@ -825,25 +825,6 @@ void WindowTreeImpl::SetCanFocus(uint32_t window_id, bool can_focus) {
     window->set_can_focus(can_focus);
 }
 
-void WindowTreeImpl::SetPreferredSize(
-    uint32_t window_id,
-    mojo::SizePtr size,
-    const SetPreferredSizeCallback& callback) {
-  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
-  if (window && ShouldRouteToWindowManager(window)) {
-    GetHost()->window_manager()->SetPreferredSize(window_id, size.Pass(),
-                                                  callback);
-  }
-}
-
-void WindowTreeImpl::SetResizeBehavior(
-    uint32_t window_id,
-    mus::mojom::ResizeBehavior resize_behavior) {
-  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
-  if (window && ShouldRouteToWindowManager(window))
-    GetHost()->window_manager()->SetResizeBehavior(window_id, resize_behavior);
-}
-
 void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {
   if (GetHost() && GetHost()->GetWindowTree() == this)
     connection_manager_->WindowManagerChangeCompleted(change_id, response);

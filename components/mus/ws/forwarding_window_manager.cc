@@ -28,19 +28,6 @@ void ForwardingWindowManager::OpenWindow(
   GetActiveWindowManager()->OpenWindow(client.Pass(), properties.Pass());
 }
 
-void ForwardingWindowManager::SetPreferredSize(
-    uint32_t window_id,
-    mojo::SizePtr size,
-    const SetPreferredSizeCallback& callback) {
-  GetActiveWindowManager()->SetPreferredSize(window_id, size.Pass(), callback);
-}
-
-void ForwardingWindowManager::SetResizeBehavior(
-    uint32_t window_id,
-    mus::mojom::ResizeBehavior resize_behavior) {
-  GetActiveWindowManager()->SetResizeBehavior(window_id, resize_behavior);
-}
-
 void ForwardingWindowManager::GetConfig(const GetConfigCallback& callback) {
   return GetActiveWindowManager()->GetConfig(callback);
 }

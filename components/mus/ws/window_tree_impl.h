@@ -238,11 +238,6 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                         bool visible,
                         mojo::TextInputStatePtr state) override;
   void SetClientArea(Id transport_window_id, mojo::InsetsPtr insets) override;
-  void SetPreferredSize(uint32_t window_id,
-                        mojo::SizePtr size,
-                        const SetPreferredSizeCallback& callback) override;
-  void SetResizeBehavior(uint32_t window_id,
-                         mus::mojom::ResizeBehavior resize_behavior) override;
   void WmResponse(uint32 change_id, bool response) override;
 
   // AccessPolicyDelegate:

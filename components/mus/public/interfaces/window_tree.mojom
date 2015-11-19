@@ -212,15 +212,6 @@ interface WindowTree {
   SetImeVisibility(uint32 window_id, bool visible, mojo.TextInputState? state);
 
   // --------------------------------------------------------------------------
-  // This section is for functions that call through directly to the
-  // WindowManager. It is expected this will move into an associated interface.
-  // See window_manager.mojom for details of these functions.
-  //   OpenWindow(WindowTreeClient client);
-  SetPreferredSize(uint32 window_id, mojo.Size size) =>
-      (WindowManagerErrorCode result);
-  SetResizeBehavior(uint32 window_id, ResizeBehavior resize_behavior);
-
-  // --------------------------------------------------------------------------
   // This section is for functions called from the window manager. It is
   // expected these will be pulled into an associated interface.
 
