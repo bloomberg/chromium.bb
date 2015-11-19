@@ -801,8 +801,6 @@
       'network/HTTPHeaderMap.h',
       'network/HTTPParsers.cpp',
       'network/HTTPParsers.h',
-      'network/HTTPRequest.cpp',
-      'network/HTTPRequest.h',
       'network/NetworkHints.cpp',
       'network/NetworkHints.h',
       'network/ParsedContentType.cpp',
