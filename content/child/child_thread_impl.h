@@ -17,8 +17,10 @@
 #include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
+#include "content/common/mojo/channel_init.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
+#include "ipc/ipc_platform_file.h"
 
 namespace base {
 class MessageLoop;
@@ -229,6 +231,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
   void OnGetChildProfilerData(int sequence_number, int current_profiling_phase);
   void OnProfilingPhaseCompleted(int profiling_phase);
+  void OnBindExternalMojoShellHandle(const IPC::PlatformFileForTransit& file);
 #ifdef IPC_MESSAGE_LOG_ENABLED
   void OnSetIPCLoggingEnabled(bool enable);
 #endif
@@ -296,6 +299,8 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
 
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
+
+  ChannelInit mojo_shell_channel_init_;
 
   base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
 

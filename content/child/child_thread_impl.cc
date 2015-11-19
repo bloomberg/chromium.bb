@@ -52,6 +52,7 @@
 #include "content/child/websocket_dispatcher.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/mojo/mojo_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
@@ -71,6 +72,10 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
+#endif
+
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -651,6 +656,8 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProfilingPhaseCompleted)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
+    IPC_MESSAGE_HANDLER(MojoMsg_BindExternalMojoShellHandle,
+                        OnBindExternalMojoShellHandle)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
@@ -706,6 +713,21 @@ void ChildThreadImpl::OnGetChildProfilerData(int sequence_number,
 
 void ChildThreadImpl::OnProfilingPhaseCompleted(int profiling_phase) {
   ThreadData::OnProfilingPhaseCompleted(profiling_phase);
+}
+
+void ChildThreadImpl::OnBindExternalMojoShellHandle(
+    const IPC::PlatformFileForTransit& file) {
+#if defined(MOJO_SHELL_CLIENT)
+#if defined(OS_POSIX)
+  base::PlatformFile handle = file.fd;
+#elif defined(OS_WIN)
+  base::PlatformFile handle = file;
+#endif
+  mojo::ScopedMessagePipeHandle message_pipe =
+      mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
+  DCHECK(message_pipe.is_valid());
+  MojoShellConnectionImpl::CreateWithMessagePipe(message_pipe.Pass());
+#endif  // defined(MOJO_SHELL_CLIENT)
 }
 
 #if defined(USE_TCMALLOC)

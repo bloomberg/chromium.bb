@@ -549,7 +549,9 @@ test("content_unittests") {
     }
   }
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+  ]
 
   deps = [
     ":test_support",

@@ -24,7 +24,8 @@ class RunnerConnection {
   // If a connection to the runner cannot be established, |request| will not be
   // modified and this function will return null.
   static RunnerConnection* ConnectToRunner(
-      InterfaceRequest<Application>* request);
+      InterfaceRequest<Application>* request,
+      ScopedMessagePipeHandle handle);
 
  protected:
   RunnerConnection();

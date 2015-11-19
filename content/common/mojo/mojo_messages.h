@@ -21,3 +21,8 @@
 // Mojo IPC is bootstrapped over Chrome IPC via this message.
 IPC_MESSAGE_CONTROL1(MojoMsg_Activate,
                      IPC::PlatformFileForTransit /* handle */)
+
+// Mojo IPC to an external shell is bootstrapped over Chrome IPC via this
+// message.
+IPC_MESSAGE_CONTROL1(MojoMsg_BindExternalMojoShellHandle,
+                     IPC::PlatformFileForTransit /* handle */)
