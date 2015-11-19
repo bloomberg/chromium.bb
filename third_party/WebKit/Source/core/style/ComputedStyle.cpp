@@ -1026,14 +1026,14 @@ void ComputedStyle::setBoxShadow(PassRefPtr<ShadowList> s)
 static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize size)
 {
     return FloatRoundedRect::Radii(
-        IntSize(valueForLength(border.topLeft().width(), size.width()),
-            valueForLength(border.topLeft().height(), size.height())),
-        IntSize(valueForLength(border.topRight().width(), size.width()),
-            valueForLength(border.topRight().height(), size.height())),
-        IntSize(valueForLength(border.bottomLeft().width(), size.width()),
-            valueForLength(border.bottomLeft().height(), size.height())),
-        IntSize(valueForLength(border.bottomRight().width(), size.width()),
-            valueForLength(border.bottomRight().height(), size.height())));
+        FloatSize(floatValueForLength(border.topLeft().width(), size.width().toFloat()),
+            floatValueForLength(border.topLeft().height(), size.height().toFloat())),
+        FloatSize(floatValueForLength(border.topRight().width(), size.width().toFloat()),
+            floatValueForLength(border.topRight().height(), size.height().toFloat())),
+        FloatSize(floatValueForLength(border.bottomLeft().width(), size.width().toFloat()),
+            floatValueForLength(border.bottomLeft().height(), size.height().toFloat())),
+        FloatSize(floatValueForLength(border.bottomRight().width(), size.width().toFloat()),
+            floatValueForLength(border.bottomRight().height(), size.height().toFloat())));
 }
 
 StyleImage* ComputedStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }

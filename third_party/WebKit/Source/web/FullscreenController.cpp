@@ -188,7 +188,7 @@ void FullscreenController::updatePageScaleConstraints(bool removeConstraints)
     PageScaleConstraints fullscreenConstraints;
     if (!removeConstraints) {
         fullscreenConstraints = PageScaleConstraints(1.0, 1.0, 1.0);
-        fullscreenConstraints.layoutSize = IntSize(m_webViewImpl->size());
+        fullscreenConstraints.layoutSize = FloatSize(m_webViewImpl->size());
     }
     m_webViewImpl->pageScaleConstraintsSet().setFullscreenConstraints(fullscreenConstraints);
     m_webViewImpl->pageScaleConstraintsSet().computeFinalConstraints();

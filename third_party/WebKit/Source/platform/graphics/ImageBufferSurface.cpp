@@ -67,7 +67,7 @@ void ImageBufferSurface::clear()
         } else {
             canvas()->clear(SK_ColorTRANSPARENT);
         }
-        didDraw(FloatRect(FloatPoint(0, 0), size()));
+        didDraw(FloatRect(FloatPoint(0, 0), FloatSize(size())));
     }
 }
 

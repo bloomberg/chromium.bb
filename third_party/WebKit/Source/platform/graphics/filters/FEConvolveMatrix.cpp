@@ -59,7 +59,7 @@ FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward)
     FloatRect result = rect;
     if (parametersValid()) {
         result.moveBy(forward ? -m_targetOffset : m_targetOffset - m_kernelSize);
-        result.expand(m_kernelSize);
+        result.expand(FloatSize(m_kernelSize));
     }
     return result;
 }
@@ -181,7 +181,7 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts, int indent)
     writeIndent(ts, indent);
     ts << "[feConvolveMatrix";
     FilterEffect::externalRepresentation(ts);
-    ts << " order=\"" << m_kernelSize << "\" "
+    ts << " order=\"" << FloatSize(m_kernelSize) << "\" "
        << "kernelMatrix=\"" << m_kernelMatrix  << "\" "
        << "divisor=\"" << m_divisor << "\" "
        << "bias=\"" << m_bias << "\" "

@@ -664,7 +664,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
     }
 
     squashingLayer->setPosition(squashLayerBounds.location());
-    squashingLayer->setSize(squashLayerBounds.size());
+    squashingLayer->setSize(FloatSize(squashLayerBounds.size()));
 
     *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
     offsetFromTransformedAncestor->move(squashLayerOriginInOwningLayerSpace);
@@ -712,7 +712,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateAncestorClippingLayerGeometry(compositingContainer, snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
     updateOverflowControlsHostLayerGeometry(compositingStackingContext, compositingContainer);
 
-    FloatSize contentsSize = relativeCompositingBounds.size();
+    FloatSize contentsSize(relativeCompositingBounds.size());
 
     updateMainGraphicsLayerGeometry(relativeCompositingBounds, localCompositingBounds, graphicsLayerParentLocation);
     updateContentsOffsetInCompositingLayer(snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
@@ -762,7 +762,7 @@ void CompositedLayerMapping::updateMainGraphicsLayerGeometry(const IntRect& rela
     m_graphicsLayer->setOffsetFromLayoutObject(toIntSize(localCompositingBounds.location()));
 
     FloatSize oldSize = m_graphicsLayer->size();
-    const IntSize& contentsSize = relativeCompositingBounds.size();
+    const FloatSize contentsSize(relativeCompositingBounds.size());
     if (oldSize != contentsSize)
         m_graphicsLayer->setSize(contentsSize);
 
@@ -815,7 +815,7 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const PaintLaye
     IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
     ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
     m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
-    m_ancestorClippingLayer->setSize(parentClipRect.size());
+    m_ancestorClippingLayer->setSize(FloatSize(parentClipRect.size()));
 
     // backgroundRect is relative to compositingContainer, so subtract snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y to get back to local coords.
     m_ancestorClippingLayer->setOffsetFromLayoutObject(parentClipRect.location() - snappedOffsetFromCompositedAncestor);
@@ -875,7 +875,7 @@ void CompositedLayerMapping::updateChildContainmentLayerGeometry(const IntRect& 
         clipPositionInParentSpace -= toFloatSize(ancestor->position());
 
     m_childContainmentLayer->setPosition(clipPositionInParentSpace);
-    m_childContainmentLayer->setSize(clippingBox.size());
+    m_childContainmentLayer->setSize(FloatSize(clippingBox.size()));
     m_childContainmentLayer->setOffsetFromLayoutObject(toIntSize(clippingBox.location()));
     if (m_childClippingMaskLayer && !m_scrollingLayer && !layoutObject()->style()->clipPath()) {
         m_childClippingMaskLayer->setSize(m_childContainmentLayer->size());
@@ -888,7 +888,7 @@ void CompositedLayerMapping::updateChildTransformLayerGeometry()
     if (!m_childTransformLayer)
         return;
     const IntRect borderBox = toLayoutBox(m_owningLayer.layoutObject())->pixelSnappedBorderBoxRect();
-    m_childTransformLayer->setSize(borderBox.size());
+    m_childTransformLayer->setSize(FloatSize(borderBox.size()));
     m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompositingLayer()));
 }
 
@@ -952,7 +952,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     IntRect overflowClipRect = enclosingIntRect(layoutBox->overflowClipRect(LayoutPoint()));
     DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
     m_scrollingLayer->setPosition(FloatPoint(overflowClipRect.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
-    m_scrollingLayer->setSize(overflowClipRect.size());
+    m_scrollingLayer->setSize(FloatSize(overflowClipRect.size()));
 
     IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromLayoutObject();
     m_scrollingLayer->setOffsetFromLayoutObject(-toIntSize(overflowClipRect.location()));
@@ -977,7 +977,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
         m_scrollingContentsLayer->setPosition(coordinatorHandlesOffset ? FloatPoint() : FloatPoint(-toFloatSize(adjustedScrollOffset)));
     }
 
-    m_scrollingContentsLayer->setSize(scrollSize);
+    m_scrollingContentsLayer->setSize(FloatSize(scrollSize));
     // FIXME: The paint offset and the scroll offset should really be separate concepts.
     m_scrollingContentsLayer->setOffsetDoubleFromLayoutObject(scrollingContentsOffset, GraphicsLayer::DontSetNeedsDisplay);
 
@@ -1047,7 +1047,7 @@ void CompositedLayerMapping::updateBackgroundLayerGeometry(const FloatSize& rela
     FloatSize backgroundSize = relativeCompositingBoundsSize;
     if (backgroundLayerPaintsFixedRootBackground()) {
         FrameView* frameView = toLayoutView(layoutObject())->frameView();
-        backgroundSize = frameView->visibleContentRect().size();
+        backgroundSize = FloatSize(frameView->visibleContentRect().size());
     }
     m_backgroundLayer->setPosition(FloatPoint());
     if (backgroundSize != m_backgroundLayer->size()) {
@@ -1209,7 +1209,7 @@ void CompositedLayerMapping::updateScrollingBlockSelection()
         return;
 
     m_scrollingBlockSelectionLayer->setPosition(position);
-    m_scrollingBlockSelectionLayer->setSize(blockSelectionGapsBounds.size());
+    m_scrollingBlockSelectionLayer->setSize(FloatSize(blockSelectionGapsBounds.size()));
     m_scrollingBlockSelectionLayer->setOffsetFromLayoutObject(toIntSize(blockSelectionGapsBounds.location()), GraphicsLayer::SetNeedsDisplay);
 }
 
@@ -1365,7 +1365,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers()
         Scrollbar* hBar = m_owningLayer.scrollableArea()->horizontalScrollbar();
         if (hBar) {
             layer->setPosition(hBar->frameRect().location() - offsetFromLayoutObject);
-            layer->setSize(hBar->frameRect().size());
+            layer->setSize(FloatSize(hBar->frameRect().size()));
             if (layer->hasContentsLayer())
                 layer->setContentsRect(IntRect(IntPoint(), hBar->frameRect().size()));
         }
@@ -1376,7 +1376,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers()
         Scrollbar* vBar = m_owningLayer.scrollableArea()->verticalScrollbar();
         if (vBar) {
             layer->setPosition(vBar->frameRect().location() - offsetFromLayoutObject);
-            layer->setSize(vBar->frameRect().size());
+            layer->setSize(FloatSize(vBar->frameRect().size()));
             if (layer->hasContentsLayer())
                 layer->setContentsRect(IntRect(IntPoint(), vBar->frameRect().size()));
         }

@@ -76,7 +76,7 @@ void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* layoutO
     IntSize size = flooredIntSize(imageSize(layoutObject, 1));
     intrinsicWidth = Length(size.width(), Fixed);
     intrinsicHeight = Length(size.height(), Fixed);
-    intrinsicRatio = size;
+    intrinsicRatio = FloatSize(size);
 }
 
 void StyleGeneratedImage::addClient(LayoutObject* layoutObject)

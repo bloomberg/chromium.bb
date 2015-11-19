@@ -89,7 +89,7 @@ void PageOverlay::update()
         page->frameHost().visualViewport().containerLayer()->addChild(m_layer.get());
     }
 
-    FloatSize size = page->frameHost().visualViewport().size();
+    FloatSize size(page->frameHost().visualViewport().size());
     if (size != m_layer->size())
         m_layer->setSize(size);
 

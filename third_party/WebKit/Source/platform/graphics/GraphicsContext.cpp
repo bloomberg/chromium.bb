@@ -472,7 +472,7 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
     }
 
     OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-    drawLooperBuilder->addShadow(shadowOffset, shadowBlur, shadowColor,
+    drawLooperBuilder->addShadow(FloatSize(shadowOffset), shadowBlur, shadowColor,
         DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
     setDrawLooper(drawLooperBuilder.release());
     fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
@@ -836,7 +836,7 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, cons
 {
     if (contextDisabled() || !image)
         return;
-    image->drawTiled(this, destRect, srcPoint, tileSize, op, repeatSpacing);
+    image->drawTiled(this, destRect, srcPoint, FloatSize(tileSize), op, repeatSpacing);
 }
 
 void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const IntRect& srcRect,

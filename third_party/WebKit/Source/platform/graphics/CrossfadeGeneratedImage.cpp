@@ -42,9 +42,9 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImag
 
 void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas, const SkPaint& paint, ImageClampingMode clampMode)
 {
-    FloatRect fromImageRect(FloatPoint(), m_fromImage->size());
-    FloatRect toImageRect(FloatPoint(), m_toImage->size());
-    FloatRect destRect(FloatPoint(), m_crossfadeSize);
+    FloatRect fromImageRect(FloatPoint(), FloatSize(m_fromImage->size()));
+    FloatRect toImageRect(FloatPoint(), FloatSize(m_toImage->size()));
+    FloatRect destRect((FloatPoint()), FloatSize(m_crossfadeSize));
 
     // TODO(junov): The various effects encoded into paint should probably be applied here
     // instead of inside the layer.  This probably faulty behavior was maintained in order
@@ -96,7 +96,7 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect
     SkPaint paint = context->fillPaint();
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     paint.setAntiAlias(context->shouldAntialias());
-    FloatRect destRect(FloatPoint(), m_crossfadeSize);
+    FloatRect destRect((FloatPoint()), FloatSize(m_crossfadeSize));
     paint.setFilterQuality(context->computeFilterQuality(this, destRect, srcRect));
     drawCrossfade(context->canvas(), paint, ClampImageToSourceRect);
 }

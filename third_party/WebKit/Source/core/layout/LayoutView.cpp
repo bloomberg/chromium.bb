@@ -498,7 +498,7 @@ void LayoutView::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
     if (wasFixed)
         *wasFixed = false;
-    quads.append(FloatRect(FloatPoint(), layer()->size()));
+    quads.append(FloatRect(FloatPoint(), FloatSize(layer()->size())));
 }
 
 static LayoutObject* layoutObjectAfterPosition(LayoutObject* object, unsigned offset)

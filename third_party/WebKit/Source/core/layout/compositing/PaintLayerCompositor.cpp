@@ -538,8 +538,8 @@ void PaintLayerCompositor::frameViewDidChangeSize()
 {
     if (m_containerLayer) {
         FrameView* frameView = m_layoutView.frameView();
-        m_containerLayer->setSize(frameView->visibleContentSize());
-        m_overflowControlsHostLayer->setSize(frameView->visibleContentSize(IncludeScrollbars));
+        m_containerLayer->setSize(FloatSize(frameView->visibleContentSize()));
+        m_overflowControlsHostLayer->setSize(FloatSize(frameView->visibleContentSize(IncludeScrollbars)));
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
@@ -739,13 +739,13 @@ void PaintLayerCompositor::updateRootLayerPosition()
 {
     if (m_rootContentLayer) {
         const IntRect& documentRect = m_layoutView.documentRect();
-        m_rootContentLayer->setSize(documentRect.size());
+        m_rootContentLayer->setSize(FloatSize(documentRect.size()));
         m_rootContentLayer->setPosition(documentRect.location());
     }
     if (m_containerLayer) {
         FrameView* frameView = m_layoutView.frameView();
-        m_containerLayer->setSize(frameView->visibleContentSize());
-        m_overflowControlsHostLayer->setSize(frameView->visibleContentSize(IncludeScrollbars));
+        m_containerLayer->setSize(FloatSize(frameView->visibleContentSize()));
+        m_overflowControlsHostLayer->setSize(FloatSize(frameView->visibleContentSize(IncludeScrollbars)));
     }
 }
 

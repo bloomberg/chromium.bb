@@ -395,7 +395,7 @@ void GraphicsLayer::updateContentsRect()
 
     if (m_contentsClippingMaskLayer) {
         if (m_contentsClippingMaskLayer->size() != m_contentsRect.size()) {
-            m_contentsClippingMaskLayer->setSize(m_contentsRect.size());
+            m_contentsClippingMaskLayer->setSize(FloatSize(m_contentsRect.size()));
             m_contentsClippingMaskLayer->setNeedsDisplay();
         }
         m_contentsClippingMaskLayer->setPosition(FloatPoint());

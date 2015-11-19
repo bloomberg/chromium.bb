@@ -1132,22 +1132,23 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthCon
             ? CircleEndShape
             : EllipseEndShape;
 
+        FloatSize floatSize(size);
         switch (m_sizingBehavior ? m_sizingBehavior->getValueID() : 0) {
         case CSSValueContain:
         case CSSValueClosestSide:
-            secondRadius = radiusToSide(secondPoint, size, shape,
+            secondRadius = radiusToSide(secondPoint, floatSize, shape,
                 [] (float a, float b) { return a < b; });
             break;
         case CSSValueFarthestSide:
-            secondRadius = radiusToSide(secondPoint, size, shape,
+            secondRadius = radiusToSide(secondPoint, floatSize, shape,
                 [] (float a, float b) { return a > b; });
             break;
         case CSSValueClosestCorner:
-            secondRadius = radiusToCorner(secondPoint, size, shape,
+            secondRadius = radiusToCorner(secondPoint, floatSize, shape,
                 [] (float a, float b) { return a < b; });
             break;
         default:
-            secondRadius = radiusToCorner(secondPoint, size, shape,
+            secondRadius = radiusToCorner(secondPoint, floatSize, shape,
                 [] (float a, float b) { return a > b; });
             break;
         }

@@ -3550,7 +3550,7 @@ static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scro
     if (scrollbarRect.size() == graphicsLayer->size())
         return;
 
-    graphicsLayer->setSize(scrollbarRect.size());
+    graphicsLayer->setSize(FloatSize(scrollbarRect.size()));
 
     if (graphicsLayer->hasContentsLayer()) {
         graphicsLayer->setContentsRect(IntRect(0, 0, scrollbarRect.width(), scrollbarRect.height()));
@@ -3569,7 +3569,7 @@ static void positionScrollCornerLayer(GraphicsLayer* graphicsLayer, const IntRec
     graphicsLayer->setPosition(cornerRect.location());
     if (cornerRect.size() != graphicsLayer->size())
         graphicsLayer->setNeedsDisplay();
-    graphicsLayer->setSize(cornerRect.size());
+    graphicsLayer->setSize(FloatSize(cornerRect.size()));
 }
 
 void FrameView::positionScrollbarLayers()

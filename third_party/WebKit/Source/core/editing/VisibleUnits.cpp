@@ -1253,7 +1253,7 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
     LayoutBlockFlow& containingBlock = root->block();
     FloatPoint absoluteBlockPoint = containingBlock.localToAbsolute(FloatPoint());
     if (containingBlock.hasOverflowClip())
-        absoluteBlockPoint -= containingBlock.scrolledContentOffset();
+        absoluteBlockPoint -= FloatSize(containingBlock.scrolledContentOffset());
 
     if (root->block().isHorizontalWritingMode())
         return LayoutPoint(lineDirectionPoint - absoluteBlockPoint.x(), root->blockDirectionPointInLine());

@@ -459,7 +459,7 @@ TEST_P(ParameterizedVisualViewportTest, TestVisibleRect)
     visualViewport.setSize(size);
 
     // Scale the viewport to 2X; size should not change.
-    FloatRect expectedRect(FloatPoint(0, 0), size);
+    FloatRect expectedRect(FloatPoint(0, 0), FloatSize(size));
     expectedRect.scale(0.5);
     visualViewport.setScale(2);
     EXPECT_EQ(2, visualViewport.scale());
@@ -477,7 +477,7 @@ TEST_P(ParameterizedVisualViewportTest, TestVisibleRect)
 
     // Scale the viewport to 3X to introduce some non-int values.
     FloatPoint oldLocation = expectedRect.location();
-    expectedRect = FloatRect(FloatPoint(), size);
+    expectedRect = FloatRect(FloatPoint(), FloatSize(size));
     expectedRect.scale(1 / 3.0f);
     expectedRect.setLocation(oldLocation);
     visualViewport.setScale(3);

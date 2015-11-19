@@ -2935,7 +2935,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zo
     if (!needAnimation)
         return;
 
-    FloatSize targetViewportSize = visualViewport.size();
+    FloatSize targetViewportSize(visualViewport.size());
     targetViewportSize.scale(1 / newScale);
 
     if (textboxRectInDocument.width() <= targetViewportSize.width()) {

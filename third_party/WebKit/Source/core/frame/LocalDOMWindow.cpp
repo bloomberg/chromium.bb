@@ -933,8 +933,8 @@ static FloatSize getViewportSize(LocalFrame* frame)
     }
 
     return frame->isMainFrame() && !host->settings().inertVisualViewport()
-        ? host->visualViewport().visibleRect().size()
-        : view->visibleContentRect(IncludeScrollbars).size();
+        ? FloatSize(host->visualViewport().visibleRect().size())
+        : FloatSize(view->visibleContentRect(IncludeScrollbars).size());
 }
 
 int LocalDOMWindow::innerHeight() const

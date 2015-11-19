@@ -83,7 +83,7 @@ PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, I
     if (orientation != DefaultImageOrientation) {
         if (orientation.usesWidthAsHeight())
             size = size.transposedSize();
-        transform *= orientation.transformFromDefault(size);
+        transform *= orientation.transformFromDefault(FloatSize(size));
     }
     transform.scaleNonUniform(imageScale.width(), imageScale.height());
 

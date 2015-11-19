@@ -261,7 +261,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
     if (!isSurfaceValid())
         return;
 
-    FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
+    FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), FloatSize(size()));
     m_surface->draw(context, destRect, srcRect, op);
 }
 

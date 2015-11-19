@@ -49,7 +49,7 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     const IntSize& repeatSpacing)
 {
     FloatRect tileRect = srcRect;
-    tileRect.expand(repeatSpacing);
+    tileRect.expand(FloatSize(repeatSpacing));
 
     SkPictureBuilder builder(tileRect, nullptr, destContext);
     builder.context().beginRecording(tileRect);

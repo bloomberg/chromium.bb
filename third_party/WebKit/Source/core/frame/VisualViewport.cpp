@@ -106,7 +106,7 @@ void VisualViewport::setSize(const IntSize& size)
     m_size = size;
 
     if (m_innerViewportContainerLayer) {
-        m_innerViewportContainerLayer->setSize(m_size);
+        m_innerViewportContainerLayer->setSize(FloatSize(m_size));
 
         // Need to re-compute sizes for the overlay scrollbars.
         initializeScrollbars();
@@ -130,7 +130,7 @@ void VisualViewport::mainFrameDidChangeSize()
 
     // In unit tests we may not have initialized the layer tree.
     if (m_innerViewportScrollLayer)
-        m_innerViewportScrollLayer->setSize(contentsSize());
+        m_innerViewportScrollLayer->setSize(FloatSize(contentsSize()));
 
     clampToBoundaries();
 }
@@ -319,7 +319,7 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Grap
         // Set masks to bounds so the compositor doesn't clobber a manually
         // set inner viewport container layer size.
         m_innerViewportContainerLayer->setMasksToBounds(frameHost().settings().mainFrameClipsContent());
-        m_innerViewportContainerLayer->setSize(m_size);
+        m_innerViewportContainerLayer->setSize(FloatSize(m_size));
 
         m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
             m_innerViewportContainerLayer->platformLayer());
@@ -389,7 +389,7 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 
     // Use the GraphicsLayer to position the scrollbars.
     scrollbarGraphicsLayer->setPosition(IntPoint(xPosition, yPosition));
-    scrollbarGraphicsLayer->setSize(IntSize(width, height));
+    scrollbarGraphicsLayer->setSize(FloatSize(width, height));
     scrollbarGraphicsLayer->setContentsRect(IntRect(0, 0, width, height));
 }
 
@@ -484,7 +484,7 @@ DoublePoint VisualViewport::maximumScrollPositionDouble() const
     }
 
     frameViewSize.scale(m_scale);
-    frameViewSize = flooredIntSize(frameViewSize);
+    frameViewSize = FloatSize(flooredIntSize(frameViewSize));
 
     FloatSize viewportSize(m_size);
     viewportSize.expand(0, m_topControlsAdjustment);

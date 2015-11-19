@@ -128,12 +128,12 @@ void RotationViewportAnchor::setAnchor()
     // Outer rectangle is used as a scale, we need positive width and height.
     ASSERT(!outerViewRect.isEmpty());
 
-    m_normalizedVisualViewportOffset = innerViewRect.location() - outerViewRect.location();
+    m_normalizedVisualViewportOffset = FloatSize(innerViewRect.location() - outerViewRect.location());
 
     // Normalize by the size of the outer rect
     m_normalizedVisualViewportOffset.scale(1.0 / outerViewRect.width(), 1.0 / outerViewRect.height());
 
-    FloatSize anchorOffset = innerViewRect.size();
+    FloatSize anchorOffset(innerViewRect.size());
     anchorOffset.scale(m_anchorInInnerViewCoords.width(), m_anchorInInnerViewCoords.height());
     const FloatPoint anchorPoint = FloatPoint(innerViewRect.location()) + anchorOffset;
 
@@ -152,7 +152,7 @@ void RotationViewportAnchor::restoreToAnchor()
     float newPageScaleFactor = m_oldPageScaleFactor / m_oldMinimumPageScaleFactor * m_pageScaleConstraintsSet.finalConstraints().minimumScale;
     newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().clampToConstraints(newPageScaleFactor);
 
-    FloatSize visualViewportSize = m_visualViewport->size();
+    FloatSize visualViewportSize(m_visualViewport->size());
     visualViewportSize.scale(1 / newPageScaleFactor);
 
     IntPoint mainFrameOrigin;

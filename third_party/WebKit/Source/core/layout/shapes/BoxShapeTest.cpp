@@ -118,7 +118,7 @@ TEST_F(BoxShapeTest, zeroRadii)
  */
 TEST_F(BoxShapeTest, getIntervals)
 {
-    const FloatRoundedRect::Radii cornerRadii(IntSize(10, 15), IntSize(10, 20), IntSize(25, 15), IntSize(20, 30));
+    const FloatRoundedRect::Radii cornerRadii(FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15), FloatSize(20, 30));
     OwnPtr<Shape> shape = createBoxShape(FloatRoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
     EXPECT_FALSE(shape->isEmpty());
 

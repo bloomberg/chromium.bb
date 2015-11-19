@@ -98,7 +98,7 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
 {
-    FloatSize intrinsicTileSize = size();
+    FloatSize intrinsicTileSize = FloatSize(size());
     if (hasRelativeWidth())
         intrinsicTileSize.setWidth(scaledTileSize.width());
     if (hasRelativeHeight())
@@ -262,7 +262,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
-    intrinsicRatio = size();
+    intrinsicRatio = FloatSize(size());
     intrinsicWidth = Length(intrinsicRatio.width(), Fixed);
     intrinsicHeight = Length(intrinsicRatio.height(), Fixed);
 }

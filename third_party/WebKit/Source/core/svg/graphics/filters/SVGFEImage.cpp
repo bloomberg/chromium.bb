@@ -121,7 +121,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
         }
         destRect.intersect(srcRect);
     } else {
-        srcRect = FloatRect(FloatPoint(), m_image->size());
+        srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));
         m_preserveAspectRatio->transformRect(destRect, srcRect);
     }
 
@@ -199,7 +199,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder& bui
         return createTransparentBlack(builder);
     }
 
-    FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
+    FloatRect srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));
     FloatRect dstRect = filterPrimitiveSubregion();
 
     m_preserveAspectRatio->transformRect(dstRect, srcRect);

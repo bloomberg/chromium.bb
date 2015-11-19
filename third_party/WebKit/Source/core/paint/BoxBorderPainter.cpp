@@ -184,8 +184,8 @@ FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& innerBorde
             if (!newRadii.topLeft().width())
                 newRect.move(-overshoot, 0);
         }
-        newRadii.setBottomLeft(IntSize(0, 0));
-        newRadii.setBottomRight(IntSize(0, 0));
+        newRadii.setBottomLeft(FloatSize(0, 0));
+        newRadii.setBottomRight(FloatSize(0, 0));
         maxRadii = std::max(newRadii.topLeft().height(), newRadii.topRight().height());
         if (maxRadii > newRect.height())
             newRect.setHeight(maxRadii);
@@ -198,8 +198,8 @@ FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& innerBorde
             if (!newRadii.bottomLeft().width())
                 newRect.move(-overshoot, 0);
         }
-        newRadii.setTopLeft(IntSize(0, 0));
-        newRadii.setTopRight(IntSize(0, 0));
+        newRadii.setTopLeft(FloatSize(0, 0));
+        newRadii.setTopRight(FloatSize(0, 0));
         maxRadii = std::max(newRadii.bottomLeft().height(), newRadii.bottomRight().height());
         if (maxRadii > newRect.height()) {
             newRect.move(0, newRect.height() - maxRadii);
@@ -214,8 +214,8 @@ FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& innerBorde
             if (!newRadii.topLeft().height())
                 newRect.move(0, -overshoot);
         }
-        newRadii.setTopRight(IntSize(0, 0));
-        newRadii.setBottomRight(IntSize(0, 0));
+        newRadii.setTopRight(FloatSize(0, 0));
+        newRadii.setBottomRight(FloatSize(0, 0));
         maxRadii = std::max(newRadii.topLeft().width(), newRadii.bottomLeft().width());
         if (maxRadii > newRect.width())
             newRect.setWidth(maxRadii);
@@ -228,8 +228,8 @@ FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& innerBorde
             if (!newRadii.topRight().height())
                 newRect.move(0, -overshoot);
         }
-        newRadii.setTopLeft(IntSize(0, 0));
-        newRadii.setBottomLeft(IntSize(0, 0));
+        newRadii.setTopLeft(FloatSize(0, 0));
+        newRadii.setBottomLeft(FloatSize(0, 0));
         maxRadii = std::max(newRadii.topRight().width(), newRadii.bottomRight().width());
         if (maxRadii > newRect.width()) {
             newRect.move(newRect.width() - maxRadii, 0);

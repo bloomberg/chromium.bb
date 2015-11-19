@@ -223,7 +223,7 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(width(), height());
-    drawForContainer(canvas, SkPaint(), size(), 1, rect(), rect());
+    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect());
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
 
     return adoptRef(
@@ -241,7 +241,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
 
     // Expand the tile to account for repeat spacing.
     FloatRect spacedTile(tile);
-    spacedTile.expand(repeatSpacing);
+    spacedTile.expand(FloatSize(repeatSpacing));
 
     SkPictureBuilder patternPicture(spacedTile, nullptr, context);
     if (!DrawingRecorder::useCachedDrawingIfPossible(patternPicture.context(), *this, DisplayItem::Type::SVGImage)) {

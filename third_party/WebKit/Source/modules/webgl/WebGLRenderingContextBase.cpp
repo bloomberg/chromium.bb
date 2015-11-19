@@ -1226,7 +1226,7 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
     } else {
         if (!m_markedCanvasDirty) {
             m_markedCanvasDirty = true;
-            canvas()->didDraw(FloatRect(FloatPoint(0, 0), clampedCanvasSize()));
+            canvas()->didDraw(FloatRect(FloatPoint(0, 0), FloatSize(clampedCanvasSize())));
         }
     }
 }

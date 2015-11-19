@@ -247,9 +247,9 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
     if (startOffset < borderRadius && endOffset < borderRadius)
         context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), startColor);
     else if (startOffset < borderRadius)
-        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, IntSize(0, 0), radii, IntSize(0, 0)), startColor);
+        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, FloatSize(0, 0), radii, FloatSize(0, 0)), startColor);
     else if (endOffset < borderRadius)
-        context->fillRoundedRect(FloatRoundedRect(highlightRect, IntSize(0, 0), radii, IntSize(0, 0), radii), startColor);
+        context->fillRoundedRect(FloatRoundedRect(highlightRect, FloatSize(0, 0), radii, FloatSize(0, 0), radii), startColor);
     else
         context->fillRect(highlightRect);
 
