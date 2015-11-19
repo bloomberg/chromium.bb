@@ -43,7 +43,6 @@
 #include "wtf/HashTraits.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/TypeTraits.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

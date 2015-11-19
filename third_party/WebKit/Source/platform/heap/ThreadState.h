@@ -44,7 +44,6 @@
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/WTFString.h"
 
 namespace v8 {
 class Isolate;

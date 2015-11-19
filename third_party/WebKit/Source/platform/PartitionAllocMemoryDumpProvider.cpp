@@ -8,6 +8,7 @@
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Partitions.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 

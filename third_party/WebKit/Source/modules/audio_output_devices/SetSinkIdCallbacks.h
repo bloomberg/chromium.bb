@@ -10,6 +10,7 @@
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
