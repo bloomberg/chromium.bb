@@ -62,13 +62,13 @@ void slowSpinLockLock(int volatile* lock)
             for (int count = 0; count < kYieldProcessorTries; ++count) {
                 // Let the Processor know we're spinning.
                 YIELD_PROCESSOR;
-                if (!noBarrierLoad(lock) && LIKELY(!atomicTestAndSetToOne(lock)))
+                if (!*lock && LIKELY(!atomicTestAndSetToOne(lock)))
                     return;
             }
 
             // Give the OS a chance to schedule something on this core.
             YIELD_THREAD;
-        } while (noBarrierLoad(lock));
+        } while (*lock);
     } while (UNLIKELY(atomicTestAndSetToOne(lock)));
 }
 
