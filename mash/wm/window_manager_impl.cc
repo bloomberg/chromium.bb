@@ -10,7 +10,6 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
-#include "mash/wm/move_loop.h"
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -102,17 +101,11 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
   // The insets are roughly what is needed by CustomFrameView. The expectation
   // is at some point we'll write our own NonClientFrameView and get the insets
   // from it.
-  config->normal_client_area_insets = mojo::Insets::New();
-  config->normal_client_area_insets->top = 23;
-  config->normal_client_area_insets->left = 5;
-  config->normal_client_area_insets->right = 5;
-  config->normal_client_area_insets->bottom = 5;
+  const gfx::Insets client_area_insets =
+      NonClientFrameController::GetPreferredClientAreaInsets();
+  config->normal_client_area_insets = mojo::Insets::From(client_area_insets);
 
-  config->maximized_client_area_insets = mojo::Insets::New();
-  config->maximized_client_area_insets->top = 21;
-  config->maximized_client_area_insets->left = 0;
-  config->maximized_client_area_insets->right = 0;
-  config->maximized_client_area_insets->bottom = 0;
+  config->maximized_client_area_insets = mojo::Insets::From(client_area_insets);
 
   callback.Run(config.Pass());
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_WM_MOVE_LOOP_H_
-#define MASH_WM_MOVE_LOOP_H_
+#ifndef MASH_WM_FRAME_MOVE_LOOP_H_
+#define MASH_WM_FRAME_MOVE_LOOP_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,6 +11,9 @@
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace mash {
+namespace wm {
 
 // MoveLoop is responsible for moving/resizing windows.
 class MoveLoop : public mus::WindowObserver {
@@ -112,4 +115,7 @@ class MoveLoop : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(MoveLoop);
 };
 
-#endif  // MASH_WM_MOVE_LOOP_H_
+}  // namespace wm
+}  // namespace mash
+
+#endif  // MASH_WM_FRAME_MOVE_LOOP_H_

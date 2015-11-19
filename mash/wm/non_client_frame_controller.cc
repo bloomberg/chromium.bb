@@ -5,7 +5,7 @@
 #include "mash/wm/non_client_frame_controller.h"
 
 #include "components/mus/public/cpp/window.h"
-#include "mash/wm/non_client_frame_view_impl.h"
+#include "mash/wm/frame/non_client_frame_view_mash.h"
 #include "mash/wm/property_util.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
@@ -25,9 +25,10 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
 
   // NativeWidgetMus:
   views::NonClientFrameView* CreateNonClientFrameView() override {
-    NonClientFrameViewImpl* frame_view = new NonClientFrameViewImpl(window());
-    frame_view->Init(
-        static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget());
+    views::Widget* widget =
+        static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
+    mash::wm::NonClientFrameViewMash* frame_view =
+        new mash::wm::NonClientFrameViewMash(widget, window());
     return frame_view;
   }
   void CenterWindow(const gfx::Size& size) override {
@@ -54,6 +55,11 @@ NonClientFrameController::NonClientFrameController(mojo::Shell* shell,
   params.native_widget = new WmNativeWidgetMus(widget_, shell, window);
   widget_->Init(params);
   widget_->Show();
+}
+
+// static
+gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
+  return mash::wm::NonClientFrameViewMash::GetPreferredClientAreaInsets();
 }
 
 NonClientFrameController::~NonClientFrameController() {

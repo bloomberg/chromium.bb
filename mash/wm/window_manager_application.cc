@@ -63,7 +63,7 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   window_manager_.reset(new WindowManagerImpl(this));
 
   ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
-  aura_init_.reset(new views::AuraInit(app_, "views_mus_resources.pak"));
+  aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
 
   for (auto request : requests_)
     window_manager_binding_.AddBinding(window_manager_.get(), request->Pass());

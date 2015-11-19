@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/wm/move_loop.h"
+#include "mash/wm/frame/move_loop.h"
 
 #include "base/auto_reset.h"
 #include "components/mus/public/cpp/window.h"
@@ -10,6 +10,9 @@
 #include "mash/wm/property_util.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace mash {
+namespace wm {
 
 namespace {
 
@@ -221,3 +224,6 @@ void MoveLoop::OnWindowVisibilityChanged(mus::Window* window) {
   DCHECK_EQ(window, target_);
   Cancel();
 }
+
+}  // namespace wm
+}  // namespace mash

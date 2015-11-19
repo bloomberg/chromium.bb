@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/wm/move_loop.h"
+#include "mash/wm/frame/move_loop.h"
 
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -12,6 +12,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 using MoveLoopTest = testing::Test;
+
+namespace mash {
+namespace wm {
 
 namespace {
 
@@ -177,3 +180,6 @@ TEST_F(MoveLoopTest, Move) {
     ASSERT_EQ(data[i].expected_bounds, window.bounds());
   }
 }
+
+}  // namespace wm
+}  // namespace mash

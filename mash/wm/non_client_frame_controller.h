@@ -9,6 +9,10 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace gfx {
+class Insets;
+}
+
 namespace mojo {
 class Shell;
 }
@@ -23,6 +27,9 @@ class NonClientFrameController : public views::WidgetDelegateView,
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
   NonClientFrameController(mojo::Shell* shell, mus::Window* window);
+
+  // Returns the preferred client area insets.
+  static gfx::Insets GetPreferredClientAreaInsets();
 
  private:
   ~NonClientFrameController() override;

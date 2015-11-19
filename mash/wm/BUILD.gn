@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/repack.gni")
 
 group("wm") {
   testonly = true
@@ -18,14 +19,26 @@ source_set("example_wm_lib") {
   sources = [
     "background_layout.cc",
     "background_layout.h",
+    "frame/caption_buttons/caption_button_types.h",
+    "frame/caption_buttons/frame_caption_button.cc",
+    "frame/caption_buttons/frame_caption_button.h",
+    "frame/caption_buttons/frame_caption_button_container_view.cc",
+    "frame/caption_buttons/frame_caption_button_container_view.h",
+    "frame/default_header_painter.cc",
+    "frame/default_header_painter.h",
+    "frame/frame_border_hit_test_controller.cc",
+    "frame/frame_border_hit_test_controller.h",
+    "frame/header_painter.h",
+    "frame/header_painter_util.cc",
+    "frame/header_painter_util.h",
+    "frame/move_loop.cc",
+    "frame/move_loop.h",
+    "frame/non_client_frame_view_mash.cc",
+    "frame/non_client_frame_view_mash.h",
     "layout_manager.cc",
     "layout_manager.h",
-    "move_loop.cc",
-    "move_loop.h",
     "non_client_frame_controller.cc",
     "non_client_frame_controller.h",
-    "non_client_frame_view_impl.cc",
-    "non_client_frame_view_impl.h",
     "property_util.cc",
     "property_util.h",
     "shelf_layout.cc",
@@ -44,13 +57,19 @@ source_set("example_wm_lib") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mash/wm/public/interfaces",
+    "//mash/wm/resources",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/services/tracing/public/cpp",
     "//skia",
+    "//ui/aura",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//ui/mojo/init",
+    "//ui/strings",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
@@ -63,15 +82,33 @@ mojo_native_application("example_wm") {
 
   deps = [
     ":example_wm_lib",
+    ":resources",
     "//mojo/application/public/cpp",
-    "//ui/views/mus:resources",
   ]
 
   data_deps = [
     "//components/mus",
   ]
 
-  resources = [ "$root_out_dir/views_mus_resources.pak" ]
+  resources = [ "$root_out_dir/mash_wm_resources.pak" ]
+}
+
+repack("resources") {
+  sources = [
+    "$root_gen_dir/mash/wm/resources/mash_wm_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/mash_wm_resources.pak"
+  deps = [
+    "//mash/wm/resources",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/views/mus:resources",
+    "//ui/views/resources",
+  ]
 }
 
 mojo_native_application("apptests") {
@@ -105,7 +142,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "move_loop_unittest.cc",
+    "frame/move_loop_unittest.cc",
   ]
 
   deps = [
