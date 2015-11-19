@@ -38,11 +38,11 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   class Observer {
    public:
     // Called when field type predictions are successfully received from the
-    // server. |response_xml| contains the server response for the
-    // |queried_forms|.
+    // server. |response_xml| contains the server response for the forms
+    // represented by |form_signatures|.
     virtual void OnLoadedServerPredictions(
         const std::string& response_xml,
-        const std::vector<FormStructure*>& queried_forms) = 0;
+        const std::vector<std::string>& form_signatures) = 0;
 
     // These notifications are used to help with testing.
     // Called when heuristic either successfully considered for upload and

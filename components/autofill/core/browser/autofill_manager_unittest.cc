@@ -2592,6 +2592,88 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   GetAutofillSuggestions(form, *field);
 }
 
+// Test that OnLoadedServerPredictions can obtain the FormStructure with the
+// signature of the queried form and apply type predictions.
+TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenForm(form_structure);
+
+  std::string xml = "<autofillqueryresponse>"
+                    "<field autofilltype=\"3\" />"  // This is tested below.
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"3\" />"
+                    "<field autofilltype=\"2\" />"
+                    "<field autofilltype=\"61\"/>"
+                    "</autofillqueryresponse>";
+  std::vector<std::string> signatures;
+  signatures.push_back(form_structure->FormSignature());
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnLoadedServerPredictions(xml, signatures);
+  // Verify that FormStructure::ParseQueryResponse was called (here and below).
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_RECEIVED,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_PARSED,
+                                     1);
+  // We expect the server type to have been applied to the first field.
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->Type().GetStorableType());
+}
+
+// Test that OnLoadedServerPredictions does not call ParseQueryResponse if the
+// AutofillManager has been reset between the time the query was sent and the
+// response received.
+TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenForm(form_structure);
+
+  std::string xml = "<autofillqueryresponse>"
+                    "<field autofilltype=\"3\" />"  // This is tested below.
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"0\" />"
+                    "<field autofilltype=\"3\" />"
+                    "<field autofilltype=\"2\" />"
+                    "<field autofilltype=\"61\"/>"
+                    "</autofillqueryresponse>";
+  std::vector<std::string> signatures;
+  signatures.push_back(form_structure->FormSignature());
+
+  // Reset the manager (such as during a navigation).
+  autofill_manager_->Reset();
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnLoadedServerPredictions(xml, signatures);
+
+  // Verify that FormStructure::ParseQueryResponse was NOT called.
+  histogram_tester.ExpectTotalCount("Autofill.ServerQueryResponse", 0);
+}
+
 // Test that we are able to save form data when forms are submitted and we only
 // have server data for the field types.
 TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {

@@ -82,7 +82,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   // AutofillDownloadManager::Observer implementation.
   void OnLoadedServerPredictions(
       const std::string& response_xml,
-      const std::vector<FormStructure*>& queried_forms) override {
+      const std::vector<std::string>& form_signatures) override {
     ResponseData response;
     response.response = response_xml;
     response.type_of_response = QUERY_SUCCESSFULL;

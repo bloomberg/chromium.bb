@@ -248,7 +248,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
       const std::string& response_xml,
-      const std::vector<FormStructure*>& queried_forms) override;
+      const std::vector<std::string>& form_signatures) override;
 
   // CardUnmaskDelegate:
   void OnUnmaskResponse(const UnmaskResponse& response) override;
@@ -517,6 +517,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            FormSubmittedAutocompleteEnabled);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           OnLoadedServerPredictions);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           OnLoadedServerPredictions_ResetManager);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            AutocompleteSuggestions_SomeWhenAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

@@ -742,7 +742,24 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml,
-    const std::vector<FormStructure*>& queried_forms) {
+    const std::vector<std::string>& form_signatures) {
+  // We obtain the current valid FormStructures represented by
+  // |form_signatures|. We invert both lists because most recent forms are at
+  // the end of the list.
+  std::vector<FormStructure*> queried_forms;
+  for (const std::string& signature : base::Reversed(form_signatures)) {
+    for (FormStructure* cur_form : base::Reversed(form_structures_)) {
+      if (cur_form->FormSignature() == signature) {
+        queried_forms.push_back(cur_form);
+        continue;
+      }
+    }
+  }
+  // If there are no current forms corresponding to the queried signatures, drop
+  // the query response.
+  if (queried_forms.empty())
+    return;
+
   // Parse and store the server predictions.
   FormStructure::ParseQueryResponse(response_xml, queried_forms,
                                     client_->GetRapporService());
