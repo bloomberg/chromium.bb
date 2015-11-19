@@ -153,7 +153,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   }
 #endif
 
-  // If more than two notifications are showing for this Service Worker, close
+  // If more than one notification is showing for this Service Worker, close
   // the default notification if it happens to be part of this group.
   if (notification_count >= 2) {
     for (const auto& notification_database_data : data) {
@@ -258,9 +258,6 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   // The site failed to show a notification when one was needed, and they have
   // already failed once in the previous 10 push messages, so we will show a
   // generic notification. See https://crbug.com/437277.
-  //
-  // TODO(johnme): The generic notification should probably automatically close
-  // itself when the next push message arrives?
   content::PlatformNotificationData notification_data;
   notification_data.title =
       url_formatter::FormatUrlForSecurityDisplayOmitScheme(
