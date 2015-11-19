@@ -446,6 +446,36 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          'target_name': 'cronet_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'cronet_static_small',
+            'metrics',
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+          'sources': [
+            'cronet/run_all_unittests.cc',
+            'cronet/url_request_context_config_unittest.cc',
+            'cronet/histogram_manager_unittest.cc',
+          ],
+        },
+        {
+          'target_name': 'cronet_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cronet_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cronet_unittests',
+          },
+          'includes': [
+            '../build/apk_test.gypi',
+          ],
+        },
+        {
           'target_name': 'cronet_package',
           'type': 'none',
           'dependencies': [

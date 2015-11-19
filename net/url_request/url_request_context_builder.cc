@@ -389,6 +389,14 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.trusted_spdy_proxy;
   network_session_params.next_protos = http_network_session_params_.next_protos;
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
+  network_session_params.quic_store_server_configs_in_properties =
+      http_network_session_params_.quic_store_server_configs_in_properties;
+  network_session_params.quic_delay_tcp_race =
+      http_network_session_params_.quic_delay_tcp_race;
+  network_session_params.quic_max_number_of_lossy_connections =
+      http_network_session_params_.quic_max_number_of_lossy_connections;
+  network_session_params.quic_packet_loss_threshold =
+      http_network_session_params_.quic_packet_loss_threshold;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
 
