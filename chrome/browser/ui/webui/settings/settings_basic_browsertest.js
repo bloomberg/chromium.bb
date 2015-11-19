@@ -21,7 +21,9 @@ SettingsBasicBrowserTest.prototype = {
   runAccessibilityChecks: false,
 };
 
-TEST_F('SettingsBasicBrowserTest', 'NoConsoleErrors', function() {
+// Flaky timeout failures on Linux Tests (dbg) and Win7 Tests (dbg); see
+// https://crbug.com/558434.
+TEST_F('SettingsBasicBrowserTest', 'DISABLED_NoConsoleErrors', function() {
   assertEquals(this.browsePreload, document.location.href);
   // Nothing else to assert here. If there are errors in the console the test
   // will automatically fail.
