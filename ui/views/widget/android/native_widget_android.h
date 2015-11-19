@@ -1,14 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
-#define UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
+#ifndef UI_VIEWS_WIDGET_ANDROID_NATIVE_WIDGET_ANDROID_H_
+#define UI_VIEWS_WIDGET_ANDROID_NATIVE_WIDGET_ANDROID_H_
 
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/views_export.h"
@@ -19,33 +22,40 @@
 
 namespace aura {
 class Window;
+class WindowTreeHost;
+namespace client {
+class DefaultCaptureClient;
+class DispatcherClient;
+class ScreenPositionClient;
+class WindowTreeClient;
+}
 }
 namespace gfx {
 class FontList;
 }
+namespace wm {
+class FocusController;
+}
 
 namespace views {
 
-class DropHelper;
 class TooltipManagerAura;
 class WindowReorderer;
 
-class VIEWS_EXPORT NativeWidgetAura
+// NativeWidgetAndroid creates and hosts the Widget in an Android native window.
+// It is used to create a top level window on Android platform.
+class VIEWS_EXPORT NativeWidgetAndroid
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
-      public aura::WindowObserver,
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
-      public aura::client::DragDropDelegate {
+      public aura::client::DragDropDelegate,
+      public aura::WindowTreeHostObserver {
  public:
-  explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
+  explicit NativeWidgetAndroid(internal::NativeWidgetDelegate* delegate);
 
-  // Called internally by NativeWidget implementations to associate
-  // |native_widget| with |window|.
-  static void RegisterNativeWidgetForWindow(
-      internal::NativeWidgetPrivate* native_widget,
-      aura::Window* window);
+  aura::WindowTreeHost* host() { return host_.get(); }
 
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
@@ -153,11 +163,6 @@ class VIEWS_EXPORT NativeWidgetAura
   bool HasHitTestMask() const override;
   void GetHitTestMask(gfx::Path* mask) const override;
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -183,8 +188,14 @@ class VIEWS_EXPORT NativeWidgetAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
+  // Overridden from aura::WindowTreeHostObserver:
+  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
+  void OnHostResized(const aura::WindowTreeHost* host) override;
+  void OnHostMoved(const aura::WindowTreeHost* host,
+                   const gfx::Point& new_origin) override;
+
  protected:
-  ~NativeWidgetAura() override;
+  ~NativeWidgetAndroid() override;
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
@@ -218,16 +229,20 @@ class VIEWS_EXPORT NativeWidgetAura
   // order of the associated views in the widget's view hierarchy.
   scoped_ptr<WindowReorderer> window_reorderer_;
 
-  scoped_ptr<DropHelper> drop_helper_;
-  int last_drop_operation_;
+  scoped_ptr<aura::WindowTreeHost> host_;
+  scoped_ptr<wm::FocusController> focus_client_;
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  scoped_ptr<aura::client::DispatcherClient> dispatcher_client_;
 
-  // The following factory is used for calls to close the NativeWidgetAura
-  // instance.
-  base::WeakPtrFactory<NativeWidgetAura> close_widget_factory_;
+  // The following factory is used for calls to close the
+  // NativeWidgetAndroid instance.
+  base::WeakPtrFactory<NativeWidgetAndroid> close_widget_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetAndroid);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
+#endif  // UI_VIEWS_WIDGET_ANDROID_NATIVE_WIDGET_ANDROID_H_
