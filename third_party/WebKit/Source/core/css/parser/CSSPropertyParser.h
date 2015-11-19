@@ -210,7 +210,7 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseReflect();
 
-    bool parseFlex(CSSParserValueList* args, bool important);
+    bool consumeFlex(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parsePosition(CSSParserValueList*);
     PassRefPtrWillBeRawPtr<CSSValueList> parsePositionList(CSSParserValueList*);

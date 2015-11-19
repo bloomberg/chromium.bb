@@ -749,27 +749,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBoxOrdinalGroup:
         validPrimitive = validUnit(value, FInteger | FNonNeg) && value->fValue;
         break;
-    case CSSPropertyFlex: {
-        ShorthandScope scope(this, propId);
-        if (id == CSSValueNone) {
-            addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Number), important);
-            addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Number), important);
-            addProperty(CSSPropertyFlexBasis, cssValuePool().createIdentifierValue(CSSValueAuto), important);
-            return true;
-        }
-        return parseFlex(m_valueList, important);
-    }
-    case CSSPropertyFlexBasis:
-        // FIXME: Support intrinsic dimensions too.
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-        break;
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-        validPrimitive = validUnit(value, FNumber | FNonNeg);
-        break;
     case CSSPropertyOrder:
         validPrimitive = validUnit(value, FInteger);
         break;
@@ -1000,8 +979,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyPadding:
         // <padding-width>{1,4} | inherit
         return parse4Values(propId, paddingShorthand().properties(), important);
-    case CSSPropertyFlexFlow:
-        return parseShorthand(propId, flexFlowShorthand(), important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
     case CSSPropertyWebkitColumnRule:
@@ -1177,6 +1154,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
+    case CSSPropertyFlex:
+    case CSSPropertyFlexBasis:
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+    case CSSPropertyFlexFlow:
         validPrimitive = false;
         break;
 
@@ -3858,55 +3840,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseReflect()
     }
 
     return CSSReflectValue::create(direction.release(), offset.release(), mask.release());
-}
-
-static bool isFlexBasisMiddleArg(double flexGrow, double flexShrink, double unsetValue, int argSize)
-{
-    return flexGrow != unsetValue && flexShrink == unsetValue &&  argSize == 3;
-}
-
-bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
-{
-    if (!args || !args->size() || args->size() > 3)
-        return false;
-    static const double unsetValue = -1;
-    double flexGrow = unsetValue;
-    double flexShrink = unsetValue;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> flexBasis = nullptr;
-
-    while (CSSParserValue* arg = args->current()) {
-        if (validUnit(arg, FNumber | FNonNeg)) {
-            if (flexGrow == unsetValue)
-                flexGrow = arg->fValue;
-            else if (flexShrink == unsetValue)
-                flexShrink = arg->fValue;
-            else if (!arg->fValue) {
-                // flex only allows a basis of 0 (sans units) if flex-grow and flex-shrink values have already been set.
-                flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
-            } else {
-                // We only allow 3 numbers without units if the last value is 0. E.g., flex:1 1 1 is invalid.
-                return false;
-            }
-        } else if (!flexBasis && (arg->id == CSSValueAuto || validUnit(arg, FLength | FPercent | FNonNeg)) && !isFlexBasisMiddleArg(flexGrow, flexShrink, unsetValue, args->size()))
-            flexBasis = parseValidPrimitive(arg->id, arg);
-        else {
-            // Not a valid arg for flex.
-            return false;
-        }
-        args->next();
-    }
-
-    if (flexGrow == unsetValue)
-        flexGrow = 1;
-    if (flexShrink == unsetValue)
-        flexShrink = 1;
-    if (!flexBasis)
-        flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
-
-    addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampTo<float>(flexGrow), CSSPrimitiveValue::UnitType::Number), important);
-    addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
-    addProperty(CSSPropertyFlexBasis, flexBasis, important);
-    return true;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePosition(CSSParserValueList* valueList)

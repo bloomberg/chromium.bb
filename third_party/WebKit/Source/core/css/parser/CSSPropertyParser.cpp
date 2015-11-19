@@ -1836,6 +1836,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeNoneOrURI(CSSParserTokenRange& ra
     return CSSURIValue::create(url);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFlexBasis(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    // FIXME: Support intrinsic dimensions too.
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1996,6 +2004,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
         return consumeNoneOrURI(m_range);
+    case CSSPropertyFlexBasis:
+        return consumeFlexBasis(m_range, m_context.mode());
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+        return consumeNumber(m_range, ValueRangeNonNegative);
     default:
         return nullptr;
     }
@@ -2392,6 +2405,60 @@ bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& s
     return true;
 }
 
+bool CSSPropertyParser::consumeFlex(bool important)
+{
+    ShorthandScope scope(this, CSSPropertyFlex);
+    static const double unsetValue = -1;
+    double flexGrow = unsetValue;
+    double flexShrink = unsetValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> flexBasis = nullptr;
+
+    if (m_range.peek().id() == CSSValueNone) {
+        flexGrow = 0;
+        flexShrink = 0;
+        flexBasis = cssValuePool().createIdentifierValue(CSSValueAuto);
+        m_range.consumeIncludingWhitespace();
+    } else {
+        unsigned index = 0;
+        while (!m_range.atEnd() && index++ < 3) {
+            double num;
+            if (consumeNumberRaw(m_range, num)) {
+                if (num < 0)
+                    return false;
+                if (flexGrow == unsetValue)
+                    flexGrow = num;
+                else if (flexShrink == unsetValue)
+                    flexShrink = num;
+                else if (!num) // flex only allows a basis of 0 (sans units) if flex-grow and flex-shrink values have already been set.
+                    flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+                else
+                    return false;
+            } else if (!flexBasis) {
+                if (m_range.peek().id() == CSSValueAuto)
+                    flexBasis = consumeIdent(m_range);
+                if (!flexBasis)
+                    flexBasis = consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative);
+                if (index == 2 && !m_range.atEnd())
+                    return false;
+            }
+        }
+    }
+    if (!m_range.atEnd())
+        return false;
+
+    if (flexGrow == unsetValue)
+        flexGrow = 1;
+    if (flexShrink == unsetValue)
+        flexShrink = 1;
+    if (!flexBasis)
+        flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
+
+    addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampTo<float>(flexGrow), CSSPrimitiveValue::UnitType::Number), important);
+    addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
+    addProperty(CSSPropertyFlexBasis, flexBasis, important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -2496,6 +2563,10 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         addProperty(CSSPropertyMarkerEnd, marker.release(), important);
         return true;
     }
+    case CSSPropertyFlex:
+        return consumeFlex(important);
+    case CSSPropertyFlexFlow:
+        return consumeShorthandGreedily(flexFlowShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;
