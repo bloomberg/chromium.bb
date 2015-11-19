@@ -133,6 +133,7 @@
       'src/crypto/cpu-arm.c',
       'src/crypto/cpu-intel.c',
       'src/crypto/crypto.c',
+      'src/crypto/curve25519/curve25519.c',
       'src/crypto/des/des.c',
       'src/crypto/dh/check.c',
       'src/crypto/dh/dh.c',

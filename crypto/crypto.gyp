@@ -103,6 +103,8 @@
             # TODO(joth): Use a glob to match exclude patterns once the
             #             OpenSSL file set is complete.
             'sources!': [
+              'curve25519-donna.c',
+              'curve25519_nss.cc',
               'ec_private_key_nss.cc',
               'ec_signature_creator_nss.cc',
               'encryptor_nss.cc',
@@ -126,6 +128,7 @@
             'sources!': [
               'aead_openssl.cc',
               'aead_openssl.h',
+              'curve25519_openssl.cc',
               'ec_private_key_openssl.cc',
               'ec_signature_creator_openssl.cc',
               'encryptor_openssl.cc',

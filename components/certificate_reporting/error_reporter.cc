@@ -34,11 +34,13 @@ static const uint32 kServerPublicKeyVersion = 1;
 
 static const char kHkdfLabel[] = "certificate report";
 
-std::string GetHkdfSubkeySecret(size_t subkey_length,
-                                const uint8* private_key,
-                                const uint8* public_key) {
+bool GetHkdfSubkeySecret(size_t subkey_length,
+                         const uint8* private_key,
+                         const uint8* public_key,
+                         std::string* secret) {
   uint8 shared_secret[crypto::curve25519::kBytes];
-  crypto::curve25519::ScalarMult(private_key, public_key, shared_secret);
+  if (!crypto::curve25519::ScalarMult(private_key, public_key, shared_secret))
+    return false;
 
   // By mistake, the HKDF label here ends up with an extra null byte on
   // the end, due to using sizeof(kHkdfLabel) in the StringPiece
@@ -55,7 +57,8 @@ std::string GetHkdfSubkeySecret(size_t subkey_length,
                     base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)),
                     0 /* key bytes */, 0 /* iv bytes */, subkey_length);
 
-  return hkdf.subkey_secret().as_string();
+  *secret = hkdf.subkey_secret().as_string();
+  return true;
 }
 
 bool EncryptSerializedReport(const uint8* server_public_key,
@@ -70,9 +73,13 @@ bool EncryptSerializedReport(const uint8* server_public_key,
   crypto::curve25519::ScalarBaseMult(private_key, public_key);
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  const std::string key =
-      GetHkdfSubkeySecret(aead.KeyLength(), private_key,
-                          reinterpret_cast<const uint8*>(server_public_key));
+  std::string key;
+  if (!GetHkdfSubkeySecret(aead.KeyLength(), private_key,
+                           reinterpret_cast<const uint8*>(server_public_key),
+                           &key)) {
+    LOG(ERROR) << "Error getting subkey secret.";
+    return false;
+  }
   aead.Init(&key);
 
   // Use an all-zero nonce because the key is random per-message.
@@ -157,10 +164,14 @@ bool ErrorReporter::DecryptErrorReport(
     const EncryptedCertLoggerRequest& encrypted_report,
     std::string* decrypted_serialized_report) {
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  const std::string key =
-      GetHkdfSubkeySecret(aead.KeyLength(), server_private_key,
-                          reinterpret_cast<const uint8*>(
-                              encrypted_report.client_public_key().data()));
+  std::string key;
+  if (!GetHkdfSubkeySecret(aead.KeyLength(), server_private_key,
+                           reinterpret_cast<const uint8*>(
+                               encrypted_report.client_public_key().data()),
+                           &key)) {
+    LOG(ERROR) << "Error getting subkey secret.";
+    return false;
+  }
   aead.Init(&key);
 
   // Use an all-zero nonce because the key is random per-message.

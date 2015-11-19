@@ -19,8 +19,9 @@ component("crypto") {
     "cssm_init.cc",
     "cssm_init.h",
     "curve25519-donna.c",
-    "curve25519.cc",
     "curve25519.h",
+    "curve25519_nss.cc",
+    "curve25519_openssl.cc",
     "ec_private_key.h",
     "ec_private_key_nss.cc",
     "ec_private_key_openssl.cc",
@@ -136,6 +137,8 @@ component("crypto") {
   if (use_openssl) {
     # Remove NSS files when using OpenSSL
     sources -= [
+      "curve25519-donna.c",
+      "curve25519_nss.cc",
       "ec_private_key_nss.cc",
       "ec_signature_creator_nss.cc",
       "encryptor_nss.cc",
@@ -157,6 +160,7 @@ component("crypto") {
     sources -= [
       "aead_openssl.cc",
       "aead_openssl.h",
+      "curve25519_openssl.cc",
       "ec_private_key_openssl.cc",
       "ec_signature_creator_openssl.cc",
       "encryptor_openssl.cc",
