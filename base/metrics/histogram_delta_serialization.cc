@@ -61,6 +61,8 @@ HistogramDeltaSerialization::~HistogramDeltaSerialization() {
 
 void HistogramDeltaSerialization::PrepareAndSerializeDeltas(
     std::vector<std::string>* serialized_deltas) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   serialized_deltas_ = serialized_deltas;
   // Note: Before serializing, we set the kIPCSerializationSourceFlag for all
   // the histograms, so that the receiving process can distinguish them from the
@@ -84,6 +86,7 @@ void HistogramDeltaSerialization::DeserializeAndAddSamples(
 void HistogramDeltaSerialization::RecordDelta(
     const HistogramBase& histogram,
     const HistogramSamples& snapshot) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(0, snapshot.TotalCount());
 
   Pickle pickle;
@@ -95,16 +98,22 @@ void HistogramDeltaSerialization::RecordDelta(
 
 void HistogramDeltaSerialization::InconsistencyDetected(
     HistogramBase::Inconsistency problem) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   inconsistencies_histogram_->Add(problem);
 }
 
 void HistogramDeltaSerialization::UniqueInconsistencyDetected(
     HistogramBase::Inconsistency problem) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   inconsistencies_unique_histogram_->Add(problem);
 }
 
 void HistogramDeltaSerialization::InconsistencyDetectedInLoggedCount(
     int amount) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   inconsistent_snapshot_histogram_->Add(std::abs(amount));
 }
 

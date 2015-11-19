@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 
@@ -44,6 +45,8 @@ class BASE_EXPORT HistogramDeltaSerialization : public HistogramFlattener {
   void UniqueInconsistencyDetected(
       HistogramBase::Inconsistency problem) override;
   void InconsistencyDetectedInLoggedCount(int amount) override;
+
+  ThreadChecker thread_checker_;
 
   // Calculates deltas in histogram counters.
   HistogramSnapshotManager histogram_snapshot_manager_;
