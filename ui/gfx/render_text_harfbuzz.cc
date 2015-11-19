@@ -1266,6 +1266,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     run->underline = style.style(UNDERLINE);
     int32 script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
+    CHECK_GT(static_cast<size_t>(script_item_break), run_break);
     // Odd BiDi embedding levels correspond to RTL runs.
     run->is_rtl = (run->level % 2) == 1;
     // Find the length and script of this script run.
@@ -1276,7 +1277,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     const size_t new_run_break = std::min(
         static_cast<size_t>(script_item_break),
         TextIndexToGivenTextIndex(text, style.GetRange().end()));
-    CHECK_NE(new_run_break, run_break)
+    CHECK_GT(new_run_break, run_break)
         << "It must proceed! " << text << " " << run_break;
     run_break = new_run_break;
 
