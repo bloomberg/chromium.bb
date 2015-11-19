@@ -91,19 +91,15 @@ public:
         return m_mostRecentlyProducedSize;
     }
 
-    WGC3Duint64 insertFenceSyncCHROMIUM() override
+    bool insertSyncPoint(WGC3Dbyte* syncToken) override
     {
-        static WGC3Duint64 syncPointGenerator = 0;
-        return ++syncPointGenerator;
-    }
-
-    bool genSyncTokenCHROMIUM(WGC3Duint64 fenceSync, WGC3Dbyte* syncToken) override
-    {
-        memcpy(syncToken, &fenceSync, sizeof(fenceSync));
+        static WGC3Duint syncPointGenerator = 0;
+        WGC3Duint newSyncPoint = ++syncPointGenerator;
+        memcpy(syncToken, &newSyncPoint, sizeof(newSyncPoint));
         return true;
     }
 
-    void waitSyncTokenCHROMIUM(const WGC3Dbyte* syncToken) override
+    void waitSyncToken(const WGC3Dbyte* syncToken) override
     {
         memcpy(&m_mostRecentlyWaitedSyncToken, syncToken, sizeof(m_mostRecentlyWaitedSyncToken));
     }
@@ -405,8 +401,8 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     // prepareMailbox() does not wait for any sync point.
     EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
-    WGC3Duint64 waitSyncToken = 0;
-    webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    WGC3Duint waitSyncToken = 0;
+    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -419,7 +415,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
-    webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -650,7 +646,7 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 
-    mailbox.validSyncToken = webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), mailbox.syncToken);
+    mailbox.validSyncToken = webContext()->insertSyncPoint(mailbox.syncToken);
     m_drawingBuffer->setIsHidden(true);
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer deletes mailbox immediately when hidden.

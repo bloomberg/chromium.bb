@@ -137,15 +137,12 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
       : web_graphics_context_(web_graphics_context) {}
   ~SyncTokenClientImpl() override {}
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    const blink::WGC3Duint64 fence_sync =
-        web_graphics_context_->insertFenceSyncCHROMIUM();
-    if (!web_graphics_context_->genSyncTokenCHROMIUM(fence_sync,
-                                                     sync_token->GetData())) {
+    if (!web_graphics_context_->insertSyncPoint(sync_token->GetData())) {
       sync_token->Clear();
     }
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    web_graphics_context_->waitSyncTokenCHROMIUM(sync_token.GetConstData());
+    web_graphics_context_->waitSyncToken(sync_token.GetConstData());
   }
 
  private:
@@ -690,8 +687,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||
          (is_remote_ && mailbox_holder.texture_target == GL_TEXTURE_2D));
 
-  web_graphics_context->waitSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetConstData());
+  web_graphics_context->waitSyncToken(mailbox_holder.sync_token.GetConstData());
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.

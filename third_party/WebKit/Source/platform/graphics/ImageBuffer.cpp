@@ -207,12 +207,11 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     sharedContext->genMailboxCHROMIUM(mailbox->name);
     sharedContext->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox->name);
-    const WGC3Duint64 sharedFenceSync = sharedContext->insertFenceSyncCHROMIUM();
     sharedContext->flush();
 
-    mailbox->validSyncToken = sharedContext->genSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
+    mailbox->validSyncToken = sharedContext->insertSyncPoint(mailbox->syncToken);
     if (mailbox->validSyncToken)
-        context->waitSyncTokenCHROMIUM(mailbox->syncToken);
+        context->waitSyncToken(mailbox->syncToken);
 
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
@@ -222,13 +221,11 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     context->deleteTexture(sourceTexture);
 
-    const WGC3Duint64 contextFenceSync = context->insertFenceSyncCHROMIUM();
-
     context->flush();
 
     WGC3Dbyte syncToken[24];
-    if (context->genSyncTokenCHROMIUM(contextFenceSync, syncToken))
-        sharedContext->waitSyncTokenCHROMIUM(syncToken);
+    if (context->insertSyncPoint(syncToken))
+        sharedContext->waitSyncToken(syncToken);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);

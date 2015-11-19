@@ -213,15 +213,15 @@ uint32_t WebGraphicsContext3DImpl::lastFlushID() {
   return flush_id_;
 }
 
-DELEGATE_TO_GL_R(insertFenceSyncCHROMIUM, InsertFenceSyncCHROMIUM, WGC3Duint64)
+bool WebGraphicsContext3DImpl::insertSyncPoint(WGC3Dbyte* sync_token) {
+  const uint32_t sync_point = gl_->InsertSyncPointCHROMIUM();
+  if (!sync_point)
+    return false;
 
-bool WebGraphicsContext3DImpl::genSyncTokenCHROMIUM(WGC3Duint64 fenceSync,
-                                                    WGC3Dbyte* syncToken) {
-  gl_->GenSyncTokenCHROMIUM(fenceSync, syncToken);
+  gpu::SyncToken sync_token_data(sync_point);
+  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   return true;
 }
-
-DELEGATE_TO_GL_1(waitSyncTokenCHROMIUM, WaitSyncTokenCHROMIUM, const WGC3Dbyte*)
 
 DELEGATE_TO_GL_3(reshapeWithScaleFactor, ResizeCHROMIUM, int, int, float)
 
@@ -896,6 +896,8 @@ void WebGraphicsContext3DImpl::shallowFinishCHROMIUM() {
   flush_id_ = GenFlushID();
   gl_->ShallowFinishCHROMIUM();
 }
+
+DELEGATE_TO_GL_1(waitSyncToken, WaitSyncTokenCHROMIUM, const WGC3Dbyte*)
 
 void WebGraphicsContext3DImpl::loseContextCHROMIUM(
     WGC3Denum current, WGC3Denum other) {
