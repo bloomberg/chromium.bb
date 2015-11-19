@@ -107,9 +107,11 @@ a directory, then runs GYP or GN as appropriate:
 Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
 must be specified so that `mb` can figure out which config to use.
 
-By default, MB will look in `//tools/mb/mb_config.pyl` to look up the config
-information, but you can specify a custom config file using the
-`-f/--config-file` flag.
+By default, MB will look for a bot config file under `//ios/build/bots` (see
+[design_spec.md](the design spec) for details of how the bot config files
+work). If no matching one is found, will then look in
+`//tools/mb/mb_config.pyl` to look up the config information, but you can
+specify a custom config file using the `-f/--config-file` flag.
 
 The path must be a GN-style "source-absolute" path (as above).
 

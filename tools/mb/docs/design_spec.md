@@ -38,9 +38,18 @@ It is structured as a single binary that supports a list of subcommands:
 
 ### Configurations
 
-`mb` looks in the `//tools/mb/mb_config.pyl` config file to determine whether
-to use GYP or GN for a particular build directory, and what set of flags
-(`GYP_DEFINES` or `gn args`) to use.
+`mb` will first look for a bot config file in a set of different locations
+(initially just in //ios/build/bots). Bot config files are JSON files that
+contain keys for 'GYP_DEFINES' (a list of strings that will be joined together
+with spaces and passed to GYP, or a dict that will be similarly converted),
+'gn_args' (a list of strings that will be joined together), and an
+'mb_type' field that says whether to use GN or GYP. Bot config files
+require the full list of settings to be given explicitly.
+
+If no mathcing bot config file is found, `mb` looks in the
+`//tools/mb/mb_config.pyl` config file to determine whether to use GYP or GN
+for a particular build directory, and what set of flags (`GYP_DEFINES` or `gn
+args`) to use.
 
 A config can either be specified directly (useful for testing) or by specifying
 the master name and builder name (useful on the bots so that they do not need

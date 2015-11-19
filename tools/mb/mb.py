@@ -344,13 +344,15 @@ class MetaBuildWrapper(object):
     }
 
   def Lookup(self):
-    self.ReadConfigFile()
-    config = self.ConfigFromArgs()
-    if not config in self.configs:
-      raise MBErr('Config "%s" not found in %s' %
-                  (config, self.args.config_file))
+    vals = self.ReadBotConfig()
+    if not vals:
+      self.ReadConfigFile()
+      config = self.ConfigFromArgs()
+      if not config in self.configs:
+        raise MBErr('Config "%s" not found in %s' %
+                    (config, self.args.config_file))
 
-    vals = self.FlattenConfig(config)
+      vals = self.FlattenConfig(config)
 
     # Do some basic sanity checking on the config so that we
     # don't have to do this in every caller.
@@ -359,6 +361,28 @@ class MetaBuildWrapper(object):
         'Unknown meta-build type "%s"' % vals['gn_args'])
 
     return vals
+
+  def ReadBotConfig(self):
+    if not self.args.master or not self.args.builder:
+      return {}
+    path = self.PathJoin(self.chromium_src_dir, 'ios', 'build', 'bots',
+                         self.args.master, self.args.builder + '.json')
+    if not self.Exists(path):
+      return {}
+
+    contents = json.loads(self.ReadFile(path))
+    gyp_vals = contents.get('GYP_DEFINES', {})
+    if isinstance(gyp_vals, dict):
+      gyp_defines = ' '.join('%s=%s' % (k, v) for k, v in gyp_vals.items())
+    else:
+      gyp_defines = ' '.join(gyp_vals)
+    gn_args = ' '.join(contents.get('gn_args', []))
+
+    return {
+        'type': contents.get('mb_type', ''),
+        'gn_args': gn_args,
+        'gyp_defines': gyp_defines,
+    }
 
   def ReadConfigFile(self):
     if not self.Exists(self.args.config_file):
