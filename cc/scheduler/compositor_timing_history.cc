@@ -38,6 +38,7 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawDuration(base::TimeDelta duration,
                                base::TimeDelta estimate,
                                bool affects_estimate) = 0;
+  virtual void AddSwapToAckLatency(base::TimeDelta duration) = 0;
 };
 
 namespace {
@@ -179,6 +180,11 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "Draw");
     DeprecatedDrawDurationUMA(duration, estimate);
   }
+
+  void AddSwapToAckLatency(base::TimeDelta duration) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Renderer.SwapToAckLatency",
+                                      duration);
+  }
 };
 
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -235,6 +241,11 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "Draw");
     DeprecatedDrawDurationUMA(duration, estimate);
   }
+
+  void AddSwapToAckLatency(base::TimeDelta duration) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling.Browser.SwapToAckLatency",
+                                      duration);
+  }
 };
 
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -263,6 +274,7 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawDuration(base::TimeDelta duration,
                        base::TimeDelta estimate,
                        bool affects_estimate) override {}
+  void AddSwapToAckLatency(base::TimeDelta duration) override {}
 };
 
 }  // namespace
@@ -534,6 +546,22 @@ void CompositorTimingHistory::DidDraw() {
   }
 
   start_draw_time_ = base::TimeTicks();
+}
+
+void CompositorTimingHistory::DidSwapBuffers() {
+  DCHECK_EQ(base::TimeTicks(), swap_start_time_);
+  swap_start_time_ = Now();
+}
+
+void CompositorTimingHistory::DidSwapBuffersComplete() {
+  DCHECK_NE(base::TimeTicks(), swap_start_time_);
+  base::TimeDelta swap_to_ack_duration = Now() - swap_start_time_;
+  uma_reporter_->AddSwapToAckLatency(swap_to_ack_duration);
+  swap_start_time_ = base::TimeTicks();
+}
+
+void CompositorTimingHistory::DidSwapBuffersReset() {
+  swap_start_time_ = base::TimeTicks();
 }
 
 }  // namespace cc

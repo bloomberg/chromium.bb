@@ -61,6 +61,9 @@ class CC_EXPORT CompositorTimingHistory {
   void DidActivate();
   void WillDraw();
   void DidDraw();
+  void DidSwapBuffers();
+  void DidSwapBuffersComplete();
+  void DidSwapBuffersReset();
 
  protected:
   static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
@@ -84,6 +87,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks start_prepare_tiles_time_;
   base::TimeTicks start_activate_time_;
   base::TimeTicks start_draw_time_;
+  base::TimeTicks swap_start_time_;
 
   scoped_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;

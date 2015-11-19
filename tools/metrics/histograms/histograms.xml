@@ -41188,6 +41188,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.SwapToAckLatency" units="microseconds">
+  <owner>brianderson@chromium.org</owner>
+  <summary>How long it takes the swap ack to return after a swap.</summary>
+</histogram>
+
 <histogram name="Sdch3.AdvertisedWithSecureScheme" enum="BooleanHttps">
   <obsolete>
     Experiment complete, histogram gathering code removed.
@@ -77741,6 +77746,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Scheduling.CommitToReadyToActivateDuration"/>
   <affected-histogram name="Scheduling.DrawDuration"/>
   <affected-histogram name="Scheduling.PrepareTilesDuration"/>
+  <affected-histogram name="Scheduling.SwapToAckLatency"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistoryProcess2" separator="."

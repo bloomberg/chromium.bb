@@ -194,6 +194,7 @@ void Scheduler::SetNeedsPrepareTiles() {
 }
 
 void Scheduler::DidSwapBuffers() {
+  compositor_timing_history_->DidSwapBuffers();
   state_machine_.DidSwapBuffers();
 
   // There is no need to call ProcessScheduledActions here because
@@ -205,6 +206,7 @@ void Scheduler::DidSwapBuffers() {
 
 void Scheduler::DidSwapBuffersComplete() {
   DCHECK_GT(state_machine_.pending_swaps(), 0) << AsValue()->ToString();
+  compositor_timing_history_->DidSwapBuffersComplete();
   state_machine_.DidSwapBuffersComplete();
   ProcessScheduledActions();
 }
@@ -254,6 +256,7 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
   DCHECK(!frame_source_->NeedsBeginFrames());
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
+  compositor_timing_history_->DidSwapBuffersReset();
   state_machine_.DidCreateAndInitializeOutputSurface();
   UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
