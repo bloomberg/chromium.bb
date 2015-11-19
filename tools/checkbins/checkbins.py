@@ -10,6 +10,7 @@ In essense it runs a subset of BinScope tests ensuring that binaries have
 /NXCOMPAT, /DYNAMICBASE and /SAFESEH.
 """
 
+import json
 import os
 import optparse
 import sys
@@ -43,6 +44,8 @@ def main(options, args):
   directory = args[0]
   pe_total = 0
   pe_passed = 0
+
+  failures = []
 
   for file in os.listdir(directory):
     path = os.path.abspath(os.path.join(directory, file))
@@ -103,8 +106,15 @@ def main(options, args):
     # Update tally.
     if success:
       pe_passed = pe_passed + 1
+    else:
+      failures.append(path)
 
   print "Result: %d files found, %d files passed" % (pe_total, pe_passed)
+
+  if options.json:
+    with open(options.json, 'w') as f:
+      json.dump(failures, f)
+
   if pe_passed != pe_total:
     sys.exit(1)
 
@@ -113,6 +123,7 @@ if __name__ == '__main__':
   option_parser = optparse.OptionParser(usage=usage)
   option_parser.add_option("-v", "--verbose", action="store_true",
                            default=False, help="Print debug logging")
+  option_parser.add_option("--json", help="Path to JSON output file")
   options, args = option_parser.parse_args()
   if not args:
     option_parser.print_help()

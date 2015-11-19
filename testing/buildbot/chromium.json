@@ -48,5 +48,16 @@
         "script": "sizes.py"
       }
     ]
+  },
+  "Win": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": [
+      {
+        "name": "checkbins",
+        "script": "checkbins.py"
+      }
+    ]
   }
 }
