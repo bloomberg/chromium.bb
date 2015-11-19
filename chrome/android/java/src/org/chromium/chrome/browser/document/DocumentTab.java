@@ -192,13 +192,6 @@ public class DocumentTab extends Tab {
         }
     }
 
-    @Override
-    public void onActivityStart() {
-        // DocumentActivity#onResumeWithNative() will call Tab.show(), and so we don't need to call
-        // it at this point.
-        onActivityStartInternal(false /* showNow */);
-    }
-
     /**
      * A helper function to create TabUma and set it to the tab.
      * @param creationState In what state the tab was created.
