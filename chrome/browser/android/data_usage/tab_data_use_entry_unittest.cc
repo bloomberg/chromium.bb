@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -415,8 +416,8 @@ TEST_F(MockTabDataUseEntryTest, ClosedTabSessionExpiry) {
 }
 
 // Checks that tracking session history does not grow beyond
-// GetMaxSessionsPerTabForTests entries, and automatically compacts itself by
-// removing the oldest tracking sessions.
+// GetMaxSessionsPerTab entries, and automatically compacts itself by removing
+// the oldest tracking sessions.
 TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
   const uint32_t per_session_duration = 10;
   const uint32_t next_session_start_gap = 10;
@@ -469,6 +470,66 @@ TEST_F(MockTabDataUseEntryTest, CompactTabSessionHistory) {
     ++num_sessions;
     ++oldest_session;
   }
+}
+
+TEST_F(MockTabDataUseEntryTest, TrackingSessionLifetimeHistogram) {
+  const char kUMATrackingSessionLifetimeSecondsHistogram[] =
+      "DataUse.TabModel.TrackingSessionLifetime";
+  base::HistogramTester histogram_tester;
+
+  // Tracking session from time=20 to time=30, lifetime of 10 seconds.
+  tab_entry_->SetNowOffsetInSeconds(20);
+  EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+  tab_entry_->SetNowOffsetInSeconds(30);
+  EXPECT_TRUE(tab_entry_->EndTracking());
+
+  histogram_tester.ExpectTotalCount(kUMATrackingSessionLifetimeSecondsHistogram,
+                                    1);
+  histogram_tester.ExpectBucketCount(
+      kUMATrackingSessionLifetimeSecondsHistogram,
+      base::TimeDelta::FromSeconds(10).InMilliseconds(), 1);
+
+  // Tracking session from time=40 to time=70, lifetime of 30 seconds.
+  tab_entry_->SetNowOffsetInSeconds(40);
+  EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+  tab_entry_->SetNowOffsetInSeconds(70);
+  EXPECT_TRUE(tab_entry_->EndTracking());
+
+  histogram_tester.ExpectTotalCount(kUMATrackingSessionLifetimeSecondsHistogram,
+                                    2);
+  histogram_tester.ExpectBucketCount(
+      kUMATrackingSessionLifetimeSecondsHistogram,
+      base::TimeDelta::FromSeconds(30).InMilliseconds(), 1);
+}
+
+TEST_F(MockTabDataUseEntryTest, OldInactiveSessionRemovaltimeHistogram) {
+  const char kUMAOldInactiveSessionRemovalDurationSecondsHistogram[] =
+      "DataUse.TabModel.OldInactiveSessionRemovalDuration";
+  base::HistogramTester histogram_tester;
+  const size_t max_sessions_per_tab = GetMaxSessionsPerTab();
+
+  // Start a tracking session at time=20, and end it at time=30.
+  tab_entry_->SetNowOffsetInSeconds(20);
+  EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+  tab_entry_->SetNowOffsetInSeconds(30);
+  EXPECT_TRUE(tab_entry_->EndTracking());
+
+  for (size_t session = 1; session < max_sessions_per_tab; ++session) {
+    EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+    EXPECT_TRUE(tab_entry_->EndTracking());
+  }
+
+  // Add one more session at time=60. This removes the first inactive tracking
+  // session that ended at time=30, with removal duration of 30 seconds.
+  tab_entry_->SetNowOffsetInSeconds(60);
+  EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
+  EXPECT_TRUE(tab_entry_->EndTracking());
+
+  histogram_tester.ExpectTotalCount(
+      kUMAOldInactiveSessionRemovalDurationSecondsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kUMAOldInactiveSessionRemovalDurationSecondsHistogram,
+      base::TimeDelta::FromSeconds(30).InMilliseconds(), 1);
 }
 
 }  // namespace android

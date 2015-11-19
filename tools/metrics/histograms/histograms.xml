@@ -6438,6 +6438,86 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUse.TabModel.ExpiredActiveTabEntryRemovalDuration"
+    units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the start time of a tab entry's latest data usage tracking
+    session, till when the entry is expired and removed from the tab model. This
+    is for tab entries that are still actively tracking data usage for a
+    Chromium tab.
+
+    Tab model maintains the tab entries, each pertaining to tracking sessions of
+    a single Chromium tab. These entries are considered expired after some
+    duration and can be removed from the tab model after that. The sample is
+    taken when an expired tab entry still tracking data usage is removed from
+    the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration"
+    units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time of a tab entry's latest data usage tracking
+    session, till when the entry is expired and removed from the tab model. This
+    is for tab entries that are not actively tracking data usage for a Chromium
+    tab.
+
+    Tab model maintains the tab entries, each pertaining to tracking sessions of
+    a single Chromium tab. These entries are considered expired after some
+    duration and can be removed from the tab model after that. The sample is
+    taken when an expired inactive tab entry is removed from the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TabModel.OldInactiveSessionRemovalDuration"
+    units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time of a data usage tracking session, till when
+    the tracking session is removed from the tab model. This is for old tracking
+    sessions that are not actively tracking data usage.
+
+    Tab model maintains a limited number of tracking sessions per Chromium tab.
+    When this limit is reached oldest inactive tracking sessions are removed.
+    The sample is taken when an old inactive tracking session of a tab is
+    removed from the tab model.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TabModel.TrackingSessionLifetime" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The lifetime of a data usage tracking session of a Chromium tab, maintained
+    by the tab model. This is the duration between the time tracking started due
+    to an entry event and ended with an exit event. The sample is taken when the
+    data usage tracking session ends.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.TabModel.UnexpiredTabEntryRemovalDuration"
+    units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration from the end time (start time, if still active) of a tab
+    entry's latest data usage tracking session, till when the entry is removed
+    from the tab model. This is for tab entries that are not expired yet, and
+    removed from the tab model.
+
+    Tab model maintains a limited number of entries, each pertaining to tracking
+    sessions of a single Chromium tab. When this limit is reached even after
+    removing expired tab entries, then oldest unexpired tab entries are removed.
+    The sample is taken when an unexpired tab entry is removed from the tab
+    model.
+  </summary>
+</histogram>
+
 <histogram name="DataUse.TrafficSize.System" units="bytes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

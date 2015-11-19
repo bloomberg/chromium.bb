@@ -88,7 +88,13 @@ class TabDataUseEntry {
   FRIEND_TEST_ALL_PREFIXES(TabDataUseEntryTest, MultipleTabSessionCloseEvent);
   FRIEND_TEST_ALL_PREFIXES(TabDataUseEntryTest, EndTrackingWithLabel);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           ExpiredInactiveTabEntryRemovaltimeHistogram);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           ExpiredActiveTabEntryRemovaltimeHistogram);
   FRIEND_TEST_ALL_PREFIXES(MockTabDataUseEntryTest, CompactTabSessionHistory);
+  FRIEND_TEST_ALL_PREFIXES(MockTabDataUseEntryTest,
+                           OldInactiveSessionRemovaltimeHistogram);
 
   typedef std::deque<TabDataUseTrackingSession> TabSessions;
 

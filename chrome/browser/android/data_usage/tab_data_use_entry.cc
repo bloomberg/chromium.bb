@@ -6,6 +6,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "components/variations/variations_associated_data.h"
@@ -23,6 +24,11 @@ const unsigned int kDefaultClosedTabExpirationDurationSeconds =
     30;  // 30 seconds.
 const unsigned int kDefaultOpenTabExpirationDurationSeconds =
     60 * 60 * 24 * 5;  // 5 days.
+
+const char kUMATrackingSessionLifetimeSecondsHistogram[] =
+    "DataUse.TabModel.TrackingSessionLifetime";
+const char kUMAOldInactiveSessionRemovalDurationSecondsHistogram[] =
+    "DataUse.TabModel.OldInactiveSessionRemovalDuration";
 
 // Returns various parameters from the values specified in the field trial.
 size_t GetMaxSessionsPerTab() {
@@ -110,6 +116,12 @@ bool TabDataUseEntry::EndTracking() {
     return false;
 
   back_iterator->end_time = Now();
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      kUMATrackingSessionLifetimeSecondsHistogram,
+      back_iterator->end_time - back_iterator->start_time,
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromHours(1), 50);
+
   return true;
 }
 
@@ -135,8 +147,6 @@ bool TabDataUseEntry::IsExpired() const {
   const base::TimeTicks latest_session_time = GetLatestStartOrEndTime();
   if (latest_session_time.is_null() ||
       ((now - latest_session_time) > open_tab_expiration_duration_)) {
-    // TODO(rajendrant): Add UMA to track deletion of entries corresponding to
-    // existing tabs.
     return true;
   }
   return false;
@@ -185,9 +195,16 @@ const base::TimeTicks TabDataUseEntry::GetLatestStartOrEndTime() const {
 }
 
 void TabDataUseEntry::CompactSessionHistory() {
-  // TODO(rajendrant): Add UMA to track how often old sessions are lost.
-  while (sessions_.size() > max_sessions_per_tab_)
+  while (sessions_.size() > max_sessions_per_tab_) {
+    const auto& front = sessions_.front();
+    DCHECK(!front.end_time.is_null());
+    // Track how often old sessions are lost.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        kUMAOldInactiveSessionRemovalDurationSecondsHistogram,
+        Now() - front.end_time, base::TimeDelta::FromSeconds(1),
+        base::TimeDelta::FromHours(1), 50);
     sessions_.pop_front();
+  }
 }
 
 }  // namespace android

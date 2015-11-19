@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -15,6 +16,13 @@ namespace {
 // Indicates the default maximum number of tabs to maintain session information
 // about. May be overridden by the field trial.
 const size_t kDefaultMaxTabEntries = 200;
+
+const char kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram[] =
+    "DataUse.TabModel.ExpiredInactiveTabEntryRemovalDuration";
+const char kUMAExpiredActiveTabEntryRemovalDurationHoursHistogram[] =
+    "DataUse.TabModel.ExpiredActiveTabEntryRemovalDuration";
+const char kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram[] =
+    "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
 
 // Returns true if |tab_id| is a valid tab ID.
 bool IsValidTabID(int32_t tab_id) {
@@ -151,6 +159,10 @@ void DataUseTabModel::RemoveObserver(TabDataUseObserver* observer) {
   observer_list_->RemoveObserver(observer);
 }
 
+base::TimeTicks DataUseTabModel::Now() const {
+  return base::TimeTicks::Now();
+}
+
 void DataUseTabModel::NotifyObserversOfTrackingStarting(int32_t tab_id) {
   observer_list_->Notify(FROM_HERE, &TabDataUseObserver::NotifyTrackingStarting,
                          tab_id);
@@ -194,10 +206,26 @@ void DataUseTabModel::CompactTabEntries() {
   // Remove expired tab entries.
   for (TabEntryMap::iterator tab_entry_iterator = active_tabs_.begin();
        tab_entry_iterator != active_tabs_.end();) {
-    if (tab_entry_iterator->second.IsExpired())
+    const auto& tab_entry = tab_entry_iterator->second;
+    if (tab_entry.IsExpired()) {
+      // Track the lifetime of expired tab entry.
+      const base::TimeDelta removal_time =
+          Now() - tab_entry.GetLatestStartOrEndTime();
+      if (!tab_entry.IsTrackingDataUse()) {
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            kUMAExpiredInactiveTabEntryRemovalDurationSecondsHistogram,
+            removal_time, base::TimeDelta::FromSeconds(1),
+            base::TimeDelta::FromHours(1), 50);
+      } else {
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            kUMAExpiredActiveTabEntryRemovalDurationHoursHistogram,
+            removal_time, base::TimeDelta::FromHours(1),
+            base::TimeDelta::FromDays(5), 50);
+      }
       active_tabs_.erase(tab_entry_iterator++);
-    else
+    } else {
       ++tab_entry_iterator;
+    }
   }
 
   if (active_tabs_.size() <= max_tab_entries_)
@@ -215,6 +243,10 @@ void DataUseTabModel::CompactTabEntries() {
       }
     }
     DCHECK(oldest_tab_entry_iterator != active_tabs_.end());
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram,
+        Now() - oldest_tab_entry_iterator->second.GetLatestStartOrEndTime(),
+        base::TimeDelta::FromMinutes(1), base::TimeDelta::FromHours(1), 50);
     active_tabs_.erase(oldest_tab_entry_iterator);
   }
 }

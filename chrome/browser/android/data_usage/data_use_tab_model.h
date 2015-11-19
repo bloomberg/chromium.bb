@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
 #include "components/data_usage/core/data_use.h"
 #include "url/gurl.h"
@@ -126,8 +127,17 @@ class DataUseTabModel {
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, OnTrackingLabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            CompactTabEntriesWithinMaxLimit);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           UnexpiredTabEntryRemovaltimeHistogram);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           ExpiredInactiveTabEntryRemovaltimeHistogram);
+  FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
+                           ExpiredActiveTabEntryRemovaltimeHistogram);
 
   typedef base::hash_map<int32_t, TabDataUseEntry> TabEntryMap;
+
+  // Virtualized for unit test support.
+  virtual base::TimeTicks Now() const;
 
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|.
