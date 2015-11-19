@@ -226,11 +226,16 @@ void ToolbarButton::ShowContextMenuForView(View* source,
 
 void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
   image()->SetPaintToLayer(true);
   image()->SetFillsBoundsOpaquely(false);
 
   layer()->Add(ink_drop_layer);
   layer()->StackAtBottom(ink_drop_layer);
+
+  // Invalidates the contents of the parent's layer which may contain
+  // a stale close/reload icon that should not remain visible.
+  parent()->SchedulePaint();
 }
 
 void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {

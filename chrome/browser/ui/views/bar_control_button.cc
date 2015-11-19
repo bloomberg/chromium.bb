@@ -71,6 +71,8 @@ void BarControlButton::Layout() {
 }
 
 void BarControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  // TODO(estade|tdanderson): The ink drop layer should be positioned behind
+  //                          the button's image.
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
   layer()->Add(ink_drop_layer);

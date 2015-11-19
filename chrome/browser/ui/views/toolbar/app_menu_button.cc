@@ -183,6 +183,7 @@ void AppMenuButton::UpdateIcon() {
 
 void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
   image()->SetPaintToLayer(true);
   image()->SetFillsBoundsOpaquely(false);
 
