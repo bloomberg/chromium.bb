@@ -17,7 +17,7 @@ namespace gfx {
 class Canvas;
 class Image;
 }
-class Browser;
+class BrowserView;
 class Profile;
 
 // AvatarMenuButton
@@ -32,9 +32,8 @@ class AvatarMenuButton : public views::MenuButton,
   // Internal class name.
   static const char kViewClassName[];
 
-  // Creates a new button. Unless |disabled| is true, clicking on the button
-  // will cause the profile menu to be displayed.
-  AvatarMenuButton(Browser* browser, bool disabled);
+  // Creates a new button for the given browser view.
+  explicit AvatarMenuButton(BrowserView* browser_view);
 
   ~AvatarMenuButton() override;
 
@@ -51,12 +50,12 @@ class AvatarMenuButton : public views::MenuButton,
   }
   bool button_on_right() { return button_on_right_; }
 
-  // Get avatar images for the profile.  |avatar| is used in the browser window
-  // whereas |taskbar_badge_avatar| is used for the OS taskbar.  If
+  // Get avatar images for the BrowserView. |avatar| is used in the browser
+  // window whereas |taskbar_badge_avatar| is used for the OS taskbar. If
   // |taskbar_badge_avatar| is empty then |avatar| should be used for the
   // taskbar as well. Returns false if the cache doesn't have an entry for a
-  // Profile::REGULAR_PROFILE type |profile|, otherwise return true.
-  static bool GetAvatarImages(Profile* profile,
+  // Profile::REGULAR_PROFILE type Profile, otherwise return true.
+  static bool GetAvatarImages(BrowserView* browser_view,
                               bool should_show_avatar_menu,
                               gfx::Image* avatar,
                               gfx::Image* taskbar_badge_avatar,
@@ -71,8 +70,8 @@ class AvatarMenuButton : public views::MenuButton,
   void OnMenuButtonClicked(views::View* source,
                            const gfx::Point& point) override;
 
-  Browser* browser_;
-  bool disabled_;
+  BrowserView* browser_view_;
+  bool enabled_;
   scoped_ptr<ui::MenuModel> menu_model_;
 
   // Use a scoped ptr because gfx::Image doesn't have a default constructor.

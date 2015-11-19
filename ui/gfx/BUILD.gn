@@ -467,6 +467,8 @@ action("aggregate_vector_icons") {
     "vector_icons/globe.icon",
     "vector_icons/help_outline.icon",
     "vector_icons/image.icon",
+    "vector_icons/incognito.1x.icon",
+    "vector_icons/incognito.icon",
     "vector_icons/keyword_search.1x.icon",
     "vector_icons/keyword_search.icon",
     "vector_icons/laptop.icon",

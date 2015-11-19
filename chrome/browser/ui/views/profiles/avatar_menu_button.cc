@@ -33,10 +33,10 @@ static inline int Round(double x) {
 // static
 const char AvatarMenuButton::kViewClassName[] = "AvatarMenuButton";
 
-AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
+AvatarMenuButton::AvatarMenuButton(BrowserView* browser_view)
     : MenuButton(NULL, base::string16(), this, false),
-      browser_(browser),
-      disabled_(disabled),
+      browser_view_(browser_view),
+      enabled_(browser_view_->IsRegularOrGuestSession()),
       is_rectangle_(false),
       old_height_(0),
       button_on_right_(false) {
@@ -94,17 +94,17 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 }
 
 // static
-bool AvatarMenuButton::GetAvatarImages(Profile* profile,
+bool AvatarMenuButton::GetAvatarImages(BrowserView* browser_view,
                                        bool should_show_avatar_menu,
                                        gfx::Image* avatar,
                                        gfx::Image* taskbar_badge_avatar,
                                        bool* is_rectangle) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const Profile* profile = browser_view->browser()->profile();
   if (profile->GetProfileType() == Profile::GUEST_PROFILE) {
-    *avatar = rb.
-        GetImageNamed(profiles::GetPlaceholderAvatarIconResourceID());
+    *avatar = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
   } else if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
-    *avatar = rb.GetImageNamed(IDR_OTR_ICON);
+    *avatar = gfx::Image(browser_view->GetOTRAvatarIcon());
     // TODO(nkostylev): Allow this on ChromeOS once the ChromeOS test
     // environment handles profile directories correctly.
 #if !defined(OS_CHROMEOS)
@@ -143,13 +143,13 @@ bool AvatarMenuButton::GetAvatarImages(Profile* profile,
 bool AvatarMenuButton::DoesIntersectRect(const views::View* target,
                                          const gfx::Rect& rect) const {
   CHECK_EQ(target, this);
-  return !disabled_ &&
+  return enabled_ &&
          views::ViewTargeterDelegate::DoesIntersectRect(target, rect);
 }
 
 // views::MenuButtonListener implementation
 void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
-  if (!disabled_)
-    chrome::ShowAvatarMenu(browser_);
+  if (enabled_)
+    chrome::ShowAvatarMenu(browser_view_->browser());
 }

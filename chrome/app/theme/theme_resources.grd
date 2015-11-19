@@ -542,9 +542,7 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="common/omnibox_tts.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_SELECTED" file="common/omnibox_tts_selected.png" />
       <if expr="toolkit_views and not is_macosx">
-        <!-- In Material Design the Ash image is the same as the common one, so
-             once that mode is always on, these should be collapsed and the
-             duplicate image removed from the tree. -->
+        <!-- This image is not used in Material Design and can be removed when that mode is default. -->
         <if expr="not use_ash">
           <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/otr_icon.png" />
         </if>
