@@ -403,7 +403,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
 
   const content::SecurityStyleExplanations& expired_explanation =
       observer.latest_explanations();
-  EXPECT_EQ(0u, expired_explanation.warning_explanations.size());
+  EXPECT_EQ(0u, expired_explanation.unauthenticated_explanations.size());
   ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
 
   // Check that the summary and description are as expected.
@@ -2932,7 +2932,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
             observer.latest_security_style());
-  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u,
+            observer.latest_explanations().unauthenticated_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
   EXPECT_FALSE(observer.latest_explanations().scheme_is_cryptographic);
@@ -2952,7 +2953,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
 
   const content::SecurityStyleExplanations& mixed_content_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(0u, mixed_content_explanation.warning_explanations.size());
+  ASSERT_EQ(0u, mixed_content_explanation.unauthenticated_explanations.size());
   ASSERT_EQ(0u, mixed_content_explanation.broken_explanations.size());
   CheckSecureExplanations(mixed_content_explanation.secure_explanations,
                           VALID_CERTIFICATE, browser());
@@ -2985,7 +2986,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
-  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u,
+            observer.latest_explanations().unauthenticated_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser());
@@ -3046,7 +3048,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
-  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u,
+            observer.latest_explanations().unauthenticated_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser());
@@ -3086,7 +3089,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
-  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u,
+            observer.latest_explanations().unauthenticated_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser());

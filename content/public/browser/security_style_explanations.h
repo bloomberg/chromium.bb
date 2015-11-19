@@ -47,7 +47,7 @@ struct SecurityStyleExplanations {
   bool scheme_is_cryptographic;
 
   std::vector<SecurityStyleExplanation> secure_explanations;
-  std::vector<SecurityStyleExplanation> warning_explanations;
+  std::vector<SecurityStyleExplanation> unauthenticated_explanations;
   std::vector<SecurityStyleExplanation> broken_explanations;
 };
 

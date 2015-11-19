@@ -99,8 +99,8 @@ void SecurityHandler::SecurityStyleChanged(
   AddExplanations(kSecurityStateInsecure,
                   security_style_explanations.broken_explanations,
                   &explanations);
-  AddExplanations(kSecurityStateWarning,
-                  security_style_explanations.warning_explanations,
+  AddExplanations(kSecurityStateNeutral,
+                  security_style_explanations.unauthenticated_explanations,
                   &explanations);
   AddExplanations(kSecurityStateSecure,
                   security_style_explanations.secure_explanations,

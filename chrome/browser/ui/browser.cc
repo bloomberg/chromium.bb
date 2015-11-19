@@ -1348,7 +1348,7 @@ content::SecurityStyle Browser::GetSecurityStyle(
             security_info.cert_id));
   } else if (security_info.sha1_deprecation_status ==
              SecurityStateModel::DEPRECATED_SHA1_MINOR) {
-    security_style_explanations->warning_explanations.push_back(
+    security_style_explanations->unauthenticated_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_MINOR_SHA1),
             l10n_util::GetStringUTF8(IDS_MINOR_SHA1_DESCRIPTION),
@@ -1377,7 +1377,8 @@ content::SecurityStyle Browser::GetSecurityStyle(
         security_info.cert_id);
 
     if (net::IsCertStatusMinorError(security_info.cert_status))
-      security_style_explanations->warning_explanations.push_back(explanation);
+      security_style_explanations->unauthenticated_explanations.push_back(
+          explanation);
     else
       security_style_explanations->broken_explanations.push_back(explanation);
   } else {
