@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_VPX_VIDEO_DECODER_H_
 
 #include "base/callback.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -23,12 +24,14 @@ namespace media {
 
 // Libvpx video decoder wrapper.
 // Note: VpxVideoDecoder accepts only YV12A VP8 content or VP9 content. This is
-// done to avoid usurping FFmpeg for all vp8 decoding, because the FFmpeg VP8
+// done to avoid usurping FFmpeg for all VP8 decoding, because the FFmpeg VP8
 // decoder is faster than the libvpx VP8 decoder.
+// Alpha channel, if any, is sent in the DecoderBuffer's side_data() as a frame
+// on its own of which the Y channel is taken [1].
+// [1] http://wiki.webmproject.org/alpha-channel
 class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
-  explicit VpxVideoDecoder(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  VpxVideoDecoder();
   ~VpxVideoDecoder() override;
 
   // VideoDecoder implementation.
@@ -57,29 +60,28 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   void CloseDecoder();
 
-  void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer);
+  // Try to decode |buffer| into |video_frame|. Return true if all decoding
+  // succeeded. Note that decoding can succeed and still |video_frame| be
+  // nullptr if there has been a partial decoding.
   bool VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
                  scoped_refptr<VideoFrame>* video_frame);
 
-  void CopyVpxImageTo(const vpx_image* vpx_image,
-                      const struct vpx_image* vpx_image_alpha,
-                      scoped_refptr<VideoFrame>* video_frame);
+  void CopyVpxImageToVideoFrame(const struct vpx_image* vpx_image,
+                                scoped_refptr<VideoFrame>* video_frame);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::ThreadChecker thread_checker_;
 
   DecoderState state_;
 
   OutputCB output_cb_;
-
-  // TODO(xhwang): Merge DecodeBuffer() into Decode() and remove this.
-  DecodeCB decode_cb_;
 
   VideoDecoderConfig config_;
 
   vpx_codec_ctx* vpx_codec_;
   vpx_codec_ctx* vpx_codec_alpha_;
 
-  // Memory pool used for VP9 decoding.
+  // |memory_pool_| is a single-threaded memory pool used for VP9 decoding
+  // with no alpha. |frame_pool_| is used for all other cases.
   class MemoryPool;
   scoped_refptr<MemoryPool> memory_pool_;
 

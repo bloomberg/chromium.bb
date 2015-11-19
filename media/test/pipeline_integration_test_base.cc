@@ -231,8 +231,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(const std::string& filename) {
 scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   ScopedVector<VideoDecoder> video_decoders;
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(
-      new VpxVideoDecoder(message_loop_.task_runner()));
+  video_decoders.push_back(new VpxVideoDecoder());
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 #if !defined(MEDIA_DISABLE_FFMPEG)

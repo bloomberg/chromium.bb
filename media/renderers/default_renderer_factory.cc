@@ -78,7 +78,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     video_decoders.push_back(new GpuVideoDecoder(gpu_factories_));
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new VpxVideoDecoder(media_task_runner));
+  video_decoders.push_back(new VpxVideoDecoder());
 #endif
 
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
