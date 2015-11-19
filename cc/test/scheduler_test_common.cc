@@ -84,6 +84,9 @@ FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 
 void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
   begin_main_frame_to_commit_duration_ = duration;
+  begin_main_frame_queue_duration_critical_ = duration;
+  begin_main_frame_queue_duration_not_critical_ = duration;
+  begin_main_frame_start_to_commit_duration_ = duration;
   commit_to_ready_to_activate_duration_ = duration;
   prepare_tiles_duration_ = duration;
   activate_duration_ = duration;
@@ -93,6 +96,22 @@ void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
 void FakeCompositorTimingHistory::SetBeginMainFrameToCommitDurationEstimate(
     base::TimeDelta duration) {
   begin_main_frame_to_commit_duration_ = duration;
+}
+
+void FakeCompositorTimingHistory::
+    SetBeginMainFrameQueueDurationCriticalEstimate(base::TimeDelta duration) {
+  begin_main_frame_queue_duration_critical_ = duration;
+}
+
+void FakeCompositorTimingHistory::
+    SetBeginMainFrameQueueDurationNotCriticalEstimate(
+        base::TimeDelta duration) {
+  begin_main_frame_queue_duration_not_critical_ = duration;
+}
+
+void FakeCompositorTimingHistory::
+    SetBeginMainFrameStartToCommitDurationEstimate(base::TimeDelta duration) {
+  begin_main_frame_start_to_commit_duration_ = duration;
 }
 
 void FakeCompositorTimingHistory::SetCommitToReadyToActivateDurationEstimate(
@@ -118,6 +137,24 @@ void FakeCompositorTimingHistory::SetDrawDurationEstimate(
 base::TimeDelta
 FakeCompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
   return begin_main_frame_to_commit_duration_;
+}
+
+base::TimeDelta
+FakeCompositorTimingHistory::BeginMainFrameQueueDurationCriticalEstimate()
+    const {
+  return begin_main_frame_queue_duration_critical_;
+}
+
+base::TimeDelta
+FakeCompositorTimingHistory::BeginMainFrameQueueDurationNotCriticalEstimate()
+    const {
+  return begin_main_frame_queue_duration_not_critical_;
+}
+
+base::TimeDelta
+FakeCompositorTimingHistory::BeginMainFrameStartToCommitDurationEstimate()
+    const {
+  return begin_main_frame_start_to_commit_duration_;
 }
 
 base::TimeDelta

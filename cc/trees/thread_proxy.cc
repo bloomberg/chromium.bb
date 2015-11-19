@@ -1069,11 +1069,11 @@ void ThreadProxy::RenewTreePriority() {
     impl().smoothness_priority_expiration_notifier.Schedule();
 
   // We use the same priority for both trees by default.
-  TreePriority priority = SAME_PRIORITY_FOR_BOTH_TREES;
+  TreePriority tree_priority = SAME_PRIORITY_FOR_BOTH_TREES;
 
   // Smoothness takes priority if we have an expiration for it scheduled.
   if (impl().smoothness_priority_expiration_notifier.HasPendingNotification())
-    priority = SMOOTHNESS_TAKES_PRIORITY;
+    tree_priority = SMOOTHNESS_TAKES_PRIORITY;
 
   // New content always takes priority when there is an invalid viewport size or
   // ui resources have been evicted.
@@ -1084,18 +1084,21 @@ void ThreadProxy::RenewTreePriority() {
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.
     impl().layer_tree_host_impl->SetRequiresHighResToDraw();
-    priority = NEW_CONTENT_TAKES_PRIORITY;
+    tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   }
 
-  impl().layer_tree_host_impl->SetTreePriority(priority);
+  impl().layer_tree_host_impl->SetTreePriority(tree_priority);
 
   // Only put the scheduler in impl latency prioritization mode if we don't
   // have a scroll listener. This gives the scroll listener a better chance of
   // handling scroll updates within the same frame. The tree itself is still
   // kept in prefer smoothness mode to allow checkerboarding.
-  impl().scheduler->SetImplLatencyTakesPriority(
-      priority == SMOOTHNESS_TAKES_PRIORITY &&
-      !impl().layer_tree_host_impl->scroll_affects_scroll_handler());
+  ScrollHandlerState scroll_handler_state =
+      impl().layer_tree_host_impl->scroll_affects_scroll_handler()
+          ? ScrollHandlerState::SCROLL_AFFECTS_SCROLL_HANDLER
+          : ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER;
+  impl().scheduler->SetTreePrioritiesAndScrollState(tree_priority,
+                                                    scroll_handler_state);
 
   // Notify the the client of this compositor via the output surface.
   // TODO(epenner): Route this to compositor-thread instead of output-surface
@@ -1103,7 +1106,8 @@ void ThreadProxy::RenewTreePriority() {
   if (impl().layer_tree_host_impl->output_surface()) {
     impl()
         .layer_tree_host_impl->output_surface()
-        ->UpdateSmoothnessTakesPriority(priority == SMOOTHNESS_TAKES_PRIORITY);
+        ->UpdateSmoothnessTakesPriority(tree_priority ==
+                                        SMOOTHNESS_TAKES_PRIORITY);
   }
 }
 

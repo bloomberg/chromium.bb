@@ -20,6 +20,7 @@
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
+#include "cc/tiles/tile_priority.h"
 
 namespace base {
 namespace trace_event {
@@ -98,7 +99,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void DidSwapBuffers();
   void DidSwapBuffersComplete();
 
-  void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
+  void SetTreePrioritiesAndScrollState(TreePriority tree_priority,
+                                       ScrollHandlerState scroll_handler_state);
 
   void NotifyReadyToCommit();
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
@@ -125,7 +127,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
     return !begin_impl_frame_deadline_task_.IsCancelled();
   }
   bool ImplLatencyTakesPriority() const {
-    return state_machine_.impl_latency_takes_priority();
+    return state_machine_.ImplLatencyTakesPriority();
   }
 
   // Pass in a main_thread_start_time of base::TimeTicks() if it is not
@@ -200,9 +202,13 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void DrawAndSwapForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
-  bool ShouldRecoverMainLatency(const BeginFrameArgs& args) const;
-  bool ShouldRecoverImplLatency(const BeginFrameArgs& args) const;
-  bool CanCommitAndActivateBeforeDeadline(const BeginFrameArgs& args) const;
+  bool ShouldRecoverMainLatency(const BeginFrameArgs& args,
+                                bool can_activate_before_deadline) const;
+  bool ShouldRecoverImplLatency(const BeginFrameArgs& args,
+                                bool can_activate_before_deadline) const;
+  bool CanBeginMainFrameAndActivateBeforeDeadline(
+      const BeginFrameArgs& args,
+      base::TimeDelta bmf_to_activate_estimate) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
   void BeginRetroFrame();

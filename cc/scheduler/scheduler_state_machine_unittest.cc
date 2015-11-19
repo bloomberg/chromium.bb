@@ -1901,7 +1901,9 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   // Verify the deadline is not triggered early until we enter
   // prefer impl latency mode.
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
-  state.SetImplLatencyTakesPriority(true);
+  state.SetTreePrioritiesAndScrollState(
+      SMOOTHNESS_TAKES_PRIORITY,
+      ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 
   // Trigger the deadline.

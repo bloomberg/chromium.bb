@@ -51,7 +51,10 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       pending_tree_is_ready_for_activation_(false),
       active_tree_needs_first_draw_(false),
       did_create_and_initialize_first_output_surface_(false),
-      impl_latency_takes_priority_(false),
+      tree_priority_(NEW_CONTENT_TAKES_PRIORITY),
+      scroll_handler_state_(
+          ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER),
+      critical_begin_main_frame_to_activate_is_fast_(true),
       main_thread_missed_last_deadline_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
       children_need_begin_frames_(false),
@@ -150,6 +153,17 @@ const char* SchedulerStateMachine::ForcedRedrawOnTimeoutStateToString(
   return "???";
 }
 
+const char* ScrollHandlerStateToString(ScrollHandlerState state) {
+  switch (state) {
+    case ScrollHandlerState::SCROLL_AFFECTS_SCROLL_HANDLER:
+      return "SCROLL_AFFECTS_SCROLL_HANDLER";
+    case ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER:
+      return "SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER";
+  }
+  NOTREACHED();
+  return "???";
+}
+
 const char* SchedulerStateMachine::ActionToString(Action action) {
   switch (action) {
     case ACTION_NONE:
@@ -240,8 +254,11 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("wait_for_ready_to_draw", wait_for_ready_to_draw_);
   state->SetBoolean("did_create_and_initialize_first_output_surface",
                     did_create_and_initialize_first_output_surface_);
-  state->SetBoolean("impl_latency_takes_priority",
-                    impl_latency_takes_priority_);
+  state->SetString("tree_priority", TreePriorityToString(tree_priority_));
+  state->SetString("scroll_handler_state",
+                   ScrollHandlerStateToString(scroll_handler_state_));
+  state->SetBoolean("critical_begin_main_frame_to_activate_is_fast_",
+                    critical_begin_main_frame_to_activate_is_fast_);
   state->SetBoolean("main_thread_missed_last_deadline",
                     main_thread_missed_last_deadline_);
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
@@ -435,8 +452,8 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
 
   // Don't send BeginMainFrame early if we are prioritizing the active tree
-  // because of impl_latency_takes_priority_.
-  if (impl_latency_takes_priority_ &&
+  // because of ImplLatencyTakesPriority.
+  if (ImplLatencyTakesPriority() &&
       (has_pending_tree_ || active_tree_needs_first_draw_)) {
     return false;
   }
@@ -472,7 +489,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     // SwapAck throttle the BeginMainFrames unless we just swapped to
     // potentially improve impl-thread latency over main-thread throughput.
     // TODO(brianderson): Remove this restriction to improve throughput or
-    // make it conditional on impl_latency_takes_priority_.
+    // make it conditional on ImplLatencyTakesPriority.
     bool just_swapped_in_deadline =
         begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
         did_perform_swap_in_last_draw_;
@@ -903,8 +920,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
       !has_pending_tree_)
     return true;
 
-  // Prioritize impl-thread draws in impl_latency_takes_priority_ mode.
-  if (impl_latency_takes_priority_)
+  // Prioritize impl-thread draws in ImplLatencyTakesPriority mode.
+  if (ImplLatencyTakesPriority())
     return true;
 
   return false;
@@ -976,9 +993,31 @@ void SchedulerStateMachine::DidSwapBuffersComplete() {
   pending_swaps_--;
 }
 
-void SchedulerStateMachine::SetImplLatencyTakesPriority(
-    bool impl_latency_takes_priority) {
-  impl_latency_takes_priority_ = impl_latency_takes_priority;
+void SchedulerStateMachine::SetTreePrioritiesAndScrollState(
+    TreePriority tree_priority,
+    ScrollHandlerState scroll_handler_state) {
+  tree_priority_ = tree_priority;
+  scroll_handler_state_ = scroll_handler_state;
+}
+
+void SchedulerStateMachine::SetCriticalBeginMainFrameToActivateIsFast(
+    bool is_fast) {
+  critical_begin_main_frame_to_activate_is_fast_ = is_fast;
+}
+
+bool SchedulerStateMachine::ImplLatencyTakesPriority() const {
+  // Attempt to synchronize with the main thread if it has a scroll listener
+  // and is fast.
+  if (ScrollHandlerState::SCROLL_AFFECTS_SCROLL_HANDLER ==
+          scroll_handler_state_ &&
+      critical_begin_main_frame_to_activate_is_fast_)
+    return false;
+
+  // Don't wait for the main thread if we are prioritizing smoothness.
+  if (SMOOTHNESS_TAKES_PRIORITY == tree_priority_)
+    return true;
+
+  return false;
 }
 
 void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {

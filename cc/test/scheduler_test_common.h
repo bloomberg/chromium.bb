@@ -169,12 +169,20 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   void SetAllEstimatesTo(base::TimeDelta duration);
 
   void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameQueueDurationCriticalEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameQueueDurationNotCriticalEstimate(
+      base::TimeDelta duration);
+  void SetBeginMainFrameStartToCommitDurationEstimate(base::TimeDelta duration);
   void SetCommitToReadyToActivateDurationEstimate(base::TimeDelta duration);
   void SetPrepareTilesDurationEstimate(base::TimeDelta duration);
   void SetActivateDurationEstimate(base::TimeDelta duration);
   void SetDrawDurationEstimate(base::TimeDelta duration);
 
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() const override;
+  base::TimeDelta BeginMainFrameQueueDurationCriticalEstimate() const override;
+  base::TimeDelta BeginMainFrameQueueDurationNotCriticalEstimate()
+      const override;
+  base::TimeDelta BeginMainFrameStartToCommitDurationEstimate() const override;
   base::TimeDelta CommitToReadyToActivateDurationEstimate() const override;
   base::TimeDelta PrepareTilesDurationEstimate() const override;
   base::TimeDelta ActivateDurationEstimate() const override;
@@ -188,6 +196,9 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
       rendering_stats_instrumentation_owned_;
 
   base::TimeDelta begin_main_frame_to_commit_duration_;
+  base::TimeDelta begin_main_frame_queue_duration_critical_;
+  base::TimeDelta begin_main_frame_queue_duration_not_critical_;
+  base::TimeDelta begin_main_frame_start_to_commit_duration_;
   base::TimeDelta commit_to_ready_to_activate_duration_;
   base::TimeDelta prepare_tiles_duration_;
   base::TimeDelta activate_duration_;
@@ -230,6 +241,14 @@ class TestScheduler : public Scheduler {
 
   base::TimeDelta BeginImplFrameInterval() {
     return begin_impl_frame_tracker_.Interval();
+  }
+
+  // Note: This setting will be overriden on the next BeginFrame in the
+  // scheduler. To control the value it gets on the next BeginFrame
+  // Pass in a fake CompositorTimingHistory that indicates BeginMainFrame
+  // to Activation is fast.
+  void SetCriticalBeginMainFrameToActivateIsFast(bool is_fast) {
+    state_machine_.SetCriticalBeginMainFrameToActivateIsFast(is_fast);
   }
 
  protected:

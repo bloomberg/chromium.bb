@@ -14,6 +14,7 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
+#include "cc/tiles/tile_priority.h"
 
 namespace base {
 namespace trace_event {
@@ -24,6 +25,12 @@ class Value;
 }
 
 namespace cc {
+
+enum class ScrollHandlerState {
+  SCROLL_AFFECTS_SCROLL_HANDLER,
+  SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER,
+};
+const char* ScrollHandlerStateToString(ScrollHandlerState state);
 
 // The SchedulerStateMachine decides how to coordinate main thread activites
 // like painting/running javascript with rendering and input activities on the
@@ -190,10 +197,15 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Indicates whether to prioritize impl thread latency (i.e., animation
   // smoothness) over new content activation.
-  void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
-  bool impl_latency_takes_priority() const {
-    return impl_latency_takes_priority_;
-  }
+  void SetTreePrioritiesAndScrollState(TreePriority tree_priority,
+                                       ScrollHandlerState scroll_handler_state);
+
+  // Indicates if the main thread will likely respond within 1 vsync.
+  void SetCriticalBeginMainFrameToActivateIsFast(bool is_fast);
+
+  // A function of SetTreePrioritiesAndScrollState and
+  // SetCriticalBeginMainFrameToActivateIsFast.
+  bool ImplLatencyTakesPriority() const;
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(DrawResult result);
@@ -330,7 +342,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool pending_tree_is_ready_for_activation_;
   bool active_tree_needs_first_draw_;
   bool did_create_and_initialize_first_output_surface_;
-  bool impl_latency_takes_priority_;
+  TreePriority tree_priority_;
+  ScrollHandlerState scroll_handler_state_;
+  bool critical_begin_main_frame_to_activate_is_fast_;
   bool main_thread_missed_last_deadline_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool children_need_begin_frames_;
