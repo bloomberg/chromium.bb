@@ -83,9 +83,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   media::AudioParameters hardware_params =
       sink->GetOutputDevice()->GetOutputParameters();
 
-// On ChromeOS we can rely on the playback device to handle resampling, so
-// don't waste cycles on it here.
-#if defined(OS_CHROMEOS)
+// On ChromeOS and Android we can rely on the playback device to handle
+// resampling, so don't waste cycles on it here.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   int sample_rate = params.sample_rate();
 #else
   int sample_rate = hardware_params.sample_rate();

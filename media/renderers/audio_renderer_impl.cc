@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_hardware_config.h"
@@ -357,7 +358,17 @@ void AudioRendererImpl::Initialize(
         // (http://crbug.com/379288), platform specific issues around channel
         // layouts (http://crbug.com/266674), and unnecessary upmixing overhead.
         stream->audio_decoder_config().channel_layout(),
-        hw_params.sample_rate(), hw_params.bits_per_sample(),
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+        // On ChromeOS and Android let the OS level resampler handle resampling
+        // unless the initial sample rate is too low; this allows support for
+        // sample rate adaptations where necessary.
+        stream->audio_decoder_config().samples_per_second() < 44100
+            ? hw_params.sample_rate()
+            : stream->audio_decoder_config().samples_per_second(),
+#else
+        hw_params.sample_rate(),
+#endif
+        hw_params.bits_per_sample(),
         hardware_config_.GetHighLatencyBufferSize());
   }
 
