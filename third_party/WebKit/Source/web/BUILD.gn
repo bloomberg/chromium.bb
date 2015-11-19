@@ -21,13 +21,13 @@ component("web") {
   output_name = "blink_web"
 
   deps = [
-    "//skia",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",
-    "//third_party/angle:translator",
+    "//skia",
     "//third_party/icu",
     "//v8",
+    "//third_party/angle:translator",
   ]
 
   include_dirs = [ "//third_party/skia/include/utils" ]
@@ -105,13 +105,12 @@ test("webkit_unit_tests") {
     ":test_support",
     ":web",
     "//base",
-    "//base:i18n",
     "//base/test:test_support",
+    "//base:i18n",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/platform:test_support",
-    "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
     "//third_party/libwebp",
     "//third_party/zlib",

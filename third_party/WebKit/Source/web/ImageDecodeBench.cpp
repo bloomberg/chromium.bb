@@ -25,7 +25,6 @@ http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 #include "wtf/OwnPtr.h"
@@ -361,8 +360,18 @@ int main(int argc, char* argv[])
 
     // Create a web platform without V8.
 
-    class WebPlatform : public TestingPlatformSupport {
+    class WebPlatform : public blink::Platform {
     public:
+        const unsigned char* getTraceCategoryEnabledFlag(const char*) override
+        {
+            return reinterpret_cast<const unsigned char *>("nope-none-nada");
+        }
+
+        void cryptographicallyRandomValues(unsigned char*, size_t) override
+        {
+            RELEASE_ASSERT_NOT_REACHED();
+        }
+
         void screenColorProfile(WebVector<char>* profile) override
         {
             getScreenColorProfile(profile); // Returns a whacked color profile.

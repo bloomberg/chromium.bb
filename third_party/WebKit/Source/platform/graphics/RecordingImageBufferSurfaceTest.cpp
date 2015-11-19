@@ -9,7 +9,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -237,13 +236,24 @@ namespace {
 // for the current thread. The Mock thread is capable of queuing a single non-delayed task
 // and registering a single task observer. The run loop exits immediately after running
 // the single task.
-
-class CurrentThreadPlatformMock : public TestingPlatformSupport {
+class AutoInstallCurrentThreadPlatformMock {
 public:
-    CurrentThreadPlatformMock() { }
-    WebThread* currentThread() override { return &m_currentThread; }
+    AutoInstallCurrentThreadPlatformMock()
+    {
+        m_oldPlatform = Platform::current();
+        Platform::initialize(&m_mockPlatform);
+    }
 
-    void enterRunLoop() { m_currentThread.enterRunLoop(); }
+    ~AutoInstallCurrentThreadPlatformMock()
+    {
+        Platform::initialize(m_oldPlatform);
+    }
+
+    void enterRunLoop()
+    {
+        m_mockPlatform.enterRunLoop();
+    }
+
 private:
     class MockWebTaskRunner : public WebTaskRunner {
     public:
@@ -325,7 +335,22 @@ private:
         TaskObserver* m_taskObserver;
     };
 
-    CurrentThreadMock m_currentThread;
+    class CurrentThreadPlatformMock : public Platform {
+    public:
+        CurrentThreadPlatformMock() { }
+        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
+        {
+            RELEASE_ASSERT_NOT_REACHED();
+        }
+        WebThread* currentThread() override { return &m_currentThread; }
+
+        void enterRunLoop() { m_currentThread.enterRunLoop(); }
+    private:
+        CurrentThreadMock m_currentThread;
+    };
+
+    CurrentThreadPlatformMock m_mockPlatform;
+    Platform* m_oldPlatform;
 };
 
 } // anonymous namespace
@@ -341,7 +366,7 @@ class TestWrapperTask_ ## TEST_METHOD : public WebTaskRunner::Task {            
 
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
-        CurrentThreadPlatformMock ctpm;                                                                   \
+        AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
         Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
         ctpm.enterRunLoop();                                      \
     }
