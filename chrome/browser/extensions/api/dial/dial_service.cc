@@ -530,7 +530,7 @@ void DialServiceImpl::BindAndAddSocket(const IPAddressNumber& bind_ip_address) {
   scoped_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
   if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
                                        net_log_source_))
-    dial_sockets_.push_back(dial_socket.release());
+    dial_sockets_.push_back(dial_socket.Pass());
 }
 
 scoped_ptr<DialServiceImpl::DialSocket> DialServiceImpl::CreateDialSocket() {
@@ -552,12 +552,9 @@ void DialServiceImpl::SendOneRequest() {
   num_requests_sent_++;
   VLOG(2) << "Sending request " << num_requests_sent_ << "/"
           << max_requests_;
-  for (ScopedVector<DialServiceImpl::DialSocket>::iterator iter =
-           dial_sockets_.begin();
-       iter != dial_sockets_.end();
-       ++iter) {
-    if (!((*iter)->IsClosed()))
-      (*iter)->SendOneRequest(send_address_, send_buffer_);
+  for (const auto& socket : dial_sockets_) {
+    if (!socket->IsClosed())
+      socket->SendOneRequest(send_address_, send_buffer_);
   }
 }
 
@@ -618,10 +615,8 @@ void DialServiceImpl::FinishDiscovery() {
 }
 
 bool DialServiceImpl::HasOpenSockets() {
-  for (ScopedVector<DialSocket>::const_iterator iter = dial_sockets_.begin();
-       iter != dial_sockets_.end();
-       ++iter) {
-    if (!((*iter)->IsClosed()))
+  for (const auto& socket : dial_sockets_) {
+    if (!socket->IsClosed())
       return true;
   }
   return false;

@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -244,7 +244,7 @@ class DialServiceImpl : public DialService,
 
   // DialSockets for each network interface whose ip address was
   // successfully bound.
-  ScopedVector<DialSocket> dial_sockets_;
+  std::vector<scoped_ptr<DialSocket>> dial_sockets_;
 
   // The NetLog for this service.
   net::NetLog* net_log_;
