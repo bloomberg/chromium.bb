@@ -9,7 +9,6 @@
 #include <pk11pub.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "crypto/nss_util.h"
 
 #if defined(USE_NSS_CERTS)
@@ -38,7 +37,7 @@ ScopedSECItem MakeIDFromSPKI(const std::vector<uint8_t>& input) {
   // First, decode and save the public key.
   SECItem key_der;
   key_der.type = siBuffer;
-  key_der.data = const_cast<unsigned char*>(vector_as_array(&input));
+  key_der.data = const_cast<unsigned char*>(input.data());
   key_der.len = input.size();
 
   ScopedPublicKeyInfo spki(SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der));
@@ -94,7 +93,7 @@ ScopedSECKEYPrivateKey ImportNSSKeyFromPrivateKeyInfo(
   // Excess data is illegal, but NSS silently accepts it, so first ensure that
   // |input| consists of a single ASN.1 element.
   SECItem input_item;
-  input_item.data = const_cast<unsigned char*>(vector_as_array(&input));
+  input_item.data = const_cast<unsigned char*>(input.data());
   input_item.len = input.size();
   SECItem der_private_key_info;
   SECStatus rv =

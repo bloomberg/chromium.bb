@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -79,9 +78,9 @@ class CloudPolicyValidatorTest : public testing::Test {
 
     // Convert from bytes to string format (which is what ValidateSignature()
     // takes).
-    std::string public_key = std::string(
-        reinterpret_cast<const char*>(vector_as_array(&public_key_bytes)),
-        public_key_bytes.size());
+    std::string public_key =
+        std::string(reinterpret_cast<const char*>(public_key_bytes.data()),
+                    public_key_bytes.size());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
         policy_response.Pass(), base::ThreadTaskRunnerHandle::Get());

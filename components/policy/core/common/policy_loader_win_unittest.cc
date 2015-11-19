@@ -589,10 +589,9 @@ void PRegTestHarness::AppendRecordToPRegFile(const base::string16& path,
   buffer.insert(buffer.end(), data, data + size);
   AppendChars(&buffer, L"]");
 
-  ASSERT_TRUE(base::AppendToFile(
-      preg_file_path_,
-      reinterpret_cast<const char*>(vector_as_array(&buffer)),
-      buffer.size()));
+  ASSERT_TRUE(base::AppendToFile(preg_file_path_,
+                                 reinterpret_cast<const char*>(buffer.data()),
+                                 buffer.size()));
 }
 
 void PRegTestHarness::AppendDWORDToPRegFile(const base::string16& path,
@@ -613,7 +612,7 @@ void PRegTestHarness::AppendStringToPRegFile(const base::string16& path,
   data.push_back(base::ByteSwapToLE16(L'\0'));
 
   AppendRecordToPRegFile(path, key, REG_SZ, data.size() * sizeof(base::char16),
-                         reinterpret_cast<uint8*>(vector_as_array(&data)));
+                         reinterpret_cast<uint8*>(data.data()));
 }
 
 void PRegTestHarness::AppendPolicyToPRegFile(const base::string16& path,

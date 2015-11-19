@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -106,7 +106,7 @@ std::string DecodePRegStringValue(const std::vector<uint8>& data) {
     return std::string();
 
   const base::char16* chars =
-      reinterpret_cast<const base::char16*>(vector_as_array(&data));
+      reinterpret_cast<const base::char16*>(data.data());
   base::string16 result;
   std::transform(chars, chars + len - 1, std::back_inserter(result),
                  std::ptr_fun(base::ByteSwapToLE16));
@@ -125,7 +125,7 @@ bool DecodePRegValue(uint32 type,
     case REG_DWORD_LITTLE_ENDIAN:
     case REG_DWORD_BIG_ENDIAN:
       if (data.size() == sizeof(uint32)) {
-        uint32 val = *reinterpret_cast<const uint32*>(vector_as_array(&data));
+        uint32 val = *reinterpret_cast<const uint32*>(data.data());
         if (type == REG_DWORD_BIG_ENDIAN)
           val = base::NetToHost32(val);
         else
@@ -290,7 +290,7 @@ bool ReadFile(const base::FilePath& file_path,
       if (size > kMaxPRegFileSize)
         break;
       data.resize(size);
-      if (!ReadFieldBinary(&cursor, end, size, vector_as_array(&data)))
+      if (!ReadFieldBinary(&cursor, end, size, data.data()))
         break;
       current = NextChar(&cursor, end);
     }

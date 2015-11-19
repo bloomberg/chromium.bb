@@ -290,6 +290,14 @@ Parameter pack</a></td>
 </tr>
 
 <tr>
+<td>Access to underlying <code>std::vector</code> data</td>
+<td><code>v.data()</code></td>
+<td>Returns a pointer to a <code>std::vector</code>'s underlying data, accounting for empty vectors.</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/vector/data">std::vector::data</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/16V7fmtbzok">Discussion thread</a>.</td>
+</tr>
+
+<tr>
 <td>Containers containing movable types</td>
 <td><code>vector&lt;scoped_ptr&gt;</code></td>
 <td>Enables containers that contain move-only types like <code>scoped_ptr</code></td>

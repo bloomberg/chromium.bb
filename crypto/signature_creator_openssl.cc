@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
@@ -70,7 +69,7 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
 
   unsigned int len = 0;
   if (!RSA_sign(ToOpenSSLDigestType(hash_alg), data, data_len,
-                vector_as_array(signature), &len, rsa_key.get())) {
+                signature->data(), &len, rsa_key.get())) {
     signature->clear();
     return false;
   }
@@ -103,7 +102,7 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   signature->resize(len);
 
   // Sign it.
-  if (!EVP_DigestSignFinal(sign_context_, vector_as_array(signature), &len)) {
+  if (!EVP_DigestSignFinal(sign_context_, signature->data(), &len)) {
     signature->clear();
     return false;
   }

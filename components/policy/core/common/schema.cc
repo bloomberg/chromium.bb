@@ -330,12 +330,12 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
     return NULL;
 
   SchemaData* data = &storage->schema_data_;
-  data->schema_nodes = vector_as_array(&storage->schema_nodes_);
-  data->property_nodes = vector_as_array(&storage->property_nodes_);
-  data->properties_nodes = vector_as_array(&storage->properties_nodes_);
-  data->restriction_nodes = vector_as_array(&storage->restriction_nodes_);
-  data->int_enums = vector_as_array(&storage->int_enums_);
-  data->string_enums = vector_as_array(&storage->string_enums_);
+  data->schema_nodes = storage->schema_nodes_.data();
+  data->property_nodes = storage->property_nodes_.data();
+  data->properties_nodes = storage->properties_nodes_.data();
+  data->restriction_nodes = storage->restriction_nodes_.data();
+  data->int_enums = storage->int_enums_.data();
+  data->string_enums = storage->string_enums_.data();
   return storage;
 }
 

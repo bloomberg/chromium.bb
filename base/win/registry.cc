@@ -569,7 +569,7 @@ bool RegistryValueIterator::Read() {
     value_size_ = static_cast<DWORD>((value_.size() - 1) * sizeof(wchar_t));
     LONG result = ::RegEnumValue(
         key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
-        reinterpret_cast<BYTE*>(vector_as_array(&value_)), &value_size_);
+        reinterpret_cast<BYTE*>(value_.data()), &value_size_);
 
     if (result == ERROR_MORE_DATA) {
       // Registry key names are limited to 255 characters and fit within
@@ -585,7 +585,7 @@ bool RegistryValueIterator::Read() {
       name_size = name_size == capacity ? MAX_REGISTRY_NAME_SIZE : capacity;
       result = ::RegEnumValue(
           key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
-          reinterpret_cast<BYTE*>(vector_as_array(&value_)), &value_size_);
+          reinterpret_cast<BYTE*>(value_.data()), &value_size_);
     }
 
     if (result == ERROR_SUCCESS) {

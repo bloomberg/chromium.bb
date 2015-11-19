@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 
@@ -119,8 +118,7 @@ void SignatureVerifier::VerifyUpdate(const uint8* data_part,
 bool SignatureVerifier::VerifyFinal() {
   DCHECK(verify_context_);
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(),
-                                 vector_as_array(&signature_),
+  int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(), signature_.data(),
                                  signature_.size());
   DCHECK_EQ(static_cast<int>(!!rv), rv);
   Reset();

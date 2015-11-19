@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/stl_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_creator.h"
 
@@ -217,7 +216,7 @@ void PolicyBuilder::Build() {
     // Add the new public key.
     std::vector<uint8> raw_new_public_signing_key;
     CHECK(policy_signing_key->ExportPublicKey(&raw_new_public_signing_key));
-    policy_.set_new_public_key(vector_as_array(&raw_new_public_signing_key),
+    policy_.set_new_public_key(raw_new_public_signing_key.data(),
                                raw_new_public_signing_key.size());
 
     policy_.set_new_public_key_verification_signature(
@@ -301,9 +300,8 @@ void PolicyBuilder::SignData(const std::string& data,
                             data.size());
   std::vector<uint8> signature_bytes;
   CHECK(signature_creator->Final(&signature_bytes));
-  signature->assign(
-      reinterpret_cast<const char*>(vector_as_array(&signature_bytes)),
-      signature_bytes.size());
+  signature->assign(reinterpret_cast<const char*>(signature_bytes.data()),
+                    signature_bytes.size());
 }
 
 template<>

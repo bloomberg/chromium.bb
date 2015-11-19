@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/stl_util.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 
@@ -180,7 +179,7 @@ class BASE_EXPORT RegistryValueIterator {
   void operator++();
 
   const wchar_t* Name() const { return name_.c_str(); }
-  const wchar_t* Value() const { return vector_as_array(&value_); }
+  const wchar_t* Value() const { return value_.data(); }
   // ValueSize() is in bytes.
   DWORD ValueSize() const { return value_size_; }
   DWORD Type() const { return type_; }
