@@ -3427,3 +3427,13 @@
    fun:vp9_pick_inter_mode
    fun:nonrd_pick_sb_modes
 }
+{
+   bug_558179
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content27ServiceWorkerContextWrapperC1EPNS_14BrowserContextE
+   fun:_ZN7content20StoragePartitionImpl6CreateEPNS_14BrowserContextEbRKN4base8FilePathE
+   fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
+   fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContextERKSsS4_b
+   fun:_ZN7content14BrowserContext26GetStoragePartitionForSiteEPS0_RK4GURL
+}
