@@ -649,8 +649,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Right to Left
       </message>
 
-      <!-- content area context menus. Android does not use it -->
-      <if expr="not is_android">
+      <!-- content area context menus. -->
+      <if expr="not is_android or use_aura">
         <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
           I&amp;nspect
         </message>
@@ -10041,8 +10041,8 @@ I don't think this site should be blocked!
         Platform
       </message>
 
-      <!-- chrome://settings. Android uses native UI for settings -->
-      <if expr="not is_android">
+      <!-- chrome://settings. Non-Aura Android uses native UI for settings -->
+      <if expr="not is_android or use_aura">
         <if expr="chromeos">
           <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
             Internet
@@ -14106,7 +14106,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </if>
 
       <!-- Media Galleries. -->
-      <if expr="not is_android">
+      <if expr="not is_android or use_aura">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">
           Media-File Permissions for "<ph name="EXTENSION">$1<ex>Photo Editor</ex></ph>"
         </message>

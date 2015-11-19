@@ -55,7 +55,8 @@ namespace chrome {
 struct NavigateParams {
 #if defined(OS_ANDROID)
   explicit NavigateParams(content::WebContents* a_target_contents);
-#else
+#endif
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   NavigateParams(Browser* browser,
                  const GURL& a_url,
                  ui::PageTransition a_transition);
@@ -205,7 +206,7 @@ struct NavigateParams {
   // Default is IGNORE.
   RefBehavior ref_behavior;
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
   //       it is not compatible with the operation being performed. This can be

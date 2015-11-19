@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -64,10 +65,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#endif
-
-#if defined(ENABLE_APP_LIST)
-#include "chrome/grit/chromium_strings.h"
 #endif
 
 #if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)

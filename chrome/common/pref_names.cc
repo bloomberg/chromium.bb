@@ -1178,7 +1178,7 @@ const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 // in order to use Easy Unlock.
 const char kEasyUnlockProximityRequired[] = "easy_unlock.proximity_required";
 
-#if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(ENABLE_EXTENSIONS)
 // These device IDs are used by the copresence component, to uniquely identify
 // this device to the server. For privacy, authenticated and unauthenticated
 // calls are made using different device IDs.
