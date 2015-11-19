@@ -348,13 +348,19 @@ template("java_cpp_enum") {
                            ])
 
     script = "//build/android/gyp/java_cpp_enum.py"
+    depfile = "$target_gen_dir/$target_name.d"
 
     _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
     _rebased_srcjar_path = rebase_path(_srcjar_path, root_build_dir)
     _rebased_sources = rebase_path(invoker.sources, root_build_dir)
 
-    args = [ "--srcjar=$_rebased_srcjar_path" ] + _rebased_sources
+    args = [
+             "--depfile",
+             rebase_path(depfile, root_build_dir),
+             "--srcjar=$_rebased_srcjar_path",
+           ] + _rebased_sources
     outputs = [
+      depfile,
       _srcjar_path,
     ]
   }
