@@ -45,13 +45,8 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
 
 // Requests before the load event should be bundled into one bubble.
 // http://crbug.com/512849 flaky
-#if defined(OS_WIN)
-#define MAYBE_RequestsBeforeLoad DISABLED_RequestsBeforeLoad
-#else
-#define MAYBE_RequestsBeforeLoad RequestsBeforeLoad
-#endif
 IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
-                       MAYBE_RequestsBeforeLoad) {
+                       DISABLED_RequestsBeforeLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
