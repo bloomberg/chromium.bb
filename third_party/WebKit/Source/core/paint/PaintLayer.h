@@ -616,6 +616,9 @@ public:
     IntSize previousScrollOffsetAccumulationForPainting() const { return m_previousScrollOffsetAccumulationForPainting; }
     void setPreviousScrollOffsetAccumulationForPainting(const IntSize& s) { m_previousScrollOffsetAccumulationForPainting = s; }
 
+    ClipRects* previousPaintingClipRects() const { return m_previousPaintingClipRects.get(); }
+    void setPreviousPaintingClipRects(ClipRects* clipRects) { m_previousPaintingClipRects = clipRects; }
+
     // For subsequence display items.
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
@@ -806,6 +809,7 @@ private:
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 
     IntSize m_previousScrollOffsetAccumulationForPainting;
+    RefPtr<ClipRects> m_previousPaintingClipRects;
 };
 
 } // namespace blink

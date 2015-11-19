@@ -76,6 +76,8 @@ public:
             && fixed() == other.fixed();
     }
 
+    bool operator!=(const ClipRects& other) const { return !(*this == other); }
+
     ClipRects& operator=(const ClipRects& other)
     {
         m_overflowClipRect = other.overflowClipRect();

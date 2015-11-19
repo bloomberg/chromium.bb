@@ -329,4 +329,12 @@ bool PaintLayerClipper::shouldRespectOverflowClip(const ClipRectsContext& contex
     return true;
 }
 
+ClipRects* PaintLayerClipper::paintingClipRects(const PaintLayer* rootLayer, ShouldRespectOverflowClip respectOverflowClip, const LayoutSize& subpixelAccumulation) const
+{
+    ClipRectsContext context(rootLayer, PaintingClipRects, IgnoreOverlayScrollbarSize, subpixelAccumulation);
+    if (respectOverflowClip == IgnoreOverflowClip)
+        context.setIgnoreOverflowClip();
+    return getClipRects(context);
+}
+
 } // namespace blink

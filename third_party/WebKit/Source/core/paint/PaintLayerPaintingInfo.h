@@ -86,7 +86,6 @@ struct PaintLayerPaintingInfo {
         , subPixelAccumulation(inSubPixelAccumulation)
         , clipToDirtyRect(true)
         , ancestorHasClipPathClipping(false)
-        , disableSubsequenceCache(false)
         , m_globalPaintFlags(globalPaintFlags)
     { }
 
@@ -100,8 +99,6 @@ struct PaintLayerPaintingInfo {
     IntSize scrollOffsetAccumulation;
     bool clipToDirtyRect;
     bool ancestorHasClipPathClipping;
-    // TODO(wangxianzhu): Remove for slimming paint v2.
-    bool disableSubsequenceCache;
 
 private:
     const GlobalPaintFlags m_globalPaintFlags;

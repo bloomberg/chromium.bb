@@ -220,14 +220,29 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
 
+    bool clipRectsChanged = false;
+    LayoutSize subpixelAccumulation = m_paintLayer.compositingState() == PaintsIntoOwnBacking ? m_paintLayer.subpixelAccumulation() : paintingInfoArg.subPixelAccumulation;
+    ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
+    if (paintFlags & PaintLayerUncachedClipRects) {
+        m_paintLayer.setPreviousPaintingClipRects(nullptr);
+    } else {
+        ClipRects* clipRects = m_paintLayer.clipper().paintingClipRects(paintingInfoArg.rootLayer, respectOverflowClip, subpixelAccumulation);
+        if (!m_paintLayer.needsRepaint()) {
+            ClipRects* previousClipRects = m_paintLayer.previousPaintingClipRects();
+            if (clipRects != previousClipRects && (!clipRects || !previousClipRects || *clipRects != *previousClipRects))
+                clipRectsChanged = true;
+        }
+        m_paintLayer.setPreviousPaintingClipRects(clipRects);
+    }
+
     Optional<SubsequenceRecorder> subsequenceRecorder;
-    if (!paintingInfoArg.disableSubsequenceCache
-        && !context->printing()
+    if (!context->printing()
         && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
-        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars))
+        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars | PaintLayerUncachedClipRects))
         && m_paintLayer.stackingNode()->isStackingContext()
         && PaintLayerStackingNodeIterator(*m_paintLayer.stackingNode(), AllChildren).next()) {
         if (!m_paintLayer.needsRepaint()
+            && !clipRectsChanged
             && paintingInfoArg.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
             && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
             return result;
@@ -236,22 +251,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
     PaintLayerPaintingInfo paintingInfo = paintingInfoArg;
 
-    // This is a workaround of ancestor clip change issue (crbug.com/533717).
-    // TODO(wangxianzhu):
-    // - spv1: This disables subsequence cache for all descendants of LayoutView with root-layer-scrolls because
-    //   LayoutView has overflow clip. Should find another workaround method working with root-layer-scrolls
-    //   if it ships before slimming paint v2. crbug.com/552030.
-    // - spv2: Ensure subsequence cache works with ancestor clip change. crbug.com/536138.
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_paintLayer.layoutObject()->hasClipOrOverflowClip())
-        paintingInfo.disableSubsequenceCache = true;
-
     LayoutPoint offsetFromRoot;
     m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
-
-    if (m_paintLayer.compositingState() == PaintsIntoOwnBacking)
-        offsetFromRoot.move(m_paintLayer.subpixelAccumulation());
-    else
-        offsetFromRoot.move(paintingInfo.subPixelAccumulation);
+    offsetFromRoot.move(subpixelAccumulation);
 
     LayoutRect bounds = m_paintLayer.physicalBoundingBox(offsetFromRoot);
     if (!paintingInfo.paintDirtyRect.contains(bounds))
@@ -280,14 +282,12 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     }
 
     PaintLayerPaintingInfo localPaintingInfo(paintingInfo);
-    if (m_paintLayer.compositingState() == PaintsIntoOwnBacking)
-        localPaintingInfo.subPixelAccumulation = m_paintLayer.subpixelAccumulation();
+    localPaintingInfo.subPixelAccumulation = subpixelAccumulation;
 
     PaintLayerFragments layerFragments;
     if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {
         // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
-        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
         if (fragmentPolicy == ForceSingleFragment)
             m_paintLayer.appendSingleFragmentIgnoringPagination(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
         else
