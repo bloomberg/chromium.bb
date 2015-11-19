@@ -1,18 +1,18 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <p>This tests whether right clicking on a paragraph break in editable content selects it.  The break should be selected on OS X, but not on Windows or Unix.  To run it manually, right click on the paragraph break after the first paragraph below.</p>
 <div id="div" contenteditable="true">
 <div><span id="text">The following paragraph break should be selected on OS X.</span></div>
 <br>
 </div>
-<p>Mac: <span id="resultmac">RUNNING</span></p>
-<p>Win: <span id="resultwin">RUNNING</span></p>
-<p>Unix: <span id="resultunix">RUNNING</span></p>
-<p>Android: <span id="resultandroid">RUNNING</span></p>
-
+<div id="log"></div>
 <script>
-function test(platform, result) {
+function testIt(platform, expectedValue) {
     window.getSelection().removeAllRanges();
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
     internals.settings.setEditingBehavior(platform);
-    
+
     paragraph = document.getElementById("text");
     x = paragraph.offsetParent.offsetLeft + paragraph.offsetLeft + paragraph.offsetWidth + 10;
     y = paragraph.offsetParent.offsetTop + paragraph.offsetTop + paragraph.offsetHeight / 2;
@@ -24,17 +24,13 @@ function test(platform, result) {
     eventSender.contextClick();
     // esc key to kill the context menu.
     eventSender.keyDown("escape", null);
-    
-    document.getElementById(result).innerHTML = window.getSelection().type;
+    assert_equals(window.getSelection().type, expectedValue);
 }
 
 if (window.eventSender && window.testRunner && window.internals) {
-    testRunner.dumpAsText();
-
-    test('mac', 'resultmac');
-    test('win', 'resultwin');
-    test('unix', 'resultunix');
-    test('android', 'resultandroid');
+    test(testIt.bind(this, 'mac', 'Range'), 'mac');
+    test(testIt.bind(this, 'win', 'Caret'), 'win');
+    test(testIt.bind(this, 'unix', 'Caret'), 'unix');
+    test(testIt.bind(this, 'android', 'Caret'), 'android');
 }
 </script>
-
