@@ -51,6 +51,9 @@ class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
                             MediaPipelineBackend::BufferStatus status) override;
   void OnEndOfStream(MediaPipelineBackend::Decoder* decoder) override;
   void OnDecoderError(MediaPipelineBackend::Decoder* decoder) override;
+  void OnKeyStatusChanged(const std::string& key_id,
+                          CastKeyStatus key_status,
+                          uint32_t system_code) override;
 
   void InitializeAudio(const ::media::AudioDecoderConfig& config,
                        const AvPipelineClient& client,

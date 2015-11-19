@@ -175,6 +175,10 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       OnPushBufferComplete(decoder_, MediaPipelineBackend::kBufferFailed);
   }
 
+  void OnKeyStatusChanged(const std::string& key_id,
+                          CastKeyStatus key_status,
+                          uint32_t system_code) override {}
+
   base::WeakPtr<CastAudioOutputStream::Backend> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

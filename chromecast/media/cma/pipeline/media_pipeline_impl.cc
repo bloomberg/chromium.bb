@@ -155,6 +155,15 @@ void MediaPipelineImpl::OnDecoderError(MediaPipelineBackend::Decoder* decoder) {
   }
 }
 
+void MediaPipelineImpl::OnKeyStatusChanged(const std::string& key_id,
+                                           CastKeyStatus key_status,
+                                           uint32_t system_code) {
+  CMALOG(kLogControl) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(cdm_);
+  cdm_->SetKeyStatus(key_id, key_status, system_code);
+}
+
 void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());

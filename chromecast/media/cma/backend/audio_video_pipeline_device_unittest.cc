@@ -99,6 +99,9 @@ class AudioVideoPipelineDeviceTest : public testing::Test,
                             MediaPipelineBackend::BufferStatus status) override;
   void OnEndOfStream(MediaPipelineBackend::Decoder* decoder) override;
   void OnDecoderError(MediaPipelineBackend::Decoder* decoder) override;
+  void OnKeyStatusChanged(const std::string& key_id,
+                          CastKeyStatus key_status,
+                          uint32_t system_code) override;
 
  private:
   void Initialize();
@@ -339,6 +342,12 @@ void AudioVideoPipelineDeviceTest::OnEndOfStream(
 
 void AudioVideoPipelineDeviceTest::OnDecoderError(
     MediaPipelineBackend::Decoder* decoder) {
+  ASSERT_TRUE(false);
+}
+
+void AudioVideoPipelineDeviceTest::OnKeyStatusChanged(const std::string& key_id,
+                                                      CastKeyStatus key_status,
+                                                      uint32_t system_code) {
   ASSERT_TRUE(false);
 }
 

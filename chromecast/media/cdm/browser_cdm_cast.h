@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/thread_checker.h"
+#include "chromecast/public/media/cast_key_status.h"
 #include "media/base/media_keys.h"
 #include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"
@@ -62,6 +63,12 @@ class BrowserCdmCast : public ::media::MediaKeys,
   virtual scoped_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id) const = 0;
 
+  // Notifies that key status has changed (e.g. if expiry is detected by
+  // hardware decoder).
+  virtual void SetKeyStatus(const std::string& key_id,
+                            CastKeyStatus key_status,
+                            uint32_t system_code) = 0;
+
  protected:
   ~BrowserCdmCast() override;
 
@@ -71,7 +78,11 @@ class BrowserCdmCast : public ::media::MediaKeys,
                         ::media::MediaKeys::MessageType message_type);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,
-                           const ::media::KeyIdAndKeyPairs& keys);
+                           bool newly_usable_keys,
+                           ::media::CdmKeysInfo keys_info);
+
+  void KeyIdAndKeyPairsToInfo(const ::media::KeyIdAndKeyPairs& keys,
+                              ::media::CdmKeysInfo* key_info);
 
  private:
   friend class BrowserCdmCastUi;

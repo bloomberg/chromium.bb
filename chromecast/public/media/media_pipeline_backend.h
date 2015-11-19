@@ -5,6 +5,10 @@
 #ifndef CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_BACKEND_H_
 #define CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_BACKEND_H_
 
+#include <stdint.h>
+#include <string>
+
+#include "cast_key_status.h"
 #include "decoder_config.h"
 
 namespace chromecast {
@@ -141,6 +145,11 @@ class MediaPipelineBackend {
     // May be called if a decoder error occurs. No more calls to PushBuffer()
     // will be made after this is called.
     virtual void OnDecoderError(Decoder* decoder) = 0;
+
+    // Must be called when a decryption key status changes.
+    virtual void OnKeyStatusChanged(const std::string& key_id,
+                                    CastKeyStatus key_status,
+                                    uint32_t system_code) = 0;
 
    protected:
     virtual ~Delegate() {}

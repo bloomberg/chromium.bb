@@ -126,17 +126,25 @@ void BrowserCdmCast::OnSessionClosed(const std::string& session_id) {
   session_closed_cb_.Run(session_id);
 }
 
-void BrowserCdmCast::OnSessionKeysChange(
-    const std::string& session_id,
-    const ::media::KeyIdAndKeyPairs& keys) {
-  ::media::CdmKeysInfo cdm_keys_info;
-  for (const std::pair<std::string, std::string>& key : keys) {
-    cdm_keys_info.push_back(new ::media::CdmKeyInformation(
-        key.first, ::media::CdmKeyInformation::USABLE, 0));
-  }
-  session_keys_change_cb_.Run(session_id, true, cdm_keys_info.Pass());
+void BrowserCdmCast::OnSessionKeysChange(const std::string& session_id,
+                                         bool newly_usable_keys,
+                                         ::media::CdmKeysInfo keys_info) {
+  session_keys_change_cb_.Run(session_id, newly_usable_keys, keys_info.Pass());
 
-  player_tracker_impl_->NotifyNewKey();
+  if (newly_usable_keys)
+    player_tracker_impl_->NotifyNewKey();
+}
+
+void BrowserCdmCast::KeyIdAndKeyPairsToInfo(
+    const ::media::KeyIdAndKeyPairs& keys,
+    ::media::CdmKeysInfo* keys_info) {
+  DCHECK(keys_info);
+  for (const std::pair<std::string, std::string>& key : keys) {
+    scoped_ptr<::media::CdmKeyInformation> cdm_key_information(
+        new ::media::CdmKeyInformation(key.first,
+                                       ::media::CdmKeyInformation::USABLE, 0));
+    keys_info->push_back(cdm_key_information.release());
+  }
 }
 
 // A macro runs current member function on |task_runner_| thread.
