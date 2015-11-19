@@ -67,7 +67,7 @@ LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, floa
         return LayoutSize(width, height);
     }
 
-    return LayoutSize(m_containerSize);
+    return LayoutSize();
 }
 
 void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* layoutObject, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
@@ -89,7 +89,7 @@ void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
     m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject* layoutObject, const IntSize& size) const
+PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject* layoutObject, const IntSize& size, float) const
 {
     return m_imageGeneratorValue->image(layoutObject, size);
 }

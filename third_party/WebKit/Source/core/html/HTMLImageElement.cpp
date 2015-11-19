@@ -603,7 +603,7 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* s
         return nullptr;
     }
 
-    RefPtr<Image> sourceImage = cachedImage()->imageForLayoutObject(layoutObject());
+    RefPtr<Image> sourceImage = cachedImage()->image();
 
     // We need to synthesize a container size if a layoutObject is not available to provide one.
     if (!layoutObject() && sourceImage->usesContainerSize())

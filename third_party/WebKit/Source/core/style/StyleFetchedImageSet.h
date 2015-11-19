@@ -67,10 +67,9 @@ public:
     bool imageHasRelativeHeight() const override;
     void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
     bool usesImageContainerSize() const override;
-    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const override;
     float imageScaleFactor() const override { return m_imageScaleFactor; }
     bool knownToBeOpaque(const LayoutObject*) const override;
     ImageResource* cachedImage() const override;

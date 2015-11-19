@@ -5,6 +5,7 @@
 #ifndef SVGImagePainter_h
 #define SVGImagePainter_h
 
+#include "platform/geometry/FloatSize.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -22,6 +23,7 @@ public:
 private:
     // Assumes the PaintInfo context has had all local transforms applied.
     void paintForeground(const PaintInfo&);
+    FloatSize computeImageViewportSize() const;
 
     const LayoutSVGImage& m_layoutSVGImage;
 };

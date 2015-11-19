@@ -49,10 +49,9 @@ public:
     bool imageHasRelativeHeight() const override { return !m_fixedSize; }
     void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
     bool usesImageContainerSize() const override { return !m_fixedSize; }
-    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize& containerSize, float) override { m_containerSize = containerSize; }
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&) const override;
+    PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const override;
     bool knownToBeOpaque(const LayoutObject*) const override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -63,7 +62,6 @@ private:
     // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once RefPtrWillBeMember<>
     // supports const types.
     RefPtrWillBeMember<CSSImageGeneratorValue> m_imageGeneratorValue;
-    IntSize m_containerSize;
     bool m_fixedSize;
 };
 

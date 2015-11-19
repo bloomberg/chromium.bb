@@ -55,18 +55,13 @@ public:
     void resetAnimation();
     bool maybeAnimated() const;
 
-    virtual PassRefPtr<Image> image(const IntSize&) const
-    {
-        return m_cachedImage ? m_cachedImage->imageForLayoutObject(m_layoutObject) : Image::nullImage();
-    }
+    virtual PassRefPtr<Image> image(const IntSize&, float) const;
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
-    virtual void setContainerSizeForLayoutObject(const IntSize&);
     virtual bool imageHasRelativeWidth() const { return m_cachedImage ? m_cachedImage->imageHasRelativeWidth() : false; }
     virtual bool imageHasRelativeHeight() const { return m_cachedImage ? m_cachedImage->imageHasRelativeHeight() : false; }
 
-    virtual LayoutSize imageSize(float multiplier) const { return getImageSize(multiplier, ImageResource::NormalSize); }
-    virtual LayoutSize intrinsicSize(float multiplier) const { return getImageSize(multiplier, ImageResource::IntrinsicSize); }
+    virtual LayoutSize imageSize(float multiplier) const;
 
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
@@ -76,9 +71,6 @@ protected:
     LayoutImageResource();
     LayoutObject* m_layoutObject;
     ResourcePtr<ImageResource> m_cachedImage;
-
-private:
-    LayoutSize getImageSize(float multiplier, ImageResource::SizeType) const;
 };
 
 } // namespace blink

@@ -26,11 +26,11 @@ public:
     { }
 
     void calculate(const LayoutBoxModelObject&, const LayoutBoxModelObject* paintContainer,
-        const GlobalPaintFlags, const FillLayer&, const LayoutRect& paintRect,
-        const LayoutObject* backgroundObject = nullptr);
+        const GlobalPaintFlags, const FillLayer&, const LayoutRect& paintRect);
 
     IntRect destRect() const { return m_destRect; }
     IntSize tileSize() const { return m_tileSize; }
+    IntSize imageContainerSize() const { return m_imageContainerSize; }
     IntPoint phase() const { return m_phase; }
     // Space-size represents extra width and height that may be added to
     // the image if used as a pattern with background-repeat: space.
@@ -41,6 +41,7 @@ public:
 private:
     void setDestRect(const IntRect& destRect) { m_destRect = destRect; }
     void setPhase(const IntPoint& phase) { m_phase = phase; }
+    void setImageContainerSize(const IntSize& imageContainerSize) { m_imageContainerSize = imageContainerSize; }
     void setTileSize(const IntSize& tileSize) { m_tileSize = tileSize; }
     void setSpaceSize(const IntSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
     void setPhaseX(int x) { m_phase.setX(x); }
@@ -54,6 +55,7 @@ private:
 
     IntRect m_destRect;
     IntPoint m_phase;
+    IntSize m_imageContainerSize;
     IntSize m_tileSize;
     IntSize m_repeatSpacing;
     bool m_hasNonLocalGeometry;

@@ -128,7 +128,7 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     if (alignedRect.width() <= 0 || alignedRect.height() <= 0)
         return;
 
-    RefPtr<Image> image = m_layoutImage.imageResource()->image(alignedRect.size());
+    RefPtr<Image> image = m_layoutImage.imageResource()->image(alignedRect.size(), m_layoutImage.style()->effectiveZoom());
     if (!image || image->isNull())
         return;
 

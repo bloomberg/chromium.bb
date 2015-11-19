@@ -829,7 +829,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     if (isContextLost() || !image || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
+    RefPtr<Image> imageForRender = image->cachedImage()->image();
     if (imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage3D");
 

@@ -63,43 +63,6 @@ void LayoutSVGImage::willBeDestroyed()
     LayoutSVGModelObject::willBeDestroyed();
 }
 
-FloatSize LayoutSVGImage::computeImageViewportSize(ImageResource& cachedImage) const
-{
-    if (toSVGImageElement(element())->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
-        return m_objectBoundingBox.size();
-
-    // Images with preserveAspectRatio=none should force non-uniform
-    // scaling. This can be achieved by setting the image's container size to
-    // its viewport size (i.e. if a viewBox is available - use that - else use intrinsic size.)
-    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The 'preserveAspectRatio' attribute.
-    Length intrinsicWidth;
-    Length intrinsicHeight;
-    FloatSize intrinsicRatio;
-    cachedImage.computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
-    return intrinsicRatio;
-}
-
-static bool containerSizeIsSetForLayoutObject(ImageResource& cachedImage, const LayoutObject* layoutObject)
-{
-    const Image* image = cachedImage.image();
-    // If a container size has been specified for this layoutObject, then
-    // imageForLayoutObject() will return the SVGImageForContainer while image()
-    // will return the underlying SVGImage.
-    return !image->isSVGImage() || image != cachedImage.imageForLayoutObject(layoutObject);
-}
-
-void LayoutSVGImage::updateImageContainerSize()
-{
-    ImageResource* cachedImage = m_imageResource->cachedImage();
-    if (!cachedImage || !cachedImage->usesImageContainerSize())
-        return;
-    FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
-    if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(styleRef().effectiveZoom())
-        || !containerSizeIsSetForLayoutObject(*cachedImage, this)) {
-        m_imageResource->setContainerSizeForLayoutObject(roundedIntSize(imageViewportSize));
-    }
-}
-
 void LayoutSVGImage::updateBoundingBox()
 {
     FloatRect oldBoundaries = m_objectBoundingBox;
@@ -119,7 +82,6 @@ void LayoutSVGImage::layout()
     LayoutAnalyzer::Scope analyzer(*this);
 
     updateBoundingBox();
-    updateImageContainerSize();
 
     bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
     if (m_needsTransformUpdate) {
@@ -184,10 +146,6 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
     // references from resources (filters) that may have a cached
     // representation of this image/layout object.
     LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
-
-    // Update the SVGImageCache sizeAndScales entry in case image loading finished after layout.
-    // (https://bugs.webkit.org/show_bug.cgi?id=99489)
-    updateImageContainerSize();
 
     m_bufferedForeground.clear();
 

@@ -330,7 +330,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
     // If frame is an image document, add the image and don't continue
     if (document.isImageDocument()) {
         ImageDocument& imageDocument = toImageDocument(document);
-        addImageToResources(imageDocument.cachedImage(), imageDocument.imageElement()->layoutObject(), url);
+        addImageToResources(imageDocument.cachedImage(), url);
         return;
     }
 
@@ -364,13 +364,13 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
             HTMLImageElement& imageElement = toHTMLImageElement(element);
             KURL url = document.completeURL(imageElement.getAttribute(HTMLNames::srcAttr));
             ImageResource* cachedImage = imageElement.cachedImage();
-            addImageToResources(cachedImage, imageElement.layoutObject(), url);
+            addImageToResources(cachedImage, url);
         } else if (isHTMLInputElement(element)) {
             HTMLInputElement& inputElement = toHTMLInputElement(element);
             if (inputElement.type() == InputTypeNames::image && inputElement.imageLoader()) {
                 KURL url = inputElement.src();
                 ImageResource* cachedImage = inputElement.imageLoader()->image();
-                addImageToResources(cachedImage, inputElement.layoutObject(), url);
+                addImageToResources(cachedImage, url);
             }
         } else if (isHTMLLinkElement(element)) {
             HTMLLinkElement& linkElement = toHTMLLinkElement(element);
@@ -489,7 +489,7 @@ void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer>
     m_resourceURLs.add(url);
 }
 
-void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* imageLayoutObject, const KURL& url)
+void PageSerializer::addImageToResources(ImageResource* image, const KURL& url)
 {
     if (!shouldAddURL(url))
         return;
@@ -497,10 +497,7 @@ void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* ima
     if (!image || !image->hasImage() || image->errorOccurred())
         return;
 
-    RefPtr<SharedBuffer> data = imageLayoutObject ? image->imageForLayoutObject(imageLayoutObject)->data() : nullptr;
-    if (!data)
-        data = image->image()->data();
-
+    RefPtr<SharedBuffer> data = image->image()->data();
     addToResources(image, data, url);
 }
 
@@ -539,7 +536,7 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
         if (!styleImage || !styleImage->isImageResource())
             return;
 
-        addImageToResources(styleImage->cachedImage(), nullptr, styleImage->cachedImage()->url());
+        addImageToResources(styleImage->cachedImage(), styleImage->cachedImage()->url());
     } else if (cssValue->isFontFaceSrcValue()) {
         CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
         if (fontFaceSrcValue->isLocal()) {

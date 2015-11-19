@@ -1874,7 +1874,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
         if (!cachedImage->hasImage())
             return false;
 
-        Image* image = cachedImage->imageForLayoutObject(imageLayoutObject);
+        Image* image = cachedImage->image();
         if (!image->isBitmapImage())
             return false;
 
@@ -1906,7 +1906,7 @@ void CompositedLayerMapping::updateImageContents()
     if (!cachedImage)
         return;
 
-    Image* image = cachedImage->imageForLayoutObject(imageLayoutObject);
+    Image* image = cachedImage->image();
     if (!image)
         return;
 

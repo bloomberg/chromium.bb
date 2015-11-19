@@ -46,15 +46,13 @@ public:
     void shutdown() override;
 
     bool hasImage() const override { return true; }
-    PassRefPtr<Image> image(const IntSize&) const override;
+    PassRefPtr<Image> image(const IntSize&, float) const override;
     bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
-    void setContainerSizeForLayoutObject(const IntSize&) override;
     bool imageHasRelativeWidth() const override { return m_styleImage->imageHasRelativeWidth(); }
     bool imageHasRelativeHeight() const override { return m_styleImage->imageHasRelativeHeight(); }
 
     LayoutSize imageSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
-    LayoutSize intrinsicSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
 
     WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
 

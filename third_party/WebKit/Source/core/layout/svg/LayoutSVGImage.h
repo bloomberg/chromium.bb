@@ -66,8 +66,6 @@ private:
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     void updateBoundingBox();
-    void updateImageContainerSize();
-    FloatSize computeImageViewportSize(ImageResource&) const;
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 

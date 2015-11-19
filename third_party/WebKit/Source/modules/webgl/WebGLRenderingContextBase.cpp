@@ -4350,7 +4350,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         type = GL_FLOAT;
     }
 
-    RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
+    RefPtr<Image> imageForRender = image->cachedImage()->image();
     if (imageForRender && imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texImage2D");
 
@@ -4676,7 +4676,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         type = GL_FLOAT;
     }
 
-    RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
+    RefPtr<Image> imageForRender = image->cachedImage()->image();
     if (imageForRender && imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texSubImage2D");
 

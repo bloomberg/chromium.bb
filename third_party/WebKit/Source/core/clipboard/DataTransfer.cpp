@@ -281,10 +281,10 @@ static void writeImageToDataObject(DataObject* dataObject, Element* element, con
 {
     // Shove image data into a DataObject for use as a file
     ImageResource* cachedImage = getImageResource(element);
-    if (!cachedImage || !cachedImage->imageForLayoutObject(element->layoutObject()) || !cachedImage->isLoaded())
+    if (!cachedImage || !cachedImage->image() || !cachedImage->isLoaded())
         return;
 
-    SharedBuffer* imageBuffer = cachedImage->imageForLayoutObject(element->layoutObject())->data();
+    SharedBuffer* imageBuffer = cachedImage->image()->data();
     if (!imageBuffer || !imageBuffer->size())
         return;
 

@@ -137,19 +137,10 @@ void LayoutImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
     setIntrinsicSize(newSize);
 }
 
-void LayoutImage::updateInnerContentRect()
-{
-    // Propagate container size to the image resource.
-    LayoutRect containerRect = replacedContentRect();
-    IntSize containerSize(containerRect.width(), containerRect.height());
-    if (!containerSize.isEmpty())
-        m_imageResource->setContainerSizeForLayoutObject(containerSize);
-}
-
 void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
 {
     LayoutSize oldIntrinsicSize = intrinsicSize();
-    LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
+    LayoutSize newIntrinsicSize = m_imageResource->imageSize(style()->effectiveZoom());
     updateIntrinsicSizeIfNeeded(newIntrinsicSize);
 
     // In the case of generated image content using :before/:after/content, we might not be
@@ -174,15 +165,6 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     if (imageSourceHasChangedSize && (!imageSizeIsConstrained || containingBlockNeedsToRecomputePreferredSize)) {
         setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         return;
-    }
-
-    // The image hasn't changed in size or its style constrains its size, so a paint invalidation will suffice.
-    if (everHadLayout() && !selfNeedsLayout()) {
-        // The inner content rectangle is calculated during layout, but may need an update now
-        // (unless the box has already been scheduled for layout). In order to calculate it, we
-        // may need values from the containing block, though, so make sure that we're not too
-        // early. It may be that layout hasn't even taken place once yet.
-        updateInnerContentRect();
     }
 
     if (imageResource() && imageResource()->maybeAnimated())
@@ -298,12 +280,6 @@ bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     if (inside)
         result = tempResult;
     return inside;
-}
-
-void LayoutImage::layout()
-{
-    LayoutReplaced::layout();
-    updateInnerContentRect();
 }
 
 void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const

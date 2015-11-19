@@ -815,7 +815,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             // Get hotspot and convert from logical pixels to physical pixels.
             IntPoint hotSpot = (*cursors)[i].hotSpot();
             hotSpot.scale(scale, scale);
-            IntSize size = cachedImage->imageForLayoutObject(layoutObject)->size();
+            IntSize size = cachedImage->image()->size();
             if (cachedImage->errorOccurred())
                 continue;
             // Limit the size of cursors (in UI pixels) so that they cannot be
@@ -824,7 +824,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             if (size.width() > maximumCursorSize || size.height() > maximumCursorSize)
                 continue;
 
-            Image* image = cachedImage->imageForLayoutObject(layoutObject);
+            Image* image = cachedImage->image();
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;

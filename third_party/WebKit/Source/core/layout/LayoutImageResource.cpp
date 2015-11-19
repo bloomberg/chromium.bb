@@ -28,7 +28,9 @@
 #include "config.h"
 #include "core/layout/LayoutImageResource.h"
 
+#include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutImage.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {
 
@@ -88,21 +90,30 @@ void LayoutImageResource::resetAnimation()
     m_layoutObject->setShouldDoFullPaintInvalidation();
 }
 
-void LayoutImageResource::setContainerSizeForLayoutObject(const IntSize& imageContainerSize)
-{
-    ASSERT(m_layoutObject);
-    if (m_cachedImage)
-        m_cachedImage->setContainerSizeForLayoutObject(m_layoutObject, imageContainerSize, m_layoutObject->style()->effectiveZoom());
-}
-
-LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
+LayoutSize LayoutImageResource::imageSize(float multiplier) const
 {
     if (!m_cachedImage)
         return LayoutSize();
-    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier, type);
+    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier, ImageResource::IntrinsicSize);
     if (m_layoutObject && m_layoutObject->isLayoutImage() && size.width() && size.height())
         size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
     return size;
+}
+
+PassRefPtr<Image> LayoutImageResource::image(const IntSize& containerSize, float zoom) const
+{
+    RefPtr<Image> image = m_cachedImage ? m_cachedImage->image() : Image::nullImage();
+    if (image->isSVGImage()) {
+        SVGImage* svgImage = toSVGImage(image.get());
+        Node* node = m_layoutObject->node();
+        if (node && isHTMLImageElement(node)) {
+            const AtomicString& urlString = toHTMLImageElement(node)->imageSourceURL();
+            KURL url = node->document().completeURL(urlString);
+            svgImage->setURL(url);
+        }
+        return SVGImageForContainer::create(svgImage, containerSize, zoom);
+    }
+    return image;
 }
 
 bool LayoutImageResource::maybeAnimated() const

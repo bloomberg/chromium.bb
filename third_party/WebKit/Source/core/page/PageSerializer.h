@@ -99,7 +99,7 @@ private:
     bool shouldAddURL(const KURL&);
 
     void addToResources(Resource *, PassRefPtr<SharedBuffer>, const KURL&);
-    void addImageToResources(ImageResource*, LayoutObject*, const KURL&);
+    void addImageToResources(ImageResource*, const KURL&);
     void addFontToResources(FontResource*);
 
     void retrieveResourcesForProperties(const StylePropertySet*, Document&);

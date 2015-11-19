@@ -53,14 +53,11 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
     IntSize imageSize = m_layoutObject.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(),
         LayoutBoxModelObject::DoNotScaleByEffectiveZoom);
 
-    // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
-    styleImage->setContainerSizeForLayoutObject(&m_layoutObject, imageSize, style.effectiveZoom());
-
     IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
         style.borderBottomWidth(), style.borderLeftWidth());
     NinePieceImageGrid grid(ninePieceImage, imageSize, borderImageRect, borderWidths);
 
-    RefPtr<Image> image = styleImage->image(&m_layoutObject, imageSize);
+    RefPtr<Image> image = styleImage->image(&m_layoutObject, imageSize, style.effectiveZoom());
 
     InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutObject,
         graphicsContext, image.get(), 0, rectWithOutsets.size());

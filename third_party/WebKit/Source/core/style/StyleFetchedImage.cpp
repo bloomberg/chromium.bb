@@ -28,6 +28,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {
 
@@ -104,11 +105,6 @@ bool StyleFetchedImage::usesImageContainerSize() const
     return m_image->usesImageContainerSize();
 }
 
-void StyleFetchedImage::setContainerSizeForLayoutObject(const LayoutObject* layoutObject, const IntSize& imageContainerSize, float imageContainerZoomFactor)
-{
-    m_image->setContainerSizeForLayoutObject(layoutObject, imageContainerSize, imageContainerZoomFactor);
-}
-
 void StyleFetchedImage::addClient(LayoutObject* layoutObject)
 {
     m_image->addClient(layoutObject);
@@ -127,9 +123,12 @@ void StyleFetchedImage::notifyFinished(Resource* resource)
     m_document.clear();
 }
 
-PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject* layoutObject, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject*, const IntSize& containerSize, float zoom) const
 {
-    return m_image->imageForLayoutObject(layoutObject);
+    RefPtr<Image> image = m_image->image();
+    if (image->isSVGImage())
+        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom);
+    return image;
 }
 
 bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const

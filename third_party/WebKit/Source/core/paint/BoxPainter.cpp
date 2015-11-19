@@ -437,7 +437,7 @@ void BoxPainter::paintFillLayerExtended(const LayoutBoxModelObject& obj, const P
 
     BackgroundImageGeometry geometry;
     if (bgImage)
-        geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.globalPaintFlags(), bgLayer, scrolledPaintRect, backgroundObject);
+        geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.globalPaintFlags(), bgLayer, scrolledPaintRect);
     bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(obj, obj.style()->effectiveZoom());
 
     // Paint the color first underneath all images, culled if background image occludes it.
@@ -464,7 +464,7 @@ void BoxPainter::paintFillLayerExtended(const LayoutBoxModelObject& obj, const P
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
             const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
-            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
+            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.imageContainerSize(), obj.style()->effectiveZoom());
             InterpolationQuality interpolationQuality = chooseInterpolationQuality(*clientForBackgroundImage, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context->setColorFilter(ColorFilterLuminanceToAlpha);

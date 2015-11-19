@@ -123,8 +123,6 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
 PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
     const IntSize& imageSize = m_layoutBox.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), LayoutImage::ScaleByEffectiveZoom);
-    styleImage->setContainerSizeForLayoutObject(&m_layoutBox, imageSize, m_layoutBox.style()->effectiveZoom());
-
     const LayoutRect& marginRect = getShapeImageMarginRect(m_layoutBox, m_referenceBoxLogicalSize);
     const LayoutRect& imageRect = (m_layoutBox.isLayoutImage())
         ? toLayoutImage(m_layoutBox).replacedContentRect()
@@ -136,7 +134,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
     }
 
     ASSERT(!styleImage->isPendingImage());
-    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_layoutBox), imageSize);
+    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_layoutBox), imageSize, m_layoutBox.style()->effectiveZoom());
 
     return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }

@@ -93,7 +93,7 @@ static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* la
     if (!cachedImage || !cachedImage->canRender(*layoutObject, 1))
         return nullptr;
 
-    return cachedImage->imageForLayoutObject(layoutObject);
+    return cachedImage->image();
 }
 
 CSSCrossfadeValue::~CSSCrossfadeValue()

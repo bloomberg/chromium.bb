@@ -170,8 +170,7 @@ void BackgroundImageGeometry::clip(const IntRect& clipRect)
 }
 
 void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer,
-    const GlobalPaintFlags globalPaintFlags, const FillLayer& fillLayer, const LayoutRect& paintRect,
-    const LayoutObject* backgroundObject)
+    const GlobalPaintFlags globalPaintFlags, const FillLayer& fillLayer, const LayoutRect& paintRect)
 {
     LayoutUnit left = 0;
     LayoutUnit top = 0;
@@ -257,10 +256,9 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         positioningAreaSize = destRect().size();
     }
 
-    const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
     IntSize fillTileSize = calculateFillTileSize(positioningBox, fillLayer, positioningAreaSize);
-    fillLayer.image()->setContainerSizeForLayoutObject(clientForBackgroundImage, fillTileSize, obj.style()->effectiveZoom());
     setTileSize(fillTileSize);
+    setImageContainerSize(fillTileSize);
 
     EFillRepeat backgroundRepeatX = fillLayer.repeatX();
     EFillRepeat backgroundRepeatY = fillLayer.repeatY();

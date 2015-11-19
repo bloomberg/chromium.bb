@@ -35,16 +35,16 @@
 namespace blink {
 
 class SVGImageForContainer final : public Image {
+    USING_FAST_MALLOC(SVGImageForContainer);
 public:
-    static PassRefPtr<SVGImageForContainer> create(SVGImage* image, const FloatSize& containerSize, float zoom)
+    static PassRefPtr<SVGImageForContainer> create(SVGImage* image, const IntSize& containerSize, float zoom)
     {
-        return adoptRef(new SVGImageForContainer(image, containerSize, zoom));
+        FloatSize containerSizeWithoutZoom(containerSize);
+        containerSizeWithoutZoom.scale(1 / zoom);
+        return adoptRef(new SVGImageForContainer(image, containerSizeWithoutZoom, zoom));
     }
 
-    bool isSVGImage() const override { return true; }
-
     IntSize size() const override;
-    void setURL(const KURL& url) { m_image->setURL(url); }
 
     bool usesContainerSize() const override { return m_image->usesContainerSize(); }
     bool hasRelativeWidth() const override { return m_image->hasRelativeWidth(); }

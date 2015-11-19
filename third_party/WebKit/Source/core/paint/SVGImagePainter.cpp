@@ -51,7 +51,12 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
 {
-    RefPtr<Image> image = m_layoutSVGImage.imageResource()->image(IntSize());
+    const LayoutImageResource* imageResource = m_layoutSVGImage.imageResource();
+    IntSize imageViewportSize = expandedIntSize(computeImageViewportSize());
+    if (imageViewportSize.isEmpty())
+        return;
+
+    RefPtr<Image> image = imageResource->image(imageViewportSize, m_layoutSVGImage.style()->effectiveZoom());
     FloatRect destRect = m_layoutSVGImage.objectBoundingBox();
     FloatRect srcRect(0, 0, image->width(), image->height());
 
@@ -65,6 +70,26 @@ void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
     paintInfo.context->setImageInterpolationQuality(interpolationQuality);
     paintInfo.context->drawImage(image.get(), destRect, srcRect, SkXfermode::kSrcOver_Mode);
     paintInfo.context->setImageInterpolationQuality(previousInterpolationQuality);
+}
+
+FloatSize SVGImagePainter::computeImageViewportSize() const
+{
+    ASSERT(m_layoutSVGImage.imageResource()->hasImage());
+
+    if (toSVGImageElement(m_layoutSVGImage.element())->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
+        return m_layoutSVGImage.objectBoundingBox().size();
+
+    ImageResource* cachedImage = m_layoutSVGImage.imageResource()->cachedImage();
+
+    // Images with preserveAspectRatio=none should force non-uniform
+    // scaling. This can be achieved by setting the image's container size to
+    // its viewport size (i.e. if a viewBox is available - use that - else use intrinsic size.)
+    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The 'preserveAspectRatio' attribute.
+    Length intrinsicWidth;
+    Length intrinsicHeight;
+    FloatSize intrinsicRatio;
+    cachedImage->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    return intrinsicRatio;
 }
 
 } // namespace blink
