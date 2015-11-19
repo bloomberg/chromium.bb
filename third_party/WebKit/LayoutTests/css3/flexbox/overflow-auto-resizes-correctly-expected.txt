@@ -5,7 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS hbox.clientHeight is hbox.scrollHeight
 PASS intrinsicHeightBox.clientHeight is intrinsicHeightBox.scrollHeight
-FAIL vbox.clientWidth should be 100. Was 70.
+PASS scrollbarSize is not 0
+PASS vbox.clientWidth is 100 - scrollbarSize
 PASS successfullyParsed is true
 
 TEST COMPLETE

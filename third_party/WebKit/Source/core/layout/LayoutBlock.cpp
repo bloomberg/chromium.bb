@@ -887,17 +887,11 @@ void LayoutBlock::updateScrollInfoAfterLayout()
         }
 
         if (gDelayUpdateScrollInfo) {
-            LayoutUnit logicalWidthExcludingScrollbar = logicalWidth() - scrollbarLogicalWidth();
-            LayoutUnit logicalHeightExcludingScrollbar = logicalHeight() - scrollbarLogicalHeight();
             ScrollInfo scrollInfo;
             layer()->scrollableArea()->updateScrollDimensions(scrollInfo.scrollOffset, scrollInfo.autoHorizontalScrollBarChanged, scrollInfo.autoVerticalScrollBarChanged);
             DelayedUpdateScrollInfoMap::AddResult scrollInfoIterator = gDelayedUpdateScrollInfoMap->add(this, scrollInfo);
             if (!scrollInfoIterator.isNewEntry)
                 scrollInfoIterator.storedValue->value.merge(scrollInfo);
-            if (scrollInfo.autoHorizontalScrollBarChanged)
-                setLogicalHeight(logicalHeightExcludingScrollbar + scrollbarLogicalHeight());
-            if (scrollInfo.autoVerticalScrollBarChanged)
-                setLogicalWidth(logicalWidthExcludingScrollbar + scrollbarLogicalWidth());
         } else {
             layer()->scrollableArea()->updateAfterLayout();
         }
