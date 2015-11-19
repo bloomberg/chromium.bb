@@ -523,14 +523,7 @@ class ProfileIOData {
   mutable BooleanPrefMember quick_check_enabled_;
   mutable IntegerPrefMember incognito_availibility_pref_;
 
-  // The state of metrics reporting in the browser that this profile runs on.
-  // Unfortunately, since ChromeOS has a separate representation of this state,
-  // we need to make one available based on the platform.
-#if defined(OS_CHROMEOS)
-  bool enable_metrics_;
-#else
   BooleanPrefMember enable_metrics_;
-#endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // Pointed to by NetworkDelegate.

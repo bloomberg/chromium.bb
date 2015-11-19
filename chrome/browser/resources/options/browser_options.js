@@ -450,47 +450,53 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
       $('privacyClearDataButton').hidden = OptionsPage.isSettingsApp();
-      // 'metricsReportingEnabled' element is only present on Chrome branded
-      // builds, and the 'metricsReportingCheckboxAction' message is only
-      // handled on ChromeOS.
-      if ($('metrics-reporting-enabled') && cr.isChromeOS) {
-        $('metrics-reporting-enabled').onclick = function(event) {
-          chrome.send('metricsReportingCheckboxAction',
-              [String(event.currentTarget.checked)]);
-        };
-      }
-      if ($('metrics-reporting-enabled') && !cr.isChromeOS) {
-        // The localized string has the | symbol on each side of the text that
-        // needs to be made into a button to restart Chrome. We parse the text
-        // and build the button from that.
-        var restartTextFragments =
-            loadTimeData.getString('metricsReportingResetRestart').split('|');
-        // Assume structure is something like "starting text |link text| ending
-        // text" where both starting text and ending text may or may not be
-        // present, but the split should always be in three pieces.
-        var restartElements =
-            $('metrics-reporting-reset-restart').querySelectorAll('*');
-        for (var i = 0; i < restartTextFragments.length; i++) {
-          restartElements[i].textContent = restartTextFragments[i];
-        }
-        restartElements[1].onclick = function(event) {
-          chrome.send('restartBrowser');
-        };
+
+      if ($('metrics-reporting-enabled')) {
+        $('metrics-reporting-enabled').checked =
+            loadTimeData.getBoolean('metricsReportingEnabledAtStart');
+
+        // A browser restart is never needed to toggle metrics reporting,
+        // and is only needed to toggle crash reporting when using Breakpad.
+        // Crashpad, used on Mac, does not require a browser restart.
+        var togglingMetricsRequiresRestart = !cr.isMac && !cr.isChromeOS;
         $('metrics-reporting-enabled').onclick = function(event) {
           chrome.send('metricsReportingCheckboxChanged',
               [Boolean(event.currentTarget.checked)]);
-          if (cr.isMac) {
-            // A browser restart is never needed to toggle metrics reporting,
-            // and is only needed to toggle crash reporting when using Breakpad.
-            // Crashpad, used on Mac, does not require a browser restart.
-            return;
+          if (cr.isChromeOS) {
+            // 'metricsReportingEnabled' element is only present on Chrome
+            // branded builds, and the 'metricsReportingCheckboxAction' message
+            // is only handled on ChromeOS.
+            chrome.send('metricsReportingCheckboxAction',
+                [String(event.currentTarget.checked)]);
           }
-          $('metrics-reporting-reset-restart').hidden =
-              loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
-                  $('metrics-reporting-enabled').checked;
+
+          if (togglingMetricsRequiresRestart) {
+            $('metrics-reporting-reset-restart').hidden =
+                loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
+                    $('metrics-reporting-enabled').checked;
+          }
+
         };
-        $('metrics-reporting-enabled').checked =
-            loadTimeData.getBoolean('metricsReportingEnabledAtStart');
+
+        // Initialize restart button if needed.
+        if (togglingMetricsRequiresRestart) {
+          // The localized string has the | symbol on each side of the text that
+          // needs to be made into a button to restart Chrome. We parse the text
+          // and build the button from that.
+          var restartTextFragments =
+              loadTimeData.getString('metricsReportingResetRestart').split('|');
+          // Assume structure is something like "starting text |link text|
+          // ending text" where both starting text and ending text may or may
+          // not be present, but the split should always be in three pieces.
+          var restartElements =
+              $('metrics-reporting-reset-restart').querySelectorAll('*');
+          for (var i = 0; i < restartTextFragments.length; i++) {
+            restartElements[i].textContent = restartTextFragments[i];
+          }
+          restartElements[1].onclick = function(event) {
+            chrome.send('restartBrowser');
+          };
+        }
       }
       $('networkPredictionOptions').onchange = function(event) {
         var value = (event.target.checked ?
@@ -1730,18 +1736,24 @@ cr.define('options', function() {
      * Set the checked state of the metrics reporting checkbox.
      * @private
      */
-    setMetricsReportingCheckboxState_: function(checked, disabled) {
+    setMetricsReportingCheckboxState_: function(checked,
+                                                policyManaged,
+                                                ownerManaged) {
       $('metrics-reporting-enabled').checked = checked;
-      $('metrics-reporting-enabled').disabled = disabled;
+      $('metrics-reporting-enabled').disabled = policyManaged || ownerManaged;
 
       // If checkbox gets disabled then add an attribute for displaying the
       // special icon. Otherwise remove the indicator attribute.
-      if (disabled) {
+      if (policyManaged) {
         $('metrics-reporting-disabled-icon').setAttribute('controlled-by',
                                                           'policy');
+      } else if (ownerManaged) {
+        $('metrics-reporting-disabled-icon').setAttribute('controlled-by',
+                                                          'owner');
       } else {
         $('metrics-reporting-disabled-icon').removeAttribute('controlled-by');
       }
+
     },
 
     /**

@@ -866,14 +866,7 @@ bool ProfileIOData::IsOffTheRecord() const {
 
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_CHROMEOS)
-  // Just fetch the value from ChromeOS' settings while we're on the UI thread.
-  // TODO(stevet): For now, this value is only set on profile initialization.
-  // We will want to do something similar to the PrefMember method below in the
-  // future to more accurately capture this state.
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enable_metrics_);
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // TODO(dwkang): rename or unify the pref for UMA once we have conclusion
   // in crbugs.com/246495.
   // Android has it's own preferences for metrics / crash uploading.
@@ -888,16 +881,12 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_ANDROID)
 }
 
 bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-#if defined(OS_CHROMEOS)
-  return enable_metrics_;
-#else
   return enable_metrics_.GetValue();
-#endif  // defined(OS_CHROMEOS)
 }
 
 bool ProfileIOData::IsDataReductionProxyEnabled() const {
@@ -1258,9 +1247,7 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_do_not_track_.Destroy();
   force_google_safesearch_.Destroy();
   force_youtube_safety_mode_.Destroy();
-#if !defined(OS_CHROMEOS)
   enable_metrics_.Destroy();
-#endif
   safe_browsing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();

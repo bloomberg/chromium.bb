@@ -126,9 +126,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultPrinterSelection,
     prefs::kPrintPreviewDefaultDestinationSelectionRules,
     base::Value::TYPE_STRING },
-  { key::kMetricsReportingEnabled,
-    metrics::prefs::kMetricsReportingEnabled,
-    base::Value::TYPE_BOOLEAN },
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,
     base::Value::TYPE_STRING },
@@ -492,6 +489,17 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kUnifiedDesktopEnabledByDefault,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
+
+// Metrics reporting is controlled by a platform specific policy for ChromeOS
+#if defined(OS_CHROMEOS)
+  { key::kDeviceMetricsReportingEnabled,
+    metrics::prefs::kMetricsReportingEnabled,
+    base::Value::TYPE_BOOLEAN },
+#else
+  { key::kMetricsReportingEnabled,
+    metrics::prefs::kMetricsReportingEnabled,
+    base::Value::TYPE_BOOLEAN },
+#endif
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   { key::kBackgroundModeEnabled,

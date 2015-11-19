@@ -21,31 +21,28 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
       !content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI) ||
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  // This is only possible during unit tests. If the unit test didn't set the
+  // local_state then it doesn't care about pref value and therefore we return
+  // false.
+  if (!g_browser_process->local_state()) {
+    DLOG(WARNING) << "Local state has not been set and pref cannot be read";
+    return false;
+  }
+
+#if !defined(OS_ANDROID)
   return IsMetricsReportingEnabled(g_browser_process->local_state());
 #else
-  // ChromeOS and Android currently obtain the value for whether the user has
+  // Android currently obtain the value for whether the user has
   // obtain metrics reporting in non-standard ways.
   // TODO(gayane): Consolidate metric prefs on all platforms and eliminate this
   // special-case code, instead having all platforms go through the above flow.
   // http://crbug.com/362192, http://crbug.com/532084
   bool pref_value = false;
 
-#if defined(OS_CHROMEOS)
-  // TODO(gayane): The check is added as a temporary fix for unittests. It's
-  // not expected to happen from production code. This should be cleaned up
-  // soon when metrics pref from cros will be eliminated.
-  if (chromeos::CrosSettings::IsInitialized()) {
-    chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                              &pref_value);
-  }
-#else  // Android
   pref_value = g_browser_process->local_state()->GetBoolean(
       prefs::kCrashReportingEnabled);
-#endif  // defined(OS_CHROMEOS)
-
   return IsMetricsReportingEnabledWithPrefValue(pref_value);
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 }
 
 // static

@@ -36,6 +36,8 @@ ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
     PrefService* local_state)
     : local_state_(local_state) {
   DCHECK(local_state);
+
+  SetupMetricsStateForChromeOS();
 }
 
 ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}

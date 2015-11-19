@@ -19,8 +19,12 @@ void InitiateMetricsReportingChange(
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn);
 
-// Returns whether MetricsReporting can be modified by the user (except CrOS and
+// Returns whether MetricsReporting can be modified by the user (except
 // Android).
-bool IsMetricsReportingUserChangable();
+bool IsMetricsReportingPolicyManaged();
+
+// Initialize kMetricsReportingEnabled based on kStatsReportingPref device
+// setting and add an observer as it is the source of truth on Chrome OS.
+void SetupMetricsStateForChromeOS();
 
 #endif  // CHROME_BROWSER_METRICS_METRICS_REPORTING_STATE_H_

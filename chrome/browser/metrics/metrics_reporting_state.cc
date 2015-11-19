@@ -14,6 +14,11 @@
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/settings/cros_settings_names.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 enum MetricsReportingChangeHistogramValue {
@@ -58,10 +63,12 @@ void SetMetricsReporting(bool to_update_pref,
     else
       metrics->Stop();
   }
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, updated_pref);
-#endif
+#endif  // !defined(OS_ANDROID)
+
   // When a user opts in to the metrics reporting service, the previously
   // collected data should be cleared to ensure that nothing is reported before
   // a user opts in and all reported data is accurate.
@@ -78,13 +85,27 @@ void SetMetricsReporting(bool to_update_pref,
     callback_fn.Run(updated_pref);
 }
 
+#if defined(OS_CHROMEOS)
+// Callback function for Chrome OS device settings change, so that the update is
+// applied to metrics reporting state.
+void OnDeviceSettingChange() {
+  bool enable_metrics = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enable_metrics);
+  InitiateMetricsReportingChange(enable_metrics,
+                                 OnMetricsReportingCallbackType());
+}
+#endif
+
 } // namespace
 
+// TODO(gayane): Instead of checking policy before setting the metrics pref set
+// the pref and register for notifications for the rest of the changes.
 void InitiateMetricsReportingChange(
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (!IsMetricsReportingUserChangable()) {
+#if !defined(OS_ANDROID)
+  if (IsMetricsReportingPolicyManaged()) {
     if (!callback_fn.is_null()) {
       callback_fn.Run(
           ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
@@ -100,9 +121,21 @@ void InitiateMetricsReportingChange(
       base::Bind(&SetMetricsReporting, enabled, callback_fn));
 }
 
-bool IsMetricsReportingUserChangable() {
+bool IsMetricsReportingPolicyManaged() {
   const PrefService* pref_service = g_browser_process->local_state();
   const PrefService::Preference* pref =
       pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
-  return pref && !pref->IsManaged();
+  return pref && pref->IsManaged();
+}
+
+// TODO(gayane): Add unittest which will check that observer on device settings
+// will trigger this function and kMetricsReportinEnabled as well as metrics
+// service state will be updated accordingly.
+void SetupMetricsStateForChromeOS() {
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kStatsReportingPref, base::Bind(&OnDeviceSettingChange));
+
+  OnDeviceSettingChange();
+#endif // defined(OS_CHROMEOS)
 }

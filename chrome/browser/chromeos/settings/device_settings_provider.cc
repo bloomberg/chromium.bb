@@ -87,15 +87,6 @@ const char* const kKnownSettings[] = {
     kVariationsRestrictParameter,
 };
 
-bool HasOldMetricsFile() {
-  // TODO(pastarmovj): Remove this once migration is not needed anymore.
-  // If the value is not set we should try to migrate legacy consent file.
-  // Loading consent file state causes us to do blocking IO on UI thread.
-  // Temporarily allow it until we fix http://crbug.com/62626
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  return GoogleUpdateSettings::GetCollectStatsConsent();
-}
-
 void DecodeLoginPolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) {
@@ -373,7 +364,7 @@ void DecodeGenericPolicies(
     new_values_cache->SetBoolean(kStatsReportingPref,
                                  policy.metrics_enabled().metrics_enabled());
   } else {
-    new_values_cache->SetBoolean(kStatsReportingPref, HasOldMetricsFile());
+    new_values_cache->SetBoolean(kStatsReportingPref, false);
   }
 
   if (!policy.has_release_channel() ||
@@ -554,9 +545,6 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
     }
   }
 
-  bool metrics_value;
-  if (path == kStatsReportingPref && in_value.GetAsBoolean(&metrics_value))
-    ApplyMetricsSetting(false, metrics_value);
 }
 
 void DeviceSettingsProvider::OwnershipStatusChanged() {
@@ -595,9 +583,6 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
       LOG(ERROR) << "Can't store policy";
     }
   }
-
-  // The owner key might have become available, allowing migration to happen.
-  AttemptMigration();
 
   ownership_status_ = new_ownership_status;
 }
@@ -684,36 +669,6 @@ void DeviceSettingsProvider::UpdateValuesCache(
     NotifyObservers(notifications[i]);
 }
 
-void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
-                                                 bool new_value) {
-  // TODO(pastarmovj): Remove this once migration is not needed anymore.
-  // If the value is not set we should try to migrate legacy consent file.
-  if (use_file) {
-    new_value = HasOldMetricsFile();
-    // Make sure the values will get eventually written to the policy file.
-    migration_values_.SetBoolean(kStatsReportingPref, new_value);
-    AttemptMigration();
-    VLOG(1) << "No metrics policy set will revert to checking "
-            << "consent file which is "
-            << (new_value ? "on." : "off.");
-    UMA_HISTOGRAM_COUNTS("DeviceSettings.MetricsMigrated", 1);
-  }
-  VLOG(1) << "Metrics policy is being set to : " << new_value
-          << "(use file : " << use_file << ")";
-  // TODO(pastarmovj): Remove this once we don't need to regenerate the
-  // consent file for the GUID anymore.
-  InitiateMetricsReportingChange(new_value, OnMetricsReportingCallbackType());
-}
-
-void DeviceSettingsProvider::ApplySideEffects(
-    const em::ChromeDeviceSettingsProto& settings) {
-  // First migrate metrics settings as needed.
-  if (settings.has_metrics_enabled())
-    ApplyMetricsSetting(false, settings.metrics_enabled().metrics_enabled());
-  else
-    ApplyMetricsSetting(true, false);
-}
-
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
   // First check if the device has been owned already and if not exit
   // immediately.
@@ -794,10 +749,6 @@ bool DeviceSettingsProvider::UpdateFromService() {
         UpdateValuesCache(*policy_data, *device_settings, TRUSTED);
         device_settings_ = *device_settings;
 
-        // TODO(pastarmovj): Make those side effects responsibility of the
-        // respective subsystems.
-        ApplySideEffects(*device_settings);
-
         settings_loaded = true;
       } else {
         // Initial policy load is still pending.
@@ -837,15 +788,6 @@ bool DeviceSettingsProvider::UpdateFromService() {
     callbacks[i].Run();
 
   return settings_loaded;
-}
-
-void DeviceSettingsProvider::AttemptMigration() {
-  if (device_settings_service_->HasPrivateOwnerKey()) {
-    PrefValueMap::const_iterator i;
-    for (i = migration_values_.begin(); i != migration_values_.end(); ++i)
-      DoSet(i->first, *i->second);
-    migration_values_.Clear();
-  }
 }
 
 }  // namespace chromeos

@@ -425,18 +425,6 @@
 <if expr="_google_chrome">
       <div id="metrics-reporting-setting"
           class="checkbox controlled-setting-with-label">
-<if expr="chromeos">
-        <label>
-          <input id="metrics-reporting-enabled"
-              pref="cros.metrics.reportingEnabled" type="checkbox">
-          <span>
-            <span i18n-content="enableLogging"></span>
-            <span class="controlled-setting-indicator"
-                pref="cros.metrics.reportingEnabled"></span>
-          </span>
-        </label>
-</if>
-<if expr="not chromeos">
         <label>
           <input id="metrics-reporting-enabled" type="checkbox">
           <span>
@@ -445,12 +433,13 @@
                 class="controlled-setting-indicator"></span>
           </span>
         </label>
+<if expr="not chromeos">
         <span id="metrics-reporting-reset-restart" hidden>
           <!-- Text filled by JavaScript -->
           <span></span><a is="action-link" role="button"
               class="standalone-action-link"></a><span></span>
         </span>
-</if>
+</if>  <!-- not chromeos -->
       </div>
 </if>  <!-- _google_chrome -->
       <div class="checkbox">

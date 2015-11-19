@@ -569,11 +569,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
-#if !defined(OS_CHROMEOS)
   values->SetBoolean(
       "metricsReportingEnabledAtStart",
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-#endif
 
 #if defined(OS_CHROMEOS)
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
@@ -2076,14 +2074,18 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
 }
 
 void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {
-  // This function does not work for ChromeOS and non-official builds.
-#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+// As the metrics and crash reporting checkbox only exists for official builds
+// it doesn't need to be set up for non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
   bool checked =
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
-  bool disabled = !IsMetricsReportingUserChangable();
-
-  SetMetricsReportingCheckbox(checked, disabled);
-#endif
+  bool policy_managed = IsMetricsReportingPolicyManaged();
+  bool owner_managed = false;
+#if defined(OS_CHROMEOS)
+  owner_managed = !IsDeviceOwnerProfile();
+#endif  // defined(OS_CHROMEOS)
+  SetMetricsReportingCheckbox(checked, policy_managed, owner_managed);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void BrowserOptionsHandler::HandleMetricsReportingChange(
@@ -2091,23 +2093,43 @@ void BrowserOptionsHandler::HandleMetricsReportingChange(
   bool enable;
   if (!args->GetBoolean(0, &enable))
     return;
+  // Decline the change if current user shouldn't be able to change metrics
+  // reporting.
+  if (!IsDeviceOwnerProfile() || IsMetricsReportingPolicyManaged()) {
+    NotifyUIOfMetricsReportingChange(
+        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+    return;
+  }
 
+// For Chrome OS updating device settings will notify an observer to update
+// metrics pref, however we still need to call |InitiateMetricsReportingChange|
+// with a proper callback so that UI gets updated in case of failure to update
+// the metrics pref.
+// TODO(gayane): Don't call |InitiateMetricsReportingChange| twice so that
+// metrics service pref changes only as a result of device settings change for
+// Chrome OS .crbug.com/552550.
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->SetBoolean(chromeos::kStatsReportingPref,
+                                            enable);
+#endif  // defined(OS_CHROMEOS)
   InitiateMetricsReportingChange(
       enable,
-      base::Bind(&BrowserOptionsHandler::MetricsReportingChangeCallback,
+      base::Bind(&BrowserOptionsHandler::NotifyUIOfMetricsReportingChange,
                  base::Unretained(this)));
 }
 
-void BrowserOptionsHandler::MetricsReportingChangeCallback(bool enabled) {
-  SetMetricsReportingCheckbox(enabled, !IsMetricsReportingUserChangable());
+void BrowserOptionsHandler::NotifyUIOfMetricsReportingChange(bool enabled) {
+  SetMetricsReportingCheckbox(enabled, IsMetricsReportingPolicyManaged(),
+                              !IsDeviceOwnerProfile());
 }
 
 void BrowserOptionsHandler::SetMetricsReportingCheckbox(bool checked,
-                                                        bool disabled) {
+                                                        bool policy_managed,
+                                                        bool owner_managed) {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setMetricsReportingCheckboxState",
-      base::FundamentalValue(checked),
-      base::FundamentalValue(disabled));
+      base::FundamentalValue(checked), base::FundamentalValue(policy_managed),
+      base::FundamentalValue(owner_managed));
 }
 
 void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -2117,6 +2139,14 @@ void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   current.GetDifferingKeys(previous, &different_keys);
   if (ContainsKey(different_keys, policy::key::kMetricsReportingEnabled))
     SetupMetricsReportingCheckbox();
+}
+
+bool BrowserOptionsHandler::IsDeviceOwnerProfile() {
+#if defined(OS_CHROMEOS)
+  return chromeos::ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
+#else
+  return true;
+#endif
 }
 
 }  // namespace options

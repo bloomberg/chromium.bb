@@ -77,17 +77,9 @@ class DeviceSettingsProvider
       const enterprise_management::ChromeDeviceSettingsProto& settings,
       TrustedStatus trusted_status);
 
-  // Applies the metrics policy and if not set migrates the legacy file.
-  void ApplyMetricsSetting(bool use_file, bool new_value);
-
   // Applies the data roaming policy.
   void ApplyRoamingSetting(bool new_value);
   void ApplyRoamingSettingFromProto(
-      const enterprise_management::ChromeDeviceSettingsProto& settings);
-
-  // Applies any changes of the policies that are not handled by the respective
-  // subsystems.
-  void ApplySideEffects(
       const enterprise_management::ChromeDeviceSettingsProto& settings);
 
   // In case of missing policy blob we should verify if this is upgrade of
@@ -108,11 +100,6 @@ class DeviceSettingsProvider
   // |trusted_status_| and calls UpdateValuesCache() if applicable. Returns true
   // if new settings have been loaded.
   bool UpdateFromService();
-
-  // Checks the current ownership status to see whether the device owner is
-  // logged in and writes the data accumulated in |migration_values_| to proper
-  // device settings.
-  void AttemptMigration();
 
   // Pending callbacks that need to be invoked after settings verification.
   std::vector<base::Closure> callbacks_;
