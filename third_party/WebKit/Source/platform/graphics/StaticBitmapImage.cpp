@@ -14,7 +14,7 @@
 
 namespace blink {
 
-PassRefPtr<Image> StaticBitmapImage::create(PassRefPtr<SkImage> image)
+PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(PassRefPtr<SkImage> image)
 {
     if (!image)
         return nullptr;
@@ -58,6 +58,11 @@ void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const Float
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);
+}
+
+PassRefPtr<SkImage> StaticBitmapImage::imageForCurrentFrame()
+{
+    return m_image;
 }
 
 } // namespace blink

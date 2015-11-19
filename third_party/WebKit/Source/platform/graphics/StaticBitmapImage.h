@@ -15,13 +15,13 @@ public:
 
     bool currentFrameIsComplete() override { return true; }
 
-    static PassRefPtr<Image> create(PassRefPtr<SkImage>);
+    static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
     virtual void destroyDecodedData(bool destroyAll) { }
     virtual bool currentFrameKnownToBeOpaque();
     virtual IntSize size() const;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override { return m_image; }
+    PassRefPtr<SkImage> imageForCurrentFrame() override;
 
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
