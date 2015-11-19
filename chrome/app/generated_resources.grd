@@ -1941,8 +1941,8 @@ Even if you have downloaded files from this website before, the website might ha
         Keep anyway
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS"
-               desc="The text for the button used to confirm that the user DOES want to keep malware. Don't translate the English string literally; for translations, translate 'Recover anyway'">
-        Hurt me plenty
+               desc="The text for the button used to confirm that the user DOES want to keep malware.">
+        Recover anyway
       </message>
       <message name="IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS"
                desc="Text for the button used to indicate that the user does NOT want to restore a malicious download.">
