@@ -33,6 +33,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -2258,7 +2259,9 @@ bool CompositedLayerMapping::interestRectChangedEnoughToRepaint(const IntRect& p
 
 IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect& previousInterestRect) const
 {
-    if (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer)
+    // Paint the whole layer if "mainFrameClipsContent" is false, meaning that WebPreferences::record_whole_document is true.
+    bool shouldPaintWholePage = !m_owningLayer.layoutObject()->document().settings()->mainFrameClipsContent();
+    if (shouldPaintWholePage || (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer))
         return IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
 
     IntRect newInterestRect = recomputeInterestRect(graphicsLayer, m_owningLayer.layoutObject());

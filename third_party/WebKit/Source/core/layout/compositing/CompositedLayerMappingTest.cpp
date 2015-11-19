@@ -25,6 +25,11 @@ protected:
         return CompositedLayerMapping::recomputeInterestRect(graphicsLayer, owningLayoutObject);
     }
 
+    IntRect computeInterestRect(const CompositedLayerMapping* compositedLayerMapping, GraphicsLayer* graphicsLayer, IntRect previousInterestRect)
+    {
+        return compositedLayerMapping->computeInterestRect(graphicsLayer, previousInterestRect);
+    }
+
     bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize)
     {
         return CompositedLayerMapping::interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize);
@@ -85,6 +90,23 @@ TEST_F(CompositedLayerMappingTest, TallLayerInterestRect)
     // clipping, yields this rect.
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
 }
+
+TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect)
+{
+    setBodyInnerHTML("<div id='target' style='width: 200px; height: 10000px; will-change: transform'></div>");
+
+    document().settings()->setMainFrameClipsContent(false);
+
+    document().view()->updateAllLifecyclePhases();
+    Element* element = document().getElementById("target");
+    PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+    ASSERT_TRUE(paintLayer->compositedLayerMapping());
+    // recomputeInterestRect computes the interest rect; computeInterestRect applies the extra setting to paint everything.
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 10000), computeInterestRect(paintLayer->compositedLayerMapping(), paintLayer->graphicsLayerBacking(), IntRect()));
+}
+
 
 TEST_F(CompositedLayerMappingTest, RotatedInterestRect)
 {
