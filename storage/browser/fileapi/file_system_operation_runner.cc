@@ -175,6 +175,7 @@ OperationID FileSystemOperationRunner::FileExists(
 
 OperationID FileSystemOperationRunner::GetMetadata(
     const FileSystemURL& url,
+    int fields,
     const GetMetadataCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
@@ -186,10 +187,9 @@ OperationID FileSystemOperationRunner::GetMetadata(
     return handle.id;
   }
   PrepareForRead(handle.id, url);
-  operation->GetMetadata(
-      url,
-      base::Bind(&FileSystemOperationRunner::DidGetMetadata, AsWeakPtr(),
-                 handle, callback));
+  operation->GetMetadata(url, fields,
+                         base::Bind(&FileSystemOperationRunner::DidGetMetadata,
+                                    AsWeakPtr(), handle, callback));
   return handle.id;
 }
 

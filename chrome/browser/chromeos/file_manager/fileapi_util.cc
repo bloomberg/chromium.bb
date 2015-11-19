@@ -349,11 +349,12 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
 
     context_->operation_runner()->GetMetadata(
         context_->CrackURL(it->file_system_url),
+        storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+            storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+            storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
         base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                        OnGotMetadataOnIOThread,
-                   base::Unretained(this),
-                   base::Passed(&lifetime),
-                   it));
+                   base::Unretained(this), base::Passed(&lifetime), it));
   }
 
   // Callback invoked after GetMetadata.
@@ -554,6 +555,7 @@ void CheckIfDirectoryExists(
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& entry_path,
+    int fields,
     const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -568,7 +570,7 @@ void GetMetadataForPath(
       base::Bind(
           base::IgnoreResult(&storage::FileSystemOperationRunner::GetMetadata),
           file_system_context->operation_runner()->AsWeakPtr(), internal_url,
-          google_apis::CreateRelayCallback(callback)));
+          fields, google_apis::CreateRelayCallback(callback)));
 }
 
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(

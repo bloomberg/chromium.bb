@@ -73,7 +73,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
     }
 
     operation_runner()->GetMetadata(
-        url,
+        url, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
         base::Bind(&LoggingRecursiveOperation::DidGetMetadata,
                    weak_factory_.GetWeakPtr(), callback));
   }

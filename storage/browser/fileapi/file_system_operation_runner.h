@@ -48,6 +48,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   typedef FileSystemOperation::CopyFileProgressCallback
       CopyFileProgressCallback;
   typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
+  typedef FileSystemOperation::GetMetadataField GetMetadataField;
 
   typedef int OperationID;
 
@@ -98,6 +99,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
 
   // Gets the metadata of a file or directory at |url|.
   OperationID GetMetadata(const FileSystemURL& url,
+                          int fields,
                           const GetMetadataCallback& callback);
 
   // Reads contents of a directory at |url|.

@@ -177,9 +177,9 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   void CheckFile(storage::FileSystemURL url,
                  int64 expected_size,
                  const base::Callback<void(bool success)>& callback) {
-    operation_runner()->GetMetadata(url,
-                                    base::Bind(&HandleCheckFileResult,
-                                               expected_size, callback));
+    operation_runner()->GetMetadata(
+        url, storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
+        base::Bind(&HandleCheckFileResult, expected_size, callback));
   }
 
   // Helper that checks the result of |move_src_| lookup and then checks

@@ -267,6 +267,8 @@ void ExternalFileURLRequestJob::OnRedirectURLObtained(
   // Obtain file system context.
   file_system_context_->operation_runner()->GetMetadata(
       file_system_url_,
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
       base::Bind(&ExternalFileURLRequestJob::OnFileInfoObtained,
                  weak_ptr_factory_.GetWeakPtr()));
 }

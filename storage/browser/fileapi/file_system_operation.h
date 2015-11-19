@@ -227,6 +227,14 @@ class FileSystemOperation {
     OPTION_PRESERVE_LAST_MODIFIED,
   };
 
+  // Fields requested for the GetMetadata method. Used as a bitmask.
+  enum GetMetadataField {
+    GET_METADATA_FIELD_NONE = 0,
+    GET_METADATA_FIELD_SIZE = 1 << 0,
+    GET_METADATA_FIELD_IS_DIRECTORY = 1 << 1,
+    GET_METADATA_FIELD_LAST_MODIFIED = 1 << 2
+  };
+
   // Used for Write().
   typedef base::Callback<void(base::File::Error result,
                               int64 bytes,
@@ -302,6 +310,7 @@ class FileSystemOperation {
 
   // Gets the metadata of a file or directory at |path|.
   virtual void GetMetadata(const FileSystemURL& path,
+                           int fields,
                            const GetMetadataCallback& callback) = 0;
 
   // Reads contents of a directory at |path|.

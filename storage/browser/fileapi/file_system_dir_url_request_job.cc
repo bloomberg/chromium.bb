@@ -157,7 +157,8 @@ void FileSystemDirURLRequestJob::GetMetadata(size_t index) {
       url_.path().Append(base::FilePath(entry.name)));
   DCHECK(url.is_valid());
   file_system_context_->operation_runner()->GetMetadata(
-      url,
+      url, FileSystemOperation::GET_METADATA_FIELD_SIZE |
+               FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
       base::Bind(&FileSystemDirURLRequestJob::DidGetMetadata, this, index));
 }
 

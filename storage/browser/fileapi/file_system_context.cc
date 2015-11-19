@@ -626,8 +626,12 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
     DCHECK(result);
   }
 
+  // TODO(mtomasz): Not all fields should be required for ResolveURL.
   operation_runner()->GetMetadata(
-      url, base::Bind(&DidGetMetadataForResolveURL, path, callback, info));
+      url, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+               FileSystemOperation::GET_METADATA_FIELD_SIZE |
+               FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::Bind(&DidGetMetadataForResolveURL, path, callback, info));
 }
 
 }  // namespace storage

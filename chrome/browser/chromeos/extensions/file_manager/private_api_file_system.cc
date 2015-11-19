@@ -602,10 +602,11 @@ bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
 void GetFileMetadataOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const FileSystemURL& url,
+    int fields,
     const storage::FileSystemOperation::GetMetadataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   file_system_context->operation_runner()->GetMetadata(
-      url, base::Bind(&GetFileMetadataRespondOnUIThread, callback));
+      url, fields, base::Bind(&GetFileMetadataRespondOnUIThread, callback));
 }
 
 // Checks if the available space of the |path| is enough for required |bytes|.
@@ -656,6 +657,7 @@ bool FileManagerPrivateInternalStartCopyFunction::RunAsync() {
     return BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&GetFileMetadataOnIOThread, file_system_context, source_url_,
+                   storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
                    base::Bind(&FileManagerPrivateInternalStartCopyFunction::
                                   RunAfterGetFileMetadata,
                               this)));

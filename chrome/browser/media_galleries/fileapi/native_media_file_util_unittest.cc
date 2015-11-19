@@ -500,10 +500,8 @@ TEST_F(NativeMediaFileUtilTest, GetMetadataFiltering) {
         expectation = base::File::FILE_ERROR_NOT_FOUND;
       }
       operation_runner()->GetMetadata(
-          url,
-          base::Bind(&ExpectMetadataEqHelper,
-                     test_name,
-                     expectation,
+          url, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
+          base::Bind(&ExpectMetadataEqHelper, test_name, expectation,
                      kFilteringTestCases[i].is_directory));
       base::MessageLoop::current()->RunUntilIdle();
     }

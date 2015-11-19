@@ -391,7 +391,8 @@ class StreamCopyOrMoveImpl
     // a directory. To check errors before destination file creation,
     // check metadata first.
     operation_runner_->GetMetadata(
-        src_url_,
+        src_url_, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                      FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
         base::Bind(&StreamCopyOrMoveImpl::RunAfterGetMetadataForSource,
                    weak_factory_.GetWeakPtr(), callback));
   }
@@ -884,7 +885,7 @@ void CopyOrMoveOperationDelegate::PostProcessDirectory(
   }
 
   operation_runner()->GetMetadata(
-      src_url,
+      src_url, FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
       base::Bind(
           &CopyOrMoveOperationDelegate::PostProcessDirectoryAfterGetMetadata,
           weak_factory_.GetWeakPtr(), src_url, callback));

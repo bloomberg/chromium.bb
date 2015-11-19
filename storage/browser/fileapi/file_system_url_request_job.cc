@@ -165,7 +165,8 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   }
   file_system_context_->operation_runner()->GetMetadata(
-      url_,
+      url_, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                FileSystemOperation::GET_METADATA_FIELD_SIZE,
       base::Bind(&FileSystemURLRequestJob::DidGetMetadata,
                  weak_factory_.GetWeakPtr()));
 }

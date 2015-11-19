@@ -80,6 +80,7 @@ class AsyncFileUtil {
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
 
   typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
+  typedef FileSystemOperation::GetMetadataField GetMetadataField;
 
   // Creates an AsyncFileUtil instance which performs file operations on
   // local native file system. The created instance assumes
@@ -149,10 +150,10 @@ class AsyncFileUtil {
   // - File::FILE_ERROR_NOT_FOUND if the file doesn't exist.
   // - Other error code if there was an error while retrieving the file info.
   //
-  virtual void GetFileInfo(
-      scoped_ptr<FileSystemOperationContext> context,
-      const FileSystemURL& url,
-      const GetFileInfoCallback& callback) = 0;
+  virtual void GetFileInfo(scoped_ptr<FileSystemOperationContext> context,
+                           const FileSystemURL& url,
+                           int fields,
+                           const GetFileInfoCallback& callback) = 0;
 
   // Reads contents of a directory at |path|.
   //

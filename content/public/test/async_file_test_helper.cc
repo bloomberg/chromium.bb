@@ -216,8 +216,10 @@ base::File::Error AsyncFileTestHelper::GetMetadata(
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->GetMetadata(
-      url, base::Bind(&GetMetadataCallback, &run_loop, &result,
-                      file_info));
+      url, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+               storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+               storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::Bind(&GetMetadataCallback, &run_loop, &result, file_info));
   run_loop.Run();
   return result;
 }

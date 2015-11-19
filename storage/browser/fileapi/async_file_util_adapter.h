@@ -52,6 +52,7 @@ class STORAGE_EXPORT AsyncFileUtilAdapter
                        const StatusCallback& callback) override;
   void GetFileInfo(scoped_ptr<FileSystemOperationContext> context,
                    const FileSystemURL& url,
+                   int /* fields */,
                    const GetFileInfoCallback& callback) override;
   void ReadDirectory(scoped_ptr<FileSystemOperationContext> context,
                      const FileSystemURL& url,

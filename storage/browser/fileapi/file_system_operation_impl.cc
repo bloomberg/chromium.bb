@@ -131,7 +131,7 @@ void FileSystemOperationImpl::DirectoryExists(const FileSystemURL& url,
                                               const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationDirectoryExists));
   async_file_util_->GetFileInfo(
-      operation_context_.Pass(), url,
+      operation_context_.Pass(), url, GET_METADATA_FIELD_IS_DIRECTORY,
       base::Bind(&FileSystemOperationImpl::DidDirectoryExists,
                  weak_factory_.GetWeakPtr(), callback));
 }
@@ -140,15 +140,17 @@ void FileSystemOperationImpl::FileExists(const FileSystemURL& url,
                                          const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationFileExists));
   async_file_util_->GetFileInfo(
-      operation_context_.Pass(), url,
+      operation_context_.Pass(), url, GET_METADATA_FIELD_IS_DIRECTORY,
       base::Bind(&FileSystemOperationImpl::DidFileExists,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void FileSystemOperationImpl::GetMetadata(
-    const FileSystemURL& url, const GetMetadataCallback& callback) {
+void FileSystemOperationImpl::GetMetadata(const FileSystemURL& url,
+                                          int fields,
+                                          const GetMetadataCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationGetMetadata));
-  async_file_util_->GetFileInfo(operation_context_.Pass(), url, callback);
+  async_file_util_->GetFileInfo(operation_context_.Pass(), url, fields,
+                                callback);
 }
 
 void FileSystemOperationImpl::ReadDirectory(

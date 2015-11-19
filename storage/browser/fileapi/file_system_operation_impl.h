@@ -53,6 +53,7 @@ class STORAGE_EXPORT FileSystemOperationImpl
   void FileExists(const FileSystemURL& url,
                   const StatusCallback& callback) override;
   void GetMetadata(const FileSystemURL& url,
+                   int fields,
                    const GetMetadataCallback& callback) override;
   void ReadDirectory(const FileSystemURL& url,
                      const ReadDirectoryCallback& callback) override;

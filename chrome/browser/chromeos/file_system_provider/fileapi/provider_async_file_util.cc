@@ -26,6 +26,7 @@ namespace {
 void GetFileInfoOnUIThread(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
+    int /* fields */,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
@@ -34,6 +35,8 @@ void GetFileInfoOnUIThread(
     return;
   }
 
+  // TODO(mtomasz): Pass fields to FSP extensions so only requested fields are
+  // returned.
   parser.file_system()->GetMetadata(
       parser.file_path(),
       ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT,
@@ -317,14 +320,13 @@ void ProviderAsyncFileUtil::CreateDirectory(
 void ProviderAsyncFileUtil::GetFileInfo(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
+    int fields,
     const GetFileInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&GetFileInfoOnUIThread,
-                                     base::Passed(&context),
-                                     url,
-                                     base::Bind(&OnGetFileInfo, callback)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetFileInfoOnUIThread, base::Passed(&context), url, fields,
+                 base::Bind(&OnGetFileInfo, callback)));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(

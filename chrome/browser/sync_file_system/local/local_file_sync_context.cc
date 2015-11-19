@@ -463,8 +463,10 @@ void LocalFileSyncContext::GetFileMetadata(
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
   file_system_context->operation_runner()->GetMetadata(
-      url_for_sync, base::Bind(&LocalFileSyncContext::DidGetFileMetadata,
-                      this, callback));
+      url_for_sync, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                        FileSystemOperation::GET_METADATA_FIELD_SIZE |
+                        FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::Bind(&LocalFileSyncContext::DidGetFileMetadata, this, callback));
 }
 
 void LocalFileSyncContext::HasPendingLocalChanges(

@@ -54,6 +54,7 @@ class SyncableFileSystemOperation
   void FileExists(const storage::FileSystemURL& url,
                   const StatusCallback& callback) override;
   void GetMetadata(const storage::FileSystemURL& url,
+                   int fields,
                    const GetMetadataCallback& callback) override;
   void ReadDirectory(const storage::FileSystemURL& url,
                      const ReadDirectoryCallback& callback) override;

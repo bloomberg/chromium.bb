@@ -385,12 +385,12 @@ class FileSystemOperationImplTest
     return status;
   }
 
-  base::File::Error GetMetadata(const FileSystemURL& url) {
+  base::File::Error GetMetadata(const FileSystemURL& url, int fields) {
     base::File::Error status;
     base::RunLoop run_loop;
     update_observer_.Enable();
     operation_runner()->GetMetadata(
-        url, RecordMetadataCallback(run_loop.QuitClosure(), &status));
+        url, fields, RecordMetadataCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();
     update_observer_.Disable();
     return status;
@@ -938,7 +938,8 @@ TEST_F(FileSystemOperationImplTest, TestCreateDirSuccessExclusive) {
 
 TEST_F(FileSystemOperationImplTest, TestExistsAndMetadataFailure) {
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
-            GetMetadata(URLForPath("nonexistent")));
+            GetMetadata(URLForPath("nonexistent"),
+                        storage::FileSystemOperation::GET_METADATA_FIELD_NONE));
 
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             FileExists(URLForPath("nonexistent")));
@@ -956,14 +957,20 @@ TEST_F(FileSystemOperationImplTest, TestExistsAndMetadataSuccess) {
   EXPECT_EQ(base::File::FILE_OK, DirectoryExists(dir));
   ++read_access;
 
-  EXPECT_EQ(base::File::FILE_OK, GetMetadata(dir));
+  EXPECT_EQ(
+      base::File::FILE_OK,
+      GetMetadata(
+          dir, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY));
   EXPECT_TRUE(info().is_directory);
   ++read_access;
 
   EXPECT_EQ(base::File::FILE_OK, FileExists(file));
   ++read_access;
 
-  EXPECT_EQ(base::File::FILE_OK, GetMetadata(file));
+  EXPECT_EQ(
+      base::File::FILE_OK,
+      GetMetadata(
+          file, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY));
   EXPECT_FALSE(info().is_directory);
   ++read_access;
 
@@ -1077,7 +1084,11 @@ TEST_F(FileSystemOperationImplTest, TestTruncate) {
             base::WriteFile(platform_path, test_data, data_size));
 
   // Check that its length is the size of the data written.
-  EXPECT_EQ(base::File::FILE_OK, GetMetadata(file));
+  EXPECT_EQ(
+      base::File::FILE_OK,
+      GetMetadata(
+          file, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                    storage::FileSystemOperation::GET_METADATA_FIELD_SIZE));
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(data_size, info().size);
 

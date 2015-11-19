@@ -176,9 +176,10 @@ void SyncableFileSystemOperation::FileExists(
 
 void SyncableFileSystemOperation::GetMetadata(
     const FileSystemURL& url,
+    int fields,
     const GetMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  impl_->GetMetadata(url, callback);
+  impl_->GetMetadata(url, fields, callback);
 }
 
 void SyncableFileSystemOperation::ReadDirectory(

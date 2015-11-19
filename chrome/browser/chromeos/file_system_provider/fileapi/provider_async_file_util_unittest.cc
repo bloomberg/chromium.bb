@@ -261,8 +261,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, GetFileInfo) {
   EventLogger logger;
 
   async_file_util_->GetFileInfo(
-      CreateOperationContext(),
-      root_url_,
+      CreateOperationContext(), root_url_,
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+          storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
       base::Bind(&EventLogger::OnGetFileInfo, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 

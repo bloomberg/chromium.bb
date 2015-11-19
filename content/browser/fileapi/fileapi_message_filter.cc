@@ -316,7 +316,10 @@ void FileAPIMessageFilter::OnReadMetadata(
   }
 
   operations_[request_id] = operation_runner()->GetMetadata(
-      url, base::Bind(&FileAPIMessageFilter::DidGetMetadata, this, request_id));
+      url, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+               FileSystemOperation::GET_METADATA_FIELD_SIZE |
+               FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::Bind(&FileAPIMessageFilter::DidGetMetadata, this, request_id));
 }
 
 void FileAPIMessageFilter::OnCreate(
@@ -493,9 +496,11 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
   FileSystemBackend* backend = context_->GetFileSystemBackend(url.type());
   if (backend->SupportsStreaming(url)) {
     operations_[request_id] = operation_runner()->GetMetadata(
-        url,
-        base::Bind(&FileAPIMessageFilter::DidGetMetadataForStreaming,
-                   this, request_id));
+        url, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                 FileSystemOperation::GET_METADATA_FIELD_SIZE |
+                 FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+        base::Bind(&FileAPIMessageFilter::DidGetMetadataForStreaming, this,
+                   request_id));
   } else {
     operations_[request_id] = operation_runner()->CreateSnapshotFile(
         url,

@@ -201,6 +201,7 @@ void AsyncFileUtil::CreateDirectory(
 void AsyncFileUtil::GetFileInfo(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
+    int /* fields */,
     const GetFileInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

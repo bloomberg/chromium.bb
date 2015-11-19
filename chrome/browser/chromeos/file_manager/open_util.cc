@@ -168,6 +168,7 @@ void OpenItem(Profile* profile,
 
   GetMetadataForPath(
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
       base::Bind(&OpenItemWithMetadata, profile, file_path, url, expected_type,
                  callback));
 }

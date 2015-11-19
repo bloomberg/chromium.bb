@@ -1149,19 +1149,16 @@ bool FileSystemRetainEntryFunction::RunAsync() {
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(
             base::IgnoreResult(
                 &storage::FileSystemOperationRunner::GetMetadata),
-            context->operation_runner()->AsWeakPtr(),
-            url,
+            context->operation_runner()->AsWeakPtr(), url,
+            storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
             base::Bind(
                 &PassFileInfoToUIThread,
                 base::Bind(&FileSystemRetainEntryFunction::RetainFileEntry,
-                           this,
-                           entry_id,
-                           path))));
+                           this, entry_id, path))));
     return true;
   }
 

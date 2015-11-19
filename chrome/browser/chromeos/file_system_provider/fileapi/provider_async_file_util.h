@@ -47,6 +47,7 @@ class ProviderAsyncFileUtil : public storage::AsyncFileUtil {
                        const StatusCallback& callback) override;
   void GetFileInfo(scoped_ptr<storage::FileSystemOperationContext> context,
                    const storage::FileSystemURL& url,
+                   int fields,
                    const GetFileInfoCallback& callback) override;
   void ReadDirectory(scoped_ptr<storage::FileSystemOperationContext> context,
                      const storage::FileSystemURL& url,
