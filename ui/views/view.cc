@@ -1887,7 +1887,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
 
   OnBoundsChanged(previous_bounds);
 
-  if (previous_bounds.size() != size()) {
+  if (needs_layout_ || previous_bounds.size() != size()) {
     needs_layout_ = false;
     Layout();
   }

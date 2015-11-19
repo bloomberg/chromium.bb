@@ -202,6 +202,7 @@ class TestView : public View {
  public:
   TestView()
       : View(),
+        did_layout_(false),
         delete_on_pressed_(false),
         did_paint_(false),
         native_theme_(NULL),
@@ -211,6 +212,7 @@ class TestView : public View {
   // Reset all test state
   void Reset() {
     did_change_bounds_ = false;
+    did_layout_ = false;
     last_mouse_event_type_ = 0;
     location_.SetPoint(0, 0);
     received_mouse_enter_ = false;
@@ -239,6 +241,11 @@ class TestView : public View {
     return can_process_events_within_subtree_;
   }
 
+  void Layout() override {
+    did_layout_ = true;
+    View::Layout();
+  }
+
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -255,6 +262,9 @@ class TestView : public View {
   // OnBoundsChanged.
   bool did_change_bounds_;
   gfx::Rect new_bounds_;
+
+  // Layout.
+  bool did_layout_;
 
   // MouseEvent.
   int last_mouse_event_type_;
@@ -276,6 +286,35 @@ class TestView : public View {
   // Value to return from CanProcessEventsWithinSubtree().
   bool can_process_events_within_subtree_;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Layout
+////////////////////////////////////////////////////////////////////////////////
+
+TEST_F(ViewTest, LayoutCalledInvalidateAndOriginChanges) {
+  TestView parent;
+  TestView* child = new TestView;
+  gfx::Rect parent_rect(0, 0, 100, 100);
+  parent.SetBoundsRect(parent_rect);
+
+  parent.Reset();
+  // |AddChildView| invalidates parent's layout.
+  parent.AddChildView(child);
+  // Change rect so that only rect's origin is affected.
+  parent.SetBoundsRect(parent_rect + gfx::Vector2d(10, 0));
+
+  EXPECT_TRUE(parent.did_layout_);
+
+  // After child layout is invalidated, parent and child must be laid out
+  // during parent->BoundsChanged(...) call.
+  parent.Reset();
+  child->Reset();
+
+  child->InvalidateLayout();
+  parent.SetBoundsRect(parent_rect + gfx::Vector2d(20, 0));
+  EXPECT_TRUE(parent.did_layout_);
+  EXPECT_TRUE(child->did_layout_);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OnBoundsChanged
