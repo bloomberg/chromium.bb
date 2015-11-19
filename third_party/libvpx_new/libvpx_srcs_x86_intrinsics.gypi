@@ -107,7 +107,7 @@
       'xcode_settings': { 'OTHER_CFLAGS': [ '-mavx' ] },
       'msvs_settings': {
         'VCCLCompilerTool': {
-          'EnableEnhancedInstructionSet': '4', # /arch:AVX
+          'EnableEnhancedInstructionSet': '3', # /arch:AVX
         },
       },
     },

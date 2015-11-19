@@ -169,7 +169,7 @@ function write_target_definition {
   if [[ -z $DISABLE_AVX && $4 == avx ]]; then
   echo "      'msvs_settings': {" >> "$2"
   echo "        'VCCLCompilerTool': {" >> "$2"
-  echo "          'EnableEnhancedInstructionSet': '4', # /arch:AVX" >> "$2"
+  echo "          'EnableEnhancedInstructionSet': '3', # /arch:AVX" >> "$2"
   echo "        }," >> "$2"
   echo "      }," >> "$2"
   fi
