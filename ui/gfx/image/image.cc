@@ -743,13 +743,13 @@ internal::ImageRep* Image::GetRepresentation(
     CHECK(!must_exist);
     return NULL;
   }
-  return it->second;
+  return it->second.get();
 }
 
 void Image::AddRepresentation(scoped_ptr<internal::ImageRep> rep) const {
   CHECK(storage_.get());
   RepresentationType type = rep->type();
-  storage_->representations().insert(type, rep.Pass());
+  storage_->representations().insert(std::make_pair(type, std::move(rep)));
 }
 
 }  // namespace gfx
