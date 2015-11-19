@@ -1,0 +1,512 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <deque>
+#include <string>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/message_loop/message_loop.h"
+#include "media/blink/multibuffer.h"
+#include "media/blink/multibuffer_reader.h"
+#include "media/blink/test_random.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+const int kBlockSizeShift = 8;
+const size_t kBlockSize = 1UL << kBlockSizeShift;
+
+namespace media {
+class TestMultiBufferDataProvider;
+
+std::vector<TestMultiBufferDataProvider*> writers;
+
+class TestMultiBufferDataProvider : public media::MultiBuffer::DataProvider {
+ public:
+  TestMultiBufferDataProvider(MultiBufferBlockId pos,
+                              size_t file_size,
+                              int max_blocks_after_defer,
+                              bool must_read_whole_file,
+                              media::TestRandom* rnd)
+      : pos_(pos),
+        blocks_until_deferred_(1 << 30),
+        max_blocks_after_defer_(max_blocks_after_defer),
+        file_size_(file_size),
+        must_read_whole_file_(must_read_whole_file),
+        rnd_(rnd) {
+    writers.push_back(this);
+  }
+
+  ~TestMultiBufferDataProvider() override {
+    if (must_read_whole_file_) {
+      CHECK_GE(pos_ * kBlockSize, file_size_);
+    }
+    for (size_t i = 0; i < writers.size(); i++) {
+      if (writers[i] == this) {
+        writers[i] = writers.back();
+        writers.pop_back();
+        return;
+      }
+    }
+    LOG(FATAL) << "Couldn't find myself in writers!";
+  }
+
+  MultiBufferBlockId Tell() const override { return pos_; }
+
+  bool Available() const override { return !fifo_.empty(); }
+
+  scoped_refptr<DataBuffer> Read() override {
+    DCHECK(Available());
+    scoped_refptr<DataBuffer> ret = fifo_.front();
+    fifo_.pop_front();
+    ++pos_;
+    return ret;
+  }
+
+  void SetAvailableCallback(const base::Closure& cb) override {
+    DCHECK(!Available());
+    cb_ = cb;
+  }
+
+  void SetDeferred(bool deferred) override {
+    if (deferred) {
+      if (max_blocks_after_defer_ > 0) {
+        blocks_until_deferred_ = rnd_->Rand() % max_blocks_after_defer_;
+      } else if (max_blocks_after_defer_ < 0) {
+        blocks_until_deferred_ = -max_blocks_after_defer_;
+      } else {
+        blocks_until_deferred_ = 0;
+      }
+    } else {
+      blocks_until_deferred_ = 1 << 30;
+    }
+  }
+
+  bool Advance() {
+    if (blocks_until_deferred_ == 0)
+      return false;
+    --blocks_until_deferred_;
+
+    bool ret = true;
+    scoped_refptr<media::DataBuffer> block = new media::DataBuffer(kBlockSize);
+    size_t x = 0;
+    size_t byte_pos = (fifo_.size() + pos_) * kBlockSize;
+    for (x = 0; x < kBlockSize; x++, byte_pos++) {
+      if (byte_pos >= file_size_)
+        break;
+      block->writable_data()[x] =
+          static_cast<uint8_t>((byte_pos * 15485863) >> 16);
+    }
+    block->set_data_size(static_cast<int>(x));
+    fifo_.push_back(block);
+    if (byte_pos == file_size_) {
+      fifo_.push_back(DataBuffer::CreateEOSBuffer());
+      ret = false;
+    }
+    cb_.Run();
+    return ret;
+  }
+
+ private:
+  std::deque<scoped_refptr<media::DataBuffer>> fifo_;
+  MultiBufferBlockId pos_;
+  int32_t blocks_until_deferred_;
+  int32_t max_blocks_after_defer_;
+  size_t file_size_;
+  bool must_read_whole_file_;
+  base::Closure cb_;
+  media::TestRandom* rnd_;
+};
+
+class TestMultiBuffer : public media::MultiBuffer {
+ public:
+  explicit TestMultiBuffer(
+      int32_t shift,
+      const scoped_refptr<media::MultiBuffer::GlobalLRU>& lru,
+      media::TestRandom* rnd)
+      : media::MultiBuffer(shift, lru),
+        range_supported_(false),
+        create_ok_(true),
+        max_writers_(10000),
+        file_size_(1 << 30),
+        max_blocks_after_defer_(0),
+        must_read_whole_file_(false),
+        writers_created_(0),
+        rnd_(rnd) {}
+
+  void SetMaxWriters(size_t max_writers) { max_writers_ = max_writers; }
+
+  void CheckPresentState() {
+    IntervalMap<MultiBufferBlockId, int32_t> tmp;
+    for (DataMap::iterator i = data_.begin(); i != data_.end(); ++i) {
+      CHECK(i->second);  // Null poineters are not allowed in data_
+      CHECK_NE(!!pinned_[i->first], lru_->Contains(this, i->first))
+          << " i->first = " << i->first;
+      tmp.IncrementInterval(i->first, i->first + 1, 1);
+    }
+    IntervalMap<MultiBufferBlockId, int32_t>::const_iterator tmp_iterator =
+        tmp.begin();
+    IntervalMap<MultiBufferBlockId, int32_t>::const_iterator present_iterator =
+        present_.begin();
+    while (tmp_iterator != tmp.end() && present_iterator != present_.end()) {
+      EXPECT_EQ(tmp_iterator.interval_begin(),
+                present_iterator.interval_begin());
+      EXPECT_EQ(tmp_iterator.interval_end(), present_iterator.interval_end());
+      EXPECT_EQ(tmp_iterator.value(), present_iterator.value());
+      ++tmp_iterator;
+      ++present_iterator;
+    }
+    EXPECT_TRUE(tmp_iterator == tmp.end());
+    EXPECT_TRUE(present_iterator == present_.end());
+  }
+
+  void CheckLRUState() {
+    for (DataMap::iterator i = data_.begin(); i != data_.end(); ++i) {
+      CHECK(i->second);  // Null poineters are not allowed in data_
+      CHECK_NE(!!pinned_[i->first], lru_->Contains(this, i->first))
+          << " i->first = " << i->first;
+      CHECK_EQ(1, present_[i->first]) << " i->first = " << i->first;
+    }
+  }
+
+  void SetFileSize(size_t file_size) { file_size_ = file_size; }
+
+  void SetMaxBlocksAfterDefer(int32_t max_blocks_after_defer) {
+    max_blocks_after_defer_ = max_blocks_after_defer;
+  }
+
+  void SetMustReadWholeFile(bool must_read_whole_file) {
+    must_read_whole_file_ = must_read_whole_file;
+  }
+
+  int32_t writers_created() const { return writers_created_; }
+
+  void SetRangeSupported(bool supported) { range_supported_ = supported; }
+
+ protected:
+  DataProvider* CreateWriter(const MultiBufferBlockId& pos) override {
+    DCHECK(create_ok_);
+    writers_created_++;
+    CHECK_LT(writers.size(), max_writers_);
+    return new TestMultiBufferDataProvider(
+        pos, file_size_, max_blocks_after_defer_, must_read_whole_file_, rnd_);
+  }
+  void Prune(size_t max_to_free) override {
+    // Prune should not cause additional writers to be spawned.
+    create_ok_ = false;
+    MultiBuffer::Prune(max_to_free);
+    create_ok_ = true;
+  }
+
+  bool RangeSupported() const override { return range_supported_; }
+
+ private:
+  bool range_supported_;
+  bool create_ok_;
+  size_t max_writers_;
+  size_t file_size_;
+  int32_t max_blocks_after_defer_;
+  bool must_read_whole_file_;
+  int32_t writers_created_;
+  media::TestRandom* rnd_;
+};
+}
+
+class MultiBufferTest : public testing::Test {
+ public:
+  MultiBufferTest()
+      : rnd_(42),
+        lru_(new media::MultiBuffer::GlobalLRU()),
+        multibuffer_(kBlockSizeShift, lru_, &rnd_) {}
+
+  void Advance() {
+    CHECK(media::writers.size());
+    media::writers[rnd_.Rand() % media::writers.size()]->Advance();
+  }
+
+  bool AdvanceAll() {
+    bool advanced = false;
+    for (size_t i = 0; i < media::writers.size(); i++) {
+      advanced |= media::writers[i]->Advance();
+    }
+    multibuffer_.CheckLRUState();
+    return advanced;
+  }
+
+ protected:
+  media::TestRandom rnd_;
+  scoped_refptr<media::MultiBuffer::GlobalLRU> lru_;
+  media::TestMultiBuffer multibuffer_;
+  base::MessageLoop message_loop_;
+};
+
+TEST_F(MultiBufferTest, ReadAll) {
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  multibuffer_.SetMustReadWholeFile(true);
+  media::MultiBufferReader reader(&multibuffer_, pos, end,
+                                  base::Callback<void(int64_t, int64_t)>());
+  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPreload(1000, 1000);
+  while (pos < end) {
+    unsigned char buffer[27];
+    buffer[17] = 17;
+    size_t to_read = std::min<size_t>(end - pos, 17);
+    int64_t bytes_read = reader.TryRead(buffer, to_read);
+    if (bytes_read) {
+      EXPECT_EQ(buffer[17], 17);
+      for (int64_t i = 0; i < bytes_read; i++) {
+        uint8_t expected = static_cast<uint8_t>((pos * 15485863) >> 16);
+        EXPECT_EQ(expected, buffer[i]) << " pos = " << pos;
+        pos++;
+      }
+    } else {
+      Advance();
+    }
+  }
+}
+
+TEST_F(MultiBufferTest, ReadAllAdvanceFirst) {
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  multibuffer_.SetMustReadWholeFile(true);
+  media::MultiBufferReader reader(&multibuffer_, pos, end,
+                                  base::Callback<void(int64_t, int64_t)>());
+  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPreload(1000, 1000);
+  while (pos < end) {
+    unsigned char buffer[27];
+    buffer[17] = 17;
+    size_t to_read = std::min<size_t>(end - pos, 17);
+    while (AdvanceAll())
+      ;
+    int64_t bytes = reader.TryRead(buffer, to_read);
+    EXPECT_GT(bytes, 0);
+    EXPECT_EQ(buffer[17], 17);
+    for (int64_t i = 0; i < bytes; i++) {
+      uint8_t expected = static_cast<uint8_t>((pos * 15485863) >> 16);
+      EXPECT_EQ(expected, buffer[i]) << " pos = " << pos;
+      pos++;
+    }
+  }
+}
+
+// Checks that if the data provider provides too much data after we told it
+// to defer, we kill it.
+TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer) {
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  multibuffer_.SetMaxBlocksAfterDefer(-10000);
+  multibuffer_.SetRangeSupported(true);
+  media::MultiBufferReader reader(&multibuffer_, pos, end,
+                                  base::Callback<void(int64_t, int64_t)>());
+  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPreload(1000, 1000);
+  while (pos < end) {
+    unsigned char buffer[27];
+    buffer[17] = 17;
+    size_t to_read = std::min<size_t>(end - pos, 17);
+    while (AdvanceAll())
+      ;
+    int64_t bytes = reader.TryRead(buffer, to_read);
+    EXPECT_GT(bytes, 0);
+    EXPECT_EQ(buffer[17], 17);
+    for (int64_t i = 0; i < bytes; i++) {
+      uint8_t expected = static_cast<uint8_t>((pos * 15485863) >> 16);
+      EXPECT_EQ(expected, buffer[i]) << " pos = " << pos;
+      pos++;
+    }
+  }
+  EXPECT_GT(multibuffer_.writers_created(), 1);
+}
+
+// Same as ReadAllAdvanceFirst_NeverDefer, but the url doesn't support
+// ranges, so we don't destroy it no matter how much data it provides.
+TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer2) {
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  multibuffer_.SetMustReadWholeFile(true);
+  multibuffer_.SetMaxBlocksAfterDefer(-10000);
+  media::MultiBufferReader reader(&multibuffer_, pos, end,
+                                  base::Callback<void(int64_t, int64_t)>());
+  reader.SetMaxBuffer(2000, 5000);
+  reader.SetPreload(1000, 1000);
+  while (pos < end) {
+    unsigned char buffer[27];
+    buffer[17] = 17;
+    size_t to_read = std::min<size_t>(end - pos, 17);
+    while (AdvanceAll())
+      ;
+    int64_t bytes = reader.TryRead(buffer, to_read);
+    EXPECT_GT(bytes, 0);
+    EXPECT_EQ(buffer[17], 17);
+    for (int64_t i = 0; i < bytes; i++) {
+      uint8_t expected = static_cast<uint8_t>((pos * 15485863) >> 16);
+      EXPECT_EQ(expected, buffer[i]) << " pos = " << pos;
+      pos++;
+    }
+  }
+}
+
+TEST_F(MultiBufferTest, LRUTest) {
+  int64_t max_size = 17;
+  int64_t current_size = 0;
+  lru_->IncrementMaxSize(max_size);
+
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  media::MultiBufferReader reader(&multibuffer_, pos, end,
+                                  base::Callback<void(int64_t, int64_t)>());
+  reader.SetPreload(10000, 10000);
+  // Note, no pinning, all data should end up in LRU.
+  EXPECT_EQ(current_size, lru_->Size());
+  current_size += max_size;
+  while (AdvanceAll())
+    ;
+  EXPECT_EQ(current_size, lru_->Size());
+  lru_->IncrementMaxSize(-max_size);
+  lru_->Prune(3);
+  current_size -= 3;
+  EXPECT_EQ(current_size, lru_->Size());
+  lru_->Prune(3);
+  current_size -= 3;
+  EXPECT_EQ(current_size, lru_->Size());
+  lru_->Prune(1000);
+  EXPECT_EQ(0, lru_->Size());
+}
+
+class ReadHelper {
+ public:
+  ReadHelper(size_t end,
+             size_t max_read_size,
+             media::MultiBuffer* multibuffer,
+             media::TestRandom* rnd)
+      : pos_(0),
+        end_(end),
+        max_read_size_(max_read_size),
+        read_size_(0),
+        rnd_(rnd),
+        reader_(multibuffer,
+                pos_,
+                end_,
+                base::Callback<void(int64_t, int64_t)>()) {
+    reader_.SetMaxBuffer(2000, 5000);
+    reader_.SetPreload(1000, 1000);
+  }
+
+  bool Read() {
+    if (read_size_ == 0)
+      return true;
+    unsigned char buffer[4096];
+    CHECK_LE(read_size_, static_cast<int64_t>(sizeof(buffer)));
+    CHECK_EQ(pos_, reader_.Tell());
+    int64_t bytes_read = reader_.TryRead(buffer, read_size_);
+    if (bytes_read) {
+      for (int64_t i = 0; i < bytes_read; i++) {
+        unsigned char expected = (pos_ * 15485863) >> 16;
+        EXPECT_EQ(expected, buffer[i]) << " pos = " << pos_;
+        pos_++;
+      }
+      CHECK_EQ(pos_, reader_.Tell());
+      return true;
+    }
+    return false;
+  }
+
+  void StartRead() {
+    CHECK_EQ(pos_, reader_.Tell());
+    read_size_ = std::min(1 + rnd_->Rand() % (max_read_size_ - 1), end_ - pos_);
+    if (!Read()) {
+      reader_.Wait(read_size_,
+                   base::Bind(&ReadHelper::WaitCB, base::Unretained(this)));
+    }
+  }
+
+  void WaitCB() { CHECK(Read()); }
+
+  void Seek() {
+    pos_ = rnd_->Rand() % end_;
+    reader_.Seek(pos_);
+    CHECK_EQ(pos_, reader_.Tell());
+  }
+
+ private:
+  int64_t pos_;
+  int64_t end_;
+  int64_t max_read_size_;
+  int64_t read_size_;
+  media::TestRandom* rnd_;
+  media::MultiBufferReader reader_;
+};
+
+TEST_F(MultiBufferTest, RandomTest) {
+  size_t file_size = 1000000;
+  multibuffer_.SetFileSize(file_size);
+  multibuffer_.SetMaxBlocksAfterDefer(10);
+  std::vector<ReadHelper*> read_helpers;
+  for (size_t i = 0; i < 20; i++) {
+    read_helpers.push_back(
+        new ReadHelper(file_size, 1000, &multibuffer_, &rnd_));
+  }
+  for (int i = 0; i < 100; i++) {
+    for (int j = 0; j < 100; j++) {
+      if (rnd_.Rand() & 1) {
+        if (!media::writers.empty())
+          Advance();
+      } else {
+        size_t j = rnd_.Rand() % read_helpers.size();
+        if (rnd_.Rand() % 100 < 3)
+          read_helpers[j]->Seek();
+        read_helpers[j]->StartRead();
+      }
+    }
+    multibuffer_.CheckLRUState();
+  }
+  multibuffer_.CheckPresentState();
+  while (!read_helpers.empty()) {
+    delete read_helpers.back();
+    read_helpers.pop_back();
+  }
+}
+
+TEST_F(MultiBufferTest, RandomTest_RangeSupported) {
+  size_t file_size = 1000000;
+  multibuffer_.SetFileSize(file_size);
+  multibuffer_.SetMaxBlocksAfterDefer(10);
+  std::vector<ReadHelper*> read_helpers;
+  multibuffer_.SetRangeSupported(true);
+  for (size_t i = 0; i < 20; i++) {
+    read_helpers.push_back(
+        new ReadHelper(file_size, 1000, &multibuffer_, &rnd_));
+  }
+  for (int i = 0; i < 100; i++) {
+    for (int j = 0; j < 100; j++) {
+      if (rnd_.Rand() & 1) {
+        if (!media::writers.empty())
+          Advance();
+      } else {
+        size_t j = rnd_.Rand() % read_helpers.size();
+        if (rnd_.Rand() % 100 < 3)
+          read_helpers[j]->Seek();
+        read_helpers[j]->StartRead();
+      }
+    }
+    multibuffer_.CheckLRUState();
+  }
+  multibuffer_.CheckPresentState();
+  while (!read_helpers.empty()) {
+    delete read_helpers.back();
+    read_helpers.pop_back();
+  }
+}
