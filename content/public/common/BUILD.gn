@@ -44,6 +44,15 @@ config("static_switches_defines") {
   defines = [ "COMPILE_CONTENT_STATICALLY" ]
 }
 
+# Set in GN builds, triggering behavior in content when run from an external
+# Mojo shell.
+config("mojo_shell_client") {
+  # This configuration has only been tested on these platforms.
+  if (is_win || is_linux || is_chromeos) {
+    defines = [ "MOJO_SHELL_CLIENT" ]
+  }
+}
+
 # This target allows you to use the content_switches constants and statically
 # link to it, without depending on the rest of content. This is only for use
 # without content, or you will get multiply defined symbols.
