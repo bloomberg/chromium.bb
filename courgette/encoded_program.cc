@@ -145,7 +145,15 @@ CheckBool EncodedProgram::DefineLabelCommon(RvaVector* rvas,
                                             int index,
                                             RVA rva) {
   bool ok = true;
-  if (static_cast<int>(rvas->size()) <= index)
+
+  // Resize |rvas| to accommodate |index|. If we naively call resize(), in the
+  // worst case we'd encounter |index| in increasing order, and then we'd
+  // require reallocation every time. Turns out this worst case is the typical
+  // scenario, and noticeable slowness (~5x slow down) ensues. The solution is
+  // to exponentially increase capacity. We use a factor of 1.01 to be frugal.
+  if (static_cast<int>(rvas->capacity()) <= index)
+    ok = rvas->reserve((index + 1) * 1.01);
+  if (ok && static_cast<int>(rvas->size()) <= index)
     ok = rvas->resize(index + 1, kUnassignedRVA);
 
   if (ok) {
