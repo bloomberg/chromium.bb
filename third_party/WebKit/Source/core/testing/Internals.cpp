@@ -134,8 +134,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/filters/FilterOperation.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"

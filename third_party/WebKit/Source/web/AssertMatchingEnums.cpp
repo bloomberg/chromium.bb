@@ -71,7 +71,6 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSmoothingMode.h"
-#include "platform/graphics/filters/FilterOperation.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceLoadPriority.h"
