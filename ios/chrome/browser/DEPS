@@ -30,6 +30,7 @@ include_rules = [
   "+components/metrics_services_manager",
   "+components/net_log",
   "+components/network_time",
+  "+components/ntp_snippets",
   "+components/omnibox/browser",
   "+components/open_from_clipboard",
   "+components/password_manager/core/browser",

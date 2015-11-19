@@ -67,6 +67,7 @@ include_rules = [
   "+components/net_log",
   "+components/network_hints",
   "+components/network_time",
+  "+components/ntp_snippets",
   "+components/offline_pages",
   "+components/omnibox/browser",
   "+components/os_crypt",

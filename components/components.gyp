@@ -56,6 +56,7 @@
     'net_log.gypi',
     'network_hints.gypi',
     'network_time.gypi',
+    'ntp_snippets.gypi',
     'offline_pages.gypi',
     'omnibox.gypi',
     'onc.gypi',

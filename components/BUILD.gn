@@ -51,6 +51,7 @@ group("all_components") {
     "//components/metrics",
     "//components/net_log",
     "//components/network_time",
+    "//components/ntp_snippets",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",

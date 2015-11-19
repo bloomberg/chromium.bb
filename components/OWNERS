@@ -184,6 +184,9 @@ per-file navigation_interception.gypi=mnaganov@chromium.org
 
 per-file network_time.gypi=zea@chromium.org
 
+per-file ntp_snippets.gypi=noyau@chromium.org
+per-file ntp_snippets.gypi=bauerb@chromium.org
+
 per-file offline_pages*=dimich@chromium.org
 per-file offline_pages*=fgorski@chromium.org
 

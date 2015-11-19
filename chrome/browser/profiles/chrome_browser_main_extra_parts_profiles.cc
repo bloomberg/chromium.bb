@@ -27,6 +27,7 @@
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
@@ -270,6 +271,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   MediaGalleriesPreferencesFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
 #endif
+  NTPSnippetsServiceFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PasswordManagerSettingMigratorServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
