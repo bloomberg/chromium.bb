@@ -41,21 +41,6 @@ crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
 
-crbug.com/424119 fast/backgrounds/border-radius-split-background-image.html [ NeedsRebaseline ]
-crbug.com/424119 fast/backgrounds/border-radius-split-background.html [ NeedsRebaseline ]
-crbug.com/424119 fast/borders/border-styles-split.html [ NeedsRebaseline ]
-crbug.com/424119 fast/borders/borderRadiusMultiColors01.html [ NeedsRebaseline ]
-crbug.com/424119 fast/borders/borderRadiusMultiColors02.html [ NeedsRebaseline ]
-crbug.com/424119 fast/borders/mixed-border-styles-radius.html [ NeedsRebaseline ]
-crbug.com/424119 fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
-crbug.com/424119 fast/table/border-radius-with-image.html [ NeedsRebaseline ]
-crbug.com/424119 fast/text/emphasis.html [ NeedsRebaseline ]
-crbug.com/424119 fast/writing-mode/border-styles-vertical-lr.html [ NeedsRebaseline ]
-crbug.com/424119 fast/writing-mode/border-styles-vertical-rl.html [ NeedsRebaseline ]
-crbug.com/424119 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm  [ NeedsRebaseline ]
-crbug.com/424119 media/video-zoom-controls.html [ NeedsRebaseline ]
-crbug.com/424119 svg/custom/svg-fonts-in-html.html [ NeedsRebaseline ]
-
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/syncpaint/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
