@@ -3440,6 +3440,12 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM" desc="String to be displayed in the login prompt dialog to explain what the user needs to do">
         The server <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password.
       </message>
+      <message name="IDS_LOGIN_DIALOG_DESCRIPTION_PROXY" desc="String to be displayed in the proxy login prompt dialog to explain what the user needs to do">
+        The proxy <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password. The proxy says: <ph name="REALM">$2<ex>opaque string</ex></ph>.
+      </message>
+      <message name="IDS_LOGIN_DIALOG_DESCRIPTION_PROXY_NO_REALM" desc="String to be displayed in the proxy login prompt dialog to explain what the user needs to do">
+        The proxy <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password.
+      </message>
       <message name="IDS_LOGIN_DIALOG_USERNAME_FIELD" desc="The label of the username field in the login prompt dialog" formatter_data="android_java">
         User Name:
       </message>

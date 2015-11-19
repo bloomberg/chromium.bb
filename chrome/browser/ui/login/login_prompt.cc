@@ -125,12 +125,20 @@ void ShowLoginPrompt(const GURL& request_url,
 
   base::string16 authority =
       url_formatter::FormatUrlForSecurityDisplay(request_url, languages);
-  base::string16 explanation =
-      elided_realm.empty()
-          ? l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                       authority)
-          : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION, authority,
-                                       elided_realm);
+  base::string16 explanation;
+  if (auth_info->is_proxy) {
+    explanation = elided_realm.empty()
+        ? l10n_util::GetStringFUTF16(
+            IDS_LOGIN_DIALOG_DESCRIPTION_PROXY_NO_REALM, authority)
+        : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_PROXY,
+                                     authority, elided_realm);
+  } else {
+    explanation = elided_realm.empty()
+        ? l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
+                                     authority)
+        : l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION, authority,
+                                     elided_realm);
+  }
 
   password_manager::PasswordManager* password_manager =
       handler->GetPasswordManagerForLogin();
