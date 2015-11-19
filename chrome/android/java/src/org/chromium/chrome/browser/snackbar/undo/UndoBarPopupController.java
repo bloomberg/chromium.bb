@@ -64,8 +64,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
         mContext = context;
         mTabModelObserver = new EmptyTabModelObserver() {
             private boolean disableUndo() {
-                return !DeviceClassManager.enableUndo(mContext)
-                        || DeviceClassManager.isAccessibilityModeEnabled(mContext)
+                return DeviceClassManager.isAccessibilityModeEnabled(mContext)
                         || DeviceClassManager.enableAccessibilityLayout();
             }
 

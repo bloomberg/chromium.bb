@@ -22,9 +22,6 @@ public abstract class ChromeSwitches {
     /** Whether fullscreen support is disabled (auto hiding controls, etc...). */
     public static final String DISABLE_FULLSCREEN = "disable-fullscreen";
 
-    /** Show the undo bar for high end UI devices. */
-    public static final String ENABLE_HIGH_END_UI_UNDO = "enable-high-end-ui-undo";
-
     /** Enable toolbar swipe to change tabs in document mode */
     public static final String ENABLE_TOOLBAR_SWIPE_IN_DOCUMENT_MODE =
             "enable-toolbar-swipe-in-document-mode";

@@ -8,11 +8,9 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.test.suitebuilder.annotation.LargeTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -44,7 +42,6 @@ public class UndoIntegrationTest extends ChromeTabbedActivityTestBase {
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HIGH_END_UI_UNDO);
         SnackbarManager.setDurationForTesting(1500);
         startMainActivityOnBlankPage();
     }

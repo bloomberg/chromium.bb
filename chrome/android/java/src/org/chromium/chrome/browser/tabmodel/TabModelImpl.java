@@ -8,7 +8,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -234,8 +233,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public boolean supportsPendingClosures() {
-        return !isIncognito()
-                && DeviceClassManager.enableUndo(ApplicationStatus.getApplicationContext());
+        return !isIncognito();
     }
 
     @Override

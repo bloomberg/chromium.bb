@@ -9,8 +9,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -443,7 +441,6 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
      * Tests that a real {@link TabModelImpl} will use the {@link TabPersistentStore} to write out
      * an updated metadata file when a closure is undone.
      */
-    @CommandLineFlags.Add(ChromeSwitches.ENABLE_HIGH_END_UI_UNDO)
     @SmallTest
     public void testUndoSingleTabClosureWritesTabListFile() throws Exception {
         TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
@@ -470,7 +467,6 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
      * valid a valid metadata file and the TabModel's associated TabStates after closing and
      * canceling the closure of all the tabs simultaneously.
      */
-    @CommandLineFlags.Add(ChromeSwitches.ENABLE_HIGH_END_UI_UNDO)
     @SmallTest
     public void testUndoCloseAllTabsWritesTabListFile() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
