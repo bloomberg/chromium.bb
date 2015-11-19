@@ -55,7 +55,7 @@
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
     'gyp_release_trybot_x64': ['gyp', 'release_trybot', 'x64'],
-    'libfuzzer_upload_bot': ['gn', 'release', 'libfuzzer', 'asan'],
+    'libfuzzer_upload_bot': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs'],
 
     # This is just for completeness; any bot that uses this config should never actually run MB.
     'none': ['none'],
@@ -286,6 +286,11 @@
     'official': {
       'gn_args': 'is_chrome_branded=true is_official_build=true is_debug=false',
       'gyp_defines': 'branding=Chrome buildtype=Official',
+    },
+
+    'proprietary_codecs': {
+      'gn_args': 'proprietary_codecs=1',
+      'gyp_defines': 'proprietary_codecs=1',
     },
 
     'release': {
