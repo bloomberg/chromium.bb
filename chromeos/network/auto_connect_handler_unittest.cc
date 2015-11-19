@@ -418,6 +418,37 @@ TEST_F(AutoConnectHandlerTest, DisconnectOnPolicyLoading) {
   EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
 }
 
+TEST_F(AutoConnectHandlerTest,
+       DisconnectOnPolicyLoadingAllowOnlyPolicyNetworksToConnect) {
+  EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
+  EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
+
+  // User login and certificate loading shouldn't trigger any change until the
+  // policy is loaded.
+  LoginToRegularUser();
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+
+  base::DictionaryValue global_config;
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, true);
+
+  // Applying the policy which restricts autoconnect should disconnect from the
+  // shared, unmanaged network.
+  // Because no best service is set, the fake implementation of
+  // ConnectToBestServices will be a no-op.
+  SetupPolicy(kPolicy, global_config, false /* load as device policy */);
+
+  // Should not trigger any change until user policy is loaded
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+
+  SetupPolicy(std::string(), base::DictionaryValue(), true);
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+}
+
 // After login a reconnect is triggered even if there is no managed network.
 TEST_F(AutoConnectHandlerTest, ReconnectAfterLogin) {
   EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));

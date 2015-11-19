@@ -115,6 +115,8 @@ const char NetworkConnectionHandler::kErrorConnectCanceled[] =
     "connect-canceled";
 const char NetworkConnectionHandler::kErrorCertLoadTimeout[] =
     "cert-load-timeout";
+const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
+    "unmanaged-network";
 
 struct NetworkConnectionHandler::ConnectRequest {
   ConnectRequest(const std::string& service_path,
@@ -285,6 +287,11 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
   if (network && network->connectable() && network->type() != shill::kTypeVPN) {
+    if (IsNetworkProhibitedByPolicy(network->guid(), network->profile_path())) {
+      ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
+      return;
+    }
+
     CallShillConnect(service_path);
     return;
   }
@@ -416,6 +423,11 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
   const base::DictionaryValue* user_policy =
       managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile);
 
+  if (IsNetworkProhibitedByPolicy(guid, profile)) {
+    ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
+    return;
+  }
+
   client_cert::ClientCertConfig cert_config_from_policy;
   if (user_policy)
     client_cert::OncToClientCertConfig(*user_policy, &cert_config_from_policy);
@@ -521,6 +533,27 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
   else
     CallShillConnect(service_path);
+}
+
+bool NetworkConnectionHandler::IsNetworkProhibitedByPolicy(
+    const std::string& guid,
+    const std::string& profile_path) {
+  if (!logged_in_)
+    return false;
+  const base::DictionaryValue* global_network_config =
+      managed_configuration_handler_->GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  if (!global_network_config)
+    return false;
+  bool policy_prohibites = false;
+  if (!global_network_config->GetBooleanWithoutPathExpansion(
+          ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+          &policy_prohibites) ||
+      !policy_prohibites) {
+    return false;
+  }
+  return !managed_configuration_handler_->FindPolicyByGuidAndProfile(
+      guid, profile_path);
 }
 
 void NetworkConnectionHandler::QueueConnectRequest(

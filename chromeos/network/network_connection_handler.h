@@ -96,6 +96,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Certificate load timed out.
   static const char kErrorCertLoadTimeout[];
 
+  // Trying to configure an unmanged network but policy prohibits that
+  static const char kErrorUnmanagedNetwork[];
+
   ~NetworkConnectionHandler() override;
 
   void AddObserver(NetworkConnectionObserver* observer);
@@ -166,6 +169,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void VerifyConfiguredAndConnect(bool check_error_state,
                                   const std::string& service_path,
                                   const base::DictionaryValue& properties);
+
+  bool IsNetworkProhibitedByPolicy(const std::string& guid,
+                                   const std::string& profile_path);
 
   // Queues a connect request until certificates have loaded.
   void QueueConnectRequest(const std::string& service_path);
