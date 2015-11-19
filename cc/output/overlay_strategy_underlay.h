@@ -24,8 +24,7 @@ class CC_EXPORT OverlayStrategyUnderlay : public OverlayProcessor::Strategy {
 
   bool Attempt(ResourceProvider* resource_provider,
                RenderPassList* render_passes,
-               OverlayCandidateList* candidate_list,
-               gfx::Rect* damage_rect) override;
+               OverlayCandidateList* candidate_list) override;
 
  private:
   OverlayCandidateValidator* capability_checker_;  // Weak.

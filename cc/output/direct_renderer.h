@@ -160,10 +160,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
  private:
   gfx::Vector2d enlarge_pass_texture_amount_;
 
-  // Regions that must be drawn in the next frame because they were represented
-  // as CALayers in the current frame.
-  gfx::Rect next_root_damage_rect_;
-
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };
 

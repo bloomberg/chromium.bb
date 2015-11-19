@@ -208,8 +208,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.root_damage_rect = Capabilities().using_partial_swap
                                ? root_render_pass->damage_rect
                                : root_render_pass->output_rect;
-  frame.root_damage_rect.Union(next_root_damage_rect_);
-  next_root_damage_rect_ = gfx::Rect();
+  frame.root_damage_rect.Union(overlay_processor_->GetAndResetOverlayDamage());
   frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
   frame.device_viewport_rect = device_viewport_rect;
   frame.device_clip_rect = device_clip_rect;
@@ -239,59 +238,42 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     frame.overlay_list.push_back(output_surface_plane);
   }
 
-  // If we have any copy requests, we can't remove any quads for overlays,
-  // otherwise the framebuffer will be missing the overlay contents.
-  if (root_render_pass->copy_requests.empty()) {
-    if (overlay_processor_->ProcessForCALayers(
-            resource_provider_, render_passes_in_draw_order,
-            &frame.ca_layer_overlay_list, &frame.overlay_list)) {
-      // Ensure that the next frame to use the backbuffer will do a full redraw.
-      next_root_damage_rect_.Union(root_render_pass->output_rect);
-    } else {
-      overlay_processor_->ProcessForOverlays(
-          resource_provider_, render_passes_in_draw_order, &frame.overlay_list,
-          &frame.root_damage_rect);
+  // If we have any copy requests, we can't remove any quads for overlays or
+  // CALayers because the framebuffer would be missing the removed quads'
+  // contents.
+  bool has_copy_requests = false;
+  for (const auto& pass : *render_passes_in_draw_order) {
+    if (!pass->copy_requests.empty()) {
+      has_copy_requests = true;
+      break;
+    }
+  }
+  if (!has_copy_requests) {
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_, render_passes_in_draw_order, &frame.overlay_list,
+        &frame.ca_layer_overlay_list, &frame.root_damage_rect);
+  }
 
-      // No need to render in case the damage rect is completely composited
-      // using
-      // overlays and dont have any copy requests.
-      if (frame.root_damage_rect.IsEmpty()) {
-        bool handle_copy_requests = false;
-        for (const auto& pass : *render_passes_in_draw_order) {
-          if (!pass->copy_requests.empty()) {
-            handle_copy_requests = true;
-            break;
-          }
-        }
+  // If all damage is being drawn with overlays or CALayers then skip drawing
+  // the render passes.
+  if (frame.root_damage_rect.IsEmpty() && !has_copy_requests) {
+    BindFramebufferToOutputSurface(&frame);
+  } else {
+    for (const auto& pass : *render_passes_in_draw_order) {
+      DrawRenderPass(&frame, pass.get());
 
-        if (!handle_copy_requests) {
-          BindFramebufferToOutputSurface(&frame);
-          FinishDrawingFrame(&frame);
-          render_passes_in_draw_order->clear();
-          return;
-        }
-        overlay_processor_->ProcessForOverlays(
-            resource_provider_, render_passes_in_draw_order,
-            &frame.overlay_list, &frame.root_damage_rect);
+      bool first_request = true;
+      for (auto& copy_request : pass->copy_requests) {
+        // Doing a readback is destructive of our state on Mac, so make sure
+        // we restore the state between readbacks. http://crbug.com/99393.
+        if (!first_request)
+          UseRenderPass(&frame, pass.get());
+        CopyCurrentRenderPassToBitmap(&frame, std::move(copy_request));
+        first_request = false;
       }
     }
   }
-
-  for (const auto& pass : *render_passes_in_draw_order) {
-    DrawRenderPass(&frame, pass.get());
-
-    bool first_request = true;
-    for (auto& copy_request : pass->copy_requests) {
-      // Doing a readback is destructive of our state on Mac, so make sure
-      // we restore the state between readbacks. http://crbug.com/99393.
-      if (!first_request)
-        UseRenderPass(&frame, pass.get());
-      CopyCurrentRenderPassToBitmap(&frame, std::move(copy_request));
-      first_request = false;
-    }
-  }
   FinishDrawingFrame(&frame);
-
   render_passes_in_draw_order->clear();
 }
 

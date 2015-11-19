@@ -81,7 +81,7 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
 }
 
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
-  if (damage != gfx::Rect(size_)) {
+  if (!damage.IsEmpty() && damage != gfx::Rect(size_)) {
     // We must have a frame available to copy from.
     DCHECK(!in_flight_surfaces_.empty() || displayed_surface_.texture);
     unsigned int texture_id = !in_flight_surfaces_.empty()

@@ -21,13 +21,12 @@ OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(ResourceProvider* resource_provider,
                                          RenderPassList* render_passes,
-                                         OverlayCandidateList* candidate_list,
-                                         gfx::Rect* damage_rect) {
+                                         OverlayCandidateList* candidate_list) {
   QuadList* quad_list = &render_passes->back()->quad_list;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
-        TryOverlay(quad_list, candidate_list, candidate, it, damage_rect)) {
+        TryOverlay(quad_list, candidate_list, candidate, it)) {
       return true;
     }
   }
@@ -39,8 +38,7 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     QuadList* quad_list,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator,
-    gfx::Rect* damage_rect) {
+    QuadList::Iterator candidate_iterator) {
   // Check that no prior quads overlap it.
   for (auto overlap_iter = quad_list->cbegin();
        overlap_iter != candidate_iterator; ++overlap_iter) {
@@ -65,7 +63,6 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   if (overlay_candidate.overlay_handled) {
     quad_list->EraseAndInvalidateAllPointers(candidate_iterator);
     candidate_list->swap(new_candidate_list);
-    damage_rect->Subtract(ToEnclosedRect(overlay_candidate.display_rect));
     return true;
   }
 

@@ -29,8 +29,7 @@ class CC_EXPORT OverlayProcessor {
     // overlays.
     virtual bool Attempt(ResourceProvider* resource_provider,
                          RenderPassList* render_passes,
-                         OverlayCandidateList* candidates,
-                         gfx::Rect* damage_rect) = 0;
+                         OverlayCandidateList* candidates) = 0;
   };
   using StrategyList = std::vector<scoped_ptr<Strategy>>;
 
@@ -39,21 +38,26 @@ class CC_EXPORT OverlayProcessor {
   // Virtual to allow testing different strategies.
   virtual void Initialize();
 
-  bool ProcessForCALayers(ResourceProvider* resource_provider,
-                          RenderPassList* render_passes,
-                          CALayerOverlayList* ca_layer_overlays,
-                          OverlayCandidateList* overlay_candidates);
+  gfx::Rect GetAndResetOverlayDamage();
 
   void ProcessForOverlays(ResourceProvider* resource_provider,
                           RenderPassList* render_passes,
-                          OverlayCandidateList* candidates,
+                          OverlayCandidateList* overlay_candidates,
+                          CALayerOverlayList* ca_layer_overlays,
                           gfx::Rect* damage_rect);
 
  protected:
   StrategyList strategies_;
   OutputSurface* surface_;
+  gfx::Rect overlay_damage_rect_;
 
  private:
+  bool ProcessForCALayers(ResourceProvider* resource_provider,
+                          RenderPassList* render_passes,
+                          OverlayCandidateList* overlay_candidates,
+                          CALayerOverlayList* ca_layer_overlays,
+                          gfx::Rect* damage_rect);
+
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };
 
