@@ -272,7 +272,7 @@ NativeLibrary LoadOtherLibrary() {
                           << ": " << load_error.ToString();
   };
 
-  NativeLibrary library;
+  NativeLibrary library = nullptr;
   load(&library);
   return library;
 }
