@@ -880,7 +880,7 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
 }
 
 void WebContentsImpl::EnableTreeOnlyAccessibilityMode() {
-  if (GetAccessibilityMode() == AccessibilityModeTreeOnly)
+  if (GetAccessibilityMode() != AccessibilityModeOff)
     ForEachFrame(base::Bind(&ResetAccessibility));
   else
     AddAccessibilityMode(AccessibilityModeTreeOnly);
