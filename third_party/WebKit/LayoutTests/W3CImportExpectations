@@ -90,6 +90,7 @@ imported/web-platform-tests/conformance-checkers [ Skip ]
 imported/web-platform-tests/content-security-policy [ Skip ]
 imported/web-platform-tests/cors [ Skip ]
 imported/web-platform-tests/csp [ Skip ]
+imported/web-platform-tests/cssom-view [ Skip ]
 ## Owners: TBD
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
