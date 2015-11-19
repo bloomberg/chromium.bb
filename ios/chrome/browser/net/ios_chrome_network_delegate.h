@@ -24,23 +24,12 @@ namespace domain_reliability {
 class DomainReliabilityMonitor;
 }
 
-namespace policy {
-class URLBlacklistManager;
-}
-
 // IOSChromeNetworkDelegate is the central point from within the Chrome code to
 // add hooks into the network stack.
 class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   IOSChromeNetworkDelegate();
   ~IOSChromeNetworkDelegate() override;
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  void set_url_blacklist_manager(
-      const policy::URLBlacklistManager* url_blacklist_manager) {
-    url_blacklist_manager_ = url_blacklist_manager;
-  }
-#endif
 
   // If |cookie_settings| is null or not set, all cookies are enabled,
   // otherwise the settings are enforced on all observed network requests.
@@ -100,10 +89,7 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Weak, owned by our owner.
   BooleanPrefMember* enable_do_not_track_;
 
-// Weak, owned by our owner.
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  const policy::URLBlacklistManager* url_blacklist_manager_;
-#endif
+  // Weak, owned by our owner.
   domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeNetworkDelegate);

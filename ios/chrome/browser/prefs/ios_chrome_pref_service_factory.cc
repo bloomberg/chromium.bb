@@ -32,19 +32,11 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
 void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
-                    policy::PolicyService* policy_service,
                     const base::FilePath& pref_filename,
                     base::SequencedTaskRunner* pref_io_task_runner,
                     bool async) {
   factory->set_user_prefs(make_scoped_refptr(new JsonPrefStore(
       pref_filename, pref_io_task_runner, scoped_ptr<PrefFilter>())));
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::BrowserPolicyConnector* policy_connector =
-      GetApplicationContext()->GetBrowserPolicyConnector();
-  factory->SetManagedPolicies(policy_service, policy_connector);
-  factory->SetRecommendedPolicies(policy_service, policy_connector);
-#endif  // ENABLE_CONFIGURATION_POLICY
 
   factory->set_async(async);
   factory->set_read_error_callback(base::Bind(&HandleReadError));
@@ -57,12 +49,10 @@ void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
 scoped_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
-    policy::PolicyService* policy_service,
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
   syncable_prefs::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, policy_service, pref_filename, pref_io_task_runner,
-                 async);
+  PrepareFactory(&factory, pref_filename, pref_io_task_runner, async);
   return factory.Create(pref_registry.get());
 }
 
@@ -70,7 +60,6 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
-    policy::PolicyService* policy_service,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
   // chrome_prefs::CreateProfilePrefs uses ProfilePrefStoreManager to create
@@ -79,8 +68,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
   // simple JsonPrefStore to store them (which is what PrefStoreManager uses
   // on platforms that do not track preference modifications).
   syncable_prefs::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, policy_service,
-                 browser_state_path.Append(kPreferencesFilename),
+  PrepareFactory(&factory, browser_state_path.Append(kPreferencesFilename),
                  pref_io_task_runner, async);
   scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());

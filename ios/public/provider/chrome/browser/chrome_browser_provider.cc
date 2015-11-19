@@ -128,11 +128,6 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
-policy::BrowserPolicyConnector*
-ChromeBrowserProvider::GetBrowserPolicyConnector() {
-  return nullptr;
-}
-
 rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
   return nullptr;
 }

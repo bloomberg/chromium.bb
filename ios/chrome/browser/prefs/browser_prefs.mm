@@ -34,12 +34,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/policy/core/common/policy_statistics_collector.h"
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
 namespace {
 
 // TODO(crbug.com/525079): those preferences are not used on iOS but are
@@ -59,11 +53,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   rappor::RapporService::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::BrowserPolicyConnector::RegisterPrefs(registry);
-  policy::PolicyStatisticsCollector::RegisterPrefs(registry);
-#endif
 
   // Preferences related to the browser state manager.
   registry->RegisterStringPref(ios::prefs::kBrowserStateLastUsed,
@@ -102,10 +91,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   variations::VariationsService::RegisterProfilePrefs(registry);
   web_resource::PromoResourceService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::URLBlacklistManager::RegisterProfilePrefs(registry);
-#endif
 
   registry->RegisterBooleanPref(
       ios::prefs::kEnableDoNotTrack, false,

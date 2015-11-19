@@ -35,13 +35,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/policy_service.h"
-#else
-#include "components/policy/core/common/policy_service_stub.h"
-#endif
-
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
     const base::CommandLine& command_line)
@@ -172,23 +165,6 @@ variations::VariationsService* ApplicationContextImpl::GetVariationsService() {
   return ios::GetChromeBrowserProvider()->GetVariationsService();
 }
 
-policy::BrowserPolicyConnector*
-ApplicationContextImpl::GetBrowserPolicyConnector() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetBrowserPolicyConnector();
-}
-
-policy::PolicyService* ApplicationContextImpl::GetPolicyService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  return GetBrowserPolicyConnector()->GetPolicyService();
-#else
-  if (!policy_service_)
-    policy_service_.reset(new policy::PolicyServiceStub);
-  return policy_service_.get();
-#endif
-}
-
 rappor::RapporService* ApplicationContextImpl::GetRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return ios::GetChromeBrowserProvider()->GetRapporService();
@@ -221,9 +197,8 @@ void ApplicationContextImpl::CreateLocalState() {
   // Register local state preferences.
   RegisterLocalStatePrefs(pref_registry.get());
 
-  local_state_ =
-      ::CreateLocalState(local_state_path, local_state_task_runner_.get(),
-                         GetPolicyService(), pref_registry, false);
+  local_state_ = ::CreateLocalState(
+      local_state_path, local_state_task_runner_.get(), pref_registry, false);
 
   const int max_per_proxy =
       local_state_->GetInteger(ios::prefs::kMaxConnectionsPerProxy);

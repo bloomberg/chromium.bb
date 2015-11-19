@@ -43,8 +43,6 @@ class ApplicationContextImpl : public ApplicationContext {
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
   metrics::MetricsService* GetMetricsService() override;
   variations::VariationsService* GetVariationsService() override;
-  policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
-  policy::PolicyService* GetPolicyService() override;
   rappor::RapporService* GetRapporService() override;
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
@@ -56,13 +54,6 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<net_log::ChromeNetLog> net_log_;
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   std::string application_locale_;
-
-#if !defined(ENABLE_CONFIGURATION_POLICY)
-  // Must be destroyed after |local_state_|.
-  // This is a stub when policy is not enabled. Otherwise the PolicyService is
-  // owned by the BrowserPolicyConnector and this is not used.
-  scoped_ptr<policy::PolicyService> policy_service_;
-#endif
 
   // Sequenced task runner for local state related I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;

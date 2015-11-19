@@ -28,10 +28,6 @@
 #include "net/log/net_log.h"
 #include "net/url_request/url_request.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/url_blacklist_manager.h"
-#endif
-
 namespace {
 
 const char kDNTHeader[] = "DNT";
@@ -73,9 +69,6 @@ void RecordNetworkErrorHistograms(const net::URLRequest* request) {
 
 IOSChromeNetworkDelegate::IOSChromeNetworkDelegate()
     : enable_do_not_track_(nullptr),
-#if defined(ENABLE_CONFIGURATION_POLICY)
-      url_blacklist_manager_(nullptr),
-#endif
       domain_reliability_monitor_(nullptr) {
 }
 
@@ -101,22 +94,6 @@ int IOSChromeNetworkDelegate::OnBeforeURLRequest(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456327 URLRequest::IOSChromeNetworkDelegate::OnBeforeURLRequest"));
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  int error = net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  // iOS cannot check the resource type, block everything.
-  // See http://crbug.com/338283 and http://crbug.com/489704
-  if (url_blacklist_manager_ &&
-      url_blacklist_manager_->ShouldBlockRequestForFrame(request->url(),
-                                                         &error)) {
-    // URL access blocked by policy.
-    request->net_log().AddEvent(
-        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
-        net::NetLog::StringCallback("url",
-                                    &request->url().possibly_invalid_spec()));
-    return error;
-  }
-#endif
 
   // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(

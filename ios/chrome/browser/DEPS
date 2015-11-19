@@ -34,7 +34,6 @@ include_rules = [
   "+components/open_from_clipboard",
   "+components/password_manager/core/browser",
   "+components/password_manager/sync/browser",
-  "+components/policy/core",
   "+components/pref_registry",
   "+components/profile_metrics",
   "+components/proxy_config",

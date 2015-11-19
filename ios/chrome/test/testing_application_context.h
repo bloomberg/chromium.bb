@@ -38,8 +38,6 @@ class TestingApplicationContext : public ApplicationContext {
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
   metrics::MetricsService* GetMetricsService() override;
   variations::VariationsService* GetVariationsService() override;
-  policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
-  policy::PolicyService* GetPolicyService() override;
   rappor::RapporService* GetRapporService() override;
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;

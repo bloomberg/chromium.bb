@@ -90,17 +90,6 @@ TestingApplicationContext::GetVariationsService() {
   return nullptr;
 }
 
-policy::BrowserPolicyConnector*
-TestingApplicationContext::GetBrowserPolicyConnector() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
-policy::PolicyService* TestingApplicationContext::GetPolicyService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 rappor::RapporService* TestingApplicationContext::GetRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;

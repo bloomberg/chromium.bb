@@ -573,12 +573,6 @@
             'ios_chrome_browser_rlz',
           ],
         }],
-        ['configuration_policy==1', {
-          'dependencies': [
-            '../../components/components.gyp:policy_component_browser',
-            '../../components/components.gyp:policy_component_common',
-          ],
-        }],
       ],
     },
     {

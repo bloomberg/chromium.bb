@@ -29,11 +29,6 @@ namespace network_time {
 class NetworkTimeTracker;
 }
 
-namespace policy {
-class BrowserPolicyConnector;
-class PolicyService;
-}
-
 namespace rappor {
 class RapporService;
 }
@@ -83,12 +78,6 @@ class ApplicationContext {
 
   // Gets the VariationsService used by this application.
   virtual variations::VariationsService* GetVariationsService() = 0;
-
-  // Gets the policy connector, creating and starting it if necessary.
-  virtual policy::BrowserPolicyConnector* GetBrowserPolicyConnector() = 0;
-
-  // Gets the policy service.
-  virtual policy::PolicyService* GetPolicyService() = 0;
 
   // Gets the RapporService. May return null.
   virtual rappor::RapporService* GetRapporService() = 0;

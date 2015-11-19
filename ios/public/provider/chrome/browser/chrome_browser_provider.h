@@ -33,10 +33,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace policy {
-class BrowserPolicyConnector;
-}
-
 namespace rappor {
 class RapporService;
 }
@@ -135,8 +131,6 @@ class ChromeBrowserProvider {
       autofill::CardUnmaskPromptController* controller);
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Starts and manages the policy system.
-  virtual policy::BrowserPolicyConnector* GetBrowserPolicyConnector();
   // Returns the RapporService. May be null.
   virtual rappor::RapporService* GetRapporService();
   // Returns whether there is an Off-The-Record session active.
