@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "platform/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupport.h"
 
 namespace blink {
 
@@ -69,6 +69,11 @@ WebMemoryAllocatorDump* TestingDiscardableMemory::createMemoryAllocatorDump(cons
     return nullptr;
 }
 
+TestingPlatformSupport::TestingPlatformSupport()
+    : TestingPlatformSupport(TestingPlatformSupport::Config())
+{
+}
+
 TestingPlatformSupport::TestingPlatformSupport(const Config& config)
     : m_config(config)
     , m_oldPlatform(Platform::current())
@@ -100,6 +105,11 @@ const unsigned char* TestingPlatformSupport::getTraceCategoryEnabledFlag(const c
 WebString TestingPlatformSupport::defaultLocale()
 {
     return WebString::fromUTF8("en-US");
+}
+
+WebThread* TestingPlatformSupport::currentThread()
+{
+    return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
 }
 
 } // namespace blink

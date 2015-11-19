@@ -5,6 +5,7 @@
 #include "config.h"
 #include "platform/Timer.h"
 
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
@@ -236,7 +237,7 @@ private:
     OwnPtr<MockWebScheduler> m_webScheduler;
 };
 
-class TimerTestPlatform : public Platform {
+class TimerTestPlatform : public TestingPlatformSupport {
 public:
     TimerTestPlatform()
         : m_webThread(adoptPtr(new FakeWebThread())) { }
@@ -245,17 +246,6 @@ public:
     WebThread* currentThread() override
     {
         return m_webThread.get();
-    }
-
-    void cryptographicallyRandomValues(unsigned char*, size_t) override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
-    {
-        static const unsigned char enabled[] = {0};
-        return enabled;
     }
 
     void runUntilIdle()
@@ -296,19 +286,11 @@ class TimerTest : public testing::Test {
 public:
     void SetUp() override
     {
-        m_platform = adoptPtr(new TimerTestPlatform());
-        m_oldPlatform = Platform::current();
-        Platform::initialize(m_platform.get());
         WTF::setMonotonicallyIncreasingTimeFunction(currentTime);
 
         m_runTimes.clear();
         gCurrentTimeSecs = 10.0;
         m_startTime = gCurrentTimeSecs;
-    }
-
-    void TearDown() override
-    {
-        Platform::initialize(m_oldPlatform);
     }
 
     void countingTask(Timer<TimerTest>*)
@@ -328,27 +310,27 @@ public:
 
     void runUntilIdle()
     {
-        m_platform->runUntilIdle();
+        m_platform.runUntilIdle();
     }
 
     void runPendingTasks()
     {
-        m_platform->runPendingTasks();
+        m_platform.runPendingTasks();
     }
 
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
-        m_platform->runUntilIdleOrDeadlinePassed(deadline);
+        m_platform.runUntilIdleOrDeadlinePassed(deadline);
     }
 
     bool hasOneTimerTask() const
     {
-        return m_platform->hasOneTimerTask();
+        return m_platform.hasOneTimerTask();
     }
 
     double nextTimerTaskDelaySecs() const
     {
-        return m_platform->nextTimerTaskDelaySecs();
+        return m_platform.nextTimerTaskDelaySecs();
     }
 
 protected:
@@ -357,8 +339,7 @@ protected:
     WTF::Vector<double> m_nextFireTimes;
 
 private:
-    OwnPtr<TimerTestPlatform> m_platform;
-    Platform* m_oldPlatform;
+    TimerTestPlatform m_platform;
 };
 
 TEST_F(TimerTest, StartOneShot_Zero)
