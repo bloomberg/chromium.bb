@@ -88,6 +88,19 @@
                 elt.selectionEnd = 7;
                 display(elt);
                 
+                print("");
+                print("selectionStart and selectionEnd in focus handler don't return wrong values 0,0:");
+                elt.selectionStart = elt.selectionEnd = 7;
+                // Need to clear selection. Selection API calls above modified
+                // both of real selection and |elt|'s cached selection even
+                // though |elt| has no focus.
+                // We'd like to check the behavior in case that real selection
+                // and the cached selection are mismatched.
+                getSelection().removeAllRanges();
+                // selectionStart and selectionEnd are still 7.
+                elt.onfocus = function() { display(elt); };
+                elt.focus();
+
                 elt.value = "";
             }
             function testButtonSelectionAccess(button, access)

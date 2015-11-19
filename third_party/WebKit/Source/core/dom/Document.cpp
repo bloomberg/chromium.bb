@@ -3548,6 +3548,8 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         m_focusedElement = newFocusedElement;
 
         m_focusedElement->setFocus(true);
+        cancelFocusAppearanceUpdate();
+        m_focusedElement->updateFocusAppearance(params.selectionBehavior);
 
         // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
         // If page lost focus, event will be dispatched on page focus, don't duplicate

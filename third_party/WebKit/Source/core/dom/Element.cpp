@@ -2379,15 +2379,7 @@ void Element::focus(const FocusParams& params)
     if (!document().page()->focusController().setFocusedElement(this, document().frame(), params))
         return;
 
-    // Setting the focused node above might have invalidated the layout due to scripts.
-    document().updateLayoutIgnorePendingStylesheets();
-    if (!isFocusable())
-        return;
-
-    cancelFocusAppearanceUpdate();
-    updateFocusAppearance(params.selectionBehavior);
-
-    if (UserGestureIndicator::processedUserGestureSinceLoad()) {
+    if (document().focusedElement() == this && UserGestureIndicator::processedUserGestureSinceLoad()) {
         // Bring up the keyboard in the context of anything triggered by a user
         // gesture. Since tracking that across arbitrary boundaries (eg.
         // animations) is difficult, for now we match IE's heuristic and bring
@@ -2396,8 +2388,10 @@ void Element::focus(const FocusParams& params)
     }
 }
 
-void Element::updateFocusAppearance(SelectionBehaviorOnFocus)
+void Element::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 {
+    if (selectionBehavior == SelectionBehaviorOnFocus::None)
+        return;
     if (isRootEditableElement()) {
         // Taking the ownership since setSelection() may release the last reference to |frame|.
         RefPtrWillBeRawPtr<LocalFrame> frame(document().frame());

@@ -24,6 +24,9 @@ selectionEnd:
 0, 48
 7, 7
 
+selectionStart and selectionEnd in focus handler don't return wrong values 0,0:
+7, 7
+
 ===input===
 setSelectionRange():
 3, 7
@@ -43,6 +46,9 @@ selectionEnd:
 2, 2
 0, 0
 0, 48
+7, 7
+
+selectionStart and selectionEnd in focus handler don't return wrong values 0,0:
 7, 7
 
 ===button===
