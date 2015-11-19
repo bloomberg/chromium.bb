@@ -1,24 +1,27 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-
+var tester = async_test('iframe');
 function runTest() {
-    var frame = frames[0];
-    var sel = frame.getSelection();
-    var doc = frame.document;
-    
-    sel.collapse(doc.body, 0);
-    doc.execCommand("InsertText", false, "foo bar baz");
-    sel.modify("extend", "backward", "word");
-    doc.execCommand("Copy");
-    doc.execCommand("Delete");
-    doc.execCommand("Paste");
-    if (window.testRunner)
-        window.testRunner.notifyDone();
-}
+    if (window.internals)
+        internals.settings.setEditingBehavior('win');
 
-if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    var frame = frames[0];
+    var selection = frame.getSelection();
+    var doc = frame.document;
+
+    selection.collapse(doc.body, 0);
+    doc.execCommand('InsertText', false, 'foo bar baz');
+    selection.modify('extend', 'backward', 'word');
+    doc.execCommand('Copy');
+    doc.execCommand('Delete');
+    doc.execCommand('Paste');
+
+    tester.step(function() { assert_equals(doc.body.innerHTML.replace(/&nbsp;/, ' ', 'g'), 'foo bar baz'); });
+    tester.done();
+}
 </script>
 <p>This tests copy/delete/paste inside an editable iframe.  You should see 'foo bar baz' below.</p>
-<iframe src="../resources/contenteditable-iframe-src.html" onload="runTest();"></iframe>
+<iframe srcdoc="<body contenteditable></body>" onload="runTest()"></iframe>
+<div id="log"></div>
