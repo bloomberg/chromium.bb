@@ -248,8 +248,6 @@ class Config(object):
     self.targets = set()
     self.additional_compile_target_names = set()
     self.test_target_names = set()
-    # Needed until recipes are updated.
-    self.deprecated_mode = False
 
   def Init(self, params):
     """Initializes Config. This is a separate method as it raises an exception
@@ -269,13 +267,9 @@ class Config(object):
     if not isinstance(config, dict):
       raise Exception('config_path must be a JSON file containing a dictionary')
     self.files = config.get('files', [])
-    if 'targets' in config:
-      self.targets = set(config.get('targets'))
-      self.deprecated_mode = True
-    else:
-      self.additional_compile_target_names = set(
-        config.get('additional_compile_targets', []))
-      self.test_target_names = set(config.get('test_targets', []))
+    self.additional_compile_target_names = set(
+      config.get('additional_compile_targets', []))
+    self.test_target_names = set(config.get('test_targets', []))
 
 
 def _WasBuildFileModified(build_file, data, files, toplevel_dir):
@@ -424,55 +418,6 @@ def _GetUnqualifiedToTargetMapping(all_targets, to_find):
       if not to_find:
         return result, []
   return result, [x for x in to_find]
-
-
-def _AddBuildTargetsDeprecated(target, roots, result):
-  """Recurses through all targets that depend on |target|, adding all targets
-  that need to be built (and are in |roots|) to |result|.
-  roots: set of root targets.
-  result: targets that need to be built are added here."""
-  if target.visited:
-    return
-
-  target.visited = True
-  target.in_roots = target in roots
-
-  for back_dep_target in target.back_deps:
-    _AddBuildTargetsDeprecated(back_dep_target, roots, result)
-    target.added_to_compile_targets |= back_dep_target.added_to_compile_targets
-    target.in_roots |= back_dep_target.in_roots
-    target.is_or_has_linked_ancestor |= (
-      back_dep_target.is_or_has_linked_ancestor)
-
-  # Always add 'executable' targets. Even though they may be built by other
-  # targets that depend upon them it makes detection of what is going to be
-  # built easier.
-  # And always add static_libraries that have no dependencies on them from
-  # linkables. This is necessary as the other dependencies on them may be
-  # static libraries themselves, which are not compile time dependencies.
-  if target.in_roots and \
-        (target.is_executable or
-         (not target.added_to_compile_targets and target.requires_build) or
-         (target.is_static_library and not target.is_or_has_linked_ancestor)):
-    print '\t\tadding to build targets', target.name, 'executable', \
-           target.is_executable, 'added_to_compile_targets', \
-           target.added_to_compile_targets, 'requires_build', \
-           target.requires_build, 'is_static_library', \
-           target.is_static_library, 'is_or_has_linked_ancestor', \
-           target.is_or_has_linked_ancestor
-    result.add(target)
-    target.added_to_compile_targets = True
-
-
-def _GetBuildTargetsDeprecated(matching_targets, roots):
-  """Returns the set of Targets that require a build.
-  matching_targets: targets that changed and need to be built.
-  roots: set of root targets in the build files to search from."""
-  result = set()
-  for target in matching_targets:
-    print '\tfinding build targets for match', target.name
-    _AddBuildTargetsDeprecated(target, roots, result)
-  return result
 
 
 def _DoesTargetDependOnMatchingTargets(target):
@@ -650,49 +595,6 @@ def CalculateVariables(default_variables, params):
     default_variables.setdefault('OS', operating_system)
 
 
-def _GenerateOutputDeprecated(target_list, target_dicts, data, params, config):
-  """Old deprecated behavior, will be nuked shortly."""
-  toplevel_dir = _ToGypPath(os.path.abspath(params['options'].toplevel_dir))
-
-  if _WasGypIncludeFileModified(params, config.files):
-    result_dict = { 'status': all_changed_string,
-                    'targets': list(config.targets) }
-    _WriteOutput(params, **result_dict)
-    return
-
-  all_targets, matching_targets, root_targets = _GenerateTargets(
-    data, target_list, target_dicts, toplevel_dir, frozenset(config.files),
-    params['build_files'])
-
-  unqualified_mapping, invalid_targets = _GetUnqualifiedToTargetMapping(
-    all_targets, config.targets)
-
-  if matching_targets:
-    search_targets = _LookupTargets(config.targets, unqualified_mapping)
-    print 'supplied targets'
-    for target in config.targets:
-      print '\t', target
-    print 'expanded supplied targets'
-    for target in search_targets:
-      print '\t', target.name
-    # Reset the visited status for _GetBuildTargets.
-    for target in all_targets.itervalues():
-      target.visited = False
-    build_targets = _GetBuildTargetsDeprecated(matching_targets, search_targets)
-    build_targets = [gyp.common.ParseQualifiedTarget(target.name)[1]
-                     for target in build_targets]
-  else:
-    build_targets = []
-
-  result_dict = { 'targets': build_targets,
-                  'status': found_dependency_string if matching_targets else
-                            no_dependency_string,
-                  'build_targets': build_targets}
-  if invalid_targets:
-    result_dict['invalid_targets'] = invalid_targets
-  _WriteOutput(params, **result_dict)
-
-
 class TargetCalculator(object):
   """Calculates the matching test_targets and matching compile_targets."""
   def __init__(self, files, additional_compile_target_names, test_target_names,
@@ -794,11 +696,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if not config.files:
       raise Exception('Must specify files to analyze via config_path generator '
                       'flag')
-
-    if config.deprecated_mode:
-      _GenerateOutputDeprecated(target_list, target_dicts, data, params,
-                                config)
-      return
 
     toplevel_dir = _ToGypPath(os.path.abspath(params['options'].toplevel_dir))
     if debug:
