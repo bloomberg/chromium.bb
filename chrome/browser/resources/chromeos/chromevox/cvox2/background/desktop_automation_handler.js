@@ -75,7 +75,8 @@ DesktopAutomationHandler.prototype = {
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (node.root.role != RoleType.desktop &&
         global.backgroundObj.mode === ChromeVoxMode.CLASSIC) {
-      chrome.accessibilityPrivate.setFocusRing([]);
+      if (cvox.ChromeVox.isChromeOS)
+        chrome.accessibilityPrivate.setFocusRing([]);
       return;
     }
 

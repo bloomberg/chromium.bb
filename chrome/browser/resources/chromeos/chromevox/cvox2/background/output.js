@@ -741,7 +741,8 @@ Output.prototype = {
     }
 
     // Display.
-    chrome.accessibilityPrivate.setFocusRing(this.locations_);
+    if (cvox.ChromeVox.isChromeOS)
+      chrome.accessibilityPrivate.setFocusRing(this.locations_);
   },
 
   /**
