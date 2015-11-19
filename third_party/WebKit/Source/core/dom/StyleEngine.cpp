@@ -613,6 +613,11 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
 }
 
+CSSFontSelector* StyleEngine::fontSelector() const
+{
+    return m_fontSelector.get();
+}
+
 void StyleEngine::setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector> fontSelector)
 {
 #if !ENABLE(OILPAN)

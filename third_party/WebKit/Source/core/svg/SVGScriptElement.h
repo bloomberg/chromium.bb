@@ -42,7 +42,7 @@ class SVGScriptElement final
 public:
     static PassRefPtrWillBeRawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
 
-    ScriptLoader* loader() const { return m_loader.get(); }
+    ScriptLoader* loader() const;
 
 #if ENABLE(ASSERT)
     bool isAnimatableAttribute(const QualifiedName&) const override;

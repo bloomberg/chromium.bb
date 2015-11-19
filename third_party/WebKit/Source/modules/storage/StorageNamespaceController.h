@@ -29,8 +29,8 @@ public:
 
     DECLARE_TRACE();
 
-    InspectorDOMStorageAgent* inspectorAgent() { return m_inspectorAgent; }
-    void setInspectorAgent(InspectorDOMStorageAgent* agent) { m_inspectorAgent = agent; }
+    InspectorDOMStorageAgent* inspectorAgent();
+    void setInspectorAgent(InspectorDOMStorageAgent*);
 private:
     explicit StorageNamespaceController(StorageClient*);
     static const char* supplementName();

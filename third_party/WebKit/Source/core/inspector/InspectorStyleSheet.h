@@ -134,7 +134,7 @@ public:
     RefPtrWillBeRawPtr<CSSStyleRule>  addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
     bool deleteRule(const SourceRange&, ExceptionState&);
 
-    CSSStyleSheet* pageStyleSheet() { return m_pageStyleSheet.get(); }
+    CSSStyleSheet* pageStyleSheet() const;
 
     PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo();
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRuleWithoutMedia(CSSStyleRule*);

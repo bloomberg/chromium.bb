@@ -47,6 +47,11 @@ void SVGAnimatedNumber::synchronizeAttribute()
     SVGAnimatedProperty<SVGNumber>::synchronizeAttribute();
 }
 
+void SVGAnimatedNumber::setParentOptionalNumber(SVGAnimatedNumberOptionalNumber* numberOptionalNumber)
+{
+    m_parentNumberOptionalNumber = numberOptionalNumber;
+}
+
 DEFINE_TRACE(SVGAnimatedNumber)
 {
     visitor->trace(m_parentNumberOptionalNumber);

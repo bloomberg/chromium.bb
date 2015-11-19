@@ -42,6 +42,7 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
@@ -51,7 +52,6 @@
 
 namespace blink {
 
-class ApplicationCacheHost;
 class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
@@ -83,7 +83,7 @@ public:
 
     const ResourceRequest& request() const;
 
-    ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+    ResourceFetcher* fetcher() const;
 
     const SubstituteData& substituteData() const { return m_substituteData; }
 

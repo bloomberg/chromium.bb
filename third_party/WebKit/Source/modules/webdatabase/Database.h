@@ -108,7 +108,7 @@ public:
     void closeImmediately();
     void closeDatabase();
 
-    DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
+    DatabaseContext* databaseContext() const;
     ExecutionContext* executionContext() const;
 
 private:

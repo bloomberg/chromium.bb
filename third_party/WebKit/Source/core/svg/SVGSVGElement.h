@@ -72,7 +72,7 @@ public:
     void setCurrentTranslate(const FloatPoint&);
     PassRefPtrWillBeRawPtr<SVGPointTearOff> currentTranslateFromJavascript();
 
-    SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
+    SMILTimeContainer* timeContainer() const;
 
     void pauseAnimations();
     void unpauseAnimations();

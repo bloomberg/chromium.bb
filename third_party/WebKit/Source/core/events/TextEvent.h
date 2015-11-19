@@ -58,7 +58,7 @@ public:
 
     bool shouldSmartReplace() const { return m_shouldSmartReplace; }
     bool shouldMatchStyle() const { return m_shouldMatchStyle; }
-    DocumentFragment* pastingFragment() const { return m_pastingFragment.get(); }
+    DocumentFragment* pastingFragment() const;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -59,7 +59,7 @@ public:
     virtual bool hasValidAttributeName();
     virtual void animationAttributeChanged() = 0;
 
-    SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
+    SMILTimeContainer* timeContainer() const;
 
     SVGElement* targetElement() const { return m_targetElement; }
     const QualifiedName& attributeName() const { return m_attributeName; }
@@ -199,7 +199,7 @@ private:
         int repeat() const { return m_repeat; }
         SVGSMILElement* syncBase() const { return m_syncBase.get(); }
         void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
-        ConditionEventListener* eventListener() const { return m_eventListener.get(); }
+        ConditionEventListener* eventListener() const;
         void setEventListener(PassRefPtrWillBeRawPtr<ConditionEventListener>);
 
     private:

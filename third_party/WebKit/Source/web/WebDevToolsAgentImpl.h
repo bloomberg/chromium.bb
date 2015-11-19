@@ -83,7 +83,7 @@ public:
 
     void willBeDestroyed();
     WebDevToolsAgentClient* client() { return m_client; }
-    InspectorOverlay* overlay() const { return m_overlay.get(); }
+    InspectorOverlay* overlay() const;
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);

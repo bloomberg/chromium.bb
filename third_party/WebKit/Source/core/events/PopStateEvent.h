@@ -51,7 +51,7 @@ public:
         ASSERT(!m_serializedState);
         m_serializedState = state;
     }
-    History* history() const { return m_history.get(); }
+    History* history() const;
 
     const AtomicString& interfaceName() const override;
 

@@ -51,7 +51,7 @@ public:
     ~CSSImageValue();
 
     bool isCachePending() const { return m_isCachePending; }
-    StyleFetchedImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
+    StyleFetchedImage* cachedImage() const;
     StyleFetchedImage* cacheImage(Document*, const ResourceLoaderOptions&);
     StyleFetchedImage* cacheImage(Document* document) { return cacheImage(document, ResourceFetcher::defaultResourceOptions()); }
 
@@ -70,10 +70,7 @@ public:
 
     bool knownToBeOpaque(const LayoutObject*) const;
 
-    PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute()
-    {
-        return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
-    }
+    PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute();
 
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 

@@ -244,7 +244,7 @@ public:
     void setRangeText(const String& replacement, ExceptionState&) final;
     void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&) final;
 
-    HTMLImageLoader* imageLoader() const { return m_imageLoader.get(); }
+    HTMLImageLoader* imageLoader() const;
     HTMLImageLoader& ensureImageLoader();
 
     bool setupDateTimeChooserParameters(DateTimeChooserParameters&);

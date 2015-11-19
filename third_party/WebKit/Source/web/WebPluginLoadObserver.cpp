@@ -36,6 +36,13 @@
 
 namespace blink {
 
+WebPluginLoadObserver::WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer, const WebURL& notifyURL, void* notifyData)
+    : m_pluginContainer(pluginContainer)
+    , m_notifyURL(notifyURL)
+    , m_notifyData(notifyData)
+{
+}
+
 WebPluginLoadObserver::~WebPluginLoadObserver()
 {
 #if !ENABLE(OILPAN)

@@ -129,21 +129,8 @@ struct FormatTypeCompare {
 class ScopedDrawingBufferBinder {
     STACK_ALLOCATED();
 public:
-    ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-        : m_drawingBuffer(drawingBuffer)
-        , m_readFramebufferBinding(framebufferBinding)
-    {
-        // Commit DrawingBuffer if needed (e.g., for multisampling)
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->commit();
-    }
-
-    ~ScopedDrawingBufferBinder()
-    {
-        // Restore DrawingBuffer if needed
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->restoreFramebufferBindings();
-    }
+    ScopedDrawingBufferBinder(DrawingBuffer*, WebGLFramebuffer*);
+    ~ScopedDrawingBufferBinder();
 
 private:
     DrawingBuffer* m_drawingBuffer;
@@ -758,21 +745,8 @@ protected:
     class ScopedDrawingBufferBinder {
         STACK_ALLOCATED();
     public:
-        ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-            : m_drawingBuffer(drawingBuffer)
-            , m_readFramebufferBinding(framebufferBinding)
-        {
-            // Commit DrawingBuffer if needed (e.g., for multisampling)
-            if (!m_readFramebufferBinding && m_drawingBuffer)
-                m_drawingBuffer->commit();
-        }
-
-        ~ScopedDrawingBufferBinder()
-        {
-            // Restore DrawingBuffer if needed
-            if (!m_readFramebufferBinding && m_drawingBuffer)
-                m_drawingBuffer->restoreFramebufferBindings();
-        }
+        ScopedDrawingBufferBinder(DrawingBuffer*, WebGLFramebuffer*);
+        ~ScopedDrawingBufferBinder();
 
     private:
         DrawingBuffer* m_drawingBuffer;

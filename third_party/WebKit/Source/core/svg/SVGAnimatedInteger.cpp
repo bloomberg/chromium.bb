@@ -46,6 +46,11 @@ void SVGAnimatedInteger::synchronizeAttribute()
     SVGAnimatedProperty<SVGInteger>::synchronizeAttribute();
 }
 
+void SVGAnimatedInteger::setParentOptionalInteger(SVGAnimatedIntegerOptionalInteger* numberOptionalInteger)
+{
+    m_parentIntegerOptionalInteger = numberOptionalInteger;
+}
+
 DEFINE_TRACE(SVGAnimatedInteger)
 {
     visitor->trace(m_parentIntegerOptionalInteger);

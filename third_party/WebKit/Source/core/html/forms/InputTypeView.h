@@ -125,8 +125,8 @@ public:
     virtual bool hasFallbackContent() const { return false; }
 
 protected:
-    InputTypeView(HTMLInputElement& element) : m_element(&element) { }
-    HTMLInputElement& element() const { return *m_element; }
+    explicit InputTypeView(HTMLInputElement&);
+    HTMLInputElement& element() const;
 
 private:
     // Not a RefPtr because the HTMLInputElement object owns this InputTypeView

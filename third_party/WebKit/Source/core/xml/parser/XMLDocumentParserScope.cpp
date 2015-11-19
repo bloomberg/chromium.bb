@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 
+#include "core/dom/Document.h"
+
 namespace blink {
 
 Document* XMLDocumentParserScope::currentDocument = 0;

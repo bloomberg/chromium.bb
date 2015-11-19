@@ -559,6 +559,11 @@ void SVGSVGElement::removedFrom(ContainerNode* rootParent)
     SVGGraphicsElement::removedFrom(rootParent);
 }
 
+SMILTimeContainer* SVGSVGElement::timeContainer() const
+{
+    return m_timeContainer.get();
+}
+
 void SVGSVGElement::pauseAnimations()
 {
     ASSERT(RuntimeEnabledFeatures::smilEnabled());

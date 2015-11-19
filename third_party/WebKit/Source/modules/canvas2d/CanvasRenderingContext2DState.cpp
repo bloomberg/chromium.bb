@@ -234,10 +234,20 @@ void CanvasRenderingContext2DState::setStrokeStyle(CanvasStyle* style)
     m_strokeStyleDirty = true;
 }
 
+CanvasStyle* CanvasRenderingContext2DState::strokeStyle() const
+{
+    return m_strokeStyle.get();
+}
+
 void CanvasRenderingContext2DState::setFillStyle(CanvasStyle* style)
 {
     m_fillStyle = style;
     m_fillStyleDirty = true;
+}
+
+CanvasStyle* CanvasRenderingContext2DState::fillStyle() const
+{
+    return m_fillStyle.get();
 }
 
 void CanvasRenderingContext2DState::updateStrokeStyle() const

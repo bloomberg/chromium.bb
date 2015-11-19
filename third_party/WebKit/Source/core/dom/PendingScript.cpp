@@ -108,6 +108,11 @@ void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
     m_watchingForLoad = false;
 }
 
+Element* PendingScript::element() const
+{
+    return m_element.get();
+}
+
 void PendingScript::setElement(Element* element)
 {
     m_element = element;

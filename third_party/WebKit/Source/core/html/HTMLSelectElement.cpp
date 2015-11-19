@@ -1968,6 +1968,11 @@ void HTMLSelectElement::hidePopup()
         m_popup->hide();
 }
 
+PopupMenu* HTMLSelectElement::popup() const
+{
+    return m_popup.get();
+}
+
 void HTMLSelectElement::didRecalcStyle(StyleRecalcChange change)
 {
     HTMLFormControlElementWithState::didRecalcStyle(change);

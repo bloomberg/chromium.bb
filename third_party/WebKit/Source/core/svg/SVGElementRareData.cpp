@@ -13,6 +13,26 @@
 
 namespace blink {
 
+SVGCursorElement* SVGElementRareData::cursorElement() const
+{
+    return m_cursorElement;
+}
+
+void SVGElementRareData::setCursorElement(SVGCursorElement* cursorElement)
+{
+    m_cursorElement = cursorElement;
+}
+
+CSSCursorImageValue* SVGElementRareData::cursorImageValue() const
+{
+    return m_cursorImageValue;
+}
+
+void SVGElementRareData::setCursorImageValue(CSSCursorImageValue* cursorImageValue)
+{
+    m_cursorImageValue = cursorImageValue;
+}
+
 MutableStylePropertySet* SVGElementRareData::ensureAnimatedSMILStyleProperties()
 {
     if (!m_animatedSMILStyleProperties)

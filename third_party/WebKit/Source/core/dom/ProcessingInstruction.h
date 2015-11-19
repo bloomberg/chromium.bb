@@ -45,7 +45,7 @@ public:
     void setCreatedByParser(bool createdByParser) { m_createdByParser = createdByParser; }
 
     const String& localHref() const { return m_localHref; }
-    StyleSheet* sheet() const { return m_sheet.get(); }
+    StyleSheet* sheet() const;
 
     bool isCSS() const { return m_isCSS; }
     bool isXSL() const { return m_isXSL; }

@@ -50,7 +50,7 @@ public:
 #endif
 
     static HTMLFormElement* findAssociatedForm(const HTMLElement*);
-    HTMLFormElement* form() const { return m_form.get(); }
+    HTMLFormElement* form() const;
     ValidityState* validity();
 
     virtual bool isFormControlElement() const = 0;

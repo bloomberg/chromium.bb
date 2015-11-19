@@ -39,6 +39,11 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
 {
 }
 
+ScriptLoader* SVGScriptElement::loader() const
+{
+    return m_loader.get();
+}
+
 PassRefPtrWillBeRawPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
 {
     return adoptRefWillBeNoop(new SVGScriptElement(document, insertedByParser, false));

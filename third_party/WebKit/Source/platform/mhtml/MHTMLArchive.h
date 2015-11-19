@@ -98,7 +98,7 @@ public:
     typedef WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> SubArchiveResources;
     typedef WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive>> SubFrameArchives;
 
-    ArchiveResource* mainResource() { return m_mainResource.get(); }
+    ArchiveResource* mainResource() const;
     const SubArchiveResources& subresources() const { return m_subresources; }
     const SubFrameArchives& subframeArchives() const { return m_subframeArchives; }
 

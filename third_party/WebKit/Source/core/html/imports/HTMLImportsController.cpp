@@ -89,6 +89,11 @@ void HTMLImportsController::dispose()
     m_loaders.clear();
 }
 
+HTMLImportTreeRoot* HTMLImportsController::root() const
+{
+    return m_root.get();
+}
+
 static bool makesCycle(HTMLImport* parent, const KURL& url)
 {
     for (HTMLImport* ancestor = parent; ancestor; ancestor = ancestor->parent()) {
@@ -159,6 +164,16 @@ HTMLImportLoader* HTMLImportsController::createLoader()
 {
     m_loaders.append(HTMLImportLoader::create(this));
     return m_loaders.last().get();
+}
+
+size_t HTMLImportsController::loaderCount() const
+{
+    return m_loaders.size();
+}
+
+HTMLImportLoader* HTMLImportsController::loaderAt(size_t i) const
+{
+    return m_loaders[i].get();
 }
 
 HTMLImportLoader* HTMLImportsController::loaderFor(const Document& document) const

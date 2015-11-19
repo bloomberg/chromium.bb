@@ -58,6 +58,16 @@ TrackBase::~TrackBase()
 #endif
 }
 
+void TrackBase::setMediaElement(HTMLMediaElement* mediaElement)
+{
+    m_mediaElement = mediaElement;
+}
+
+HTMLMediaElement* TrackBase::mediaElement() const
+{
+    return m_mediaElement;
+}
+
 Node* TrackBase::owner() const
 {
     return m_mediaElement;

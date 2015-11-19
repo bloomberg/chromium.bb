@@ -244,6 +244,11 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(
     return mhtmlData.release();
 }
 
+ArchiveResource* MHTMLArchive::mainResource() const
+{
+    return m_mainResource.get();
+}
+
 #if !ENABLE(OILPAN)
 void MHTMLArchive::clearAllSubframeArchives()
 {

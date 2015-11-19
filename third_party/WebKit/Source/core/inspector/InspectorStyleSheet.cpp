@@ -1257,6 +1257,11 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     }
 }
 
+CSSStyleSheet* InspectorStyleSheet::pageStyleSheet() const
+{
+    return m_pageStyleSheet.get();
+}
+
 PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo()
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();

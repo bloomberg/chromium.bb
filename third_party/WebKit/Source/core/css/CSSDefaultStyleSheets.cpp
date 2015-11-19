@@ -103,6 +103,21 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     m_defaultQuirksStyle->addRulesFromSheet(quirksStyleSheet(), screenEval());
 }
 
+RuleSet* CSSDefaultStyleSheets::defaultStyle() const
+{
+    return m_defaultStyle.get();
+}
+
+RuleSet* CSSDefaultStyleSheets::defaultQuirksStyle() const
+{
+    return m_defaultQuirksStyle.get();
+}
+
+RuleSet* CSSDefaultStyleSheets::defaultPrintStyle() const
+{
+    return m_defaultPrintStyle.get();
+}
+
 RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
 {
     if (!m_defaultViewSourceStyle) {
@@ -123,6 +138,36 @@ RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
         m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
     return m_defaultXHTMLMobileProfileStyle.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::defaultStyleSheet() const
+{
+    return m_defaultStyleSheet.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::quirksStyleSheet() const
+{
+    return m_quirksStyleSheet.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::svgStyleSheet() const
+{
+    return m_svgStyleSheet.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::mathmlStyleSheet() const
+{
+    return m_mathmlStyleSheet.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet() const
+{
+    return m_mediaControlsStyleSheet.get();
+}
+
+StyleSheetContents* CSSDefaultStyleSheets::fullscreenStyleSheet() const
+{
+    return m_fullscreenStyleSheet.get();
 }
 
 RuleSet* CSSDefaultStyleSheets::defaultMobileViewportStyle()

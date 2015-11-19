@@ -196,7 +196,7 @@ public:
     HTMLStackItem* headStackItem() const { return m_head.get(); }
 
     void setForm(HTMLFormElement*);
-    HTMLFormElement* form() const { return m_form.get(); }
+    HTMLFormElement* form() const;
     PassRefPtrWillBeRawPtr<HTMLFormElement> takeForm();
 
     ParserContentPolicy parserContentPolicy() { return m_parserContentPolicy; }

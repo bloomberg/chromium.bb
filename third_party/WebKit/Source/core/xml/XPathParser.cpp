@@ -116,6 +116,11 @@ static bool isNodeTypeName(const String& name)
     return nodeTypeNames.contains(name);
 }
 
+XPathNSResolver* Parser::resolver() const
+{
+    return m_resolver;
+}
+
 // Returns whether the current token can possibly be a binary operator, given
 // the previous token. Necessary to disambiguate some of the operators
 // (* (multiply), div, and, or, mod) in the [32] Operator rule

@@ -103,6 +103,11 @@ const AtomicString& TextEvent::interfaceName() const
     return EventNames::TextEvent;
 }
 
+DocumentFragment* TextEvent::pastingFragment() const
+{
+    return m_pastingFragment.get();
+}
+
 DEFINE_TRACE(TextEvent)
 {
     visitor->trace(m_pastingFragment);

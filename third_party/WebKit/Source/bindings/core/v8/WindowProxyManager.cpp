@@ -29,6 +29,16 @@ DEFINE_TRACE(WindowProxyManager)
 #endif
 }
 
+Frame* WindowProxyManager::frame() const
+{
+    return m_frame.get();
+}
+
+WindowProxy* WindowProxyManager::mainWorldProxy() const
+{
+    return m_windowProxy.get();
+}
+
 WindowProxy* WindowProxyManager::windowProxy(DOMWrapperWorld& world)
 {
     WindowProxy* windowProxy = nullptr;

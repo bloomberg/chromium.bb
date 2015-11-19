@@ -171,7 +171,7 @@ public:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
     void setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame>);
-    RemoteFrame* frame() const { return m_frame.get(); }
+    RemoteFrame* frame() const;
 
     WebRemoteFrameClient* client() const { return m_client; }
 

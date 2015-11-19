@@ -57,7 +57,7 @@ public:
     };
 
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
-    ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
+    ContentSecurityPolicy* contentSecurityPolicy() const;
 
     bool isSecureTransitionTo(const KURL&) const;
 

@@ -50,10 +50,7 @@ public:
 
     void synchronizeAttribute() override;
 
-    void setParentOptionalNumber(SVGAnimatedNumberOptionalNumber* numberOptionalNumber)
-    {
-        m_parentNumberOptionalNumber = numberOptionalNumber;
-    }
+    void setParentOptionalNumber(SVGAnimatedNumberOptionalNumber*);
 
     DECLARE_VIRTUAL_TRACE();
 

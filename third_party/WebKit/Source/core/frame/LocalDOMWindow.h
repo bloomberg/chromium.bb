@@ -35,6 +35,7 @@
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/loader/appcache/ApplicationCache.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

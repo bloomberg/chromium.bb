@@ -95,6 +95,37 @@ void AnimationEffect::updateSpecifiedTiming(const Timing& timing)
     specifiedTimingChanged();
 }
 
+bool AnimationEffect::requiresIterationEvents() const
+{
+    return m_eventDelegate && m_eventDelegate->requiresIterationEvents(*this);
+}
+
+void AnimationEffect::clearEventDelegate()
+{
+    m_eventDelegate = nullptr;
+}
+
+void AnimationEffect::attach(Animation* animation)
+{
+    m_animation = animation;
+}
+
+void AnimationEffect::detach()
+{
+    ASSERT(m_animation);
+    m_animation = nullptr;
+}
+
+const Animation* AnimationEffect::animation() const
+{
+    return m_animation;
+}
+
+Animation* AnimationEffect::animation()
+{
+    return m_animation;
+}
+
 void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
 {
     // ComputedTimingProperties members.

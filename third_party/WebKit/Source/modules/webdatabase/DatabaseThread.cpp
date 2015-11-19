@@ -152,6 +152,11 @@ bool DatabaseThread::isDatabaseOpen(Database* database)
     return !m_terminationRequested && m_openDatabaseSet.contains(database);
 }
 
+SQLTransactionCoordinator* DatabaseThread::transactionCoordinator() const
+{
+    return m_transactionCoordinator.get();
+}
+
 void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
 {
     ASSERT(m_thread);

@@ -151,7 +151,7 @@ public:
 
     StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
 
-    CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
+    CSSFontSelector* fontSelector() const;
     void setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector>);
 
     void removeFontFaceRules(const WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace>>&);

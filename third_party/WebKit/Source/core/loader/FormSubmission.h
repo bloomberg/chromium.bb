@@ -31,6 +31,7 @@
 #ifndef FormSubmission_h
 #define FormSubmission_h
 
+#include "core/events/Event.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -39,7 +40,6 @@
 namespace blink {
 
 class EncodedFormData;
-class Event;
 struct FrameLoadRequest;
 class HTMLFormElement;
 

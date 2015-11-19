@@ -50,7 +50,7 @@ public:
 
     void initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData*);
 
-    DeviceMotionData* deviceMotionData() const { return m_deviceMotionData.get(); }
+    DeviceMotionData* deviceMotionData() const;
 
     DeviceAcceleration* acceleration();
     DeviceAcceleration* accelerationIncludingGravity();

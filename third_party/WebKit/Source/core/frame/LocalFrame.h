@@ -31,9 +31,12 @@
 #include "core/CoreExport.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrameLifecycleNotifier.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/Supplementable.h"
@@ -56,14 +59,11 @@ class EventHandler;
 class FloatSize;
 class FrameConsole;
 class FrameSelection;
-class FrameView;
 class HTMLPlugInElement;
 class InputMethodController;
 class IntPoint;
 class IntSize;
-class InstrumentingAgents;
 class LocalDOMWindow;
-class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class Range;
@@ -110,7 +110,7 @@ public:
     FrameView* view() const;
     Document* document() const;
     void setPagePopupOwner(Element&);
-    Element* pagePopupOwner() const { return m_pagePopupOwner.get(); }
+    Element* pagePopupOwner() const;
 
     LayoutView* contentLayoutObject() const; // Root of the layout tree for the document contained in this frame.
 
@@ -260,11 +260,6 @@ private:
 inline void LocalFrame::init()
 {
     m_loader.init();
-}
-
-inline LocalDOMWindow* LocalFrame::localDOMWindow() const
-{
-    return m_domWindow.get();
 }
 
 inline FrameLoader& LocalFrame::loader() const

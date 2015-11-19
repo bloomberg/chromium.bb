@@ -438,6 +438,11 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     m_instrumentingAgents->reset();
 }
 
+InspectorOverlay* WebDevToolsAgentImpl::overlay() const
+{
+    return m_overlay.get();
+}
+
 void WebDevToolsAgentImpl::initializeDeferredAgents()
 {
     if (m_deferredAgentsInitialized)

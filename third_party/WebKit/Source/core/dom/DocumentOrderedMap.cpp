@@ -179,6 +179,12 @@ Element* DocumentOrderedMap::getElementByLabelForAttribute(const AtomicString& k
     return get<keyMatchesLabelForAttribute>(key, scope);
 }
 
+DocumentOrderedMap::MapEntry::MapEntry(Element* firstElement)
+    : element(firstElement)
+    , count(1)
+{
+}
+
 DEFINE_TRACE(DocumentOrderedMap)
 {
 #if ENABLE(OILPAN)

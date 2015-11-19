@@ -43,6 +43,11 @@ CSSFontFaceSource::~CSSFontFaceSource()
 {
 }
 
+void CSSFontFaceSource::setFontFace(CSSFontFace* face)
+{
+    m_face = face;
+}
+
 PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription)
 {
     // If the font hasn't loaded or an error occurred, then we've got nothing.

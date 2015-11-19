@@ -739,6 +739,11 @@ void WebRemoteFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame> frame)
     m_frame = frame;
 }
 
+RemoteFrame* WebRemoteFrameImpl::frame() const
+{
+    return m_frame.get();
+}
+
 WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
 {
     if (!frame.client())

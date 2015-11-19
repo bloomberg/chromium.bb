@@ -222,7 +222,7 @@ public:
     bool isPainting() const;
 
     void setNodeToDraw(Node*);
-    Node* nodeToDraw() const { return m_nodeToDraw.get(); }
+    Node* nodeToDraw() const;
 
     Color documentBackgroundColor() const;
 

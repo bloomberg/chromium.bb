@@ -29,6 +29,7 @@
 #define Frame_h
 
 #include "core/CoreExport.h"
+#include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
@@ -44,7 +45,6 @@ class DOMWrapperWorld;
 class Document;
 class FrameClient;
 class FrameHost;
-class FrameOwner;
 class HTMLFrameOwnerElement;
 class LayoutPart;
 class KURL;

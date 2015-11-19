@@ -40,6 +40,11 @@ PassRefPtrWillBeRawPtr<InputTypeView> InputTypeView::create(HTMLInputElement& in
     return adoptRefWillBeNoop(new InputTypeView(input));
 }
 
+InputTypeView::InputTypeView(HTMLInputElement& element)
+    : m_element(&element)
+{
+}
+
 InputTypeView::~InputTypeView()
 {
 }
@@ -225,6 +230,11 @@ void InputTypeView::updatePlaceholderText()
 AXObject* InputTypeView::popupRootAXObject()
 {
     return nullptr;
+}
+
+HTMLInputElement& InputTypeView::element() const
+{
+    return *m_element;
 }
 
 DEFINE_TRACE(ClickHandlingState)

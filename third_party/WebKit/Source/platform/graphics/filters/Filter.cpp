@@ -107,4 +107,14 @@ void Filter::setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect> effect)
     m_lastEffect = effect;
 }
 
+FilterEffect* Filter::lastEffect() const
+{
+    return m_lastEffect.get();
+}
+
+SourceGraphic* Filter::sourceGraphic() const
+{
+    return m_sourceGraphic.get();
+}
+
 } // namespace blink

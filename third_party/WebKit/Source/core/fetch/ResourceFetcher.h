@@ -36,6 +36,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "platform/Timer.h"
+#include "platform/mhtml/ArchiveResourceCollection.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "wtf/HashMap.h"

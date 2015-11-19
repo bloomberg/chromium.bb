@@ -133,7 +133,7 @@ public:
     // Asynchronous audio file data decoding.
     void decodeAudioData(DOMArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
 
-    AudioListener* listener() { return m_listener.get(); }
+    AudioListener* listener() const;
 
     virtual bool hasRealtimeConstraint() = 0;
 

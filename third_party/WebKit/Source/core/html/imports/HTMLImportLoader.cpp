@@ -193,6 +193,11 @@ void HTMLImportLoader::moveToFirst(HTMLImportChild* import)
     m_imports.insert(0, import);
 }
 
+Document* HTMLImportLoader::document() const
+{
+    return m_document.get();
+}
+
 void HTMLImportLoader::addImport(HTMLImportChild* import)
 {
     ASSERT(kNotFound == m_imports.find(import));

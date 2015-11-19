@@ -121,13 +121,13 @@ public:
     double timerAlignmentInterval() const final;
     DOMTimerCoordinator* timers() final;
 
-    WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
+    WorkerInspectorController* workerInspectorController() const;
 
     bool isClosing() { return m_closing; }
 
     double timeOrigin() const { return m_timeOrigin; }
 
-    WorkerClients* clients() { return m_workerClients.get(); }
+    WorkerClients* clients() const;
 
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;

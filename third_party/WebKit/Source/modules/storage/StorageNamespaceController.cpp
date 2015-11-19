@@ -32,6 +32,16 @@ DEFINE_TRACE(StorageNamespaceController)
     visitor->trace(m_inspectorAgent);
 }
 
+InspectorDOMStorageAgent* StorageNamespaceController::inspectorAgent()
+{
+    return m_inspectorAgent;
+}
+
+void StorageNamespaceController::setInspectorAgent(InspectorDOMStorageAgent* agent)
+{
+    m_inspectorAgent = agent;
+}
+
 StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)

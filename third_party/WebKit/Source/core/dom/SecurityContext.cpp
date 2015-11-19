@@ -60,6 +60,11 @@ void SecurityContext::setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSec
     m_contentSecurityPolicy = contentSecurityPolicy;
 }
 
+ContentSecurityPolicy* SecurityContext::contentSecurityPolicy() const
+{
+    return m_contentSecurityPolicy.get();
+}
+
 bool SecurityContext::isSecureTransitionTo(const KURL& url) const
 {
     // If we haven't initialized our security origin by now, this is probably

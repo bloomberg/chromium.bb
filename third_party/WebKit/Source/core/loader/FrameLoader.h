@@ -38,6 +38,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/FrameTypes.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryItem.h"
@@ -50,7 +51,6 @@
 
 namespace blink {
 
-class DocumentLoader;
 class Frame;
 class FrameLoaderClient;
 class ProgressTracker;

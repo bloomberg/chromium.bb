@@ -30,13 +30,16 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/StylePropertySet.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/AttributeCollection.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
 
@@ -44,7 +47,6 @@ namespace blink {
 
 class ElementAnimations;
 class Attr;
-class Attribute;
 class CSSStyleDeclaration;
 class ClientRect;
 class ClientRectList;
@@ -66,7 +68,6 @@ class ScrollStateCallback;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
-class StylePropertySet;
 
 enum SpellcheckAttributeState {
     SpellcheckAttributeTrue,

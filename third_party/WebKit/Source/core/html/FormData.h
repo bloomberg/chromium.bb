@@ -101,17 +101,17 @@ private:
 // Represents entry, which is a pair of a name and a value.
 // https://xhr.spec.whatwg.org/#concept-formdata-entry
 // Entry objects are immutable.
-class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
+class CORE_EXPORT FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
 public:
-    Entry(const CString& name, const CString& value) : m_name(name), m_value(value) { }
-    Entry(const CString& name, Blob* blob, const String& filename) : m_name(name), m_blob(blob), m_filename(filename) { }
+    Entry(const CString&, const CString&);
+    Entry(const CString&, Blob*, const String&);
     DECLARE_TRACE();
 
-    bool isString() const { return !m_blob; }
-    bool isFile() const { return m_blob; }
+    bool isString() const;
+    bool isFile() const;
     const CString& name() const { return m_name; }
     const CString& value() const { return m_value; }
-    Blob* blob() const { return m_blob.get(); }
+    Blob* blob() const;
     File* file() const;
     const String& filename() const { return m_filename; }
 

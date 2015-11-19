@@ -1012,6 +1012,12 @@ Element* Node::parentOrShadowHostElement() const
     return toElement(parent);
 }
 
+void Node::setParentOrShadowHostNode(ContainerNode* parent)
+{
+    ASSERT(isMainThread());
+    m_parentOrShadowHostNode = parent;
+}
+
 ContainerNode* Node::parentOrShadowHostOrTemplateHostNode() const
 {
     if (isDocumentFragment() && toDocumentFragment(this)->isTemplateContent())

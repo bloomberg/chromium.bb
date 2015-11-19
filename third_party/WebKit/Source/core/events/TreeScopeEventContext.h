@@ -60,7 +60,7 @@ public:
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget>);
 
-    TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
+    TouchEventContext* touchEventContext() const;
     TouchEventContext* ensureTouchEventContext();
 
     WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& ensureEventPath(EventPath&);

@@ -46,6 +46,12 @@ CSSImageValue::~CSSImageValue()
 {
 }
 
+StyleFetchedImage* CSSImageValue::cachedImage() const
+{
+    ASSERT(!isCachePending());
+    return m_cachedImage.get();
+}
+
 StyleFetchedImage* CSSImageValue::cacheImage(Document* document, const ResourceLoaderOptions& options)
 {
     ASSERT(document);
@@ -105,6 +111,11 @@ String CSSImageValue::customCSSText() const
 bool CSSImageValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
     return m_cachedImage ? m_cachedImage->knownToBeOpaque(layoutObject) : false;
+}
+
+PassRefPtrWillBeRawPtr<CSSImageValue> CSSImageValue::valueWithURLMadeAbsolute()
+{
+    return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue)

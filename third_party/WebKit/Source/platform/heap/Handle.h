@@ -771,7 +771,11 @@ public:
         checkPointer();
     }
 
-    T* get() const { return m_raw; }
+    T* get() const
+    {
+        static_assert(IsFullyDefined<T>::value, "T is not fully defined.");
+        return m_raw;
+    }
 
     void clear() { m_raw = nullptr; }
 
@@ -779,6 +783,8 @@ public:
 protected:
     void checkPointer()
     {
+        static_assert(IsFullyDefined<T>::value, "T is not fully defined.");
+
 #if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
         if (!m_raw)
             return;

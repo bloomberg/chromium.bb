@@ -166,6 +166,11 @@ RemoteFrameClient* RemoteFrame::remoteFrameClient() const
     return static_cast<RemoteFrameClient*>(client());
 }
 
+WindowProxyManager* RemoteFrame::windowProxyManager() const
+{
+    return m_windowProxyManager.get();
+}
+
 void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 {
     if (m_remotePlatformLayer)
@@ -176,6 +181,11 @@ void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 
     ASSERT(owner());
     toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();
+}
+
+RemoteFrameView* RemoteFrame::view() const
+{
+    return m_view.get();
 }
 
 } // namespace blink

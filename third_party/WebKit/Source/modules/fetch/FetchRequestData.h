@@ -64,9 +64,9 @@ public:
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     void setHeaderList(FetchHeaderList* headerList) { m_headerList = headerList; }
-    BodyStreamBuffer* buffer() const { return m_buffer; }
+    BodyStreamBuffer* buffer() const;
     // Call Request::refreshBody() after calling setBuffer().
-    void setBuffer(BodyStreamBuffer* buffer) { m_buffer = buffer; }
+    void setBuffer(BodyStreamBuffer*);
     String mimeType() const { return m_mimeType; }
     void setMIMEType(const String& type) { m_mimeType = type; }
     String integrity() const { return m_integrity; }

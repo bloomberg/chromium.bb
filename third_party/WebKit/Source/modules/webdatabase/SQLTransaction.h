@@ -69,7 +69,7 @@ public:
     void executeSql(ScriptState*, const String& sqlStatement, const Nullable<Vector<ScriptValue>>& arguments,
         SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
 
-    Database* database() { return m_database.get(); }
+    Database* database() const;
 
     SQLTransactionErrorCallback* releaseErrorCallback();
 

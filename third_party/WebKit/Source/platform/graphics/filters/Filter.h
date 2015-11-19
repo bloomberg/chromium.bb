@@ -30,8 +30,8 @@
 
 namespace blink {
 
-class SourceGraphic;
 class FilterEffect;
+class SourceGraphic;
 
 class PLATFORM_EXPORT Filter final : public RefCountedWillBeGarbageCollectedFinalized<Filter> {
 public:
@@ -61,9 +61,9 @@ public:
     const FloatRect& referenceBox() const { return m_referenceBox; }
 
     void setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect>);
-    FilterEffect* lastEffect() const { return m_lastEffect.get(); }
+    FilterEffect* lastEffect() const;
 
-    SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
+    SourceGraphic* sourceGraphic() const;
 
 private:
     Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);

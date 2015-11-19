@@ -98,8 +98,8 @@ public:
     double activeDurationInternal() const;
     double endTimeInternal() const { return specifiedTiming().startDelay + activeDurationInternal() + specifiedTiming().endDelay; }
 
-    const Animation* animation() const { return m_animation; }
-    Animation* animation() { return m_animation; }
+    const Animation* animation() const;
+    Animation* animation();
     const Timing& specifiedTiming() const { return m_timing; }
     AnimationEffectTiming* timing();
     void updateSpecifiedTiming(const Timing&);
@@ -118,21 +118,13 @@ protected:
     // When AnimationEffect receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
-    void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
+    void updateInheritedTime(double, TimingUpdateReason) const;
     void invalidate() const { m_needsUpdate = true; }
-    bool requiresIterationEvents() const { return m_eventDelegate && m_eventDelegate->requiresIterationEvents(*this); }
-    void clearEventDelegate() { m_eventDelegate = nullptr; }
+    bool requiresIterationEvents() const;
+    void clearEventDelegate();
 
-    virtual void attach(Animation* animation)
-    {
-        m_animation = animation;
-    }
-
-    virtual void detach()
-    {
-        ASSERT(m_animation);
-        m_animation = nullptr;
-    }
+    virtual void attach(Animation*);
+    virtual void detach();
 
     double repeatedDuration() const;
 

@@ -50,6 +50,11 @@ void StaticCSSRuleList::deref()
 }
 #endif
 
+CSSRule* StaticCSSRuleList::item(unsigned index) const
+{
+    return index < m_rules.size() ? m_rules[index].get() : nullptr;
+}
+
 DEFINE_TRACE(StaticCSSRuleList)
 {
     visitor->trace(m_rules);

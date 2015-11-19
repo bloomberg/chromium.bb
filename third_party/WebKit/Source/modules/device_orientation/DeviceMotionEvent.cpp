@@ -60,6 +60,11 @@ void DeviceMotionEvent::initDeviceMotionEvent(const AtomicString& type, bool bub
     m_rotationRate.clear();
 }
 
+DeviceMotionData* DeviceMotionEvent::deviceMotionData() const
+{
+    return m_deviceMotionData.get();
+}
+
 DeviceAcceleration* DeviceMotionEvent::acceleration()
 {
     if (!m_deviceMotionData->acceleration())

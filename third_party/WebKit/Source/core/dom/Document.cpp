@@ -658,11 +658,21 @@ void Document::setDoctype(PassRefPtrWillBeRawPtr<DocumentType> docType)
     styleEngine().clearResolver();
 }
 
+DocumentType* Document::doctype() const
+{
+    return m_docType.get();
+}
+
 DOMImplementation& Document::implementation()
 {
     if (!m_implementation)
         m_implementation = DOMImplementation::create(*this);
     return *m_implementation;
+}
+
+Element* Document::documentElement() const
+{
+    return m_documentElement.get();
 }
 
 bool Document::hasAppCacheManifest() const
@@ -779,6 +789,11 @@ ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicStri
     CustomElementConstructorBuilder constructorBuilder(scriptState, options);
     registrationContext()->registerElement(this, &constructorBuilder, name, validNames, exceptionState);
     return constructorBuilder.bindingsReturnValue();
+}
+
+CustomElementRegistrationContext* Document::registrationContext() const
+{
+    return m_registrationContext.get();
 }
 
 CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue()
@@ -1317,6 +1332,11 @@ void Document::setTitleElement(Element* titleElement)
         updateTitle(toHTMLTitleElement(m_titleElement)->text());
     else if (isSVGTitleElement(m_titleElement))
         updateTitle(toSVGTitleElement(m_titleElement)->textContent());
+}
+
+Element* Document::titleElement() const
+{
+    return m_titleElement.get();
 }
 
 void Document::removeTitle(Element* titleElement)
@@ -1980,6 +2000,11 @@ void Document::clearFocusedElementSoon()
 {
     if (!m_clearFocusedElementTimer.isActive())
         m_clearFocusedElementTimer.startOneShot(0, BLINK_FROM_HERE);
+}
+
+Element* Document::focusedElement() const
+{
+    return m_focusedElement.get();
 }
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
@@ -3019,6 +3044,10 @@ void Document::disableEval(const String& errorMessage)
     frame()->script().disableEval(errorMessage);
 }
 
+ElementDataCache* Document::elementDataCache() const
+{
+    return m_elementDataCache.get();
+}
 
 void Document::didLoadAllImports()
 {
@@ -3338,6 +3367,12 @@ StyleSheetList* Document::styleSheets()
     return m_styleSheetList.get();
 }
 
+StyleEngine& Document::styleEngine()
+{
+    ASSERT(m_styleEngine.get());
+    return *m_styleEngine.get();
+}
+
 String Document::preferredStylesheetSet() const
 {
     return m_styleEngine->preferredStylesheetSetName();
@@ -3411,6 +3446,16 @@ void Document::setActiveHoverElement(PassRefPtrWillBeRawPtr<Element> newActiveEl
     }
 
     m_activeHoverElement = newActiveElement;
+}
+
+Element* Document::activeHoverElement() const
+{
+    return m_activeHoverElement.get();
+}
+
+Node* Document::hoverNode() const
+{
+    return m_hoverNode.get();
 }
 
 void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
@@ -4447,6 +4492,11 @@ KURL Document::openSearchDescriptionURL()
     return KURL();
 }
 
+HTMLScriptElement* Document::currentScript() const
+{
+    return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr;
+}
+
 void Document::pushCurrentScript(PassRefPtrWillBeRawPtr<HTMLScriptElement> newCurrentScript)
 {
     ASSERT(newCurrentScript);
@@ -4516,6 +4566,11 @@ WeakPtrWillBeRawPtr<Document> Document::contextDocument()
 #endif
     }
     return nullptr;
+}
+
+ScriptRunner* Document::scriptRunner() const
+{
+    return m_scriptRunner.get();
 }
 
 PassRefPtrWillBeRawPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
@@ -5584,6 +5639,11 @@ void Document::setAutofocusElement(Element* element)
     ASSERT(!m_autofocusElement);
     m_autofocusElement = element;
     m_taskRunner->postTask(BLINK_FROM_HERE, AutofocusTask::create());
+}
+
+Element* Document::autofocusElement() const
+{
+    return m_autofocusElement.get();
 }
 
 Element* Document::activeElement() const

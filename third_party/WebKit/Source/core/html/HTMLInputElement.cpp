@@ -147,6 +147,11 @@ DEFINE_TRACE(HTMLInputElement)
     HTMLTextFormControlElement::trace(visitor);
 }
 
+HTMLImageLoader* HTMLInputElement::imageLoader() const
+{
+    return m_imageLoader.get();
+}
+
 HTMLImageLoader& HTMLInputElement::ensureImageLoader()
 {
     if (!m_imageLoader)

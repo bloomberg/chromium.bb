@@ -440,6 +440,16 @@ void LocalFrame::setPagePopupOwner(Element& owner)
     m_pagePopupOwner = &owner;
 }
 
+Element* LocalFrame::pagePopupOwner() const
+{
+    return m_pagePopupOwner.get();
+}
+
+LocalDOMWindow* LocalFrame::localDOMWindow() const
+{
+    return m_domWindow.get();
+}
+
 LayoutView* LocalFrame::contentLayoutObject() const
 {
     return document() ? document()->layoutView() : nullptr;

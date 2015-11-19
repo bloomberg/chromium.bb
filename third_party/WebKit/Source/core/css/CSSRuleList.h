@@ -79,7 +79,7 @@ private:
     ~StaticCSSRuleList() override;
 
     unsigned length() const override { return m_rules.size(); }
-    CSSRule* item(unsigned index) const override { return index < m_rules.size() ? m_rules[index].get() : nullptr; }
+    CSSRule* item(unsigned index) const override;
 
     WillBeHeapVector<RefPtrWillBeMember<CSSRule>> m_rules;
 #if !ENABLE(OILPAN)
