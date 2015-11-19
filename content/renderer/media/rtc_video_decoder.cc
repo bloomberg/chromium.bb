@@ -116,6 +116,12 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
   return decoder.Pass();
 }
 
+// static
+void RTCVideoDecoder::Destroy(webrtc::VideoDecoder* decoder,
+                              media::GpuVideoAcceleratorFactories* factories) {
+  factories->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder);
+}
+
 int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
                                     int32_t /*numberOfCores*/) {
   DVLOG(2) << "InitDecode";

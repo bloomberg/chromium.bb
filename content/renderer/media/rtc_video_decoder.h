@@ -51,11 +51,14 @@ class CONTENT_EXPORT RTCVideoDecoder
  public:
   ~RTCVideoDecoder() override;
 
-  // Creates a RTCVideoDecoder. Returns NULL if failed. The video decoder will
-  // run on the message loop of |factories|.
+  // Creates a RTCVideoDecoder on the message loop of |factories|. Returns NULL
+  // if failed. The video decoder will run on the message loop of |factories|.
   static scoped_ptr<RTCVideoDecoder> Create(
       webrtc::VideoCodecType type,
       media::GpuVideoAcceleratorFactories* factories);
+  // Destroys |decoder| on the loop of |factories|
+  static void Destroy(webrtc::VideoDecoder* decoder,
+                      media::GpuVideoAcceleratorFactories* factories);
 
   // webrtc::VideoDecoder implementation.
   // Called on WebRTC DecodingThread.
