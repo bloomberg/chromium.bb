@@ -48,6 +48,11 @@ void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
                             content::PUSH_USER_VISIBLE_STATUS_LAST + 1);
 }
 
+content::StoragePartition* GetStoragePartition(Profile* profile,
+                                               const GURL& origin) {
+  return content::BrowserContext::GetStoragePartitionForSite(profile, origin);
+}
+
 }  // namespace
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
@@ -63,8 +68,8 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Relax this heuristic slightly.
   scoped_refptr<content::PlatformNotificationContext> notification_context =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile_, requesting_origin)->GetPlatformNotificationContext();
+      GetStoragePartition(profile_, requesting_origin)
+          ->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -181,8 +186,8 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // from needing to do so.
   if (notification_shown || notification_needed) {
     content::ServiceWorkerContext* service_worker_context =
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile_, requesting_origin)->GetServiceWorkerContext();
+        GetStoragePartition(profile_, requesting_origin)
+            ->GetServiceWorkerContext();
 
     content::PushMessagingService::GetNotificationsShownByLastFewPushes(
         service_worker_context, service_worker_registration_id,
@@ -209,8 +214,8 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
     const std::string& data, bool success, bool not_found) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::ServiceWorkerContext* service_worker_context =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile_, requesting_origin)->GetServiceWorkerContext();
+      GetStoragePartition(profile_, requesting_origin)
+          ->GetServiceWorkerContext();
 
   // We remember whether the last (up to) 10 pushes showed notifications.
   const size_t MISSED_NOTIFICATIONS_LENGTH = 10;
@@ -278,8 +283,8 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   database_data.notification_data = notification_data;
 
   scoped_refptr<content::PlatformNotificationContext> notification_context =
-    content::BrowserContext::GetStoragePartitionForSite(
-        profile_, requesting_origin)->GetPlatformNotificationContext();
+      GetStoragePartition(profile_, requesting_origin)
+          ->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
