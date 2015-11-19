@@ -15,18 +15,16 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 // Common test results.
 const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
 
-MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {
-}
+MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {}
 
-MediaBrowserTest::~MediaBrowserTest() {
-}
+MediaBrowserTest::~MediaBrowserTest() {}
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
                                         const base::StringPairs& query_params,
@@ -34,14 +32,15 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
                                         bool http) {
   GURL gurl;
   std::string query = media::GetURLQueryString(query_params);
-  scoped_ptr<net::EmbeddedTestServer> http_test_server;
+  scoped_ptr<net::SpawnedTestServer> http_test_server;
   if (http) {
     DVLOG(0) << base::TimeFormatTimeOfDayWithMilliseconds(base::Time::Now())
              << " Starting HTTP server";
-    http_test_server.reset(new net::EmbeddedTestServer);
-    http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
+    http_test_server.reset(new net::SpawnedTestServer(
+        net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
+        media::GetTestDataPath()));
     CHECK(http_test_server->Start());
-    gurl = http_test_server->GetURL("/" + html_page + "?" + query);
+    gurl = http_test_server->GetURL("files/" + html_page + "?" + query);
   } else {
     gurl = content::GetFileUrlWithQuery(media::GetTestDataFilePath(html_page),
                                         query);
