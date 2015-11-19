@@ -459,6 +459,14 @@ chrome.app.window.AppWindow.prototype.onRestored;
 chrome.app.window.AppWindow.prototype.contentWindow;
 
 
+/** @type {!chrome.app.window.Bounds} */
+chrome.app.window.AppWindow.prototype.innerBounds;
+
+
+/** @type {!chrome.app.window.Bounds} */
+chrome.app.window.AppWindow.prototype.outerBounds;
+
+
 /**
  * @typedef {?{
  *   left: number,
