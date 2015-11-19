@@ -177,9 +177,6 @@ crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 
-crbug.com/128055 svg/as-image/svg-non-integer-scaled-image.html [ NeedsRebaseline ]
-crbug.com/128055 svg/zoom/page/zoom-background-images.html [ NeedsRebaseline ]
-
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/519003 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
