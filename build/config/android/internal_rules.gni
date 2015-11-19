@@ -1001,8 +1001,8 @@ template("java_prebuilt_impl") {
 
   # Jar files can be needed at runtime (by Robolectric tests or java binaries),
   # so do not put them under gen/.
-  target_dir_name = get_label_info(":$target_name", "dir")
-  _jar_path = "$root_out_dir/lib.java$target_dir_name/$target_name.jar"
+  _target_dir_name = get_label_info(":$target_name", "dir")
+  _jar_path = "$root_out_dir/lib.java$_target_dir_name/$target_name.jar"
   _build_config = _base_path + ".build_config"
 
   if (_supports_android) {
@@ -1019,13 +1019,13 @@ template("java_prebuilt_impl") {
 
   _template_name = target_name
 
-  build_config_target_name = "${_template_name}__build_config"
-  process_jar_target_name = "${_template_name}__process_jar"
+  _build_config_target_name = "${_template_name}__build_config"
+  _process_jar_target_name = "${_template_name}__process_jar"
   if (_supports_android) {
-    dex_target_name = "${_template_name}__dex"
+    _dex_target_name = "${_template_name}__dex"
   }
 
-  write_build_config(build_config_target_name) {
+  write_build_config(_build_config_target_name) {
     type = "java_library"
     supports_android = _supports_android
     requires_android =
@@ -1039,10 +1039,10 @@ template("java_prebuilt_impl") {
     }
   }
 
-  process_java_prebuilt(process_jar_target_name) {
+  process_java_prebuilt(_process_jar_target_name) {
     visibility = [ ":$_template_name" ]
     if (_supports_android) {
-      visibility += [ ":$dex_target_name" ]
+      visibility += [ ":$_dex_target_name" ]
     }
 
     if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
@@ -1054,22 +1054,22 @@ template("java_prebuilt_impl") {
     input_jar_path = invoker.jar_path
     output_jar_path = _jar_path
 
-    deps = [ ":$build_config_target_name" ] + _deps + _jar_deps
+    deps = [ ":$_build_config_target_name" ] + _deps + _jar_deps
   }
 
   if (_supports_android) {
-    dex(dex_target_name) {
+    dex(_dex_target_name) {
       sources = [
         _jar_path,
       ]
       output = _dex_path
-      deps = [ ":$process_jar_target_name" ] + _deps + _jar_deps
+      deps = [ ":$_process_jar_target_name" ] + _deps + _jar_deps
     }
   }
 
   if (defined(invoker.main_class)) {
-    binary_script_target_name = "${_template_name}__java_binary_script"
-    java_binary_script(binary_script_target_name) {
+    _binary_script_target_name = "${_template_name}__java_binary_script"
+    java_binary_script(_binary_script_target_name) {
       forward_variables_from(invoker,
                              [
                                "bootclasspath",
@@ -1080,7 +1080,7 @@ template("java_prebuilt_impl") {
       jar_path = _jar_path
       script_name = _template_name
       deps = [
-        ":$build_config_target_name",
+        ":$_build_config_target_name",
       ]
     }
   }
@@ -1088,17 +1088,17 @@ template("java_prebuilt_impl") {
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
     deps = [
-      ":$process_jar_target_name",
+      ":$_process_jar_target_name",
     ]
     if (_supports_android) {
-      deps += [ ":$dex_target_name" ]
+      deps += [ ":$_dex_target_name" ]
     }
     data_deps = []
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }
     if (defined(invoker.main_class)) {
-      data_deps += [ ":$binary_script_target_name" ]
+      data_deps += [ ":$_binary_script_target_name" ]
     }
   }
 }
@@ -1185,11 +1185,11 @@ template("compile_java") {
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
   _rebased_jar_path = rebase_path(_intermediate_jar_path, root_build_dir)
 
-  javac_target_name = "${target_name}__javac"
-  finish_target_name = "${target_name}__finish"
-  final_target_name = target_name
+  _javac_target_name = "${target_name}__javac"
+  _finish_target_name = "${target_name}__finish"
+  _final_target_name = target_name
 
-  action(javac_target_name) {
+  action(_javac_target_name) {
     script = "//build/android/gyp/javac.py"
     depfile = "$target_gen_dir/$target_name.d"
     deps = _srcjar_deps
@@ -1251,8 +1251,8 @@ template("compile_java") {
     args += rebase_path(_java_files, root_build_dir)
   }
 
-  process_java_prebuilt(finish_target_name) {
-    visibility = [ ":$final_target_name" ]
+  process_java_prebuilt(_finish_target_name) {
+    visibility = [ ":$_final_target_name" ]
 
     build_config = _build_config
     input_jar_path = _intermediate_jar_path
@@ -1262,14 +1262,14 @@ template("compile_java") {
       proguard_config = invoker.proguard_config
     }
     deps = [
-      ":$javac_target_name",
+      ":$_javac_target_name",
     ]
   }
 
-  group(final_target_name) {
+  group(_final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
-      ":$finish_target_name",
+      ":$_finish_target_name",
     ]
   }
 }
