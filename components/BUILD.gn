@@ -115,6 +115,8 @@ group("all_components") {
       "//components/devtools_discovery",
       "//components/devtools_http_handler",
       "//components/domain_reliability",
+      "//components/exo",
+      "//components/exo/wayland",
       "//components/feedback",
       "//components/gcm_driver/crypto",
       "//components/gcm_driver/instance_id",
@@ -229,6 +231,14 @@ group("all_components") {
 
     if (is_chromeos && enable_arc) {
       deps += [ "//components/arc" ]
+    }
+
+    if (!use_ash) {
+      deps -= [ "//components/exo" ]
+    }
+
+    if (!use_ash || !is_linux) {
+      deps -= [ "//components/exo/wayland" ]
     }
   } else {
     deps += [

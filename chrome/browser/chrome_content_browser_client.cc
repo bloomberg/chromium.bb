@@ -276,6 +276,10 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
 
+#if defined(ENABLE_WAYLAND_SERVER)
+#include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
+#endif
+
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
@@ -751,6 +755,10 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 #if defined(USE_X11)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
+#endif
+
+#if defined(ENABLE_WAYLAND_SERVER)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsExo());
 #endif
 
   chrome::AddMetricsExtraParts(main_parts);

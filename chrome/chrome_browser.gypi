@@ -3871,6 +3871,16 @@
             '../components/components.gyp:printing_browser',
           ]
         }],
+        ['enable_wayland_server==1', {
+          'sources': [
+            'browser/chrome_browser_main_extra_parts_exo.cc',
+            'browser/chrome_browser_main_extra_parts_exo.h',
+          ],
+          'dependencies': [
+            '../components/components.gyp:exo',
+            '../components/components.gyp:exo_wayland',
+          ],
+        }],
       ],
     },
     {

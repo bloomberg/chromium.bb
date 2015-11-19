@@ -85,6 +85,9 @@
           # Enable top chrome material design.
           'enable_topchrome_md%' : 0,
 
+          # Enable Wayland display server support.
+          'enable_wayland_server%' : 0,
+
           # Build against pre-built sysroot image on linux.  By default
           # the sysroot image is only used for Official builds or when cross
           # compiling.
@@ -161,6 +164,7 @@
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_topchrome_md%': '<(enable_topchrome_md)',
+        'enable_wayland_server%': '<(enable_wayland_server)',
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
         'branding_path_component%': '<(branding)',
@@ -337,6 +341,7 @@
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_topchrome_md%': '<(enable_topchrome_md)',
+      'enable_wayland_server%': '<(enable_wayland_server)',
       'android_channel%': '<(android_channel)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
@@ -751,6 +756,13 @@
           'use_glib%': 1,
         }],
 
+        # Flags to use Wayland server support.
+        ['chromeos==1 and use_ozone==1', {
+          'enable_wayland_server%': 1,
+        }, {
+          'enable_wayland_server%': 0,
+        }],
+
         # Flags to use pango and cairo.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or embedded==1', {
           'use_pango%': 0,
@@ -1128,6 +1140,7 @@
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
     'enable_topchrome_md%': '<(enable_topchrome_md)',
+    'enable_wayland_server%': '<(enable_wayland_server)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
     'dont_embed_build_metadata%': '<(dont_embed_build_metadata)',
@@ -2756,6 +2769,9 @@
       }],
       ['enable_topchrome_md==1', {
         'defines': ['ENABLE_TOPCHROME_MD=1'],
+      }],
+      ['enable_wayland_server==1', {
+        'defines': ['ENABLE_WAYLAND_SERVER=1'],
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],

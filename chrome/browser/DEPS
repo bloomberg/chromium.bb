@@ -41,6 +41,7 @@ include_rules = [
   "+components/dom_distiller",
   "+components/domain_reliability",
   "+components/enhanced_bookmarks",
+  "+components/exo",
   "+components/favicon",
   "+components/favicon_base",
   "+components/feedback",

@@ -1309,6 +1309,11 @@ const char kDebugPrint[] = "debug-print";
 const char kDisableNewTaskManager[]   = "disable-new-task-manager";
 #endif  // defined(ENABLE_TASK_MANAGER)
 
+#if defined(ENABLE_WAYLAND_SERVER)
+// Enables Wayland display server support.
+const char kEnableWaylandServer[] = "enable-wayland-server";
+#endif
+
 #if defined(OS_ANDROID)
 // Sets the threshold for when to disable auto-hiding the toolbar. If the
 // device's width and height are above the threshold, the toolbar will never

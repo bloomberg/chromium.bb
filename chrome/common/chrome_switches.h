@@ -393,6 +393,10 @@ extern const char kDisallowUncheckedDangerousDownloads[];
 extern const char kDisableNewTaskManager[];
 #endif  // defined(ENABLE_TASK_MANAGER)
 
+#if defined(ENABLE_WAYLAND_SERVER)
+extern const char kEnableWaylandServer[];
+#endif
+
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
 bool MdPolicyPageEnabled();

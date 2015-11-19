@@ -201,6 +201,11 @@
       'includes': [
         'rlz.gypi',
       ],
-    }]
+    }],
+    ['use_ash==1', {
+      'includes': [
+        'exo.gypi',
+      ],
+    }],
   ],
 }

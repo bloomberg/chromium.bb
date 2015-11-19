@@ -1,0 +1,88 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+source_set("exo") {
+  sources = [
+    "buffer.cc",
+    "buffer.h",
+    "display.cc",
+    "display.h",
+    "shared_memory.cc",
+    "shared_memory.h",
+    "shell_surface.cc",
+    "shell_surface.h",
+    "surface.cc",
+    "surface.h",
+    "surface_delegate.h",
+  ]
+
+  deps = [
+    "//ash",
+    "//base",
+    "//cc",
+    "//gpu",
+    "//skia",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/views",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test/exo_test_base.cc",
+    "test/exo_test_base.h",
+    "test/exo_test_helper.cc",
+    "test/exo_test_helper.h",
+  ]
+
+  deps = [
+    "//ash:test_support",
+    "//base",
+    "//skia",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "buffer_unittest.cc",
+    "display_unittest.cc",
+    "shared_memory_unittest.cc",
+    "shell_surface_unittest.cc",
+    "surface_unittest.cc",
+  ]
+
+  deps = [
+    "//components/user_manager",
+    "//skia",
+    "//testing/gtest",
+    "//ui/keyboard",
+    "//ui/message_center",
+    ":exo",
+    ":test_support",
+  ]
+}
+
+test("exo_unittests") {
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+  deps = [
+    "//ash:test_support",
+    ":unit_tests",
+  ]
+  if (is_linux) {
+    deps += [ "//components/exo/wayland:unit_tests" ]
+  }
+}

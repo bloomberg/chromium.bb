@@ -1,0 +1,35 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("wayland") {
+  sources = [
+    "scoped_wl_types.cc",
+    "scoped_wl_types.h",
+    "server.cc",
+    "server.h",
+  ]
+
+  defines = [ "EXO_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//components/exo",
+    "//skia",
+    "//third_party/wayland:wayland_server",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "server_unittest.cc",
+  ]
+
+  deps = [
+    "//testing/gtest",
+    "//third_party/wayland:wayland_client",
+    ":wayland",
+  ]
+}

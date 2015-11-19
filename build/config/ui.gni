@@ -46,6 +46,9 @@ declare_args() {
 
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux
+
+  # Indicates if Wayland display server support is enabled.
+  enable_wayland_server = is_chromeos
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -64,6 +67,11 @@ use_x11 = is_linux && !use_ozone
 # Turn off glib if Ozone is enabled.
 if (use_ozone) {
   use_glib = false
+}
+
+# Turn off Wayland if glib is enabled.
+if (use_glib) {
+  enable_wayland_server = false
 }
 
 if (is_linux && !use_ozone) {

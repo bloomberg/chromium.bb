@@ -196,6 +196,10 @@ source_set("test_support") {
   if (is_win) {
     deps += [ "//ui/platform_window/win" ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//ui/display" ]
+  }
 }
 
 source_set("test_support_with_content") {
