@@ -15,7 +15,8 @@
         expanded$="[[expanded]]"
         shuffle="[[shuffle]]"
         current-track-index="{{currentTrackIndex}}"
-        on-replay="onReplayCurrentTrack"></track-list>
+        on-replay="onReplayCurrentTrack"
+        on-play="onPlayCurrentTrack"></track-list>
     <control-panel id="audioController"
         playing="{{playing}}"
         time="{{time}}"
@@ -24,6 +25,7 @@
         repeat="{{repeat}}"
         volume="{{volume}}"
         expanded="{{expanded}}"
+        aria-labels="[[ariaLabels]]"
         on-next-clicked="onControllerNextClicked"
         on-previous-clicked="onControllerPreviousClicked"></control-panel>
     <audio id="audio"

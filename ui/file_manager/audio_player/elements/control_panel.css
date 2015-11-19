@@ -5,22 +5,20 @@
 /* Controls bar. */
 .controls {
   align-items: center;
-  background-color: #fff;
+  background-color: white;
   display: flex;
   flex-direction: column;
-  height: 64px;
+  height: 96px;
   justify-content: center;
   padding: 0;
 }
 
-.controls .upper-controls {
-  height: 32px;
-  width: 100%
-}
-
+.controls .upper-controls,
 .controls .lower-controls {
-  height: 32px;
-  width: 100%
+  box-sizing: border-box;
+  height: 48px;
+  padding: 8px;
+  width: 100%;
 }
 
 .audio-controls {
@@ -34,7 +32,7 @@
 /* Customized scrollbar for the playlist. */
 
 .media-button {
-  background-color: #fff;
+  background-color: transparent;
   border: 0;
   height: 32px;
   outline: none;  /* TODO(yoshiki): Show outline only on keyboard focus. */
@@ -43,14 +41,10 @@
   width: 32px;
 }
 
-.media-button:active {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_pressed.png) 1x,
-      url(../assets/200/player_button_pressed.png) 2x);
-}
-
 .media-button > div,
 .media-button.toggle > label > span {
+  background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
   height: 100%;
   pointer-events: none;
@@ -63,13 +57,6 @@
   opacity: 0;
   position: absolute;
   top: 0;
-}
-
-.media-button[state='default']:not(.disabled) > .default,
-.media-button[state='ended']:not(.disabled) > .ended,
-.media-button[state='playing']:not(.disabled) > .playing,
-.media-button.disabled > .disabled {
-  opacity: 1;
 }
 
 /* Custom sliders for progress and volume. */
@@ -86,171 +73,38 @@
   justify-content: center;
 }
 
-.custom-slider.progress {
-  display: flex;
-  flex: 1 1 auto;
-  height: 100%;
-  position: relative;
-  z-index: 0;  /* Make a layer which includes the thumb on slider. */
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_handler.png) 1x,
-      url(../assets/200/player_timeline_handler.png) 2x);
-  width: 28px;
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_handler.png) 1x,
-      url(../assets/200/player_timeline_handler.png) 2x);
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb:active {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_handler_pressed.png) 1x,
-      url(../assets/200/player_timeline_handler_pressed.png) 2x);
-}
-
-.custom-slider.progress.disabled > input[type='range']::-webkit-slider-thumb {
-  background-image: none;
-}
-
-.time-controls > .time {
+.time-controls > .time-container {
+  color: rgb(51, 51, 51);
   cursor: default;
-  height: 100%;
+  flex: none;
+  font-size: 12px;
+  padding: 8px;
   position: relative;
-  width: 53px;
 }
 
-.time-controls > .time.disabled {
+.time-container > .time {
+  position: absolute;
+  right: 8px; /* Should be same as time-container's right padding. */
+  top: 8px; /* Should be same as time-container's top padding. */
+}
+
+.time-container > .time.disabled {
   opacity: 0;
 }
 
-.custom-slider > input[type='range'] {
-  -webkit-appearance: none !important;  /* Hide the default thumb icon. */
-  background: transparent;  /* Hide the standard slider bar */
-  height: 100%;
-  left: -2px;  /* Required to align the input element with the parent. */
-  outline: none;
-  position: absolute;
-  top: -2px;
-  width: 100%;
+.time-container > .time-spacer {
+  opacity: 0; /* This class is intended to be used as invisible spacer. */
 }
 
-/* Custom thumb icon. */
-.custom-slider > input[type='range']::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  background-position: center center;
-  background-repeat: no-repeat;
-  height: 24px;
-  position: relative;
-  z-index: 2;
-}
-
-/* Custom slider bar (we hide the standard one). */
-.custom-slider > .bar {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_base_center.png) 1x,
-      url(../assets/200/player_timeline_base_center.png) 2x);
-  /* In order to match the horizontal position of the standard slider bar
-     left and right must be equal to 1/2 of the thumb icon width. */
-  bottom: 15px;
-  left: 14px;  /* Exactly 1/2 of the thumb width */
-  pointer-events: none;  /* Mouse events pass through to the standard input. */
-  position: absolute;
-  right: 14px;
-  top: 15px;
-}
-
-.custom-slider > .bar > .filled,
-.custom-slider > .bar > .cap {
-  bottom: 0;
-  position: absolute;
-  top: 0;
-}
-
-/* The filled portion of the slider bar to the left of the thumb. */
-.custom-slider > .bar > .filled {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_played_center.png) 1x,
-      url(../assets/200/player_timeline_played_center.png) 2x);
-  border-left-style: none;
-  border-right-style: none;
-  left: 0;
-  width: 0; /* The element style.width is manipulated from the code. */
-}
-
-/* Rounded caps to the left and right of the slider bar. */
-.custom-slider > .bar > .cap {
-  width: 1px;
-}
-
-/* Left cap is always filled, should be the same color as .filled. */
-.custom-slider > .bar > .cap.left {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_played_left.png) 1x,
-      url(../assets/200/player_timeline_played_left.png) 2x);
-  right: 100%;
-}
-
-/* Right cap is always not filled. */
-.custom-slider > .bar > .cap.right {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_timeline_base_right.png) 1x,
-      url(../assets/200/player_timeline_base_right.png) 2x);
-  left: 100%;
+.time-controls > paper-slider {
+  --paper-slider-active-color: rgb(66, 133, 244);
+  --paper-slider-knob-color: rgb(64, 138, 241);
+  flex: auto;
 }
 
 .media-button.disabled,
-.custom-slider.disabled,
-.custom-slider.readonly {
+paper-slider.disabled {
   pointer-events: none;
-}
-
-/* Progress seek marker (precise time shown on mouse hover. */
-
-/* Thin vertical line across the slider bar */
-.custom-slider > .bar > .seek-mark {
-  background-color: #202020;
-  bottom: -1px;
-  left: 0;
-  position: absolute;
-  top: -1px;
-  width: 0;
-}
-
-.custom-slider > .bar > .seek-mark.visible {
-  width: 1px;
-}
-
-.custom-slider > .bar > .seek-mark.inverted {
-  background-color: #808080;
-}
-
-/* Text label giving the precise time corresponding to the hover position. */
-.custom-slider > .bar > .seek-mark > .seek-label {
-  align-items: center;
-  background: #202020;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  bottom: 19px;
-  color: white;
-  display: flex;
-  flex-direction: row;
-  font-size: 12px;
-  height: 15px;
-  justify-content: center;
-  left: 0;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  transition: opacity 150ms ease;
-}
-
-.custom-slider > .bar > .seek-mark.visible > .seek-label {
-  opacity: 1;
 }
 
 /* Media controls in order of appearance. */
@@ -271,143 +125,82 @@
 }
 
 .media-button.shuffle-mode {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-.media-button.shuffle-mode > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_shuffle.png) 1x,
       url(../assets/200/player_button_shuffle.png) 2x);
   pointer-events: auto;
 }
 
-.media-button.shuffle-mode > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_shuffle_active.png) 1x,
-      url(../assets/200/player_button_shuffle_active.png) 2x);
-}
-
 .media-button.repeat {
-  margin-left: 5px;
+  margin-left: 8px;
   margin-right: 0;
 }
 
-.media-button.repeat > label > .icon {
+.media-button.repeat {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_repeat.png) 1x,
       url(../assets/200/player_button_repeat.png) 2x);
   pointer-events: auto;
 }
 
-.media-button.repeat > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_repeat_active.png) 1x,
-      url(../assets/200/player_button_repeat_active.png) 2x);
+.media-button.play {
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .media-button.play {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.media-button.play > .ended {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_play.png) 1x,
       url(../assets/200/player_button_play.png) 2x);
 }
 
-.media-button.play > .playing {
+:host([playing]) .media-button.play {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_pause.png) 1x,
       url(../assets/200/player_button_pause.png) 2x);
 }
 
 .media-button.previous {
-  margin-left: 5px;
-  margin-right: 0;
-}
-
-.media-button.previous > .normal {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_previous.png) 1x,
       url(../assets/200/player_button_previous.png) 2x);
+  margin-left: 8px;
+  margin-right: 0;
 }
 
 .media-button.next {
-  margin-left: 0;
-  margin-right: 5px;
-}
-
-.media-button.next > .normal {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_next.png) 1x,
       url(../assets/200/player_button_next.png) 2x);
+  margin-left: 0;
+  margin-right: 8px;
 }
 
 .media-button.volume {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-.media-button.volume > .normal {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_volume.png) 1x,
       url(../assets/200/player_button_volume.png) 2x);
-}
-
-.media-button.volume > label > .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_volume.png) 1x,
-      url(../assets/200/player_button_volume.png) 2x);
+  margin-left: 0;
+  margin-right: 8px;
   pointer-events: auto;
 }
 
-.media-button.volume > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_volume_active.png) 1x,
-      url(../assets/200/player_button_volume_active.png) 2x);
-}
-
 .media-button.playlist {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-.media-button.playlist > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_playlist.png) 1x,
       url(../assets/200/player_button_playlist.png) 2x);
   pointer-events: auto;
 }
 
-.media-button.playlist > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_playlist_active.png) 1x,
-      url(../assets/200/player_button_playlist_active.png) 2x);
-}
-
-
 /* Invisible div used to compute the width required for the elapsed time. */
-.time-controls > .time > .duration,
 .time-controls > .time > .current {
   align-items: center;
-  color: #3d3d3d;
   display: flex;
   flex-direction: row;
-  font-size: 12px;
   height: 100%;
   justify-content: flex-end;
   position: absolute;
   top: -1px;
-}
-
-.time-controls > .time > .duration {
-  left: 0;
-}
-
-.time-controls > .time > .current {
-  right: 0;
 }
 
 /* Volume controls: sound button and volume slider */

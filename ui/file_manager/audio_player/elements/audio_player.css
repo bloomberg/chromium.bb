@@ -3,10 +3,8 @@
  * found in the LICENSE file. */
 
 control-panel {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
   bottom: 0;
   left: 0;
-  margin-bottom: 8px;
   position: fixed;
   right: 0;
 }
