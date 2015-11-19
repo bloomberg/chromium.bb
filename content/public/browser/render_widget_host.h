@@ -245,6 +245,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
   // Get the color profile corresponding to this render widget.
   virtual bool GetScreenColorProfile(std::vector<char>* color_profile) = 0;
+
+  // Sends a compositor proto to the render widget.
+  virtual void HandleCompositorProto(const std::vector<uint8_t>& proto) = 0;
 };
 
 }  // namespace content

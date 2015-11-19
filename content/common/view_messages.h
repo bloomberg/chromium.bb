@@ -975,6 +975,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
                     cc::BeginFrameArgs /* args */)
 
+// Sent by the browser to deliver a compositor proto to the renderer.
+IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
+                    std::vector<uint8_t> /* proto */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -1344,6 +1348,10 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 // RenderWidget(Host), should be renamed to WidgetHostMsg_*.
 // See https://crbug.com/537793.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstPaintAfterLoad)
+
+// Sent by the renderer to deliver a compositor proto to the browser.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardCompositorProto,
+                    std::vector<uint8_t> /* proto */)
 
 #if defined(OS_ANDROID)
 // Response to ViewMsg_FindMatchRects.

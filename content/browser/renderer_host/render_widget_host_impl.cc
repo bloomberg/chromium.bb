@@ -477,6 +477,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstPaintAfterLoad,
                         OnFirstPaintAfterLoad)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardCompositorProto,
+                        OnForwardCompositorProto)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1274,6 +1276,12 @@ bool RenderWidgetHostImpl::GetScreenColorProfile(
   return false;
 }
 
+void RenderWidgetHostImpl::HandleCompositorProto(
+    const std::vector<uint8_t>& proto) {
+  DCHECK(!proto.empty());
+  Send(new ViewMsg_HandleCompositorProto(GetRoutingID(), proto));
+}
+
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   color_profile_out_of_date_ = true;
 
@@ -1310,6 +1318,12 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
   if (view_) {
     view_->SelectionBoundsChanged(params);
   }
+}
+
+void RenderWidgetHostImpl::OnForwardCompositorProto(
+    const std::vector<uint8_t>& proto) {
+  if (delegate_)
+    delegate_->ForwardCompositorProto(this, proto);
 }
 
 void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,

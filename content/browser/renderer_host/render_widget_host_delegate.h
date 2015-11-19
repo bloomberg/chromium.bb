@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -162,6 +164,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
+
+  // Called when the widget has sent a compositor proto.  This is used in Blimp
+  // mode with the RemoteChannel compositor.
+  virtual void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
+                                      const std::vector<uint8_t>& proto) {}
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

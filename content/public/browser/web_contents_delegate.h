@@ -510,6 +510,10 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* web_contents,
       int cert_id);
 
+  // Called when the active render widget is forwarding a RemoteChannel
+  // compositor proto.  This is used in Blimp mode.
+  virtual void ForwardCompositorProto(const std::vector<uint8_t>& proto) {}
+
  protected:
   virtual ~WebContentsDelegate();
 

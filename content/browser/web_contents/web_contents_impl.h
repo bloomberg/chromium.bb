@@ -602,6 +602,8 @@ class CONTENT_EXPORT WebContentsImpl
       RenderWidgetHostImpl* render_widget_host) const override;
   void LostCapture(RenderWidgetHostImpl* render_widget_host) override;
   void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
+  void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
+                              const std::vector<uint8_t>& proto) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

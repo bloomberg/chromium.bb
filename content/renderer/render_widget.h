@@ -302,6 +302,10 @@ class CONTENT_EXPORT RenderWidget
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
 
+  // Called by the compositor to forward a proto that represents serialized
+  // compositor state.
+  void ForwardCompositorProto(const std::vector<uint8_t>& proto);
+
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
 
   void OnShowHostContextMenu(ContextMenuParams* params);
@@ -447,6 +451,7 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
   void OnShowImeIfNeeded();
   void OnSetSurfaceIdNamespace(uint32_t surface_id_namespace);
+  void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
 
 #if defined(OS_ANDROID)
   // Called when we send IME event that expects an ACK.

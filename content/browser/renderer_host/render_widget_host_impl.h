@@ -159,6 +159,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void RemoveMouseEventCallback(const MouseEventCallback& callback) override;
   void GetWebScreenInfo(blink::WebScreenInfo* result) override;
   bool GetScreenColorProfile(std::vector<char>* color_profile) override;
+  void HandleCompositorProto(const std::vector<uint8_t>& proto) override;
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -589,6 +590,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                           const gfx::Range& range);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
+  void OnForwardCompositorProto(const std::vector<uint8_t>& proto);
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it

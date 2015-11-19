@@ -493,6 +493,7 @@ component("cc") {
     "trees/proxy_common.h",
     "trees/proxy_impl.h",
     "trees/proxy_main.h",
+    "trees/remote_proto_channel.h",
     "trees/scoped_abort_remaining_swap_promises.h",
     "trees/single_thread_proxy.cc",
     "trees/single_thread_proxy.h",

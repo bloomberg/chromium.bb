@@ -138,7 +138,8 @@ void BlimpEngineSession::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(message->type() == BlimpMessage::CONTROL ||
-         message->type() == BlimpMessage::NAVIGATION);
+      message->type() == BlimpMessage::NAVIGATION ||
+      message->type() == BlimpMessage::COMPOSITOR);
 
   if (message->type() == BlimpMessage::CONTROL) {
     switch (message->control().type()) {
@@ -231,6 +232,13 @@ void BlimpEngineSession::CloseContents(content::WebContents* source) {
 
 void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
+}
+
+void BlimpEngineSession::ForwardCompositorProto(
+    const std::vector<uint8_t>& proto) {
+  // Send the compositor proto over the network layer to the client, which will
+  // apply the proto to their local compositor instance.
+  // TODO(dtrainor): Send the compositor proto.
 }
 
 void BlimpEngineSession::PlatformSetContents(

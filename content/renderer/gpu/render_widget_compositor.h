@@ -15,6 +15,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/remote_proto_channel.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
@@ -31,6 +32,11 @@ class CopyOutputRequest;
 class InputHandler;
 class Layer;
 class LayerTreeHost;
+
+namespace proto {
+class CompositorMessage;
+}
+
 }
 
 namespace content {
@@ -39,7 +45,8 @@ class RenderWidget;
 class CONTENT_EXPORT RenderWidgetCompositor
     : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
       NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
+      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
+      NON_EXPORTED_BASE(public cc::RemoteProtoChannel) {
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
@@ -79,6 +86,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const base::Callback<void(scoped_ptr<base::Value>)>& callback);
   bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
   void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
+  void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
   cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy);
   void SetPaintedDeviceScaleFactor(float device_scale);
@@ -164,6 +172,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidPostSwapBuffers() override;
   void DidAbortSwapBuffers() override;
 
+  // cc::RemoteProtoChannel implementation.
+  void SetProtoReceiver(ProtoReceiver* receiver) override;
+  void SendCompositorProto(const cc::proto::CompositorMessage& proto) override;
+
   enum {
     OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK = 4,
     MAX_OUTPUT_SURFACE_RETRIES = 5,
@@ -190,6 +202,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
   scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
+
+  cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 };

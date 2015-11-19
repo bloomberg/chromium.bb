@@ -29,6 +29,7 @@ proto_library("proto_internal") {
   sources = [
     # TODO(dtrainor): Move protos to their correct packages once it's possible
     # to include protos from other directories/targets (crbug.com/542423).
+    "compositor_message.proto",
     "display_item.proto",
     "layer.proto",
     "point.proto",

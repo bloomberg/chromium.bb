@@ -553,6 +553,7 @@
         'trees/proxy_common.h',
         'trees/proxy_impl.h',
         'trees/proxy_main.h',
+        'trees/remote_proto_channel.h',
         'trees/scoped_abort_remaining_swap_promises.h',
         'trees/single_thread_proxy.cc',
         'trees/single_thread_proxy.h',
@@ -584,6 +585,7 @@
       'target_name': 'cc_proto',
       'type': '<(component)',
       'sources': [
+        'proto/compositor_message.proto',
         'proto/display_item.proto',
         'proto/layer.proto',
         'proto/point.proto',

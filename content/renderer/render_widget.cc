@@ -753,6 +753,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
+    IPC_MESSAGE_HANDLER(ViewMsg_HandleCompositorProto, OnHandleCompositorProto)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1753,6 +1754,11 @@ void RenderWidget::OnSetSurfaceIdNamespace(uint32_t surface_id_namespace) {
     compositor_->SetSurfaceIdNamespace(surface_id_namespace);
 }
 
+void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {
+  if (compositor_)
+    compositor_->OnHandleCompositorProto(proto);
+}
+
 void RenderWidget::showImeIfNeeded() {
   OnShowImeIfNeeded();
 }
@@ -2045,6 +2051,10 @@ void RenderWidget::UpdateSelectionBounds() {
   }
 
   UpdateCompositionInfo(false);
+}
+
+void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
+  Send(new ViewHostMsg_ForwardCompositorProto(routing_id_, proto));
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.
