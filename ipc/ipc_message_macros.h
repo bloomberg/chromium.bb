@@ -444,7 +444,7 @@
                        Method func) {                                         \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      DispatchToMethod(obj, func, p);                                         \
+      base::DispatchToMethod(obj, func, p);                                   \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \

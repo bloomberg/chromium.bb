@@ -1023,7 +1023,7 @@ class SyncMessageSchema {
     Message* reply = SyncMessage::GenerateReply(msg);
     if (ok) {
       typename base::TupleTypes<ReplyParam>::ValueTuple reply_params;
-      DispatchToMethod(obj, func, send_params, &reply_params);
+      base::DispatchToMethod(obj, func, send_params, &reply_params);
       WriteParam(reply, reply_params);
       LogReplyParamsToMessage(reply_params, msg);
     } else {
@@ -1043,7 +1043,7 @@ class SyncMessageSchema {
     if (ok) {
       base::Tuple<Message&> t = base::MakeRefTuple(*reply);
       ConnectMessageAndReply(msg, reply);
-      DispatchToMethod(obj, func, send_params, &t);
+      base::DispatchToMethod(obj, func, send_params, &t);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
