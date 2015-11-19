@@ -46,6 +46,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -360,6 +361,12 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   CHECK(worker_thread_);
 
   // Init SSL, which will be needed by PeerConnection.
+  //
+  // TODO(davidben): BoringSSL must be initialized by Chromium code. If the
+  // initialization requirement is removed or when different libraries are
+  // allowed to call CRYPTO_library_init concurrently, remove this line and
+  // initialize within WebRTC. See https://crbug.com/542879.
+  crypto::EnsureOpenSSLInit();
   if (!rtc::InitializeSSL()) {
     LOG(ERROR) << "Failed on InitializeSSL.";
     NOTREACHED();
