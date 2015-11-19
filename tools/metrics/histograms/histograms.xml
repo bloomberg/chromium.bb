@@ -77112,6 +77112,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="325375649" label="chrome://settings-frame/"/>
   <int value="361621847" label="chrome://make-metro/"/>
   <int value="554090510" label="chrome://first-run/"/>
+  <int value="581234974" label="chrome://tcmalloc/"/>
   <int value="646837226" label="chrome://crashes/"/>
   <int value="659389881" label="chrome://gpu/"/>
   <int value="689991895" label="chrome://supervised-user-internals/"/>
