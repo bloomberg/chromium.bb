@@ -237,8 +237,6 @@
         '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
-        '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         'remoting_base',
       ],
       'export_dependent_settings': [
@@ -247,6 +245,14 @@
       'sources': [
         '<@(remoting_protocol_sources)',
         '<@(remoting_signaling_sources)',
+      ],
+      'conditions': [
+        ['enable_webrtc==1', {
+          'dependencies': [
+            '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
+          ],
+        }],
       ],
     },  # end of target 'remoting_protocol'
   ],  # end of targets
