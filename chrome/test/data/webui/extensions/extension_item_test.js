@@ -34,27 +34,11 @@ cr.define('extension_item_tests', function() {
     inspectItemView: function(id, view) {},
   };
 
-  /** @type {string} The mock extension's id. */
-  var id = 'a'.repeat(32);
-
-  /** @type {string} The mock extension's base URL. */
-  var baseUrl = 'chrome-extension://' + id + '/';
-
   /**
    * The data used to populate the extension item.
-   * @type {ExtensionInfo}
+   * @type {chrome.developerPrivate.ExtensionInfo}
    */
-  var extensionData = {
-    description: 'This is an extension',
-    iconUrl: 'chrome://extension-icon/' + id + '/24/0',
-    id: id,
-    incognitoAccess: {isEnabled: true, isActive: false},
-    name: 'Wonderful Extension',
-    state: 'ENABLED',
-    type: 'EXTENSION',
-    version: '2.0',
-    views: [{url: baseUrl + 'foo.html'}, {url: baseUrl + 'bar.html'}],
-  };
+  var extensionData = extension_test_util.createExtensionInfo();
 
   // The normal elements, which should always be shown.
   var normalElements = [

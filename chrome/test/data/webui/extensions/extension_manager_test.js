@@ -7,6 +7,7 @@ cr.define('extension_manager_tests', function() {
   /** @enum {string} */
   var TestNames = {
     SplitSections: 'split sections',
+    ItemOrder: 'item order',
   };
 
   function registerTests() {
@@ -63,6 +64,58 @@ cr.define('extension_manager_tests', function() {
         selector = '#' + packaged_app.data.id;
         testVisible(selector, true)
         expectTrue(!!manager.$$('#websites-list').querySelector(selector));
+      });
+
+      test(assert(TestNames.ItemOrder), function() {
+        var extensionsSection = manager.$['extensions-list'];
+        var service = extensions.Service.getInstance();
+        expectEquals(0, extensionsSection.children.length);
+
+        var alphaFromStore = extension_test_util.createExtensionInfo(
+            {location: 'FROM_STORE', name: 'Alpha', id: 'a'.repeat(32)});
+        manager.addItem(alphaFromStore, service);
+
+        expectEquals(1, extensionsSection.children.length);
+        expectEquals(alphaFromStore.id, extensionsSection.children[0].id);
+
+        // Unpacked extensions come first.
+        var betaUnpacked = extension_test_util.createExtensionInfo(
+            {location: 'UNPACKED', name: 'Beta', id: 'b'.repeat(32)});
+        manager.addItem(betaUnpacked, service);
+
+        expectEquals(2, extensionsSection.children.length);
+        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
+        expectEquals(alphaFromStore.id, extensionsSection.children[1].id);
+
+        // Extensions from the same location are sorted by name.
+        var gammaUnpacked = extension_test_util.createExtensionInfo(
+            {location: 'UNPACKED', name: 'Gamma', id: 'c'.repeat(32)});
+        manager.addItem(gammaUnpacked, service);
+
+        expectEquals(3, extensionsSection.children.length);
+        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
+        expectEquals(gammaUnpacked.id, extensionsSection.children[1].id);
+        expectEquals(alphaFromStore.id, extensionsSection.children[2].id);
+
+        // The name-sort should be case-insensitive, and should fall back on
+        // id.
+        var aaFromStore = extension_test_util.createExtensionInfo(
+            {location: 'FROM_STORE', name: 'AA', id: 'd'.repeat(32)});
+        var AaFromStore = extension_test_util.createExtensionInfo(
+            {location: 'FROM_STORE', name: 'Aa', id: 'e'.repeat(32)});
+        var aAFromStore = extension_test_util.createExtensionInfo(
+            {location: 'FROM_STORE', name: 'aA', id: 'f'.repeat(32)});
+        manager.addItem(aaFromStore, service);
+        manager.addItem(AaFromStore, service);
+        manager.addItem(aAFromStore, service);
+
+        expectEquals(6, extensionsSection.children.length);
+        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
+        expectEquals(gammaUnpacked.id, extensionsSection.children[1].id);
+        expectEquals(aaFromStore.id, extensionsSection.children[2].id);
+        expectEquals(AaFromStore.id, extensionsSection.children[3].id);
+        expectEquals(aAFromStore.id, extensionsSection.children[4].id);
+        expectEquals(alphaFromStore.id, extensionsSection.children[5].id);
       });
     });
   }

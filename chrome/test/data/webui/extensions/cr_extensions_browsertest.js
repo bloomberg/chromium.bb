@@ -15,7 +15,8 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 
 /**
- * Test fixture for Polymer Settings elements.
+ * Basic test fixture for the MD chrome://extensions page. Installs no
+ * extensions.
  * @constructor
  * @extends {PolymerTest}
 */
@@ -38,6 +39,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_item_test.js',
     'extension_service_test.js',
     'extension_sidebar_test.js',
+    'extension_manager_test.js',
     '../mock_controller.js',
     '../../../../../ui/webui/resources/js/webui_resource_test.js',
   ]),
@@ -45,6 +47,45 @@ CrExtensionsBrowserTest.prototype = {
   /** @override */
   typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
 };
+
+/**
+ * Test fixture with one installed extension.
+ * @constructor
+ * @extends {CrExtensionsBrowserTest}
+ */
+function CrExtensionsBrowserTestWithInstalledExtension() {}
+
+CrExtensionsBrowserTestWithInstalledExtension.prototype = {
+  __proto__: CrExtensionsBrowserTest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  InstallGoodExtension();');
+    GEN('  SetAutoConfirmUninstall();');
+  },
+};
+
+/**
+ * Test fixture with multiple installed extensions of different types.
+ * @constructor
+ * @extends {CrExtensionsBrowserTest}
+ */
+function CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled() {}
+
+CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.prototype = {
+  __proto__: CrExtensionsBrowserTest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  InstallGoodExtension();');
+    GEN('  InstallPackagedApp();');
+    GEN('  InstallHostedApp();');
+    GEN('  InstallPlatformApp();');
+  },
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Sidebar Tests
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarLayoutTest', function() {
   extension_sidebar_tests.registerTests();
@@ -56,7 +97,8 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionSidebarClickHandlerTest',
   mocha.grep(assert(extension_sidebar_tests.TestNames.ClickHandlers)).run();
 });
 
-function CrExtensionsBrowserTestWithInstalledExtension() {}
+////////////////////////////////////////////////////////////////////////////////
+// Extension Item Tests
 
 TEST_F('CrExtensionsBrowserTest', 'ExtensionItemNormalStateTest', function() {
   extension_item_tests.registerTests();
@@ -84,15 +126,8 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemClickableItemsTest',
   mocha.grep(assert(TestNames.ClickableItems)).run();
 });
 
-CrExtensionsBrowserTestWithInstalledExtension.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
-  /** @override */
-  testGenPreamble: function() {
-    GEN('  InstallGoodExtension();');
-    GEN('  SetAutoConfirmUninstall();');
-  },
-};
+////////////////////////////////////////////////////////////////////////////////
+// Extension Service Tests
 
 TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
        'ExtensionServiceToggleEnableTest', function() {
@@ -116,27 +151,16 @@ TEST_F('CrExtensionsBrowserTestWithInstalledExtension',
   mocha.grep(assert(extension_service_tests.TestNames.ProfileSettings)).run();
 });
 
-function CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled() {}
-
-CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
-  /** @override */
-  testGenPreamble: function() {
-    GEN('  InstallGoodExtension();');
-    GEN('  InstallPackagedApp();');
-    GEN('  InstallHostedApp();');
-    GEN('  InstallPlatformApp();');
-  },
-
-  /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_manager_test.js',
-  ]),
-};
+////////////////////////////////////////////////////////////////////////////////
+// Extension Manager Tests
 
 TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
        'ExtensionManagerSplitSectionsTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(assert(extension_manager_tests.TestNames.SplitSections)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionManagerItemOrderTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(assert(extension_manager_tests.TestNames.ItemOrder)).run();
 });

@@ -6,30 +6,6 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
-   * Compares two extensions to determine which should come first in the list.
-   * @param {chrome.developerPrivate.ExtensionInfo} a
-   * @param {chrome.developerPrivate.ExtensionInfo} b
-   * @return {number}
-   */
-  var compareExtensions = function(a, b) {
-    function compare(x, y) {
-      return x < y ? -1 : (x > y ? 1 : 0);
-    }
-    function compareLocation(x, y) {
-      if (x.location == y.location)
-        return 0;
-      if (x.location == chrome.developerPrivate.Location.UNPACKED)
-        return -1;
-      if (y.location == chrome.developerPrivate.Location.UNPACKED)
-        return 1;
-      return 0;
-    }
-    return compareLocation(a, b) ||
-           compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
-           compare(a.id, b.id);
-  };
-
-  /**
    * @constructor
    * @implements {extensions.ItemDelegate}
    * @implements {extensions.SidebarDelegate}
@@ -42,7 +18,9 @@ cr.define('extensions', function() {
 
     /** @param {extensions.Manager} manager */
     managerReady: function(manager) {
+      /** @private {extensions.Manager} */
       this.manager_ = manager;
+      /** @private {extensions.Sidebar} */
       this.sidebar_ = manager.sidebar;
       this.sidebar_.setDelegate(this);
       chrome.developerPrivate.onProfileStateChanged.addListener(
@@ -52,7 +30,7 @@ cr.define('extensions', function() {
       chrome.developerPrivate.getExtensionsInfo(
           {includeDisabled: true, includeTerminated: true},
           function(extensions) {
-        extensions.sort(compareExtensions);
+        /** @private {Array<chrome.developerPrivate.ExtensionInfo>} */
         this.extensions_ = extensions;
         for (let extension of extensions)
           this.manager_.addItem(extension, this);
@@ -66,6 +44,7 @@ cr.define('extensions', function() {
      * @private
      */
     onProfileStateChanged_: function(profileInfo) {
+      /** @private {chrome.developerPrivate.ProfileInfo} */
       this.profileInfo_ = profileInfo;
       this.sidebar_.inDevMode = profileInfo.inDeveloperMode;
       this.manager_.forEachItem(function(item) {
@@ -104,13 +83,9 @@ cr.define('extensions', function() {
               return extension.id == eventData.extensionInfo.id;
             });
             assert(currentIndex == -1);
-            var newIndex = this.extensions_.findIndex(function(extension) {
-              return compareExtensions(extension,
-                                       assert(eventData.extensionInfo)) > 0;
-            });
-            newIndex = newIndex == -1 ? this.extensions_.length : newIndex;
-            this.extensions_.splice(newIndex, 0, eventData.extensionInfo);
-            this.manager_.addItem(eventData.extensionInfo, this, newIndex);
+
+            this.extensions_.push(eventData.extensionInfo);
+            this.manager_.addItem(eventData.extensionInfo, this);
           }
           break;
         case EventType.UNINSTALLED:
