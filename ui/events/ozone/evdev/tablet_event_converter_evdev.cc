@@ -14,6 +14,15 @@
 
 namespace ui {
 
+namespace {
+
+// Convert tilt from [min, min + num_values) to [-90deg, +90deg)
+float ScaleTilt(int value, int min_value, int num_values) {
+  return 180.f * (value - min_value) / num_values - 90.f;
+}
+
+}  // namespace
+
 TabletEventConverterEvdev::TabletEventConverterEvdev(
     int fd,
     base::FilePath path,
@@ -34,9 +43,10 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
   x_abs_range_ = info.GetAbsMaximum(ABS_X) - x_abs_min_ + 1;
   y_abs_min_ = info.GetAbsMinimum(ABS_Y);
   y_abs_range_ = info.GetAbsMaximum(ABS_Y) - y_abs_min_ + 1;
-
-  tilt_x_max_ = info.GetAbsMaximum(ABS_TILT_X);
-  tilt_y_max_ = info.GetAbsMaximum(ABS_TILT_Y);
+  tilt_x_min_ = info.GetAbsMinimum(ABS_TILT_X);
+  tilt_y_min_ = info.GetAbsMinimum(ABS_TILT_Y);
+  tilt_x_range_ = info.GetAbsMaximum(ABS_TILT_X) - tilt_x_min_ + 1;
+  tilt_y_range_ = info.GetAbsMaximum(ABS_TILT_Y) - tilt_y_min_ + 1;
   pressure_max_ = info.GetAbsMaximum(ABS_PRESSURE);
 }
 
@@ -116,11 +126,11 @@ void TabletEventConverterEvdev::ConvertAbsEvent(const input_event& input) {
       abs_value_dirty_ = true;
       break;
     case ABS_TILT_X:
-      tilt_x_ = (90.0f * input.value) / tilt_x_max_;
+      tilt_x_ = ScaleTilt(input.value, tilt_x_min_, tilt_x_range_);
       abs_value_dirty_ = true;
       break;
     case ABS_TILT_Y:
-      tilt_y_ = (90.0f * input.value) / tilt_y_max_;
+      tilt_y_ = ScaleTilt(input.value, tilt_y_min_, tilt_y_range_);
       abs_value_dirty_ = true;
       break;
     case ABS_PRESSURE:

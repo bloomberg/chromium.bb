@@ -423,8 +423,8 @@ TEST_F(TabletEventConverterEvdevTest, Tap) {
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
   EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
             event->pointer_details().pointer_type());
-  EXPECT_FLOAT_EQ((90.0f * 68) / 127, event->pointer_details().tilt_x());
-  EXPECT_FLOAT_EQ((90.0f * 64) / 127, event->pointer_details().tilt_y());
+  EXPECT_FLOAT_EQ(5.625f, event->pointer_details().tilt_x());
+  EXPECT_FLOAT_EQ(0.f, event->pointer_details().tilt_y());
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, event->type());
   EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,

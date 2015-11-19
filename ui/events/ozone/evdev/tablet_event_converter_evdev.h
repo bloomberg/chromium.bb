@@ -63,11 +63,14 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   int x_abs_range_;
   int y_abs_range_;
 
+  int tilt_x_min_;
+  int tilt_x_range_;
+  int tilt_y_min_;
+  int tilt_y_range_;
+
   float tilt_x_ = 0.0f;
   float tilt_y_ = 0.0f;
   float pressure_ = 0.0f;
-  int tilt_x_max_;
-  int tilt_y_max_;
   int pressure_max_;
 
   // BTN_TOOL_ code for the active device
