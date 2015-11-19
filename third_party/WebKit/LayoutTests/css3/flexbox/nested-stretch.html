@@ -26,9 +26,12 @@ div {
   flex: 1 0 auto;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 </head>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 There should be two boxes of equal height on the left and 3 boxes of equal
 height on the right.
 <div class="flexbox row" style="width: 600px">

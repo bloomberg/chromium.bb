@@ -2,7 +2,9 @@
 <html>
 <head>
 <link rel="stylesheet" href="resources/flexbox.css">
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <style>
 .flexbox {
   width: 600px;
@@ -42,6 +44,7 @@
 </style>
 </head>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <div class="flexbox wrap">
   <div class="flex-one" style="min-width: 400px" data-expected-width="400" data-offset-x="0" data-offset-y="0"></div>

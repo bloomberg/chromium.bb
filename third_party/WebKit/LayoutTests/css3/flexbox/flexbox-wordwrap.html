@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <style>
 .flex-horizontal {
     width:600px;
@@ -63,7 +65,8 @@
 }
 </style>
 </head>
-<body onload="checkLayout('.flex-horizontal'); checkLayout('.flex-vertical');">
+<body onload="checkLayout('.flex-horizontal, .flex-vertical');">
+<div id=log></div>
 <p>Test for crbug.com/362848: Flex box word-wrap is not adhering to spec</p>
 <div class="flex-horizontal">
     <div class="item-horizontal" data-expected-height="80"><div class="content1-horizontal"></div></div>

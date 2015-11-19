@@ -60,9 +60,12 @@ body {
 </style>
 
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <div class='flexbox relative align-items-center'>
     <div id='placed-absolute' class='absolute' data-offset-x=20 data-offset-y=20></div>

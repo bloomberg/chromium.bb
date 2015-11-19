@@ -23,9 +23,12 @@
     -webkit-writing-mode: vertical-rl;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <script src="../../resources/ahem.js"></script>
 <body onload="checkLayout('.flexbox');">
+<div id=log></div>
 <div class="flexbox column">
   <div class="flex-one" data-expected-height="14">Flex item with flex: 1</div>
 </div>

@@ -58,8 +58,11 @@ body {
     height: 10px;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <div class="flexbox">
   <div data-expected-width="75" data-offset-x="0" style="flex: 1 0 0; margin: 0 auto;"></div>

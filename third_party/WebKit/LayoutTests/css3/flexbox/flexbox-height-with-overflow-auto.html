@@ -25,8 +25,11 @@
     -webkit-writing-mode: vertical-rl;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
-<body onload="checkLayout('.flexbox'); checkLayout('.inline-flexbox')">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
+<body onload="checkLayout('.flexbox, .inline-flexbox')">
+<div id=log></div>
 <div class="flexbox" data-expected-height="47">
   <div class="overflow"><div style="width: 100px; height: 20px"></div></div>
 </div>

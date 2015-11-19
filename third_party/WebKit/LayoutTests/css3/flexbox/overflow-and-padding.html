@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <style>
 #scrollable {
     overflow: scroll;
@@ -17,6 +19,7 @@
     flex-shrink: 0;
 }
 </style>
+<div id=log></div>
 Tests that padding bottom on a flexbox works in the face of overflowing content.
 Padding-right does not work. This matches the Blink/WebKit display:block behavior.
 Unfortunately, IE and Gecko both lose the padding bottom and the padding right.

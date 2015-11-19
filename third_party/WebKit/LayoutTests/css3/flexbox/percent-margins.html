@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <div class="flexbox" style="display:flex; flex-direction: column; background-color: salmon; height: 300px; width: 400px;">
     <div style="margin: 10%; background-color: orange; height: 5px; flex: 1" data-expected-width=320 data-expected-height=135></div>

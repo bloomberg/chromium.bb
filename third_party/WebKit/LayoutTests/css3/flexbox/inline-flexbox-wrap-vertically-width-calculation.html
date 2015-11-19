@@ -26,8 +26,11 @@
     background-color: yellow;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.inline-flexbox');">
+<div id=log></div>
 <div class="inline-flexbox column align-content-flex-start wrap" data-expected-width="110" data-expected-height="60">
   <div style="width: 100px; height: 20px" data-offset-x="0" data-offset-y="0"></div>
   <div style="width: 50px; height: 10px" data-offset-x="0" data-offset-y="20"></div>

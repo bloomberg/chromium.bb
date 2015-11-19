@@ -1,26 +1,4 @@
 CONSOLE WARNING: 'SVGElement.offsetWidth' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/5724912467574784 for more details.
-button
-
-object
-
-
-
-button
-
-
-
-button
-
-object
-
-
-
-
-Some text
-Some more text
-
-
-
 This is a testharness.js-based test.
 PASS .flexbox 1 
 PASS .flexbox 2 

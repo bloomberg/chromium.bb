@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <link href="resources/flexbox.css" rel="stylesheet">
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 
 <style>
 .flexbox {
@@ -16,6 +18,7 @@
 }
 </style>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <div class="flexbox" data-expected-height="20">
     <div class="vertical" data-expected-width="50" data-expected-height="20">

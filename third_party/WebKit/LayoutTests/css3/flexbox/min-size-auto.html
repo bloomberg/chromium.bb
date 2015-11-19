@@ -2,7 +2,9 @@
 <link href="resources/flexbox.css" rel="stylesheet">
 
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 
 <style>
 .flexbox {
@@ -32,7 +34,8 @@
 
 </style>
 
-<body onload="checkLayout('.flexbox'); checkLayout('.inline-flexbox');">
+<body onload="checkLayout('.flexbox, .inline-flexbox');">
+<div id=log></div>
 
 <div class="flexbox" data-expected-width="10">
     <div class="item" data-expected-width="100">

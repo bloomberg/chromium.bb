@@ -49,8 +49,11 @@ function runTest()
     checkLayout('.flexbox');
 }
 </script>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="runTest()">
+<div id=log></div>
 
 <div class="flexbox row">
     <div data-expected-width="50"></div>

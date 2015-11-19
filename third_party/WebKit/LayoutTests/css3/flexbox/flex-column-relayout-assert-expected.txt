@@ -1,3 +1,0 @@
-You should see a green rectangle, 20px high.
-
-PASS

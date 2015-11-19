@@ -50,8 +50,11 @@ body {
     background-color: salmon;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 <!-- stretch is the default align-items so these flexitems should all have the same height. -->
 <div class="flexbox">

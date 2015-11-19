@@ -25,8 +25,11 @@
   -webkit-writing-mode: vertical-rl;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox');">
+<div id=log></div>
 
 <div class="flexbox container">
   <div class="child-flex-grow-0-5" data-expected-width="50"></div>

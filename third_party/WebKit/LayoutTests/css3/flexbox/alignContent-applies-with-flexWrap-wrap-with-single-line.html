@@ -21,9 +21,12 @@
     -webkit-writing-mode: vertical-lr;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 </head>
-<body onload="checkLayout('.default'); checkLayout('.verticalWriting'); ">
+<body onload="checkLayout('.default, .verticalWriting'); ">
+<div id=log></div>
 <p>Test for BUG=324178: Chrome incorrectly honors "align-content" in "flex-wrap: wrap" flex containers that only have a single line</p>
 <div class="default" style="align-content: flex-start">
 <div data-offset-y="0">This text should be at the top of it's container</div>

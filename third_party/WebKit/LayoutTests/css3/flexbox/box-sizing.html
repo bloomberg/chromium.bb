@@ -26,8 +26,11 @@
     padding: 3px;
 }
 </style>
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
+<div id=log></div>
 
 All blue boxes are 100x100px with box-sizing: border-box and 2px border (4px border-top), we expect offsetWidth/Height to be <b>100x100</b>
 
