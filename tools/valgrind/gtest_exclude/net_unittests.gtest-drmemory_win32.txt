@@ -27,3 +27,6 @@ HttpServerTest.RequestWithTooLargeBody
 
 # http://crbug.com/504198
 DiskCacheEntryTest.ExternalAsyncIONoBuffer
+
+# http://crbug.com/557993
+ProxyResolverV8TracingWrapperTest.Terminate
