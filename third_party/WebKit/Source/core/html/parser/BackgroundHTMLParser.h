@@ -68,7 +68,7 @@ public:
     static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
 
     struct Checkpoint {
-        USING_FAST_MALLOC(CheckPoint);
+        USING_FAST_MALLOC(Checkpoint);
     public:
         WeakPtr<HTMLDocumentParser> parser;
         OwnPtr<HTMLToken> token;

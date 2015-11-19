@@ -36,7 +36,7 @@ namespace blink {
 class Event;
 
 class EventFactoryBase {
-    USING_FAST_MALLOC(EventFactory);
+    USING_FAST_MALLOC(EventFactoryBase);
 public:
     virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) = 0;
     virtual ~EventFactoryBase() { }
