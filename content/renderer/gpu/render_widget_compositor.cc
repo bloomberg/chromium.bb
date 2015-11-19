@@ -331,8 +331,8 @@ void RenderWidgetCompositor::Initialize() {
 
   settings.verify_property_trees =
       cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification);
-  settings.use_property_trees =
-      cmd->HasSwitch(cc::switches::kEnableCompositorPropertyTrees);
+  if (cmd->HasSwitch(cc::switches::kDisableCompositorPropertyTrees))
+    settings.use_property_trees = false;
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   // The means the renderer compositor has 2 possible modes:

@@ -127,7 +127,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               true,
                               false,
                               true,
-                              false,
+                              true,
                               render_surface_layer_list,
                               0,
                               GetPropertyTrees(root_layer)) {
