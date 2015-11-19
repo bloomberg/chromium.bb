@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -68,9 +69,6 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
 
   // Used to schedule periodic screen captures.
   scoped_ptr<base::RepeatingTimer> capture_timer_;
-
-  // Used to set the elapsed_time attribute of captured frames.
-  base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoCapturerAdapter);
 };

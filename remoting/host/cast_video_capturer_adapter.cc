@@ -45,8 +45,6 @@ void CastVideoCapturerAdapter::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   captured_frame.width = owned_frame->size().width();
   captured_frame.height = owned_frame->size().height();
   base::TimeTicks current_time = base::TimeTicks::Now();
-  captured_frame.elapsed_time = (current_time - start_time_).InMicroseconds() *
-                                base::Time::kNanosecondsPerMicrosecond;
   captured_frame.time_stamp =
       current_time.ToInternalValue() * base::Time::kNanosecondsPerMicrosecond;
   captured_frame.data = owned_frame->data();
@@ -91,10 +89,6 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
 
   desktop_capturer_->Start(this);
 
-  // Save the Start() time of |desktop_capturer_|. This will be used
-  // to estimate the creation time of the frame source, to set the elapsed_time
-  // of future CapturedFrames in OnCaptureCompleted().
-  start_time_ = base::TimeTicks::Now();
   capture_timer_.reset(new base::RepeatingTimer());
   capture_timer_->Start(FROM_HERE,
                         base::TimeDelta::FromMicroseconds(
