@@ -353,8 +353,13 @@ struct BluetoothDispatcherHost::CacheQueryResult {
         service(nullptr),
         characteristic(nullptr),
         outcome(CacheQueryOutcome::SUCCESS) {}
+  CacheQueryResult(CacheQueryOutcome outcome)
+      : device(nullptr),
+        service(nullptr),
+        characteristic(nullptr),
+        outcome(outcome) {}
   ~CacheQueryResult() {}
-  WebBluetoothError GetWebError() {
+  WebBluetoothError GetWebError() const {
     switch (outcome) {
       case CacheQueryOutcome::SUCCESS:
       case CacheQueryOutcome::BAD_RENDERER:
@@ -690,8 +695,7 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
   // permissions are implemented we should check that the domain has access to
   // the device. https://crbug.com/484745
 
-  CacheQueryResult query_result;
-  QueryCacheForDevice(device_id, query_result);
+  const CacheQueryResult query_result = QueryCacheForDevice(device_id);
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
     RecordConnectGATTOutcome(query_result.outcome);
@@ -723,8 +727,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   // TODO(ortuno): Check if service_uuid is in "allowed services"
   // https://crbug.com/493460
 
-  CacheQueryResult query_result;
-  QueryCacheForDevice(device_id, query_result);
+  const CacheQueryResult query_result = QueryCacheForDevice(device_id);
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
     RecordGetPrimaryServiceOutcome(query_result.outcome);
@@ -780,8 +783,8 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_CHARACTERISTIC);
   RecordGetCharacteristicCharacteristic(characteristic_uuid);
 
-  CacheQueryResult query_result;
-  QueryCacheForService(service_instance_id, query_result);
+  const CacheQueryResult query_result =
+      QueryCacheForService(service_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
@@ -829,8 +832,8 @@ void BluetoothDispatcherHost::OnReadValue(
   RecordWebBluetoothFunctionCall(
       UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
 
-  CacheQueryResult query_result;
-  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
+  const CacheQueryResult query_result =
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
@@ -870,8 +873,8 @@ void BluetoothDispatcherHost::OnWriteValue(
     return;
   }
 
-  CacheQueryResult query_result;
-  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
+  const CacheQueryResult query_result =
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
@@ -911,8 +914,8 @@ void BluetoothDispatcherHost::OnStartNotifications(
   // TODO(ortuno): Check if notify/indicate bit is set.
   // http://crbug.com/538869
 
-  CacheQueryResult query_result;
-  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
+  const CacheQueryResult query_result =
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
@@ -1243,8 +1246,9 @@ void BluetoothDispatcherHost::OnStopNotifySession(
   Send(new BluetoothMsg_StopNotificationsSuccess(thread_id, request_id));
 }
 
-void BluetoothDispatcherHost::QueryCacheForDevice(const std::string& device_id,
-                                                  CacheQueryResult& result) {
+BluetoothDispatcherHost::CacheQueryResult
+BluetoothDispatcherHost::QueryCacheForDevice(const std::string& device_id) {
+  CacheQueryResult result;
   result.device = adapter_->GetDevice(device_id);
   // When a device can't be found in the BluetoothAdapter, that generally
   // indicates that it's gone out of range. We reject with a NetworkError in
@@ -1253,38 +1257,39 @@ void BluetoothDispatcherHost::QueryCacheForDevice(const std::string& device_id,
   if (result.device == nullptr) {
     result.outcome = CacheQueryOutcome::NO_DEVICE;
   }
+  return result;
 }
 
-void BluetoothDispatcherHost::QueryCacheForService(
-    const std::string& service_instance_id,
-    CacheQueryResult& result) {
+BluetoothDispatcherHost::CacheQueryResult
+BluetoothDispatcherHost::QueryCacheForService(
+    const std::string& service_instance_id) {
   auto device_iter = service_to_device_.find(service_instance_id);
 
   // Kill the renderer, see "ID Not In Map Note" above.
   if (device_iter == service_to_device_.end()) {
     bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_SERVICE_ID);
-    result.outcome = CacheQueryOutcome::BAD_RENDERER;
-    return;
+    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
   // TODO(ortuno): Check if domain has access to device.
   // https://crbug.com/493459
 
-  QueryCacheForDevice(device_iter->second, result);
+  CacheQueryResult result = QueryCacheForDevice(device_iter->second);
 
   if (result.outcome != CacheQueryOutcome::SUCCESS) {
-    return;
+    return result;
   }
 
   result.service = result.device->GetGattService(service_instance_id);
   if (result.service == nullptr) {
     result.outcome = CacheQueryOutcome::NO_SERVICE;
   }
+  return result;
 }
 
-void BluetoothDispatcherHost::QueryCacheForCharacteristic(
-    const std::string& characteristic_instance_id,
-    CacheQueryResult& result) {
+BluetoothDispatcherHost::CacheQueryResult
+BluetoothDispatcherHost::QueryCacheForCharacteristic(
+    const std::string& characteristic_instance_id) {
   auto characteristic_iter =
       characteristic_to_service_.find(characteristic_instance_id);
 
@@ -1292,13 +1297,12 @@ void BluetoothDispatcherHost::QueryCacheForCharacteristic(
   if (characteristic_iter == characteristic_to_service_.end()) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_CHARACTERISTIC_ID);
-    result.outcome = CacheQueryOutcome::BAD_RENDERER;
-    return;
+    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
-  QueryCacheForService(characteristic_iter->second, result);
+  CacheQueryResult result = QueryCacheForService(characteristic_iter->second);
   if (result.outcome != CacheQueryOutcome::SUCCESS) {
-    return;
+    return result;
   }
 
   result.characteristic =
@@ -1307,6 +1311,8 @@ void BluetoothDispatcherHost::QueryCacheForCharacteristic(
   if (result.characteristic == nullptr) {
     result.outcome = CacheQueryOutcome::NO_CHARACTERISTIC;
   }
+
+  return result;
 }
 
 bool BluetoothDispatcherHost::IsServicesDiscoveryCompleteForDevice(
