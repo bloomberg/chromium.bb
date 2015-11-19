@@ -63,32 +63,29 @@ PushMessagingNotificationManager::PushMessagingNotificationManager(
 PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
 
 void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
-    const GURL& requesting_origin, int64_t service_worker_registration_id,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Relax this heuristic slightly.
   scoped_refptr<content::PlatformNotificationContext> notification_context =
-      GetStoragePartition(profile_, requesting_origin)
-          ->GetPlatformNotificationContext();
+      GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &content::PlatformNotificationContext
-                  ::ReadAllNotificationDataForServiceWorkerRegistration,
-          notification_context,
-          requesting_origin, service_worker_registration_id,
-          base::Bind(
-              &PushMessagingNotificationManager
-                  ::DidGetNotificationsFromDatabaseIOProxy,
-              weak_factory_.GetWeakPtr(),
-              requesting_origin, service_worker_registration_id,
-              message_handled_closure)));
+          &content::PlatformNotificationContext::
+              ReadAllNotificationDataForServiceWorkerRegistration,
+          notification_context, origin, service_worker_registration_id,
+          base::Bind(&PushMessagingNotificationManager::
+                         DidGetNotificationsFromDatabaseIOProxy,
+                     weak_factory_.GetWeakPtr(), origin,
+                     service_worker_registration_id, message_handled_closure)));
 }
 
 // static
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabaseIOProxy(
     const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-    const GURL& requesting_origin,
+    const GURL& origin,
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
     bool success,
@@ -96,18 +93,18 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabaseIOProxy(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingNotificationManager
-                     ::DidGetNotificationsFromDatabase,
-                 ui_weak_ptr,
-                 requesting_origin, service_worker_registration_id,
-                 message_handled_closure,
-                 success, data));
+      base::Bind(
+          &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
+          ui_weak_ptr, origin, service_worker_registration_id,
+          message_handled_closure, success, data));
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
-    const GURL& requesting_origin, int64_t service_worker_registration_id,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
-    bool success, const std::vector<content::NotificationDatabaseData>& data) {
+    bool success,
+    const std::vector<content::NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Hiding an existing notification should also count as a useful
   // user-visible action done in response to a push message - but make sure that
@@ -148,7 +145,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     // Use the visible URL since that's the one the user is aware of (and it
     // doesn't matter whether the page loaded successfully).
     const GURL& active_url = active_web_contents->GetVisibleURL();
-    if (requesting_origin == active_url.GetOrigin()) {
+    if (origin == active_url.GetOrigin()) {
       notification_needed = false;
       break;
     }
@@ -186,17 +183,15 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // from needing to do so.
   if (notification_shown || notification_needed) {
     content::ServiceWorkerContext* service_worker_context =
-        GetStoragePartition(profile_, requesting_origin)
-            ->GetServiceWorkerContext();
+        GetStoragePartition(profile_, origin)->GetServiceWorkerContext();
 
     content::PushMessagingService::GetNotificationsShownByLastFewPushes(
         service_worker_context, service_worker_registration_id,
-        base::Bind(&PushMessagingNotificationManager
-                       ::DidGetNotificationsShownAndNeeded,
-                   weak_factory_.GetWeakPtr(),
-                   requesting_origin, service_worker_registration_id,
-                   notification_shown, notification_needed,
-                   message_handled_closure));
+        base::Bind(&PushMessagingNotificationManager::
+                       DidGetNotificationsShownAndNeeded,
+                   weak_factory_.GetWeakPtr(), origin,
+                   service_worker_registration_id, notification_shown,
+                   notification_needed, message_handled_closure));
   } else {
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN);
@@ -208,14 +203,17 @@ static void IgnoreResult(bool unused) {
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
-    const GURL& requesting_origin, int64_t service_worker_registration_id,
-    bool notification_shown, bool notification_needed,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    bool notification_shown,
+    bool notification_needed,
     const base::Closure& message_handled_closure,
-    const std::string& data, bool success, bool not_found) {
+    const std::string& data,
+    bool success,
+    bool not_found) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::ServiceWorkerContext* service_worker_context =
-      GetStoragePartition(profile_, requesting_origin)
-          ->GetServiceWorkerContext();
+      GetStoragePartition(profile_, origin)->GetServiceWorkerContext();
 
   // We remember whether the last (up to) 10 pushes showed notifications.
   const size_t MISSED_NOTIFICATIONS_LENGTH = 10;
@@ -233,8 +231,8 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   std::string updated_data(missed_notifications.
       to_string<char, std::string::traits_type, std::string::allocator_type>());
   content::PushMessagingService::SetNotificationsShownByLastFewPushes(
-      service_worker_context, service_worker_registration_id,
-      requesting_origin, updated_data,
+      service_worker_context, service_worker_registration_id, origin,
+      updated_data,
       base::Bind(&IgnoreResult));  // This is a heuristic; ignore failure.
 
   if (notification_shown) {
@@ -257,8 +255,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
           PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),
-      "PushMessaging.GenericNotificationShown.Origin",
-      requesting_origin);
+      "PushMessaging.GenericNotificationShown.Origin", origin);
 
   // The site failed to show a notification when one was needed, and they have
   // already failed once in the previous 10 push messages, so we will show a
@@ -266,8 +263,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   content::PlatformNotificationData notification_data;
   notification_data.title =
       url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-          requesting_origin,
-          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+          origin, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   notification_data.direction =
       content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   notification_data.body =
@@ -277,31 +273,27 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   notification_data.silent = true;
 
   content::NotificationDatabaseData database_data;
-  database_data.origin = requesting_origin;
+  database_data.origin = origin;
   database_data.service_worker_registration_id =
       service_worker_registration_id;
   database_data.notification_data = notification_data;
 
   scoped_refptr<content::PlatformNotificationContext> notification_context =
-      GetStoragePartition(profile_, requesting_origin)
-          ->GetPlatformNotificationContext();
+      GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &content::PlatformNotificationContext::WriteNotificationData,
-          notification_context,
-          requesting_origin, database_data,
-          base::Bind(&PushMessagingNotificationManager
-                         ::DidWriteNotificationDataIOProxy,
-                     weak_factory_.GetWeakPtr(),
-                     requesting_origin, notification_data,
-                     message_handled_closure)));
+      base::Bind(&content::PlatformNotificationContext::WriteNotificationData,
+                 notification_context, origin, database_data,
+                 base::Bind(&PushMessagingNotificationManager::
+                                DidWriteNotificationDataIOProxy,
+                            weak_factory_.GetWeakPtr(), origin,
+                            notification_data, message_handled_closure)));
 }
 
 // static
 void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
     const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-    const GURL& requesting_origin,
+    const GURL& origin,
     const content::PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
@@ -310,13 +302,12 @@ void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingNotificationManager::DidWriteNotificationData,
-                 ui_weak_ptr,
-                 requesting_origin, notification_data, message_handled_closure,
-                 success, persistent_notification_id));
+                 ui_weak_ptr, origin, notification_data,
+                 message_handled_closure, success, persistent_notification_id));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
-    const GURL& requesting_origin,
+    const GURL& origin,
     const content::PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
@@ -328,10 +319,7 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
     return;
   }
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
-      profile_,
-      persistent_notification_id,
-      requesting_origin,
-      SkBitmap() /* icon */,
+      profile_, persistent_notification_id, origin, SkBitmap() /* icon */,
       notification_data);
   message_handled_closure.Run();
 }

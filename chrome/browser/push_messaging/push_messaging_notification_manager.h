@@ -40,28 +40,28 @@ class PushMessagingNotificationManager {
   // Enforces the requirements implied for push subscriptions which must display
   // a Web Notification in response to an incoming message.
   void EnforceUserVisibleOnlyRequirements(
-      const GURL& requesting_origin,
+      const GURL& origin,
       int64_t service_worker_registration_id,
       const base::Closure& message_handled_closure);
 
  private:
   static void DidGetNotificationsFromDatabaseIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-      const GURL& requesting_origin,
+      const GURL& origin,
       int64_t service_worker_registration_id,
       const base::Closure& message_handled_closure,
       bool success,
       const std::vector<content::NotificationDatabaseData>& data);
 
   void DidGetNotificationsFromDatabase(
-      const GURL& requesting_origin,
+      const GURL& origin,
       int64_t service_worker_registration_id,
       const base::Closure& message_handled_closure,
       bool success,
       const std::vector<content::NotificationDatabaseData>& data);
 
   void DidGetNotificationsShownAndNeeded(
-      const GURL& requesting_origin,
+      const GURL& origin,
       int64_t service_worker_registration_id,
       bool notification_shown,
       bool notification_needed,
@@ -72,14 +72,14 @@ class PushMessagingNotificationManager {
 
   static void DidWriteNotificationDataIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-      const GURL& requesting_origin,
+      const GURL& origin,
       const content::PlatformNotificationData& notification_data,
       const base::Closure& message_handled_closure,
       bool success,
       int64_t persistent_notification_id);
 
   void DidWriteNotificationData(
-      const GURL& requesting_origin,
+      const GURL& origin,
       const content::PlatformNotificationData& notification_data,
       const base::Closure& message_handled_closure,
       bool success,
