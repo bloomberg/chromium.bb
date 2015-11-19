@@ -11,7 +11,6 @@ cr.define('options', function() {
    * AutomaticSettingsResetBanner class
    * Provides encapsulated handling of the Reset Profile Settings banner.
    * @constructor
-   * @extends {options.SettingsBannerBase}
    */
   function AutomaticSettingsResetBanner() {}
 
@@ -31,13 +30,13 @@ cr.define('options', function() {
      * our show() method. This would mean that the banner would be first
      * dismissed, then shown. We want to prevent this.
      *
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
-    hadBeenDismissed_: false,
+    wasDismissed_: false,
 
     /**
      * Metric name to send when a show event occurs.
+     * @private {string}
      */
     showMetricName_: '',
 
@@ -48,8 +47,9 @@ cr.define('options', function() {
 
     /**
      * DOM element whose visibility is set when setVisibility_ is called.
+     * @private {?HTMLElement}
      */
-    setVisibilibyDomElement_: null,
+    visibleElement_: null,
 
     /**
      * Initializes the banner's event handlers.
@@ -66,7 +66,8 @@ cr.define('options', function() {
       this.dismissNativeCallbackName_ =
           'onDismissedAutomaticSettingsResetBanner';
 
-      this.setVisibilibyDomElement_ = $('automatic-settings-reset-banner');
+      this.visibleElement_ = getRequiredElement(
+          'automatic-settings-reset-banner');
 
       $('automatic-settings-reset-banner-close').onclick = function(event) {
         chrome.send('metricsHandler:recordAction',
@@ -91,7 +92,7 @@ cr.define('options', function() {
      * @protected
      */
     setVisibility: function(show) {
-      this.setVisibilibyDomElement_.hidden = !show;
+      this.visibleElement_.hidden = !show;
     },
 
     /**
@@ -99,7 +100,7 @@ cr.define('options', function() {
      * @private
      */
     show_: function() {
-      if (!this.hadBeenDismissed_) {
+      if (!this.wasDismissed_) {
         chrome.send('metricsHandler:recordAction', [this.showMetricName_]);
         this.setVisibility(true);
       }
@@ -112,8 +113,8 @@ cr.define('options', function() {
      * @private
      */
     dismiss_: function() {
-      chrome.send(this.dismissNativeCallbackName_);
-      this.hadBeenDismissed_ = true;
+      chrome.send(assert(this.dismissNativeCallbackName_));
+      this.wasDismissed_ = true;
       this.setVisibility(false);
     },
   };

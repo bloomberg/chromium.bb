@@ -55,7 +55,7 @@ html[dir='rtl'] .settings-banner > .close-button {
 
 .settings-banner .content-area .text {
   -webkit-margin-start: 18px;
-  flex: 1.0;
+  flex: 1;
 }
 
 .settings-banner .content-area .text p {
