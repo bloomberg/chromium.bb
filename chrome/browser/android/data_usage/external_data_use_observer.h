@@ -91,6 +91,12 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // matching rule's label.
   bool Matches(const GURL& gurl, std::string* label) const;
 
+  // Returns true if the |app_package_name| matches the registered package
+  // names. |label| must not be null. If a match is found, the |label| is set
+  // to the matching rule's label.
+  bool MatchesAppPackageName(const std::string& app_package_name,
+                             std::string* label) const;
+
   DataUseTabModel* data_use_tab_model() const {
     return data_use_tab_model_.get();
   }
@@ -183,6 +189,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
     ~MatchingRule();
 
     const re2::RE2* pattern() const;
+    const std::string& app_package_name() const;
     const std::string& label() const;
 
    private:

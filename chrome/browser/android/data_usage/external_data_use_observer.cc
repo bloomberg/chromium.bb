@@ -199,7 +199,6 @@ base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetUIWeakPtr() {
 
 void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!buffered_data_reports_.empty());
   DCHECK(submit_data_report_pending_);
 
   // TODO(tbansal): If not successful, record UMA.
@@ -386,10 +385,29 @@ bool ExternalDataUseObserver::Matches(const GURL& gurl,
   if (!gurl.is_valid() || gurl.is_empty())
     return false;
 
-  for (size_t i = 0; i < matching_rules_.size(); ++i) {
-    const re2::RE2* pattern = matching_rules_[i]->pattern();
+  for (const auto* matching_rule : matching_rules_) {
+    const re2::RE2* pattern = matching_rule->pattern();
     if (re2::RE2::FullMatch(gurl.spec(), *pattern)) {
-      *label = matching_rules_[i]->label();
+      *label = matching_rule->label();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ExternalDataUseObserver::MatchesAppPackageName(
+    const std::string& app_package_name,
+    std::string* label) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  *label = "";
+
+  if (app_package_name.empty())
+    return false;
+
+  for (const auto* matching_rule : matching_rules_) {
+    if (app_package_name == matching_rule->app_package_name()) {
+      *label = matching_rule->label();
       return true;
     }
   }
@@ -448,6 +466,11 @@ ExternalDataUseObserver::MatchingRule::~MatchingRule() {}
 
 const re2::RE2* ExternalDataUseObserver::MatchingRule::pattern() const {
   return pattern_.get();
+}
+
+const std::string& ExternalDataUseObserver::MatchingRule::app_package_name()
+    const {
+  return app_package_name_;
 }
 
 const std::string& ExternalDataUseObserver::MatchingRule::label() const {

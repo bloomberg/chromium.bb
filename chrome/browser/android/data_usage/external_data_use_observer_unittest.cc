@@ -106,6 +106,7 @@ TEST_F(ExternalDataUseObserverTest, SingleRegex) {
   std::string label("test");
   for (size_t i = 0; i < arraysize(tests); ++i) {
     external_data_use_observer()->RegisterURLRegexes(
+        // App package name not specified in the matching rule.
         std::vector<std::string>(1, std::string()),
         std::vector<std::string>(1, tests[i].regex),
         std::vector<std::string>(1, "label"));
@@ -119,6 +120,14 @@ TEST_F(ExternalDataUseObserverTest, SingleRegex) {
       expected_label = "label";
 
     EXPECT_EQ(expected_label, label);
+    EXPECT_FALSE(external_data_use_observer()->MatchesAppPackageName(
+        "com.example.helloworld", &label))
+        << i;
+    // Empty package name should not match against empty package name in the
+    // matching rule.
+    EXPECT_FALSE(external_data_use_observer()->MatchesAppPackageName(
+        std::string(), &label))
+        << i;
   }
 }
 
@@ -158,16 +167,25 @@ TEST_F(ExternalDataUseObserverTest, TwoRegex) {
       {"https://www.google.com", "http://www.google.com", "", false},
   };
 
-  std::string label;
+  std::string got_label;
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<std::string> url_regexes;
     url_regexes.push_back(tests[i].regex1 + "|" + tests[i].regex2);
+    const std::string label("label");
     external_data_use_observer()->RegisterURLRegexes(
-        std::vector<std::string>(url_regexes.size(), std::string()),
-        url_regexes, std::vector<std::string>(url_regexes.size(), "label"));
-    EXPECT_EQ(tests[i].expect_match,
-              external_data_use_observer()->Matches(GURL(tests[i].url), &label))
+        std::vector<std::string>(url_regexes.size(), "com.example.helloworld"),
+        url_regexes, std::vector<std::string>(url_regexes.size(), label));
+    EXPECT_EQ(tests[i].expect_match, external_data_use_observer()->Matches(
+                                         GURL(tests[i].url), &got_label))
         << i;
+    const std::string expected_label =
+        tests[i].expect_match ? label : std::string();
+    EXPECT_EQ(got_label, expected_label);
+
+    EXPECT_TRUE(external_data_use_observer()->MatchesAppPackageName(
+        "com.example.helloworld", &got_label))
+        << i;
+    EXPECT_EQ(label, got_label);
   }
 }
 
@@ -466,7 +484,8 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
                 ->second.end_time.ToJavaTime());
 }
 
-// Tests the behavior when multiple matching rules are available.
+// Tests the behavior when multiple matching rules are available for URL and
+// package name matching.
 TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
@@ -480,9 +499,14 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   labels.push_back(label_foo);
   labels.push_back(label_bar);
 
+  std::vector<std::string> app_package_names;
+  const std::string app_foo("com.example.foo");
+  const std::string app_bar("com.example.bar");
+  app_package_names.push_back(app_foo);
+  app_package_names.push_back(app_bar);
+
   external_data_use_observer()->FetchMatchingRulesDoneOnIOThread(
-      std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
-      labels);
+      app_package_names, url_regexes, labels);
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
   EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
   EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
@@ -526,6 +550,26 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
     EXPECT_EQ(label_bar, it.first.label);
     EXPECT_EQ("mccmnc", it.first.mcc_mnc);
   }
+
+  // Test if labels are matched properly for app package names.
+  std::string got_label;
+  EXPECT_TRUE(
+      external_data_use_observer()->MatchesAppPackageName(app_foo, &got_label));
+  EXPECT_EQ(label_foo, got_label);
+
+  got_label = "";
+  EXPECT_TRUE(
+      external_data_use_observer()->MatchesAppPackageName(app_bar, &got_label));
+  EXPECT_EQ(label_bar, got_label);
+
+  got_label = "";
+  EXPECT_FALSE(external_data_use_observer()->MatchesAppPackageName(
+      "com.example.unmatched", &got_label));
+  EXPECT_EQ(std::string(), got_label);
+
+  EXPECT_FALSE(external_data_use_observer()->MatchesAppPackageName(
+      std::string(), &got_label));
+  EXPECT_EQ(std::string(), got_label);
 }
 
 // Tests that hash function reports distinct values. This test may fail if there
