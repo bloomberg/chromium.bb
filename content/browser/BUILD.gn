@@ -12,10 +12,7 @@ source_set("browser") {
   # internal content ones) should depend on the public one.
   visibility = [ "//content/public/browser:browser_sources" ]
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//content/public/common:mojo_shell_client",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
   defines = []
   libs = []
   ldflags = []
@@ -106,6 +103,8 @@ source_set("browser") {
               "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
             ],
             ".")
+
+    defines += [ "MOJO_SHELL_CLIENT" ]
 
     # Non-iOS deps.
     deps += [

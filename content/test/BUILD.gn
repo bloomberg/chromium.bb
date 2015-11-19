@@ -349,7 +349,6 @@ test("content_browsertests") {
   configs += [
     "//build/config:precompiled_headers",
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//content/public/common:mojo_shell_client",
   ]
 
   deps = [
@@ -550,10 +549,7 @@ test("content_unittests") {
     }
   }
 
-  configs += [
-    "//build/config:precompiled_headers",
-    "//content/public/common:mojo_shell_client",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":test_support",
