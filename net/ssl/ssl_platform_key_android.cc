@@ -13,6 +13,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/openssl_client_key_store.h"
+#include "net/ssl/ssl_platform_key_task_runner.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
 
@@ -105,14 +106,7 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyAndroid);
 };
 
-}  // namespace
-
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
-    X509Certificate* certificate,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  crypto::ScopedEVP_PKEY key =
-      OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
-          certificate);
+scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY key) {
   if (!key)
     return nullptr;
 
@@ -128,9 +122,19 @@ scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
       LOG(ERROR) << "Unknown key type: " << EVP_PKEY_id(key.get());
       return nullptr;
   }
-  return make_scoped_ptr(new ThreadedSSLPrivateKey(
+  return make_scoped_refptr(new ThreadedSSLPrivateKey(
       make_scoped_ptr(new SSLPlatformKeyAndroid(key.Pass(), type)),
-      task_runner.Pass()));
+      GetSSLPlatformKeyTaskRunner()));
+}
+
+}  // namespace
+
+scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
+    X509Certificate* certificate) {
+  crypto::ScopedEVP_PKEY key =
+      OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
+          certificate);
+  return WrapOpenSSLPrivateKey(key.Pass());
 }
 
 }  // namespace net

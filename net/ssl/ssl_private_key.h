@@ -11,14 +11,14 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
 
 namespace net {
 
 // An interface for a private key for use with SSL client authentication.
-class SSLPrivateKey {
+class SSLPrivateKey : public base::RefCountedThreadSafe<SSLPrivateKey> {
  public:
   using SignCallback = base::Callback<void(Error, const std::vector<uint8_t>&)>;
 
@@ -36,7 +36,6 @@ class SSLPrivateKey {
   };
 
   SSLPrivateKey() {}
-  virtual ~SSLPrivateKey() {}
 
   // Returns whether the key is an RSA key or an ECDSA key. Although the signing
   // interface is type-agnositic and type tags in interfaces are discouraged,
@@ -62,7 +61,11 @@ class SSLPrivateKey {
                           const base::StringPiece& input,
                           const SignCallback& callback) = 0;
 
+ protected:
+  virtual ~SSLPrivateKey() {}
+
  private:
+  friend class base::RefCountedThreadSafe<SSLPrivateKey>;
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKey);
 };
 

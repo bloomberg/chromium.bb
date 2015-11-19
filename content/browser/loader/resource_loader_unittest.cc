@@ -38,6 +38,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
@@ -163,7 +164,8 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
                    this, cert_request_info));
   }
 
-  void ContinueWithCertificate(net::X509Certificate* cert) override {
+  void ContinueWithCertificate(net::X509Certificate* cert,
+                               net::SSLPrivateKey* private_key) override {
     net::URLRequestTestJob::Start();
   }
 
@@ -707,7 +709,7 @@ TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   EXPECT_EQ(dummy_certs, test_client.passed_certs());
 
   // Continue the request.
-  test_client.ContinueWithCertificate(dummy_certs[0].get());
+  test_client.ContinueWithCertificate(nullptr);
   raw_ptr_resource_handler_->WaitForResponseComplete();
   EXPECT_EQ(net::OK, raw_ptr_resource_handler_->status().error());
 
@@ -732,9 +734,7 @@ TEST_F(ClientCertResourceLoaderTest, WithNullStore) {
   EXPECT_EQ(net::CertificateList(), test_client.passed_certs());
 
   // Continue the request.
-  scoped_refptr<net::X509Certificate> cert(
-      new net::X509Certificate("test", "test", base::Time(), base::Time()));
-  test_client.ContinueWithCertificate(cert.get());
+  test_client.ContinueWithCertificate(nullptr);
   raw_ptr_resource_handler_->WaitForResponseComplete();
   EXPECT_EQ(net::OK, raw_ptr_resource_handler_->status().error());
 

@@ -437,7 +437,7 @@ void URLFetcherCore::OnCertificateRequested(
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (g_ignore_certificate_requests) {
-    request->ContinueWithCertificate(NULL);
+    request->ContinueWithCertificate(nullptr, nullptr);
   } else {
     request->Cancel();
   }

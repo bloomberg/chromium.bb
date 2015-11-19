@@ -34,6 +34,7 @@ class HttpResponseInfo;
 class HttpTransaction;
 class HttpUserAgentSettings;
 class ProxyInfo;
+class SSLPrivateKey;
 class UploadDataStream;
 class URLRequestContext;
 
@@ -125,7 +126,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) override;
   void SetAuth(const AuthCredentials& credentials) override;
   void CancelAuth() override;
-  void ContinueWithCertificate(X509Certificate* client_cert) override;
+  void ContinueWithCertificate(X509Certificate* client_cert,
+                               SSLPrivateKey* client_private_key) override;
   void ContinueDespiteLastError() override;
   void ResumeNetworkStart() override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;

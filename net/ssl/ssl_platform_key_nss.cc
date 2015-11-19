@@ -20,6 +20,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_key_store.h"
+#include "net/ssl/ssl_platform_key_task_runner.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
 
@@ -160,9 +161,8 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
 
 }  // namespace
 
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
-    X509Certificate* certificate,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
+    X509Certificate* certificate) {
   crypto::ScopedSECKEYPrivateKey key(
       PK11_FindKeyByAnyCert(certificate->os_cert_handle(), nullptr));
   if (!key) {
@@ -183,9 +183,9 @@ scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
       LOG(ERROR) << "Unknown key type: " << nss_type;
       return nullptr;
   }
-  return make_scoped_ptr(new ThreadedSSLPrivateKey(
+  return make_scoped_refptr(new ThreadedSSLPrivateKey(
       make_scoped_ptr(new SSLPlatformKeyNSS(type, key.Pass())),
-      task_runner.Pass()));
+      GetSSLPlatformKeyTaskRunner()));
 }
 
 }  // namespace net

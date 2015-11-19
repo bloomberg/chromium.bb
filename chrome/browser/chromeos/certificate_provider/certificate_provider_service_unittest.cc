@@ -422,7 +422,7 @@ TEST_F(CertificateProviderServiceTest, UnloadExtensionDuringGetCertificates) {
 TEST_F(CertificateProviderServiceTest, SignRequest) {
   ProvideDefaultCert();
 
-  scoped_ptr<net::SSLPrivateKey> private_key(
+  scoped_refptr<net::SSLPrivateKey> private_key(
       client_key_store_->FetchClientCertPrivateKey(*cert_info1_.certificate));
 
   ASSERT_TRUE(private_key);
@@ -459,7 +459,7 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
 TEST_F(CertificateProviderServiceTest, UnloadExtensionDuringSign) {
   ProvideDefaultCert();
 
-  scoped_ptr<net::SSLPrivateKey> private_key(
+  scoped_refptr<net::SSLPrivateKey> private_key(
       client_key_store_->FetchClientCertPrivateKey(*cert_info1_.certificate));
   ASSERT_TRUE(private_key);
 

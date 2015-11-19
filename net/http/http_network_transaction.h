@@ -37,6 +37,7 @@ class HttpStreamRequest;
 class IOBuffer;
 class ProxyInfo;
 class SpdySession;
+class SSLPrivateKey;
 struct HttpRequestInfo;
 
 class NET_EXPORT_PRIVATE HttpNetworkTransaction
@@ -54,6 +55,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
             const BoundNetLog& net_log) override;
   int RestartIgnoringLastError(const CompletionCallback& callback) override;
   int RestartWithCertificate(X509Certificate* client_cert,
+                             SSLPrivateKey* client_private_key,
                              const CompletionCallback& callback) override;
   int RestartWithAuth(const AuthCredentials& credentials,
                       const CompletionCallback& callback) override;

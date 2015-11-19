@@ -26,6 +26,7 @@ class IOBuffer;
 struct LoadTimingInfo;
 class ProxyInfo;
 class QuicServerInfo;
+class SSLPrivateKey;
 class X509Certificate;
 
 // Represents a single HTTP transaction (i.e., a single request/response pair).
@@ -80,6 +81,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Restarts the HTTP transaction with a client certificate.
   virtual int RestartWithCertificate(X509Certificate* client_cert,
+                                     SSLPrivateKey* client_private_key,
                                      const CompletionCallback& callback) = 0;
 
   // Restarts the HTTP transaction with authentication credentials.

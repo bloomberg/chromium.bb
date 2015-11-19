@@ -78,6 +78,7 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12218,14 +12219,15 @@ TEST_P(HttpNetworkTransactionTest,
   // of SSLClientCertCache, NULL is just as meaningful as a real
   // certificate, so this is the same as supply a
   // legitimate-but-unacceptable certificate.
-  rv = trans->RestartWithCertificate(NULL, callback.callback());
+  rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
 
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
+  scoped_refptr<SSLPrivateKey> client_private_key;
   ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
-      HostPortPair("www.example.com", 443), &client_cert));
+      HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_EQ(NULL, client_cert.get());
 
   // Restart the handshake. This will consume ssl_data2, which fails, and
@@ -12237,7 +12239,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
   ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-      HostPortPair("www.example.com", 443), &client_cert));
+      HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
 // Ensure that a client certificate is removed from the SSL client auth
@@ -12335,14 +12337,15 @@ TEST_P(HttpNetworkTransactionTest,
   // of SSLClientCertCache, NULL is just as meaningful as a real
   // certificate, so this is the same as supply a
   // legitimate-but-unacceptable certificate.
-  rv = trans->RestartWithCertificate(NULL, callback.callback());
+  rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
 
   // Ensure the certificate was added to the client auth cache before
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
+  scoped_refptr<SSLPrivateKey> client_private_key;
   ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
-      HostPortPair("www.example.com", 443), &client_cert));
+      HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_EQ(NULL, client_cert.get());
 
   // Restart the handshake. This will consume ssl_data2, which fails, and
@@ -12354,7 +12357,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
   ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-      HostPortPair("www.example.com", 443), &client_cert));
+      HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
 // Ensure that a client certificate is removed from the SSL client auth
@@ -12427,19 +12430,21 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
     // of SSLClientCertCache, NULL is just as meaningful as a real
     // certificate, so this is the same as supply a
     // legitimate-but-unacceptable certificate.
-    rv = trans->RestartWithCertificate(NULL, callback.callback());
+    rv = trans->RestartWithCertificate(NULL, NULL, callback.callback());
     ASSERT_EQ(ERR_IO_PENDING, rv);
 
     // Ensure the certificate was added to the client auth cache before
     // allowing the connection to continue restarting.
     scoped_refptr<X509Certificate> client_cert;
+    scoped_refptr<SSLPrivateKey> client_private_key;
     ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("proxy", 70), &client_cert));
+        HostPortPair("proxy", 70), &client_cert, &client_private_key));
     ASSERT_EQ(NULL, client_cert.get());
     // Ensure the certificate was NOT cached for the endpoint. This only
     // applies to HTTPS requests, but is fine to check for HTTP requests.
     ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("www.example.com", 443), &client_cert));
+        HostPortPair("www.example.com", 443), &client_cert,
+        &client_private_key));
 
     // Restart the handshake. This will consume ssl_data2, which fails, and
     // then consume ssl_data3, which should also fail. The result code is
@@ -12450,9 +12455,10 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
     // Now that the new handshake has failed, ensure that the client
     // certificate was removed from the client auth cache.
     ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("proxy", 70), &client_cert));
+        HostPortPair("proxy", 70), &client_cert, &client_private_key));
     ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("www.example.com", 443), &client_cert));
+        HostPortPair("www.example.com", 443), &client_cert,
+        &client_private_key));
   }
 }
 

@@ -27,6 +27,8 @@
 #include "net/ssl/client_cert_store_mac.h"
 #endif
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_platform_key.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -152,13 +154,15 @@ void TokenValidatorBase::OnCertificatesSelected(
       third_party_auth_config_.token_validation_cert_issuer;
   if (request_) {
     for (size_t i = 0; i < selected_certs->size(); ++i) {
+      net::X509Certificate* cert = (*selected_certs)[i].get();
       if (issuer == kCertIssuerWildCard ||
-          issuer == (*selected_certs)[i]->issuer().common_name) {
-        request_->ContinueWithCertificate((*selected_certs)[i].get());
+          issuer == cert->issuer().common_name) {
+        request_->ContinueWithCertificate(
+            cert, net::FetchClientCertPrivateKey(cert).get());
         return;
       }
     }
-    request_->ContinueWithCertificate(nullptr);
+    request_->ContinueWithCertificate(nullptr, nullptr);
   }
 }
 

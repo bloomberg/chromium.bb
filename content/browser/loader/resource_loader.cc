@@ -35,6 +35,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_platform_key.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
 
@@ -423,7 +425,13 @@ void ResourceLoader::ContinueSSLRequest() {
 void ResourceLoader::ContinueWithCertificate(net::X509Certificate* cert) {
   DCHECK(ssl_client_auth_handler_);
   ssl_client_auth_handler_.reset();
-  request_->ContinueWithCertificate(cert);
+  if (!cert) {
+    request_->ContinueWithCertificate(nullptr, nullptr);
+    return;
+  }
+  scoped_refptr<net::SSLPrivateKey> private_key =
+      net::FetchClientCertPrivateKey(cert);
+  request_->ContinueWithCertificate(cert, private_key.get());
 }
 
 void ResourceLoader::CancelCertificateSelection() {

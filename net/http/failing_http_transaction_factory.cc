@@ -23,6 +23,7 @@ class AuthCredentials;
 class BoundNetLog;
 class HttpRequestHeaders;
 class IOBuffer;
+class SSLPrivateKey;
 class X509Certificate;
 
 namespace {
@@ -41,6 +42,7 @@ class FailingHttpTransaction : public HttpTransaction {
             const BoundNetLog& net_log) override;
   int RestartIgnoringLastError(const CompletionCallback& callback) override;
   int RestartWithCertificate(X509Certificate* client_cert,
+                             SSLPrivateKey* client_private_key,
                              const CompletionCallback& callback) override;
   int RestartWithAuth(const AuthCredentials& credentials,
                       const CompletionCallback& callback) override;
@@ -95,7 +97,8 @@ int FailingHttpTransaction::RestartIgnoringLastError(
 
 int FailingHttpTransaction::RestartWithCertificate(
     X509Certificate* client_cert,
-    const CompletionCallback& callback)  {
+    SSLPrivateKey* client_private_key,
+    const CompletionCallback& callback) {
   return ERR_FAILED;
 }
 
@@ -211,4 +214,3 @@ HttpNetworkSession* FailingHttpTransactionFactory::GetSession() {
 }
 
 }  // namespace net
-

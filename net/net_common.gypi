@@ -165,6 +165,8 @@
           'ssl/ssl_client_session_cache_openssl.h',
           'ssl/ssl_platform_key.h',
           'ssl/ssl_platform_key_nss.cc',
+          'ssl/ssl_platform_key_task_runner.cc',
+          'ssl/ssl_platform_key_task_runner.h',
           'ssl/threaded_ssl_private_key.cc',
           'ssl/threaded_ssl_private_key.h',
         ],

@@ -37,8 +37,9 @@ class NET_EXPORT ClientKeyStore {
     // it knows about the certificate, but is unable to return the private key,
     // returns true and sets |*private_key| to nullptr.
     // This can be called from any thread.
-    virtual bool GetCertificateKey(const X509Certificate& cert,
-                                   scoped_ptr<SSLPrivateKey>* private_key) = 0;
+    virtual bool GetCertificateKey(
+        const X509Certificate& cert,
+        scoped_refptr<SSLPrivateKey>* private_key) = 0;
   };
 
   static ClientKeyStore* GetInstance();
@@ -53,7 +54,7 @@ class NET_EXPORT ClientKeyStore {
   // Given a |certificate|'s public key, return the corresponding private
   // key if any of the registered providers has a matching key.
   // Returns its matching private key on success, nullptr otherwise.
-  scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
+  scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
       const X509Certificate& certificate);
 
  private:

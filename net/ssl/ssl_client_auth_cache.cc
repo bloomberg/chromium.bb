@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_private_key.h"
 
 namespace net {
 
@@ -17,22 +18,24 @@ SSLClientAuthCache::~SSLClientAuthCache() {
   CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
-bool SSLClientAuthCache::Lookup(
-    const HostPortPair& server,
-    scoped_refptr<X509Certificate>* certificate) {
+bool SSLClientAuthCache::Lookup(const HostPortPair& server,
+                                scoped_refptr<X509Certificate>* certificate,
+                                scoped_refptr<SSLPrivateKey>* private_key) {
   DCHECK(certificate);
 
   AuthCacheMap::iterator iter = cache_.find(server);
   if (iter == cache_.end())
     return false;
 
-  *certificate = iter->second;
+  *certificate = iter->second.first;
+  *private_key = iter->second.second;
   return true;
 }
 
 void SSLClientAuthCache::Add(const HostPortPair& server,
-                             X509Certificate* value) {
-  cache_[server] = value;
+                             X509Certificate* certificate,
+                             SSLPrivateKey* private_key) {
+  cache_[server] = std::make_pair(certificate, private_key);
 
   // TODO(wtc): enforce a maximum number of entries.
 }

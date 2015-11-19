@@ -28,6 +28,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/scoped_openssl_types.h"
+#include "net/ssl/ssl_platform_key_task_runner.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
 
@@ -323,9 +324,8 @@ bool GetKeyInfo(const X509Certificate* certificate,
 
 }  // namespace
 
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
-    X509Certificate* certificate,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
+    X509Certificate* certificate) {
   // Rather than query the private key for metadata, extract the public key from
   // the certificate without using Windows APIs. CAPI and CNG do not
   // consistently work depending on the system. See https://crbug.com/468345.
@@ -360,8 +360,8 @@ scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
     DCHECK(SSLPrivateKey::Type::RSA == key_type);
     delegate.reset(new SSLPlatformKeyCAPI(prov_or_key, key_spec, max_length));
   }
-  return make_scoped_ptr(
-      new ThreadedSSLPrivateKey(delegate.Pass(), task_runner.Pass()));
+  return make_scoped_refptr(new ThreadedSSLPrivateKey(
+      delegate.Pass(), GetSSLPlatformKeyTaskRunner()));
 }
 
 }  // namespace net

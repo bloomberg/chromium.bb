@@ -40,6 +40,7 @@ struct LoadTimingInfo;
 class NetworkDelegate;
 class SSLCertRequestInfo;
 class SSLInfo;
+class SSLPrivateKey;
 class UploadDataStream;
 class URLRequestStatus;
 class X509Certificate;
@@ -199,7 +200,8 @@ class NET_EXPORT URLRequestJob
   // Display the error page without asking for credentials again.
   virtual void CancelAuth();
 
-  virtual void ContinueWithCertificate(X509Certificate* client_cert);
+  virtual void ContinueWithCertificate(X509Certificate* client_cert,
+                                       SSLPrivateKey* client_private_key);
 
   // Continue processing the request ignoring the last error.
   virtual void ContinueDespiteLastError();

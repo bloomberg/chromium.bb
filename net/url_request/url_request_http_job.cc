@@ -1250,7 +1250,8 @@ void URLRequestHttpJob::CancelAuth() {
 }
 
 void URLRequestHttpJob::ContinueWithCertificate(
-    X509Certificate* client_cert) {
+    X509Certificate* client_cert,
+    SSLPrivateKey* client_private_key) {
   DCHECK(transaction_.get());
 
   DCHECK(!response_info_) << "should not have a response yet";
@@ -1262,7 +1263,8 @@ void URLRequestHttpJob::ContinueWithCertificate(
   // be notifying our consumer asynchronously via OnStartCompleted.
   SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
 
-  int rv = transaction_->RestartWithCertificate(client_cert, start_callback_);
+  int rv = transaction_->RestartWithCertificate(client_cert, client_private_key,
+                                                start_callback_);
   if (rv == ERR_IO_PENDING)
     return;
 

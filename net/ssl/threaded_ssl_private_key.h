@@ -52,7 +52,6 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
 
   ThreadedSSLPrivateKey(scoped_ptr<Delegate> delegate,
                         scoped_refptr<base::TaskRunner> task_runner);
-  ~ThreadedSSLPrivateKey() override;
 
   // SSLPrivateKey implementation.
   Type GetType() override;
@@ -63,6 +62,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
                   const SignCallback& callback) override;
 
  private:
+  ~ThreadedSSLPrivateKey() override;
   class Core;
 
   scoped_refptr<Core> core_;

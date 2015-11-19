@@ -1147,6 +1147,8 @@
       'ssl/ssl_config_service_defaults.cc',
       'ssl/ssl_config_service_defaults.h',
       'ssl/ssl_platform_key.h',
+      'ssl/ssl_platform_key_task_runner.cc',
+      'ssl/ssl_platform_key_task_runner.h',
       'ssl/ssl_platform_key_android.cc',
       'ssl/ssl_platform_key_mac.cc',
       'ssl/ssl_platform_key_nss.cc',

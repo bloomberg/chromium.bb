@@ -55,9 +55,6 @@ ThreadedSSLPrivateKey::ThreadedSSLPrivateKey(
       weak_factory_(this) {
 }
 
-ThreadedSSLPrivateKey::~ThreadedSSLPrivateKey() {
-}
-
 SSLPrivateKey::Type ThreadedSSLPrivateKey::GetType() {
   return core_->delegate()->GetType();
 }
@@ -82,5 +79,7 @@ void ThreadedSSLPrivateKey::SignDigest(
       base::Bind(&DoCallback, weak_factory_.GetWeakPtr(), callback,
                  base::Owned(signature)));
 }
+
+ThreadedSSLPrivateKey::~ThreadedSSLPrivateKey() {}
 
 }  // namespace net

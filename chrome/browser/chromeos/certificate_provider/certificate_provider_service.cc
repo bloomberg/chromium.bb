@@ -52,8 +52,9 @@ class CertificateProviderService::CertKeyProviderImpl
       certificate_provider::ThreadSafeCertificateMap* certificate_map);
   ~CertKeyProviderImpl() override;
 
-  bool GetCertificateKey(const net::X509Certificate& cert,
-                         scoped_ptr<net::SSLPrivateKey>* private_key) override;
+  bool GetCertificateKey(
+      const net::X509Certificate& cert,
+      scoped_refptr<net::SSLPrivateKey>* private_key) override;
 
  private:
   const scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
@@ -104,7 +105,6 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
       const CertificateInfo& cert_info,
       const scoped_refptr<base::SequencedTaskRunner>& service_task_runner,
       const base::WeakPtr<CertificateProviderService>& service);
-  ~SSLPrivateKey() override;
 
   // net::SSLPrivateKey:
   Type GetType() override;
@@ -115,6 +115,8 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
                   const SignCallback& callback) override;
 
  private:
+  ~SSLPrivateKey() override;
+
   static void SignDigestOnServiceTaskRunner(
       const base::WeakPtr<CertificateProviderService>& service,
       const std::string& extension_id,
@@ -150,7 +152,7 @@ CertificateProviderService::CertKeyProviderImpl::~CertKeyProviderImpl() {}
 
 bool CertificateProviderService::CertKeyProviderImpl::GetCertificateKey(
     const net::X509Certificate& cert,
-    scoped_ptr<net::SSLPrivateKey>* private_key) {
+    scoped_refptr<net::SSLPrivateKey>* private_key) {
   bool is_currently_provided = false;
   CertificateInfo info;
   std::string extension_id;
@@ -159,8 +161,9 @@ bool CertificateProviderService::CertKeyProviderImpl::GetCertificateKey(
   if (!is_currently_provided)
     return false;
 
-  private_key->reset(
-      new SSLPrivateKey(extension_id, info, service_task_runner_, service_));
+  *private_key =
+      new SSLPrivateKey(extension_id, info, service_task_runner_, service_);
+
   return true;
 }
 
@@ -218,10 +221,6 @@ CertificateProviderService::SSLPrivateKey::SSLPrivateKey(
   thread_checker_.DetachFromThread();
 }
 
-CertificateProviderService::SSLPrivateKey::~SSLPrivateKey() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
 CertificateProviderService::SSLPrivateKey::Type
 CertificateProviderService::SSLPrivateKey::GetType() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -277,6 +276,10 @@ void CertificateProviderService::SSLPrivateKey::SignDigest(
       FROM_HERE, base::Bind(&SSLPrivateKey::SignDigestOnServiceTaskRunner,
                             service_, extension_id_, cert_info_.certificate,
                             hash, input.as_string(), bound_callback));
+}
+
+CertificateProviderService::SSLPrivateKey::~SSLPrivateKey() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void CertificateProviderService::SSLPrivateKey::DidSignDigest(

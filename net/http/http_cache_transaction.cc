@@ -405,6 +405,7 @@ int HttpCache::Transaction::RestartIgnoringLastError(
 
 int HttpCache::Transaction::RestartWithCertificate(
     X509Certificate* client_cert,
+    SSLPrivateKey* client_private_key,
     const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -414,7 +415,8 @@ int HttpCache::Transaction::RestartWithCertificate(
   if (!cache_.get())
     return ERR_UNEXPECTED;
 
-  int rv = RestartNetworkRequestWithCertificate(client_cert);
+  int rv =
+      RestartNetworkRequestWithCertificate(client_cert, client_private_key);
 
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -2280,13 +2282,15 @@ int HttpCache::Transaction::RestartNetworkRequest() {
 }
 
 int HttpCache::Transaction::RestartNetworkRequestWithCertificate(
-    X509Certificate* client_cert) {
+    X509Certificate* client_cert,
+    SSLPrivateKey* client_private_key) {
   DCHECK(mode_ & WRITE || mode_ == NONE);
   DCHECK(network_trans_.get());
   DCHECK_EQ(STATE_NONE, next_state_);
 
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
-  int rv = network_trans_->RestartWithCertificate(client_cert, io_callback_);
+  int rv = network_trans_->RestartWithCertificate(
+      client_cert, client_private_key, io_callback_);
   if (rv != ERR_IO_PENDING)
     return DoLoop(rv);
   return rv;

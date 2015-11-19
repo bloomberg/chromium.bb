@@ -128,6 +128,11 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
       if (ok)
         intermediates.push_back(copied_intermediate);
     }
+    // TODO(svaldez): cert currently wraps cert_context2 which may be backed
+    // by a smartcard with threading difficulties. Instead, create a fresh
+    // X509Certificate with CreateFromBytes and route cert_context2 into the
+    // SSLPrivateKey. Probably changing CertificateList to be a
+    // pair<X509Certificate, SSLPrivateKeyCallback>.
     scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
         cert_context2, intermediates);
     selected_certs->push_back(cert);

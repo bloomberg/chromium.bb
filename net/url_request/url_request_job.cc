@@ -238,8 +238,8 @@ void URLRequestJob::CancelAuth() {
   NOTREACHED();
 }
 
-void URLRequestJob::ContinueWithCertificate(
-    X509Certificate* client_cert) {
+void URLRequestJob::ContinueWithCertificate(X509Certificate* client_cert,
+                                            SSLPrivateKey* client_private_key) {
   // The derived class should implement this!
   NOTREACHED();
 }

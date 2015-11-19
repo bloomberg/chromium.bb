@@ -8213,7 +8213,7 @@ TEST_F(HTTPSRequestTest, ClientAuthTest) {
     // Send no certificate.
     // TODO(davidben): Get temporary client cert import (with keys) working on
     // all platforms so we can test sending a cert as well.
-    r->ContinueWithCertificate(NULL);
+    r->ContinueWithCertificate(nullptr, nullptr);
 
     base::RunLoop().Run();
 

@@ -844,10 +844,11 @@ void URLRequest::CancelAuth() {
   job_->CancelAuth();
 }
 
-void URLRequest::ContinueWithCertificate(X509Certificate* client_cert) {
+void URLRequest::ContinueWithCertificate(X509Certificate* client_cert,
+                                         SSLPrivateKey* client_private_key) {
   DCHECK(job_.get());
 
-  job_->ContinueWithCertificate(client_cert);
+  job_->ContinueWithCertificate(client_cert, client_private_key);
 }
 
 void URLRequest::ContinueDespiteLastError() {

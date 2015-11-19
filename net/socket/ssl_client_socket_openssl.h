@@ -34,7 +34,6 @@ class CertVerifier;
 class CTVerifier;
 class SSLCertRequestInfo;
 class SSLInfo;
-class SSLPrivateKey;
 
 // An SSL client socket implemented with OpenSSL.
 class SSLClientSocketOpenSSL : public SSLClientSocket {
@@ -333,7 +332,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   ChannelIDService::Request channel_id_request_;
   SSLFailureState ssl_failure_state_;
 
-  scoped_ptr<SSLPrivateKey> private_key_;
   int signature_result_;
   std::vector<uint8_t> signature_;
 

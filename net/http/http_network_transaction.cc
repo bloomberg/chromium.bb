@@ -60,6 +60,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_private_key.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
@@ -220,7 +221,9 @@ int HttpNetworkTransaction::RestartIgnoringLastError(
 }
 
 int HttpNetworkTransaction::RestartWithCertificate(
-    X509Certificate* client_cert, const CompletionCallback& callback) {
+    X509Certificate* client_cert,
+    SSLPrivateKey* client_private_key,
+    const CompletionCallback& callback) {
   // In HandleCertificateRequest(), we always tear down existing stream
   // requests to force a new connection.  So we shouldn't have one here.
   DCHECK(!stream_request_.get());
@@ -231,8 +234,10 @@ int HttpNetworkTransaction::RestartWithCertificate(
       &proxy_ssl_config_ : &server_ssl_config_;
   ssl_config->send_client_cert = true;
   ssl_config->client_cert = client_cert;
+  ssl_config->client_private_key = client_private_key;
   session_->ssl_client_auth_cache()->Add(
-      response_.cert_request_info->host_and_port, client_cert);
+      response_.cert_request_info->host_and_port, client_cert,
+      client_private_key);
   // Reset the other member variables.
   // Note: this is necessary only with SSL renegotiation.
   ResetStateForRestart();
@@ -1226,8 +1231,10 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // to provide one for this server before, use the past decision
   // automatically.
   scoped_refptr<X509Certificate> client_cert;
+  scoped_refptr<SSLPrivateKey> client_private_key;
   bool found_cached_cert = session_->ssl_client_auth_cache()->Lookup(
-      response_.cert_request_info->host_and_port, &client_cert);
+      response_.cert_request_info->host_and_port, &client_cert,
+      &client_private_key);
   if (!found_cached_cert)
     return error;
 
@@ -1251,6 +1258,7 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
       &proxy_ssl_config_ : &server_ssl_config_;
   ssl_config->send_client_cert = true;
   ssl_config->client_cert = client_cert;
+  ssl_config->client_private_key = client_private_key;
   next_state_ = STATE_CREATE_STREAM;
   // Reset the other member variables.
   // Note: this is necessary only with SSL renegotiation.

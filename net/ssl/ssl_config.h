@@ -11,6 +11,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/next_proto.h"
+#include "net/ssl/ssl_private_key.h"
 
 namespace net {
 
@@ -198,6 +199,7 @@ struct NET_EXPORT SSLConfig {
   NextProtoVector renego_allowed_for_protos;
 
   scoped_refptr<X509Certificate> client_cert;
+  scoped_refptr<SSLPrivateKey> client_private_key;
 };
 
 }  // namespace net

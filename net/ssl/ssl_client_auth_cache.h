@@ -7,12 +7,14 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_database.h"
+#include "net/ssl/ssl_private_key.h"
 
 namespace net {
 
@@ -36,13 +38,16 @@ class NET_EXPORT_PRIVATE SSLClientAuthCache : public CertDatabase::Observer {
   // indicates a preference to not send any certificate to |server|.
   // If a certificate preference is not found, returns false.
   bool Lookup(const HostPortPair& server,
-              scoped_refptr<X509Certificate>* certificate);
+              scoped_refptr<X509Certificate>* certificate,
+              scoped_refptr<SSLPrivateKey>* private_key);
 
-  // Add a client certificate for |server| to the cache. If there is already
-  // a client certificate for |server|, it will be overwritten. A NULL
-  // |client_cert| indicates a preference that no client certificate should
-  // be sent to |server|.
-  void Add(const HostPortPair& server, X509Certificate* client_cert);
+  // Add a client certificate and private key for |server| to the cache. If
+  // there is already a client certificate for |server|, it will be
+  // overwritten. A NULL |client_cert| indicates a preference that no client
+  // certificate should be sent to |server|.
+  void Add(const HostPortPair& server,
+           X509Certificate* client_cert,
+           SSLPrivateKey* private_key);
 
   // Remove the client certificate for |server| from the cache, if one exists.
   void Remove(const HostPortPair& server);
@@ -52,7 +57,8 @@ class NET_EXPORT_PRIVATE SSLClientAuthCache : public CertDatabase::Observer {
 
  private:
   typedef HostPortPair AuthCacheKey;
-  typedef scoped_refptr<X509Certificate> AuthCacheValue;
+  typedef std::pair<scoped_refptr<X509Certificate>,
+                    scoped_refptr<SSLPrivateKey>> AuthCacheValue;
   typedef std::map<AuthCacheKey, AuthCacheValue> AuthCacheMap;
 
   // internal representation of cache, an STL map.

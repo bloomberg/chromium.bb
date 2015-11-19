@@ -181,11 +181,12 @@ int DevToolsNetworkTransaction::RestartIgnoringLastError(
 
 int DevToolsNetworkTransaction::RestartWithCertificate(
     net::X509Certificate* client_cert,
+    net::SSLPrivateKey* client_private_key,
     const net::CompletionCallback& callback) {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
   int rv = network_transaction_->RestartWithCertificate(
-      client_cert, proxy_callback_);
+      client_cert, client_private_key, proxy_callback_);
   return SetupCallback(callback, rv, RESTART_WITH_CERTIFICATE);
 }
 

@@ -5,8 +5,10 @@
 #ifndef NET_SSL_SSL_PLATFORM_KEY_H_
 #define NET_SSL_SSL_PLATFORM_KEY_H_
 
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/net_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -18,12 +20,10 @@ class SSLPrivateKey;
 class X509Certificate;
 
 // Looks up the private key from the platform key store corresponding to
-// |certificate|'s public key and returns an SSLPrivateKey which offloads
-// signing operations to |task_runner|. |task_runner| is a SequencedTaskRunner
-// to allow for buggy third-party smartcard drivers.
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
-    X509Certificate* certificate,
-    scoped_refptr<base::SequencedTaskRunner> task_runner);
+// |certificate|'s public key and returns an SSLPrivateKey backed by the
+// playform key.
+NET_EXPORT scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
+    X509Certificate* certificate);
 
 }  // namespace net
 

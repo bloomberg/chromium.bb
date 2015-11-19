@@ -52,6 +52,7 @@ struct LoadTimingInfo;
 struct RedirectInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
+class SSLPrivateKey;
 class UploadDataStream;
 class URLRequestContext;
 class URLRequestJob;
@@ -172,8 +173,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     // Called when we receive an SSL CertificateRequest message for client
     // authentication.  The delegate should call
     // request->ContinueWithCertificate() with the client certificate the user
-    // selected, or request->ContinueWithCertificate(NULL) to continue the SSL
-    // handshake without a client certificate.
+    // selected and its private key, or request->ContinueWithCertificate(NULL,
+    // NULL)
+    // to continue the SSL handshake without a client certificate.
     virtual void OnCertificateRequested(
         URLRequest* request,
         SSLCertRequestInfo* cert_request_info);
@@ -587,7 +589,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // This method can be called after the user selects a client certificate to
   // instruct this URLRequest to continue with the request with the
   // certificate.  Pass NULL if the user doesn't have a client certificate.
-  void ContinueWithCertificate(X509Certificate* client_cert);
+  void ContinueWithCertificate(X509Certificate* client_cert,
+                               SSLPrivateKey* client_private_key);
 
   // This method can be called after some error notifications to instruct this
   // URLRequest to ignore the current error and continue with the request.  To
