@@ -53,6 +53,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
+#include "ui/native_theme/native_theme_win.h"
 #endif
 
 namespace views {
@@ -835,7 +836,17 @@ ui::ThemeProvider* View::GetThemeProvider() const {
 
 const ui::NativeTheme* View::GetNativeTheme() const {
   const Widget* widget = GetWidget();
-  return widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
+  if (widget)
+    return widget->GetNativeTheme();
+
+#if defined(OS_WIN)
+  // On Windows, ui::NativeTheme::instance() returns NativeThemeWinAura because
+  // that's what the renderer wants, but Views should default to NativeThemeWin.
+  // TODO(estade): clean this up, see http://crbug.com/558029
+  return ui::NativeThemeWin::instance();
+#else
+  return ui::NativeTheme::instance();
+#endif
 }
 
 // RTL painting ----------------------------------------------------------------
