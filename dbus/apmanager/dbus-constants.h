@@ -47,6 +47,16 @@ const char kHwMode80211ac[] = "802.11ac";
 // Operation modes.
 const char kOperationModeServer[] = "server";
 const char kOperationModeBridge[] = "bridge";
+
+// D-Bus error codes.
+const char kErrorInternalError[] =
+    "org.chromium.apmanager.Error.InternalError";
+const char kErrorInvalidArguments[] =
+    "org.chromium.apmanager.Error.InvalidArguments";
+const char kErrorInvalidConfiguration[] =
+    "org.chromium.apmanager.Error.InvalidConfiguration";
+const char kErrorSuccess[] = "org.chromium.apmanager.Error.Success";
+
 }  // namespace apmanager
 
 #endif  // SYSTEM_API_DBUS_APMANAGER_DBUS_CONSTANTS_H_
