@@ -71,13 +71,11 @@ SK_API void InitializeDC(HDC context);
 SK_API CGContextRef GetBitmapContext(SkBaseDevice* device);
 #endif
 
-// Following routines are used in print preview workflow to mark the draft mode
-// metafile and preview metafile.
+// Following routines are used in print preview workflow to mark the
+// preview metafile.
 SK_API SkMetaData& getMetaData(const SkCanvas& canvas);
-SK_API void SetIsDraftMode(const SkCanvas& canvas, bool draft_mode);
-SK_API bool IsDraftMode(const SkCanvas& canvas);
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
 SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
 SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
 #endif

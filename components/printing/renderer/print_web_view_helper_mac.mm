@@ -124,7 +124,6 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
       return;
 
     MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-    skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
 #if defined(ENABLE_PRINT_PREVIEW)
     if (params.display_header_footer) {

@@ -11,7 +11,6 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "printing/pdf_metafile_skia.h"
-#include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -152,7 +151,6 @@ void PrintWebViewHelper::PrintPageInternal(
     return;
 
   MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-  skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
 
 #if defined(ENABLE_PRINT_PREVIEW)
   if (params.params.display_header_footer) {

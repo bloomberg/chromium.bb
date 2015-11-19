@@ -11,11 +11,10 @@ namespace skia {
 
 namespace {
 
-const char* kDevicePlatformBehaviour = "CrDevicePlatformBehaviour";
-const char* kDraftModeKey = "CrDraftMode";
+const char kDevicePlatformBehaviour[] = "CrDevicePlatformBehaviour";
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-const char* kIsPreviewMetafileKey = "CrIsPreviewMetafile";
+#if defined(OS_MACOSX)
+const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
 #endif
 
 void SetBoolMetaData(const SkCanvas& canvas, const char* key,  bool value) {
@@ -55,15 +54,7 @@ SkMetaData& getMetaData(const SkCanvas& canvas) {
   return device->getMetaData();
 }
 
-void SetIsDraftMode(const SkCanvas& canvas, bool draft_mode) {
-  SetBoolMetaData(canvas, kDraftModeKey, draft_mode);
-}
-
-bool IsDraftMode(const SkCanvas& canvas) {
-  return GetBoolMetaData(canvas, kDraftModeKey);
-}
-
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
 void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview) {
   SetBoolMetaData(canvas, kIsPreviewMetafileKey, is_preview);
 }
