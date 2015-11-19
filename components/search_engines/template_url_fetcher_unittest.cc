@@ -33,7 +33,7 @@ class TemplateURLFetcherTest : public testing::Test {
     template_url_fetcher_.reset(new TemplateURLFetcher(
         test_util_.model(), profile->GetRequestContext()));
 
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
   }
 
   void TearDown() override {
@@ -72,7 +72,7 @@ class TemplateURLFetcherTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
   TemplateURLServiceTestUtil test_util_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
 
   // The last TemplateURL to come from a callback.
   scoped_ptr<TemplateURL> last_callback_template_url_;

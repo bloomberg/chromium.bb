@@ -166,7 +166,10 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
     classifier_ = new StrictMock<MockPhishingClassifier>(render_frame);
     delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
 
-    ASSERT_TRUE(StartTestServer());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&PhishingClassifierDelegateTest::HandleRequest,
+                   base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -193,15 +196,6 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
         base::Bind(&PhishingClassifierDelegate::PageCaptured,
                    base::Unretained(delegate_), page_text,
                    preliminary_capture));
-  }
-
-  bool StartTestServer() {
-    CHECK(!embedded_test_server_);
-    embedded_test_server_.reset(new net::test_server::EmbeddedTestServer());
-    embedded_test_server_->RegisterRequestHandler(
-        base::Bind(&PhishingClassifierDelegateTest::HandleRequest,
-                   base::Unretained(this)));
-    return embedded_test_server_->InitializeAndWaitUntilReady();
   }
 
   scoped_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -238,7 +232,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
     replace_host.SetHostStr(host);
     response_content_ = content;
     response_url_ =
-        embedded_test_server_->base_url().ReplaceComponents(replace_host);
+        embedded_test_server()->base_url().ReplaceComponents(replace_host);
     ui_test_utils::NavigateToURL(browser(), response_url_);
     return response_url_;
   }
@@ -256,7 +250,6 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   scoped_refptr<InterceptingMessageFilter> intercepting_filter_;
   GURL response_url_;
   std::string response_content_;
-  scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
   scoped_ptr<ClientPhishingRequest> verdict_;
   StrictMock<MockPhishingClassifier>* classifier_;  // Owned by |delegate_|.
   int32_t render_view_routing_id_;
@@ -271,10 +264,12 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {
 
   // Test an initial load.  We expect classification to happen normally.
   EXPECT_CALL(*classifier_, CancelPendingClassification());
-  std::string port = base::UintToString(embedded_test_server_->port());
-  std::string html = "<html><body><iframe src=\"http://sub1.com:";
-  html += port;
-  html += "/\"></iframe></body></html>";
+  GURL iframe_url = embedded_test_server()->GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("sub1.com");
+  std::string html = "<html><body><iframe src=\"";
+  html += iframe_url.ReplaceComponents(replace_host).spec();
+  html += "\"></iframe></body></html>";
   GURL url = LoadHtml("host.com", html);
   Mock::VerifyAndClearExpectations(classifier_);
   OnStartPhishingDetection(url);
@@ -521,10 +516,10 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
 
   Mock::VerifyAndClearExpectations(classifier_);
 
-  std::string url_str = "http://host4.com:";
-  url_str += base::UintToString(embedded_test_server_->port());
-  url_str += "/redir";
-  OnStartPhishingDetection(GURL(url_str));
+  GURL redir_url = embedded_test_server()->GetURL("/redir");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host4.com");
+  OnStartPhishingDetection(redir_url.ReplaceComponents(replace_host));
   page_text = ASCIIToUTF16("123");
   {
     InSequence s;

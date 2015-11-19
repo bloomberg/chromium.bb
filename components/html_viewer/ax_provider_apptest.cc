@@ -14,7 +14,7 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
@@ -72,16 +72,15 @@ using AXProviderTest = mus::WindowServerTestBase;
 
 TEST_F(AXProviderTest, HelloWorld) {
   // Start a test server for net/data/test.html access.
-  net::SpawnedTestServer server(
-      net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("net/data")));
+  net::EmbeddedTestServer server;
+  server.ServeFilesFromSourceDirectory("net/data");
   ASSERT_TRUE(server.Start());
 
   // Connect to the URL through the mojo:html_viewer content handler.
   const uint16_t assigned_port = server.host_port_pair().port();
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(
-      base::StringPrintf("http://127.0.0.1:%u/files/test.html", assigned_port));
+      base::StringPrintf("http://127.0.0.1:%u/test.html", assigned_port));
   scoped_ptr<ApplicationConnection> connection =
       application_impl()->ConnectToApplication(request.Pass());
 

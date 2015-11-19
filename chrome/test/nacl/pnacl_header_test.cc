@@ -20,7 +20,6 @@
 #include "net/url_request/url_request.h"
 
 using net::test_server::BasicHttpResponse;
-using net::test_server::EmbeddedTestServer;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 
@@ -47,7 +46,7 @@ PnaclHeaderTest::PnaclHeaderTest() : noncors_loads_(0), cors_loads_(0) {}
 PnaclHeaderTest::~PnaclHeaderTest() {}
 
 void PnaclHeaderTest::StartServer() {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // For most requests, just serve files, but register a special test handler
   // that watches for the .pexe fetch also.

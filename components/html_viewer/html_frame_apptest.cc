@@ -22,7 +22,7 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/test_frame_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
 using mus::mojom::WindowTreeClientPtr;
@@ -39,7 +39,7 @@ namespace {
 
 const char kAddFrameWithEmptyPageScript[] =
     "var iframe = document.createElement(\"iframe\");"
-    "iframe.src = \"http://127.0.0.1:%u/files/empty_page.html\";"
+    "iframe.src = \"http://127.0.0.1:%u/empty_page.html\";"
     "document.body.appendChild(iframe);";
 
 void OnGotContentHandlerForRoot(bool* got_callback) {
@@ -173,7 +173,7 @@ class HTMLFrameTest : public WindowServerTestBase {
     frame_tree_delegate_.reset(
         new TestFrameTreeDelegateImpl(application_impl()));
     FrameConnection* root_connection = InitFrameTree(
-        embed_window, "http://127.0.0.1:%u/files/empty_page2.html");
+        embed_window, "http://127.0.0.1:%u/empty_page2.html");
     if (!root_connection) {
       ADD_FAILURE() << "unable to establish root connection";
       return nullptr;
@@ -241,9 +241,9 @@ class HTMLFrameTest : public WindowServerTestBase {
     WindowServerTestBase::SetUp();
 
     // Start a test server.
-    http_server_.reset(new net::SpawnedTestServer(
-        net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
-        base::FilePath(FILE_PATH_LITERAL("components/test/data/html_viewer"))));
+    http_server_.reset(new net::EmbeddedTestServer);
+    http_server_->ServeFilesFromSourceDirectory(
+        "components/test/data/html_viewer");
     ASSERT_TRUE(http_server_->Start());
   }
   void TearDown() override {
@@ -252,7 +252,7 @@ class HTMLFrameTest : public WindowServerTestBase {
     WindowServerTestBase::TearDown();
   }
 
-  scoped_ptr<net::SpawnedTestServer> http_server_;
+  scoped_ptr<net::EmbeddedTestServer> http_server_;
   scoped_ptr<FrameTree> frame_tree_;
 
   scoped_ptr<TestFrameTreeDelegateImpl> frame_tree_delegate_;
@@ -265,7 +265,7 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
   mus::Window* embed_window = window_manager()->NewWindow();
 
   FrameConnection* root_connection = InitFrameTree(
-      embed_window, "http://127.0.0.1:%u/files/page_with_single_frame.html");
+      embed_window, "http://127.0.0.1:%u/page_with_single_frame.html");
   ASSERT_TRUE(root_connection);
 
   ASSERT_EQ("Page with single frame",
@@ -290,7 +290,7 @@ TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
   mus::Window* embed_window = window_manager()->NewWindow();
 
   ASSERT_TRUE(InitFrameTree(
-      embed_window, "http://127.0.0.1:%u/files/page_with_single_frame.html"));
+      embed_window, "http://127.0.0.1:%u/page_with_single_frame.html"));
 
   // page_with_single_frame contains a child frame. The child frame should
   // create a new View and Frame.
@@ -306,7 +306,7 @@ TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
   // Change the location and wait for the navigation to occur.
   const char kNavigateFrame[] =
       "window.frames[0].location = "
-      "'http://127.0.0.1:%u/files/empty_page2.html'";
+      "'http://127.0.0.1:%u/empty_page2.html'";
   frame_tree_delegate_->ClearGotNavigate(child_frame);
   ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
                 AddPortToString(kNavigateFrame));

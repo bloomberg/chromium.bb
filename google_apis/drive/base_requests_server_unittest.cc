@@ -45,7 +45,7 @@ class BaseRequestsServerTest : public testing::Test {
         message_loop_.task_runner(),
         kTestUserAgent));
 
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
     test_server_.RegisterRequestHandler(
         base::Bind(&test_util::HandleDownloadFileRequest,
                    test_server_.base_url(),
@@ -58,7 +58,7 @@ class BaseRequestsServerTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   scoped_ptr<RequestSender> request_sender_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::ScopedTempDir temp_dir_;

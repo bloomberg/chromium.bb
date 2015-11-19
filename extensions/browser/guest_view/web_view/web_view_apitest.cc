@@ -196,7 +196,7 @@ void WebViewAPITest::SetUpOnMainThread() {
 
 void WebViewAPITest::StartTestServer() {
   // For serving guest pages.
-  if (!embedded_test_server()->InitializeAndWaitUntilReady()) {
+  if (!embedded_test_server()->Start()) {
     LOG(ERROR) << "Failed to start test server.";
     return;
   }

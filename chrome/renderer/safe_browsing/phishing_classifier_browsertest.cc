@@ -103,6 +103,11 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     content::RenderFrame* render_frame = content::RenderFrame::FromRoutingID(
         web_contents->GetMainFrame()->GetRoutingID());
     classifier_.reset(new PhishingClassifier(render_frame, clock_));
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&PhishingClassifierTest::HandleRequest,
+                   base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
@@ -152,19 +157,6 @@ class PhishingClassifierTest : public InProcessBrowserTest {
                               const ClientPhishingRequest& verdict) {
     *verdict_out = verdict;  // Copy the verdict.
     run_loop->Quit();
-  }
-
-  scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
-  net::test_server::EmbeddedTestServer* embedded_test_server() {
-    // TODO(ajwong): Merge this into BrowserTestBase.
-    if (!embedded_test_server_) {
-      embedded_test_server_.reset(new net::test_server::EmbeddedTestServer());
-      embedded_test_server_->RegisterRequestHandler(
-          base::Bind(&PhishingClassifierTest::HandleRequest,
-                     base::Unretained(this)));
-      CHECK(embedded_test_server_->InitializeAndWaitUntilReady());
-    }
-    return embedded_test_server_.get();
   }
 
   void LoadHtml(const std::string& host, const std::string& content) {
@@ -263,14 +255,12 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 
   // Extraction should also fail for this case because the URL is not http.
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   GURL::Replacements replace_host;
   replace_host.SetHostStr("host.net");
-  GURL test_url = https_server.GetURL("/files/title1.html");
+  GURL test_url = https_server.GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(),
                                test_url.ReplaceComponents(replace_host));
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));

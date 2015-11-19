@@ -72,7 +72,7 @@ class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("components/test/data/dom_distiller");
     embedded_test_server()->ServeFilesFromDirectory(path);
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void DocumentLoadedInFrame(

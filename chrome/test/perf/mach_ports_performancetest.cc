@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
 namespace {
@@ -24,10 +24,8 @@ namespace {
 // which was the source of <http://crbug.com/105513>.
 class MachPortsTest : public InProcessBrowserTest {
  public:
-  MachPortsTest()
-      : server_(net::SpawnedTestServer::TYPE_HTTP,
-                net::SpawnedTestServer::kLocalhost,
-                base::FilePath(FILE_PATH_LITERAL("data/mach_ports/moz"))) {
+  MachPortsTest() {
+    server_.ServeFilesFromSourceDirectory("data/mach_ports/moz");
   }
 
   void SetUp() override {
@@ -74,12 +72,12 @@ class MachPortsTest : public InProcessBrowserTest {
 
   // Adds a tab from the page cycler data at the specified domain.
   void AddTab(const std::string& domain) {
-    GURL url = server_.GetURL("files/" + domain + "/").Resolve("?skip");
+    GURL url = server_.GetURL("/" + domain + "/").Resolve("?skip");
     AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
   }
 
  private:
-  net::SpawnedTestServer server_;
+  net::EmbeddedTestServer server_;
   std::vector<int> port_counts_;
 };
 

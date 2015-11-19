@@ -193,8 +193,8 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         "components/test/data/data_reduction_proxy/direct");
     proxy_.ServeFilesFromDirectory(proxy_file_path);
     direct_.ServeFilesFromDirectory(direct_file_path);
-    ASSERT_TRUE(proxy_.InitializeAndWaitUntilReady());
-    ASSERT_TRUE(direct_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(proxy_.Start());
+    ASSERT_TRUE(direct_.Start());
 
     test_context_ =
         DataReductionProxyTestContext::Builder()
@@ -227,17 +227,15 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     return context_;
   }
 
-  const net::test_server::EmbeddedTestServer& direct() {
-    return direct_;
-  }
+  const net::EmbeddedTestServer& direct() { return direct_; }
 
  private:
   base::MessageLoopForIO message_loop_;
   net::TestNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
-  net::test_server::EmbeddedTestServer proxy_;
-  net::test_server::EmbeddedTestServer direct_;
+  net::EmbeddedTestServer proxy_;
+  net::EmbeddedTestServer direct_;
   scoped_ptr<net::ProxyService> proxy_service_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;

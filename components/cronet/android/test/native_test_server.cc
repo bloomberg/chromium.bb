@@ -54,7 +54,7 @@ const char kSdchTestPath[] = "/sdch/test";
 // Path where dictionaries are stored.
 const char kSdchDictPath[] = "/sdch/dict/";
 
-net::test_server::EmbeddedTestServer* g_test_server = nullptr;
+net::EmbeddedTestServer* g_test_server = nullptr;
 
 scoped_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
     const base::FilePath& file_path) {
@@ -201,7 +201,7 @@ jboolean StartNativeTestServer(JNIEnv* env,
   // Shouldn't happen.
   if (g_test_server)
     return false;
-  g_test_server = new net::test_server::EmbeddedTestServer();
+  g_test_server = new net::EmbeddedTestServer();
   g_test_server->RegisterRequestHandler(
       base::Bind(&NativeTestServerRequestHandler));
   g_test_server->RegisterRequestHandler(base::Bind(&SdchRequestHandler));
@@ -211,7 +211,7 @@ jboolean StartNativeTestServer(JNIEnv* env,
   // Add a third handler for paths that NativeTestServerRequestHandler does not
   // handle.
   g_test_server->ServeFilesFromDirectory(test_files_root);
-  return g_test_server->InitializeAndWaitUntilReady();
+  return g_test_server->Start();
 }
 
 void RegisterHostResolverProc(JNIEnv* env,

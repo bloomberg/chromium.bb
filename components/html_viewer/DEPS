@@ -36,7 +36,7 @@ include_rules = [
   "+mojo/services/network",
   "+mojo/services/tracing/public",
   "+net/base",
-  "+net/test/spawned_test_server",
+  "+net/test/embedded_test_server",
   "+skia",
   "+third_party/WebKit/public",
   "+third_party/mojo_services/src",

@@ -137,10 +137,10 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
 
-  net::test_server::EmbeddedTestServer test_server;
+  net::EmbeddedTestServer test_server;
   test_server.ServeFilesFromDirectory(TestDataPath(
       "chrome/test/data/extensions/api_test/webrequest/declarative"));
-  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test_server.Start());
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
@@ -525,10 +525,10 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // Necessary for TestURLRequest.
   base::MessageLoopForIO message_loop;
 
-  net::test_server::EmbeddedTestServer test_server;
+  net::EmbeddedTestServer test_server;
   test_server.ServeFilesFromDirectory(TestDataPath(
       "chrome/test/data/extensions/api_test/webrequest/declarative"));
-  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test_server.Start());
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;

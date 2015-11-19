@@ -129,7 +129,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
     test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiRequestsTest::HandleChildrenDeleteRequest,
                    base::Unretained(this)));
@@ -183,7 +183,7 @@ class DriveApiRequestsTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   scoped_ptr<RequestSender> request_sender_;
   scoped_ptr<DriveApiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

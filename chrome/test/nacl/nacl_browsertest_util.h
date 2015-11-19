@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/javascript_test_observer.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 // A helper base class that decodes structured automation messages of the form:
 // {"type": type_name, ...}
@@ -103,7 +104,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
  private:
   bool StartTestServer();
 
-  scoped_ptr<net::SpawnedTestServer> test_server_;
+  scoped_ptr<net::EmbeddedTestServer> test_server_;
 };
 
 class NaClBrowserTestNewlib : public NaClBrowserTestBase {

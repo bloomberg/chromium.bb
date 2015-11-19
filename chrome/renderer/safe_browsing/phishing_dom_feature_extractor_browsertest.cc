@@ -84,7 +84,10 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
         GetWebContents()->GetRenderViewHost()->GetRoutingID();
     extractor_.reset(new PhishingDOMFeatureExtractor(&clock_));
 
-    ASSERT_TRUE(StartTestServer());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&PhishingDOMFeatureExtractorTest::HandleRequest,
+                   base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -132,15 +135,6 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
             "document.body.removeChild(document.getElementById('frame1'));"));
   }
 
-  bool StartTestServer() {
-    CHECK(!embedded_test_server_);
-    embedded_test_server_.reset(new net::test_server::EmbeddedTestServer());
-    embedded_test_server_->RegisterRequestHandler(
-        base::Bind(&PhishingDOMFeatureExtractorTest::HandleRequest,
-                   base::Unretained(this)));
-    return embedded_test_server_->InitializeAndWaitUntilReady();
-  }
-
   scoped_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     std::map<std::string, std::string>::const_iterator host_it =
@@ -167,7 +161,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     GURL::Replacements replace;
     replace.SetHostStr(host);
     replace.SetPathStr(path);
-    return embedded_test_server_->base_url().ReplaceComponents(replace);
+    return embedded_test_server()->base_url().ReplaceComponents(replace);
   }
 
   // Returns the URL that was loaded.
@@ -184,7 +178,6 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   // Any urls not in this map are served a 404 error.
   std::map<std::string, std::string> responses_;
 
-  scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
   MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
   bool success_;  // holds the success value from ExtractFeatures
@@ -204,10 +197,12 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
       std::string("http://cgi.host.com/submit"));
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://other.com/"));
-  expected_features.AddBooleanFeature(features::kPageActionURL +
-      std::string("http://host.com:") +
-      base::UintToString(embedded_test_server_->port()) +
-      std::string("/query"));
+
+  GURL url = embedded_test_server()->GetURL("/query");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host.com");
+  expected_features.AddBooleanFeature(
+      features::kPageActionURL + url.ReplaceComponents(replace_host).spec());
 
   FeatureMap features;
   LoadHtml(
@@ -281,18 +276,16 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   expected_features.AddBooleanFeature(features::kPageLinkDomain +
                                       std::string("chromium.org"));
 
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
   // so use a domain.
-  std::string url_str = "https://host.com:";
-  url_str += base::UintToString(https_server.host_port_pair().port());
-  url_str += "/files/safe_browsing/secure_link_features.html";
-  ui_test_utils::NavigateToURL(browser(), GURL(url_str));
+  GURL url = https_server.GetURL("/safe_browsing/secure_link_features.html");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host.com");
+  ui_test_utils::NavigateToURL(browser(), url.ReplaceComponents(replace_host));
 
   // Click through the certificate error interstitial.
   content::InterstitialPage* interstitial_page =
@@ -332,18 +325,17 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
   expected_features.AddRealFeature(features::kPageImgOtherDomainFreq, 0.5);
 
   features.Clear();
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
 
   // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
   // so use a domain.
-  std::string url_str = "https://host.com:";
-  url_str += base::UintToString(https_server.host_port_pair().port());
-  url_str += "/files/safe_browsing/secure_script_and_image.html";
-  ui_test_utils::NavigateToURL(browser(), GURL(url_str));
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/secure_script_and_image.html");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host.com");
+  ui_test_utils::NavigateToURL(browser(), url.ReplaceComponents(replace_host));
 
   // Click through the certificate error interstitial.
   content::InterstitialPage* interstitial_page =
@@ -361,7 +353,6 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
 
   // Test that features are aggregated across all frames.
 
-  std::string port = base::UintToString(embedded_test_server_->port());
   responses_[GetURL("host2.com", "").spec()] =
       "<html><head><script></script><body>"
       "<form action=\"http://host4.com/\"><input type=checkbox></form>"
@@ -402,15 +393,19 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
       std::string("http://host4.com/"));
 
   FeatureMap features;
+  GURL url = embedded_test_server()->GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host2.com");
+  GURL::Replacements replace_host_2;
+  replace_host_2.SetHostStr("host3.com");
+
   std::string html(
       "<html><body><input type=text><a href=\"info.html\">link</a>"
-      "<iframe src=\"http://host2.com:");
-  html += port;
-  html += std::string(
-      "/\"></iframe>"
-      "<iframe src=\"http://host3.com:");
-  html += port;
-  html += std::string("/\"></iframe></body></html>");
+      "<iframe src=\"");
+  html += url.ReplaceComponents(replace_host).spec();
+  html += std::string("\"></iframe><iframe src=\"");
+  html += url.ReplaceComponents(replace_host_2).spec();
+  html += std::string("\"></iframe></body></html>");
 
   LoadHtml("host.com", html);
   ASSERT_TRUE(ExtractFeatures(&features));
@@ -473,10 +468,11 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageHasForms);
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
-  expected_features.AddBooleanFeature(features::kPageActionURL +
-      std::string("http://host.com:") +
-      base::UintToString(embedded_test_server_->port()) +
-      std::string("/ondomain"));
+  GURL url = embedded_test_server()->GetURL("/ondomain");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("host.com");
+  expected_features.AddBooleanFeature(
+      features::kPageActionURL + url.ReplaceComponents(replace_host).spec());
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://host2.com/"));
 

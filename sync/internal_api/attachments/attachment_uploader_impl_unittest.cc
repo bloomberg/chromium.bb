@@ -224,7 +224,7 @@ class AttachmentUploaderImplTest : public testing::Test,
   scoped_ptr<RequestHandler> request_handler_;
   scoped_ptr<AttachmentUploader> uploader_;
   AttachmentUploader::UploadCallback upload_callback_;
-  net::test_server::EmbeddedTestServer server_;
+  net::EmbeddedTestServer server_;
   // A closure that signals an upload has finished.
   base::Closure signal_upload_done_;
   std::vector<HttpRequest> http_requests_received_;
@@ -282,7 +282,7 @@ void AttachmentUploaderImplTest::SetUp() {
   url_request_context_getter_ =
       new net::TestURLRequestContextGetter(message_loop_.task_runner());
 
-  ASSERT_TRUE(server_.InitializeAndWaitUntilReady());
+  ASSERT_TRUE(server_.Start());
   server_.RegisterRequestHandler(
       base::Bind(&RequestHandler::HandleRequest,
                  base::Unretained(request_handler_.get())));

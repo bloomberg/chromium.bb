@@ -210,7 +210,7 @@ bool NaClBrowserTestBase::IsAPnaclTest() {
 
 GURL NaClBrowserTestBase::TestURL(
     const base::FilePath::StringType& url_fragment) {
-  base::FilePath expanded_url = base::FilePath(FILE_PATH_LITERAL("files"));
+  base::FilePath expanded_url = base::FilePath(FILE_PATH_LITERAL("/"));
   expanded_url = expanded_url.Append(url_fragment);
   return test_server_->GetURL(expanded_url.MaybeAsASCII());
 }
@@ -259,10 +259,8 @@ bool NaClBrowserTestBase::StartTestServer() {
   base::FilePath document_root;
   if (!GetDocumentRoot(&document_root))
     return false;
-  test_server_.reset(new net::SpawnedTestServer(
-                         net::SpawnedTestServer::TYPE_HTTP,
-                         net::SpawnedTestServer::kLocalhost,
-                         document_root));
+  test_server_.reset(new net::EmbeddedTestServer);
+  test_server_->ServeFilesFromSourceDirectory(document_root);
   return test_server_->Start();
 }
 

@@ -8,7 +8,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/threading/thread.h"
 #include "net/http/http_response_headers.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
@@ -115,12 +115,10 @@ const char kUserAgent[] = "user-agent";
 class MAYBE_SyncHttpBridgeTest : public testing::Test {
  public:
   MAYBE_SyncHttpBridgeTest()
-      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
-                     base::FilePath(kDocRoot)),
-        fake_default_request_context_getter_(NULL),
+      : fake_default_request_context_getter_(NULL),
         bridge_for_race_test_(NULL),
         io_thread_("IO thread") {
+    test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
   void SetUp() override {
@@ -181,7 +179,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     return fake_default_request_context_getter_;
   }
 
-  net::SpawnedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
 
   base::Thread* io_thread() { return &io_thread_; }
 
@@ -310,7 +308,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
   std::string payload = "this should be echoed back";
-  GURL echo = test_server_.GetURL("echo");
+  GURL echo = test_server_.GetURL("/echo");
   http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
   http_bridge->SetPostPayload("application/x-www-form-urlencoded",
                               payload.length() + 1, payload.c_str());
@@ -334,7 +332,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
   std::string payload = "this should be echoed back";
-  GURL echo = test_server_.GetURL("echo");
+  GURL echo = test_server_.GetURL("/echo");
   http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
   http_bridge->SetPostPayload("application/x-www-form-urlencoded",
                               payload.length(), payload.c_str());
@@ -365,7 +363,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
-  GURL echo_header = test_server_.GetURL("echoall");
+  GURL echo_header = test_server_.GetURL("/echoall");
   http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
 
   std::string test_payload = "###TEST PAYLOAD###";
@@ -400,7 +398,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
-  GURL echo_header = test_server_.GetURL("echoall");
+  GURL echo_header = test_server_.GetURL("/echoall");
   http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
 
   std::string test_payload = "###TEST PAYLOAD###";
@@ -432,7 +430,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestExtraRequestHeaders) {
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
-  GURL echo_header = test_server_.GetURL("echoall");
+  GURL echo_header = test_server_.GetURL("/echoall");
 
   http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
   http_bridge->SetExtraRequestHeaders("test:fnord");
@@ -460,7 +458,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestResponseHeader) {
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
-  GURL echo_header = test_server_.GetURL("echoall");
+  GURL echo_header = test_server_.GetURL("/echoall");
   http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
 
   std::string test_payload = "###TEST PAYLOAD###";

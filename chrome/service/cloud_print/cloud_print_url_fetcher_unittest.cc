@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/service_process.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -330,46 +330,42 @@ void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
-  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTP,
-                                     net::SpawnedTestServer::kLocalhost,
-                                     base::FilePath(kDocRoot));
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   SetHandleRawResponse(true);
 
-  CreateFetcher(test_server.GetURL("echo"), 0);
+  CreateFetcher(test_server.GetURL("/echo"), 0);
   base::MessageLoop::current()->Run();
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
-  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTP,
-                                     net::SpawnedTestServer::kLocalhost,
-                                     base::FilePath(kDocRoot));
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   SetHandleRawData(true);
-  CreateFetcher(test_server.GetURL("echo"), 0);
+  CreateFetcher(test_server.GetURL("/echo"), 0);
   base::MessageLoop::current()->Run();
 }
 
 TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
-  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTP,
-                                     net::SpawnedTestServer::kLocalhost,
-                                     base::FilePath(kDocRoot));
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
-  GURL url(test_server.GetURL("defaultresponse"));
+  GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
   base::MessageLoop::current()->Run();
 }
 
 TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
-  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTP,
-                                     net::SpawnedTestServer::kLocalhost,
-                                     base::FilePath(kDocRoot));
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
-  GURL url(test_server.GetURL("defaultresponse"));
+  GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
   base::MessageLoop::current()->Run();

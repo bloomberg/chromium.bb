@@ -131,7 +131,7 @@ class FakeDatabaseManager
   bool MatchDownloadWhitelistUrl(const GURL& url) override {
     // This matches the behavior in RunTestViaHTTP().
     return url.SchemeIsHTTPOrHTTPS() && url.has_path() &&
-           url.path().find("/files/test_case.html") == 0;
+           url.path().find("/test_case.html") == 0;
   }
 
  protected:

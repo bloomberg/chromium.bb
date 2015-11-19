@@ -134,7 +134,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
         path.AppendASCII("components/test/data/dom_distiller"));
     embedded_test_server()->ServeFilesFromDirectory(
         path.AppendASCII("components/dom_distiller/core/javascript"));
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
  protected:

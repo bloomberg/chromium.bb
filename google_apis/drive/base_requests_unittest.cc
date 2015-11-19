@@ -115,7 +115,7 @@ class BaseRequestsTest : public testing::Test {
                                     message_loop_.task_runner(),
                                     std::string() /* custom user agent */));
 
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
     test_server_.RegisterRequestHandler(
         base::Bind(&BaseRequestsTest::HandleRequest, base::Unretained(this)));
   }
@@ -133,7 +133,7 @@ class BaseRequestsTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   scoped_ptr<RequestSender> sender_;
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
 
   net::HttpStatusCode response_code_;
   std::string response_body_;

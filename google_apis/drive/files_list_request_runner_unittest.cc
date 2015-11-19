@@ -73,7 +73,7 @@ class FilesListRequestRunnerTest : public testing::Test {
     test_server_.RegisterRequestHandler(
         base::Bind(&FilesListRequestRunnerTest::OnFilesListRequest,
                    base::Unretained(this), test_server_.base_url()));
-    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+    ASSERT_TRUE(test_server_.Start());
 
     runner_.reset(new FilesListRequestRunner(
         request_sender_.get(),
@@ -117,7 +117,7 @@ class FilesListRequestRunnerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   scoped_ptr<RequestSender> request_sender_;
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   scoped_ptr<FilesListRequestRunner> runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::Closure on_completed_callback_;
