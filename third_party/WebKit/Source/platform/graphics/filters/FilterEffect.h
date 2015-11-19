@@ -122,8 +122,9 @@ public:
     FloatRect filterPrimitiveSubregion() const { return m_filterPrimitiveSubregion; }
     void setFilterPrimitiveSubregion(const FloatRect& filterPrimitiveSubregion) { m_filterPrimitiveSubregion = filterPrimitiveSubregion; }
 
-    FloatRect effectBoundaries() const { return m_effectBoundaries; }
+    const FloatRect& effectBoundaries() const { return m_effectBoundaries; }
     void setEffectBoundaries(const FloatRect& effectBoundaries) { m_effectBoundaries = effectBoundaries; }
+    FloatRect applyEffectBoundaries(const FloatRect&) const;
 
     Filter* filter() { return m_filter; }
     const Filter* filter() const { return m_filter; }
