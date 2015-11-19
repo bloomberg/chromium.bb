@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
@@ -2282,7 +2283,7 @@ void Node::setCustomElementState(CustomElementState newState)
     setFlag(newState == Upgraded, CustomElementUpgradedFlag);
 
     if (oldState == NotCustomElement || newState == Upgraded)
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Unresolved)); // :unresolved has changed
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoUnresolved);
 }
 
 DEFINE_TRACE(Node)
