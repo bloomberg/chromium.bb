@@ -87,10 +87,6 @@ class NET_EXPORT URLRequestContextBuilder {
     std::string trusted_spdy_proxy;
     bool use_alternative_services;
     bool enable_quic;
-    bool quic_store_server_configs_in_properties;
-    bool quic_delay_tcp_race;
-    int quic_max_number_of_lossy_connections;
-    float quic_packet_loss_threshold;
     QuicTagVector quic_connection_options;
   };
 
@@ -194,27 +190,6 @@ class NET_EXPORT URLRequestContextBuilder {
       const QuicTagVector& quic_connection_options) {
     http_network_session_params_.quic_connection_options =
         quic_connection_options;
-  }
-
-  void set_quic_store_server_configs_in_properties(
-      bool quic_store_server_configs_in_properties) {
-    http_network_session_params_.quic_store_server_configs_in_properties =
-        quic_store_server_configs_in_properties;
-  }
-
-  void set_quic_delay_tcp_race(bool quic_delay_tcp_race) {
-    http_network_session_params_.quic_delay_tcp_race = quic_delay_tcp_race;
-  }
-
-  void set_quic_max_number_of_lossy_connections(
-      int quic_max_number_of_lossy_connections) {
-    http_network_session_params_.quic_max_number_of_lossy_connections =
-        quic_max_number_of_lossy_connections;
-  }
-
-  void set_quic_packet_loss_threshold(float quic_packet_loss_threshold) {
-    http_network_session_params_.quic_packet_loss_threshold =
-        quic_packet_loss_threshold;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {
