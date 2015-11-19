@@ -109,7 +109,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void ApplyAutofillOptions(std::vector<Suggestion>* suggestions);
 
   // Insert the data list values at the start of the given list, including
-  // any required separators.
+  // any required separators. Will also go through |suggestions| and remove
+  // duplicate autocomplete (not Autofill) suggestions, keeping their datalist
+  // version.
   void InsertDataListValues(std::vector<Suggestion>* suggestions);
 
   AutofillManager* manager_;  // weak.

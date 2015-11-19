@@ -292,6 +292,84 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
                                                data_list_items);
 }
 
+// Test that we _don't_ de-dupe autofill values against datalist values. We
+// keep both with a separator.
+TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutofillDatalistValues) {
+  IssueOnQuery(kQueryId);
+
+  std::vector<base::string16> data_list_items;
+  data_list_items.push_back(base::ASCIIToUTF16("Rick"));
+  data_list_items.push_back(base::ASCIIToUTF16("Deckard"));
+
+  EXPECT_CALL(autofill_client_, UpdateAutofillPopupDataListValues(
+                                    data_list_items, data_list_items));
+
+  external_delegate_->SetCurrentDataListValues(data_list_items,
+                                               data_list_items);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids =
+      testing::ElementsAre(static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+                           static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+#if !defined(OS_ANDROID)
+                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+                           kAutofillProfileId,
+#if !defined(OS_ANDROID)
+                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+                           static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
+  EXPECT_CALL(autofill_client_,
+              ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
+
+  // Have an Autofill item that is identical to one of the datalist entries.
+  std::vector<Suggestion> autofill_item;
+  autofill_item.push_back(Suggestion());
+  autofill_item[0].value = ASCIIToUTF16("Rick");
+  autofill_item[0].frontend_id = kAutofillProfileId;
+  ;
+  external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
+}
+
+// Test that we de-dupe autocomplete values against datalist values, keeping the
+// latter in case of a match.
+TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutocompleteDatalistValues) {
+  IssueOnQuery(kQueryId);
+
+  std::vector<base::string16> data_list_items;
+  data_list_items.push_back(base::ASCIIToUTF16("Rick"));
+  data_list_items.push_back(base::ASCIIToUTF16("Deckard"));
+
+  EXPECT_CALL(autofill_client_, UpdateAutofillPopupDataListValues(
+                                    data_list_items, data_list_items));
+
+  external_delegate_->SetCurrentDataListValues(data_list_items,
+                                               data_list_items);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids = testing::ElementsAre(
+      // We are expecting only two data list entries.
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      static_cast<int>(POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY));
+  EXPECT_CALL(autofill_client_,
+              ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
+
+  // Have an Autocomplete item that is identical to one of the datalist entries
+  // and one that is distinct.
+  std::vector<Suggestion> autocomplete_items;
+  autocomplete_items.push_back(Suggestion());
+  autocomplete_items[0].value = ASCIIToUTF16("Rick");
+  autocomplete_items[0].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
+  autocomplete_items.push_back(Suggestion());
+  autocomplete_items[1].value = ASCIIToUTF16("Cain");
+  autocomplete_items[1].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
+  external_delegate_->OnSuggestionsReturned(kQueryId, autocomplete_items);
+}
+
 // Test that the Autofill popup is able to display warnings explaining why
 // Autofill is disabled for a website.
 // Regression test for http://crbug.com/247880

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -309,9 +310,22 @@ void AutofillExternalDelegate::InsertDataListValues(
   if (data_list_values_.empty())
     return;
 
+  // Go through the list of autocomplete values and remove them if they are in
+  // the list of datalist values.
+  std::set<base::string16> data_list_set(data_list_values_.begin(),
+                                         data_list_values_.end());
+  suggestions->erase(
+      std::remove_if(suggestions->begin(), suggestions->end(),
+                     [&data_list_set](const Suggestion& suggestion) {
+                       return suggestion.frontend_id ==
+                                  POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
+                              ContainsKey(data_list_set, suggestion.value);
+                     }),
+      suggestions->end());
+
 #if !defined(OS_ANDROID)
-  // Insert the separator between the datalist and Autofill values (if there
-  // are any).
+  // Insert the separator between the datalist and Autofill/Autocomplete values
+  // (if there are any).
   if (!suggestions->empty()) {
     suggestions->insert(suggestions->begin(), Suggestion());
     (*suggestions)[0].frontend_id = POPUP_ITEM_ID_SEPARATOR;
