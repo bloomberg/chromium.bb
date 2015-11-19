@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.webkit.MimeTypeMap;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -83,6 +84,17 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_SHARE_IMAGE = 19;
         static final int NUM_ACTIONS = 20;
 
+        // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
+        // Only add new values at the end, right before NUM_TYPES. We depend on these specific
+        // values in UMA histograms.
+        static final int TYPE_UNKNWON = 0;
+        static final int TYPE_TEXT = 1;
+        static final int TYPE_IMAGE = 2;
+        static final int TYPE_AUDIO = 3;
+        static final int TYPE_VIDEO = 4;
+        static final int TYPE_PDF = 5;
+        static final int NUM_TYPES = 6;
+
         /**
          * Records a histogram entry when the user selects an item from a context menu.
          * @param params The ContextMenuParams describing the current context menu.
@@ -103,6 +115,33 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 histogramName = "ContextMenu.SelectedOption.Link";
             }
             RecordHistogram.recordEnumeratedHistogram(histogramName, action, NUM_ACTIONS);
+        }
+
+        /**
+         * Records the content types when user downloads the file by long pressing the
+         * save link context menu option.
+         */
+        static void recordSaveLinkTypes(String url) {
+            String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+            int mimeType = TYPE_UNKNWON;
+            if (extension != null) {
+                String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+                if (type != null) {
+                    if (type.startsWith("text")) {
+                        mimeType = TYPE_TEXT;
+                    } else if (type.startsWith("image")) {
+                        mimeType = TYPE_IMAGE;
+                    } else if (type.startsWith("audio")) {
+                        mimeType = TYPE_AUDIO;
+                    } else if (type.startsWith("video")) {
+                        mimeType = TYPE_VIDEO;
+                    } else if (type.equals("application/pdf")) {
+                        mimeType = TYPE_PDF;
+                    }
+                }
+            }
+            RecordHistogram.recordEnumeratedHistogram(
+                    "ContextMenu.SaveLinkType", mimeType, NUM_TYPES);
         }
     }
 
@@ -280,7 +319,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
         } else if (itemId == R.id.contextmenu_save_link_as) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SAVE_LINK);
-            if (mDelegate.startDownload(params.getUnfilteredLinkUrl(), true)) {
+            String url = params.getUnfilteredLinkUrl();
+            if (mDelegate.startDownload(url, true)) {
+                ContextMenuUma.recordSaveLinkTypes(url);
                 helper.startContextMenuDownload(true, false);
             }
         } else if (itemId == R.id.contextmenu_search_by_image) {
