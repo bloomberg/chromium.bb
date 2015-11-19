@@ -945,6 +945,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
 
+TEST_PPAPI_NACL(AudioEncoder)
+
 // PPB_Audio tests.
 #define RUN_AUDIO_SUBTESTS \
   RunTestViaHTTP( \

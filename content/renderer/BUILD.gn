@@ -183,6 +183,7 @@ source_set("renderer") {
       "//ppapi/proxy",
       "//ppapi/shared_impl",
       "//third_party/libvpx_new",
+      "//third_party/opus",
     ]
   }
 

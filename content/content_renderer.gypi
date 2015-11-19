@@ -505,6 +505,8 @@
       'renderer/pepper/host_var_tracker.h',
       'renderer/pepper/message_channel.cc',
       'renderer/pepper/message_channel.h',
+      'renderer/pepper/pepper_audio_encoder_host.cc',
+      'renderer/pepper/pepper_audio_encoder_host.h',
       'renderer/pepper/pepper_audio_input_host.cc',
       'renderer/pepper/pepper_audio_input_host.h',
       'renderer/pepper/pepper_broker.cc',
@@ -898,6 +900,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
+        '../third_party/opus/opus.gyp:opus',
       ],
     }],
     ['enable_pepper_cdms != 1', {

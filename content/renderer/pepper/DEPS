@@ -8,6 +8,7 @@ include_rules = [
   "+media/video",
   "+third_party/libvpx_new",
   "+third_party/libyuv",
+  "+third_party/opus",
   "+ui/base/ime",
   "+ui/base/range",
 ]
