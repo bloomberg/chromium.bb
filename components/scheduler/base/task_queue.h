@@ -10,6 +10,7 @@
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
+class TimeDomain;
 
 class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
@@ -102,6 +103,7 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
           should_monitor_quiescence(false),
           pump_policy(TaskQueue::PumpPolicy::AUTO),
           wakeup_policy(TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES),
+          time_domain(nullptr),
           should_notify_observers(true) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
@@ -124,10 +126,16 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
+    Spec SetTimeDomain(TimeDomain* domain) {
+      time_domain = domain;
+      return *this;
+    }
+
     const char* name;
     bool should_monitor_quiescence;
     TaskQueue::PumpPolicy pump_policy;
     TaskQueue::WakeupPolicy wakeup_policy;
+    TimeDomain* time_domain;
     bool should_notify_observers;
   };
 
@@ -172,6 +180,10 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       base::MessageLoop::TaskObserver* task_observer) = 0;
   virtual void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) = 0;
+
+  // Removes the task queue from the previous TimeDomain and adds it to
+  // |domain|.  This is a moderately expensive operation.
+  virtual void SetTimeDomain(const scoped_refptr<TimeDomain>& domain) = 0;
 
  protected:
   ~TaskQueue() override {}

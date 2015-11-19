@@ -8,13 +8,10 @@
 #include "components/scheduler/base/task_queue_manager.h"
 
 namespace scheduler {
-namespace internal {
-
 base::TimeTicks LazyNow::Now() {
   if (now_.is_null())
     now_ = tick_clock_->NowTicks();
   return now_;
 }
 
-}  // namespace internal
 }  // namespace scheduler

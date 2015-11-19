@@ -10,12 +10,14 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/task_queue_sets.h"
 #include "components/scheduler/base/test_always_fail_time_source.h"
 #include "components/scheduler/base/test_time_source.h"
+#include "components/scheduler/base/virtual_time_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -71,6 +73,7 @@ class TaskQueueManagerTest : public testing::Test {
   }
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
+    now_src_.reset(new base::SimpleTestTickClock());
     message_loop_.reset(new base::MessageLoop());
     manager_ = make_scoped_ptr(new TaskQueueManager(
         MessageLoopTaskRunner::Create(
@@ -897,47 +900,49 @@ TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
   EXPECT_TRUE(runners_[0]->RunsTasksOnCurrentThread());
 }
 
-TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime) {
+TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime) {
   Initialize(2u);
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10000));
 
   // With no delayed tasks.
-  EXPECT_TRUE(manager_->NextPendingDelayedTaskRunTime().is_null());
+  base::TimeTicks run_time;
+  EXPECT_FALSE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
 
   // With a non-delayed task.
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
-  EXPECT_TRUE(manager_->NextPendingDelayedTaskRunTime().is_null());
+  EXPECT_FALSE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
 
   // With a delayed task.
   base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(50);
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(now_src_->NowTicks() + expected_delay,
-            manager_->NextPendingDelayedTaskRunTime());
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks() + expected_delay, run_time);
 
   // With another delayed task in the same queue with a longer delay.
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
                                base::TimeDelta::FromMilliseconds(100));
-  EXPECT_EQ(now_src_->NowTicks() + expected_delay,
-            manager_->NextPendingDelayedTaskRunTime());
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks() + expected_delay, run_time);
 
   // With another delayed task in the same queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(20);
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(now_src_->NowTicks() + expected_delay,
-            manager_->NextPendingDelayedTaskRunTime());
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks() + expected_delay, run_time);
 
   // With another delayed task in a different queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(10);
   runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), expected_delay);
-  EXPECT_EQ(now_src_->NowTicks() + expected_delay,
-            manager_->NextPendingDelayedTaskRunTime());
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks() + expected_delay, run_time);
 
   // Test it updates as time progresses
   now_src_->Advance(expected_delay);
-  EXPECT_EQ(now_src_->NowTicks(), manager_->NextPendingDelayedTaskRunTime());
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks(), run_time);
 }
 
-TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
+TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime_MultipleQueues) {
   Initialize(3u);
 
   base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(50);
@@ -946,9 +951,11 @@ TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay1);
   runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay2);
   runners_[2]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay3);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
-  EXPECT_EQ(now_src_->NowTicks() + delay2,
-            manager_->NextPendingDelayedTaskRunTime());
+  base::TimeTicks run_time;
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(now_src_->NowTicks() + delay2, run_time);
 }
 
 TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
@@ -1374,6 +1381,81 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
   message_loop_->RunUntilIdle();
 
   EXPECT_THAT(log, ElementsAre(false, false, true));
+}
+
+TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
+  Initialize(2u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+  scoped_refptr<VirtualTimeDomain> domain_a(new VirtualTimeDomain(start_time));
+  scoped_refptr<VirtualTimeDomain> domain_b(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_a);
+  manager_->RegisterTimeDomain(domain_b);
+  runners_[0]->SetTimeDomain(domain_a);
+  runners_[1]->SetTimeDomain(domain_b);
+
+  std::vector<int> run_order;
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                               base::TimeDelta::FromMilliseconds(10));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                               base::TimeDelta::FromMilliseconds(20));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
+                               base::TimeDelta::FromMilliseconds(30));
+
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order),
+                               base::TimeDelta::FromMilliseconds(10));
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 5, &run_order),
+                               base::TimeDelta::FromMilliseconds(20));
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 6, &run_order),
+                               base::TimeDelta::FromMilliseconds(30));
+
+  domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(4, 5, 6));
+
+  domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
+
+  manager_->UnregisterTimeDomain(domain_a);
+  manager_->UnregisterTimeDomain(domain_b);
+}
+
+TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+  scoped_refptr<VirtualTimeDomain> domain_a(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_a);
+  runners_[0]->SetTimeDomain(domain_a);
+
+  std::vector<int> run_order;
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                               base::TimeDelta::FromMilliseconds(10));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                               base::TimeDelta::FromMilliseconds(20));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
+                               base::TimeDelta::FromMilliseconds(30));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order),
+                               base::TimeDelta::FromMilliseconds(40));
+
+  domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(20));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+
+  scoped_refptr<VirtualTimeDomain> domain_b(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_b);
+  runners_[0]->SetTimeDomain(domain_b);
+
+  domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+
+  manager_->UnregisterTimeDomain(domain_a);
+  manager_->UnregisterTimeDomain(domain_b);
 }
 
 }  // namespace scheduler

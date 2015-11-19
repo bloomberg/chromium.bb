@@ -6,17 +6,19 @@
 
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
+#include "components/scheduler/base/time_domain.h"
 
 namespace scheduler {
 namespace internal {
 
 TaskQueueImpl::TaskQueueImpl(
     TaskQueueManager* task_queue_manager,
+    const scoped_refptr<TimeDomain>& time_domain,
     const Spec& spec,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
     : thread_id_(base::PlatformThread::CurrentId()),
-      any_thread_(task_queue_manager, spec.pump_policy),
+      any_thread_(task_queue_manager, spec.pump_policy, time_domain),
       name_(spec.name),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -25,7 +27,9 @@ TaskQueueImpl::TaskQueueImpl(
       main_thread_only_(task_queue_manager),
       wakeup_policy_(spec.wakeup_policy),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
-      should_notify_observers_(spec.should_notify_observers) {}
+      should_notify_observers_(spec.should_notify_observers) {
+  DCHECK(time_domain.get());
+}
 
 TaskQueueImpl::~TaskQueueImpl() {}
 
@@ -53,9 +57,13 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
   sequence_num = sequence_number;
 }
 
-TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
-                                    PumpPolicy pump_policy)
-    : task_queue_manager(task_queue_manager), pump_policy(pump_policy) {}
+TaskQueueImpl::AnyThread::AnyThread(
+    TaskQueueManager* task_queue_manager,
+    PumpPolicy pump_policy,
+    const scoped_refptr<TimeDomain>& time_domain)
+    : task_queue_manager(task_queue_manager),
+      pump_policy(pump_policy),
+      time_domain(time_domain) {}
 
 TaskQueueImpl::AnyThread::~AnyThread() {}
 
@@ -70,6 +78,8 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return;
+  any_thread().time_domain->UnregisterQueue(this);
+  any_thread().time_domain = nullptr;
   any_thread().task_queue_manager->UnregisterTaskQueue(this);
 
   any_thread().task_queue_manager = nullptr;
@@ -104,7 +114,7 @@ bool TaskQueueImpl::PostDelayedTaskAt(
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return false;
-  LazyNow lazy_now(any_thread().task_queue_manager->delegate().get());
+  LazyNow lazy_now(any_thread().time_domain->CreateLazyNow());
   return PostDelayedTaskLocked(&lazy_now, from_here, task, desired_run_time,
                                TaskType::NORMAL);
 }
@@ -117,7 +127,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return false;
-  LazyNow lazy_now(any_thread().task_queue_manager->delegate().get());
+  LazyNow lazy_now(any_thread().time_domain->CreateLazyNow());
   base::TimeTicks desired_run_time;
   if (delay > base::TimeDelta())
     desired_run_time = lazy_now.Now() + delay;
@@ -143,13 +153,35 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
     any_thread().delayed_task_queue.push(pending_task);
     TraceQueueSize(true);
     // Schedule a later call to MoveReadyDelayedTasksToIncomingQueue.
-    any_thread().task_queue_manager->ScheduleDelayedWork(this, desired_run_time,
-                                                         lazy_now);
+    if (base::PlatformThread::CurrentId() == thread_id_) {
+      any_thread().time_domain->ScheduleDelayedWork(this, desired_run_time,
+                                                    lazy_now);
+    } else {
+      // NOTE posting a delayed task from a different thread is not expected to
+      // be common. This pathway is less optimal than perhaps it could be
+      // because it causes two main thread tasks to be run.  Should this
+      // assumption prove to be false in future, we may need to revisit this.
+      Task thread_hop_task(
+          FROM_HERE, base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask, this,
+                                any_thread().time_domain, desired_run_time),
+          any_thread().task_queue_manager->GetNextSequenceNumber(), true);
+      any_thread().task_queue_manager->DidQueueTask(thread_hop_task);
+      pending_task.set_enqueue_order(thread_hop_task.sequence_num);
+      EnqueueTaskLocked(thread_hop_task);
+    }
     return true;
   }
   pending_task.set_enqueue_order(pending_task.sequence_num);
   EnqueueTaskLocked(pending_task);
   return true;
+}
+
+void TaskQueueImpl::ScheduleDelayedWorkTask(
+    const scoped_refptr<TimeDomain> time_domain,
+    base::TimeTicks desired_run_time) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  LazyNow lazy_now(time_domain->CreateLazyNow());
+  time_domain->ScheduleDelayedWork(this, desired_run_time, &lazy_now);
 }
 
 void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now) {
@@ -222,16 +254,6 @@ bool TaskQueueImpl::ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
   return true;
 }
 
-bool TaskQueueImpl::NextPendingDelayedTaskRunTime(
-    base::TimeTicks* next_pending_delayed_task) {
-  base::AutoLock lock(any_thread_lock_);
-  if (any_thread().delayed_task_queue.empty())
-    return false;
-  *next_pending_delayed_task =
-      any_thread().delayed_task_queue.top().delayed_run_time;
-  return true;
-}
-
 void TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
                                     bool should_trigger_wakeup,
                                     const Task* previous_task) {
@@ -241,10 +263,9 @@ void TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
     return;
   MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
   std::swap(main_thread_only().work_queue, any_thread().incoming_queue);
-  // |any_thread().incoming_queue| is now empty so
-  // TaskQueueManager::UpdateQueues no longer needs to consider
-  // this queue for reloading.
-  any_thread().task_queue_manager->UnregisterAsUpdatableTaskQueue(this);
+  // |any_thread().incoming_queue| is now empty so TimeDomain::UpdateQueues
+  // no longer needs to consider this queue for reloading.
+  any_thread().time_domain->UnregisterAsUpdatableTaskQueue(this);
   if (!main_thread_only().work_queue.empty()) {
     DCHECK(any_thread().task_queue_manager);
     any_thread().task_queue_manager->selector_.GetTaskQueueSets()->OnPushQueue(
@@ -287,7 +308,7 @@ void TaskQueueImpl::EnqueueTaskLocked(const Task& pending_task) {
   if (!any_thread().task_queue_manager)
     return;
   if (any_thread().incoming_queue.empty())
-    any_thread().task_queue_manager->RegisterAsUpdatableTaskQueue(this);
+    any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
   if (any_thread().pump_policy == PumpPolicy::AUTO &&
       any_thread().incoming_queue.empty()) {
     any_thread().task_queue_manager->MaybePostDoWorkOnMainRunner();
@@ -297,11 +318,17 @@ void TaskQueueImpl::EnqueueTaskLocked(const Task& pending_task) {
   TraceQueueSize(true);
 }
 
+// TODO(alexclarke): Consider merging EnqueueTaskLocked &
+//  EnqueueDelayedTaskLocked.
 void TaskQueueImpl::EnqueueDelayedTaskLocked(const Task& pending_task) {
   if (!any_thread().task_queue_manager)
     return;
   if (any_thread().incoming_queue.empty())
-    any_thread().task_queue_manager->RegisterAsUpdatableTaskQueue(this);
+    any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
+  if (any_thread().pump_policy == PumpPolicy::AUTO &&
+      any_thread().incoming_queue.empty()) {
+    any_thread().task_queue_manager->MaybePostDoWorkOnMainRunner();
+  }
   // TODO(alexclarke): consider std::move() when allowed.
   any_thread().incoming_queue.push(pending_task);
   any_thread().incoming_queue.back().set_enqueue_order(
@@ -322,7 +349,7 @@ void TaskQueueImpl::PumpQueueLocked() {
   if (!any_thread().task_queue_manager)
     return;
 
-  LazyNow lazy_now(any_thread().task_queue_manager->delegate().get());
+  LazyNow lazy_now(any_thread().time_domain->CreateLazyNow());
   MoveReadyDelayedTasksToIncomingQueueLocked(&lazy_now);
 
   bool was_empty = main_thread_only().work_queue.empty();
@@ -331,9 +358,9 @@ void TaskQueueImpl::PumpQueueLocked() {
     main_thread_only().work_queue.push(any_thread().incoming_queue.front());
     any_thread().incoming_queue.pop();
   }
-  // |incoming_queue| is now empty so TaskQueueManager::UpdateQueues no longer
-  // needs to consider this queue for reloading.
-  any_thread().task_queue_manager->UnregisterAsUpdatableTaskQueue(this);
+  // |incoming_queue| is now empty so TimeDomain::UpdateQueues no longer needs
+  // to consider this queue for reloading.
+  any_thread().time_domain->UnregisterAsUpdatableTaskQueue(this);
   if (!main_thread_only().work_queue.empty()) {
     if (was_empty) {
       any_thread()
@@ -430,6 +457,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
+  state->SetString("time_domain_name", any_thread().time_domain->GetName());
   state->SetString("pump_policy", PumpPolicyToString(any_thread().pump_policy));
   state->SetString("wakeup_policy", WakeupPolicyToString(wakeup_policy_));
   bool verbose_tracing_enabled = false;
@@ -481,6 +509,17 @@ void TaskQueueImpl::NotifyDidProcessTask(
                     DidProcessTask(pending_task));
 }
 
+void TaskQueueImpl::SetTimeDomain(
+    const scoped_refptr<TimeDomain>& time_domain) {
+  base::AutoLock lock(any_thread_lock_);
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (time_domain == any_thread().time_domain)
+    return;
+
+  any_thread().time_domain->MigrateQueue(this, time_domain.get());
+  any_thread().time_domain = time_domain;
+}
+
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {
@@ -514,6 +553,11 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
       "delayed_run_time",
       (task.delayed_run_time - base::TimeTicks()).InMicroseconds() / 1000.0L);
   state->EndDictionary();
+}
+
+size_t TaskQueueImpl::IncomingQueueSizeForTest() const {
+  base::AutoLock lock(any_thread_lock_);
+  return any_thread().incoming_queue.size();
 }
 
 }  // namespace internal

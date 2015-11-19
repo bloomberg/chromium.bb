@@ -48,6 +48,7 @@ source_set("unit_tests") {
     "base/test_always_fail_time_source.h",
     "base/test_time_source.cc",
     "base/test_time_source.h",
+    "base/time_domain_unittest.cc",
     "child/idle_helper_unittest.cc",
     "child/scheduler_helper_unittest.cc",
     "child/scheduler_tqm_delegate_for_test.cc",
