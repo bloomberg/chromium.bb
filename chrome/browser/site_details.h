@@ -45,6 +45,10 @@ struct SiteData {
 
   // Global list of all SiteInstances, used for de-duping related instances.
   std::vector<content::SiteInstance*> instances;
+
+  // A count of all RenderFrameHosts, which are in a different SiteInstance from
+  // their parents.
+  int out_of_process_frames;
 };
 
 // Maps a BrowserContext to information about the sites it contains.

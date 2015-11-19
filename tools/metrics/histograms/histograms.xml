@@ -44252,6 +44252,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.OutOfProcessIframes">
+  <owner>nasko@chromium.org</owner>
+  <summary>
+    The count of all out-of-process iframes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.XSD.DataLength" units="byte">
   <owner>creis@chromium.org</owner>
   <summary>

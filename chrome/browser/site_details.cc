@@ -105,13 +105,20 @@ void CollectForScenario(std::map<RenderFrameHost*, GURL>* frame_urls,
   (*frame_urls)[frame] = site;
 }
 
+void CollectCurrentSnapshot(SiteData* site_data, RenderFrameHost* frame) {
+  if (frame->GetParent()) {
+    if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
+      site_data->out_of_process_frames++;
+  }
+}
+
 }  // namespace
 
 IsolationScenario::IsolationScenario() : policy(ISOLATE_ALL_SITES) {}
 
 IsolationScenario::~IsolationScenario() {}
 
-SiteData::SiteData() {
+SiteData::SiteData() : out_of_process_frames(0) {
   for (int i = 0; i <= ISOLATION_SCENARIO_LAST; i++)
     scenarios[i].policy = static_cast<IsolationScenarioType>(i);
 }
@@ -149,6 +156,9 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
         base::Bind(&CollectForScenario, base::Unretained(&memo),
                    base::Unretained(primary), base::Unretained(&scenario)));
   }
+
+  contents->ForEachFrame(
+      base::Bind(&CollectCurrentSnapshot, base::Unretained(site_data)));
 }
 
 void SiteDetails::UpdateHistograms(
@@ -158,10 +168,12 @@ void SiteDetails::UpdateHistograms(
   // Reports a set of site-based process metrics to UMA.
   int process_limit = RenderProcessHost::GetMaxRendererProcessCount();
 
-  // Sum the number of sites and SiteInstances in each BrowserContext.
+  // Sum the number of sites and SiteInstances in each BrowserContext and
+  // the total number of out-of-process iframes.
   int num_sites[ISOLATION_SCENARIO_LAST + 1] = {};
   int num_isolated_site_instances[ISOLATION_SCENARIO_LAST + 1] = {};
   int num_browsing_instances = 0;
+  int num_oopifs = 0;
   for (BrowserContextSiteDataMap::const_iterator i = site_data_map.begin();
        i != site_data_map.end(); ++i) {
     for (const IsolationScenario& scenario : i->second.scenarios) {
@@ -173,6 +185,7 @@ void SiteDetails::UpdateHistograms(
     }
     num_browsing_instances += i->second.scenarios[ISOLATE_ALL_SITES]
                                   .browsing_instance_site_map.size();
+    num_oopifs += i->second.out_of_process_frames;
   }
 
   // Predict the number of processes needed when isolating all sites, when
@@ -193,6 +206,7 @@ void SiteDetails::UpdateHistograms(
   UMA_HISTOGRAM_COUNTS_100(
       "SiteIsolation.BrowsingInstanceCount",
       num_browsing_instances);
+  UMA_HISTOGRAM_COUNTS_100("SiteIsolation.OutOfProcessIframes", num_oopifs);
 
   // ISOLATE_NOTHING metrics.
   UMA_HISTOGRAM_COUNTS_100("SiteIsolation.IsolateNothingProcessCountNoLimit",
