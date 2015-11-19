@@ -54,9 +54,12 @@ Panel.init = function() {
     Panel.exec(/** @type {PanelCommand} */(command));
   }, false);
 
-  $('menu').addEventListener('click', Panel.onMenu, false);
   $('options').addEventListener('click', Panel.onOptions, false);
   $('close').addEventListener('click', Panel.onClose, false);
+
+  // The ChromeVox menu isn't fully implemented yet, disable it.
+  $('menu').disabled = true;
+  $('triangle').style.display = 'none';
 
   Msgs.addTranslatedMessagesToDom(document);
 };
@@ -118,14 +121,6 @@ Panel.exec = function(command) {
       this.brailleCellsElement_.textContent = command.data.braille;
       break;
   }
-};
-
-/**
- * Open the ChromeVox Menu.
- */
-Panel.onMenu = function() {
-  window.location = '#fullscreen';
-  // TODO(dmazzoni): implement the menu UI here.
 };
 
 /**
