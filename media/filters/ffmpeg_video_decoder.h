@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_pool.h"
@@ -30,7 +29,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
  public:
   static bool IsCodecSupported(VideoCodec codec);
 
-  FFmpegVideoDecoder();
+  explicit FFmpegVideoDecoder(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~FFmpegVideoDecoder() override;
 
   // Allow decoding of individual NALU. Entire frames are required by default.
@@ -75,7 +75,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   // and resets them to NULL.
   void ReleaseFFmpegResources();
 
-  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DecoderState state_;
 

@@ -236,7 +236,8 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-  video_decoders.push_back(new FFmpegVideoDecoder());
+  video_decoders.push_back(
+      new FFmpegVideoDecoder(message_loop_.task_runner()));
 #endif
 
   // Simulate a 60Hz rendering sink.

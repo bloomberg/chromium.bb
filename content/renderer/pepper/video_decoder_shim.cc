@@ -697,7 +697,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   {
     scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
-        new media::FFmpegVideoDecoder());
+        new media::FFmpegVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = ffmpeg_video_decoder.Pass();
   }

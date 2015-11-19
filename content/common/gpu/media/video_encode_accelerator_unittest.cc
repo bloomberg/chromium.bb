@@ -639,7 +639,8 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
     const base::Closure& flush_complete_cb,
     const base::Closure& decode_error_cb)
     : profile_(profile),
-      decoder_(new media::FFmpegVideoDecoder()),
+      decoder_(new media::FFmpegVideoDecoder(base::MessageLoop::current()
+                                                 ->task_runner())),
       decode_cb_(base::Bind(&VideoFrameQualityValidator::DecodeDone,
                             base::Unretained(this))),
       eos_decode_cb_(base::Bind(&VideoFrameQualityValidator::FlushDone,

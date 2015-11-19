@@ -72,10 +72,10 @@ bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
   return avcodec_find_decoder(VideoCodecToCodecID(codec)) != nullptr;
 }
 
-FFmpegVideoDecoder::FFmpegVideoDecoder()
-    : state_(kUninitialized), decode_nalus_(false) {
-  thread_checker_.DetachFromThread();
-}
+FFmpegVideoDecoder::FFmpegVideoDecoder(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner), state_(kUninitialized),
+      decode_nalus_(false) {}
 
 int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
                                        AVFrame* frame,
@@ -168,7 +168,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     const SetCdmReadyCB& /* set_cdm_ready_cb */,
                                     const InitCB& init_cb,
                                     const OutputCB& output_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
   DCHECK(!output_cb.is_null());
 
@@ -198,7 +198,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
 void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                 const DecodeCB& decode_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(buffer.get());
   DCHECK(!decode_cb.is_null());
   CHECK_NE(state_, kUninitialized);
@@ -258,16 +258,15 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 }
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
-  // PostTask() to avoid calling |closure| inmediately.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+  task_runner_->PostTask(FROM_HERE, closure);
 }
 
 FFmpegVideoDecoder::~FFmpegVideoDecoder() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ != kUninitialized)
     ReleaseFFmpegResources();
