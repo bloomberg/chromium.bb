@@ -193,14 +193,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     }
 
     if (enable_webrtc) {
-      deps += [
-        # TODO(GYP): crbug.com/481633. We should probably not have to depend on
-        # libjingle_webrtc; that should be pulled in automatically by
-        # libpeerconnection instead.
-        "//third_party/libjingle:libjingle_webrtc",
-        "//third_party/libjingle:libpeerconnection",
-        "//third_party/webrtc/modules/desktop_capture",
-      ]
+      deps += [ "//third_party/webrtc/modules/desktop_capture" ]
 
       sources +=
           rebase_path(remoting_host_srcs_gypi_values.remoting_cast_sources,

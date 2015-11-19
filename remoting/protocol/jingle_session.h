@@ -77,6 +77,7 @@ class JingleSession : public base::NonThreadSafe,
     scoped_ptr<buzz::XmlElement> transport_info) override;
   void OnTransportRouteChange(const std::string& component,
                               const TransportRoute& route) override;
+  void OnTransportConnected() override;
   void OnTransportError(ErrorCode error) override;
 
   // Response handler for transport-info responses. Transport-info timeouts are

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//remoting/remoting_srcs.gni")
 
 source_set("protocol") {
@@ -35,6 +36,18 @@ source_set("protocol") {
       "chromium_port_allocator_factory.cc",
       "chromium_socket_factory.cc",
     ]
+  }
+
+  if (!is_nacl && enable_webrtc) {
+    deps += [
+      # TODO(GYP): crbug.com/481633. We should probably not have to depend on
+      # libjingle_webrtc; that should be pulled in automatically by
+      # libpeerconnection instead.
+      "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/libjingle:libpeerconnection",
+    ]
+  } else {
+    sources -= [ "webrtc_transport.cc" ]
   }
 }
 
@@ -95,6 +108,7 @@ source_set("unit_tests") {
     "ssl_hmac_channel_authenticator_unittest.cc",
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
+    "webrtc_transport_unittest.cc",
   ]
 
   deps = [

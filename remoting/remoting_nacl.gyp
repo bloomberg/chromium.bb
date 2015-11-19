@@ -125,6 +125,7 @@
         'base/url_request_context_getter.cc',
         'protocol/chromium_socket_factory.cc',
         'protocol/chromium_port_allocator_factory.cc',
+        'protocol/webrtc_transport.cc',
       ],
 
       # Include normalizing_input_filter_*.cc excluded by the filename

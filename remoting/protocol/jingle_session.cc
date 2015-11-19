@@ -277,6 +277,8 @@ void JingleSession::Close(protocol::ErrorCode error) {
 }
 
 void JingleSession::SendMessage(const JingleMessage& message) {
+  DCHECK(CalledOnValidThread());
+
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&JingleSession::OnMessageResponse,
@@ -301,6 +303,8 @@ void JingleSession::OnMessageResponse(
     JingleMessage::ActionType request_type,
     IqRequest* request,
     const buzz::XmlElement* response) {
+  DCHECK(CalledOnValidThread());
+
   // Delete the request from the list of pending requests.
   pending_requests_.erase(request);
   delete request;
@@ -333,6 +337,8 @@ void JingleSession::OnMessageResponse(
 
 void JingleSession::OnOutgoingTransportInfo(
     scoped_ptr<XmlElement> transport_info) {
+  DCHECK(CalledOnValidThread());
+
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.transport_info = transport_info.Pass();
 
@@ -349,15 +355,27 @@ void JingleSession::OnOutgoingTransportInfo(
 
 void JingleSession::OnTransportRouteChange(const std::string& channel_name,
                                            const TransportRoute& route) {
+  DCHECK(CalledOnValidThread());
+
   event_handler_->OnSessionRouteChange(channel_name, route);
 }
 
+void JingleSession::OnTransportConnected() {
+  DCHECK(CalledOnValidThread());
+
+  // TODO(sergeyu): Add Session::State value to indicate that the transport has
+  // been connected.
+}
+
 void JingleSession::OnTransportError(ErrorCode error) {
+  DCHECK(CalledOnValidThread());
+
   Close(error);
 }
 
 void JingleSession::OnTransportInfoResponse(IqRequest* request,
                                             const buzz::XmlElement* response) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!transport_info_requests_.empty());
 
   // Consider transport-info requests sent before this one lost and delete

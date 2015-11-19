@@ -67,6 +67,9 @@ class Transport {
     virtual void OnTransportRouteChange(const std::string& channel_name,
                                         const TransportRoute& route) = 0;
 
+    // Called when the transport is connected.
+    virtual void OnTransportConnected() = 0;
+
     // Called when there is an error connecting the session.
     virtual void OnTransportError(ErrorCode error) = 0;
   };

@@ -182,7 +182,6 @@
             ['enable_webrtc==1', {
               'dependencies': [
                 '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-                '../third_party/libjingle/libjingle.gyp:libpeerconnection',
               ],
               'sources': [
                 '<@(remoting_cast_sources)',

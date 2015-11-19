@@ -207,6 +207,8 @@
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
       'protocol/video_stub.h',
+      'protocol/webrtc_transport.cc',
+      'protocol/webrtc_transport.h',
     ],
 
     'remoting_signaling_sources': [

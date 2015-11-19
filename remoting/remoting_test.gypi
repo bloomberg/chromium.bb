@@ -330,6 +330,7 @@
         'protocol/ssl_hmac_channel_authenticator_unittest.cc',
         'protocol/third_party_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',
+        'protocol/webrtc_transport_unittest.cc',
         'signaling/iq_sender_unittest.cc',
         'signaling/jid_util_unittest.cc',
         'signaling/log_to_server_unittest.cc',

@@ -237,6 +237,8 @@
         '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+        '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         'remoting_base',
       ],
       'export_dependent_settings': [
