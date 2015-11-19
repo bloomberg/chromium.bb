@@ -184,20 +184,117 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 
 void ManagePasswordsUIController::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
-  password_manager::ui::State current_state = state();
+  password_manager::ui::State current_state = GetState();
   passwords_data_.ProcessLoginsChanged(changes);
-  if (current_state != state())
+  if (current_state != GetState())
     UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
-#if defined(OS_ANDROID)
-  chrome::android::ChromeApplication::ShowPasswordSettings();
-#else
-  chrome::ShowSettingsSubPage(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      chrome::kPasswordManagerSubPage);
-#endif
+const GURL& ManagePasswordsUIController::GetOrigin() const {
+  return passwords_data_.origin();
+}
+
+password_manager::ui::State ManagePasswordsUIController::GetState() const {
+  return passwords_data_.state();
+}
+
+const autofill::PasswordForm& ManagePasswordsUIController::
+    GetPendingPassword() const {
+  if (GetState() == password_manager::ui::AUTO_SIGNIN_STATE)
+    return *GetCurrentForms()[0];
+
+  DCHECK(GetState() == password_manager::ui::PENDING_PASSWORD_STATE ||
+         GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+         GetState() == password_manager::ui::CONFIRMATION_STATE)
+      << GetState();
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return form_manager->pending_credentials();
+}
+
+bool ManagePasswordsUIController::IsPasswordOverridden() const {
+  const password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return form_manager ? form_manager->password_overridden() : false;
+}
+
+const std::vector<const autofill::PasswordForm*>&
+ManagePasswordsUIController::GetCurrentForms() const {
+  return passwords_data_.GetCurrentForms();
+}
+
+const std::vector<const autofill::PasswordForm*>&
+ManagePasswordsUIController::GetFederatedForms() const {
+  return passwords_data_.federated_credentials_forms();
+}
+
+password_manager::InteractionsStats*
+ManagePasswordsUIController::GetCurrentInteractionStats() const {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return password_manager::FindStatsByUsername(
+      form_manager->interactions_stats(),
+      form_manager->pending_credentials().username_value);
+}
+
+void ManagePasswordsUIController::OnBubbleShown() {
+  should_pop_up_bubble_ = false;
+}
+
+void ManagePasswordsUIController::OnBubbleHidden() {
+  if (GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
+      GetState() == password_manager::ui::CONFIRMATION_STATE ||
+      GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+    UpdateBubbleAndIconVisibility();
+  }
+}
+
+void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
+  if (GetState() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    // Do nothing if the state was changed. It can happen for example when the
+    // update bubble is active and a page navigation happens.
+    return;
+  }
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->OnNoInteractionOnUpdate();
+}
+
+void ManagePasswordsUIController::OnNopeUpdateClicked() {
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->OnNopeUpdateClicked();
+}
+
+void ManagePasswordsUIController::NeverSavePassword() {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
+  NeverSavePasswordInternal();
+  // The state stays the same.
+}
+
+void ManagePasswordsUIController::SavePassword() {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
+  SavePasswordInternal();
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::UpdatePassword(
+    const autofill::PasswordForm& password_form) {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, GetState());
+  UpdatePasswordInternal(password_form);
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::ChooseCredential(
+    const autofill::PasswordForm& form,
+    password_manager::CredentialType credential_type) {
+  passwords_data_.ChooseCredential(form, credential_type);
 }
 
 void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
@@ -238,25 +335,14 @@ void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
 #endif
 }
 
-void ManagePasswordsUIController::SavePassword() {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state());
-  SavePasswordInternal();
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  UpdateBubbleAndIconVisibility();
-}
-
-void ManagePasswordsUIController::UpdatePassword(
-    const autofill::PasswordForm& password_form) {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, state());
-  UpdatePasswordInternal(password_form);
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  UpdateBubbleAndIconVisibility();
-}
-
-void ManagePasswordsUIController::ChooseCredential(
-    const autofill::PasswordForm& form,
-    password_manager::CredentialType credential_type) {
-  passwords_data_.ChooseCredential(form, credential_type);
+void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
+#if defined(OS_ANDROID)
+  chrome::android::ChromeApplication::ShowPasswordSettings();
+#else
+  chrome::ShowSettingsSubPage(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      chrome::kPasswordManagerSubPage);
+#endif
 }
 
 void ManagePasswordsUIController::SavePasswordInternal() {
@@ -277,12 +363,6 @@ void ManagePasswordsUIController::UpdatePasswordInternal(
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   form_manager->Update(password_form);
-}
-
-void ManagePasswordsUIController::NeverSavePassword() {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state());
-  NeverSavePasswordInternal();
-  // The state stays the same.
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {
@@ -318,86 +398,19 @@ void ManagePasswordsUIController::WasHidden() {
 #endif
 }
 
-const autofill::PasswordForm& ManagePasswordsUIController::
-    PendingPassword() const {
-  if (state() == password_manager::ui::AUTO_SIGNIN_STATE)
-    return *GetCurrentForms()[0];
-
-  DCHECK(state() == password_manager::ui::PENDING_PASSWORD_STATE ||
-         state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-         state() == password_manager::ui::CONFIRMATION_STATE)
-      << state();
-  password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  return form_manager->pending_credentials();
-}
-
-bool ManagePasswordsUIController::PasswordOverridden() const {
-  const password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  return form_manager ? form_manager->password_overridden() : false;
-}
-
-password_manager::InteractionsStats*
-ManagePasswordsUIController::GetCurrentInteractionStats() const {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state());
-  password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  return password_manager::FindStatsByUsername(
-      form_manager->interactions_stats(),
-      form_manager->pending_credentials().username_value);
-}
-
 #if !defined(OS_ANDROID)
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
   if (should_pop_up_bubble_) {
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.
-    icon->SetState(state());
+    icon->SetState(GetState());
     ShowBubbleWithoutUserInteraction();
   } else {
-    icon->SetState(state());
+    icon->SetState(GetState());
   }
 }
 #endif
-
-void ManagePasswordsUIController::OnBubbleShown() {
-  should_pop_up_bubble_ = false;
-}
-
-void ManagePasswordsUIController::OnNopeUpdateClicked() {
-  password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  DCHECK(form_manager);
-  form_manager->OnNopeUpdateClicked();
-}
-
-void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
-  if (state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    // Do nothing if the state was changed. It can happen for example when the
-    // update bubble is active and a page navigation happens.
-    return;
-  }
-  password_manager::PasswordFormManager* form_manager =
-      passwords_data_.form_manager();
-  DCHECK(form_manager);
-  form_manager->OnNoInteractionOnUpdate();
-}
-
-void ManagePasswordsUIController::OnBubbleHidden() {
-  // Avoid using |state()| which is overridden for some unit tests.
-  if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
-      state() == password_manager::ui::CONFIRMATION_STATE ||
-      state() == password_manager::ui::AUTO_SIGNIN_STATE) {
-    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-    UpdateBubbleAndIconVisibility();
-  }
-}
-
-password_manager::ui::State ManagePasswordsUIController::state() const {
-  return passwords_data_.state();
-}
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
   DCHECK(should_pop_up_bubble_);

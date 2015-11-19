@@ -10,9 +10,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,7 +33,8 @@ class ManagePasswordsIconView;
 class ManagePasswordsUIController
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ManagePasswordsUIController>,
-      public password_manager::PasswordStore::Observer {
+      public password_manager::PasswordStore::Observer,
+      public PasswordsModelDelegate {
  public:
   ~ManagePasswordsUIController() override;
 
@@ -80,89 +81,41 @@ class ManagePasswordsUIController
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
-  // Called from the model when the user chooses to save a password; passes the
-  // action to the |form_manager|. The controller must be in a pending state,
-  // and will be in MANAGE_STATE after this method executes.
-  virtual void SavePassword();
-
-  // Called from the model when the user chooses to update a password; passes
-  // the action to the |form_manager|. The controller must be in a pending
-  // state, and will be in MANAGE_STATE after this method executes.
-  virtual void UpdatePassword(const autofill::PasswordForm& password_form);
-
-  // Called from the model when the user chooses a credential.
-  // The controller MUST be in a pending credentials state.
-  virtual void ChooseCredential(
-      const autofill::PasswordForm& form,
-      password_manager::CredentialType credential_type);
-
-  // Called from the model when the user chooses to never save passwords; passes
-  // the action off to the FormManager. The controller must be in a pending
-  // state, and will state in this state.
-  virtual void NeverSavePassword();
-
-  // Open a new tab, pointing to the password manager settings page.
-  virtual void NavigateToPasswordManagerSettingsPage();
-
-  // Two different ways to open a new tab pointing to passwords.google.com.
-  // TODO(crbug.com/548259) eliminate one of them.
-  virtual void NavigateToExternalPasswordManager();
-  virtual void NavigateToSmartLockPage();
-
-  // Open a new tab, pointing to the Smart Lock help article.
-  virtual void NavigateToSmartLockHelpPage();
-
-  virtual const autofill::PasswordForm& PendingPassword() const;
-
 #if !defined(OS_ANDROID)
   // Set the state of the Omnibox icon, and possibly show the associated bubble
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIconView* icon);
 #endif
 
-  // Called from the model when the bubble is displayed.
-  void OnBubbleShown();
-
-  // Called from the model when the bubble is hidden.
-  virtual void OnBubbleHidden();
-
-  // Called when the user chose not to update password.
-  void OnNopeUpdateClicked();
-
-  // Called when the user didn't interact with Update UI.
-  void OnNoInteractionOnUpdate();
-
-  virtual password_manager::ui::State state() const;
-
-  // True if a password is sitting around, waiting for a user to decide whether
-  // or not to save it.
-  // TODO(vasilii): remove.
-  bool PasswordPendingUserDecision() const {
-    return state() == password_manager::ui::PENDING_PASSWORD_STATE;
-  }
-
-  const GURL& origin() const { return passwords_data_.origin(); }
-
   bool IsAutomaticallyOpeningBubble() const { return should_pop_up_bubble_; }
 
-  // Current local forms.
-  const std::vector<const autofill::PasswordForm*>& GetCurrentForms() const {
-    return passwords_data_.GetCurrentForms();
-  }
-
-  // Current federated forms.
-  const std::vector<const autofill::PasswordForm*>& GetFederatedForms() const {
-    return passwords_data_.federated_credentials_forms();
-  }
-
-  // True if the password for previously stored account was overridden, i.e. in
-  // newly submitted form the password is different from stored one.
-  bool PasswordOverridden() const;
-
-  // For PENDING_PASSWORD_STATE state returns the current statistics for
-  // the pending username.
-  virtual password_manager::InteractionsStats* GetCurrentInteractionStats()
-      const;
+  // PasswordsModelDelegate:
+  const GURL& GetOrigin() const override;
+  password_manager::ui::State GetState() const override;
+  const autofill::PasswordForm& GetPendingPassword() const override;
+  bool IsPasswordOverridden() const override;
+  const std::vector<const autofill::PasswordForm*>& GetCurrentForms()
+      const override;
+  const std::vector<const autofill::PasswordForm*>& GetFederatedForms()
+      const override;
+  password_manager::InteractionsStats* GetCurrentInteractionStats() const
+      override;
+  void OnBubbleShown() override;
+  void OnBubbleHidden() override;
+  void OnNoInteractionOnUpdate() override;
+  void OnNopeUpdateClicked() override;
+  void NeverSavePassword() override;
+  void SavePassword() override;
+  void UpdatePassword(const autofill::PasswordForm& password_form) override;
+  void ChooseCredential(
+      const autofill::PasswordForm& form,
+      password_manager::CredentialType credential_type) override;
+  // Two different ways to open a new tab pointing to passwords.google.com.
+  // TODO(crbug.com/548259) eliminate one of them.
+  void NavigateToExternalPasswordManager() override;
+  void NavigateToSmartLockPage() override;
+  void NavigateToSmartLockHelpPage() override;
+  void NavigateToPasswordManagerSettingsPage() override;
 
  protected:
   explicit ManagePasswordsUIController(

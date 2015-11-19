@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -138,33 +138,34 @@ class InfoBarObserver : public PromptObserver,
 class BubbleObserver : public PromptObserver {
  public:
   explicit BubbleObserver(content::WebContents* web_contents)
-      : ui_controller_(
-            ManagePasswordsUIController::FromWebContents(web_contents)) {}
+      : passwords_model_delegate_(
+            PasswordsModelDelegateFromWebContents(web_contents)) {}
 
   ~BubbleObserver() override {}
 
  private:
   // PromptObserver:
   bool IsShowingPrompt() const override {
-    return ui_controller_->PasswordPendingUserDecision();
+    return passwords_model_delegate_->GetState() ==
+           password_manager::ui::PENDING_PASSWORD_STATE;
   }
 
   bool IsShowingUpdatePrompt() const override {
-    return ui_controller_->state() ==
+    return passwords_model_delegate_->GetState() ==
            password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
   }
 
   void AcceptImpl() const override {
-    ui_controller_->SavePassword();
+    passwords_model_delegate_->SavePassword();
     EXPECT_FALSE(IsShowingPrompt());
   }
 
   void AcceptUpdatePromptImpl(
       const autofill::PasswordForm& form) const override {
-    ui_controller_->UpdatePassword(form);
+    passwords_model_delegate_->UpdatePassword(form);
     EXPECT_FALSE(IsShowingUpdatePrompt());
   }
-  ManagePasswordsUIController* const ui_controller_;
+  PasswordsModelDelegate* const passwords_model_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };

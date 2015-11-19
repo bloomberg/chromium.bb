@@ -157,14 +157,10 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
       federated_forms.Pass(),
       GURL("http://example.com"),
       base::Callback<void(const password_manager::CredentialInfo&)>()));
-  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
-            ui_controller()->state());
   [controller().credentialsView
           selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
       byExtendingSelection:NO];
   EXPECT_TRUE(delegate().dismissed);
-  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
-            ui_controller()->state());
   EXPECT_TRUE(ui_controller()->choose_credential());
   EXPECT_EQ(base::ASCIIToUTF16("taco"),
             ui_controller()->chosen_credential().username_value);

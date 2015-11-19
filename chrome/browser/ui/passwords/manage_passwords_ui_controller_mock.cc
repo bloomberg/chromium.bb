@@ -37,7 +37,7 @@ void ManagePasswordsUIControllerMock::
 }
 
 const autofill::PasswordForm&
-    ManagePasswordsUIControllerMock::PendingPassword() const {
+    ManagePasswordsUIControllerMock::GetPendingPassword() const {
   return pending_password_;
 }
 
@@ -46,8 +46,8 @@ void ManagePasswordsUIControllerMock::SetPendingPassword(
   pending_password_ = pending_password;
 }
 
-password_manager::ui::State ManagePasswordsUIControllerMock::state() const {
-  return state_overridden_ ? state_ : ManagePasswordsUIController::state();
+password_manager::ui::State ManagePasswordsUIControllerMock::GetState() const {
+  return state_overridden_ ? state_ : ManagePasswordsUIController::GetState();
 }
 
 void ManagePasswordsUIControllerMock::SetState(

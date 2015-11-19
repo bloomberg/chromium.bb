@@ -59,10 +59,10 @@ class ManagePasswordsUIControllerMock
   bool choose_credential() const { return choose_credential_; }
   autofill::PasswordForm chosen_credential() { return chosen_credential_; }
 
-  const autofill::PasswordForm& PendingPassword() const override;
+  const autofill::PasswordForm& GetPendingPassword() const override;
   void SetPendingPassword(autofill::PasswordForm pending_password);
 
-  password_manager::ui::State state() const override;
+  password_manager::ui::State GetState() const override;
   void SetState(password_manager::ui::State state);
   void UnsetState();
 

@@ -13,8 +13,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/range/range.h"
 
-class ManagePasswordsIconController;
-class ManagePasswordsUIController;
 class Profile;
 
 namespace content {

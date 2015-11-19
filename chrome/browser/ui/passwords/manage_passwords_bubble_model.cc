@@ -14,8 +14,8 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace metrics_util = password_manager::metrics_util;
@@ -75,25 +76,25 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
       update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION) {
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents);
+  PasswordsModelDelegate* delegate =
+      PasswordsModelDelegateFromWebContents(web_contents);
 
-  origin_ = controller->origin();
-  state_ = controller->state();
-  password_overridden_ = controller->PasswordOverridden();
+  origin_ = delegate->GetOrigin();
+  state_ = delegate->GetState();
+  password_overridden_ = delegate->IsPasswordOverridden();
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    pending_password_ = controller->PendingPassword();
-    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
+    pending_password_ = delegate->GetPendingPassword();
+    local_credentials_ = DeepCopyForms(delegate->GetCurrentForms());
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     // We don't need anything.
   } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
-    federated_credentials_ = DeepCopyForms(controller->GetFederatedForms());
+    local_credentials_ = DeepCopyForms(delegate->GetCurrentForms());
+    federated_credentials_ = DeepCopyForms(delegate->GetFederatedForms());
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    pending_password_ = controller->PendingPassword();
+    pending_password_ = delegate->GetPendingPassword();
   } else {
-    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
+    local_credentials_ = DeepCopyForms(delegate->GetCurrentForms());
   }
 
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
@@ -144,7 +145,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     interaction_stats_.username_value = pending_password_.username_value;
     interaction_stats_.update_time = base::Time::Now();
     password_manager::InteractionsStats* stats =
-        controller->GetCurrentInteractionStats();
+        delegate->GetCurrentInteractionStats();
     if (stats) {
       // TODO(vasilii): DCHECK that username and origin are the same.
       interaction_stats_.dismissal_count = stats->dismissal_count;
@@ -200,7 +201,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   }
   metrics_util::LogUIDisplayDisposition(display_disposition_);
 
-  controller->OnBubbleShown();
+  delegate->OnBubbleShown();
 }
 
 ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
@@ -227,12 +228,11 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
       }
     }
   }
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      web_contents() ?
-          ManagePasswordsUIController::FromWebContents(web_contents())
-          : nullptr;
-  if (manage_passwords_ui_controller)
-    manage_passwords_ui_controller->OnBubbleHidden();
+  PasswordsModelDelegate* delegate =
+      web_contents() ? PasswordsModelDelegateFromWebContents(web_contents())
+                     : nullptr;
+  if (delegate)
+    delegate->OnBubbleHidden();
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
@@ -248,8 +248,8 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
     update_password_submission_event_ =
         GetUpdateDismissalReason(NO_INTERACTION);
     if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-        manage_passwords_ui_controller)
-      manage_passwords_ui_controller->OnNoInteractionOnUpdate();
+        delegate)
+      delegate->OnNoInteractionOnUpdate();
   }
   if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
     LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
@@ -265,9 +265,7 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NEVER;
   update_password_submission_event_ = GetUpdateDismissalReason(NOPE_CLICKED);
   CleanStatisticsForSite(web_contents(), origin_);
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->NeverSavePassword();
+  PasswordsModelDelegateFromWebContents(web_contents())->NeverSavePassword();
 }
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
@@ -275,24 +273,19 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   dismissal_reason_ = metrics_util::CLICKED_SAVE;
   update_password_submission_event_ = GetUpdateDismissalReason(UPDATE_CLICKED);
   CleanStatisticsForSite(web_contents(), origin_);
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->SavePassword();
+  PasswordsModelDelegateFromWebContents(web_contents())->SavePassword();
 }
 
 void ManagePasswordsBubbleModel::OnNopeUpdateClicked() {
   update_password_submission_event_ = GetUpdateDismissalReason(NOPE_CLICKED);
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->OnNopeUpdateClicked();
+  PasswordsModelDelegateFromWebContents(web_contents())->OnNopeUpdateClicked();
 }
 
 void ManagePasswordsBubbleModel::OnUpdateClicked(
     const autofill::PasswordForm& password_form) {
   update_password_submission_event_ = GetUpdateDismissalReason(UPDATE_CLICKED);
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->UpdatePassword(password_form);
+  PasswordsModelDelegateFromWebContents(web_contents())->UpdatePassword(
+      password_form);
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {
@@ -309,10 +302,10 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_MANAGE;
   if (GetSmartLockBrandingState(GetProfile()) ==
       password_bubble_experiment::SmartLockBranding::FULL) {
-    ManagePasswordsUIController::FromWebContents(web_contents())
+    PasswordsModelDelegateFromWebContents(web_contents())
         ->NavigateToExternalPasswordManager();
   } else {
-    ManagePasswordsUIController::FromWebContents(web_contents())
+    PasswordsModelDelegateFromWebContents(web_contents())
         ->NavigateToPasswordManagerSettingsPage();
   }
 }
@@ -321,11 +314,11 @@ void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_BRAND_NAME;
   switch (GetSmartLockBrandingState(GetProfile())) {
     case password_bubble_experiment::SmartLockBranding::FULL:
-      ManagePasswordsUIController::FromWebContents(web_contents())
+      PasswordsModelDelegateFromWebContents(web_contents())
           ->NavigateToSmartLockPage();
       break;
     case password_bubble_experiment::SmartLockBranding::SAVE_BUBBLE_ONLY:
-      ManagePasswordsUIController::FromWebContents(web_contents())
+      PasswordsModelDelegateFromWebContents(web_contents())
           ->NavigateToSmartLockHelpPage();
       break;
     case password_bubble_experiment::SmartLockBranding::NONE:
@@ -369,10 +362,8 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
   dismissal_reason_ = metrics_util::CLICKED_CREDENTIAL;
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->ChooseCredential(password_form,
-                                                   credential_type);
+  PasswordsModelDelegateFromWebContents(web_contents())->ChooseCredential(
+      password_form, credential_type);
 }
 
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
