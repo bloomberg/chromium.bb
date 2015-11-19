@@ -64,4 +64,20 @@ void SSLInfo::SetCertError(int error) {
   cert_status |= MapNetErrorToCertStatus(error);
 }
 
+void SSLInfo::UpdateSignedCertificateTimestamps(
+    const ct::CTVerifyResult& ct_verify_result) {
+  for (const auto& sct : ct_verify_result.verified_scts) {
+    signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(sct, ct::SCT_STATUS_OK));
+  }
+  for (const auto& sct : ct_verify_result.invalid_scts) {
+    signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(sct, ct::SCT_STATUS_INVALID));
+  }
+  for (const auto& sct : ct_verify_result.unknown_logs_scts) {
+    signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(sct, ct::SCT_STATUS_LOG_UNKNOWN));
+  }
+}
+
 }  // namespace net
