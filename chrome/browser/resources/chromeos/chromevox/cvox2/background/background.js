@@ -419,7 +419,8 @@ Background.prototype = {
    * @return {boolean} True if the default action should be performed.
    */
   onKeyDown: function(evt) {
-    if (!cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
+    if (this.mode_ != ChromeVoxMode.CLASSIC &&
+        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
     }
