@@ -76,11 +76,11 @@ public:
 
 private:
     static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
-    MutationObserverInterestGroup(WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
+    MutationObserverInterestGroup(WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
 
     bool hasOldValue(MutationRecordDeliveryOptions options) { return options & m_oldValueFlag; }
 
-    WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> m_observers;
+    WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> m_observers;
     MutationRecordDeliveryOptions m_oldValueFlag;
 };
 
