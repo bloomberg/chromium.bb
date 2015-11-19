@@ -319,6 +319,17 @@ ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr)
     return value;
 }
 
+ALWAYS_INLINE void noBarrierStore(volatile int* ptr, int value)
+{
+    *ptr = value;
+}
+
+ALWAYS_INLINE int noBarrierLoad(volatile const int* ptr)
+{
+    int value = *ptr;
+    return value;
+}
+
 #if defined(ADDRESS_SANITIZER)
 
 NO_SANITIZE_ADDRESS ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
