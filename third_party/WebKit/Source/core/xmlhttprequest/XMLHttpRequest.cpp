@@ -191,8 +191,8 @@ XMLHttpRequest* XMLHttpRequest::create(ScriptState* scriptState)
 {
     ExecutionContext* context = scriptState->executionContext();
     DOMWrapperWorld& world = scriptState->world();
-    RefPtr<SecurityOrigin> securityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
-    XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, securityOrigin);
+    RefPtr<SecurityOrigin> isolatedWorldSecurityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
+    XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, isolatedWorldSecurityOrigin);
     xmlHttpRequest->suspendIfNeeded();
 
     return xmlHttpRequest;
@@ -206,7 +206,7 @@ XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context)
     return xmlHttpRequest;
 }
 
-XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
+XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> isolatedWorldSecurityOrigin)
     : ActiveDOMObject(context)
     , m_timeoutMilliseconds(0)
     , m_state(UNSENT)
@@ -215,7 +215,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_exceptionCode(0)
     , m_progressEventThrottle(XMLHttpRequestProgressEventThrottle::create(this))
     , m_responseTypeCode(ResponseTypeDefault)
-    , m_securityOrigin(securityOrigin)
+    , m_isolatedWorldSecurityOrigin(isolatedWorldSecurityOrigin)
     , m_eventDispatchRecursionLevel(0)
     , m_async(true)
     , m_includeCredentials(false)
@@ -246,7 +246,7 @@ Document* XMLHttpRequest::document() const
 
 SecurityOrigin* XMLHttpRequest::securityOrigin() const
 {
-    return m_securityOrigin ? m_securityOrigin.get() : executionContext()->securityOrigin();
+    return m_isolatedWorldSecurityOrigin ? m_isolatedWorldSecurityOrigin.get() : executionContext()->securityOrigin();
 }
 
 XMLHttpRequest::State XMLHttpRequest::readyState() const
@@ -893,6 +893,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     request.setHTTPMethod(m_method);
     request.setRequestContext(WebURLRequest::RequestContextXMLHttpRequest);
     request.setFetchCredentialsMode(m_includeCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeSameOrigin);
+    request.setSkipServiceWorker(m_isolatedWorldSecurityOrigin);
 
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 

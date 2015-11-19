@@ -4,6 +4,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +21,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 
@@ -389,6 +391,26 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBackgroundSyncTest, Sync) {
   // Resume firing by going online.
   content::background_sync_test_util::SetOnline(web_contents, true);
   EXPECT_TRUE(sync_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
+                       FetchFromContentScriptShouldNotGoToServiceWorkerOfPage) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/content_script_fetch/"
+      "controlled_page/index.html");
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  content::WaitForLoadStop(tab);
+
+  std::string value;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(tab, "register();", &value));
+  EXPECT_EQ("SW controlled", value);
+
+  ASSERT_TRUE(RunExtensionTest("service_worker/content_script_fetch"))
+      << message_;
 }
 
 }  // namespace extensions

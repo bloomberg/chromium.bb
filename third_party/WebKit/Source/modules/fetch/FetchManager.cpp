@@ -56,9 +56,9 @@ bool IsRedirectStatusCode(int statusCode)
 class FetchManager::Loader final : public GarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
 public:
-    static Loader* create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
+    static Loader* create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request, bool isIsolatedWorld)
     {
-        return new Loader(executionContext, fetchManager, resolver, request);
+        return new Loader(executionContext, fetchManager, resolver, request, isIsolatedWorld);
     }
 
     ~Loader() override;
@@ -151,7 +151,7 @@ public:
     };
 
 private:
-    Loader(ExecutionContext*, FetchManager*, ScriptPromiseResolver*, FetchRequestData*);
+    Loader(ExecutionContext*, FetchManager*, ScriptPromiseResolver*, FetchRequestData*, bool isIsolatedWorld);
 
     void performBasicFetch();
     void performNetworkError(const String& message);
@@ -171,9 +171,10 @@ private:
     int m_responseHttpStatusCode;
     Member<SRIVerifier> m_integrityVerifier;
     bool m_didFinishLoading;
+    bool m_isIsolatedWorld;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request, bool isIsolatedWorld)
     : ContextLifecycleObserver(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -183,6 +184,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_responseHttpStatusCode(0)
     , m_integrityVerifier(nullptr)
     , m_didFinishLoading(false)
+    , m_isIsolatedWorld(isIsolatedWorld)
 {
 }
 
@@ -561,6 +563,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         // referrer string (i.e. String()).
         request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), m_request->referrerString()));
     }
+    request.setSkipServiceWorker(m_isIsolatedWorld);
 
     // "3. Append `Host`, ..."
     // FIXME: Implement this when the spec is fixed.
@@ -691,7 +694,7 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* re
 
     request->setContext(WebURLRequest::RequestContextFetch);
 
-    Loader* loader = Loader::create(m_executionContext, this, resolver, request);
+    Loader* loader = Loader::create(m_executionContext, this, resolver, request, scriptState->world().isIsolatedWorld());
     m_loaders.add(loader);
     loader->start();
     return promise;

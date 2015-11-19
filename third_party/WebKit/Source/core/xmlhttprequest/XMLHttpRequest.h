@@ -293,7 +293,7 @@ private:
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
-    RefPtr<SecurityOrigin> m_securityOrigin;
+    RefPtr<SecurityOrigin> m_isolatedWorldSecurityOrigin;
 
     // This blob loader will be used if |m_downloadingToFile| is true and
     // |m_responseTypeCode| is NOT ResponseTypeBlob.
