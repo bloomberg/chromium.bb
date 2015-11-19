@@ -122,6 +122,7 @@ static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     : m_webView(webView)
     , m_cursorOverridden(false)
+    , m_didRequestNonEmptyToolTip(false)
 {
 }
 
@@ -576,8 +577,17 @@ void ChromeClientImpl::showMouseOverURL(const HitTestResult& result)
 
 void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
 {
-    if (m_webView->client())
+    if (!m_webView->client())
+        return;
+    if (!tooltipText.isEmpty()) {
         m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
+        m_didRequestNonEmptyToolTip = true;
+    } else if (m_didRequestNonEmptyToolTip) {
+        // WebViewClient::setToolTipText will send an IPC message.  We'd like to
+        // reduce the number of setToolTipText calls.
+        m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
+        m_didRequestNonEmptyToolTip = false;
+    }
 }
 
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportDescription& description) const

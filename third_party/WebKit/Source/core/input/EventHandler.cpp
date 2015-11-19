@@ -3151,6 +3151,7 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
 bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    m_frame->chromeClient().setToolTip(String(), LTR);
 
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
         capsLockStateMayHaveChanged();

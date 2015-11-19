@@ -190,6 +190,7 @@ private:
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
     Cursor m_lastSetMouseCursorForTesting;
     bool m_cursorOverridden;
+    bool m_didRequestNonEmptyToolTip;
 };
 
 DEFINE_TYPE_CASTS(ChromeClientImpl, ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());
