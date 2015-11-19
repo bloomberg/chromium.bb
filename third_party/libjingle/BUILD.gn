@@ -323,8 +323,6 @@ if (enable_webrtc) {
       "source/talk/app/webrtc/mediastreaminterface.h",
       "source/talk/app/webrtc/mediastreamprovider.h",
       "source/talk/app/webrtc/mediastreamproxy.h",
-      "source/talk/app/webrtc/mediastreamsignaling.cc",
-      "source/talk/app/webrtc/mediastreamsignaling.h",
       "source/talk/app/webrtc/mediastreamtrack.h",
       "source/talk/app/webrtc/mediastreamtrackproxy.h",
       "source/talk/app/webrtc/notifier.h",

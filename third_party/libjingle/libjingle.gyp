@@ -282,8 +282,6 @@
             '<(libjingle_source)/talk/app/webrtc/mediastreaminterface.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamprovider.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamproxy.h',
-            '<(libjingle_source)/talk/app/webrtc/mediastreamsignaling.cc',
-            '<(libjingle_source)/talk/app/webrtc/mediastreamsignaling.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamtrack.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamtrackproxy.h',
             '<(libjingle_source)/talk/app/webrtc/notifier.h',
