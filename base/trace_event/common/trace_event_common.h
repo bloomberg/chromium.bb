@@ -309,6 +309,12 @@
                            TRACE_EVENT_FLAG_COPY | scope, arg1_name, arg1_val, \
                            arg2_name, arg2_val)
 
+#define TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(category_group, name, scope, \
+                                           timestamp)                   \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                   \
+      TRACE_EVENT_PHASE_INSTANT, category_group, name, 0, 0, timestamp, \
+      TRACE_EVENT_FLAG_NONE | scope)
+
 // Syntactic sugars for the sampling tracing in the main thread.
 #define TRACE_EVENT_SCOPED_SAMPLING_STATE(category, name) \
   TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(0, category, name)

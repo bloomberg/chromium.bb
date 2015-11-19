@@ -319,6 +319,8 @@ void RecordMainEntryTimeHistogram() {
           (browser_main_entry_time_raw_ms >> 1) & kLower31BitsMask);
 
   // A timestamp is a 64 bit value, yet histograms can only store 32 bits.
+  // TODO(gabadie): Once startup_with_url.* benchmarks are replaced by
+  //    startup_with_url2.*, remove this dirty hack (crbug.com/539287).
   LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteHighWord",
       browser_main_entry_time_raw_ms_high_word);
   LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
@@ -355,6 +357,22 @@ base::TimeTicks ExeMainEntryPointTicks() {
     return base::TimeTicks::FromInternalValue(time_int);
   }
   return base::TimeTicks();
+}
+
+void AddStartupEventsForTelemetry()
+{
+  DCHECK(!g_browser_main_entry_point_ticks.Get().is_null());
+
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "startup", "Startup.BrowserMainEntryPoint", 0,
+      g_browser_main_entry_point_ticks.Get().ToInternalValue());
+
+  if (!g_process_creation_ticks.Get().is_null())
+  {
+    TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+        "startup", "Startup.BrowserProcessCreation", 0,
+        g_process_creation_ticks.Get().ToInternalValue());
+  }
 }
 
 }  // namespace
@@ -394,6 +412,7 @@ void RecordExeMainEntryPointTime(const base::Time& time) {
 
 void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
                                        bool is_first_run) {
+  AddStartupEventsForTelemetry();
   RecordHardFaultHistogram(is_first_run);
   RecordMainEntryTimeHistogram();
 
