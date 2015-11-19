@@ -100,6 +100,14 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     @Override
     public Notification build() {
+        // A note about RemoteViews and updating notifications. When a notification is passed to the
+        // {@code NotificationManager} with the same tag and id as a previous notification, an
+        // in-place update will be performed. In that case, the actions of all new
+        // {@link RemoteViews} will be applied to the views of the old notification. This is safe
+        // for actions that overwrite old values such as setting the text of a {@code TextView}, but
+        // care must be taken for additive actions. Especially in the case of
+        // {@link RemoteViews#addView} the result could be to append new views below stale ones. In
+        // that case {@link RemoteViews#removeAllViews} must be called before adding new ones.
         RemoteViews compactView =
                 new RemoteViews(mContext.getPackageName(), R.layout.web_notification);
         RemoteViews bigView =
@@ -217,9 +225,13 @@ public class CustomNotificationBuilder implements NotificationBuilder {
      * If there are actions, shows the button related views, and adds a button for each action.
      */
     private void addActionButtons(RemoteViews bigView) {
+        // Remove the existing buttons in case an existing notification is being updated.
+        bigView.removeAllViews(R.id.buttons);
+
         if (mActions.isEmpty()) {
             return;
         }
+
         bigView.setViewVisibility(R.id.button_divider, View.VISIBLE);
         bigView.setViewVisibility(R.id.buttons, View.VISIBLE);
         Resources resources = mContext.getResources();
