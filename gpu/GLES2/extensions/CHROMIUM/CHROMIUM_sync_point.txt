@@ -18,9 +18,9 @@ Overview
 
     This extension allows a client to order operations between contexts.
 
-    This extension introduces the concept of "fence syncs" and "sync token".
-    Inserted fence syncs represents a position in the command stream of a
-    context. Sync tokens are generated from fence syncs and allows another
+    This extension introduces the concepts of "fence sync" and "sync token".
+    An inserted fence sync represents a position in the command stream of a
+    context. Sync tokens are generated from fence syncs and allow another
     context to issue a "wait" command on the sync token. This wait command
     will then guarantee that commands before the inserted fence sync are
     submitted before commands after the sync token wait.
@@ -47,8 +47,8 @@ New Procedures and Functions
     signaled when previous commands have been submitted to the server, or when
     the context is destroyed, whichever happens first. The fence sync name is
     only visible for the current context. The returned fence sync name cannot
-    be waited upon directly, but once the command is flushed to the server it
-    can be converted to a sync token using GenSyncTokenCHROMIUM which is
+    be waited upon directly, but once the command is flushed to the server,
+    it can be converted to a sync token using GenSyncTokenCHROMIUM, which is
     waitable.
 
     The command
@@ -60,7 +60,7 @@ New Procedures and Functions
     The <fence_sync> command must be flushed before this function may be
     called, otherwise an INVALID_OPERATION error is generated. The generated
     <sync_token> must be generated on the same context as when
-    InsertSyncPointCHROMIUM was called. The <sync_token> can be passed and
+    InsertFenceSyncCHROMIUM was called. The <sync_token> can be passed and
     used by any context on the same server, including other context groups.
 
     <sync_token> returns a GL_SYNC_POINT_SIZE_CHROMIUM byte sized name.
@@ -70,15 +70,15 @@ New Procedures and Functions
         void GenUnverifiedSyncTokenCHROMIUM(uint64 fence_sync,
                                             GLbyte *sync_token)
 
-    converts <fence_sync> which is only visible to the current context to a
-    sync token which may be waited upon by a context which only needs flush
+    converts <fence_sync>, which is only visible to the current context, to a
+    sync token, which may be waited upon by a context which only needs flush
     order guarantee with respect to the fence sync context. For example, if
     the two contexts are on the same channel but on different streams, flush
     order guarantee is enough to guarantee that the server will receive the
     release command before the wait command. The <fence_sync> command must be
     flushed before this function may be called, otherwise an INVALID_OPERATION
     error is generated. The generated <sync_token> must be generated on the
-    same context as when InsertSyncPointCHROMIUM was called.
+    same context as when InsertFenceSyncCHROMIUM was called.
 
     The command
 
@@ -108,7 +108,7 @@ Errors
     GenSyncPointCHROMIUM has not been flushed to the server.
 
     INVALID_OPERATION is generated if the <sync_token> parameter of
-    WaitSyncTokenCHROMIUM was generated using GenUnverifiedSyncTokenCHROMIUM
+    WaitSyncTokenCHROMIUM was generated using GenUnverifiedSyncTokenCHROMIUM,
     but the two contexts must be synchronized with more than just flush order.
 
 New State
