@@ -130,6 +130,44 @@ size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
       profile_index());
 }
 
+bool ProfileAttributesEntry::HasStatsBrowsingHistory() const {
+  return profile_info_cache_->HasStatsBrowsingHistoryOfProfileAtIndex(
+      profile_index());
+}
+
+int ProfileAttributesEntry::GetStatsBrowsingHistory() const {
+  return profile_info_cache_->GetStatsBrowsingHistoryOfProfileAtIndex(
+      profile_index());
+}
+
+bool ProfileAttributesEntry::HasStatsPasswords() const {
+  return profile_info_cache_->HasStatsPasswordsOfProfileAtIndex(
+      profile_index());
+}
+
+int ProfileAttributesEntry::GetStatsPasswords() const {
+  return profile_info_cache_->GetStatsPasswordsOfProfileAtIndex(
+      profile_index());
+}
+
+bool ProfileAttributesEntry::HasStatsBookmarks() const {
+  return profile_info_cache_->HasStatsBookmarksOfProfileAtIndex(
+      profile_index());
+}
+
+int ProfileAttributesEntry::GetStatsBookmarks() const {
+  return profile_info_cache_->GetStatsBookmarksOfProfileAtIndex(
+      profile_index());
+}
+
+bool ProfileAttributesEntry::HasStatsSettings() const {
+  return profile_info_cache_->HasStatsSettingsOfProfileAtIndex(profile_index());
+}
+
+int ProfileAttributesEntry::GetStatsSettings() const {
+  return profile_info_cache_->GetStatsSettingsOfProfileAtIndex(profile_index());
+}
+
 void ProfileAttributesEntry::SetName(const base::string16& name) {
   profile_info_cache_->SetNameOfProfileAtIndex(profile_index(), name);
 }
@@ -204,6 +242,25 @@ void ProfileAttributesEntry::SetIsAuthError(bool value) {
 void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
   profile_info_cache_->SetAvatarIconOfProfileAtIndex(
       profile_index(), icon_index);
+}
+
+void ProfileAttributesEntry::SetStatsBrowsingHistory(int value) {
+  profile_info_cache_->SetStatsBrowsingHistoryOfProfileAtIndex(profile_index(),
+                                                               value);
+}
+
+void ProfileAttributesEntry::SetStatsPasswords(int value) {
+  profile_info_cache_->SetStatsPasswordsOfProfileAtIndex(profile_index(),
+                                                         value);
+}
+
+void ProfileAttributesEntry::SetStatsBookmarks(int value) {
+  profile_info_cache_->SetStatsBookmarksOfProfileAtIndex(profile_index(),
+                                                         value);
+}
+
+void ProfileAttributesEntry::SetStatsSettings(int value) {
+  profile_info_cache_->SetStatsSettingsOfProfileAtIndex(profile_index(), value);
 }
 
 void ProfileAttributesEntry::SetAuthInfo(

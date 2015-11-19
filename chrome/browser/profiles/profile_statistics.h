@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "base/files/file_path.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -36,6 +37,8 @@ using ProfileCategoryStats = std::vector<ProfileCategoryStat>;
 // |ProfileCategoryStats| is made each time the callback is called.
 using ProfileStatisticsCallback = base::Callback<void(ProfileCategoryStats)>;
 
+// Profile Statistics ----------------------------------------------------------
+
 // This function collects statistical information about |profile| and returns
 // the information via |callback|. Currently bookmarks, history, logins and
 // preferences are counted. The callback function will probably be called more
@@ -43,6 +46,16 @@ using ProfileStatisticsCallback = base::Callback<void(ProfileCategoryStats)>;
 void GetProfileStatistics(Profile* profile,
                           const ProfileStatisticsCallback& callback,
                           base::CancelableTaskTracker* tracker);
+
+// ProfileInfoCache ------------------------------------------------------------
+
+// Gets statistical information from ProfileInfoCache.
+ProfileCategoryStats GetProfileStatisticsFromCache(
+    const base::FilePath& profile_path);
+
+// Sets an individual statistic to ProfileInfoCache.
+void SetProfileStatisticsInCache(const base::FilePath& profile_path,
+                                 const std::string& category, int count);
 
 }  // namespace profiles
 

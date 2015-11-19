@@ -34,11 +34,19 @@ namespace {
         std::string("second_" #member "_value"));
 
 #define TEST_BOOL_ACCESSORS(entry_type, entry, member) \
-TestAccessors(&entry, \
-              &entry_type::member, \
-              &entry_type::Set ## member, \
-              false, \
-              true);
+    TestAccessors(&entry, \
+                  &entry_type::member, \
+                  &entry_type::Set ## member, \
+                  false, \
+                  true);
+
+#define TEST_STAT_ACCESSORS(entry_type, entry, member) \
+    TestStatAccessors(&entry, \
+                      &entry_type::Has ## member, \
+                      &entry_type::Get ## member, \
+                      &entry_type::Set ## member, \
+                      10, \
+                      20);
 
 template<typename TValue, typename TGetter, typename TSetter>
 void TestAccessors(ProfileAttributesEntry** entry,
@@ -49,6 +57,22 @@ void TestAccessors(ProfileAttributesEntry** entry,
   (*entry->*setter_func)(first_value);
   EXPECT_EQ(first_value, (*entry->*getter_func)());
   (*entry->*setter_func)(second_value);
+  EXPECT_EQ(second_value, (*entry->*getter_func)());
+}
+
+template<typename TValue, typename TExist, typename TGetter, typename TSetter>
+void TestStatAccessors(ProfileAttributesEntry** entry,
+    TExist exist_func,
+    TGetter getter_func,
+    TSetter setter_func,
+    TValue first_value,
+    TValue second_value) {
+  EXPECT_FALSE((*entry->*exist_func)());
+  (*entry->*setter_func)(first_value);
+  EXPECT_TRUE((*entry->*exist_func)());
+  EXPECT_EQ(first_value, (*entry->*getter_func)());
+  (*entry->*setter_func)(second_value);
+  EXPECT_TRUE((*entry->*exist_func)());
   EXPECT_EQ(second_value, (*entry->*getter_func)());
 }
 }  // namespace
@@ -183,7 +207,7 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
 
   std::vector<ProfileAttributesEntry*> entries =
       storage()->GetAllProfilesAttributes();
-  for (auto& entry: entries) {
+  for (auto& entry : entries) {
     EXPECT_NE(GetProfilePath("testing_profile_path0"), entry->GetPath());
   }
 }
@@ -227,6 +251,11 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultName);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultAvatar);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsAuthError);
+
+  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsBrowsingHistory);
+  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsBookmarks);
+  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsPasswords);
+  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsSettings);
 }
 
 TEST_F(ProfileAttributesStorageTest, AuthInfo) {
@@ -310,7 +339,7 @@ TEST_F(ProfileAttributesStorageTest, RemoveOtherProfile) {
       GetProfilePath("testing_profile_path1"), &second_entry));
 
   EXPECT_EQ(
-      base::ASCIIToUTF16("testing_profile_name0"),first_entry->GetName());
+      base::ASCIIToUTF16("testing_profile_name0"), first_entry->GetName());
 
   storage()->RemoveProfile(GetProfilePath("testing_profile_path1"));
   ASSERT_FALSE(storage()->GetProfileAttributesWithPath(

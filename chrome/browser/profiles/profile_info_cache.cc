@@ -60,6 +60,10 @@ const char kSupervisedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kActiveTimeKey[] = "active_time";
 const char kIsAuthErrorKey[] = "is_auth_error";
+const char kStatsBrowsingHistoryKey[] = "stats_browsing_history";
+const char kStatsPasswordsKey[] = "stats_passwords";
+const char kStatsBookmarksKey[] = "stats_bookmarks";
+const char kStatsSettingsKey[] = "stats_settings";
 
 // First eight are generic icons, which use IDS_NUMBERED_PROFILE_NAME.
 const int kDefaultNames[] = {
@@ -499,6 +503,55 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
   return icon_index;
 }
 
+bool ProfileInfoCache::HasStatsBrowsingHistoryOfProfileAtIndex(size_t index)
+    const {
+  int value = 0;
+  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsBrowsingHistoryKey,
+                                                     &value);
+}
+
+int ProfileInfoCache::GetStatsBrowsingHistoryOfProfileAtIndex(size_t index)
+    const {
+  int value = 0;
+  GetInfoForProfileAtIndex(index)->GetInteger(kStatsBrowsingHistoryKey, &value);
+  return value;
+}
+
+bool ProfileInfoCache::HasStatsPasswordsOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsPasswordsKey,
+                                                     &value);
+}
+
+int ProfileInfoCache::GetStatsPasswordsOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  GetInfoForProfileAtIndex(index)->GetInteger(kStatsPasswordsKey, &value);
+  return value;
+}
+
+bool ProfileInfoCache::HasStatsBookmarksOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsBookmarksKey,
+                                                     &value);
+}
+
+int ProfileInfoCache::GetStatsBookmarksOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  GetInfoForProfileAtIndex(index)->GetInteger(kStatsBookmarksKey, &value);
+  return value;
+}
+
+bool ProfileInfoCache::HasStatsSettingsOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsSettingsKey, &value);
+}
+
+int ProfileInfoCache::GetStatsSettingsOfProfileAtIndex(size_t index) const {
+  int value = 0;
+  GetInfoForProfileAtIndex(index)->GetInteger(kStatsSettingsKey, &value);
+  return value;
+}
+
 void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
   if (base::Time::Now() - GetProfileActiveTimeAtIndex(index) <
       base::TimeDelta::FromHours(1)) {
@@ -907,6 +960,42 @@ size_t ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() const {
 
   NOTREACHED();
   return 0;
+}
+
+void ProfileInfoCache::SetStatsBrowsingHistoryOfProfileAtIndex(size_t index,
+                                                               int value) {
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetInteger(kStatsBrowsingHistoryKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetStatsPasswordsOfProfileAtIndex(size_t index,
+                                                         int value) {
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetInteger(kStatsPasswordsKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetStatsBookmarksOfProfileAtIndex(size_t index,
+                                                         int value) {
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetInteger(kStatsBookmarksKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetStatsSettingsOfProfileAtIndex(size_t index,
+                                                        int value) {
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetInteger(kStatsSettingsKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
