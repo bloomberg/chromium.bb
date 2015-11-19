@@ -293,7 +293,7 @@
     },
 
     'proprietary_codecs': {
-      'gn_args': 'proprietary_codecs=1',
+      'gn_args': 'proprietary_codecs=true',
       'gyp_defines': 'proprietary_codecs=1',
     },
 
