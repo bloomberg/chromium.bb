@@ -1,0 +1,25 @@
+<!doctype HTML>
+<embed id="plugin" type="application/x-plugin-placeholder-test"></embed>
+<div style="height: 3000px"></div>
+<style>
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+}
+</style>
+<script>
+onload = function() {
+    window.scrollBy(0, 50);
+    if (window.testRunner) {
+        window.testRunner.waitUntilDone();
+        // Need to paint two frames in order to allow the plugin to properly load.
+        // TODO(chrishtr): find out why and fix.
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    window.testRunner.notifyDone();
+                });
+            });
+        });
+    }
+}
+</script>

@@ -35,6 +35,8 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
+crbug.com/553905 plugins/webview-plugin-scroll.html [ NeedsRebaseline ]
+
 crbug.com/546730 virtual/syncpaint/paint/invalidation/composited-table-cell-container-background.html [ Failure ]
 
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]

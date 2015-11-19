@@ -987,8 +987,9 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
     box->mapRectToPaintInvalidationBacking(rootView, unclippedAbsoluteRect, nullptr);
 
-    // The frameRect is already in absolute space.
+    // The frameRect is already in absolute space, except for scrolling of the root frame.
     windowRect = frameRect();
+    windowRect.moveBy(roundedIntPoint(-rootView->viewRect().location()));
 
     clippedLocalRect = enclosingIntRect(unclippedAbsoluteRect);
     unclippedIntLocalRect = clippedLocalRect;
@@ -1001,7 +1002,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
 void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
 {
-    // document().layoutView() can be 0 when we receive messages from the
+    // document().layoutView() can be null when we receive messages from the
     // plugins while we are destroying a frame.
     // FIXME: Can we just check m_element->document().isActive() ?
     if (m_element->layoutObject()->document().layoutView()) {
