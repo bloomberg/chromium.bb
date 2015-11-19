@@ -419,8 +419,8 @@ void ChannelProxy::Init(scoped_ptr<ChannelFactory> factory,
     context_->CreateChannel(factory.Pass());
   } else {
     context_->ipc_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Context::CreateChannel,
-                              context_.get(), Passed(factory.Pass())));
+        FROM_HERE, base::Bind(&Context::CreateChannel, context_.get(),
+                              base::Passed(&factory)));
   }
 
   // complete initialization on the background thread

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gl/gl_surface_osmesa.h"
+
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace gfx {

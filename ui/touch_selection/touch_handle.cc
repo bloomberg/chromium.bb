@@ -4,6 +4,7 @@
 
 #include "ui/touch_selection/touch_handle.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace ui {

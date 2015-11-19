@@ -17,6 +17,8 @@
 
 #include "media/base/yuv_convert.h"
 
+#include <algorithm>
+
 #include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

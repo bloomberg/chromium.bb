@@ -4,6 +4,8 @@
 
 #include "ui/base/x/x11_menu_list.h"
 
+#include <algorithm>
+
 #include "base/memory/singleton.h"
 #include "ui/base/x/x11_util.h"
 

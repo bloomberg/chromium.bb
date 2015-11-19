@@ -5,6 +5,7 @@
 #ifndef DEVICE_HID_DEVICE_MONITOR_LINUX_H_
 #define DEVICE_HID_DEVICE_MONITOR_LINUX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -54,7 +55,7 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
-  friend struct base::DefaultDeleter<DeviceMonitorLinux>;
+  friend std::default_delete<DeviceMonitorLinux>;
 
   ~DeviceMonitorLinux() override;
 

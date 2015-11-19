@@ -8,6 +8,8 @@
 #error Build json_sanitizer_android.cc instead of this file on Android.
 #endif
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
@@ -27,7 +29,7 @@ class OopJsonSanitizer : public JsonSanitizer {
                    const StringCallback& error_callback);
 
  private:
-  friend struct base::DefaultDeleter<OopJsonSanitizer>;
+  friend std::default_delete<OopJsonSanitizer>;
   ~OopJsonSanitizer() {}
 
   void OnParseSuccess(scoped_ptr<base::Value> value);

@@ -4,6 +4,7 @@
 
 #include "ui/events/gesture_detection/snap_scroll_controller.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "ui/events/gesture_detection/motion_event.h"

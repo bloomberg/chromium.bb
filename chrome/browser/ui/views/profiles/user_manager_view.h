@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,7 +43,7 @@ class UserManagerView : public views::DialogDelegateView {
  private:
   ~UserManagerView() override;
 
-  friend struct base::DefaultDeleter<UserManagerView>;
+  friend std::default_delete<UserManagerView>;
 
   // Creates dialog and initializes UI.
   void Init(Profile* guest_profile, const GURL& url);

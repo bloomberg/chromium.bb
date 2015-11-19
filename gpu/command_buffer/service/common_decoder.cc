@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/common_decoder.h"
 
+#include <algorithm>
+
 #include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 

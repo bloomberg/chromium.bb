@@ -5,15 +5,13 @@
 #ifndef MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 #define MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-template <class T>
-class scoped_refptr;
 
 namespace base {
 class SharedMemory;

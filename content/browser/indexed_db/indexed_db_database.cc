@@ -552,7 +552,7 @@ void IndexedDBDatabase::GetAll(int64 transaction_id,
 
   transaction->ScheduleTask(base::Bind(
       &IndexedDBDatabase::GetAllOperation, this, object_store_id, index_id,
-      Passed(&key_range),
+      base::Passed(&key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       max_count, callbacks));
 }
@@ -572,11 +572,8 @@ void IndexedDBDatabase::Get(int64 transaction_id,
     return;
 
   transaction->ScheduleTask(base::Bind(
-      &IndexedDBDatabase::GetOperation,
-      this,
-      object_store_id,
-      index_id,
-      Passed(&key_range),
+      &IndexedDBDatabase::GetOperation, this, object_store_id, index_id,
+      base::Passed(&key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       callbacks));
 }

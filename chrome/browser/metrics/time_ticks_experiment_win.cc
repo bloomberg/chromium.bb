@@ -6,11 +6,12 @@
 
 #if defined(OS_WIN)
 
+#include <windows.h>
+#include <algorithm>
+
 #include "base/cpu.h"
 #include "base/metrics/histogram.h"
 #include "base/win/windows_version.h"
-
-#include <windows.h>
 
 namespace chrome {
 

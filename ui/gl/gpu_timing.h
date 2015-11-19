@@ -5,6 +5,7 @@
 #ifndef UI_GL_GPU_TIMING_H_
 #define UI_GL_GPU_TIMING_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
@@ -58,7 +59,7 @@ class GPUTiming {
   };
 
  protected:
-  friend struct base::DefaultDeleter<GPUTiming>;
+  friend std::default_delete<GPUTiming>;
   friend class GLContextReal;
 
   static GPUTiming* CreateGPUTiming(GLContextReal* context);

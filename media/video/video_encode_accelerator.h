@@ -5,6 +5,7 @@
 #ifndef MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_
 #define MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -155,19 +156,15 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
 }  // namespace media
 
-namespace base {
+namespace std {
 
-template <class T>
-struct DefaultDeleter;
-
-// Specialize DefaultDeleter so that scoped_ptr<VideoEncodeAccelerator> always
+// Specialize std::default_delete so that scoped_ptr<VideoEncodeAccelerator>
 // uses "Destroy()" instead of trying to use the destructor.
 template <>
-struct MEDIA_EXPORT DefaultDeleter<media::VideoEncodeAccelerator> {
- public:
-  void operator()(void* video_encode_accelerator) const;
+struct MEDIA_EXPORT default_delete<media::VideoEncodeAccelerator> {
+  void operator()(media::VideoEncodeAccelerator* vea) const;
 };
 
-}  // namespace base
+}  // namespace std
 
 #endif  // MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_

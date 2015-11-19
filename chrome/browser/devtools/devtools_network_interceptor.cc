@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/time/time.h"

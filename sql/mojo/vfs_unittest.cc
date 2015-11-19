@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
@@ -10,12 +12,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-namespace base {
+namespace std {
 
 // This deleter lets us be safe with sqlite3 objects, which aren't really the
 // structs, but slabs of new uint8_t[size].
 template <>
-struct DefaultDeleter<sqlite3_file> {
+struct default_delete<sqlite3_file> {
   inline void operator()(sqlite3_file* ptr) const {
     // Why don't we call file->pMethods->xClose() here? Because it's not
     // guaranteed to be valid. sqlite3_file "objects" can be in partially
@@ -24,7 +26,7 @@ struct DefaultDeleter<sqlite3_file> {
   }
 };
 
-}  // namespace base
+}  // namespace std
 
 namespace sql {
 

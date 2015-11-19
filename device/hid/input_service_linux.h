@@ -5,6 +5,7 @@
 #ifndef DEVICE_HID_INPUT_SERVICE_LINUX_H_
 #define DEVICE_HID_INPUT_SERVICE_LINUX_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -87,7 +88,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   base::ObserverList<Observer> observers_;
 
  private:
-  friend struct base::DefaultDeleter<InputServiceLinux>;
+  friend std::default_delete<InputServiceLinux>;
 
   base::ThreadChecker thread_checker_;
 

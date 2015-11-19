@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_ANDROID_H_
 #define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_ANDROID_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/safe_json/safe_json_parser.h"
 
 namespace safe_json {
@@ -19,7 +20,7 @@ class SafeJsonParserAndroid : public SafeJsonParser {
                         const ErrorCallback& error_callback);
 
  private:
-  friend struct base::DefaultDeleter<SafeJsonParserAndroid>;
+  friend std::default_delete<SafeJsonParserAndroid>;
 
   ~SafeJsonParserAndroid() override;
 

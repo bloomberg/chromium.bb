@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/fake_gcm_client.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/macros.h"
 

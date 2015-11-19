@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 

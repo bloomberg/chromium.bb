@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/metrics.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"

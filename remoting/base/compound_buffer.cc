@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/base/compound_buffer.h"
+
+#include <algorithm>
 #include <functional>
 
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "remoting/base/compound_buffer.h"
 
 namespace remoting {
 

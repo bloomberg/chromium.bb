@@ -6,6 +6,8 @@
 
 #include "media/filters/vp9_parser.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 

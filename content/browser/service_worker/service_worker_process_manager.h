@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROCESS_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -130,12 +131,12 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
 }  // namespace content
 
-namespace base {
+namespace std {
 // Specialized to post the deletion to the UI thread.
 template <>
-struct CONTENT_EXPORT DefaultDeleter<content::ServiceWorkerProcessManager> {
+struct CONTENT_EXPORT default_delete<content::ServiceWorkerProcessManager> {
   void operator()(content::ServiceWorkerProcessManager* ptr) const;
 };
-}  // namespace base
+}  // namespace std
 
 #endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROCESS_MANAGER_H_

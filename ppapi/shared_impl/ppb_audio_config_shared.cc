@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+
+#include <algorithm>
+
+#include "build/build_config.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 

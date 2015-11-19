@@ -5,6 +5,7 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 #define BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/atomicops.h"
@@ -124,7 +125,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   }
 
  private:
-  friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
+  friend std::default_delete<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerDelegate;
   friend class MemoryDumpManagerTest;

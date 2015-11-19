@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -244,7 +245,7 @@ class PersonalDataManager : public KeyedService,
 #endif
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
-  friend struct base::DefaultDeleter<PersonalDataManager>;
+  friend std::default_delete<PersonalDataManager>;
   friend void autofill_helper::SetProfiles(
       int, std::vector<autofill::AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(

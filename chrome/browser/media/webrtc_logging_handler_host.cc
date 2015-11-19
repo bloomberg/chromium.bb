@@ -312,12 +312,11 @@ void WebRtcLoggingHandlerHost::StoreLogContinue(
   ReleaseRtpDumps(log_paths.get());
 
   content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
+      content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
                  this),
       base::Bind(&WebRtcLoggingHandlerHost::StoreLogInDirectory, this, log_id,
-                 Passed(&log_paths), callback));
+                 base::Passed(&log_paths), callback));
 }
 
 void WebRtcLoggingHandlerHost::LogMessage(const std::string& message) {
@@ -679,11 +678,12 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
   log_paths->log_path = directory;
 
   log_buffer_->SetComplete();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcLogUploader::LoggingStoppedDoStore,
-          base::Unretained(g_browser_process->webrtc_log_uploader()),
-          *log_paths.get(), log_id, Passed(&log_buffer_), Passed(&meta_data_),
-          done_callback));
+                 base::Unretained(g_browser_process->webrtc_log_uploader()),
+                 *log_paths.get(), log_id, base::Passed(&log_buffer_),
+                 base::Passed(&meta_data_), done_callback));
 
   logging_state_ = CLOSED;
 }
@@ -700,12 +700,12 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
   ReleaseRtpDumps(&upload_done_data);
 
   log_buffer_->SetComplete();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &WebRtcLogUploader::LoggingStoppedDoUpload,
-      base::Unretained(g_browser_process->webrtc_log_uploader()),
-      Passed(&log_buffer_),
-      Passed(&meta_data_),
-      upload_done_data));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::LoggingStoppedDoUpload,
+                 base::Unretained(g_browser_process->webrtc_log_uploader()),
+                 base::Passed(&log_buffer_), base::Passed(&meta_data_),
+                 upload_done_data));
 
   logging_state_ = CLOSED;
 }

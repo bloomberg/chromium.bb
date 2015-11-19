@@ -4,6 +4,7 @@
 
 #include "media/base/audio_buffer_converter.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"

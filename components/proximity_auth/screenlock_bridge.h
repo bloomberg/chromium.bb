@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_BRIDGE_H_
 #define COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_BRIDGE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/basictypes.h"
@@ -172,7 +173,7 @@ class ScreenlockBridge {
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
-  friend struct base::DefaultDeleter<ScreenlockBridge>;
+  friend std::default_delete<ScreenlockBridge>;
 
   ScreenlockBridge();
   ~ScreenlockBridge();

@@ -86,11 +86,8 @@ void URLRequestAdapter::AppendChunk(const char* bytes, int bytes_len,
   memcpy(buf.get(), bytes, bytes_len);
   context_->PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(&URLRequestAdapter::OnAppendChunk,
-                 base::Unretained(this),
-                 Passed(buf.Pass()),
-                 bytes_len,
-                 is_last_chunk));
+      base::Bind(&URLRequestAdapter::OnAppendChunk, base::Unretained(this),
+                 base::Passed(&buf), bytes_len, is_last_chunk));
 }
 
 std::string URLRequestAdapter::GetHeader(const std::string& name) const {

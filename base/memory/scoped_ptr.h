@@ -84,8 +84,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <algorithm>  // For std::swap().
 #include <iosfwd>
+#include <memory>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -98,61 +99,6 @@ namespace subtle {
 class RefCountedBase;
 class RefCountedThreadSafeBase;
 }  // namespace subtle
-
-// Function object which deletes its parameter, which must be a pointer.
-// If C is an array type, invokes 'delete[]' on the parameter; otherwise,
-// invokes 'delete'. The default deleter for scoped_ptr<T>.
-template <class T>
-struct DefaultDeleter {
-  DefaultDeleter() {}
-  template <typename U> DefaultDeleter(const DefaultDeleter<U>& other) {
-    // IMPLEMENTATION NOTE: C++11 20.7.1.1.2p2 only provides this constructor
-    // if U* is implicitly convertible to T* and U is not an array type.
-    //
-    // Correct implementation should use SFINAE to disable this
-    // constructor. However, since there are no other 1-argument constructors,
-    // using a COMPILE_ASSERT() based on is_convertible<> and requiring
-    // complete types is simpler and will cause compile failures for equivalent
-    // misuses.
-    //
-    // Note, the is_convertible<U*, T*> check also ensures that U is not an
-    // array. T is guaranteed to be a non-array, so any U* where U is an array
-    // cannot convert to T*.
-    enum { T_must_be_complete = sizeof(T) };
-    enum { U_must_be_complete = sizeof(U) };
-    COMPILE_ASSERT((base::is_convertible<U*, T*>::value),
-                   U_ptr_must_implicitly_convert_to_T_ptr);
-  }
-  inline void operator()(T* ptr) const {
-    enum { type_must_be_complete = sizeof(T) };
-    delete ptr;
-  }
-};
-
-// Specialization of DefaultDeleter for array types.
-template <class T>
-struct DefaultDeleter<T[]> {
-  inline void operator()(T* ptr) const {
-    enum { type_must_be_complete = sizeof(T) };
-    delete[] ptr;
-  }
-
- private:
-  // Disable this operator for any U != T because it is undefined to execute
-  // an array delete when the static type of the array mismatches the dynamic
-  // type.
-  //
-  // References:
-  //   C++98 [expr.delete]p3
-  //   http://cplusplus.github.com/LWG/lwg-defects.html#938
-  template <typename U> void operator()(U* array) const;
-};
-
-template <class T, int n>
-struct DefaultDeleter<T[n]> {
-  // Never allow someone to declare something like scoped_ptr<int[10]>.
-  COMPILE_ASSERT(sizeof(T) == -1, do_not_use_array_with_size_as_type);
-};
 
 // Function object which invokes 'free' on its parameter, which must be
 // a pointer. Can be used to store malloc-allocated pointers in scoped_ptr:
@@ -173,17 +119,6 @@ template <typename T> struct IsNotRefCounted {
         !base::is_convertible<T*, base::subtle::RefCountedThreadSafeBase*>::
             value
   };
-};
-
-template <typename T>
-struct ShouldAbortOnSelfReset {
-  template <typename U>
-  static NoType Test(const typename U::AllowSelfReset*);
-
-  template <typename U>
-  static YesType Test(...);
-
-  static const bool value = sizeof(Test<T>(0)) == sizeof(YesType);
 };
 
 // Minimal implementation of the core logic of scoped_ptr, suitable for
@@ -230,10 +165,6 @@ class scoped_ptr_impl {
   }
 
   void reset(T* p) {
-    // This is a self-reset, which is no longer allowed for default deleters:
-    // https://crbug.com/162971
-    assert(!ShouldAbortOnSelfReset<D>::value || p == nullptr || p != data_.ptr);
-
     // Match C++11's definition of unique_ptr::reset(), which requires changing
     // the pointer before invoking the deleter on the old pointer. This prevents
     // |this| from being accessed after the deleter is run, which may destroy
@@ -295,15 +226,15 @@ class scoped_ptr_impl {
 // dereference it, you get the thread safety guarantees of T.
 //
 // The size of scoped_ptr is small. On most compilers, when using the
-// DefaultDeleter, sizeof(scoped_ptr<T>) == sizeof(T*). Custom deleters will
-// increase the size proportional to whatever state they need to have. See
+// std::default_delete, sizeof(scoped_ptr<T>) == sizeof(T*). Custom deleters
+// will increase the size proportional to whatever state they need to have. See
 // comments inside scoped_ptr_impl<> for details.
 //
 // Current implementation targets having a strict subset of  C++11's
 // unique_ptr<> features. Known deficiencies include not supporting move-only
 // deleteres, function pointers as deleters, and deleters with reference
 // types.
-template <class T, class D = base::DefaultDeleter<T> >
+template <class T, class D = std::default_delete<T>>
 class scoped_ptr {
   MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
 

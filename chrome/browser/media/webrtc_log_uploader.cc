@@ -197,12 +197,10 @@ void WebRtcLogUploader::UploadCompressedLog(
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLogUploader::CreateAndStartURLFetcher,
-                 base::Unretained(this),
-                 upload_done_data,
-                 Passed(&post_data)));
+                 base::Unretained(this), upload_done_data,
+                 base::Passed(&post_data)));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLogUploader::DecreaseLogCount, base::Unretained(this)));

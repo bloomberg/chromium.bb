@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
 

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 
 #include <windows.h>
+#include <algorithm>
 #include <set>
 
 #include "base/compiler_specific.h"

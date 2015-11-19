@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_SERIAL_RUNNER_H_
 #define MEDIA_BASE_SERIAL_RUNNER_H_
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
@@ -65,7 +66,7 @@ class MEDIA_EXPORT SerialRunner {
       const Queue& bound_fns, const PipelineStatusCB& done_cb);
 
  private:
-  friend struct base::DefaultDeleter<SerialRunner>;
+  friend std::default_delete<SerialRunner>;
 
   SerialRunner(const Queue& bound_fns, const PipelineStatusCB& done_cb);
   ~SerialRunner();

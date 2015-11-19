@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include <psapi.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/lazy_instance.h"

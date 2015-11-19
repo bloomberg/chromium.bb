@@ -19,13 +19,11 @@ VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() {
 
 }  // namespace media
 
-namespace base {
+namespace std {
 
-void DefaultDeleter<media::VideoEncodeAccelerator>::operator()(
-    void* video_encode_accelerator) const {
-  static_cast<media::VideoEncodeAccelerator*>(video_encode_accelerator)->
-      Destroy();
+void default_delete<media::VideoEncodeAccelerator>::operator()(
+    media::VideoEncodeAccelerator* vea) const {
+  vea->Destroy();
 }
 
-}  // namespace base
-
+}  // namespace std

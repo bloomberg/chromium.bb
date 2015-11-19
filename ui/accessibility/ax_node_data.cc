@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_node_data.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/strings/string_number_conversions.h"

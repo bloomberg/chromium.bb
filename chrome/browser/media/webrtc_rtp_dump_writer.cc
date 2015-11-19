@@ -377,19 +377,14 @@ void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
   // guaranteed to be deleted on the FILE thread before this object goes away.
   base::Closure task =
       base::Bind(&FileThreadWorker::CompressAndWriteToFileOnFileThread,
-                 base::Unretained(worker),
-                 Passed(&new_buffer),
-                 end_stream,
-                 result.get(),
-                 bytes_written.get());
+                 base::Unretained(worker), base::Passed(&new_buffer),
+                 end_stream, result.get(), bytes_written.get());
 
   // OnFlushDone is necessary to avoid running the callback after this
   // object is gone.
-  base::Closure reply = base::Bind(&WebRtcRtpDumpWriter::OnFlushDone,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   callback,
-                                   Passed(&result),
-                                   Passed(&bytes_written));
+  base::Closure reply = base::Bind(
+      &WebRtcRtpDumpWriter::OnFlushDone, weak_ptr_factory_.GetWeakPtr(),
+      callback, base::Passed(&result), base::Passed(&bytes_written));
 
   // Define the task and reply outside the method call so that getting and
   // passing the scoped_ptr does not depend on the argument evaluation order.

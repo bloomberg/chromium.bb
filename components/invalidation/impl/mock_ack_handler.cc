@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/mock_ack_handler.h"
 
+#include <algorithm>
+
 #include "base/thread_task_runner_handle.h"
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/invalidation.h"

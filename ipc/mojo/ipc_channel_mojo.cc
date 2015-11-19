@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_channel_mojo.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -361,7 +363,7 @@ namespace {
 // ClosingDeleter calls |CloseWithErrorIfPending| before deleting the
 // |MessagePipeReader|.
 struct ClosingDeleter {
-  typedef base::DefaultDeleter<internal::MessagePipeReader> DefaultType;
+  typedef std::default_delete<internal::MessagePipeReader> DefaultType;
 
   void operator()(internal::MessagePipeReader* ptr) const {
     ptr->CloseWithErrorIfPending();

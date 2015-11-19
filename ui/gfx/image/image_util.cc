@@ -4,6 +4,8 @@
 
 #include "ui/gfx/image/image_util.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"

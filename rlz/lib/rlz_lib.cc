@@ -7,6 +7,8 @@
 
 #include "rlz/lib/rlz_lib.h"
 
+#include <algorithm>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "rlz/lib/assert.h"

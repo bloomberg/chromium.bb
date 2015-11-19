@@ -90,7 +90,7 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
         profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
   }
   content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, Passed(&bitmap)),
+      FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)),
       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 

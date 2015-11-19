@@ -38,14 +38,11 @@ VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {
 
 } // namespace media
 
-namespace base {
+namespace std {
 
-void DefaultDeleter<media::VideoDecodeAccelerator>::operator()(
-    void* video_decode_accelerator) const {
-  static_cast<media::VideoDecodeAccelerator*>(video_decode_accelerator)->
-      Destroy();
+void default_delete<media::VideoDecodeAccelerator>::operator()(
+    media::VideoDecodeAccelerator* vda) const {
+  vda->Destroy();
 }
 
-}  // namespace base
-
-
+}  // namespace std

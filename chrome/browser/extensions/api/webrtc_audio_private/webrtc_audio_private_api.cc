@@ -121,11 +121,9 @@ void WebrtcAudioPrivateFunction::GetOutputDeviceNames() {
   AudioManager::Get()->GetAudioOutputDeviceNames(device_names.get());
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebrtcAudioPrivateFunction::OnOutputDeviceNames,
-                 this,
-                 Passed(&device_names)));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebrtcAudioPrivateFunction::OnOutputDeviceNames, this,
+                 base::Passed(&device_names)));
 }
 
 void WebrtcAudioPrivateFunction::OnOutputDeviceNames(

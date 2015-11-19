@@ -8,6 +8,8 @@
 #include <psapi.h>
 #include <winternl.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/sys_info.h"
 

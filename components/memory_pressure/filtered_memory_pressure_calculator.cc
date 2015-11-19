@@ -4,6 +4,7 @@
 
 #include "components/memory_pressure/filtered_memory_pressure_calculator.h"
 
+#include <algorithm>
 #include "base/time/tick_clock.h"
 
 namespace memory_pressure {

@@ -4,6 +4,7 @@
 
 #include "components/rappor/byte_vector_utils.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/logging.h"

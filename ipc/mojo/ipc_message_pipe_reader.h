@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_MESSAGE_PIPE_READER_H_
 #define IPC_IPC_MESSAGE_PIPE_READER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/atomicops.h"
@@ -49,7 +50,7 @@ class MessagePipeReader {
   // This is intended to used by MessagePipeReader owners.
   class DelayedDeleter {
    public:
-    typedef base::DefaultDeleter<MessagePipeReader> DefaultType;
+    typedef std::default_delete<MessagePipeReader> DefaultType;
 
     static void DeleteNow(MessagePipeReader* ptr) { delete ptr; }
 

@@ -4,6 +4,8 @@
 
 #include "components/search_provider_logos/google_logo_api.h"
 
+#include <algorithm>
+
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"

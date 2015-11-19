@@ -171,7 +171,7 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
-                 base::Unretained(this), Passed(&context_config_),
+                 base::Unretained(this), base::Passed(&context_config_),
                  jcaller_ref));
 }
 

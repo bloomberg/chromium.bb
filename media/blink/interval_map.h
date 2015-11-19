@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_INTERVAL_MAP_H_
 #define MEDIA_BLINK_INTERVAL_MAP_H_
 
+#include <algorithm>
 #include <limits>
 #include <map>
 

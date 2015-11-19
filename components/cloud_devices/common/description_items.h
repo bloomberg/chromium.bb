@@ -8,6 +8,7 @@
 // Defines common templates that could be used to create device specific
 // capabilities and print tickets.
 
+#include <algorithm>
 #include <vector>
 
 #include "base/logging.h"

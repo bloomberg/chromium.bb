@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/histogram.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram.h"
 
 namespace nacl {
