@@ -209,7 +209,7 @@ Combobox* LabelExample::AddCombobox(GridLayout* layout,
   layout->StartRow(0, 0);
   layout->AddView(new Label(base::ASCIIToUTF16(name)));
   ExampleComboboxModel* model = new ExampleComboboxModel(strings, count);
-  example_combobox_models_.push_back(model);
+  example_combobox_models_.push_back(make_scoped_ptr(model));
   Combobox* combobox = new Combobox(model);
   combobox->SetSelectedIndex(0);
   combobox->set_listener(this);

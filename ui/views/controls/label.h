@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/view.h"
 
@@ -187,7 +186,7 @@ class VIEWS_EXPORT Label : public View {
   scoped_ptr<gfx::RenderText> render_text_;
 
   // The RenderText instances used to display elided and multi-line text.
-  ScopedVector<gfx::RenderText> lines_;
+  std::vector<scoped_ptr<gfx::RenderText>> lines_;
 
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;
