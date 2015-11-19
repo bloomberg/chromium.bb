@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
@@ -19,6 +21,7 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +63,22 @@ public class CustomNotificationBuilder implements NotificationBuilder {
      * flexible amount of padding. If the font size is scaled up the applied padding will be scaled
      * down towards 0.
      */
-    private static final int MAX_SCALABLE_PADDING_DIP = 3;
+    private static final int MAX_SCALABLE_PADDING_DP = 3;
+
+    /**
+     * The amount of padding at the start of the button, either before an icon or before the text.
+     */
+    private static final int BUTTON_PADDING_START_DP = 8;
+
+    /**
+     * The amount of padding between the icon and text of a button. Used only if there is an icon.
+     */
+    private static final int BUTTON_ICON_PADDING_DP = 8;
+
+    /**
+     * Material Grey 600 - to be applied to action button icons in the Material theme.
+     */
+    private static final int BUTTON_ICON_COLOR_MATERIAL = 0xff757575;
 
     private final Context mContext;
 
@@ -101,21 +119,9 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setViewPadding(R.id.title, 0, scaledPadding, 0, 0);
             view.setViewPadding(R.id.body, 0, scaledPadding, 0, scaledPadding);
         }
+        addActionButtons(bigView);
 
-        if (!mActions.isEmpty()) {
-            bigView.setViewVisibility(R.id.button_divider, View.VISIBLE);
-            bigView.setViewVisibility(R.id.buttons, View.VISIBLE);
-            for (Action action : mActions) {
-                RemoteViews button = new RemoteViews(
-                        mContext.getPackageName(), R.layout.web_notification_button);
-                button.setTextViewCompoundDrawablesRelative(R.id.button, action.getIcon(), 0, 0, 0);
-                button.setTextViewText(R.id.button, action.getTitle());
-                button.setOnClickPendingIntent(R.id.button, action.getActionIntent());
-                bigView.addView(R.id.buttons, button);
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (useMaterial()) {
             compactView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
             bigView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
         } else {
@@ -207,6 +213,49 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         return this;
     }
 
+    /**
+     * If there are actions, shows the button related views, and adds a button for each action.
+     */
+    private void addActionButtons(RemoteViews bigView) {
+        if (mActions.isEmpty()) {
+            return;
+        }
+        bigView.setViewVisibility(R.id.button_divider, View.VISIBLE);
+        bigView.setViewVisibility(R.id.buttons, View.VISIBLE);
+        Resources resources = mContext.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        for (Action action : mActions) {
+            RemoteViews view =
+                    new RemoteViews(mContext.getPackageName(), R.layout.web_notification_button);
+
+            if (action.getIcon() != 0) {
+                // TODO(mvanouwerkerk): If the icon can be provided by web developers, limit its
+                // dimensions and decide whether or not to paint it.
+                if (useMaterial()) {
+                    view.setInt(R.id.button_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
+                }
+                view.setImageViewResource(R.id.button_icon, action.getIcon());
+
+                // Set the padding of the button so the text does not overlap with the icon. Flip
+                // between left and right manually as RemoteViews does not expose a method that sets
+                // padding in a writing-direction independent way.
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeResource(resources, action.getIcon(), options);
+                int buttonPadding =
+                        dpToPx(BUTTON_PADDING_START_DP + BUTTON_ICON_PADDING_DP, metrics)
+                        + options.outWidth;
+                int buttonPaddingLeft = LocalizationUtils.isLayoutRtl() ? 0 : buttonPadding;
+                int buttonPaddingRight = LocalizationUtils.isLayoutRtl() ? buttonPadding : 0;
+                view.setViewPadding(R.id.button, buttonPaddingLeft, 0, buttonPaddingRight, 0);
+            }
+
+            view.setTextViewText(R.id.button, action.getTitle());
+            view.setOnClickPendingIntent(R.id.button, action.getActionIntent());
+            bigView.addView(R.id.buttons, view);
+        }
+    }
+
     @Nullable
     private static CharSequence limitLength(@Nullable CharSequence input) {
         if (input == null) {
@@ -252,7 +301,21 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             fontScale = Math.min(fontScale, FONT_SCALE_LARGE);
             paddingScale = (FONT_SCALE_LARGE - fontScale) / (FONT_SCALE_LARGE - 1.0f);
         }
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                paddingScale * MAX_SCALABLE_PADDING_DIP, displayMetrics));
+        return dpToPx(paddingScale * MAX_SCALABLE_PADDING_DP, displayMetrics);
+    }
+
+    /**
+     * Converts a dp value to a px value.
+     */
+    private static int dpToPx(float value, DisplayMetrics displayMetrics) {
+        return Math.round(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, displayMetrics));
+    }
+
+    /**
+     * Whether to use the Material look and feel or fall back to Holo.
+     */
+    private static boolean useMaterial() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 }
