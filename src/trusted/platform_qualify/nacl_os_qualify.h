@@ -35,6 +35,11 @@ int NaClOsIs64BitWindows(void);
  * Returns 1 if the operating system is OS X 10.10+.
  */
 int NaClOSX10Dot10OrLater(void);
+
+/*
+ * Returns 1 if the operating system is OS X 10.7+.
+ */
+int NaClOSX10Dot7OrLater(void);
 #endif
 
 EXTERN_C_END

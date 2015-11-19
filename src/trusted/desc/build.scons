@@ -55,6 +55,11 @@ if env.Bit('windows'):
 else:
   nrd_lib_inputs += ['posix/nacl_desc.c']
 
+if env.Bit('mac'):
+  nrd_lib_inputs += [
+    'osx/nacl_desc_imc_shm_mach.c',
+  ]
+
 if env.Bit('windows'):
   nrd_lib_inputs += [
       'nacl_desc_conn_cap.c',

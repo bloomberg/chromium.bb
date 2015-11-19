@@ -45,6 +45,10 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
+#if NACL_OSX
+#include "native_client/src/trusted/desc/osx/nacl_desc_imc_shm_mach.h"
+#endif
+
 /*
  * This file contains base class code for NaClDesc.
  *
@@ -195,6 +199,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescInternalizeNotImplemented,  /* bound sockets cannot be transferred */
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
+  NaClDescInternalizeNotImplemented,  /* mach shm */
   NaClDescInternalizeNotImplemented,  /* mutex */
   NaClDescInternalizeNotImplemented,  /* condvar */
   NaClDescInternalizeNotImplemented,  /* semaphore */
@@ -218,6 +223,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_BOUND_SOCKET);
     MAP(NACL_DESC_CONNECTED_SOCKET);
     MAP(NACL_DESC_SHM);
+    MAP(NACL_DESC_SHM_MACH);
     MAP(NACL_DESC_MUTEX);
     MAP(NACL_DESC_CONDVAR);
     MAP(NACL_DESC_SEMAPHORE);

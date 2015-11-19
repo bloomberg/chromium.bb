@@ -39,6 +39,12 @@ static_library("nrd_xfer") {
     ]
   }
 
+  if (current_os == "mac") {
+    sources += [
+      "osx/nacl_desc_imc_shm_mach.c",
+    ]
+  }
+
   deps = [
     "//build/config/nacl:nacl_base",
     "//native_client/src/shared/imc:imc",

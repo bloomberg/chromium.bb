@@ -7,9 +7,14 @@
 #ifndef NATIVE_CLIENT_SRC_PUBLIC_NACL_DESC_H_
 #define NATIVE_CLIENT_SRC_PUBLIC_NACL_DESC_H_ 1
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/public/imc_types.h"
+
+#if NACL_OSX
+#include <mach/mach.h>
+#endif
 
 EXTERN_C_BEGIN
 
@@ -51,6 +56,10 @@ struct NaClDesc *NaClDescIoMakeFromHandle(NaClHandle handle,
                                           int flags) NACL_WUR;
 
 struct NaClDesc *NaClDescImcShmMake(NaClHandle handle, int64_t size) NACL_WUR;
+#if NACL_OSX
+struct NaClDesc *NaClDescImcShmMachMake(mach_port_t handle,
+                                        int64_t size) NACL_WUR;
+#endif
 
 struct NaClDesc *NaClDescSyncSocketMake(NaClHandle handle) NACL_WUR;
 

@@ -13,6 +13,7 @@
 # include <sys/mman.h>
 #elif NACL_OSX
 # include <mach/mach.h>
+# include <mach/mach_vm.h>
 #endif
 
 #include "gtest/gtest.h"
@@ -31,6 +32,10 @@
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sys_memory.h"
+
+#if NACL_OSX
+#include "native_client/src/trusted/desc/osx/nacl_desc_imc_shm_mach.h"
+#endif
 
 static const int kTestFillByte = 0x42;
 
@@ -154,6 +159,24 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   ASSERT_EQ(mapping_addr, addr);
 }
 
+#if NACL_OSX
+static void MapShmMach(struct NaClApp *nap, uintptr_t addr, size_t shm_size) {
+  struct NaClDescImcShmMach *shm_desc =
+      (struct NaClDescImcShmMach *) malloc(sizeof(*shm_desc));
+  ASSERT_TRUE(shm_desc);
+  ASSERT_EQ(NaClDescImcShmMachAllocCtor(shm_desc, shm_size,
+                                        /* executable= */ 0), 1);
+  struct NaClDesc *desc = &shm_desc->base;
+  int fd = NaClAppSetDescAvail(nap, desc);
+
+  uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
+      nap, (void *) addr, shm_size,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
+  ASSERT_EQ(mapping_addr, addr);
+}
+#endif
+
 void UnmapMemory(struct NaClApp *nap, uint32_t addr, uint32_t size) {
   // Create dummy NaClAppThread.
   // TODO(mseaborn): Clean up so that this is not necessary.
@@ -192,6 +215,27 @@ TEST_F(MmapTest, TestFreeingShmMappings) {
   NaClAddrSpaceFree(&app);
 }
 
+#if NACL_OSX
+// Test that Mach shared memory mappings can be unmapped by
+// NaClAddrSpaceFree().
+TEST_F(MmapTest, TestFreeingShmMachMappings) {
+  // Mach shared memory is only implemented on OSX 10.7+.
+  if (!NaClOSX10Dot7OrLater())
+    return;
+
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // Create a shared memory descriptor of arbitrary size and map it at
+  // an arbitrary address.
+  MapShmMach(&app, 0x200000, 0x100000);
+
+  // Check that we can deallocate the address space.
+  NaClAddrSpaceFree(&app);
+}
+#endif /* NACL_OSX */
+
 // Test that unmapping a shared memory mapping does not leave behind
 // an address space hole.
 TEST_F(MmapTest, TestUnmapShmMapping) {
@@ -223,6 +267,37 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
 
   NaClAddrSpaceFree(&app);
 }
+
+#if NACL_OSX
+// Test that unmapping a Mach shared memory mapping does not leave behind
+// an address space hole.
+TEST_F(MmapTest, TestUnmapShmMachMappings) {
+  // Mach shared memory is only implemented on OSX 10.7+.
+  if (!NaClOSX10Dot7OrLater())
+    return;
+
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmMach(&app, 0x400000, 0x10000);
+
+  uintptr_t addr = 0x200000;
+  uint32_t size = 0x100000;
+  MapShmMach(&app, addr, size);
+
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SharedMapFlag());
+
+  UnmapMemory(&app, addr, size);
+
+  // Check that we can deallocate the address space.
+  NaClAddrSpaceFree(&app);
+}
+#endif /* NACL_OSX */
 
 // Test that unmapping a file mapping does not leave behind an address
 // space hole.
@@ -336,6 +411,37 @@ TEST_F(MmapTest, TestProtectShmMapping) {
 
   NaClAddrSpaceFree(&app);
 }
+
+#if NACL_OSX
+// Test that changing a protection of a Mach shared memory mapping is reflected
+// by the underlying OS memory mapping.
+TEST_F(MmapTest, TestProtectShmMachMapping) {
+  // Mach shared memory is only implemented on OSX 10.7+.
+  if (!NaClOSX10Dot7OrLater())
+    return;
+
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmMach(&app, 0x400000, 0x10000);
+
+  uintptr_t addr = 0x200000;
+  size_t size = 0x100000;
+  MapShmMach(&app, addr, size);
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+  CheckMapping(sysaddr, size, VM_PROT_READ | VM_PROT_WRITE, SharedMapFlag());
+
+  ASSERT_EQ(0, NaClSysMprotectInternal(
+                   &app, (uint32_t) addr, size, NACL_ABI_PROT_NONE));
+  CheckMapping(sysaddr, size, VM_PROT_NONE, SharedMapFlag());
+
+  NaClAddrSpaceFree(&app);
+}
+#endif /* NACL_OSX */
 
 // Test that changing a protection of a file mapping is reflected
 // by the underlying OS memory mapping.
@@ -483,6 +589,56 @@ TEST_F(MmapTest, TestTrustedMapBeyondFileExtent) {
     NaClDescUnmapUnsafe(desc, (void *) map_result, file_size_rounded_up);
   }
 }
+
+#if NACL_OSX
+// Test that Mach shared memory mappings can be unmapped by
+// NaClDescUnmapUnsafe(), which uses munmap().
+TEST_F(MmapTest, TestPosixUnmapShmMachMappings) {
+  // Mach shared memory is only implemented on OSX 10.7+.
+  if (!NaClOSX10Dot7OrLater())
+    return;
+
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // Create a shared memory descriptor of arbitrary size and map it at
+  // an arbitrary address.
+  uintptr_t addr = 0x200000;
+  uint32_t size = 0x100000;
+
+  // Make a desc.
+  struct NaClDescImcShmMach *shm_desc =
+      (struct NaClDescImcShmMach *) malloc(sizeof(*shm_desc));
+  ASSERT_TRUE(shm_desc);
+  ASSERT_EQ(NaClDescImcShmMachAllocCtor(shm_desc, size,
+                                        /* executable= */ 0),
+            1);
+  struct NaClDesc *desc = &shm_desc->base;
+  int fd = NaClAppSetDescAvail(&app, desc);
+
+  // Map it at a fixed location.
+  uintptr_t user_addr = (uint32_t) NaClSysMmapIntern(
+      &app, (void *) addr, size,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
+  ASSERT_EQ(user_addr, (uintptr_t) addr);
+
+  uintptr_t sys_addr = NaClUserToSys(&app, user_addr);
+
+  // Unmap the memory, leaving a hole.
+  NaClDescUnmapUnsafe(desc, (void *) sys_addr, size);
+
+  // Check that we can map the memory with VM_FLAGS_FIXED but without
+  // VM_FLAGS_OVERWRITE. If the unmap failed, then this call will fail as well.
+  mach_vm_address_t sys_addr_copy = (mach_vm_address_t) sys_addr;
+  kern_return_t kr = mach_vm_map(mach_task_self(), &sys_addr_copy, size, 0,
+                                 VM_FLAGS_FIXED, MACH_PORT_NULL, 0, FALSE,
+                                 VM_PROT_READ, VM_PROT_READ, VM_INHERIT_NONE);
+  ASSERT_EQ(KERN_SUCCESS, kr);
+  NaClAddrSpaceFree(&app);
+}
+#endif /* NACL_OSX */
 
 #endif /* !NACL_WINDOWS || defined(NDEBUG) ||
           NACL_ARCH(NACL_BUILD_SUBARCH) != 64 */

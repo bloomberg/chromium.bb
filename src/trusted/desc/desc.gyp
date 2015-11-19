@@ -115,7 +115,11 @@
                   '-pedantic',
                 ]}
               }]
-            ]
+            ],
+            'sources': [
+              'osx/nacl_desc_imc_shm_mach.c',
+              'osx/nacl_desc_imc_shm_mach.h',
+            ],
           }],
           ['OS=="win"', { 'sources': [
               'win/nacl_desc.c',

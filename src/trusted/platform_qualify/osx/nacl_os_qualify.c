@@ -113,3 +113,7 @@ static int OSXMajorVersion(void) {
 int NaClOSX10Dot10OrLater(void) {
   return OSXMajorVersion() >= 10;
 }
+
+int NaClOSX10Dot7OrLater(void) {
+  return OSXMajorVersion() >= 7;
+}
