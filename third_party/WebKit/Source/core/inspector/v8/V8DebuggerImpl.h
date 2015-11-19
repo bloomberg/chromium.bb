@@ -81,6 +81,7 @@ public:
     int frameCount();
 
     bool isPaused();
+    v8::Local<v8::Context> pausedContext() { return m_pausedContext; }
 
     v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>) override;
     v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) override;

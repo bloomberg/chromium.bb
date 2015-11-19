@@ -109,16 +109,16 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallF
     return ScriptCallStack::create(frames);
 }
 
-static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(v8::Local<v8::Object> value)
+static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(v8::Local<v8::Context> context, v8::Local<v8::Object> value)
 {
     if (value.IsEmpty())
         return nullptr;
-    return V8JavaScriptCallFrame::unwrap(value);
+    return V8JavaScriptCallFrame::unwrap(context, value);
 }
 
-static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::Object> callFrames)
+static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames)
 {
-    RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(callFrames);
+    RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(context, callFrames);
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
@@ -1113,9 +1113,9 @@ int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String& description)
     RefPtr<AsyncCallChain> chain;
     if (callFrames.IsEmpty()) {
         if (m_currentAsyncCallChain)
-            chain = AsyncCallChain::create(nullptr, m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
+            chain = AsyncCallChain::create(m_currentAsyncCallChain.get()->creationContext(m_isolate), nullptr, m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
     } else {
-        chain = AsyncCallChain::create(adoptRef(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
+        chain = AsyncCallChain::create(debugger().isPaused() ? debugger().pausedContext() : m_isolate->GetCurrentContext(), adoptRef(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
     }
     do {
         ++m_lastAsyncOperationId;
@@ -1244,7 +1244,7 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         RefPtr<AsyncStackTrace> lastAsyncStackTrace;
         for (const auto& callStack : callStacks) {
             v8::HandleScope scope(m_isolate);
-            RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = toScriptCallStack(callStack->callFrames(m_isolate));
+            RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = toScriptCallStack(chain->creationContext(m_isolate), callStack->callFrames(m_isolate));
             if (!scriptCallStack)
                 break;
             if (!operation) {
@@ -1433,7 +1433,7 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> V8DebuggerAgentImpl::currentAsyncSt
     RefPtrWillBeRawPtr<ScriptAsyncCallStack> result = nullptr;
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
         v8::HandleScope scope(m_isolate);
-        RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame((*it)->callFrames(m_isolate));
+        RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), (*it)->callFrames(m_isolate));
         if (!callFrame)
             break;
         result = ScriptAsyncCallStack::create((*it)->description(), toScriptCallStack(callFrame.get()), result.release());

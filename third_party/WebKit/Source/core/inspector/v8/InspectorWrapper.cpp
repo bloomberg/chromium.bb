@@ -8,6 +8,8 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "wtf/RefPtr.h"
 
+#include <v8-debug.h>
+
 namespace blink {
 
 v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::Isolate* isolate, const char* className, const Vector<V8MethodConfiguration>& methods, const Vector<V8AttributeConfiguration>& attributes)
@@ -48,9 +50,10 @@ v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::Function
     return result;
 }
 
-void* InspectorWrapperBase::unwrap(v8::Local<v8::Object> object, const char* name)
+void* InspectorWrapperBase::unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name)
 {
-    v8::Isolate* isolate = object->GetIsolate();
+    ASSERT(context != v8::Debug::GetDebugContext());
+    v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, object, v8InternalizedString(isolate, name));
     if (value.IsEmpty())
         return nullptr;

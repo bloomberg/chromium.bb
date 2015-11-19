@@ -19,13 +19,14 @@ AsyncCallStack::~AsyncCallStack()
 {
 }
 
-PassRefPtr<AsyncCallChain> AsyncCallChain::create(PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
+PassRefPtr<AsyncCallChain> AsyncCallChain::create(v8::Local<v8::Context> creationContext, PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
-    return adoptRef(new AsyncCallChain(stack, prevChain, asyncCallChainMaxLength));
+    return adoptRef(new AsyncCallChain(creationContext, stack, prevChain, asyncCallChainMaxLength));
 }
 
-AsyncCallChain::AsyncCallChain(PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
+AsyncCallChain::AsyncCallChain(v8::Local<v8::Context> creationContext, PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
+    m_creationContext.Reset(creationContext->GetIsolate(), creationContext);
     if (stack)
         m_callStacks.append(stack);
     if (prevChain) {

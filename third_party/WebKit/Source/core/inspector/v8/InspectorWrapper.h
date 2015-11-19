@@ -30,7 +30,7 @@ public:
 
 protected:
     static v8::Local<v8::Object> createWrapper(v8::Local<v8::FunctionTemplate>, v8::Local<v8::Context>);
-    static void* unwrap(v8::Local<v8::Object>, const char* name);
+    static void* unwrap(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name);
 
     static v8::Local<v8::String> v8InternalizedString(v8::Isolate*, const char* name);
 };
@@ -89,9 +89,9 @@ public:
         V8HiddenValue::setHiddenValue(isolate, result, v8InternalizedString(isolate, hiddenPropertyName), objectReference);
         return result;
     }
-    static T* unwrap(v8::Local<v8::Object> object)
+    static T* unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
     {
-        void* data = InspectorWrapperBase::unwrap(object, hiddenPropertyName);
+        void* data = InspectorWrapperBase::unwrap(context, object, hiddenPropertyName);
         if (!data)
             return nullptr;
         return reinterpret_cast<WeakCallbackData*>(data)->m_impl.get();
