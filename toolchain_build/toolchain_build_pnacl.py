@@ -16,6 +16,7 @@ import fnmatch
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -93,6 +94,11 @@ CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                             'llvm-build', 'Release+Asserts', 'bin', 'clang')
 CHROME_CLANGXX = CHROME_CLANG + '++'
 
+# Required SDK version and target version for Mac builds.
+# See MAC_SDK_FLAGS, below.
+MAC_SDK_MIN = '10.10'
+MAC_DEPLOYMENT_TARGET = '10.6'
+
 # Redirectors are small shims acting like sym links with optional arguments.
 # For mac/linux we simply use a shell script which create small redirector
 # shell scripts. For windows we compile an executable which redirects to
@@ -148,6 +154,24 @@ def ProgramPath(program):
   except pynacl.file_tools.ExecutableNotFound:
     pass
   return None
+
+
+# Determine the extra compiler flags necessary for Mac.  Do this once at
+# top level, rather than every time in CompilersForHost, because running
+# the external script is costly.
+def MacSdkFlags():
+  if not pynacl.platform.IsMac():
+    return []
+  mac_sdk_sysroot, mac_sdk_version = subprocess.check_output([
+      sys.executable,
+      os.path.join(os.path.dirname(NACL_DIR), 'build', 'mac', 'find_sdk.py'),
+      '--print_sdk_path',
+      MAC_SDK_MIN,
+      ]).splitlines()
+  return ['-isysroot', mac_sdk_sysroot,
+          '-mmacosx-version-min=' + MAC_DEPLOYMENT_TARGET]
+
+MAC_SDK_FLAGS = MacSdkFlags()
 
 
 def InputsForCommands(commands):
@@ -229,22 +253,25 @@ def HostArchToolFlags(host, extra_cflags, opts):
   """Return the appropriate CFLAGS, CXXFLAGS, and LDFLAGS based on host
   and opts. Does not attempt to determine flags that are attached
   to CC and CXX directly.
+
+  Returns the tuple (flags, deps) where 'flags' is a dictionary mapping
+  'CFLAGS' et al to a list of arguments, and 'deps' is a list of extra
+  dependencies for a component using these flags.
   """
   extra_cc_flags = list(extra_cflags)
   result = { 'LDFLAGS' : [],
              'CFLAGS' : [],
              'CXXFLAGS' : []}
+  deps = []
   if TripleIsWindows(host):
     result['LDFLAGS'] += ['-L%(abs_libdl)s', '-ldl']
     result['CFLAGS'] += ['-isystem','%(abs_libdl)s']
     result['CXXFLAGS'] += ['-isystem', '%(abs_libdl)s']
+    deps.append('libdl')
   else:
     if TripleIsLinux(host) and not TripleIsX8664(host):
       # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
       extra_cc_flags += ['-m32']
-    elif TripleIsMac(host):
-      # This is required for building with recent libc++ against OSX 10.6
-      extra_cc_flags += ['-U__STRICT_ANSI__']
     if opts.gcc or host == 'le32-nacl':
       result['CFLAGS']  += extra_cc_flags
       result['CXXFLAGS'] += extra_cc_flags
@@ -256,7 +283,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
         '-stdlib=libc++',
         '-I%(' + FlavoredName('abs_libcxx', host, opts) + ')s/include/c++/v1'] +
         extra_cc_flags)
-  return result
+      deps.append(FlavoredName('libcxx', host, opts))
+  return result, deps
 
 
 def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
@@ -264,8 +292,9 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
   """Return flags passed to LLVM and binutils configure for compilers and
   compile flags.
 
-  Returns the tuple (flags, inputs) where 'flags' is a list of arguments to
-  configure and 'inputs' is a dict of extra inputs to be hashed.
+  Returns the tuple (flags, inputs, deps) where 'flags' is a list of
+  arguments to configure, 'inputs' is a dict of extra inputs to be hashed,
+  and 'deps' is a list of extra dependencies for a component using these flags.
   """
   configure_args = []
   extra_cc_args = []
@@ -314,12 +343,17 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
     else:
       cc_list = [cc]
       cxx_list = [cxx]
+
+    if TripleIsMac(host):
+      cc_list += MAC_SDK_FLAGS
+      cxx_list += MAC_SDK_FLAGS
+
     configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
     configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
     configure_args.append('AR=' + ar)
     configure_args.append('RANLIB=' + ranlib)
 
-  tool_flags = HostArchToolFlags(host, extra_cflags, options)
+  tool_flags, tool_deps = HostArchToolFlags(host, extra_cflags, options)
   configure_args.extend(
        ['CFLAGS=' + ' '.join(tool_flags['CFLAGS']),
         'CXXFLAGS=' + ' '.join(tool_flags['CXXFLAGS']),
@@ -333,7 +367,7 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
     if is_cross:
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
-  return configure_args, InputsForCommands(hashables)
+  return configure_args, InputsForCommands(hashables), tool_deps
 
 
 def LibCxxHostArchFlags(host):
@@ -345,14 +379,19 @@ def LibCxxHostArchFlags(host):
     # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
     cmake_flags.extend(['-DCMAKE_C_FLAGS=-m32',
                         '-DCMAKE_CXX_FLAGS=-m32'])
+  elif TripleIsMac(host):
+    sdk_flags = ' '.join(MAC_SDK_FLAGS)
+    cmake_flags.extend(['-DCMAKE_C_FLAGS=' + sdk_flags,
+                        '-DCMAKE_CXX_FLAGS=' + sdk_flags])
   return cmake_flags, InputsForCommands(hashables)
 
 
 def CmakeHostArchFlags(host, options):
   """Set flags passed to LLVM cmake for compilers and compile flags.
 
-  Returns the tuple (flags, inputs) where 'flags' is a list of arguments to
-  cmake and 'inputs' is a dict of extra inputs to be hashed.
+  Returns the tuple (flags, inputs, deps) where 'flags' is a list of
+  arguments to cmake, 'inputs' is a dict of extra inputs to be hashed,
+  and 'deps' is a list of extra dependencies for a component using these flags.
   """
   cmake_flags = []
   if options.afl_fuzz_dir:
@@ -370,23 +409,44 @@ def CmakeHostArchFlags(host, options):
   # msan-enabled compiler_rt, leaving references to __msan_allocated_memory
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
-  tool_flags = HostArchToolFlags(host, [], options)
-  cmake_flags.extend(['-DCMAKE_C_FLAGS=' + ' '.join(tool_flags['CFLAGS'])])
-  cmake_flags.extend(['-DCMAKE_CXX_FLAGS=' + ' '.join(tool_flags['CXXFLAGS'])])
+  tool_flags, tool_deps = HostArchToolFlags(host, [], options)
+  cflags = tool_flags['CFLAGS']
+  cxxflags = tool_flags['CXXFLAGS']
+  if TripleIsMac(host):
+    cflags = MAC_SDK_FLAGS + cflags
+    cxxflags = MAC_SDK_FLAGS + cxxflags
+  cmake_flags.append('-DCMAKE_C_FLAGS=' + ' '.join(cflags))
+  cmake_flags.append('-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags))
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
     cmake_flags.extend([('-DCMAKE_%s_LINKER_FLAGS=' % linker_type) +
                         ' '.join(tool_flags['LDFLAGS'])])
-  return cmake_flags, InputsForCommands(hashables)
+  return cmake_flags, InputsForCommands(hashables), tool_deps
 
 
-def ConfigureBinutilsCommon():
-  return ['--with-pkgversion=' + PACKAGE_NAME,
-          '--with-bugurl=' + BUG_URL,
-          '--without-zlib',
-          '--prefix=',
-          '--disable-silent-rules',
-          '--enable-deterministic-archives',
-         ]
+def ConfigureBinutilsCommon(host, options, is_pnacl):
+  # Binutils still has some warnings when building with clang
+  if not options.gcc:
+    warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
+                    '-Wno-unused-function', '-Wno-unused-const-variable',
+                    '-Wno-unneeded-internal-declaration',
+                    '-Wno-unused-private-field', '-Wno-format-security']
+  else:
+    warning_flags = ['-Wno-unused-function', '-Wno-unused-value']
+
+  host_arch_flags, inputs, deps = ConfigureHostArchFlags(
+      host, warning_flags, options,
+      options.binutils_pnacl_extra_configure if is_pnacl else None)
+
+  flags = [
+      '--with-pkgversion=' + PACKAGE_NAME,
+      '--with-bugurl=' + BUG_URL,
+      '--without-zlib',
+      '--prefix=',
+      '--disable-silent-rules',
+      '--enable-deterministic-archives',
+      ] + host_arch_flags
+
+  return flags, inputs, deps
 
 def LLVMConfigureAssertionsFlags(options):
   if options.enable_llvm_assertions:
@@ -622,15 +682,6 @@ def HostTools(host, options):
     binutils_do_werror = False
     extra_gold_deps = [H('llvm')]
 
-  # Binutils still has some warnings when building with clang
-  if not options.gcc:
-    warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
-                    '-Wno-unused-function', '-Wno-unused-const-variable',
-                    '-Wno-unneeded-internal-declaration',
-                    '-Wno-unused-private-field', '-Wno-format-security']
-  else:
-    warning_flags = ['-Wno-unused-function', '-Wno-unused-value']
-
   # The binutils git checkout includes all the directories in the
   # upstream binutils-gdb.git repository, but some of these
   # directories are not included in a binutils release tarball.  The
@@ -651,22 +702,22 @@ def HostTools(host, options):
         dummy_makefile, command.path.join(dir, 'Makefile')))
     return commands
 
-  binutils_host_arch_flags, binutils_inputs = ConfigureHostArchFlags(
-      host, warning_flags, options, options.binutils_pnacl_extra_configure)
-  binutils_inputs.update({'macros': os.path.join(
-      NACL_DIR, 'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')})
+  binutils_flags, binutils_inputs, binutils_deps = ConfigureBinutilsCommon(
+      host, options, True)
+  binutils_inputs['macros'] = os.path.join(
+      NACL_DIR, 'pnacl', 'support', 'clang_direct', 'nacl-arm-macros.s')
   tools = {
       # The binutils_pnacl package is used both for bitcode linking (gold) and
       # for its conventional use with arm-nacl-clang.
       H('binutils_pnacl'): {
-          'dependencies': ['binutils_pnacl_src'] + extra_gold_deps,
+          'dependencies': (['binutils_pnacl_src'] +
+                           extra_gold_deps + binutils_deps),
           'type': 'build',
           'inputs' : binutils_inputs,
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
-                  '%(binutils_pnacl_src)s/configure'] +
-                  ConfigureBinutilsCommon() + binutils_host_arch_flags +
+                  '%(binutils_pnacl_src)s/configure'] + binutils_flags +
                   [
                   '--enable-gold=yes',
                   '--enable-plugins',
@@ -746,17 +797,18 @@ def HostTools(host, options):
   # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
   # https://public.kitware.com/Bug/view.php?id=14066
   # The workaround is to set LDFLAGS in the environment.
-  llvm_cmake_config_env = {'LDFLAGS': ' '.join(
-      HostArchToolFlags(host, [], options)['LDFLAGS'])}
+  tool_flags, tool_deps = HostArchToolFlags(host, [], options)
+  llvm_cmake_config_env = {'LDFLAGS': ' '.join(tool_flags['LDFLAGS'])}
   llvm_cmake_config_env.update(AflFuzzEnvMap(host, options))
 
-  llvm_host_arch_flags, llvm_inputs = CmakeHostArchFlags(host, options)
-  llvm_inputs.update({'test_xfails': os.path.join(NACL_DIR,
-                                                  'pnacl', 'scripts')})
+  llvm_host_arch_flags, llvm_inputs, llvm_deps = CmakeHostArchFlags(
+      host, options)
+  llvm_deps = list(set(tool_deps + llvm_deps))
+  llvm_inputs['test_xfails'] = os.path.join(NACL_DIR, 'pnacl', 'scripts')
   llvm_cmake = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
-                           'subzero_src'],
+                           'subzero_src'] + llvm_deps,
           'inputs': llvm_inputs,
           'type': 'build',
           'commands': [
@@ -798,14 +850,14 @@ def HostTools(host, options):
         command.Remove(*[os.path.join('%(output)s', 'lib', f) for f
                          in '*.a', '*Hello.*', 'BugpointPasses.*']),
     ]
-  llvm_host_arch_flags, llvm_inputs = ConfigureHostArchFlags(
+  llvm_host_arch_flags, llvm_inputs, llvm_deps = ConfigureHostArchFlags(
       host, [], options, use_afl_fuzz=options.afl_fuzz_dir)
   llvm_inputs.update({'test_xfails': os.path.join(NACL_DIR,
                                                   'pnacl', 'scripts')})
   llvm_autoconf = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
-                           'subzero_src'],
+                           'subzero_src'] + llvm_deps,
           'inputs': llvm_inputs,
           'type': 'build',
           'commands': [
@@ -863,12 +915,6 @@ def HostTools(host, options):
     tools.update(llvm_cmake)
   else:
     tools.update(llvm_autoconf)
-  if TripleIsWindows(host):
-    tools[H('binutils_pnacl')]['dependencies'].append('libdl')
-    tools[H('llvm')]['dependencies'].append('libdl')
-  elif not options.gcc and host != 'le32-nacl':
-    tools[H('binutils_pnacl')]['dependencies'].append(H('libcxx'))
-    tools[H('llvm')]['dependencies'].append(H('libcxx'))
   return tools
 
 
@@ -977,17 +1023,22 @@ def HostToolsDirectToNacl(host, options):
             args])
         for tool, args in TOOL_X64_I686_REDIRECTS]
 
+  binutils_flags, binutils_inputs, binutils_deps = ConfigureBinutilsCommon(
+      host, options, False)
+  redirect_inputs.update(binutils_inputs)
   tools.update({
       H('binutils_x86'): {
           'type': 'build',
-          'dependencies': ['binutils_x86_src'] + redirect_deps,
+          'dependencies': ['binutils_x86_src'] + redirect_deps + binutils_deps,
           'inputs': redirect_inputs,
           'commands': [
               command.SkipForIncrementalCommand(
-                  ['sh', '%(binutils_x86_src)s/configure'] +
-                  ConfigureBinutilsCommon() +
+                  ['sh', '%(binutils_x86_src)s/configure'] + binutils_flags +
                   ['--target=x86_64-nacl',
-                   '--enable-gold',
+                   # TODO(mcgrathr): Enable gold if we rebase to 2.25.
+                   # The 2.24 gold sources are not compatible with the libc++
+                   # version we use to build.
+                   '--disable-gold',
                    '--enable-targets=x86_64-nacl,i686-nacl',
                    '--disable-werror']),
               command.Command(MakeCommand(host)),
