@@ -229,6 +229,12 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   blink::WebString getShaderSource(blink::WebGLId shader) override;
   blink::WebString getString(blink::WGC3Denum name) override;
 
+  void getSynciv(blink::WGC3Dsync sync,
+                 blink::WGC3Denum pname,
+                 blink::WGC3Dsizei bufSize,
+                 blink::WGC3Dsizei *length,
+                 blink::WGC3Dint *params) override;
+
   void getTexParameterfv(blink::WGC3Denum target,
                          blink::WGC3Denum pname,
                          blink::WGC3Dfloat* value) override;

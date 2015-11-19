@@ -573,6 +573,15 @@ blink::WebString WebGraphicsContext3DImpl::getString(
       reinterpret_cast<const char*>(gl_->GetString(name)));
 }
 
+void WebGraphicsContext3DImpl::getSynciv(blink::WGC3Dsync sync,
+                                         blink::WGC3Denum pname,
+                                         blink::WGC3Dsizei bufSize,
+                                         blink::WGC3Dsizei *length,
+                                         blink::WGC3Dint *params) {
+  return gl_->GetSynciv(
+      reinterpret_cast<GLsync>(sync), pname, bufSize, length, params);
+}
+
 DELEGATE_TO_GL_3(getTexParameterfv, GetTexParameterfv,
                  WGC3Denum, WGC3Denum, WGC3Dfloat*)
 
