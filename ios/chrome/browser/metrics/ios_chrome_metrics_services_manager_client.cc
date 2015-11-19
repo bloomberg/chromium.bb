@@ -56,7 +56,7 @@ IOSChromeMetricsServicesManagerClient::CreateVariationsService() {
   // networking.
   return variations::VariationsService::Create(
       make_scoped_ptr(new IOSChromeVariationsServiceClient), local_state_,
-      GetMetricsStateManager(), "dummyDisableBackgroundSwitch",
+      GetMetricsStateManager(), "dummy-disable-background-switch",
       ::CreateUIStringOverrider());
 }
 
