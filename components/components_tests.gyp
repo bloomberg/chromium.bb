@@ -601,7 +601,6 @@
       'scheduler/base/test_always_fail_time_source.h',
       'scheduler/base/test_time_source.cc',
       'scheduler/base/test_time_source.h',
-      'scheduler/base/time_domain_unittest.cc',
       'scheduler/child/idle_helper_unittest.cc',
       'scheduler/child/scheduler_helper_unittest.cc',
       'scheduler/child/scheduler_tqm_delegate_for_test.cc',

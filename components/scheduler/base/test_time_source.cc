@@ -7,9 +7,7 @@
 namespace scheduler {
 
 TestTimeSource::TestTimeSource(base::SimpleTestTickClock* time_source)
-    : time_source_(time_source) {
-  DCHECK(time_source_);
-}
+    : time_source_(time_source) {}
 
 TestTimeSource::~TestTimeSource() {}
 
