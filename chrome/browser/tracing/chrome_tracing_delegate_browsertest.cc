@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,6 +28,14 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
       : receive_count_(0),
         started_finalizations_count_(0),
         last_on_started_finalizing_success_(false) {}
+
+#if !defined(OS_CHROMEOS)
+  void SetUpOnMainThread() override {
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    local_state->SetBoolean(metrics::prefs::kMetricsReportingEnabled, true);
+  }
+#endif
 
   bool StartPreemptiveScenario(
       const base::Closure& on_upload_callback,
@@ -225,12 +234,30 @@ class ChromeTracingDelegateBrowserTestOnStartup
   }
 };
 
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
+                       PRE_ScenarioSetFromFieldtrial) {
+  // At this point the metrics pref is not set.
+  EXPECT_FALSE(
+      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
+}
+#endif // OS_CHROMEOS
+
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        ScenarioSetFromFieldtrial) {
   // We should reach this point without crashing.
   EXPECT_TRUE(
       content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
+
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
+                       PRE_PRE_StartupTracingThrottle) {
+  // At this point the metrics pref is not set.
+  EXPECT_FALSE(
+      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
+}
+#endif // OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_StartupTracingThrottle) {
