@@ -912,6 +912,8 @@
             'animation/RectSVGInterpolation.h',
             'animation/SVGAngleInterpolationType.cpp',
             'animation/SVGAngleInterpolationType.h',
+            'animation/SVGIntegerInterpolationType.cpp',
+            'animation/SVGIntegerInterpolationType.h',
             'animation/SVGInterpolation.cpp',
             'animation/SVGInterpolation.h',
             'animation/SVGInterpolationType.cpp',

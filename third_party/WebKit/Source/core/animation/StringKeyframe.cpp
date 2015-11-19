@@ -22,7 +22,6 @@
 #include "core/animation/FilterStyleInterpolation.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
-#include "core/animation/IntegerSVGInterpolation.h"
 #include "core/animation/InterpolationType.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -37,6 +36,7 @@
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
+#include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
@@ -268,6 +268,10 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
         const QualifiedName& attribute = property.svgAttribute();
         if (attribute == SVGNames::orientAttr) {
             applicableTypes->append(adoptPtr(new SVGAngleInterpolationType(attribute)));
+        } else if (attribute == SVGNames::numOctavesAttr
+            || attribute == SVGNames::targetXAttr
+            || attribute == SVGNames::targetYAttr) {
+            applicableTypes->append(adoptPtr(new SVGIntegerInterpolationType(attribute)));
         } else if (attribute == SVGNames::amplitudeAttr
             || attribute == SVGNames::azimuthAttr
             || attribute == SVGNames::biasAttr
@@ -555,8 +559,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     RefPtr<Interpolation> interpolation = nullptr;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
-    case AnimatedInteger:
-        return IntegerSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedIntegerOptionalInteger: {
         int min = &attribute->attributeName() == &SVGNames::orderAttr ? 1 : 0;
         return IntegerOptionalIntegerSVGInterpolation::create(fromValue, toValue, attribute, min);
@@ -582,6 +584,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
 
     // Handled by SVGInterpolationTypes.
     case AnimatedAngle:
+    case AnimatedInteger:
     case AnimatedNumber:
     case AnimatedPoints:
         ASSERT_NOT_REACHED();
