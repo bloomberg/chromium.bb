@@ -304,6 +304,11 @@ public:
         return m_layoutObject->hitTest(result, locationInContainer, accumulatedOffset, filter);
     }
 
+    SelectionState selectionState() const
+    {
+        return m_layoutObject->selectionState();
+    }
+
     Color selectionBackgroundColor() const
     {
         return m_layoutObject->selectionBackgroundColor();

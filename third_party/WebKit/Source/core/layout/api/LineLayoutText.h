@@ -127,11 +127,6 @@ public:
         return toText()->hyphenWidth(font, textDirection);
     }
 
-    SelectionState selectionState() const
-    {
-        return toText()->selectionState();
-    }
-
     void selectionStartEnd(int& spos, int& epos) const
     {
         return toText()->selectionStartEnd(spos, epos);
