@@ -30,28 +30,28 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     : areAnyMembersSet(false)
     , isCredentialRequest(false)
 {
-    areAnyMembersSet = DictionaryHelper::get(options, "method", method) || areAnyMembersSet;
-    areAnyMembersSet = DictionaryHelper::get(options, "headers", headers) || areAnyMembersSet;
+    areAnyMembersSet |= DictionaryHelper::get(options, "method", method);
+    areAnyMembersSet |= DictionaryHelper::get(options, "headers", headers);
     if (!headers) {
         Vector<Vector<String>> headersVector;
         if (DictionaryHelper::get(options, "headers", headersVector, exceptionState)) {
             headers = Headers::create(headersVector, exceptionState);
             areAnyMembersSet = true;
         } else {
-            areAnyMembersSet = DictionaryHelper::get(options, "headers", headersDictionary) || areAnyMembersSet;
+            areAnyMembersSet |= DictionaryHelper::get(options, "headers", headersDictionary);
         }
     }
-    areAnyMembersSet = DictionaryHelper::get(options, "mode", mode) || areAnyMembersSet;
-    areAnyMembersSet = DictionaryHelper::get(options, "credentials", credentials) || areAnyMembersSet;
-    areAnyMembersSet = DictionaryHelper::get(options, "redirect", redirect) || areAnyMembersSet;
+    areAnyMembersSet |= DictionaryHelper::get(options, "mode", mode);
+    areAnyMembersSet |= DictionaryHelper::get(options, "credentials", credentials);
+    areAnyMembersSet |= DictionaryHelper::get(options, "redirect", redirect);
     AtomicString referrerString;
     bool isReferrerStringSet = DictionaryHelper::get(options, "referrer", referrerString);
-    areAnyMembersSet = areAnyMembersSet || isReferrerStringSet;
-    areAnyMembersSet = DictionaryHelper::get(options, "integrity", integrity) || areAnyMembersSet;
+    areAnyMembersSet |= isReferrerStringSet;
+    areAnyMembersSet |= DictionaryHelper::get(options, "integrity", integrity);
 
     v8::Local<v8::Value> v8Body;
     bool isBodySet = DictionaryHelper::get(options, "body", v8Body);
-    areAnyMembersSet = areAnyMembersSet || isBodySet;
+    areAnyMembersSet |= isBodySet;
 
     if (areAnyMembersSet) {
         // If any of init's members are present, unset request's
