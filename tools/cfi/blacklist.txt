@@ -23,6 +23,17 @@ type:*NoAddRefRelease*
 # https://crbug.com/515347
 type:mojo::test::*
 
+# All types and sources from libclearkeycdm.so.
+# See https://crbug.com/557969
+type:media::CdmVideoDecoder
+type:media::ClearKeyCdm
+type:media::FakeCdmVideoDecoder
+type:media::FFmpegCdmAudioDecoder
+type:media::FFmpegCdmVideoDecoder
+type:media::LibvpxCdmVideoDecoder
+src:*external_clear_key*
+type:cdm::*
+
 # invalid downcasts for IPC messages
 # https://crbug.com/520760
 fun:*MessageScannerImpl*MessageScannerImpl*
