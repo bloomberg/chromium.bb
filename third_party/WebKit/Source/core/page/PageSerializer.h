@@ -58,8 +58,9 @@ class StylePropertySet;
 
 struct SerializedResource;
 
-// This class is used to serialize a page contents back to text (typically HTML).
-// It serializes all the page frames and retrieves resources such as images and CSS stylesheets.
+// This class is used to serialize frame's contents back to text (typically HTML).
+// It serializes frame's document and resources such as images and CSS stylesheets.
+// TODO(lukasza): Rename this class to FrameSerializer.
 class CORE_EXPORT PageSerializer final {
     STACK_ALLOCATED();
 public:
@@ -72,23 +73,22 @@ public:
 
     PageSerializer(Vector<SerializedResource>*, PassOwnPtr<Delegate>);
 
-    // Initiates the serialization of the frame's page. All serialized content and retrieved
-    // resources are added to the Vector passed to the constructor. The first resource in that
-    // vector is the top frame serialized content.
-    void serialize(Page*);
+    // Initiates the serialization of the frame. All serialized content and
+    // retrieved resources are added to the Vector passed to the constructor.
+    // The first resource in that vector is the frame's serialized content.
+    // Subsequent resources are images, css, etc.
+    void serializeFrame(const LocalFrame&);
 
     void registerRewriteURL(const String& from, const String& to);
     void setRewriteURLFolder(const String&);
 
-    KURL urlForBlankFrame(LocalFrame*);
+    KURL urlForBlankFrame(const LocalFrame&);
 
     Delegate* delegate();
 
     static String markOfTheWebDeclaration(const KURL&);
 
 private:
-    void serializeFrame(LocalFrame*);
-
     // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
     // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
     void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
@@ -108,7 +108,7 @@ private:
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
 
-    using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, KURL>;
+    using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<const LocalFrame>, KURL>;
     BlankFrameURLMap m_blankFrameURLs;
     HashMap<String, String> m_rewriteURLs;
     String m_rewriteFolder;

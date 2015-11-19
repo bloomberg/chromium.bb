@@ -88,9 +88,31 @@ static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::E
 {
     Vector<SerializedResource> resources;
     PageSerializer serializer(&resources, adoptPtr(new MHTMLPageSerializerDelegate));
-    serializer.serialize(page);
+
+    RefPtr<SharedBuffer> output = SharedBuffer::create();
+    String boundary = MHTMLArchive::generateMHTMLBoundary();
+
     Document* document = page->deprecatedLocalMainFrame()->document();
-    return MHTMLArchive::generateMHTMLData(resources, encodingPolicy, document->title(), document->suggestedMIMEType());
+    MHTMLArchive::generateMHTMLHeader(
+        boundary, document->title(), document->suggestedMIMEType(), *output);
+
+    for (Frame* frame = page->deprecatedLocalMainFrame(); frame; frame = frame->tree().traverseNext()) {
+        // TODO(lukasza): This causes incomplete MHTML for OOPIFs.
+        // (crbug.com/538766)
+        if (!frame->isLocalFrame())
+            continue;
+
+        resources.clear();
+        serializer.serializeFrame(*toLocalFrame(frame));
+
+        for (const auto& resource : resources) {
+            MHTMLArchive::generateMHTMLPart(
+                boundary, encodingPolicy, resource, *output);
+        }
+    }
+
+    MHTMLArchive::generateMHTMLFooter(boundary, *output);
+    return output.release();
 }
 
 WebCString WebPageSerializer::serializeToMHTML(WebView* view)

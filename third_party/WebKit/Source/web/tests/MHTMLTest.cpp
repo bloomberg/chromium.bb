@@ -140,9 +140,26 @@ protected:
         addResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
     }
 
+    static PassRefPtr<SharedBuffer> generateMHTMLData(
+        const Vector<SerializedResource>& resources,
+        MHTMLArchive::EncodingPolicy encodingPolicy,
+        const String& title, const String& mimeType)
+    {
+        String boundary = MHTMLArchive::generateMHTMLBoundary();
+
+        RefPtr<SharedBuffer> mhtmlData = SharedBuffer::create();
+        MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);
+        for (const auto& resource : resources) {
+            MHTMLArchive::generateMHTMLPart(
+                boundary, encodingPolicy, resource, *mhtmlData);
+        }
+        MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData);
+        return mhtmlData.release();
+    }
+
     PassRefPtr<SharedBuffer> serialize(const char *title, const char *mime,  MHTMLArchive::EncodingPolicy encodingPolicy)
     {
-        return MHTMLArchive::generateMHTMLData(m_resources, encodingPolicy, title, mime);
+        return generateMHTMLData(m_resources, encodingPolicy, title, mime);
     }
 
 private:
