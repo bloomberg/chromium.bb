@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/chrome/app
       'target_name': 'ios_chrome_app',
       'type': 'static_library',
       'include_dirs': [
@@ -35,6 +36,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/browser
       'target_name': 'ios_chrome_browser',
       'type': 'static_library',
       'include_dirs': [
@@ -580,6 +582,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/common
       'target_name': 'ios_chrome_common',
       'type': 'static_library',
       'include_dirs': [
@@ -604,6 +607,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/browser:injected_js
       'target_name': 'injected_js',
       'type': 'none',
       'sources': [
@@ -617,6 +621,7 @@
       },
     },
     {
+      # GN version: //ios/chrome/common/app_group
       'target_name': 'app_group_common',
       'type': 'static_library',
       'sources': [
@@ -636,6 +641,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/common/app_group:client
       'target_name': 'app_group_client',
       'type': 'static_library',
       'sources': [
@@ -652,6 +658,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/common/app_group:main_app
       'target_name': 'app_group_mainapp',
       'type': 'static_library',
       'sources': [
@@ -670,6 +677,7 @@
     ['enable_rlz_support==1', {
       'targets': [
         {
+          # GN version: //ios/chrome/browser/rlz
           'target_name': 'ios_chrome_browser_rlz',
           'type': 'static_library',
           'sources': [

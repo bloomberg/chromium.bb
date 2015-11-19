@@ -7,6 +7,7 @@
    },
   'targets': [
     {
+      # GN version: //ios/public/test
       'target_name': 'test_support_ios',
       'type': 'static_library',
       'sources': [

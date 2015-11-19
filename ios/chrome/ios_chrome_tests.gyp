@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/chrome:ios_chrome_unittests
       'target_name': 'ios_chrome_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -87,6 +88,7 @@
       'includes': ['ios_chrome_resources_bundle.gypi'],
     },
     {
+      # GN version: //ios/chrome/browser:test_support + //ios/public/test
       'target_name': 'ios_chrome_test_support',
       'type': 'static_library',
       'dependencies': [

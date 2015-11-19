@@ -40,11 +40,13 @@
       ],
     },
     {
+      # GN version: //ios/chrome/app/strings
       'target_name': 'ios_strings_gen',
       'type': 'none',
       'hard_dependency': 1,
       'actions': [
         {
+          # GN version: //ios/chrome/app/strings:ios_locale_settings
           'action_name': 'generate_ios_locale_settings',
           'variables': {
             'grit_whitelist': '',
@@ -53,6 +55,7 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/strings:ios_strings
           'action_name': 'generate_ios_strings',
           'variables': {
             'grit_whitelist': '',
@@ -61,6 +64,7 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/strings:ios_chromium_strings
           'action_name': 'generate_ios_chromium_strings',
           'variables': {
             'grit_whitelist': '',
@@ -69,6 +73,7 @@
           'includes': [ '../../build/grit_action.gypi' ],
         },
         {
+          # GN version: //ios/chrome/app/strings:ios_google_chrome_strings
           'action_name': 'generate_ios_google_chrome_strings',
           'variables': {
             'grit_whitelist': '',
@@ -91,6 +96,7 @@
       }
     },
     {
+      # GN version: //ios/chrome/app/theme
       'target_name': 'ios_theme_resources_gen',
       'type': 'none',
       'hard_dependency': 1,

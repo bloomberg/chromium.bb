@@ -1,0 +1,32 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("test") {
+  testonly = true
+  sources = [
+    "block_cleanup_test.h",
+    "block_cleanup_test.mm",
+    "ios_chrome_scoped_testing_local_state.cc",
+    "ios_chrome_scoped_testing_local_state.h",
+    "ios_chrome_unit_test_suite.cc",
+    "ios_chrome_unit_test_suite.h",
+    "run_all_unittests.cc",
+    "testing_application_context.cc",
+    "testing_application_context.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base:prefs",
+    "//components/network_time",
+    "//ios/chrome/browser",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/test",
+    "//ios/web",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/base",
+    "//url",
+  ]
+}

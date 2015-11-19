@@ -204,6 +204,10 @@ group("both_gn_and_gyp") {
     ]
   } else {
     deps += [
+      "//ios/chrome/app",
+      "//ios/chrome/browser",
+      "//ios/chrome/common",
+      "//ios/chrome:ios_chrome_unittests",
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/chrome/browser",
       "//ios/public/provider/web",
