@@ -4,6 +4,12 @@
 
 #include "media/mojo/services/mojo_cdm_factory.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#include "media/base/key_systems.h"
+#include "media/cdm/aes_decryptor.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -31,6 +37,21 @@ void MojoCdmFactory::Create(
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(2) << __FUNCTION__ << ": " << key_system;
   DCHECK(service_factory_);
+
+  if (!security_origin.is_valid()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
+    return;
+  }
+
+  if (CanUseAesDecryptor(key_system)) {
+    scoped_refptr<MediaKeys> cdm(
+        new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
+                         session_keys_change_cb));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(cdm_created_cb, cdm, ""));
+    return;
+  }
 
   interfaces::ContentDecryptionModulePtr cdm_ptr;
   service_factory_->CreateCdm(mojo::GetProxy(&cdm_ptr));
