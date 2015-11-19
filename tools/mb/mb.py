@@ -620,7 +620,8 @@ class MetaBuildWrapper(object):
   def RunGYPAnalyze(self, vals):
     output_dir = self.ParseGYPConfigPath(self.args.path[0])
     if self.args.verbose:
-      inp = self.ReadInputJSON(['files'])
+      inp = self.ReadInputJSON(['files', 'test_targets',
+                                'additional_compile_targets'])
       self.Print()
       self.Print('analyze input:')
       self.PrintJSON(inp)
@@ -773,27 +774,20 @@ class MetaBuildWrapper(object):
     if ret:
       return ret
 
-    # TODO(dpranke): add 'test_targets' and 'additional_compile_targets'
-    # as required keys once the recipe has been converted over.
-    # See crbug.com/552146.
-    inp = self.ReadInputJSON(['files'])
+    inp = self.ReadInputJSON(['files', 'test_targets',
+                              'additional_compile_targets'])
     if self.args.verbose:
       self.Print()
       self.Print('analyze input:')
       self.PrintJSON(inp)
       self.Print()
 
-    use_new_logic = ('test_targets' in inp and
-                     'additional_compile_targets' in inp)
-    if use_new_logic:
-      # TODO(crbug.com/555273) - currently GN treats targets and
-      # additional_compile_targets identically since we can't tell the
-      # difference between a target that is a group in GN and one that isn't.
-      # We should eventually fix this and treat the two types differently.
-      targets = (set(inp['test_targets']) |
-                 set(inp['additional_compile_targets']))
-    else:
-      targets = set(inp['targets'])
+    # TODO(crbug.com/555273) - currently GN treats targets and
+    # additional_compile_targets identically since we can't tell the
+    # difference between a target that is a group in GN and one that isn't.
+    # We should eventually fix this and treat the two types differently.
+    targets = (set(inp['test_targets']) |
+               set(inp['additional_compile_targets']))
 
     output_path = self.args.output_path[0]
 
@@ -802,14 +796,11 @@ class MetaBuildWrapper(object):
     # since we can't deal with it yet.
     if (any(f.endswith('.gn') or f.endswith('.gni') for f in inp['files']) or
         'all' in targets):
-      if use_new_logic:
-        self.WriteJSON({
-              'status': 'Found dependency (all)',
-              'compile_targets': sorted(targets),
-              'test_targets': sorted(targets & set(inp['test_targets'])),
-            }, output_path)
-      else:
-        self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
+      self.WriteJSON({
+            'status': 'Found dependency (all)',
+            'compile_targets': sorted(targets),
+            'test_targets': sorted(targets & set(inp['test_targets'])),
+          }, output_path)
       return 0
 
     # This shouldn't normally happen, but could due to unusual race conditions,
@@ -817,18 +808,11 @@ class MetaBuildWrapper(object):
     # the patch has landed.
     if not inp['files']:
       self.Print('Warning: No files modified in patch, bailing out early.')
-      if use_new_logic:
-        self.WriteJSON({
-              'status': 'No dependency',
-              'compile_targets': [],
-              'test_targets': [],
-            }, output_path)
-      else:
-        self.WriteJSON({
-              'status': 'No dependency',
-              'targets': [],
-              'build_targets': [],
-            }, output_path)
+      self.WriteJSON({
+            'status': 'No dependency',
+            'compile_targets': [],
+            'test_targets': [],
+          }, output_path)
       return 0
 
     ret = 0
@@ -869,32 +853,18 @@ class MetaBuildWrapper(object):
       self.RemoveFile(response_file.name)
 
     if matching_targets:
-      if use_new_logic:
-        self.WriteJSON({
-              'status': 'Found dependency',
-              'compile_targets': sorted(matching_targets),
-              'test_targets': sorted(matching_targets &
-                                     set(inp['test_targets'])),
-            }, output_path)
-      else:
-        self.WriteJSON({
+      self.WriteJSON({
             'status': 'Found dependency',
-            'targets': sorted(matching_targets),
-            'build_targets': sorted(matching_targets),
-        }, output_path)
+            'compile_targets': sorted(matching_targets),
+            'test_targets': sorted(matching_targets &
+                                   set(inp['test_targets'])),
+          }, output_path)
     else:
-      if use_new_logic:
-        self.WriteJSON({
-            'status': 'No dependency',
-            'compile_targets': [],
-            'test_targets': [],
-        }, output_path)
-      else:
-        self.WriteJSON({
-            'status': 'No dependency',
-            'targets': [],
-            'build_targets': [],
-        }, output_path)
+      self.WriteJSON({
+          'status': 'No dependency',
+          'compile_targets': [],
+          'test_targets': [],
+      }, output_path)
 
     if self.args.verbose:
       outp = json.loads(self.ReadFile(output_path))
