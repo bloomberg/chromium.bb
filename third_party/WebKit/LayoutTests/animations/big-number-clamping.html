@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+div {
+  /* This is required so that z-index doesn't compute as auto. */
+  position: relative;
+}
+</style>
+
+<div id="animated"></div>
+<div id="reference"></div>
+
+<script>
+var numberProperties = [
+  'flex-grow',
+  'flex-shrink',
+  'font-size-adjust',
+  'line-height',
+  'orphans',
+  'stroke-miterlimit',
+  'widows',
+  'z-index',
+];
+
+var bigNumber = 1e20;
+
+for (var property of numberProperties) {
+  test(() => {
+    animated.animate({[property]: bigNumber}, {fill: 'forwards'});
+    reference.style[property] = bigNumber;
+    assert_equals(getComputedStyle(animated)[property], getComputedStyle(reference)[property]);
+  }, `Animations on ${property} should clamp identically to setting inline style`);
+}
+</script>

@@ -467,7 +467,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, nextafterf(1, 0)));
         return;
     case CSSPropertyOrphans:
-        style->setOrphans(clampTo<unsigned short>(round(toAnimatableDouble(value)->toDouble()), 1));
+        style->setOrphans(clampTo<short>(round(toAnimatableDouble(value)->toDouble()), 1));
         return;
     case CSSPropertyOutlineColor:
         style->setOutlineColor(toAnimatableColor(value)->color());
@@ -663,7 +663,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTransformOriginZ(toAnimatableDouble(value)->toDouble());
         return;
     case CSSPropertyWidows:
-        style->setWidows(clampTo<unsigned short>(round(toAnimatableDouble(value)->toDouble()), 1));
+        style->setWidows(clampTo<short>(round(toAnimatableDouble(value)->toDouble()), 1));
         return;
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state, ValueRangeNonNegative));

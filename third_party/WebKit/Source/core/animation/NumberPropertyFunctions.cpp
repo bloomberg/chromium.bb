@@ -88,33 +88,37 @@ bool NumberPropertyFunctions::getNumber(CSSPropertyID property, const ComputedSt
 double NumberPropertyFunctions::clampNumber(CSSPropertyID property, double value)
 {
     switch (property) {
-    case CSSPropertyOrphans:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyWidows:
-        return clampTo<double>(round(value), 1);
-
     case CSSPropertyStrokeMiterlimit:
-        return clampTo<double>(value, 1);
+        return clampTo<float>(value, 1);
 
     case CSSPropertyFloodOpacity:
     case CSSPropertyStopOpacity:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyShapeImageThreshold:
-        return clampTo<double>(value, 0, 1);
+        return clampTo<float>(value, 0, 1);
 
     case CSSPropertyFillOpacity:
     case CSSPropertyOpacity:
-        return clampTo<double>(value, 0, nextafterf(1, 0));
+        return clampTo<float>(value, 0, nextafterf(1, 0));
 
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
     case CSSPropertyFontSizeAdjust:
     case CSSPropertyLineHeight:
-        return clampTo<double>(value, 0);
+        return clampTo<float>(value, 0);
+
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
+        return clampTo<short>(round(value), 1);
+
+    case CSSPropertyWebkitColumnCount:
+        return clampTo<unsigned short>(round(value), 1);
 
     case CSSPropertyWebkitColumnRuleWidth:
+        return clampTo<unsigned short>(round(value));
+
     case CSSPropertyZIndex:
-        return round(value);
+        return clampTo<int>(round(value));
 
     default:
         ASSERT_NOT_REACHED();
