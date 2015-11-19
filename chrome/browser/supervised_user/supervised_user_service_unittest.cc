@@ -130,26 +130,15 @@ class SiteListObserver : public AsyncTestHelper {
     return site_lists_;
   }
 
-  const std::vector<SupervisedUserSiteList::Site>& sites() {
-    return sites_;
-  }
-
  private:
   void OnSiteListsChanged(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
     site_lists_ = site_lists;
-    sites_.clear();
-    for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists) {
-      const std::vector<SupervisedUserSiteList::Site>& sites =
-          site_list->sites();
-      sites_.insert(sites_.end(), sites.begin(), sites.end());
-    }
 
     QuitRunLoop();
   }
 
   std::vector<scoped_refptr<SupervisedUserSiteList>> site_lists_;
-  std::vector<SupervisedUserSiteList::Site> sites_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteListObserver);
 };
@@ -510,22 +499,25 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
 
-  GURL example_url("http://example.com");
+  const base::string16 title1 = base::ASCIIToUTF16("Title 1");
+  const base::string16 title2 = base::ASCIIToUTF16("Title 2");
+
+  GURL youtube_url("http://www.youtube.com");
   GURL moose_url("http://moose.org");
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
 
   profile_->GetPrefs()->SetInteger(
       prefs::kDefaultSupervisedUserFilteringBehavior,
       SupervisedUserURLFilter::BLOCK);
   EXPECT_EQ(SupervisedUserURLFilter::BLOCK,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
 
   profile_->GetPrefs()->SetInteger(
       prefs::kDefaultSupervisedUserFilteringBehavior,
       SupervisedUserURLFilter::WARN);
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
 
   // Load a whitelist.
   base::FilePath test_data_dir;
@@ -534,43 +526,34 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
       supervised_user_service->GetWhitelistService();
   base::FilePath whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
-  whitelist_service->LoadWhitelistForTesting("aaaa", whitelist_path);
+  whitelist_service->LoadWhitelistForTesting("aaaa", title1, whitelist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
-  ASSERT_EQ(3u, site_list_observer_.sites().size());
-  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), site_list_observer_.sites()[0].name);
-  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"),
-            site_list_observer_.sites()[1].name);
-  EXPECT_EQ(base::string16(), site_list_observer_.sites()[2].name);
+  EXPECT_EQ(title1, site_list_observer_.site_lists()[0]->title());
+  EXPECT_EQ(youtube_url, site_list_observer_.site_lists()[0]->entry_point());
 
   url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
   // Load a second whitelist.
   whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
-  whitelist_service->LoadWhitelistForTesting("bbbb", whitelist_path);
+  whitelist_service->LoadWhitelistForTesting("bbbb", title2, whitelist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(2u, site_list_observer_.site_lists().size());
-  ASSERT_EQ(4u, site_list_observer_.sites().size());
-
-  // The site lists might be returned in any order, so we put them into a set.
-  std::set<std::string> site_names;
-  for (const SupervisedUserSiteList::Site& site : site_list_observer_.sites())
-    site_names.insert(base::UTF16ToUTF8(site.name));
-  EXPECT_EQ(1u, site_names.count("YouTube"));
-  EXPECT_EQ(1u, site_names.count("Homestar Runner"));
-  EXPECT_EQ(1u, site_names.count(std::string()));
-  EXPECT_EQ(1u, site_names.count("Moose"));
+  EXPECT_EQ(title1, site_list_observer_.site_lists()[0]->title());
+  EXPECT_EQ(youtube_url, site_list_observer_.site_lists()[0]->entry_point());
+  EXPECT_EQ(title2, site_list_observer_.site_lists()[1]->title());
+  EXPECT_TRUE(site_list_observer_.site_lists()[1]->entry_point().is_empty());
 
   url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
@@ -579,12 +562,12 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
-  ASSERT_EQ(1u, site_list_observer_.sites().size());
-  EXPECT_EQ(base::ASCIIToUTF16("Moose"), site_list_observer_.sites()[0].name);
+  EXPECT_EQ(title2, site_list_observer_.site_lists()[0]->title());
+  EXPECT_TRUE(site_list_observer_.site_lists()[0]->entry_point().is_empty());
 
   url_filter_observer_.Wait();
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
-            url_filter->GetFilteringBehaviorForURL(example_url));
+            url_filter->GetFilteringBehaviorForURL(youtube_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 }

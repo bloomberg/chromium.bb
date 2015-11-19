@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "sync/api/syncable_service.h"
@@ -64,6 +65,7 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
   // Loads an already existing whitelist on disk (i.e. without downloading it as
   // a component).
   void LoadWhitelistForTesting(const std::string& id,
+                               const base::string16& title,
                                const base::FilePath& path);
 
   // Unloads a whitelist. Public for testing.
@@ -112,6 +114,7 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
   void NotifyWhitelistsChanged();
 
   void OnWhitelistReady(const std::string& id,
+                        const base::string16& title,
                         const base::FilePath& whitelist_path);
   void OnWhitelistLoaded(
       const std::string& id,

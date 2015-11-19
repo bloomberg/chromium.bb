@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class FilePath;
@@ -29,6 +30,7 @@ class SupervisedUserWhitelistInstaller {
  public:
   using WhitelistReadyCallback =
       base::Callback<void(const std::string& crx_id,
+                          const base::string16& title,
                           const base::FilePath& whitelist_path)>;
 
   virtual ~SupervisedUserWhitelistInstaller() {}

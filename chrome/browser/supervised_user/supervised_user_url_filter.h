@@ -32,8 +32,8 @@ class SupervisedUserAsyncURLChecker;
 // callers if a given URL should be allowed, blocked or warned about. It uses
 // information from multiple sources:
 //   * A default setting (allow, block or warn).
-//   * The set of installed and enabled content packs, which contain whitelists
-//     of URL patterns that should be allowed.
+//   * The set of installed and enabled whitelists which contain URL patterns
+//     and hostname hashes that should be allowed.
 //   * User-specified manual overrides (allow or block) for either sites
 //     (hostnames) or exact URLs, which take precedence over the previous
 //     sources.
@@ -57,10 +57,9 @@ class SupervisedUserURLFilter
     MANUAL
   };
 
-  typedef base::Callback<void(FilteringBehavior,
-                              FilteringBehaviorReason,
-                              bool /* uncertain */)>
-      FilteringBehaviorCallback;
+  using FilteringBehaviorCallback = base::Callback<void(FilteringBehavior,
+                                                        FilteringBehaviorReason,
+                                                        bool /* uncertain */)>;
 
   class Observer {
    public:
@@ -104,9 +103,6 @@ class SupervisedUserURLFilter
   static bool HostMatchesPattern(const std::string& host,
                                  const std::string& pattern);
 
-  void GetSites(const GURL& url,
-                std::vector<SupervisedUserSiteList::Site*>* sites) const;
-
   // Returns the filtering behavior for a given URL, based on the default
   // behavior and whether it is on a site list.
   FilteringBehavior GetFilteringBehaviorForURL(const GURL& url) const;
@@ -141,9 +137,8 @@ class SupervisedUserURLFilter
   // Returns whether the static blacklist is set up.
   bool HasBlacklist() const;
 
-  // Set the list of matched patterns to the passed in list.
-  // This method is only used for testing.
-  void SetFromPatterns(const std::vector<std::string>& patterns);
+  // Set the list of matched patterns to the passed in list, for testing.
+  void SetFromPatternsForTesting(const std::vector<std::string>& patterns);
 
   // Sets the set of manually allowed or blocked hosts.
   void SetManualHosts(const std::map<std::string, bool>* host_map);

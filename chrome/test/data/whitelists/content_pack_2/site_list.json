@@ -1,11 +1,6 @@
 {
-  "version": 1,
-  "sites": [
-    {
-      "name": "Moose",
-      "whitelist": [
-        "moose.org"
-      ]
-    }
+  "version": 2,
+  "whitelist": [
+    "moose.org"
   ]
 }

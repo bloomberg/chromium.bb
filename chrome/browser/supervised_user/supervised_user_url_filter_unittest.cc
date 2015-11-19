@@ -38,7 +38,7 @@ TEST_F(SupervisedUserURLFilterTest, Basic) {
   std::vector<std::string> list;
   // Allow domain and all subdomains, for any filtered scheme.
   list.push_back("google.com");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
@@ -64,7 +64,7 @@ TEST_F(SupervisedUserURLFilterTest, Inactive) {
 
   std::vector<std::string> list;
   list.push_back("google.com");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   // If the filter is inactive, every URL should be whitelisted.
@@ -78,7 +78,7 @@ TEST_F(SupervisedUserURLFilterTest, Scheme) {
   list.push_back("http://secure.com");
   list.push_back("ftp://secure.com");
   list.push_back("ws://secure.com");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://secure.com"));
@@ -96,7 +96,7 @@ TEST_F(SupervisedUserURLFilterTest, Path) {
   std::vector<std::string> list;
   // Filter only a certain path prefix.
   list.push_back("path.to/ruin");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin"));
@@ -111,7 +111,7 @@ TEST_F(SupervisedUserURLFilterTest, PathAndScheme) {
   std::vector<std::string> list;
   // Filter only a certain path prefix and scheme.
   list.push_back("https://s.aaa.com/path");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path"));
@@ -127,7 +127,7 @@ TEST_F(SupervisedUserURLFilterTest, Host) {
   std::vector<std::string> list;
   // Filter only a certain hostname, without subdomains.
   list.push_back(".www.example.com");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://www.example.com"));
@@ -139,7 +139,7 @@ TEST_F(SupervisedUserURLFilterTest, IPAddress) {
   std::vector<std::string> list;
   // Filter an ip address.
   list.push_back("123.123.123.123");
-  filter_->SetFromPatterns(list);
+  filter_->SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://123.123.123.123/"));
