@@ -21,30 +21,6 @@ bool touch_events_enabled = true;
 const int kSystemKeyModifierMask = EF_ALT_DOWN | EF_COMMAND_DOWN;
 #else
 const int kSystemKeyModifierMask = EF_ALT_DOWN;
-
-// Retrieves the status of the touch screen events from the command line on Non-
-// ChromeOS platforms.
-bool ComputeTouchStatus() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  const std::string touch_enabled_switch =
-      command_line.HasSwitch(switches::kTouchEvents) ?
-      command_line.GetSwitchValueASCII(switches::kTouchEvents) :
-      switches::kTouchEventsAuto;
-
-  if (touch_enabled_switch.empty() ||
-      touch_enabled_switch == switches::kTouchEventsEnabled ||
-      touch_enabled_switch == switches::kTouchEventsAuto) {
-    return true;
-  }
-
-  if (touch_enabled_switch == switches::kTouchEventsDisabled)
-    return false;
-
-  LOG(ERROR) << "Invalid --touch-events option: " << touch_enabled_switch;
-  return false;
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -70,20 +46,15 @@ bool IsSystemKeyModifier(int flags) {
 
 #if defined(OS_CHROMEOS)
 
-void SetTouchEventsEnabled(bool enabled) {
+void SetTouchEventsCrOsMasterSwitch(bool enabled) {
   touch_events_enabled = enabled;
 }
 
-#endif  // defined(OS_CHROMEOS)
-
-bool AreTouchEventsEnabled() {
-#if defined(OS_CHROMEOS)
+bool GetTouchEventsCrOsMasterSwitch() {
   return touch_events_enabled;
-#else
-  static bool touch_events_enabled = ComputeTouchStatus();
-  return touch_events_enabled;
-#endif  // !defined(OS_CHROMEOS)
 }
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui
 

@@ -291,6 +291,8 @@
         'touch/touch_device_win.cc',
         'touch/touch_editing_controller.cc',
         'touch/touch_editing_controller.h',
+        'touch/touch_enabled.cc',
+        'touch/touch_enabled.h',
         'ui_base_export.h',
         'ui_base_exports.cc',
         'ui_base_paths.cc',

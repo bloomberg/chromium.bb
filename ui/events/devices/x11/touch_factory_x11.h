@@ -137,6 +137,9 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Associate each device ID with its master device ID.
   std::map<int, int> device_master_id_list_;
 
+  // Indicates whether touch events are explicitly disabled.
+  bool touch_events_disabled_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };
 

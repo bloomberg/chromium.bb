@@ -294,7 +294,7 @@ void InputDeviceSettingsImplX11::SetInternalTouchpadEnabled(bool enabled) {
 }
 
 void InputDeviceSettingsImplX11::SetTouchscreensEnabled(bool enabled) {
-  ui::SetTouchEventsEnabled(enabled);
+  ui::SetTouchEventsCrOsMasterSwitch(enabled);
 }
 
 void InputDeviceSettingsImplX11::GenerateTouchpadArguments(

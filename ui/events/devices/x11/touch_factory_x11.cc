@@ -27,11 +27,25 @@
 
 namespace ui {
 
+namespace {
+
+bool IsTouchEventsFlagDisabled() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  bool touch_flag_status = command_line->HasSwitch(switches::kTouchEvents) &&
+      command_line->GetSwitchValueASCII(switches::kTouchEvents) ==
+          switches::kTouchEventsDisabled;
+  return touch_flag_status;
+}
+
+}  // namespace
+
+
 TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
       touch_device_list_(),
       virtual_core_keyboard_device_(-1),
-      id_generator_(0) {
+      id_generator_(0),
+      touch_events_disabled_(IsTouchEventsFlagDisabled()) {
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
 
@@ -143,6 +157,13 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
   XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
 
+#if defined(OS_CHROMEOS)
+  const bool is_touch_disabled = touch_events_disabled_ &&
+      !GetTouchEventsCrOsMasterSwitch();
+#else
+  const bool is_touch_disabled = touch_events_disabled_;
+#endif  // defined(OS_CHROMEOS)
+
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
@@ -159,7 +180,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     bool is_from_master_or_float = touch_device_list_[xiev->deviceid];
     bool is_from_slave_device = !is_from_master_or_float
         && xiev->sourceid == xiev->deviceid;
-    return ui::AreTouchEventsEnabled() &&
+    return !is_touch_disabled &&
            IsTouchDevice(xiev->deviceid) &&
            !is_from_slave_device;
   }
@@ -179,7 +200,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (!pointer_device_lookup_[xiev->deviceid])
     return false;
 
-  return IsTouchDevice(xiev->deviceid) ? ui::AreTouchEventsEnabled() : true;
+  return IsTouchDevice(xiev->deviceid) ? !is_touch_disabled : true;
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {
@@ -266,7 +287,14 @@ void TouchFactory::ReleaseSlotForTrackingID(uint32 tracking_id) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  return ui::AreTouchEventsEnabled() && touch_device_lookup_.any();
+#if defined(OS_CHROMEOS)
+  const bool is_touch_disabled = touch_events_disabled_ &&
+      !GetTouchEventsCrOsMasterSwitch();
+#else
+  const bool is_touch_disabled = touch_events_disabled_;
+#endif  // defined(OS_CHROMEOS)
+
+  return !is_touch_disabled && touch_device_lookup_.any();
 }
 
 void TouchFactory::ResetForTest() {
@@ -275,6 +303,11 @@ void TouchFactory::ResetForTest() {
   touch_device_list_.clear();
   touchscreen_ids_.clear();
   id_generator_.ResetForTest();
+  touch_events_disabled_ = false;
+
+#if defined(OS_CHROMEOS)
+  SetTouchEventsCrOsMasterSwitch(true);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void TouchFactory::SetTouchDeviceForTest(
@@ -287,6 +320,11 @@ void TouchFactory::SetTouchDeviceForTest(
     touch_device_lookup_[*iter] = true;
     touch_device_list_[*iter] = true;
   }
+  touch_events_disabled_ = false;
+
+#if defined(OS_CHROMEOS)
+  SetTouchEventsCrOsMasterSwitch(true);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void TouchFactory::SetPointerDeviceForTest(
