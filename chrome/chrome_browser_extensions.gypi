@@ -64,6 +64,7 @@
       'browser/extensions/api/messaging/native_message_process_host.h',
       'browser/extensions/api/messaging/native_process_launcher.cc',
       'browser/extensions/api/messaging/native_process_launcher.h',
+      'browser/extensions/api/messaging/native_process_launcher_android.cc',
       'browser/extensions/api/messaging/native_process_launcher_posix.cc',
       'browser/extensions/api/messaging/native_process_launcher_win.cc',
     ],
