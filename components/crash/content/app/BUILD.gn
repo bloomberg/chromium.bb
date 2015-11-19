@@ -110,7 +110,7 @@ source_set("app_non_mac") {
   ]
 
   if (is_android) {
-    defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
+    defines += [ "CHROME_BUILD_ID=\"$android_chrome_build_id\"" ]
   }
 
   if (is_win) {
