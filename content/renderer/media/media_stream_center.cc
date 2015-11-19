@@ -165,16 +165,8 @@ void MediaStreamCenter::didStopLocalMediaStream(
 void MediaStreamCenter::didCreateMediaStream(blink::WebMediaStream& stream) {
   DVLOG(1) << "MediaStreamCenter::didCreateMediaStream";
   blink::WebMediaStream writable_stream(stream);
-  MediaStream* native_stream(
-      new MediaStream(stream));
+  MediaStream* native_stream(new MediaStream(stream));
   writable_stream.setExtraData(native_stream);
-
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  stream.videoTracks(video_tracks);
-  for (size_t i = 0; i < video_tracks.size(); ++i) {
-    if (!MediaStreamTrack::GetTrack(video_tracks[i]))
-      CreateNativeMediaStreamTrack(video_tracks[i], rtc_factory_);
-  }
 }
 
 bool MediaStreamCenter::didAddMediaStreamTrack(
