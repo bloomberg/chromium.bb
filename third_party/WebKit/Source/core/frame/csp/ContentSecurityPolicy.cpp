@@ -140,13 +140,6 @@ static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType typ
     return UseCounter::NumberOfFeatures;
 }
 
-static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
-{
-    if (a != b)
-        return ReferrerPolicyNever;
-    return a;
-}
-
 ContentSecurityPolicy::ContentSecurityPolicy()
     : m_executionContext(nullptr)
     , m_overrideInlineStyleAllowed(false)
@@ -285,10 +278,10 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         //        ^                  ^
         OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
 
-        if (type != ContentSecurityPolicyHeaderTypeReport && policy->didSetReferrerPolicy()) {
-            // FIXME: We need a 'ReferrerPolicyUnset' enum to avoid confusing code like this.
-            m_referrerPolicy = didSetReferrerPolicy() ? mergeReferrerPolicies(m_referrerPolicy, policy->referrerPolicy()) : policy->referrerPolicy();
-        }
+        // When a referrer policy has already been set, the most recent
+        // one takes precedence.
+        if (type != ContentSecurityPolicyHeaderTypeReport && policy->didSetReferrerPolicy())
+            m_referrerPolicy = policy->referrerPolicy();
 
         if (!policy->allowEval(0, SuppressReport) && m_disableEvalErrorMessage.isNull())
             m_disableEvalErrorMessage = policy->evalDisabledErrorMessage();

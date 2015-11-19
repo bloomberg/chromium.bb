@@ -266,7 +266,7 @@ bool ExecutionContext::isWindowInteractionAllowed() const
 
 void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
 {
-    // FIXME: Can we adopt the CSP referrer policy merge algorithm? Or does the web rely on being able to modify the referrer policy in-flight?
+    // When a referrer policy has already been set, the latest value takes precedence.
     UseCounter::count(this, UseCounter::SetReferrerPolicy);
     if (m_referrerPolicy != ReferrerPolicyDefault)
         UseCounter::count(this, UseCounter::ResetReferrerPolicy);

@@ -659,12 +659,6 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
 
 void CSPDirectiveList::parseReferrer(const String& name, const String& value)
 {
-    if (m_didSetReferrerPolicy) {
-        m_policy->reportDuplicateDirective(name);
-        m_referrerPolicy = ReferrerPolicyNever;
-        return;
-    }
-
     m_didSetReferrerPolicy = true;
 
     if (value.isEmpty()) {
@@ -706,7 +700,6 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
 
     // value1 value2
     //        ^
-    m_referrerPolicy = ReferrerPolicyNever;
     m_policy->reportInvalidReferrer(value);
 }
 
