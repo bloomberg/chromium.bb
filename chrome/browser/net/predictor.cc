@@ -1043,15 +1043,7 @@ UrlInfo* Predictor::AppendToResolutionQueue(
     return NULL;
   }
 
-  bool would_likely_proxy;
-  {
-    // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 WouldLikelyProxyURL()"));
-    would_likely_proxy = WouldLikelyProxyURL(url);
-  }
-
-  if (would_likely_proxy) {
+  if (WouldLikelyProxyURL(url)) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
     return NULL;
   }
@@ -1098,15 +1090,7 @@ void Predictor::StartSomeQueuedResolutions() {
 
     LookupRequest* request = new LookupRequest(this, host_resolver_, url);
 
-    int status;
-    {
-      // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 LookupRequest::Start()"));
-      status = request->Start();
-    }
-
+    int status = request->Start();
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
       pending_lookups_.insert(request);

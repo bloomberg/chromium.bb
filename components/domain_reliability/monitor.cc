@@ -140,11 +140,6 @@ void DomainReliabilityMonitor::InitURLRequestContext(
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {
-  // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 DomainReliabilityMonitor::AddBakedInConfigs"));
-
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 

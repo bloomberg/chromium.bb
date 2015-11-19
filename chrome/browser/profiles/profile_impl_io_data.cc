@@ -521,22 +521,16 @@ void ProfileImplIOData::InitializeInternal(
   set_channel_id_service(channel_id_service);
   main_context->set_channel_id_service(channel_id_service);
 
-  {
-    // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 HttpCache construction"));
-    scoped_ptr<net::HttpCache::BackendFactory> main_backend(
-        new net::HttpCache::DefaultBackend(
-            net::DISK_CACHE,
-            ChooseCacheBackendType(),
-            lazy_params_->cache_path,
-            lazy_params_->cache_max_size,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
-    http_network_session_ = CreateHttpNetworkSession(*profile_params);
-    main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
-                                               main_backend.Pass());
-  }
-
+  scoped_ptr<net::HttpCache::BackendFactory> main_backend(
+      new net::HttpCache::DefaultBackend(
+          net::DISK_CACHE,
+          ChooseCacheBackendType(),
+          lazy_params_->cache_path,
+          lazy_params_->cache_max_size,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+  http_network_session_ = CreateHttpNetworkSession(*profile_params);
+  main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
+                                             main_backend.Pass());
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
 #if !defined(DISABLE_FTP_SUPPORT)
