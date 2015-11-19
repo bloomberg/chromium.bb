@@ -120,13 +120,13 @@ class EventConverterEvdevImplTest : public testing::Test {
   unsigned size() { return dispatched_events_.size(); }
   ui::KeyEvent* dispatched_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
-    ui::Event* ev = dispatched_events_[index];
+    ui::Event* ev = dispatched_events_[index].get();
     DCHECK(ev->IsKeyEvent());
     return static_cast<ui::KeyEvent*>(ev);
   }
   ui::MouseEvent* dispatched_mouse_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
-    ui::Event* ev = dispatched_events_[index];
+    ui::Event* ev = dispatched_events_[index].get();
     DCHECK(ev->IsMouseEvent());
     return static_cast<ui::MouseEvent*>(ev);
   }
@@ -151,7 +151,7 @@ class EventConverterEvdevImplTest : public testing::Test {
   scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
   scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
 
-  ScopedVector<ui::Event> dispatched_events_;
+  std::vector<scoped_ptr<ui::Event>> dispatched_events_;
 
   int events_out_;
   int events_in_;

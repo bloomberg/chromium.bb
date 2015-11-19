@@ -214,7 +214,7 @@ void DrmWindow::GetVSyncParameters(
 
   // If we're in mirror mode the 2 CRTCs should have similar modes with the same
   // refresh rates.
-  CrtcController* crtc = controller_->crtc_controllers()[0];
+  CrtcController* crtc = controller_->crtc_controllers()[0].get();
   // The value is invalid, so we can't update the parameters.
   if (controller_->GetTimeOfLastFlip() == 0 || crtc->mode().vrefresh == 0)
     return;

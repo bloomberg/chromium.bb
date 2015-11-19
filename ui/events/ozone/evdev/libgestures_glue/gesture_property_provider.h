@@ -128,7 +128,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // pointers. It is caller's responsibility to manage them.
   void AddProperty(const DeviceId device_id,
                    const std::string& name,
-                   GesturesProp* property);
+                   scoped_ptr<GesturesProp> property);
   void DeleteProperty(const DeviceId device_id, const std::string& name);
 
   // Check if a property exists for a device. Return if it is found.
@@ -148,12 +148,13 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   void ParseXorgConfFile(const std::string& content);
 
   // Create a match criteria.
-  internal::MatchCriteria* CreateMatchCriteria(const std::string& match_type,
-                                               const std::string& arg);
+  scoped_ptr<internal::MatchCriteria> CreateMatchCriteria(
+      const std::string& match_type,
+      const std::string& arg);
 
   // Create a property that comes from the conf files.
-  GesturesProp* CreateDefaultProperty(const std::string& name,
-                                      const std::string& value);
+  scoped_ptr<GesturesProp> CreateDefaultProperty(const std::string& name,
+                                                 const std::string& value);
 
   // Setup default property values for a newly found device.
   void SetupDefaultProperties(const DeviceId device_id, const DevicePtr device);
@@ -167,7 +168,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
 
   // A vector of parsed sections in configuration files. Owns MatchCriterias,
   // GesturesProps and ConfigurationSections in it.
-  ScopedVector<internal::ConfigurationSection> configurations_;
+  std::vector<scoped_ptr<internal::ConfigurationSection>> configurations_;
 
   DISALLOW_COPY_AND_ASSIGN(GesturePropertyProvider);
 };
@@ -246,7 +247,7 @@ class GesturesPropFunctionsWrapper {
   // Do things that should happen AFTER we create the property.
   static void PostCreateProperty(void* device_data,
                                  const char* name,
-                                 GesturesProp* property);
+                                 scoped_ptr<GesturesProp> property);
 
   // Some other utility functions used in InitializeDeviceProperties.
   static GesturesProp* CreateIntSingle(void* device_data,

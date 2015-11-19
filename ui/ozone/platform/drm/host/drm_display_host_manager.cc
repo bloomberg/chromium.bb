@@ -98,7 +98,7 @@ class FindDrmDisplayHostById {
   explicit FindDrmDisplayHostById(int64_t display_id)
       : display_id_(display_id) {}
 
-  bool operator()(const DrmDisplayHost* display) const {
+  bool operator()(const scoped_ptr<DrmDisplayHost>& display) const {
     return display->snapshot()->display_id() == display_id_;
   }
 
@@ -139,11 +139,11 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
   has_dummy_display_ = !display_infos.empty();
   for (size_t i = 0; i < display_infos.size(); ++i) {
-    displays_.push_back(new DrmDisplayHost(
+    displays_.push_back(make_scoped_ptr(new DrmDisplayHost(
         proxy_, CreateDisplaySnapshotParams(display_infos[i],
                                             primary_drm_device_handle_->fd(), 0,
                                             gfx::Point()),
-        true /* is_dummy */));
+        true /* is_dummy */)));
   }
 }
 
@@ -158,7 +158,7 @@ DrmDisplayHost* DrmDisplayHostManager::GetDisplay(int64_t display_id) {
   if (it == displays_.end())
     return nullptr;
 
-  return *it;
+  return it->get();
 }
 
 void DrmDisplayHostManager::AddDelegate(DrmNativeDisplayDelegate* delegate) {
@@ -367,17 +367,18 @@ bool DrmDisplayHostManager::OnMessageReceived(const IPC::Message& message) {
 
 void DrmDisplayHostManager::OnUpdateNativeDisplays(
     const std::vector<DisplaySnapshot_Params>& params) {
-  ScopedVector<DrmDisplayHost> old_displays(displays_.Pass());
+  std::vector<scoped_ptr<DrmDisplayHost>> old_displays;
+  displays_.swap(old_displays);
   for (size_t i = 0; i < params.size(); ++i) {
     auto it = std::find_if(old_displays.begin(), old_displays.end(),
                            FindDrmDisplayHostById(params[i].display_id));
     if (it == old_displays.end()) {
-      displays_.push_back(
-          new DrmDisplayHost(proxy_, params[i], false /* is_dummy */));
+      displays_.push_back(make_scoped_ptr(
+          new DrmDisplayHost(proxy_, params[i], false /* is_dummy */)));
     } else {
       (*it)->UpdateDisplaySnapshot(params[i]);
-      displays_.push_back(*it);
-      old_displays.weak_erase(it);
+      displays_.push_back(std::move(*it));
+      old_displays.erase(it);
     }
   }
 
@@ -461,7 +462,7 @@ void DrmDisplayHostManager::OnRelinquishDisplayControl(bool status) {
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(
     const GetDisplaysCallback& callback) const {
   std::vector<DisplaySnapshot*> snapshots;
-  for (auto* display : displays_)
+  for (const auto& display : displays_)
     snapshots.push_back(display->snapshot());
 
   callback.Run(snapshots);

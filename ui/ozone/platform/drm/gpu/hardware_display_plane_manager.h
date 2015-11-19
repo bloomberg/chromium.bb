@@ -92,7 +92,9 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
   virtual bool Commit(HardwareDisplayPlaneList* plane_list,
                       bool test_only) = 0;
 
-  const ScopedVector<HardwareDisplayPlane>& planes() { return planes_; }
+  const std::vector<scoped_ptr<HardwareDisplayPlane>>& planes() {
+    return planes_;
+  }
 
   std::vector<uint32_t> GetCompatibleHardwarePlaneIds(const OverlayPlane& plane,
                                                       uint32_t crtc_id) const;
@@ -129,7 +131,7 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
   // calls to control it. Not owned.
   DrmDevice* drm_;
 
-  ScopedVector<HardwareDisplayPlane> planes_;
+  std::vector<scoped_ptr<HardwareDisplayPlane>> planes_;
   std::vector<uint32_t> crtcs_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManager);

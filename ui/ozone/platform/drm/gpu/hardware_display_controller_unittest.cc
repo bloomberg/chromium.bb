@@ -308,7 +308,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   const ui::HardwareDisplayPlane* owned_plane = nullptr;
   for (const auto& plane : drm_->plane_manager()->planes()) {
     if (plane->in_use())
-      owned_plane = plane;
+      owned_plane = plane.get();
   }
 
   ASSERT_TRUE(owned_plane != nullptr);
@@ -347,7 +347,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
   const ui::HardwareDisplayPlane* owned_plane = nullptr;
   for (const auto& plane : drm_->plane_manager()->planes())
     if (plane->in_use())
-      owned_plane = plane;
+      owned_plane = plane.get();
   ASSERT_TRUE(owned_plane != nullptr);
   EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
   scoped_ptr<ui::CrtcController> crtc =
@@ -378,7 +378,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
   ui::HardwareDisplayPlane* primary_crtc_plane = nullptr;
   for (const auto& plane : drm_->plane_manager()->planes()) {
     if (plane->in_use() && kPrimaryCrtc == plane->owning_crtc())
-      primary_crtc_plane = plane;
+      primary_crtc_plane = plane.get();
   }
 
   ASSERT_TRUE(primary_crtc_plane != nullptr);

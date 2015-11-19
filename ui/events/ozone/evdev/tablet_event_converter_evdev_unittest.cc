@@ -101,7 +101,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
   int read_pipe_;
   int write_pipe_;
 
-  ScopedVector<Event> dispatched_events_;
+  std::vector<scoped_ptr<Event>> dispatched_events_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTabletEventConverterEvdev);
 };
@@ -211,7 +211,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
   unsigned size() { return dispatched_events_.size(); }
   ui::MouseEvent* dispatched_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
-    ui::Event* ev = dispatched_events_[index];
+    ui::Event* ev = dispatched_events_[index].get();
     DCHECK(ev->IsMouseEvent());
     return static_cast<ui::MouseEvent*>(ev);
   }
@@ -227,7 +227,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
   scoped_ptr<ui::EventFactoryEvdev> event_factory_;
   scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
 
-  ScopedVector<ui::Event> dispatched_events_;
+  std::vector<scoped_ptr<ui::Event>> dispatched_events_;
 
   int events_out_;
   int events_in_;

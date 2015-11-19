@@ -20,7 +20,7 @@ void NativeDisplayDelegateOzone::Initialize() {
   DisplaySnapshot_Params params;
   if (CreateSnapshotFromCommandLine(&params)) {
     DCHECK_NE(DISPLAY_CONNECTION_TYPE_NONE, params.type);
-    displays_.push_back(new DisplaySnapshotProxy(params));
+    displays_.push_back(make_scoped_ptr(new DisplaySnapshotProxy(params)));
   }
 }
 
@@ -58,7 +58,10 @@ void NativeDisplayDelegateOzone::ForceDPMSOn() {
 
 void NativeDisplayDelegateOzone::GetDisplays(
     const GetDisplaysCallback& callback) {
-  callback.Run(displays_.get());
+  std::vector<DisplaySnapshot*> displays;
+  for (const auto& display : displays_)
+    displays.push_back(display.get());
+  callback.Run(displays);
 }
 
 void NativeDisplayDelegateOzone::AddMode(const ui::DisplaySnapshot& output,

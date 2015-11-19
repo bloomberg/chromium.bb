@@ -90,7 +90,7 @@ class WindowManager : public ui::NativeDisplayObserver {
   scoped_ptr<ui::NativeDisplayDelegate> delegate_;
   base::Closure quit_closure_;
   RendererFactory renderer_factory_;
-  ScopedVector<DemoWindow> windows_;
+  std::vector<scoped_ptr<DemoWindow>> windows_;
 
   // Flags used to keep track of the current state of display configuration.
   //

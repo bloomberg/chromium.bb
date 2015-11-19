@@ -149,8 +149,8 @@ class OZONE_EXPORT HardwareDisplayController {
 
   uint64_t GetTimeOfLastFlip() const;
 
-  const std::vector<CrtcController*>& crtc_controllers() const {
-    return crtc_controllers_.get();
+  const std::vector<scoped_ptr<CrtcController>>& crtc_controllers() const {
+    return crtc_controllers_;
   }
 
   scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
@@ -165,7 +165,7 @@ class OZONE_EXPORT HardwareDisplayController {
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.
-  ScopedVector<CrtcController> crtc_controllers_;
+  std::vector<scoped_ptr<CrtcController>> crtc_controllers_;
 
   // Location of the controller on the screen.
   gfx::Point origin_;

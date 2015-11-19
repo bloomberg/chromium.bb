@@ -79,8 +79,8 @@ class OZONE_EXPORT ScreenManager {
   void UpdateControllerToWindowMapping();
 
  private:
-  typedef ScopedVector<HardwareDisplayController> HardwareDisplayControllers;
-
+  typedef std::vector<scoped_ptr<HardwareDisplayController>>
+      HardwareDisplayControllers;
   typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, scoped_ptr<DrmWindow>>
       WidgetToWindowMap;
 

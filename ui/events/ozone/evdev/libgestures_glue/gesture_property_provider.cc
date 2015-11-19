@@ -715,8 +715,8 @@ struct ConfigurationSection {
   ConfigurationSection() {}
   bool Match(const DevicePtr device);
   std::string identifier;
-  ScopedVector<MatchCriteria> criterias;
-  ScopedVector<GesturesProp> properties;
+  std::vector<scoped_ptr<MatchCriteria>> criterias;
+  std::vector<scoped_ptr<GesturesProp>> properties;
 };
 
 MatchCriteria::MatchCriteria(const std::string& arg) {
@@ -950,14 +950,14 @@ void GesturePropertyProvider::UnregisterDevice(const DeviceId id) {
 
 void GesturePropertyProvider::AddProperty(const DeviceId device_id,
                                           const std::string& name,
-                                          GesturesProp* property) {
+                                          scoped_ptr<GesturesProp> property) {
   // The look-up should never fail because ideally a property can only be
   // created with GesturesPropCreate* functions from the gesture lib side.
   // Therefore, we simply return on failure.
   internal::GestureDevicePropertyData* device_data =
       device_data_map_.get(device_id);
   if (device_data)
-    device_data->properties.set(name, scoped_ptr<GesturesProp>(property));
+    device_data->properties.set(name, std::move(property));
 }
 
 void GesturePropertyProvider::DeleteProperty(const DeviceId device_id,
@@ -1038,8 +1038,9 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
   base::SplitStringUsingSubstr(content, "EndSection", &sections);
   for (size_t i = 0; i < sections.size(); ++i) {
     // Create a new configuration section.
-    configurations_.push_back(new internal::ConfigurationSection());
-    internal::ConfigurationSection* config = configurations_.back();
+    configurations_.push_back(
+        make_scoped_ptr(new internal::ConfigurationSection()));
+    internal::ConfigurationSection* config = configurations_.back().get();
 
     // Break the section into lines.
     base::StringTokenizer lines(sections[i], "\n");
@@ -1111,18 +1112,19 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
             next_is_option_value = true;
             next_is_option_name = false;
           } else if (next_is_option_value) {
-            GesturesProp* property = CreateDefaultProperty(option_name, arg);
+            scoped_ptr<GesturesProp> property =
+                CreateDefaultProperty(option_name, arg);
             if (property)
-              config->properties.push_back(property);
+              config->properties.push_back(std::move(property));
             next_is_option_value = false;
             break;
           } else if (next_is_match_criteria) {
             // Skip all match types that are not supported.
             if (IsMatchTypeSupported(match_type)) {
-              internal::MatchCriteria* criteria =
+              scoped_ptr<internal::MatchCriteria> criteria =
                   CreateMatchCriteria(match_type, arg);
               if (criteria)
-                config->criterias.push_back(criteria);
+                config->criterias.push_back(std::move(criteria));
             }
             next_is_match_criteria = false;
             break;
@@ -1167,15 +1169,16 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
       // The value of a boolean option is skipped (default is true).
       if (!has_error && (next_is_option_value || next_is_match_criteria)) {
         if (next_is_option_value) {
-          GesturesProp* property = CreateDefaultProperty(option_name, "on");
+          scoped_ptr<GesturesProp> property =
+              CreateDefaultProperty(option_name, "on");
           if (property)
-            config->properties.push_back(property);
+            config->properties.push_back(std::move(property));
         } else if (IsMatchTypeSupported(match_type) &&
                    IsMatchDeviceType(match_type)) {
-          internal::MatchCriteria* criteria =
+          scoped_ptr<internal::MatchCriteria> criteria =
               CreateMatchCriteria(match_type, "on");
           if (criteria)
-            config->criterias.push_back(criteria);
+            config->criterias.push_back(std::move(criteria));
         }
       }
     }
@@ -1188,27 +1191,27 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
   }
 }
 
-internal::MatchCriteria* GesturePropertyProvider::CreateMatchCriteria(
-    const std::string& match_type,
-    const std::string& arg) {
+scoped_ptr<internal::MatchCriteria>
+GesturePropertyProvider::CreateMatchCriteria(const std::string& match_type,
+                                             const std::string& arg) {
   DVLOG(2) << "Creating match criteria: (" << match_type << ", " << arg << ")";
   if (match_type == "MatchProduct")
-    return new internal::MatchProduct(arg);
+    return make_scoped_ptr(new internal::MatchProduct(arg));
   if (match_type == "MatchDevicePath")
-    return new internal::MatchDevicePath(arg);
+    return make_scoped_ptr(new internal::MatchDevicePath(arg));
   if (match_type == "MatchUSBID")
-    return new internal::MatchUSBID(arg);
+    return make_scoped_ptr(new internal::MatchUSBID(arg));
   if (match_type == "MatchIsPointer")
-    return new internal::MatchIsPointer(arg);
+    return make_scoped_ptr(new internal::MatchIsPointer(arg));
   if (match_type == "MatchIsTouchpad")
-    return new internal::MatchIsTouchpad(arg);
+    return make_scoped_ptr(new internal::MatchIsTouchpad(arg));
   if (match_type == "MatchIsTouchscreen")
-    return new internal::MatchIsTouchscreen(arg);
+    return make_scoped_ptr(new internal::MatchIsTouchscreen(arg));
   NOTREACHED();
   return NULL;
 }
 
-GesturesProp* GesturePropertyProvider::CreateDefaultProperty(
+scoped_ptr<GesturesProp> GesturePropertyProvider::CreateDefaultProperty(
     const std::string& name,
     const std::string& value) {
   // Our parsing rule:
@@ -1254,12 +1257,12 @@ GesturesProp* GesturePropertyProvider::CreateDefaultProperty(
 
   // Create the GesturesProp. Array properties need to contain at least one
   // number and may contain numbers only.
-  GesturesProp* property = NULL;
+  scoped_ptr<GesturesProp> property;
   if (is_all_numeric && numbers.size()) {
-    property = new GesturesDoubleProp(
-        name, numbers.size(), NULL, numbers.data(), NULL);
+    property.reset(new GesturesDoubleProp(name, numbers.size(), NULL,
+                                          numbers.data(), NULL));
   } else {
-    property = new GesturesStringProp(name, NULL, value.c_str(), NULL);
+    property.reset(new GesturesStringProp(name, NULL, value.c_str(), NULL));
   }
 
   DVLOG(2) << "Prop: " << *property;
@@ -1276,15 +1279,14 @@ void GesturePropertyProvider::SetupDefaultProperties(const DeviceId device_id,
   // Go through all parsed sections.
   internal::PropertiesMap& property_map =
       device_data_map_.get(device_id)->default_properties;
-  for (size_t i = 0; i < configurations_.size(); ++i) {
-    if (configurations_[i]->Match(device)) {
-      DVLOG(2) << "Conf section \"" << configurations_[i]->identifier
+  for (const auto& configuration : configurations_) {
+    if (configuration->Match(device)) {
+      DVLOG(2) << "Conf section \"" << configuration->identifier
                << "\" is matched";
-      for (size_t j = 0; j < configurations_[i]->properties.size(); j++) {
-        GesturesProp* property = configurations_[i]->properties[j];
+      for (const auto& property : configuration->properties) {
         // We can't use insert here because a property may be set for several
         // times along the way.
-        property_map[property->name()] = property;
+        property_map[property->name()] = property.get();
       }
     }
   }
@@ -1336,8 +1338,7 @@ GesturesProp* GesturesPropFunctionsWrapper::CreateString(void* device_data,
     return NULL;
   GesturesProp* property =
       new GesturesStringProp(name, value, init, default_property);
-
-  PostCreateProperty(device_data, name, property);
+  PostCreateProperty(device_data, name, make_scoped_ptr(property));
   return property;
 }
 
@@ -1459,7 +1460,7 @@ GesturesProp* GesturesPropFunctionsWrapper::CreateProperty(void* device_data,
       new PROPTYPE(name, count, value, init, default_property);
 
   // Start tracking the property in the provider.
-  PostCreateProperty(device_data, name, property);
+  PostCreateProperty(device_data, name, make_scoped_ptr(property));
   return property;
 }
 
@@ -1491,13 +1492,14 @@ bool GesturesPropFunctionsWrapper::PreCreateProperty(
   return true;
 }
 
-void GesturesPropFunctionsWrapper::PostCreateProperty(void* device_data,
-                                                      const char* name,
-                                                      GesturesProp* property) {
+void GesturesPropFunctionsWrapper::PostCreateProperty(
+    void* device_data,
+    const char* name,
+    scoped_ptr<GesturesProp> property) {
   // Add the property to the gesture property provider. The gesture property
   // provider will own it from now on.
   GesturePropertyProvider* provider = GetPropertyProvider(device_data);
-  provider->AddProperty(GetDeviceId(device_data), name, property);
+  provider->AddProperty(GetDeviceId(device_data), name, std::move(property));
 
   // Log the creation.
   DVLOG(3) << "Created active prop: " << *property;

@@ -99,7 +99,7 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
   // Used to get best possible approximation of plane usage in GPU side. We use
   // this to make sure we don't handle more candidates than what we can support
   // in GPU side.
-  ScopedVector<HardwareDisplayPlaneProxy> hardware_plane_proxy_;
+  std::vector<scoped_ptr<HardwareDisplayPlaneProxy>> hardware_plane_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayCandidatesHost);
 };

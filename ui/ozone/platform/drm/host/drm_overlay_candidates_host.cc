@@ -181,7 +181,7 @@ void DrmOverlayCandidatesHost::OnOverlayResult(
     cache_.Put(check, true);
     for (const auto& plane_id : check.plane_ids) {
       bool plane_found = false;
-      for (const auto* plane : hardware_plane_proxy_) {
+      for (const auto& plane : hardware_plane_proxy_) {
         if (plane->plane_id == plane_id) {
           plane_found = true;
           break;
@@ -267,7 +267,7 @@ void DrmOverlayCandidatesHost::ValidateCandidates(
   }
 
   uint32_t available_overlays = hardware_plane_proxy_.size();
-  for (auto* plane : hardware_plane_proxy_)
+  for (const auto& plane : hardware_plane_proxy_)
     plane->in_use = false;
 
   // Sort in decending order w.r.t weight.
@@ -279,7 +279,7 @@ void DrmOverlayCandidatesHost::ValidateCandidates(
   // Make sure we don't handle more candidates than what we can support in
   // GPU side.
   for (const auto& candidate : compatible_candidates) {
-    for (auto* plane : hardware_plane_proxy_) {
+    for (const auto& plane : hardware_plane_proxy_) {
       // Plane is already in use.
       if (plane->in_use)
         continue;

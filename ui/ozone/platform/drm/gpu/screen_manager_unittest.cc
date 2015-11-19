@@ -225,7 +225,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeModesettingWithDisplaysMode) {
 
   ui::HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
-  for (ui::CrtcController* crtc : controller->crtc_controllers()) {
+  for (const auto& crtc : controller->crtc_controllers()) {
     if (crtc->crtc() == kPrimaryCrtc)
       EXPECT_EQ(kDefaultMode.clock, crtc->mode().clock);
     else if (crtc->crtc() == kSecondaryCrtc)

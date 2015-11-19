@@ -108,7 +108,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   // when there is no connection to the GPU to update the displays.
   bool has_dummy_display_ = false;
 
-  ScopedVector<DrmDisplayHost> displays_;
+  std::vector<scoped_ptr<DrmDisplayHost>> displays_;
 
   GetDisplaysCallback get_displays_callback_;
 

@@ -130,7 +130,8 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   }
 
   std::sort(planes_.begin(), planes_.end(),
-            [](HardwareDisplayPlane* l, HardwareDisplayPlane* r) {
+            [](const scoped_ptr<HardwareDisplayPlane>& l,
+               const scoped_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
   return true;
@@ -148,7 +149,7 @@ HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
     uint32_t crtc_index,
     const OverlayPlane& overlay) const {
   for (size_t i = *index; i < planes_.size(); ++i) {
-    auto plane = planes_[i];
+    auto plane = planes_[i].get();
     if (!plane->in_use() && IsCompatible(plane, overlay, crtc_index)) {
       *index = i + 1;
       return plane;
@@ -289,8 +290,8 @@ HardwareDisplayPlaneManager::GetCompatibleHardwarePlaneIds(
   }
 
   std::vector<uint32_t> plane_ids;
-  for (auto* hardware_plane : planes_) {
-    if (IsCompatible(hardware_plane, plane, crtc_index))
+  for (const auto& hardware_plane : planes_) {
+    if (IsCompatible(hardware_plane.get(), plane, crtc_index))
       plane_ids.push_back(hardware_plane->plane_id());
   }
 

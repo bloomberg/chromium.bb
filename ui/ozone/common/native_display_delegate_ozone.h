@@ -51,7 +51,7 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
   void RemoveObserver(NativeDisplayObserver* observer) override;
 
  private:
-  ScopedVector<DisplaySnapshot> displays_;
+  std::vector<scoped_ptr<DisplaySnapshot>> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateOzone);
 };

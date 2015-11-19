@@ -70,7 +70,8 @@ class FakePlaneManager : public ui::HardwareDisplayPlaneManager {
     }
     // The real HDPM uses sorted planes, so sort them for consistency.
     std::sort(planes_.begin(), planes_.end(),
-              [](ui::HardwareDisplayPlane* l, ui::HardwareDisplayPlane* r) {
+              [](const scoped_ptr<ui::HardwareDisplayPlane>& l,
+                 const scoped_ptr<ui::HardwareDisplayPlane>& r) {
                 return l->plane_id() < r->plane_id();
               });
   }
