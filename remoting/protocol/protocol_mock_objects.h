@@ -32,14 +32,21 @@ namespace protocol {
 
 class MockConnectionToClient : public ConnectionToClient {
  public:
-  MockConnectionToClient(Session* session, HostStub* host_stub);
+  MockConnectionToClient(scoped_ptr<Session> session, HostStub* host_stub);
   ~MockConnectionToClient() override;
+
+  void SetEventHandler(EventHandler* event_handler) override {
+    event_handler_ = event_handler;
+  }
 
   MOCK_METHOD1(Init, void(Session* session));
   MOCK_METHOD0(video_stub, VideoStub*());
+  MOCK_METHOD0(audio_stub, AudioStub*());
   MOCK_METHOD0(client_stub, ClientStub*());
-  MOCK_METHOD0(session, Session*());
   MOCK_METHOD1(Disconnect, void(ErrorCode error));
+
+  Session* session() override { return session_.get(); }
+  void OnInputEventReceived(int64_t timestamp) override {}
 
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override {
     clipboard_stub_ = clipboard_stub;
@@ -54,16 +61,20 @@ class MockConnectionToClient : public ConnectionToClient {
     video_feedback_stub_ = video_feedback_stub;
   }
 
+  EventHandler* event_handler() { return event_handler_; }
   ClipboardStub* clipboard_stub() { return clipboard_stub_; }
   HostStub* host_stub() { return host_stub_; }
   InputStub* input_stub() { return input_stub_; }
   VideoFeedbackStub* video_feedback_stub() { return video_feedback_stub_; }
 
  private:
-  ClipboardStub* clipboard_stub_;
-  HostStub* host_stub_;
-  InputStub* input_stub_;
-  VideoFeedbackStub* video_feedback_stub_;
+  scoped_ptr<Session> session_;
+  EventHandler* event_handler_ = nullptr;
+
+  ClipboardStub* clipboard_stub_ = nullptr;
+  HostStub* host_stub_ = nullptr;
+  InputStub* input_stub_ = nullptr;
+  VideoFeedbackStub* video_feedback_stub_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClient);
 };

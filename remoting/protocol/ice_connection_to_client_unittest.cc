@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/ice_connection_to_client.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -20,21 +20,20 @@ using ::testing::StrictMock;
 namespace remoting {
 namespace protocol {
 
-class ConnectionToClientTest : public testing::Test {
+class IpcConnectionToClientTest : public testing::Test {
  public:
-  ConnectionToClientTest() {
-  }
+  IpcConnectionToClientTest() {}
 
  protected:
   void SetUp() override {
     session_ = new FakeSession();
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_.reset(new ConnectionToClient(session_));
+    viewer_.reset(new IceConnectionToClient(make_scoped_ptr(session_)));
     viewer_->SetEventHandler(&handler_);
     EXPECT_CALL(handler_, OnConnectionAuthenticated(viewer_.get()))
         .WillOnce(
-            InvokeWithoutArgs(this, &ConnectionToClientTest::ConnectStubs));
+            InvokeWithoutArgs(this, &IpcConnectionToClientTest::ConnectStubs));
     EXPECT_CALL(handler_, OnConnectionChannelsConnected(viewer_.get()));
     session_->event_handler()->OnSessionStateChange(Session::CONNECTED);
     session_->event_handler()->OnSessionStateChange(Session::AUTHENTICATED);
@@ -59,14 +58,13 @@ class ConnectionToClientTest : public testing::Test {
   MockInputStub input_stub_;
   scoped_ptr<ConnectionToClient> viewer_;
 
-  // Owned by |viewer_|.
   FakeSession* session_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionToClientTest);
+  DISALLOW_COPY_AND_ASSIGN(IpcConnectionToClientTest);
 };
 
-TEST_F(ConnectionToClientTest, SendUpdateStream) {
+TEST_F(IpcConnectionToClientTest, SendUpdateStream) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
 
@@ -86,7 +84,7 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
+TEST_F(IpcConnectionToClientTest, NoWriteAfterDisconnect) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
 
@@ -99,7 +97,7 @@ TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ConnectionToClientTest, StateChange) {
+TEST_F(IpcConnectionToClientTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get(), OK));
   session_->event_handler()->OnSessionStateChange(Session::CLOSED);
   base::RunLoop().RunUntilIdle();

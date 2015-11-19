@@ -118,10 +118,6 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(ReturnRef(session_unowned_jid1_));
     EXPECT_CALL(*session_unowned2_, jid())
         .WillRepeatedly(ReturnRef(session_unowned_jid2_));
-    EXPECT_CALL(*session1_, SetEventHandler(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*session2_, SetEventHandler(_))
-        .Times(AnyNumber());
     EXPECT_CALL(*session_unowned1_, SetEventHandler(_))
         .Times(AnyNumber())
         .WillRepeatedly(SaveArg<0>(&session_unowned1_event_handler_));
@@ -133,11 +129,11 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(*session_config2_));
 
-    owned_connection1_.reset(new MockConnectionToClient(session1_,
-                                                        &host_stub1_));
+    owned_connection1_.reset(
+        new MockConnectionToClient(make_scoped_ptr(session1_), &host_stub1_));
     connection1_ = owned_connection1_.get();
-    owned_connection2_.reset(new MockConnectionToClient(session2_,
-                                                        &host_stub2_));
+    owned_connection2_.reset(
+        new MockConnectionToClient(make_scoped_ptr(session2_), &host_stub2_));
     connection2_ = owned_connection2_.get();
 
     ON_CALL(video_stub1_, ProcessVideoPacketPtr(_, _))
@@ -148,25 +144,17 @@ class ChromotingHostTest : public testing::Test {
         .WillByDefault(Return(&video_stub1_));
     ON_CALL(*connection1_, client_stub())
         .WillByDefault(Return(&client_stub1_));
-    ON_CALL(*connection1_, session())
-        .WillByDefault(Return(session1_));
     ON_CALL(*connection2_, video_stub())
         .WillByDefault(Return(&video_stub2_));
     ON_CALL(*connection2_, client_stub())
         .WillByDefault(Return(&client_stub2_));
-    ON_CALL(*connection2_, session())
-        .WillByDefault(Return(session2_));
     EXPECT_CALL(*connection1_, video_stub())
         .Times(AnyNumber());
     EXPECT_CALL(*connection1_, client_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection1_, session())
-        .Times(AnyNumber());
     EXPECT_CALL(*connection2_, video_stub())
         .Times(AnyNumber());
     EXPECT_CALL(*connection2_, client_stub())
-        .Times(AnyNumber());
-    EXPECT_CALL(*connection2_, session())
         .Times(AnyNumber());
   }
 

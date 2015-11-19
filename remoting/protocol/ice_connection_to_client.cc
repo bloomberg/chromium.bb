@@ -1,12 +1,13 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/ice_connection_to_client.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "net/base/io_buffer.h"
+#include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
 #include "remoting/protocol/host_event_dispatcher.h"
@@ -17,27 +18,28 @@
 namespace remoting {
 namespace protocol {
 
-ConnectionToClient::ConnectionToClient(protocol::Session* session)
-    : handler_(nullptr),
-      session_(session) {
+IceConnectionToClient::IceConnectionToClient(
+    scoped_ptr<protocol::Session> session)
+    : handler_(nullptr), session_(session.Pass()) {
   session_->SetEventHandler(this);
 }
 
-ConnectionToClient::~ConnectionToClient() {
+IceConnectionToClient::~IceConnectionToClient() {
 }
 
-void ConnectionToClient::SetEventHandler(EventHandler* event_handler) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::SetEventHandler(
+    ConnectionToClient::EventHandler* event_handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   handler_ = event_handler;
 }
 
-protocol::Session* ConnectionToClient::session() {
-  DCHECK(CalledOnValidThread());
+protocol::Session* IceConnectionToClient::session() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return session_.get();
 }
 
-void ConnectionToClient::Disconnect(ErrorCode error) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::Disconnect(ErrorCode error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   CloseChannels();
 
@@ -46,51 +48,51 @@ void ConnectionToClient::Disconnect(ErrorCode error) {
   session_->Close(error);
 }
 
-void ConnectionToClient::OnInputEventReceived(int64_t timestamp) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   handler_->OnInputEventReceived(this, timestamp);
 }
 
-VideoStub* ConnectionToClient::video_stub() {
-  DCHECK(CalledOnValidThread());
+VideoStub* IceConnectionToClient::video_stub() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return video_dispatcher_.get();
 }
 
-AudioStub* ConnectionToClient::audio_stub() {
-  DCHECK(CalledOnValidThread());
+AudioStub* IceConnectionToClient::audio_stub() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return audio_writer_.get();
 }
 
 // Return pointer to ClientStub.
-ClientStub* ConnectionToClient::client_stub() {
-  DCHECK(CalledOnValidThread());
+ClientStub* IceConnectionToClient::client_stub() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return control_dispatcher_.get();
 }
 
-void ConnectionToClient::set_clipboard_stub(
+void IceConnectionToClient::set_clipboard_stub(
     protocol::ClipboardStub* clipboard_stub) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   control_dispatcher_->set_clipboard_stub(clipboard_stub);
 }
 
-void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   control_dispatcher_->set_host_stub(host_stub);
 }
 
-void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   event_dispatcher_->set_input_stub(input_stub);
 }
 
-void ConnectionToClient::set_video_feedback_stub(
+void IceConnectionToClient::set_video_feedback_stub(
     VideoFeedbackStub* video_feedback_stub) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   video_dispatcher_->set_video_feedback_stub(video_feedback_stub);
 }
 
-void ConnectionToClient::OnSessionStateChange(Session::State state) {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::OnSessionStateChange(Session::State state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK(handler_);
   switch(state) {
@@ -112,8 +114,9 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       event_dispatcher_.reset(new HostEventDispatcher());
       event_dispatcher_->Init(session_.get(), session_->config().event_config(),
                               this);
-      event_dispatcher_->set_on_input_event_callback(base::Bind(
-          &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
+      event_dispatcher_->set_on_input_event_callback(
+          base::Bind(&IceConnectionToClient::OnInputEventReceived,
+                     base::Unretained(this)));
 
       video_dispatcher_.reset(new HostVideoDispatcher());
       video_dispatcher_->Init(session_.get(), session_->config().video_config(),
@@ -140,31 +143,31 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
   }
 }
 
-void ConnectionToClient::OnSessionRouteChange(
+void IceConnectionToClient::OnSessionRouteChange(
     const std::string& channel_name,
     const TransportRoute& route) {
   handler_->OnRouteChange(this, channel_name, route);
 }
 
-void ConnectionToClient::OnChannelInitialized(
+void IceConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   NotifyIfChannelsReady();
 }
 
-void ConnectionToClient::OnChannelError(
+void IceConnectionToClient::OnChannelError(
     ChannelDispatcherBase* channel_dispatcher,
     ErrorCode error) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   LOG(ERROR) << "Failed to connect channel "
              << channel_dispatcher->channel_name();
   Close(CHANNEL_CONNECTION_ERROR);
 }
 
-void ConnectionToClient::NotifyIfChannelsReady() {
-  DCHECK(CalledOnValidThread());
+void IceConnectionToClient::NotifyIfChannelsReady() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!control_dispatcher_ || !control_dispatcher_->is_connected())
     return;
@@ -179,12 +182,12 @@ void ConnectionToClient::NotifyIfChannelsReady() {
   handler_->OnConnectionChannelsConnected(this);
 }
 
-void ConnectionToClient::Close(ErrorCode error) {
+void IceConnectionToClient::Close(ErrorCode error) {
   CloseChannels();
   handler_->OnConnectionClosed(this, error);
 }
 
-void ConnectionToClient::CloseChannels() {
+void IceConnectionToClient::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
   video_dispatcher_.reset();

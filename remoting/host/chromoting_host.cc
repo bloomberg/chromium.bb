@@ -18,9 +18,9 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/video_frame_recorder.h"
-#include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/input_stub.h"
 
 using remoting::protocol::ConnectionToClient;
@@ -284,7 +284,7 @@ void ChromotingHost::OnIncomingSession(
 
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
-      new protocol::ConnectionToClient(session));
+      new protocol::IceConnectionToClient(make_scoped_ptr(session)));
   ClientSession* client = new ClientSession(
       this,
       audio_task_runner_,

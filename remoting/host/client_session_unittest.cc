@@ -226,16 +226,14 @@ void ClientSessionTest::TearDown() {
 
 void ClientSessionTest::CreateClientSession() {
   // Mock protocol::Session APIs called directly by ClientSession.
-  protocol::MockSession* session = new MockSession();
+  scoped_ptr<protocol::MockSession> session(new MockSession());
   EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(*session_config_));
   EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
-  EXPECT_CALL(*session, SetEventHandler(_));
 
   // Mock protocol::ConnectionToClient APIs called directly by ClientSession.
   // HostStub is not touched by ClientSession, so we can safely pass nullptr.
   scoped_ptr<MockConnectionToClient> connection(
-      new MockConnectionToClient(session, nullptr));
-  EXPECT_CALL(*connection, session()).WillRepeatedly(Return(session));
+      new MockConnectionToClient(session.Pass(), nullptr));
   EXPECT_CALL(*connection, client_stub())
       .WillRepeatedly(Return(&client_stub_));
   EXPECT_CALL(*connection, video_stub()).WillRepeatedly(Return(&video_stub_));
