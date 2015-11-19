@@ -944,6 +944,10 @@ bool NaClProcessHost::StartNaClExecution() {
     base::SharedMemoryCreateOptions options;
     options.size = 1;
     options.executable = true;
+
+    // NaCl expects a POSIX fd.
+    options.type = base::SharedMemoryHandle::POSIX;
+
     if (!memory_buffer.Create(options)) {
       DLOG(ERROR) << "Failed to allocate memory buffer";
       return false;

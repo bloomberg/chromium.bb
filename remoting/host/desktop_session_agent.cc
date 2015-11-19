@@ -74,8 +74,16 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                                          size_t size,
                                          int id) {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory());
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    // Remoting does not yet support Mach primitive backed SharedMemory, so
+    // force the underlying primitive to be a POSIX fd.
+    // https://crbug.com/547247.
+    if (!memory->CreateAndMapAnonymousPosix(size))
+      return nullptr;
+#else
     if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
     return make_scoped_ptr(new SharedBuffer(agent, memory.Pass(), size, id));
   }
 

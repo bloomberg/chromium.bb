@@ -28,8 +28,17 @@ scoped_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
     gfx::BufferUsage usage) {
   size_t bytes = gfx::BufferSizeForBufferFormat(size, format);
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+
+#if defined(OS_MACOSX)
+  // Mojo IPC does not yet support transfer of Mach primitives, so
+  // force the underlying primitive to be a POSIX fd. https://crbug.com/547243.
+  if (!shared_memory->CreateAnonymousPosix(bytes))
+    return nullptr;
+#else
   if (!shared_memory->CreateAnonymous(bytes))
     return nullptr;
+#endif  // defined(OS_MACOSX)
+
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new MojoGpuMemoryBufferImpl(size, format, shared_memory.Pass()));
 }
