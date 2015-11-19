@@ -84,9 +84,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-// TODO(dcheng): Temporary, remove this #include since swap is defined in
-// <utility> in C++11.
-#include <algorithm>
 #include <iosfwd>
 #include <memory>
 #include <utility>
