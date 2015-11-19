@@ -334,12 +334,14 @@ def FmtOut(tr_points_at, pnacl_changes, new_git_hash, err=[], msg=[]):
       ['BUG= ' + cl['bug'].strip() if cl['bug'] else '' for
        cl in pnacl_changes]) - set(['']))))
   reviewers = ', '.join(sorted(list(set(
-      [r.strip() for r in
-       (','.join([
-           cl['author email'] + ',' +
-           cl['reviewers tbr'] + ',' +
-           cl['reviewers']
-           for cl in pnacl_changes])).split(',')]) - set(['']))))
+      [r if '@' in r else r + '@chromium.org' for r in
+       [r.strip() for r in
+        (','.join([
+            cl['author email'] + ',' +
+            cl['reviewers tbr'] + ',' +
+            cl['reviewers']
+            for cl in pnacl_changes])).split(',')]
+       if r != '']))))
   return (('*** ERROR ***\n' if err else '') +
           '\n\n'.join(err) +
           '\n\n'.join(msg) +
