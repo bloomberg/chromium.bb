@@ -889,15 +889,16 @@ var testing = {};
    * Converts each Error in |errors| to a suitable message, adding them to
    * |message|, and returns the message string.
    * @param {Array<Error>} errors Array of errors to add to |message|.
-   * @param {string?} message When supplied, error messages are appended to it.
-   * @return {string} |message| + messages of all |errors|.
+   * @param {string=} opt_message Message to append error messages to.
+   * @return {string} |opt_message| + messages of all |errors|.
    */
-  function errorsToMessage(errors, message) {
+  function errorsToMessage(errors, opt_message) {
+    var message = '';
+    if (opt_message)
+      message += opt_message + '\n';
+
     for (var i = 0; i < errors.length; ++i) {
       var errorMessage = errors[i].stack || errors[i].message;
-      if (message)
-        message += '\n';
-
       message += 'Failed: ' + currentTestFunction + '(' +
           currentTestArguments.map(JSON.stringify) +
           ')\n' + errorMessage;
