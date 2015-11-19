@@ -92,7 +92,7 @@ class ServiceWorkerProviderContext::ControllerDelegate
       scoped_ptr<ServiceWorkerHandleReference> active) override {
     DCHECK(!registration_);
     registration_ = registration.Pass();
-    installing_ = active.Pass();
+    installing_ = installing.Pass();
     waiting_ = waiting.Pass();
     active_ = active.Pass();
   }
