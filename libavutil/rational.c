@@ -106,14 +106,14 @@ AVRational av_sub_q(AVRational b, AVRational c)
 AVRational av_d2q(double d, int max)
 {
     AVRational a;
-#define LOG2  0.69314718055994530941723212145817656807550013436025
     int exponent;
     int64_t den;
     if (isnan(d))
         return (AVRational) { 0,0 };
     if (fabs(d) > INT_MAX + 3LL)
         return (AVRational) { d < 0 ? -1 : 1, 0 };
-    exponent = FFMAX( (int)(log(fabs(d) + 1e-20)/LOG2), 0);
+    frexp(d, &exponent);
+    exponent = FFMAX(exponent-1, 0);
     den = 1LL << (61 - exponent);
     // (int64_t)rint() and llrint() do not work with gcc on ia64 and sparc64
     av_reduce(&a.num, &a.den, floor(d * den + 0.5), den, max);
@@ -146,6 +146,40 @@ int av_find_nearest_q_idx(AVRational q, const AVRational* q_list)
             nearest_q_idx = i;
 
     return nearest_q_idx;
+}
+
+uint32_t av_q2intfloat(AVRational q) {
+    int64_t n;
+    int shift;
+    int sign = 0;
+
+    if (q.den < 0) {
+        q.den *= -1;
+        q.num *= -1;
+    }
+    if (q.num < 0) {
+        q.num *= -1;
+        sign = 1;
+    }
+
+    if (!q.num && !q.den) return 0xFFC00000;
+    if (!q.num) return 0;
+    if (!q.den) return 0x7F800000 | (q.num & 0x80000000);
+
+    shift = 23 + av_log2(q.den) - av_log2(q.num);
+    if (shift >= 0) n = av_rescale(q.num, 1LL<<shift, q.den);
+    else            n = av_rescale(q.num, 1, ((int64_t)q.den) << -shift);
+
+    shift -= n >= (1<<24);
+    shift += n <  (1<<23);
+
+    if (shift >= 0) n = av_rescale(q.num, 1LL<<shift, q.den);
+    else            n = av_rescale(q.num, 1, ((int64_t)q.den) << -shift);
+
+    av_assert1(n <  (1<<24));
+    av_assert1(n >= (1<<23));
+
+    return sign<<31 | (150-shift)<<23 | (n - (1<<23));
 }
 
 #ifdef TEST
@@ -202,6 +236,20 @@ int main(void)
             }
         }
     }
+
+    for (a.den = 1; a.den < 0x100000000U/3; a.den*=3) {
+        for (a.num = -1; a.num < (1<<27); a.num += 1 + a.num/100) {
+            float f  = av_int2float(av_q2intfloat(a));
+            float f2 = av_q2d(a);
+            if (fabs(f - f2) > fabs(f)/5000000) {
+                av_log(NULL, AV_LOG_ERROR, "%d/%d %f %f\n", a.num,
+                       a.den, f, f2);
+                return 1;
+            }
+
+        }
+    }
+
     return 0;
 }
 #endif

@@ -63,6 +63,8 @@ enum HWAccelID {
     HWACCEL_VDPAU,
     HWACCEL_DXVA2,
     HWACCEL_VDA,
+    HWACCEL_VIDEOTOOLBOX,
+    HWACCEL_QSV,
 };
 
 typedef struct HWAccel {
@@ -92,6 +94,8 @@ typedef struct OptionsContext {
 
     /* input/output options */
     int64_t start_time;
+    int64_t start_time_eof;
+    int seek_timestamp;
     const char *format;
 
     SpecifierOpt *codec_names;
@@ -109,6 +113,7 @@ typedef struct OptionsContext {
 
     /* input options */
     int64_t input_ts_offset;
+    int loop;
     int rate_emu;
     int accurate_seek;
     int thread_queue_size;
@@ -121,6 +126,8 @@ typedef struct OptionsContext {
     int        nb_hwaccels;
     SpecifierOpt *hwaccel_devices;
     int        nb_hwaccel_devices;
+    SpecifierOpt *autorotate;
+    int        nb_autorotate;
 
     /* output options */
     StreamMap *stream_maps;
@@ -226,6 +233,7 @@ typedef struct OutputFilter {
 
     /* temporary storage until stream maps are processed */
     AVFilterInOut       *out_tmp;
+    enum AVMediaType     type;
 } OutputFilter;
 
 typedef struct FilterGraph {
@@ -267,6 +275,10 @@ typedef struct InputStream {
 
     int64_t filter_in_rescale_delta_last;
 
+    int64_t min_pts; /* pts with the smallest value in a current stream */
+    int64_t max_pts; /* pts with the higher value in a current stream */
+    int64_t nb_samples; /* number of samples in the last decoded audio frame before looping */
+
     double ts_scale;
     int saw_first_ts;
     int showed_multi_packet_warning;
@@ -275,6 +287,7 @@ typedef struct InputStream {
     int top_field_first;
     int guess_layout_max;
 
+    int autorotate;
     int resample_height;
     int resample_width;
     int resample_pix_fmt;
@@ -335,10 +348,16 @@ typedef struct InputFile {
     int eof_reached;      /* true if eof reached */
     int eagain;           /* true if last read attempt returned EAGAIN */
     int ist_index;        /* index of first stream in input_streams */
+    int loop;             /* set number of times input stream should be looped */
+    int64_t duration;     /* actual duration of the longest stream in a file
+                             at the moment when looping happens */
+    AVRational time_base; /* time base of the duration */
     int64_t input_ts_offset;
+
     int64_t ts_offset;
     int64_t last_ts;
     int64_t start_time;   /* user-specified start time in AV_TIME_BASE or AV_NOPTS_VALUE */
+    int seek_timestamp;
     int64_t recording_time;
     int nb_streams;       /* number of stream that ffmpeg is aware of; may be different
                              from ctx.nb_streams if new streams appear during av_read_frame() */
@@ -363,6 +382,8 @@ enum forced_keyframes_const {
     FKF_T,
     FKF_NB
 };
+
+#define ABORT_ON_FLAG_EMPTY_OUTPUT (1 <<  0)
 
 extern const char *const forced_keyframes_const_names[];
 
@@ -394,11 +415,15 @@ typedef struct OutputStream {
     AVFrame *filtered_frame;
     AVFrame *last_frame;
     int last_droped;
+    int last_nb0_frames[3];
+
+    void  *hwaccel_ctx;
 
     /* video only */
     AVRational frame_rate;
     int force_fps;
     int top_field_first;
+    int rotate_overridden;
 
     AVRational frame_aspect_ratio;
 
@@ -422,8 +447,8 @@ typedef struct OutputStream {
     char *filters;         ///< filtergraph associated to the -filter option
     char *filters_script;  ///< filtergraph script associated to the -filter_script option
 
-    int64_t sws_flags;
     AVDictionary *encoder_opts;
+    AVDictionary *sws_dict;
     AVDictionary *swr_opts;
     AVDictionary *resample_opts;
     AVDictionary *bsf_args;
@@ -448,6 +473,15 @@ typedef struct OutputStream {
     // number of frames/samples sent to the encoder
     uint64_t frames_encoded;
     uint64_t samples_encoded;
+
+    /* packet quality factor */
+    int quality;
+
+    /* packet picture type */
+    int pict_type;
+
+    /* frame encode sum of squared error values */
+    int64_t error[4];
 } OutputStream;
 
 typedef struct OutputFile {
@@ -495,6 +529,7 @@ extern int start_at_zero;
 extern int copy_tb;
 extern int debug_ts;
 extern int exit_on_error;
+extern int abort_on_flags;
 extern int print_stats;
 extern int qp_hist;
 extern int stdin_interaction;
@@ -502,6 +537,7 @@ extern int frame_bits_per_raw_sample;
 extern AVIOContext *progress_avio;
 extern float max_error_rate;
 extern int vdpau_api_ver;
+extern char *videotoolbox_pixfmt;
 
 extern const AVIOInterruptCB int_cb;
 
@@ -529,11 +565,15 @@ int configure_filtergraph(FilterGraph *fg);
 int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOut *out);
 int ist_in_filtergraph(FilterGraph *fg, InputStream *ist);
 FilterGraph *init_simple_filtergraph(InputStream *ist, OutputStream *ost);
+int init_complex_filtergraph(FilterGraph *fg);
 
 int ffmpeg_parse_options(int argc, char **argv);
 
 int vdpau_init(AVCodecContext *s);
 int dxva2_init(AVCodecContext *s);
 int vda_init(AVCodecContext *s);
+int videotoolbox_init(AVCodecContext *s);
+int qsv_init(AVCodecContext *s);
+int qsv_transcode_init(OutputStream *ost);
 
 #endif /* FFMPEG_H */

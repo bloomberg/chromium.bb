@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/arm.gni")
+import("//build/config/chrome_build.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 if (is_chrome_branded) {
   _default_ffmpeg_branding = "Chrome"
@@ -20,17 +22,18 @@ declare_args() {
   # Chromium, Chrome, ChromiumOS, and ChromeOS.
   ffmpeg_branding = _default_ffmpeg_branding
 
-  # When set to false will build Chromium against Chrome's FFmpeg headers, but
-  # not build ffmpegsumo itself.  Users are expected to build and provide
-  # their own version of ffmpegsumo.
-  build_ffmpegsumo = true
+  # Set true to build ffmpeg as a shared library. NOTE: this means we should
+  # always consult is_component_ffmpeg instead of is_component_build for
+  # ffmpeg targets. This helps linux chromium packagers that swap out our
+  # ffmpeg.so with their own. See discussion here
+  # https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
+  is_component_ffmpeg = is_component_build
 }
 
 assert(ffmpeg_branding == "Chromium" ||
        ffmpeg_branding == "Chrome" ||
        ffmpeg_branding == "ChromiumOS" ||
-       ffmpeg_branding == "ChromeOS" ||
-       ffmpeg_branding == "Ensemble")
+       ffmpeg_branding == "ChromeOS")
 
 if (current_cpu == "x86") {
   ffmpeg_arch = "ia32"

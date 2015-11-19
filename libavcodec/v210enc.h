@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVCOENC_V210ENC_H
-#define AVCOENC_V210ENC_H
+#ifndef AVCODEC_V210ENC_H
+#define AVCODEC_V210ENC_H
 
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
@@ -30,6 +30,8 @@ typedef struct V210EncContext {
                          const uint16_t *v, uint8_t *dst, ptrdiff_t width);
 } V210EncContext;
 
+void ff_v210enc_init(V210EncContext *s);
+
 void ff_v210enc_init_x86(V210EncContext *s);
 
-#endif /* AVCOENC_V210ENC_H */
+#endif /* AVCODEC_V210ENC_H */

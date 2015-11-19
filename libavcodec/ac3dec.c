@@ -193,13 +193,13 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
     ff_bswapdsp_init(&s->bdsp);
 
 #if (USE_FIXED)
-    s->fdsp = avpriv_alloc_fixed_dsp(avctx->flags & CODEC_FLAG_BITEXACT);
+    s->fdsp = avpriv_alloc_fixed_dsp(avctx->flags & AV_CODEC_FLAG_BITEXACT);
 #else
-    s->fdsp = avpriv_float_dsp_alloc(avctx->flags & CODEC_FLAG_BITEXACT);
+    s->fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     ff_fmt_convert_init(&s->fmt_conv, avctx);
 #endif
 
-    ff_ac3dsp_init(&s->ac3dsp, avctx->flags & CODEC_FLAG_BITEXACT);
+    ff_ac3dsp_init(&s->ac3dsp, avctx->flags & AV_CODEC_FLAG_BITEXACT);
     av_lfg_init(&s->dith_state, 0);
 
     if (USE_FIXED)
@@ -208,14 +208,6 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
         avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
 
     /* allow downmixing to stereo or mono */
-#if FF_API_REQUEST_CHANNELS
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->request_channels == 1)
-        avctx->request_channel_layout = AV_CH_LAYOUT_MONO;
-    else if (avctx->request_channels == 2)
-        avctx->request_channel_layout = AV_CH_LAYOUT_STEREO;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     if (avctx->channels > 1 &&
         avctx->request_channel_layout == AV_CH_LAYOUT_MONO)
         avctx->channels = 1;
@@ -306,7 +298,7 @@ static int parse_frame_header(AC3DecodeContext *s)
     AC3HeaderInfo hdr, *phdr=&hdr;
     int err;
 
-    err = avpriv_ac3_parse_header2(&s->gbc, &phdr);
+    err = avpriv_ac3_parse_header(&s->gbc, &phdr);
     if (err)
         return err;
 
@@ -601,7 +593,7 @@ static void decode_transform_coeffs_ch(AC3DecodeContext *s, int blk, int ch,
         /* if AHT is used, mantissas for all blocks are encoded in the first
            block of the frame. */
         int bin;
-        if (!blk && CONFIG_EAC3_DECODER)
+        if (CONFIG_EAC3_DECODER && !blk)
             ff_eac3_decode_transform_coeffs_aht_ch(s, ch);
         for (bin = s->start_freq[ch]; bin < s->end_freq[ch]; bin++) {
             s->fixed_coeffs[ch][bin] = s->pre_mantissa[ch][bin][blk] >> s->dexps[ch][bin];
@@ -1352,7 +1344,7 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
     }
 
     /* apply spectral extension to high frequency bins */
-    if (s->spx_in_use && CONFIG_EAC3_DECODER) {
+    if (CONFIG_EAC3_DECODER && s->spx_in_use) {
         ff_eac3_apply_spectral_extension(s);
     }
 

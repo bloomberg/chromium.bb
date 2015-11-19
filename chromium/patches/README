@@ -1,52 +1,76 @@
-Current Status as of Mar 24, 2015
+Current Status as of November 10, 2015
 
 Upstream cherry-picks:
+  Commit 17e394b99da027a9b31a9fd495add3137c0f0422 fixes crash in matroskadec.c.
+    See https://crbug.com/484423.
 
-  None
+  Commit 50ce510ac4e3ed093c051738242a9a75aeeb36ce fixes TSAN data race warning
+    in pthread_slice.c. See https://crbug.com/448215.
+
+Autorename:
+  autorename_* files are renamed copies of various files that would cause
+    base name collisions from mac libtool. These files are generated
+    by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
+  .gitignore has a "Chromium stuff" section.
 
-  Remove UNCHECKED_BITSTREAM_READER defines
-    Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs. In Chromium
-    all codecs should use the safe bitstream reader.
+  Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
+  Changes/additions to compat/{strtod.c,strtod.h}
+    Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
+    relevant build rules to fix inconsistent linkage when building with MSVC.
+    The rules/files expose overriden symbols as externs and force inject these
+    headers when building with the component build.
+    strtod.h was added, so it may not appear in diffs that ignore additions.
+    f3299330654ac1b40c50b3cbcae619f42eb7d838 added an include to snprintf.c.
 
-  Harden libavformat/matroskadec.c
-    Add CONFIG_SIPR_DECODER and CONFIG_LZO checks to remove code that may be a
-    security risk. Discuss with cevans before removing.
-
-    Add call to matroska_read_close() to mitigate memory leak caught by
-    valgrind.
-
-  Preserve AVCodecID enum in libavcodec/avcodec.h (http://crbug.com/241212)
-    Insert AV_CODEC_ID_SNOW into the AVCodecID enum to avoid breaking
-    histograms.
-
-  Fix pthreads emulation on Windows XP
+  Fix pthreads emulation on Windows XP (compat/w32pthreads.h & libavcodec/vp8.c)
     Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
     with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
 
     Add call to w32thread_init() in libavcodec/vp8.c.
 
-  Disable FMA3 instructions in libavutil/log.c (http://crbug.com/440892)
-    Remove call to _set_FMA3_enable() on Windows. Remove once we are using
-    VS2015.
+  Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
+    Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
+    In Chromium, all codecs should use the safe bitstream reader.
 
-  C++11 compatability for string concatenation (http://crbug.com/454590)
-    Add spaces between string literals and tokens in libavutil/timer.h and
-    libavutil/internal.h.
+  Changes to libavcodec/utils.c
+    Disable deprecation warnings related to FF_API_AVPACKET_OLD_API.
+    We cannot just disable FF_API_AVPACKET_OLD_API because upstream does not yet
+    compile with it disabled. Therefore, suppress the warnings locally.
 
-  Check the return value of init_get_bits in libavformat/oggparsedirac.c.
-    If it fails, the GetBitContext is invalid and mustn't be used.
+  Changes to libavformat/matroskadec.c
+    Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
+    code that may be a security risk. Discuss with cevans@ before removing.
 
-  Change printf format specifier for enum from PRIu8 to %d in libavformat/mov.
+    Remove extra const from static EbmlSyntax arrays. This fixes windows
+    compile error C4114, since EbmlSyntax struct is already defined with const.
+    TODO: push upstream.
 
-  Misc things that were not documented
-    Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
+    Add call to matroska_read_close() to mitigate memory leak caught by
+    Valgrind.
 
-    Misc changes in libavformat/mp3dec.c.
+  Changes to libavformat/mp3dec.c
+    TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
+    these changes are still necessary and either remove or document them.
 
-    Add FF_DISABLE_DEPRECATION_WARNINGS/FF_ENABLE_DEPRECATION_WARNINGS pairs in
-    libavformat/mux.c.
-
+  Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
-    av_clip_intp2_arm() from libavutil/arm/intmath.h due to compilation failure.
+    av_clip_intp2_arm() due to compilation failure.
+
+  Disable FMA3 instructions in libavutil/log.c (http://crbug.com/440892)
+    Remove call to _set_FMA3_enable() on Windows.
+    TODO: Remove once Chromium requires VS2015.
+
+  Changes to libavutil/mem.c
+    Enable av_max_alloc(0) to remove alloc size bound.
+
+  Changes to libavutil/timer.h
+    C++11 compatability for string concatenation (http://crbug.com/454590).
+    Add spaces between string literals and tokens.
+
+  Changes/additions to libavutil/x86/x86inc.asm
+    https://chromium-review.googlesource.com/#/c/272274/
+    Fixes the conditionals on Linux so that these symbols are hidden and
+    adds the Chromium-specific private_extern extension for hiding these
+    symbols on OSX.

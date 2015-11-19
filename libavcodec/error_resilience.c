@@ -27,6 +27,7 @@
 
 #include <limits.h>
 
+#include "libavutil/atomic.h"
 #include "libavutil/internal.h"
 #include "avcodec.h"
 #include "error_resilience.h"
@@ -83,6 +84,8 @@ static void put_dc(ERContext *s, uint8_t *dest_y, uint8_t *dest_cb,
         dcv = 0;
     else if (dcv > 2040)
         dcv = 2040;
+
+    if (dest_cr)
     for (y = 0; y < 8; y++) {
         int x;
         for (x = 0; x < 8; x++) {
@@ -774,7 +777,9 @@ void ff_er_frame_start(ERContext *s)
 static int er_supported(ERContext *s)
 {
     if(s->avctx->hwaccel && s->avctx->hwaccel->decode_slice           ||
-       s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU          ||
+#if FF_API_CAP_VDPAU
+       s->avctx->codec->capabilities&AV_CODEC_CAP_HWACCEL_VDPAU          ||
+#endif
        !s->cur_pic.f                                                  ||
        s->cur_pic.field_picture
     )
@@ -813,20 +818,20 @@ void ff_er_add_slice(ERContext *s, int startx, int starty,
     mask &= ~VP_START;
     if (status & (ER_AC_ERROR | ER_AC_END)) {
         mask           &= ~(ER_AC_ERROR | ER_AC_END);
-        s->error_count -= end_i - start_i + 1;
+        avpriv_atomic_int_add_and_fetch(&s->error_count, start_i - end_i - 1);
     }
     if (status & (ER_DC_ERROR | ER_DC_END)) {
         mask           &= ~(ER_DC_ERROR | ER_DC_END);
-        s->error_count -= end_i - start_i + 1;
+        avpriv_atomic_int_add_and_fetch(&s->error_count, start_i - end_i - 1);
     }
     if (status & (ER_MV_ERROR | ER_MV_END)) {
         mask           &= ~(ER_MV_ERROR | ER_MV_END);
-        s->error_count -= end_i - start_i + 1;
+        avpriv_atomic_int_add_and_fetch(&s->error_count, start_i - end_i - 1);
     }
 
     if (status & ER_MB_ERROR) {
         s->error_occurred = 1;
-        s->error_count    = INT_MAX;
+        avpriv_atomic_int_set(&s->error_count, INT_MAX);
     }
 
     if (mask == ~0x7F) {
@@ -839,7 +844,7 @@ void ff_er_add_slice(ERContext *s, int startx, int starty,
     }
 
     if (end_i == s->mb_num)
-        s->error_count = INT_MAX;
+        avpriv_atomic_int_set(&s->error_count, INT_MAX);
     else {
         s->error_status_table[end_xy] &= mask;
         s->error_status_table[end_xy] |= status;
@@ -854,7 +859,7 @@ void ff_er_add_slice(ERContext *s, int startx, int starty,
         prev_status &= ~ VP_START;
         if (prev_status != (ER_MV_END | ER_DC_END | ER_AC_END)) {
             s->error_occurred = 1;
-            s->error_count = INT_MAX;
+            avpriv_atomic_int_set(&s->error_count, INT_MAX);
         }
     }
 }
@@ -1227,6 +1232,9 @@ void ff_er_frame_end(ERContext *s)
                 dc_ptr[(n & 1) + (n >> 1) * s->b8_stride] = (dc + 4) >> 3;
             }
 
+            if (!s->cur_pic.f->data[2])
+                continue;
+
             dcu = dcv = 0;
             for (y = 0; y < 8; y++) {
                 int x;
@@ -1267,6 +1275,8 @@ void ff_er_frame_end(ERContext *s)
             dest_y  = s->cur_pic.f->data[0] + mb_x * 16 + mb_y * 16 * linesize[0];
             dest_cb = s->cur_pic.f->data[1] + mb_x *  8 + mb_y *  8 * linesize[1];
             dest_cr = s->cur_pic.f->data[2] + mb_x *  8 + mb_y *  8 * linesize[2];
+            if (!s->cur_pic.f->data[2])
+                dest_cb = dest_cr = NULL;
 
             put_dc(s, dest_y, dest_cb, dest_cr, mb_x, mb_y);
         }
@@ -1277,18 +1287,21 @@ void ff_er_frame_end(ERContext *s)
         /* filter horizontal block boundaries */
         h_block_filter(s, s->cur_pic.f->data[0], s->mb_width * 2,
                        s->mb_height * 2, linesize[0], 1);
-        h_block_filter(s, s->cur_pic.f->data[1], s->mb_width,
-                       s->mb_height, linesize[1], 0);
-        h_block_filter(s, s->cur_pic.f->data[2], s->mb_width,
-                       s->mb_height, linesize[2], 0);
 
         /* filter vertical block boundaries */
         v_block_filter(s, s->cur_pic.f->data[0], s->mb_width * 2,
                        s->mb_height * 2, linesize[0], 1);
-        v_block_filter(s, s->cur_pic.f->data[1], s->mb_width,
-                       s->mb_height, linesize[1], 0);
-        v_block_filter(s, s->cur_pic.f->data[2], s->mb_width,
-                       s->mb_height, linesize[2], 0);
+
+        if (s->cur_pic.f->data[2]) {
+            h_block_filter(s, s->cur_pic.f->data[1], s->mb_width,
+                        s->mb_height, linesize[1], 0);
+            h_block_filter(s, s->cur_pic.f->data[2], s->mb_width,
+                        s->mb_height, linesize[2], 0);
+            v_block_filter(s, s->cur_pic.f->data[1], s->mb_width,
+                        s->mb_height, linesize[1], 0);
+            v_block_filter(s, s->cur_pic.f->data[2], s->mb_width,
+                        s->mb_height, linesize[2], 0);
+        }
     }
 
 ec_clean:

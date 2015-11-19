@@ -20,6 +20,8 @@
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
+
+#include "libavutil/internal.h"
 #include "libavutil/opt.h"
 
 /**
@@ -27,7 +29,9 @@
  * Options definition for AVFormatContext.
  */
 
+FF_DISABLE_DEPRECATION_WARNINGS
 #include "options_table.h"
+FF_ENABLE_DEPRECATION_WARNINGS
 
 static const char* format_to_name(void* ptr)
 {
@@ -117,6 +121,7 @@ AVFormatContext *avformat_alloc_context(void)
         return NULL;
     }
     ic->internal->offset = AV_NOPTS_VALUE;
+    ic->internal->raw_packet_buffer_remaining_size = RAW_PACKET_BUFFER_SIZE;
 
     return ic;
 }

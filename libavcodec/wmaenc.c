@@ -50,8 +50,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
 
     if (avctx->bit_rate < 24 * 1000) {
         av_log(avctx, AV_LOG_ERROR,
-               "bitrate too low: got %i, need 24000 or higher\n",
-               avctx->bit_rate);
+               "bitrate too low: got %"PRId64", need 24000 or higher\n",
+               (int64_t)avctx->bit_rate);
         return AVERROR(EINVAL);
     }
 
@@ -377,7 +377,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
         }
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE, 0)) < 0)
         return ret;
 
     total_gain = 128;

@@ -119,12 +119,12 @@ static int on2avc_decode_band_types(On2AVCContext *c, GetBitContext *gb)
         run_len   = 1;
         do {
             run = get_bits(gb, bits_per_sect);
+            if (run > num_bands - band - run_len) {
+                av_log(c->avctx, AV_LOG_ERROR, "Invalid band type run\n");
+                return AVERROR_INVALIDDATA;
+            }
             run_len += run;
         } while (run == esc_val);
-        if (band + run_len > num_bands) {
-            av_log(c->avctx, AV_LOG_ERROR, "Invalid band type run\n");
-            return AVERROR_INVALIDDATA;
-        }
         for (i = band; i < band + run_len; i++) {
             c->band_type[i]    = band_type;
             c->band_run_end[i] = band + run_len;
@@ -186,7 +186,7 @@ static int on2avc_decode_band_scales(On2AVCContext *c, GetBitContext *gb)
 
 static inline float on2avc_scale(int v, float scale)
 {
-    return v * sqrtf(fabsf(v)) * scale;
+    return v * sqrtf(abs(v)) * scale;
 }
 
 // spectral data is coded completely differently - there are no unsigned codebooks
@@ -951,7 +951,7 @@ static av_cold int on2avc_decode_init(AVCodecContext *avctx)
     ff_fft_init(&c->fft256,  7, 0);
     ff_fft_init(&c->fft512,  8, 1);
     ff_fft_init(&c->fft1024, 9, 1);
-    c->fdsp = avpriv_float_dsp_alloc(avctx->flags & CODEC_FLAG_BITEXACT);
+    c->fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     if (!c->fdsp)
         return AVERROR(ENOMEM);
 
@@ -1016,7 +1016,7 @@ AVCodec ff_on2avc_decoder = {
     .init           = on2avc_decode_init,
     .decode         = on2avc_decode_frame,
     .close          = on2avc_decode_close,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
 };

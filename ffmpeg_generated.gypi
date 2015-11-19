@@ -8,11 +8,10 @@
 {
   'variables': {
     'conditions': [
-      ['((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromeOS") and (1)', {
+      ['OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS"', {
         'c_sources': [
           'libavcodec/arm/blockdsp_init_neon.c',
           'libavcodec/arm/idctdsp_init_neon.c',
-          'libavcodec/neon/mpegvideo.c',
         ],
         'asm_sources': [
           'libavcodec/arm/blockdsp_neon.S',
@@ -20,16 +19,28 @@
           'libavcodec/arm/mpegvideo_neon.S',
           'libavcodec/arm/simple_idct_neon.S',
         ],
-      }],  # ((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromeOS") and (1)
-      ['(target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromeOS") and (1)', {
+      }],  # OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS"
+      ['OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS"', {
         'c_sources': [
-          'libavcodec/x86/autorename_libavcodec_x86_mpegvideo.c',
+          'libavcodec/mips/blockdsp_init_mips.c',
+          'libavcodec/mips/h263dsp_init_mips.c',
+          'libavcodec/mips/idctdsp_init_mips.c',
+          'libavcodec/mips/me_cmp_init_mips.c',
+          'libavcodec/mips/mpegvideo_init_mips.c',
+          'libavcodec/mips/pixblockdsp_init_mips.c',
+          'libavcodec/mips/qpeldsp_init_mips.c',
+          'libavcodec/mips/xvididct_init_mips.c',
+        ],
+      }],  # OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS"
+      ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
           'libavcodec/x86/blockdsp_init.c',
           'libavcodec/x86/fdct.c',
           'libavcodec/x86/fdctdsp_init.c',
           'libavcodec/x86/h263dsp_init.c',
           'libavcodec/x86/idctdsp_init.c',
           'libavcodec/x86/me_cmp_init.c',
+          'libavcodec/x86/mpegvideo.c',
           'libavcodec/x86/mpegvideodsp.c',
           'libavcodec/x86/pixblockdsp_init.c',
           'libavcodec/x86/qpeldsp_init.c',
@@ -43,10 +54,29 @@
           'libavcodec/x86/me_cmp.asm',
           'libavcodec/x86/pixblockdsp.asm',
           'libavcodec/x86/qpeldsp.asm',
+          'libavcodec/x86/simple_idct10.asm',
           'libavcodec/x86/xvididct.asm',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromeOS") and (1)
-      ['(target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromeOS") and (1)', {
+      }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
+        'asm_sources': [
+          'libavutil/x86/emms.asm',
+        ],
+      }],  # (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS")', {
+        'asm_sources': [
+          'libavcodec/arm/h264cmc_neon.S',
+          'libavcodec/arm/h264dsp_neon.S',
+          'libavcodec/arm/h264idct_neon.S',
+          'libavcodec/arm/h264qpel_neon.S',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
+          'libavcodec/neon/autorename_libavcodec_neon_mpegvideo.c',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")', {
         'c_sources': [
           'libavcodec/arm/blockdsp_init_arm.c',
           'libavcodec/arm/idctdsp_init_arm.c',
@@ -68,80 +98,148 @@
           'libavcodec/arm/simple_idct_armv5te.S',
           'libavcodec/arm/simple_idct_armv6.S',
         ],
-      }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromeOS") and (1)
-      ['((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
+          'libavcodec/aarch64/h264chroma_init_aarch64.c',
+          'libavcodec/aarch64/h264dsp_init_aarch64.c',
+          'libavcodec/aarch64/h264qpel_init_aarch64.c',
+        ],
+        'asm_sources': [
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264cmc_neon.S',
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264dsp_neon.S',
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264idct_neon.S',
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264qpel_neon.S',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
+          'libavcodec/aarch64/imdct15_init.c',
+          'libavcodec/aarch64/mpegaudiodsp_init.c',
+        ],
+        'asm_sources': [
+          'libavcodec/aarch64/imdct15_neon.S',
+          'libavcodec/aarch64/mpegaudiodsp_neon.S',
+        ],
+      }],  # (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
+          'libavcodec/mips/h264chroma_init_mips.c',
+          'libavcodec/mips/h264dsp_init_mips.c',
+          'libavcodec/mips/h264qpel_init_mips.c',
+        ],
+      }],  # (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS")', {
         'asm_sources': [
           'libavcodec/arm/aacpsdsp_neon.S',
-          'libavcodec/arm/h264cmc_neon.S',
-          'libavcodec/arm/h264dsp_neon.S',
-          'libavcodec/arm/h264idct_neon.S',
-          'libavcodec/arm/h264qpel_neon.S',
           'libavcodec/arm/sbrdsp_neon.S',
         ],
-      }],  # ((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)
-      ['(target_arch == "mipsel") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS")
+      ['(OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
+        'c_sources': [
+          'compat/msvcrt/snprintf.c',
+        ],
+      }],  # (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS")', {
+        'c_sources': [
+          'libavcodec/x86/flacdsp_init.c',
+        ],
+        'asm_sources': [
+          'libavcodec/x86/flacdsp.asm',
+        ],
+      }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS")', {
         'c_sources': [
           'libavcodec/mips/aacdec_mips.c',
           'libavcodec/mips/aacpsdsp_mips.c',
           'libavcodec/mips/aacsbr_mips.c',
           'libavcodec/mips/sbrdsp_mips.c',
         ],
-      }],  # (target_arch == "mipsel") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['(target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "Chromium") and (OS == "win")', {
+      }],  # (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")', {
         'c_sources': [
-          'compat/msvcrt/snprintf.c',
-          'compat/strtod.c',
+          'libavcodec/x86/h264_qpel.c',
+          'libavcodec/x86/h264chroma_init.c',
+          'libavcodec/x86/h264dsp_init.c',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "Chromium") and (OS == "win")
-      ['(target_arch == "ia32" or target_arch == "mipsel" or target_arch == "arm" or target_arch == "x64") and (ffmpeg_branding == "Ensemble") and (1)', {
-        'c_sources': [
-          'libavcodec/alac.c',
-          'libavcodec/alac_data.c',
+        'asm_sources': [
+          'libavcodec/x86/h264_chromamc.asm',
+          'libavcodec/x86/h264_chromamc_10bit.asm',
+          'libavcodec/x86/h264_deblock.asm',
+          'libavcodec/x86/h264_deblock_10bit.asm',
+          'libavcodec/x86/h264_idct.asm',
+          'libavcodec/x86/h264_idct_10bit.asm',
+          'libavcodec/x86/h264_qpel_10bit.asm',
+          'libavcodec/x86/h264_qpel_8bit.asm',
+          'libavcodec/x86/h264_weight.asm',
+          'libavcodec/x86/h264_weight_10bit.asm',
+          'libavcodec/x86/qpel.asm',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "mipsel" or target_arch == "arm" or target_arch == "x64") and (ffmpeg_branding == "Ensemble") and (1)
-      ['(target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
-          'libavcodec/arm/aacpsdsp_init_arm.c',
+          'libavcodec/arm/hpeldsp_init_neon.c',
+          'libavcodec/arm/vp8dsp_init_neon.c',
+        ],
+        'asm_sources': [
+          'libavcodec/arm/h264pred_neon.S',
+          'libavcodec/arm/hpeldsp_neon.S',
+          'libavcodec/arm/vp3dsp_neon.S',
+          'libavcodec/arm/vp8dsp_neon.S',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")', {
+        'c_sources': [
           'libavcodec/arm/h264chroma_init_arm.c',
           'libavcodec/arm/h264dsp_init_arm.c',
           'libavcodec/arm/h264qpel_init_arm.c',
-          'libavcodec/arm/mpegaudiodsp_init_arm.c',
-          'libavcodec/arm/sbrdsp_init_arm.c',
         ],
         'asm_sources': [
-          'libavcodec/arm/mpegaudiodsp_fixed_armv6.S',
           'libavcodec/arm/startcode_armv6.S',
         ],
-      }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['(target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
           'libavcodec/arm/flacdsp_init_arm.c',
         ],
         'asm_sources': [
           'libavcodec/arm/flacdsp_arm.S',
         ],
-      }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "Chromium" or ffmpeg_branding == "ChromeOS") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
-          'libavcodec/arm/hpeldsp_init_neon.c',
-          'libavcodec/arm/vp8dsp_init_neon.c',
-          'libavutil/arm/float_dsp_init_neon.c',
+          'libavcodec/aarch64/h264pred_init.c',
+          'libavcodec/aarch64/hpeldsp_init_aarch64.c',
+          'libavcodec/aarch64/videodsp_init.c',
         ],
         'asm_sources': [
-          'libavcodec/arm/fft_fixed_neon.S',
-          'libavcodec/arm/fft_neon.S',
-          'libavcodec/arm/h264pred_neon.S',
-          'libavcodec/arm/hpeldsp_neon.S',
-          'libavcodec/arm/mdct_fixed_neon.S',
-          'libavcodec/arm/mdct_neon.S',
-          'libavcodec/arm/rdft_neon.S',
-          'libavcodec/arm/vorbisdsp_neon.S',
-          'libavcodec/arm/vp3dsp_neon.S',
-          'libavcodec/arm/vp8dsp_neon.S',
-          'libavutil/arm/float_dsp_neon.S',
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264pred_neon.S',
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S',
+          'libavcodec/aarch64/videodsp.S',
         ],
-      }],  # ((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "Chromium" or ffmpeg_branding == "ChromeOS") and (1)
-      ['(1) and (ffmpeg_branding == "ChromeOS") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS")', {
+        'c_sources': [
+          'libavcodec/aarch64/fft_init_aarch64.c',
+          'libavcodec/aarch64/vorbisdsp_init.c',
+          'libavutil/aarch64/cpu.c',
+          'libavutil/aarch64/float_dsp_init.c',
+        ],
+        'asm_sources': [
+          'libavcodec/aarch64/fft_neon.S',
+          'libavcodec/aarch64/mdct_neon.S',
+          'libavcodec/aarch64/vorbisdsp_neon.S',
+          'libavutil/aarch64/float_dsp_neon.S',
+        ],
+      }],  # (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS")', {
+        'c_sources': [
+          'libavcodec/mips/h264pred_init_mips.c',
+          'libavcodec/mips/hpeldsp_init_mips.c',
+          'libavcodec/mips/vp8dsp_init_mips.c',
+        ],
+      }],  # (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")', {
         'c_sources': [
           'libavcodec/acelp_filters.c',
           'libavcodec/acelp_pitch_delay.c',
@@ -165,6 +263,7 @@
           'libavcodec/gsmdec_data.c',
           'libavcodec/h263.c',
           'libavcodec/h263_parser.c',
+          'libavcodec/h263data.c',
           'libavcodec/h263dec.c',
           'libavcodec/h263dsp.c',
           'libavcodec/idctdsp.c',
@@ -179,118 +278,103 @@
           'libavcodec/mpeg4video_parser.c',
           'libavcodec/mpeg4videodec.c',
           'libavcodec/mpeg_er.c',
+          'libavcodec/mpegpicture.c',
           'libavcodec/mpegutils.c',
           'libavcodec/mpegvideo_motion.c',
+          'libavcodec/mpegvideodata.c',
           'libavcodec/msgsmdec.c',
           'libavcodec/pixblockdsp.c',
           'libavcodec/qpeldsp.c',
+          'libavcodec/rl.c',
           'libavcodec/tiff_common.c',
           'libavcodec/xvididct.c',
           'libavformat/amr.c',
           'libavformat/avidec.c',
           'libavformat/gsmdec.c',
         ],
-      }],  # (1) and (ffmpeg_branding == "ChromeOS") and (1)
-      ['(target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")', {
         'c_sources': [
-          'libavcodec/x86/flacdsp_init.c',
+          'libavcodec/arm/aacpsdsp_init_arm.c',
+          'libavcodec/arm/mpegaudiodsp_init_arm.c',
+          'libavcodec/arm/sbrdsp_init_arm.c',
         ],
         'asm_sources': [
-          'libavcodec/x86/flacdsp.asm',
+          'libavcodec/arm/mpegaudiodsp_fixed_armv6.S',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['(target_arch == "mipsel") and (1) and (1)', {
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
-          'libavutil/mips/float_dsp_mips.c',
+          'libavutil/arm/float_dsp_init_neon.c',
         ],
-      }],  # (target_arch == "mipsel") and (1) and (1)
-      ['(target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "Ensemble") and (1)', {
+        'asm_sources': [
+          'libavcodec/arm/autorename_libavcodec_arm_fft_neon.S',
+          'libavcodec/arm/autorename_libavcodec_arm_mdct_neon.S',
+          'libavcodec/arm/autorename_libavcodec_arm_vorbisdsp_neon.S',
+          'libavcodec/arm/fft_fixed_neon.S',
+          'libavcodec/arm/mdct_fixed_neon.S',
+          'libavcodec/arm/rdft_neon.S',
+          'libavutil/arm/autorename_libavutil_arm_float_dsp_neon.S',
+        ],
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")', {
         'c_sources': [
+          'libavcodec/x86/aacpsdsp_init.c',
           'libavcodec/x86/dct_init.c',
-          'libavcodec/x86/h264_qpel.c',
-          'libavcodec/x86/h264chroma_init.c',
-          'libavcodec/x86/h264dsp_init.c',
           'libavcodec/x86/mpegaudiodsp.c',
           'libavcodec/x86/sbrdsp_init.c',
         ],
         'asm_sources': [
+          'libavcodec/x86/aacpsdsp.asm',
           'libavcodec/x86/dct32.asm',
-          'libavcodec/x86/h264_chromamc.asm',
-          'libavcodec/x86/h264_chromamc_10bit.asm',
-          'libavcodec/x86/h264_deblock.asm',
-          'libavcodec/x86/h264_deblock_10bit.asm',
-          'libavcodec/x86/h264_idct.asm',
-          'libavcodec/x86/h264_idct_10bit.asm',
-          'libavcodec/x86/h264_qpel_10bit.asm',
-          'libavcodec/x86/h264_qpel_8bit.asm',
-          'libavcodec/x86/h264_weight.asm',
-          'libavcodec/x86/h264_weight_10bit.asm',
           'libavcodec/x86/imdct36.asm',
-          'libavcodec/x86/qpel.asm',
           'libavcodec/x86/sbrdsp.asm',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "Ensemble") and (1)
-      ['(target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (1) and (1)', {
+      }],  # (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")
+      ['(OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
-          'libavcodec/arm/fft_fixed_init_arm.c',
-          'libavcodec/arm/fft_init_arm.c',
-          'libavcodec/arm/h264pred_init_arm.c',
-          'libavcodec/arm/hpeldsp_init_arm.c',
-          'libavcodec/arm/hpeldsp_init_armv6.c',
-          'libavcodec/arm/videodsp_init_arm.c',
-          'libavcodec/arm/videodsp_init_armv5te.c',
-          'libavcodec/arm/vorbisdsp_init_arm.c',
-          'libavcodec/arm/vp3dsp_init_arm.c',
-          'libavcodec/arm/vp8dsp_init_arm.c',
-          'libavcodec/arm/vp8dsp_init_armv6.c',
-          'libavutil/arm/cpu.c',
-          'libavutil/arm/float_dsp_init_arm.c',
-          'libavutil/arm/float_dsp_init_vfp.c',
+          'libavutil/mips/float_dsp_mips.c',
         ],
-        'asm_sources': [
-          'libavcodec/arm/fft_vfp.S',
-          'libavcodec/arm/hpeldsp_arm.S',
-          'libavcodec/arm/hpeldsp_armv6.S',
-          'libavcodec/arm/mdct_vfp.S',
-          'libavcodec/arm/videodsp_armv5te.S',
-          'libavcodec/arm/vp8_armv6.S',
-          'libavcodec/arm/vp8dsp_armv6.S',
-          'libavutil/arm/float_dsp_vfp.S',
-        ],
-      }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (1) and (1)
-      ['(target_arch == "ia32" or target_arch == "x64") and (1) and (1)', {
+      }],  # (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
         'c_sources': [
-          'libavcodec/x86/constants.c',
-          'libavcodec/x86/fft_init.c',
+          'libavcodec/x86/autorename_libavcodec_x86_videodsp_init.c',
           'libavcodec/x86/h264_intrapred_init.c',
           'libavcodec/x86/hpeldsp_init.c',
-          'libavcodec/x86/videodsp_init.c',
-          'libavcodec/x86/vorbisdsp_init.c',
           'libavcodec/x86/vp3dsp_init.c',
           'libavcodec/x86/vp8dsp_init.c',
-          'libavutil/x86/autorename_libavutil_x86_cpu.c',
-          'libavutil/x86/float_dsp_init.c',
-          'libavutil/x86/lls_init.c',
         ],
         'asm_sources': [
-          'libavcodec/x86/deinterlace.asm',
-          'libavcodec/x86/fft.asm',
           'libavcodec/x86/fpel.asm',
           'libavcodec/x86/h264_intrapred.asm',
           'libavcodec/x86/h264_intrapred_10bit.asm',
           'libavcodec/x86/hpeldsp.asm',
           'libavcodec/x86/videodsp.asm',
-          'libavcodec/x86/vorbisdsp.asm',
           'libavcodec/x86/vp3dsp.asm',
           'libavcodec/x86/vp8dsp.asm',
           'libavcodec/x86/vp8dsp_loopfilter.asm',
-          'libavutil/x86/cpuid.asm',
-          'libavutil/x86/emms.asm',
-          'libavutil/x86/float_dsp.asm',
-          'libavutil/x86/lls.asm',
         ],
-      }],  # (target_arch == "ia32" or target_arch == "x64") and (1) and (1)
-      ['(1) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")', {
+        'c_sources': [
+          'libavcodec/arm/h264pred_init_arm.c',
+          'libavcodec/arm/hpeldsp_init_arm.c',
+          'libavcodec/arm/hpeldsp_init_armv6.c',
+          'libavcodec/arm/videodsp_init_arm.c',
+          'libavcodec/arm/videodsp_init_armv5te.c',
+          'libavcodec/arm/vp3dsp_init_arm.c',
+          'libavcodec/arm/vp8dsp_init_arm.c',
+          'libavcodec/arm/vp8dsp_init_armv6.c',
+        ],
+        'asm_sources': [
+          'libavcodec/arm/hpeldsp_arm.S',
+          'libavcodec/arm/hpeldsp_armv6.S',
+          'libavcodec/arm/videodsp_armv5te.S',
+          'libavcodec/arm/vp8_armv6.S',
+          'libavcodec/arm/vp8dsp_armv6.S',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
           'libavcodec/flac.c',
           'libavcodec/flac_parser.c',
@@ -299,23 +383,25 @@
           'libavcodec/flacdsp.c',
           'libavformat/autorename_libavformat_flacdec.c',
         ],
-      }],  # (1) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['(1) and (ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")', {
         'c_sources': [
-          'libavcodec/aac_ac3_parser.c',
-          'libavcodec/aac_parser.c',
-          'libavcodec/aacadtsdec.c',
-          'libavcodec/aacps.c',
-          'libavcodec/aacpsdsp.c',
-          'libavcodec/aacsbr.c',
-          'libavcodec/aactab.c',
-          'libavcodec/ac3tab.c',
-          'libavcodec/autorename_libavcodec_aacdec.c',
-          'libavcodec/autorename_libavcodec_mpegaudiodsp.c',
+          'libavcodec/arm/fft_fixed_init_arm.c',
+          'libavcodec/arm/fft_init_arm.c',
+          'libavcodec/arm/vorbisdsp_init_arm.c',
+          'libavutil/arm/autorename_libavutil_arm_cpu.c',
+          'libavutil/arm/float_dsp_init_arm.c',
+          'libavutil/arm/float_dsp_init_vfp.c',
+        ],
+        'asm_sources': [
+          'libavcodec/arm/fft_vfp.S',
+          'libavcodec/arm/mdct_vfp.S',
+          'libavutil/arm/float_dsp_vfp.S',
+        ],
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")', {
+        'c_sources': [
           'libavcodec/cabac.c',
-          'libavcodec/dct.c',
-          'libavcodec/dct32_fixed.c',
-          'libavcodec/dct32_float.c',
           'libavcodec/h264.c',
           'libavcodec/h264_cabac.c',
           'libavcodec/h264_cavlc.c',
@@ -332,6 +418,46 @@
           'libavcodec/h264dsp.c',
           'libavcodec/h264idct.c',
           'libavcodec/h264qpel.c',
+          'libavcodec/startcode.c',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
+        'c_sources': [
+          'compat/strtod.c',
+        ],
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
+        'c_sources': [
+          'libavcodec/x86/autorename_libavcodec_x86_vorbisdsp_init.c',
+          'libavcodec/x86/constants.c',
+          'libavcodec/x86/fft_init.c',
+          'libavutil/x86/autorename_libavutil_x86_cpu.c',
+          'libavutil/x86/autorename_libavutil_x86_float_dsp_init.c',
+          'libavutil/x86/lls_init.c',
+        ],
+        'asm_sources': [
+          'libavcodec/x86/fft.asm',
+          'libavcodec/x86/vorbisdsp.asm',
+          'libavutil/x86/cpuid.asm',
+          'libavutil/x86/float_dsp.asm',
+          'libavutil/x86/lls.asm',
+        ],
+      }],  # (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")', {
+        'c_sources': [
+          'libavcodec/aac_ac3_parser.c',
+          'libavcodec/aac_parser.c',
+          'libavcodec/aacadtsdec.c',
+          'libavcodec/aacps_float.c',
+          'libavcodec/aacpsdsp_float.c',
+          'libavcodec/aacsbr.c',
+          'libavcodec/aactab.c',
+          'libavcodec/ac3tab.c',
+          'libavcodec/autorename_libavcodec_aacdec.c',
+          'libavcodec/autorename_libavcodec_mpegaudiodsp.c',
+          'libavcodec/dct.c',
+          'libavcodec/dct32_fixed.c',
+          'libavcodec/dct32_float.c',
           'libavcodec/imdct15.c',
           'libavcodec/kbdwin.c',
           'libavcodec/mpegaudio.c',
@@ -343,7 +469,7 @@
           'libavcodec/mpegaudiodsp_float.c',
           'libavcodec/sbrdsp.c',
           'libavcodec/sinewin.c',
-          'libavcodec/startcode.c',
+          'libavcodec/sinewin_fixed.c',
           'libavformat/aacdec.c',
           'libavformat/apetag.c',
           'libavformat/img2.c',
@@ -351,13 +477,27 @@
           'libavformat/mov_chan.c',
           'libavformat/mp3dec.c',
         ],
-      }],  # (1) and (ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "Ensemble") and (1)
-      ['(1) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)', {
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")', {
         'c_sources': [
           'libavformat/rawdec.c',
         ],
-      }],  # (1) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS" or ffmpeg_branding == "Ensemble") and (1)
-      ['(1) and (1) and (1)', {
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome")
+      ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
+        'c_sources': [
+          'libavcodec/h264pred.c',
+          'libavcodec/hpeldsp.c',
+          'libavcodec/videodsp.c',
+          'libavcodec/vp3.c',
+          'libavcodec/vp3_parser.c',
+          'libavcodec/vp3dsp.c',
+          'libavcodec/vp56rac.c',
+          'libavcodec/vp8.c',
+          'libavcodec/vp8_parser.c',
+          'libavcodec/vp8dsp.c',
+        ],
+      }],  # (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
+      ['(OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")', {
         'c_sources': [
           'libavcodec/allcodecs.c',
           'libavcodec/autorename_libavcodec_utils.c',
@@ -368,6 +508,7 @@
           'libavcodec/bitstream.c',
           'libavcodec/bitstream_filter.c',
           'libavcodec/codec_desc.c',
+          'libavcodec/d3d11va.c',
           'libavcodec/dirac.c',
           'libavcodec/dv_profile.c',
           'libavcodec/fft_fixed.c',
@@ -375,8 +516,6 @@
           'libavcodec/fft_float.c',
           'libavcodec/fft_init_table.c',
           'libavcodec/golomb.c',
-          'libavcodec/h264pred.c',
-          'libavcodec/hpeldsp.c',
           'libavcodec/imgconvert.c',
           'libavcodec/mathtables.c',
           'libavcodec/mdct_fixed.c',
@@ -396,19 +535,11 @@
           'libavcodec/qsv_api.c',
           'libavcodec/raw.c',
           'libavcodec/rdft.c',
-          'libavcodec/videodsp.c',
           'libavcodec/vorbis.c',
           'libavcodec/vorbis_data.c',
           'libavcodec/vorbis_parser.c',
           'libavcodec/vorbisdec.c',
           'libavcodec/vorbisdsp.c',
-          'libavcodec/vp3.c',
-          'libavcodec/vp3_parser.c',
-          'libavcodec/vp3dsp.c',
-          'libavcodec/vp56rac.c',
-          'libavcodec/vp8.c',
-          'libavcodec/vp8_parser.c',
-          'libavcodec/vp8dsp.c',
           'libavcodec/xiph.c',
           'libavformat/allformats.c',
           'libavformat/autorename_libavformat_options.c',
@@ -429,6 +560,7 @@
           'libavformat/mux.c',
           'libavformat/oggdec.c',
           'libavformat/oggparsecelt.c',
+          'libavformat/oggparsedaala.c',
           'libavformat/oggparsedirac.c',
           'libavformat/oggparseflac.c',
           'libavformat/oggparseogm.c',
@@ -446,7 +578,7 @@
           'libavformat/url.c',
           'libavformat/vorbiscomment.c',
           'libavformat/wavdec.c',
-          'libavutil/atomic.c',
+          'libavutil/aes.c',
           'libavutil/autorename_libavutil_cpu.c',
           'libavutil/avstring.c',
           'libavutil/base64.c',
@@ -480,16 +612,18 @@
           'libavutil/pixelutils.c',
           'libavutil/random_seed.c',
           'libavutil/rational.c',
+          'libavutil/reverse.c',
           'libavutil/samplefmt.c',
           'libavutil/sha.c',
           'libavutil/stereo3d.c',
+          'libavutil/tea.c',
           'libavutil/threadmessage.c',
           'libavutil/time.c',
           'libavutil/timecode.c',
           'libavutil/twofish.c',
           'libavutil/utils.c',
         ],
-      }],  # (1) and (1) and (1)
+      }],  # (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mips64el" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "android" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "arm64" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "mac" and target_arch == "x64" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "ia32" and ffmpeg_branding == "Chromium") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "win" and target_arch == "x64" and ffmpeg_branding == "Chromium")
     ],  # conditions
   },
 }

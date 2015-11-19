@@ -25,7 +25,7 @@
 #include "libavutil/channel_layout.h"
 #include "config.h"
 
-#define SWR_CH_MAX 32
+#define SWR_CH_MAX 64
 
 #define SQRT3_2      1.22474487139158904909  /* sqrt(3/2) */
 
@@ -76,6 +76,7 @@ typedef int     (* resample_flush_func)(struct SwrContext *c);
 typedef int     (* set_compensation_func)(struct ResampleContext *c, int sample_delta, int compensation_distance);
 typedef int64_t (* get_delay_func)(struct SwrContext *s, int64_t base);
 typedef int     (* invert_initial_buffer_func)(struct ResampleContext *c, AudioData *dst, const AudioData *src, int src_size, int *dst_idx, int *dst_count);
+typedef int64_t (* get_out_samples_func)(struct SwrContext *s, int in_samples);
 
 struct Resampler {
   resample_init_func            init;
@@ -85,6 +86,7 @@ struct Resampler {
   set_compensation_func         set_compensation;
   get_delay_func                get_delay;
   invert_initial_buffer_func    invert_initial_buffer;
+  get_out_samples_func          get_out_samples;
 };
 
 extern struct Resampler const swri_resampler;
@@ -111,6 +113,13 @@ struct SwrContext {
     const int *channel_map;                         ///< channel index (or -1 if muted channel) map
     int used_ch_count;                              ///< number of used input channels (mapped channel count if channel_map, otherwise in.ch_count)
     int engine;
+
+    int user_in_ch_count;                           ///< User set input channel count
+    int user_out_ch_count;                          ///< User set output channel count
+    int user_used_ch_count;                         ///< User set used channel count
+    int64_t user_in_ch_layout;                      ///< User set input channel layout
+    int64_t user_out_ch_layout;                     ///< User set output channel layout
+    enum AVSampleFormat user_int_sample_fmt;        ///< User set internal sample format
 
     struct DitherContext dither;
 
@@ -149,6 +158,7 @@ struct SwrContext {
     int64_t outpts;                                 ///< output PTS
     int64_t firstpts;                               ///< first PTS
     int drop_output;                                ///< number of output samples to drop
+    double delayed_samples_fixup;                   ///< soxr 0.1.1: needed to fixup delayed_samples after flush has been called.
 
     struct AudioConvert *in_convert;                ///< input conversion context
     struct AudioConvert *out_convert;               ///< output conversion context
@@ -174,6 +184,7 @@ struct SwrContext {
     /* TODO: callbacks for ASM optimizations */
 };
 
+av_warn_unused_result
 int swri_realloc_audio(AudioData *a, int count);
 
 void swri_noise_shaping_int16 (SwrContext *s, AudioData *dsts, const AudioData *srcs, const AudioData *noises, int count);
@@ -181,12 +192,15 @@ void swri_noise_shaping_int32 (SwrContext *s, AudioData *dsts, const AudioData *
 void swri_noise_shaping_float (SwrContext *s, AudioData *dsts, const AudioData *srcs, const AudioData *noises, int count);
 void swri_noise_shaping_double(SwrContext *s, AudioData *dsts, const AudioData *srcs, const AudioData *noises, int count);
 
+av_warn_unused_result
 int swri_rematrix_init(SwrContext *s);
 void swri_rematrix_free(SwrContext *s);
 int swri_rematrix(SwrContext *s, AudioData *out, AudioData *in, int len, int mustcopy);
 int swri_rematrix_init_x86(struct SwrContext *s);
 
-void swri_get_dither(SwrContext *s, void *dst, int len, unsigned seed, enum AVSampleFormat noise_fmt);
+av_warn_unused_result
+int swri_get_dither(SwrContext *s, void *dst, int len, unsigned seed, enum AVSampleFormat noise_fmt);
+av_warn_unused_result
 int swri_dither_init(SwrContext *s, enum AVSampleFormat out_fmt, enum AVSampleFormat in_fmt);
 
 void swri_audio_convert_init_aarch64(struct AudioConvert *ac,

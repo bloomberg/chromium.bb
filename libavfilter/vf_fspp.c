@@ -48,7 +48,7 @@ static const AVOption fspp_options[] = {
     { "quality",       "set quality",                          OFFSET(log2_count),    AV_OPT_TYPE_INT, {.i64 = 4},   4, MAX_LEVEL, FLAGS },
     { "qp",            "force a constant quantizer parameter", OFFSET(qp),            AV_OPT_TYPE_INT, {.i64 = 0},   0, 64,        FLAGS },
     { "strength",      "set filter strength",                  OFFSET(strength),      AV_OPT_TYPE_INT, {.i64 = 0}, -15, 32,        FLAGS },
-    { "use_bframe_qp", "use B-frames' QP",                     OFFSET(use_bframe_qp), AV_OPT_TYPE_INT, {.i64 = 0},   0, 1,         FLAGS },
+    { "use_bframe_qp", "use B-frames' QP",                     OFFSET(use_bframe_qp), AV_OPT_TYPE_BOOL,{.i64 = 0},   0, 1,         FLAGS },
     { NULL }
 };
 
@@ -501,8 +501,11 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GBRP, AV_PIX_FMT_GRAY8,
         AV_PIX_FMT_NONE
     };
-    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
-    return 0;
+
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
 }
 
 static int config_input(AVFilterLink *inlink)

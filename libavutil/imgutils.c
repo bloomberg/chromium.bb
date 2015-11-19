@@ -41,8 +41,8 @@ void av_image_fill_max_pixsteps(int max_pixsteps[4], int max_pixstep_comps[4],
 
     for (i = 0; i < 4; i++) {
         const AVComponentDescriptor *comp = &(pixdesc->comp[i]);
-        if ((comp->step_minus1+1) > max_pixsteps[comp->plane]) {
-            max_pixsteps[comp->plane] = comp->step_minus1+1;
+        if (comp->step > max_pixsteps[comp->plane]) {
+            max_pixsteps[comp->plane] = comp->step;
             if (max_pixstep_comps)
                 max_pixstep_comps[comp->plane] = i;
         }
@@ -78,7 +78,7 @@ int av_image_get_linesize(enum AVPixelFormat pix_fmt, int width, int plane)
     int max_step     [4];       /* max pixel step for each plane */
     int max_step_comp[4];       /* the component for each plane which has the max pixel step */
 
-    if ((unsigned)pix_fmt >= AV_PIX_FMT_NB || desc->flags & AV_PIX_FMT_FLAG_HWACCEL)
+    if (!desc || desc->flags & AV_PIX_FMT_FLAG_HWACCEL)
         return AVERROR(EINVAL);
 
     av_image_fill_max_pixsteps(max_step, max_step_comp, desc);
@@ -218,6 +218,14 @@ int av_image_alloc(uint8_t *pointers[4], int linesizes[4],
     }
     if (desc->flags & AV_PIX_FMT_FLAG_PAL || desc->flags & AV_PIX_FMT_FLAG_PSEUDOPAL)
         avpriv_set_systematic_pal2((uint32_t*)pointers[1], pix_fmt);
+
+    if ((desc->flags & AV_PIX_FMT_FLAG_PAL ||
+         desc->flags & AV_PIX_FMT_FLAG_PSEUDOPAL) &&
+        pointers[1] - pointers[0] > linesizes[0] * h) {
+        /* zero-initialize the padding before the palette */
+        memset(pointers[0] + linesizes[0] * h, 0,
+               pointers[1] - pointers[0] - linesizes[0] * h);
+    }
 
     return ret;
 }

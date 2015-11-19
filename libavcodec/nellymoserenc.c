@@ -171,7 +171,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     if ((ret = ff_mdct_init(&s->mdct_ctx, 8, 0, 32768.0)) < 0)
         goto error;
-    s->fdsp = avpriv_float_dsp_alloc(avctx->flags & CODEC_FLAG_BITEXACT);
+    s->fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     if (!s->fdsp) {
         ret = AVERROR(ENOMEM);
         goto error;
@@ -318,7 +318,7 @@ static void encode_block(NellyMoserEncodeContext *s, unsigned char *output, int 
                        + s->mdct_out[i + NELLY_BUF_LEN] * s->mdct_out[i + NELLY_BUF_LEN];
         }
         cand[band] =
-            log(FFMAX(1.0, coeff_sum / (ff_nelly_band_sizes_table[band] << 7))) * 1024.0 / M_LN2;
+            log2(FFMAX(1.0, coeff_sum / (ff_nelly_band_sizes_table[band] << 7))) * 1024.0;
     }
 
     if (s->avctx->trellis) {
@@ -397,7 +397,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         s->last_frame = 1;
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, NELLY_BLOCK_LEN)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, NELLY_BLOCK_LEN, 0)) < 0)
         return ret;
     encode_block(s, avpkt->data, avpkt->size);
 
@@ -418,7 +418,7 @@ AVCodec ff_nellymoser_encoder = {
     .init           = encode_init,
     .encode2        = encode_frame,
     .close          = encode_end,
-    .capabilities   = CODEC_CAP_SMALL_LAST_FRAME | CODEC_CAP_DELAY,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME | AV_CODEC_CAP_DELAY,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLT,
                                                      AV_SAMPLE_FMT_NONE },
 };

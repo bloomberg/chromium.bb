@@ -142,23 +142,26 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_DBLP,
         AV_SAMPLE_FMT_NONE
     };
+    int ret;
 
-    layouts = ff_all_channel_layouts();
+    layouts = ff_all_channel_counts();
     if (!layouts)
         return AVERROR(ENOMEM);
-    ff_set_common_channel_layouts(ctx, layouts);
+    ret = ff_set_common_channel_layouts(ctx, layouts);
+    if (ret < 0)
+        return ret;
 
     formats = ff_make_format_list(sample_fmts);
     if (!formats)
         return AVERROR(ENOMEM);
-    ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats(ctx, formats);
+    if (ret < 0)
+        return ret;
 
     formats = ff_all_samplerates();
     if (!formats)
         return AVERROR(ENOMEM);
-    ff_set_common_samplerates(ctx, formats);
-
-    return 0;
+    return ff_set_common_samplerates(ctx, formats);
 }
 
 #define BIQUAD_FILTER(name, type, min, max, need_clipping)                    \
@@ -531,7 +534,7 @@ static const AVOption bandpass_options[] = {
     {"s", "slope", 0, AV_OPT_TYPE_CONST, {.i64=SLOPE}, 0, 0, FLAGS, "width_type"},
     {"width", "set band-width", OFFSET(width), AV_OPT_TYPE_DOUBLE, {.dbl=0.5}, 0, 999, FLAGS},
     {"w",     "set band-width", OFFSET(width), AV_OPT_TYPE_DOUBLE, {.dbl=0.5}, 0, 999, FLAGS},
-    {"csg",   "use constant skirt gain", OFFSET(csg), AV_OPT_TYPE_INT, {.i64=0}, 0, 1, FLAGS},
+    {"csg",   "use constant skirt gain", OFFSET(csg), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, FLAGS},
     {NULL}
 };
 

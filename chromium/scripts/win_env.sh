@@ -109,4 +109,4 @@ export LIB=$lib
 # Now execute whatever is left trailing.
 shift
 shift
-$@
+"$@"

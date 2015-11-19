@@ -1454,7 +1454,7 @@ static unsigned int celt_decode_band(CeltContext *s, OpusRangeCoder *rc,
         if (itheta == 0) {
             imid = 32767;
             iside = 0;
-            fill &= (1 << blocks) - 1;
+            fill = av_mod_uintp2(fill, blocks);
             delta = -16384;
         } else if (itheta == 16384) {
             imid = 0;
@@ -1666,7 +1666,7 @@ static unsigned int celt_decode_band(CeltContext *s, OpusRangeCoder *rc,
             for (j = 0; j < N0; j++)
                 lowband_out[j] = n * X[j];
         }
-        cm &= (1 << blocks) - 1;
+        cm = av_mod_uintp2(cm, blocks);
     }
     return cm;
 }
@@ -2209,7 +2209,7 @@ int ff_celt_init(AVCodecContext *avctx, CeltContext **ps, int output_channels)
             goto fail;
     }
 
-    s->dsp = avpriv_float_dsp_alloc(avctx->flags & CODEC_FLAG_BITEXACT);
+    s->dsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     if (!s->dsp) {
         ret = AVERROR(ENOMEM);
         goto fail;

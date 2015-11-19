@@ -53,16 +53,16 @@ static void dump_floats(WMACodecContext *s, const char *name,
 {
     int i;
 
-    tprintf(s->avctx, "%s[%d]:\n", name, n);
+    ff_tlog(s->avctx, "%s[%d]:\n", name, n);
     for (i = 0; i < n; i++) {
         if ((i & 7) == 0)
-            tprintf(s->avctx, "%4d: ", i);
-        tprintf(s->avctx, " %8.*f", prec, tab[i]);
+            ff_tlog(s->avctx, "%4d: ", i);
+        ff_tlog(s->avctx, " %8.*f", prec, tab[i]);
         if ((i & 7) == 7)
-            tprintf(s->avctx, "\n");
+            ff_tlog(s->avctx, "\n");
     }
     if ((i & 7) != 0)
-        tprintf(s->avctx, "\n");
+        ff_tlog(s->avctx, "\n");
 }
 #endif /* TRACE */
 
@@ -436,7 +436,7 @@ static int wma_decode_block(WMACodecContext *s)
     FFTContext *mdct;
 
 #ifdef TRACE
-    tprintf(s->avctx, "***decode_block: %d:%d\n",
+    ff_tlog(s->avctx, "***decode_block: %d:%d\n",
             s->frame_count - 1, s->block_num);
 #endif /* TRACE */
 
@@ -657,7 +657,7 @@ static int wma_decode_block(WMACodecContext *s)
                         }
                         exp_power[j]   = e2 / n;
                         last_high_band = j;
-                        tprintf(s->avctx, "%d: power=%f (%d)\n", j, exp_power[j], n);
+                        ff_tlog(s->avctx, "%d: power=%f (%d)\n", j, exp_power[j], n);
                     }
                     exponents += n << bsize >> esize;
                 }
@@ -730,7 +730,7 @@ static int wma_decode_block(WMACodecContext *s)
         /* no need to optimize this case because it should almost
          * never happen */
         if (!s->channel_coded[0]) {
-            tprintf(s->avctx, "rare ms-stereo case happened\n");
+            ff_tlog(s->avctx, "rare ms-stereo case happened\n");
             memset(s->coefs[0], 0, sizeof(float) * s->block_len);
             s->channel_coded[0] = 1;
         }
@@ -771,7 +771,7 @@ static int wma_decode_frame(WMACodecContext *s, float **samples,
     int ret, ch;
 
 #ifdef TRACE
-    tprintf(s->avctx, "***decode_frame: %d size=%d\n",
+    ff_tlog(s->avctx, "***decode_frame: %d size=%d\n",
             s->frame_count++, s->frame_len);
 #endif /* TRACE */
 
@@ -815,7 +815,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
     float **samples;
     int samples_offset;
 
-    tprintf(avctx, "***decode_superframe:\n");
+    ff_tlog(avctx, "***decode_superframe:\n");
 
     if (buf_size == 0) {
         s->last_superframe_len = 0;
@@ -854,7 +854,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
                 *q++ = get_bits (&s->gb, 8);
                 len --;
             }
-            memset(q, 0, FF_INPUT_BUFFER_PADDING_SIZE);
+            memset(q, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
             s->last_superframe_len += 8*buf_size - 8;
 //             s->reset_block_lengths = 1; //XXX is this needed ?
@@ -893,7 +893,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
             }
             if (len > 0)
                 *q++ = (get_bits) (&s->gb, len) << (8 - len);
-            memset(q, 0, FF_INPUT_BUFFER_PADDING_SIZE);
+            memset(q, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
             /* XXX: bit_offset bits into last frame */
             init_get_bits(&s->gb, s->last_superframe,
@@ -944,7 +944,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
         samples_offset += s->frame_len;
     }
 
-    av_dlog(s->avctx, "%d %d %d %d outbytes:%"PTRDIFF_SPECIFIER" eaten:%d\n",
+    ff_dlog(s->avctx, "%d %d %d %d outbytes:%"PTRDIFF_SPECIFIER" eaten:%d\n",
             s->frame_len_bits, s->block_len_bits, s->frame_len, s->block_len,
             (int8_t *) samples - (int8_t *) data, avctx->block_align);
 
@@ -977,7 +977,7 @@ AVCodec ff_wmav1_decoder = {
     .close          = ff_wma_end,
     .decode         = wma_decode_superframe,
     .flush          = flush,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
 };
@@ -993,7 +993,7 @@ AVCodec ff_wmav2_decoder = {
     .close          = ff_wma_end,
     .decode         = wma_decode_superframe,
     .flush          = flush,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
 };

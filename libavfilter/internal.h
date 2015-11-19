@@ -33,14 +33,6 @@
 #include "video.h"
 #include "libavcodec/avcodec.h"
 
-#define POOL_SIZE 32
-typedef struct AVFilterPool {
-    AVFilterBufferRef *pic[POOL_SIZE];
-    int count;
-    int refcount;
-    int draining;
-} AVFilterPool;
-
 typedef struct AVFilterCommand {
     double time;                ///< time expressed in seconds
     char *command;              ///< command
@@ -54,7 +46,6 @@ typedef struct AVFilterCommand {
  */
 void ff_avfilter_graph_update_heap(AVFilterGraph *graph, AVFilterLink *link);
 
-#if !FF_API_AVFILTERPAD_PUBLIC
 /**
  * A filter pad used for either input or output.
  */
@@ -111,9 +102,9 @@ struct AVFilterPad {
     int (*poll_frame)(AVFilterLink *link);
 
     /**
-     * Frame request callback. A call to this should result in at least one
-     * frame being output over the given link. This should return zero on
-     * success, and another value on error.
+     * Frame request callback. A call to this should result in some progress
+     * towards producing output over the given link. This should return zero
+     * on success, and another value on error.
      *
      * Output pads only.
      */
@@ -151,7 +142,6 @@ struct AVFilterPad {
      */
     int needs_writable;
 };
-#endif
 
 struct AVFilterGraphInternal {
     void *thread;
@@ -162,12 +152,15 @@ struct AVFilterInternal {
     avfilter_execute_func *execute;
 };
 
-#if FF_API_AVFILTERBUFFER
-/** default handler for freeing audio/video buffer when there are no references left */
-void ff_avfilter_default_free_buffer(AVFilterBuffer *buf);
-#endif
-
-/** Tell is a format is contained in the provided list terminated by -1. */
+/**
+ * Tell if an integer is contained in the provided -1-terminated list of integers.
+ * This is useful for determining (for instance) if an AVPixelFormat is in an
+ * array of supported formats.
+ *
+ * @param fmt provided format
+ * @param fmts -1-terminated list of formats
+ * @return 1 if present, 0 if absent
+ */
 int ff_fmt_is_in(int fmt, const int *fmts);
 
 /* Functions to parse audio format arguments */
@@ -180,6 +173,7 @@ int ff_fmt_is_in(int fmt, const int *fmts);
  * @param log_ctx log context
  * @return >= 0 in case of success, a negative AVERROR code on error
  */
+av_warn_unused_result
 int ff_parse_pixel_format(enum AVPixelFormat *ret, const char *arg, void *log_ctx);
 
 /**
@@ -190,6 +184,7 @@ int ff_parse_pixel_format(enum AVPixelFormat *ret, const char *arg, void *log_ct
  * @param log_ctx log context
  * @return >= 0 in case of success, a negative AVERROR code on error
  */
+av_warn_unused_result
 int ff_parse_sample_rate(int *ret, const char *arg, void *log_ctx);
 
 /**
@@ -200,6 +195,7 @@ int ff_parse_sample_rate(int *ret, const char *arg, void *log_ctx);
  * @param log_ctx log context
  * @return >= 0 in case of success, a negative AVERROR code on error
  */
+av_warn_unused_result
 int ff_parse_time_base(AVRational *ret, const char *arg, void *log_ctx);
 
 /**
@@ -210,6 +206,7 @@ int ff_parse_time_base(AVRational *ret, const char *arg, void *log_ctx);
  * @param log_ctx log context
  * @return >= 0 in case of success, a negative AVERROR code on error
  */
+av_warn_unused_result
 int ff_parse_sample_format(int *ret, const char *arg, void *log_ctx);
 
 /**
@@ -222,6 +219,7 @@ int ff_parse_sample_format(int *ret, const char *arg, void *log_ctx);
  * @param log_ctx log context
  * @return >= 0 in case of success, a negative AVERROR code on error
  */
+av_warn_unused_result
 int ff_parse_channel_layout(int64_t *ret, int *nret, const char *arg,
                             void *log_ctx);
 
@@ -269,28 +267,16 @@ int ff_insert_pad(unsigned idx, unsigned *count, size_t padidx_off,
 static inline int ff_insert_inpad(AVFilterContext *f, unsigned index,
                                    AVFilterPad *p)
 {
-    int ret = ff_insert_pad(index, &f->nb_inputs, offsetof(AVFilterLink, dstpad),
+    return ff_insert_pad(index, &f->nb_inputs, offsetof(AVFilterLink, dstpad),
                   &f->input_pads, &f->inputs, p);
-#if FF_API_FOO_COUNT
-FF_DISABLE_DEPRECATION_WARNINGS
-    f->input_count = f->nb_inputs;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-    return ret;
 }
 
 /** Insert a new output pad for the filter. */
 static inline int ff_insert_outpad(AVFilterContext *f, unsigned index,
                                     AVFilterPad *p)
 {
-    int ret = ff_insert_pad(index, &f->nb_outputs, offsetof(AVFilterLink, srcpad),
+    return ff_insert_pad(index, &f->nb_outputs, offsetof(AVFilterLink, srcpad),
                   &f->output_pads, &f->outputs, p);
-#if FF_API_FOO_COUNT
-FF_DISABLE_DEPRECATION_WARNINGS
-    f->output_count = f->nb_outputs;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-    return ret;
 }
 
 /**
@@ -305,8 +291,30 @@ int ff_poll_frame(AVFilterLink *link);
 /**
  * Request an input frame from the filter at the other end of the link.
  *
+ * The input filter may pass the request on to its inputs, fulfill the
+ * request from an internal buffer or any other means specific to its function.
+ *
+ * When the end of a stream is reached AVERROR_EOF is returned and no further
+ * frames are returned after that.
+ *
+ * When a filter is unable to output a frame for example due to its sources
+ * being unable to do so or because it depends on external means pushing data
+ * into it then AVERROR(EAGAIN) is returned.
+ * It is important that a AVERROR(EAGAIN) return is returned all the way to the
+ * caller (generally eventually a user application) as this step may (but does
+ * not have to be) necessary to provide the input with the next frame.
+ *
+ * If a request is successful then some progress has been made towards
+ * providing a frame on the link (through ff_filter_frame()). A filter that
+ * needs several frames to produce one is allowed to return success if one
+ * more frame has been processed but no output has been produced yet. A
+ * filter is also allowed to simply forward a success return value.
+ *
  * @param link the input link
  * @return     zero on success
+ *             AVERROR_EOF on end of file
+ *             AVERROR(EAGAIN) if the previous filter cannot output a frame
+ *             currently and can neither guarantee that EOF has been reached.
  */
 int ff_request_frame(AVFilterLink *link);
 
@@ -319,9 +327,6 @@ int ff_request_frame(AVFilterLink *link);
         .category   = AV_CLASS_CATEGORY_FILTER, \
     }
 
-AVFilterBufferRef *ff_copy_buffer_ref(AVFilterLink *outlink,
-                                      AVFilterBufferRef *ref);
-
 /**
  * Find the index of a link.
  *
@@ -330,9 +335,6 @@ AVFilterBufferRef *ff_copy_buffer_ref(AVFilterLink *outlink,
 #define FF_INLINK_IDX(link)  ((int)((link)->dstpad - (link)->dst->input_pads))
 #define FF_OUTLINK_IDX(link) ((int)((link)->srcpad - (link)->src->output_pads))
 
-int ff_buffersink_read_compat(AVFilterContext *ctx, AVFilterBufferRef **buf);
-int ff_buffersink_read_samples_compat(AVFilterContext *ctx, AVFilterBufferRef **pbuf,
-                                      int nb_samples);
 /**
  * Send a frame of data to the next filter.
  *
@@ -345,20 +347,6 @@ int ff_buffersink_read_samples_compat(AVFilterContext *ctx, AVFilterBufferRef **
  * is responsible for unreferencing frame in case of error.
  */
 int ff_filter_frame(AVFilterLink *link, AVFrame *frame);
-
-/**
- * Flags for AVFilterLink.flags.
- */
-enum {
-
-    /**
-     * Frame requests may need to loop in order to be fulfilled.
-     * A filter must set this flags on an output link if it may return 0 in
-     * request_frame() without filtering a frame.
-     */
-    FF_LINK_FLAG_REQUEST_LOOP = 1,
-
-};
 
 /**
  * Allocate a new filter context and return it.

@@ -1016,20 +1016,19 @@ static int cook_decode_frame(AVCodecContext *avctx, void *data,
     return avctx->block_align;
 }
 
-#ifdef DEBUG
 static void dump_cook_context(COOKContext *q)
 {
     //int i=0;
-#define PRINT(a, b) av_dlog(q->avctx, " %s = %d\n", a, b);
-    av_dlog(q->avctx, "COOKextradata\n");
-    av_dlog(q->avctx, "cookversion=%x\n", q->subpacket[0].cookversion);
+#define PRINT(a, b) ff_dlog(q->avctx, " %s = %d\n", a, b);
+    ff_dlog(q->avctx, "COOKextradata\n");
+    ff_dlog(q->avctx, "cookversion=%x\n", q->subpacket[0].cookversion);
     if (q->subpacket[0].cookversion > STEREO) {
         PRINT("js_subband_start", q->subpacket[0].js_subband_start);
         PRINT("js_vlc_bits", q->subpacket[0].js_vlc_bits);
     }
-    av_dlog(q->avctx, "COOKContext\n");
+    ff_dlog(q->avctx, "COOKContext\n");
     PRINT("nb_channels", q->avctx->channels);
-    PRINT("bit_rate", q->avctx->bit_rate);
+    PRINT("bit_rate", (int)q->avctx->bit_rate);
     PRINT("sample_rate", q->avctx->sample_rate);
     PRINT("samples_per_channel", q->subpacket[0].samples_per_channel);
     PRINT("subbands", q->subpacket[0].subbands);
@@ -1038,7 +1037,6 @@ static void dump_cook_context(COOKContext *q)
     PRINT("numvector_size", q->subpacket[0].numvector_size);
     PRINT("total_subbands", q->subpacket[0].total_subbands);
 }
-#endif
 
 /**
  * Cook initialization
@@ -1234,11 +1232,11 @@ static av_cold int cook_decode_init(AVCodecContext *avctx)
 
     /* Pad the databuffer with:
        DECODE_BYTES_PAD1 or DECODE_BYTES_PAD2 for decode_bytes(),
-       FF_INPUT_BUFFER_PADDING_SIZE, for the bitstreamreader. */
+       AV_INPUT_BUFFER_PADDING_SIZE, for the bitstreamreader. */
     q->decoded_bytes_buffer =
         av_mallocz(avctx->block_align
                    + DECODE_BYTES_PAD1(avctx->block_align)
-                   + FF_INPUT_BUFFER_PADDING_SIZE);
+                   + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!q->decoded_bytes_buffer)
         return AVERROR(ENOMEM);
 
@@ -1269,9 +1267,9 @@ static av_cold int cook_decode_init(AVCodecContext *avctx)
     else
         avctx->channel_layout = (avctx->channels == 2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
 
-#ifdef DEBUG
+
     dump_cook_context(q);
-#endif
+
     return 0;
 }
 
@@ -1284,7 +1282,7 @@ AVCodec ff_cook_decoder = {
     .init           = cook_decode_init,
     .close          = cook_decode_close,
     .decode         = cook_decode_frame,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
 };

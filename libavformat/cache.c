@@ -65,9 +65,9 @@ typedef struct Context {
     int read_ahead_limit;
 } Context;
 
-static int cmp(void *key, const void *node)
+static int cmp(const void *key, const void *node)
 {
-    return (*(int64_t *) key) - ((const CacheEntry *) node)->logical_pos;
+    return (*(const int64_t *) key) - ((const CacheEntry *) node)->logical_pos;
 }
 
 static int cache_open(URLContext *h, const char *arg, int flags, AVDictionary **options)
@@ -156,7 +156,7 @@ static int cache_read(URLContext *h, unsigned char *buf, int size)
 {
     Context *c= h->priv_data;
     CacheEntry *entry, *next[2] = {NULL, NULL};
-    int r;
+    int64_t r;
 
     entry = av_tree_find(c->root, &c->logical_pos, cmp, (void**)next);
 

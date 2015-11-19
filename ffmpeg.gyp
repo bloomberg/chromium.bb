@@ -7,9 +7,12 @@
 #     Controls whether we build the Chromium or Google Chrome version of
 #     FFmpeg.  The Google Chrome version contains additional codecs.
 #     Typical values are Chromium, Chrome, ChromiumOS, and ChromeOS.
-#   build_ffmpegsumo
-#     When set to zero, will not include ffmpegsumo as a library to be built as
-#     part of the larger chrome binary. Default value is 1.
+#   ffmpeg_component
+#     Set true to build ffmpeg as a shared library. NOTE: this means we should
+#     always consult the value of 'ffmpeg_component' instead of 'component' for
+#     this file. This helps linux chromium packagers that swap out our
+#     ffmpeg.so with their own. See discussion here
+#     https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
 #
 
 {
@@ -54,7 +57,7 @@
       }, {
         'ffmpeg_config%': '<(target_arch)',
       }],
-      ['OS == "mac" or OS == "win" or OS == "openbsd"', {
+      ['OS == "mac" or OS == "win" or OS == "openbsd" or OS == "android"', {
         'os_config%': '<(OS)',
       }, {  # all other Unix OS's use the linux config
         'conditions': [
@@ -73,16 +76,31 @@
       }],
     ],
 
-    'build_ffmpegsumo%': 1,
+    'ffmpeg_component%': '<(component)',
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
 
     # Stub generator script and signatures of all functions used by Chrome.
     'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
-    'sig_files': ['chromium/ffmpegsumo.sigs'],
+    'sig_files': ['chromium/ffmpeg.sigs'],
   },
   'conditions': [
+    ['chromeos == 1', {
+      # This short-lived hack allows chromium changes to statically link ffmpeg to be independent
+      # from chrome-os changes to ebuild files that explicitly mention libffmpegsumo.so as a target.
+      # TODO(chcunningham): Remove this once ebuilds are patched.
+      'targets': [
+        {
+          'target_name': 'ffmpegsumo',
+          'type': 'loadable_module',
+          'sources': [
+            # Reusing an existing dummy file.
+            'xcode_hack.c',
+          ],
+        },
+      ], # targets
+    }], # (chromeos == 1)
     ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
       'targets': [
         {
@@ -146,13 +164,15 @@
 
   'targets': [{
     'target_name': 'ffmpeg',
-    'type': '<(component)',
+    'type': '<(ffmpeg_component)',
     'variables': {
       # Path to platform configuration files.
       'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
     },
     'conditions': [
-      ['build_ffmpegsumo == 1',
+      # This looks crazy, but it seems to be the only way to make this work. Without this
+      # conditions block, platform_config_root will be undefined when expanded below.
+      ['1 == 1',
         {
           'direct_dependent_settings': {
             'include_dirs': [
@@ -179,11 +199,16 @@
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
             'PIC',
-            # Disable deprecated features which generate spammy warnings.
-            'FF_API_PIX_FMT_DESC=0',
-            'FF_API_OLD_DECODE_AUDIO=0',
-            'FF_API_DESTRUCT_PACKET=0',
-            'FF_API_GET_BUFFER=0',
+            # Disable deprecated features that generate spammy warnings.
+            # BUILD.gn & media/ffmpeg/ffmpeg_common.h must be kept in sync.
+            'FF_API_CONVERGENCE_DURATION=0',
+            # Upstream libavcodec/utils.c still uses the deprecated
+            # av_dup_packet(), causing deprecation warnings.
+            # The normal fix for such things is to disable the feature as below,
+            # but the upstream code does not yet compile with it disabled.
+            # (In this case, the fix is replacing the call with a new function.)
+            # In the meantime, we directly disable those warnings in the C file.
+            # 'FF_API_AVPACKET_OLD_API=0',
           ],
           'variables': {
             'clang_warning_flags': [
@@ -201,8 +226,17 @@
               # matroskadec.c has a "failed:" label that's only used if some
               # CONFIG_ flags we don't set are set.
               '-Wno-unused-label',
+              # ffmpeg has a lot of unused variables.
+              '-Wno-unused-variable',
               # This fires on `av_assert0(!"valid element size")` in utils.c
               '-Wno-string-conversion',
+              # This fires on `pos_min` and `pos_max` in
+              # autorename_libavformat_utils.c
+              '-Wno-sometimes-uninitialized',
+              # ffmpeg contains static functions in header files, which lead
+              # to unused function warnings. There are a few legit unused
+              # functions too.
+              '-Wno-unused-function',
             ],
           },
           'cflags': [
@@ -239,31 +273,11 @@
               ],
             }],  # target_arch == "ia32"
             ['target_arch == "arm"', {
-              # TODO(ihf): See the long comment in build_ffmpeg.sh
-              # We want to be consistent with CrOS and have configured
-              # ffmpeg for thumb. Protect yourself from -marm.
-              'cflags!': [
-                '-marm',
-              ],
-              'cflags': [
-                '-mthumb',
-                '-march=armv7-a',
-                '-mtune=cortex-a8',
-              ],
               # On arm we use gcc to compile the assembly.
               'sources': [
                 '<@(asm_sources)',
               ],
               'conditions': [
-                ['arm_neon == 0', {
-                  'cflags': [
-                    '-mfpu=vfpv3-d16',
-                  ],
-                }, {
-                  'cflags': [
-                    '-mfpu=neon',
-                  ],
-                }],
                 ['arm_float_abi == "hard"', {
                   'cflags': [
                     '-DHAVE_VFP_ARGS=1'
@@ -275,12 +289,6 @@
                 }],
               ],
             }],
-            ['target_arch == "mipsel"', {
-              'cflags': [
-                '-mips32',
-                '-EL -Wl,-EL',
-              ],
-            }],  # target_arch == "mipsel"
             ['os_posix == 1 and OS != "mac"', {
               'defines': [
                 '_ISOC99_SOURCE',
@@ -303,12 +311,18 @@
               'link_settings': {
                 'libraries': [
                   '-lm',
-                  '-lrt',
                   '-lz',
                 ],
               },
               'conditions': [
-                ['component == "shared_library"', {
+                ['OS != "android"', {
+                  'link_settings': {
+                    'libraries': [
+                      '-lrt',
+                    ],
+                  },
+                }],
+                ['ffmpeg_component == "shared_library"', {
                   # Export all symbols when building as component.
                   'cflags!': [
                     '-fvisibility=hidden',
@@ -362,7 +376,7 @@
                     ],
                   },
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   'xcode_settings': {
                     # GCC version of no -fvisiliity=hidden. Ensures that all
                     # symbols are exported for component builds.
@@ -416,7 +430,7 @@
                     4267
                   ],
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   # Fix warnings about a local symbol being inefficiently imported.
                   'msvs_settings': {
                     'VCCLCompilerTool': {
@@ -427,7 +441,17 @@
                     },
                   },
                   'sources': [
-                    '<(shared_generated_dir)/ffmpegsumo.def',
+                    '<(shared_generated_dir)/ffmpeg.def',
+                  ],
+                  'conditions': [
+                    ['OS=="win" and win_use_allocator_shim==1', {
+                      'dependencies': [
+                        '../../base/allocator/allocator.gyp:allocator',
+                      ],
+                      'sources': [
+                        'chromium/dllmain.cc',
+                      ],
+                    }],
                   ],
                   'actions': [
                     {
@@ -437,14 +461,14 @@
                         '<@(sig_files)',
                       ],
                       'outputs': [
-                        '<(shared_generated_dir)/ffmpegsumo.def',
+                        '<(shared_generated_dir)/ffmpeg.def',
                       ],
                       'action': ['python',
                                  '<(generate_stubs_script)',
                                  '-i', '<(INTERMEDIATE_DIR)',
                                  '-o', '<(shared_generated_dir)',
                                  '-t', 'windows_def',
-                                 '-m', 'ffmpegsumo.dll',
+                                 '-m', 'ffmpeg.dll',
                                  '<@(_inputs)',
                       ],
                       'message': 'Generating FFmpeg export definitions',

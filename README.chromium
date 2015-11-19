@@ -1,9 +1,9 @@
 Name: ffmpeg
 URL: http://ffmpeg.org/
 License: LGPL 2.1
-License File: LICENSE.md
+License File: CREDITS.chromium
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: 19321a295a641cbc067ec0df597bc1b69addf049, Mar 24 2015
+Last Upstream Merge: 3692d859f45fa8765fa5a330e79108b03c17c6bd, November 5 2015
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
@@ -13,7 +13,7 @@ FFmpeg Git Layout:
 ==================
 
 Chromium's copy of FFmpeg is a fork of the upstream git repository, see the tags
-above for up-to-date cut information.  All of the chromium specific bits, minus
+above for up-to-date cut information.  All of the Chromium-specific bits, minus
 the gyp files, are located under the chromium/ folder off the root.
 
     ffmpeg.gyp: See the section on ffmpeg.gyp below.
@@ -26,36 +26,33 @@ the gyp files, are located under the chromium/ folder off the root.
     chromium/config/...: Pregenerated FFmpeg config options for each platform
       and architecture; e.g., ChromeOS: ARM-Neon, Linux: X64, etc.
 
-    chromium/patches/README: Details of Chromium specific changes which haven't
+    chromium/patches/README: Details of Chromium-specific changes that haven't
       yet made it upstream.
 
 
 Help w/ Common Tasks:
 =====================
 
--- Submitting changes to Chromium's FFmpeg git repository.
+-- Submitting changes to Chromium's FFmpeg Git repository.
 
 The goal of Chromium's FFmpeg repository is to just be a mirror of the upstream
-Git repository.  Which means every change made must be upstreamed.  If you make
+Git repository.  This means every change made must be upstreamed.  If you make
 a change, please add an entry to chromium/patches/README with a link to the
-tracking issue and code review for your change. Reviews are performed with gerrit
-at https://chromium-review.googlesource.com.
+tracking issue and code review for your change. Reviews are performed with
+Gerrit at https://chromium-review.googlesource.com.
 
-  1) Install commit hooks to generate Change-Id fields in commits, run:
-     ./chromium/scripts/install_commit_msg_hook.sh
-
-  2) Create a branch and make a local, single commit. Gerrit differs from
+  1) Create a branch and make a local, single commit. Gerrit differs from
      Rietveld in that you must have a single commit, so use git commit --amend
-     if you need to make changes. Inspect that your commit contains a
-     Change-Id field, which is how gerrit coalesces separate patch sets into the
+     if you need to make changes. Verify that your commit contains a
+     Change-Id field, which is how Gerrit coalesces separate patch sets into the
      same code review.
 
-  3) Upload for review:
-     git push origin HEAD:refs/for/master
+  2) Upload for review:
+     git cl upload
 
-  4) Commit via https://chromium-review.googlesource.com once approved.
+  3) Commit via https://chromium-review.googlesource.com once approved.
 
-  5) If needed, submit a Chromium-side change to update DEPS.
+  4) If needed, submit a Chromium-side change to update DEPS.
 
 -- Upstreaming a patch.
 
@@ -76,12 +73,12 @@ will clear out all the patches which have been upstreamed.
   git fetch upstream
 
   # Create a new branch based off of master for committing our patch.
-  git checkout master -b my_new_branch
+  git checkout origin/master -b my_new_branch
 
   # Pull the patch out of upstream.
   git cherry-pick -x <hash of commit in upstream>
 
-  <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
+  <Follow rest of "Submitting changes to Chromium's FFmpeg Git repository.">
 
 
 Performing An Upstream Merge
@@ -90,6 +87,6 @@ Performing An Upstream Merge
 Currently this is an extremely tedious process that requires access to a Linux,
 Mac, and Windows development machine and lot of blood, sweat, and tears.
 
-The instructions are also prone to going stale, so in the interest collaboration
-and sharing tips we've moved to a public document:
+The instructions are also prone to going stale, so in the interest of
+collaboration and sharing tips we have moved to a public document:
 https://docs.google.com/a/chromium.org/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit#

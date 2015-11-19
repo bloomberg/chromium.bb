@@ -11,57 +11,13 @@ FFmpeg's configure scripts and Makefiles. It scans through build directories for
 object files then does a reverse lookup against the FFmpeg source tree to find
 the corresponding C or assembly file.
 
-Running build_ffmpeg.sh for ia32, arm, arm-neon and mips32 platforms is
-required prior to running this script. The arm, arm-neon and mips32 platforms
-assume a Chromium OS build environment.
+Running build_ffmpeg.sh on each supported platform for all architecture is
+required prior to running this script.  See build_ffmpeg.py for details as well
+as the documentation at:
 
-The Ensemble branding supports the following architectures: ia32, x86, arm, and
-mipsel.
+https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pli=1#heading=h.x346hhrqw4lx
 
-Step 1: Have a Chromium OS checkout (refer to http://dev.chromium.org)
-  mkdir chromeos
-  repo init ...
-  repo sync
-
-Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or cp -fpr it over
-from an existing checkout; symlinks and mount --bind no longer appear to enable
-access from within chroot)
-  cd path/to/chromeos
-  mkdir deps
-  cd deps
-  git clone http://git.chromium.org/chromium/third_party/ffmpeg.git
-
-Step 3: Build for ia32 platform outside chroot (will need yasm in path)
-  cd path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/build_ffmpeg.sh linux ia32 path/to/chromeos/deps/ffmpeg
-
-Step 4: Build and enter Chromium OS chroot:
-  cd path/to/chromeos/src/scripts
-  cros_sdk --enter
-
-Step 5: Setup build environment for ARM:
-  ./setup_board --board arm-generic
-
-Step 6: Build for arm/arm-neon platforms inside chroot
-  ./chromium/scripts/build_ffmpeg.sh linux arm path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/build_ffmpeg.sh linux arm-neon path/to/chromeos/deps/ffmpeg
-
-Step 7: Setup build environment for MIPS:
-  ./setup_board --board mipsel-o32-generic
-
-Step 8: Build for mipsel platform inside chroot
-  ./chromium/scripts/build_ffmpeg.py linux mipsel
-
-Step 9: Build for Windows platform; you will need a MinGW shell started from
-inside a Visual Studio Command Prompt to run build_ffmpeg.sh:
-  ./chromium/scripts/build_ffmpeg.sh win ia32 $(pwd)
-
-Step 10: Exit chroot and generate gyp file
-  exit
-  cd path/to/chromeos/deps/ffmpeg
-  ./chromium/scripts/generate_gyp.py
-
-Phew!
+Once you've built all platforms and architectures you may run this script.
 
 While this seems insane, reverse engineering and maintaining a gyp file by hand
 is significantly more painful.
@@ -70,15 +26,19 @@ is significantly more painful.
 __author__ = 'scherkus@chromium.org (Andrew Scherkus)'
 
 import collections
+import copy
 import datetime
+from enum import enum
 import fnmatch
+import credits_updater
 import itertools
 import optparse
 import os
 import re
+import shutil
 import string
 import subprocess
-import shutil
+import sys
 
 COPYRIGHT = """# Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -144,10 +104,13 @@ GN_SOURCE_END = """]
 """
 
 # Controls GYP conditional stanza generation.
-SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64', 'mipsel']
-SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS', 'Ensemble']
-# Mac doesn't have any platform specific files, so just use linux and win.
-SUPPORTED_PLATFORMS = ['linux', 'win']
+Attr = enum('ARCHITECTURE', 'TARGET', 'PLATFORM')
+SUPPORT_MATRIX = {
+    Attr.ARCHITECTURE:
+        set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel', 'mips64el']),
+    Attr.TARGET: set(['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']),
+    Attr.PLATFORM: set(['android', 'linux', 'win', 'mac'])
+}
 
 
 def NormalizeFilename(name):
@@ -163,11 +126,11 @@ def CleanObjectFiles(object_files):
   """
   blacklist = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
-      'libavcodec/file_open.o', # Includes libavutil/file_open.c
+      'libavcodec/file_open.o',  # Includes libavutil/file_open.c
       'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
       'libavformat/golomb_tab.o',  # Includes libavcodec/golomb.c
       'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
-      'libavformat/file_open.o', # Includes libavutil/file_open.c
+      'libavformat/file_open.o',  # Includes libavutil/file_open.c
 
       # The following files are removed to trim down on binary size.
       # TODO(ihf): Warning, it is *easy* right now to remove more files
@@ -180,7 +143,6 @@ def CleanObjectFiles(object_files):
       'libavformat/sdp.o',
       'libavutil/adler32.o',
       'libavutil/audio_fifo.o',
-      'libavutil/aes.o',
       'libavutil/blowfish.o',
       'libavutil/cast5.o',
       'libavutil/des.o',
@@ -202,24 +164,30 @@ def CleanObjectFiles(object_files):
       object_files.remove(name)
   return object_files
 
+
 def IsAssemblyFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.S', '.asm']
+
 
 def IsGasFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.S']
 
+
 def IsYasmFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.asm']
+
 
 def IsCFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.c']
 
+
 def IsSourceFile(f):
   return IsAssemblyFile(f) or IsCFile(f)
+
 
 def GetSourceFiles(source_dir):
   """Returns a list of source files for the given source directory.
@@ -256,7 +224,7 @@ def GetObjectFiles(build_dir):
     A python list of object files paths.
   """
   object_files = []
-  for root, dirs, files in os.walk(build_dir):
+  for root, _, files in os.walk(build_dir):
     # Strip leading build_dir from root.
     root = root[len(build_dir):]
 
@@ -280,7 +248,7 @@ def GetObjectToSourceMapping(source_files):
   """
   object_to_sources = {}
   for name in source_files:
-    basename, ext = os.path.splitext(name)
+    basename, _ = os.path.splitext(name)
     key = basename + '.o'
     object_to_sources[key] = name
   return object_to_sources
@@ -304,34 +272,52 @@ def GetSourceFileSet(object_to_sources, object_files):
   return source_set
 
 
+class SourceListCondition(object):
+  """A SourceListCondition represents a combination of architecture, target, and
+  platform where a specific list of sources should be used. Attributes are setup
+  using the enum values to facilitate easy iteration over attributes for
+  condition reduction."""
+
+  def __init__(self, architecture, target, platform):
+    """Creates a SourceListCondition
+    Args:
+      architecture: a system architecture (e.g. arm or x64)
+      target: target ffmpeg branding type (e.g. Chromium or Chrome)
+      platform: system platform (e.g. win or linux)
+
+      For all args, '*' is also a valid value indicating that there is no
+      restriction on the given attribute for this condition.
+    """
+    setattr(self, Attr.ARCHITECTURE, architecture)
+    setattr(self, Attr.TARGET, target)
+    setattr(self, Attr.PLATFORM, platform)
+
+  def __repr__(self):
+    return '{%s, %s, %s}' % (self.PLATFORM, self.ARCHITECTURE, self.TARGET)
+
+
 class SourceSet(object):
-  """A SourceSet represents a set of source files that are built on the given
-  set of architectures and targets.
+  """A SourceSet represents a set of source files that are built on each of the
+  given set of SourceListConditions.
   """
 
-  def __init__(self, sources, architectures, targets, platforms):
+  def __init__(self, sources, conditions):
     """Creates a SourceSet.
 
     Args:
       sources: a python set of source files
-      architectures: a python set of architectures (i.e., arm, x64, mipsel)
-      targets: a python set of targets (i.e., Chromium, Chrome)
-      platforms: a python set of platforms (i.e., win, linux)
+      conditions: a python set of SourceListConditions where the given sources
+        are to be used.
     """
     self.sources = sources
-    self.architectures = architectures
-    self.targets = targets
-    self.platforms = platforms
+    self.conditions = conditions
 
   def __repr__(self):
-    return '{%s, %s, %s, %s}' % (self.sources, self.architectures, self.targets,
-                                 self.platforms)
+    return '{%s, %s}' % (self.sources, self.conditions)
 
   def __eq__(self, other):
     return (self.sources == other.sources and
-            self.architectures == other.architectures and
-            self.targets == other.targets and
-            self.platforms == other.platforms)
+            self.conditions == other.conditions)
 
   def Intersect(self, other):
     """Return a new SourceSet containing the set of source files common to both
@@ -341,28 +327,23 @@ class SourceSet(object):
     targets of this and the other SourceSet.
     """
     return SourceSet(self.sources & other.sources,
-                     self.architectures | other.architectures,
-                     self.targets | other.targets,
-                     self.platforms | other.platforms)
+                     self.conditions | other.conditions)
 
   def Difference(self, other):
     """Return a new SourceSet containing the set of source files not present in
     the other SourceSet.
 
-    The resulting SourceSet represents the intersection of the architectures and
-    targets of this and the other SourceSet.
+    The resulting SourceSet represents the intersection of the
+    SourceListConditions from this and the other SourceSet.
     """
     return SourceSet(self.sources - other.sources,
-                     self.architectures & other.architectures,
-                     self.targets & other.targets,
-                     self.platforms & other.platforms)
+                     self.conditions & other.conditions)
 
   def IsEmpty(self):
     """An empty SourceSet is defined as containing no source files or no
-    architecture/target (i.e., a set of files that aren't built on anywhere).
+    conditions (i.e., a set of files that aren't built on anywhere).
     """
-    return (len(self.sources) == 0 or len(self.architectures) == 0 or
-            len(self.targets) == 0 or len(self.platforms) == 0)
+    return (len(self.sources) == 0 or len(self.conditions) == 0)
 
   def GenerateGypStanza(self):
     """Generates a gyp conditional stanza representing this source set.
@@ -375,41 +356,41 @@ class SourceSet(object):
       A string of gyp code.
     """
 
-    # Only build a non-trivial conditional if it's a subset of all supported
-    # architectures.
-    arch_conditions = []
-    if self.architectures == set(SUPPORTED_ARCHITECTURES):
-      arch_conditions.append('1')
-    else:
-      for arch in self.architectures:
-        if arch == 'arm-neon':
-          arch_conditions.append('(target_arch == "arm" and arm_neon == 1)')
-        else:
-          arch_conditions.append('target_arch == "%s"' % arch)
+    conjunctions = []
+    for condition in self.conditions:
+      if condition.ARCHITECTURE == '*':
+        arch_condition = None
+      elif condition.ARCHITECTURE == 'arm-neon':
+        arch_condition = 'target_arch == "arm" and arm_neon == 1'
+      else:
+        arch_condition = 'target_arch == "%s"' % condition.ARCHITECTURE
 
-    # Only build a non-trivial conditional if it's a subset of all supported
-    # targets.
-    branding_conditions = []
-    if self.targets == set(SUPPORTED_TARGETS):
-      branding_conditions.append('1')
-    else:
-      for branding in self.targets:
-        branding_conditions.append('ffmpeg_branding == "%s"' % branding)
+      if condition.TARGET == '*':
+        target_condition = None
+      else:
+        target_condition = 'ffmpeg_branding == "%s"' % condition.TARGET
 
-    platform_conditions = []
-    if (self.platforms == set(SUPPORTED_PLATFORMS) or
-        self.platforms == set(['linux'])):
-      platform_conditions.append('1')
-    else:
-      for platform in self.platforms:
-        platform_conditions.append('OS == "%s"' % platform)
+      if condition.PLATFORM == '*':
+        platform_condition = None
+      else:
+        platform_condition = 'OS == "%s"' % condition.PLATFORM
 
-    conditions = '(%s) and (%s) and (%s)' % (' or '.join(arch_conditions),
-                                             ' or '.join(branding_conditions),
-                                             ' or '.join(platform_conditions))
+      conjunction_parts = filter(
+          None, [platform_condition, arch_condition, target_condition])
+      conjunctions.append(' and '.join(conjunction_parts))
+
+    # If there is more that one clause, wrap various conditions in parens
+    # before joining.
+    if len(conjunctions) > 1:
+      conjunctions = ['(%s)' % x for x in conjunctions]
+
+    # Sort conjunctions to make order deterministic.
+    joined_conjunctions = ' or '.join(sorted(conjunctions))
+    if not joined_conjunctions:
+      joined_conjunctions = '(1)'
 
     stanza = []
-    stanza += GYP_CONDITIONAL_STANZA_BEGIN % (conditions)
+    stanza += GYP_CONDITIONAL_STANZA_BEGIN % (joined_conjunctions)
 
     self.sources = sorted(n.replace('\\', '/') for n in self.sources)
 
@@ -429,7 +410,7 @@ class SourceSet(object):
         stanza += GYP_CONDITIONAL_STANZA_ITEM % (name)
       stanza += GYP_CONDITIONAL_ITEM_STANZA_END
 
-    stanza += GYP_CONDITIONAL_STANZA_END % (conditions)
+    stanza += GYP_CONDITIONAL_STANZA_END % (joined_conjunctions)
     return ''.join(stanza)
 
   def GenerateGnStanza(self):
@@ -440,49 +421,48 @@ class SourceSet(object):
     getting out of hand.
     """
 
-    # Only build a non-trivial conditional if it's a subset of all supported
-    # architectures. targets. Arch conditions look like:
-    #   (current_cpu == "arm" || (current_cpu == "arm" && arm_use_neon))
-    arch_conditions = []
-    if self.architectures != set(SUPPORTED_ARCHITECTURES):
-      for arch in self.architectures:
-        if arch == 'arm-neon':
-          arch_conditions.append('(current_cpu == "arm" && arm_use_neon)')
-        elif arch == 'ia32':
-          arch_conditions.append('current_cpu == "x86"')
-        else:
-          arch_conditions.append('current_cpu == "%s"' % arch)
+    conjunctions = []
+    for condition in self.conditions:
+      if condition.ARCHITECTURE == '*':
+        arch_condition = None
+      elif condition.ARCHITECTURE == 'arm-neon':
+        arch_condition = 'current_cpu == "arm" && arm_use_neon'
+      elif condition.ARCHITECTURE == 'ia32':
+        arch_condition = 'current_cpu == "x86"'
+      else:
+        arch_condition = 'current_cpu == "%s"' % condition.ARCHITECTURE
 
-    # Only build a non-trivial conditional if it's a subset of all supported
-    # targets. Branding conditions look like:
-    #   (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS")
-    branding_conditions = []
-    if self.targets != set(SUPPORTED_TARGETS):
-      for branding in self.targets:
-        branding_conditions.append('ffmpeg_branding == "%s"' % branding)
+      # Branding conditions look like:
+      #   ffmpeg_branding == "Chrome"
+      if condition.TARGET == '*':
+        target_condition = None
+      else:
+        target_condition = 'ffmpeg_branding == "%s"' % condition.TARGET
 
-    # Platform conditions look like:
-    #   (is_mac || is_linux)
-    platform_conditions = []
-    if (self.platforms != set(SUPPORTED_PLATFORMS) and
-        self.platforms != set(['linux'])):
-      for platform in self.platforms:
-        platform_conditions.append('is_%s' % platform)
+      # Platform conditions look like:
+      #   is_mac
+      if condition.PLATFORM == '*':
+        platform_condition = None
+      else:
+        platform_condition = 'is_%s' % condition.PLATFORM
 
-    # Remove 0-lengthed lists.
-    conditions = filter(None, [' || '.join(arch_conditions),
-                               ' || '.join(branding_conditions),
-                               ' || '.join(platform_conditions)])
+      conjunction_parts = filter(
+          None, [platform_condition, arch_condition, target_condition])
+      conjunctions.append(' && '.join(conjunction_parts))
 
     # If there is more that one clause, wrap various conditions in parens
     # before joining.
-    if len(conditions) > 1:
-       conditions = [ '(%s)' % x for x in conditions ]
+    if len(conjunctions) > 1:
+      conjunctions = ['(%s)' % x for x in conjunctions]
+
+    # Sort conjunctions to make order deterministic.
+    joined_conjuctions = ' || '.join(sorted(conjunctions))
 
     stanza = ''
     # Output a conditional wrapper around stanzas if necessary.
-    if conditions:
-      stanza += GN_CONDITION_BEGIN % ' && '.join(conditions)
+    if joined_conjuctions:
+      stanza += GN_CONDITION_BEGIN % joined_conjuctions
+
       def indent(s):
         return '  %s' % s
     else:
@@ -516,7 +496,7 @@ class SourceSet(object):
       stanza += indent(GN_SOURCE_END)
 
     # Close the conditional if necessary.
-    if conditions:
+    if joined_conjuctions:
       stanza += GN_CONDITION_END
     else:
       stanza += '\n'  # Makeup the spacing for the remove conditional.
@@ -564,6 +544,124 @@ def CreatePairwiseDisjointSets(sets):
   return disjoint_sets
 
 
+def GetAllMatchingConditions(conditions, condition_to_match):
+  """ Given a set of conditions, find those that match the condition_to_match.
+  Matches are found when all attributes of the condition have the same value as
+  the condition_to_match, or value is accepted for wild-card attributes within
+  condition_to_match.
+  """
+
+  found_matches = set()
+
+  # Check all attributes of condition for matching values.
+  def accepts_all_values(attribute):
+    return getattr(condition_to_match, attribute) == '*'
+  attributes_to_check = [a for a in Attr if not accepts_all_values(a)]
+
+  # If all attributes allow wild-card, all conditions are considered matching
+  if not attributes_to_check:
+    return conditions
+
+  # Check all conditions and accumulate matches.
+  for condition in conditions:
+    condition_matches = True
+    for attribute in attributes_to_check:
+      if (getattr(condition, attribute)
+          != getattr(condition_to_match, attribute)):
+        condition_matches = False
+        break
+    if condition_matches:
+      found_matches.add(condition)
+
+  return found_matches
+
+
+def GetAttributeValueRange(attribute, condition):
+  """Return the range of values for the given attribute, considering
+  the values of other attributes in the given condition."""
+
+  values_range = copy.copy(SUPPORT_MATRIX[attribute])
+
+  # Filter out impossible values given condition platform. This is admittedly
+  # fragile to changes in our supported platforms. Fortunately, these platforms
+  # don't change often. Refactor if we run into trouble.
+  platform = condition.PLATFORM
+  if attribute == Attr.TARGET and platform != '*' and platform != 'linux':
+    values_range.difference_update(['ChromiumOS', 'ChromeOS'])
+  if attribute == Attr.ARCHITECTURE and platform == 'win':
+    values_range.intersection_update(['ia32', 'x64'])
+  if attribute == Attr.ARCHITECTURE and platform == 'mac':
+    values_range.intersection_update(['x64'])
+
+  return values_range
+
+
+def DoConditionsSpanValuesRange(conditions, attribute, values_range):
+  """Return True if all of the attribute values in values_range are observed
+  in one or more of the given conditions."""
+
+  # Copy set so we can safely modify
+  values_range = copy.copy(values_range)
+
+  for condition in conditions:
+    attribute_value = getattr(condition, attribute)
+    if attribute_value in values_range:
+      values_range.remove(attribute_value)
+
+  return len(values_range) == 0
+
+
+def ReduceConditionalLogic(source_set):
+  """Reduces the conditions for the given SourceSet.
+
+  The reduction leverages what we know about the space of possible combinations,
+  finding cases where conditions span all values possible of a given attribute.
+  In such cases, these conditions can be flattened into a single condition with
+  the spanned attribute removed.
+
+  There is room for further reduction (e.g. Quine-McCluskey), not implemented
+  at this time."""
+
+  removed_conditions = set()
+  reduced_conditions = set()
+
+  for condition in source_set.conditions:
+    # Skip already reduced conditions.
+    if (condition in removed_conditions):
+      continue
+
+    # Copy condition to avoid altering original value. This is important later
+    # when we check whether conditions matching our wild-card span the full
+    # range of values for a given attribute. We deepcopy because the condition
+    # contains an internal dictionary which we should not clobber.
+    condition = copy.deepcopy(condition)
+    did_condition_reduce = False
+
+    for attribute in Attr:
+      # Set attribute value to wild-card and find matching attributes.
+      original_attribute_value = getattr(condition, attribute)
+      setattr(condition, attribute, '*')
+
+      matches = GetAllMatchingConditions(source_set.conditions, condition)
+
+      # Check to see if matches span all possible values for given attribute
+      values_range = GetAttributeValueRange(attribute, condition)
+      if DoConditionsSpanValuesRange(matches, attribute, values_range):
+        # Note conditions matches to add/remove when done iterating. We leave
+        # the wild-card set for this attribute since it did reduce.
+        did_condition_reduce = True
+        removed_conditions.update(matches)
+      else:
+        setattr(condition, attribute, original_attribute_value)
+
+    if did_condition_reduce:
+      reduced_conditions.add(condition)
+
+  # Update conditions, replacing verbose statements with reduced form.
+  source_set.conditions.difference_update(removed_conditions)
+  source_set.conditions.update(reduced_conditions)
+
+
 def ParseOptions():
   """Parses the options and terminates program if they are not sane.
 
@@ -588,18 +686,11 @@ def ParseOptions():
                     metavar='DIR',
                     help='Build root containing build.x64.linux, etc...')
 
-  parser.add_option('-g',
-                    '--output_gn',
-                    dest='output_gn',
-                    action="store_true",
-                    default=False,
-                    help='Output a GN file instead of a gyp file.')
-
   parser.add_option('-p',
                     '--print_licenses',
                     dest='print_licenses',
                     default=False,
-                    action="store_true",
+                    action='store_true',
                     help='Print all licenses to console.')
 
   options, args = parser.parse_args()
@@ -617,7 +708,7 @@ def ParseOptions():
   return options, args
 
 
-def WriteGyp(fd, build_dir, disjoint_sets):
+def WriteGyp(fd, disjoint_sets):
   fd.write(COPYRIGHT)
   fd.write(GYP_HEADER)
 
@@ -630,7 +721,7 @@ def WriteGyp(fd, build_dir, disjoint_sets):
   fd.write(GYP_FOOTER)
 
 
-def WriteGn(fd, build_dir, disjoint_sets):
+def WriteGn(fd, disjoint_sets):
   fd.write(COPYRIGHT)
   fd.write(GN_HEADER)
 
@@ -641,22 +732,25 @@ def WriteGn(fd, build_dir, disjoint_sets):
 
 # Lists of files that are exempt from searching in GetIncludeSources.
 IGNORED_INCLUDE_FILES = [
-  # Chromium generated files
-  'config.h',
-  os.path.join('libavutil', 'avconfig.h'),
-  os.path.join('libavutil', 'ffversion.h'),
+    # Chromium generated files
+    'config.h',
+    os.path.join('libavutil', 'avconfig.h'),
+    os.path.join('libavutil', 'ffversion.h'),
 
-  # Current configure values are set such that we don't include these (because
-  # of various defines) and we also don't generate them at all, so we will fail
-  # to find these because they don't exist in our repository.
-  os.path.join('libavcodec', 'aacps_tables.h'),
-  os.path.join('libavcodec', 'aacsbr_tables.h'),
-  os.path.join('libavcodec', 'aac_tables.h'),
-  os.path.join('libavcodec', 'cabac_tables.h'),
-  os.path.join('libavcodec', 'cbrt_tables.h'),
-  os.path.join('libavcodec', 'mpegaudio_tables.h'),
-  os.path.join('libavcodec', 'pcm_tables.h'),
-  os.path.join('libavcodec', 'sinewin_tables.h'),
+    # Current configure values are set such that we don't include these (because
+    # of various defines) and we also don't generate them at all, so we will fail
+    # to find these because they don't exist in our repository.
+    os.path.join('libavcodec', 'aacps_tables.h'),
+    os.path.join('libavcodec', 'aacps_fixed_tables.h'),
+    os.path.join('libavcodec', 'aacsbr_tables.h'),
+    os.path.join('libavcodec', 'aac_tables.h'),
+    os.path.join('libavcodec', 'cabac_tables.h'),
+    os.path.join('libavcodec', 'cbrt_tables.h'),
+    os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
+    os.path.join('libavcodec', 'mpegaudio_tables.h'),
+    os.path.join('libavcodec', 'pcm_tables.h'),
+    os.path.join('libavcodec', 'sinewin_tables.h'),
+    os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
 ]
 
 
@@ -664,12 +758,12 @@ IGNORED_INCLUDE_FILES = [
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the
 # licenses are okay to add.
 LICENSE_WHITELIST = [
-  'BSD (3 clause) LGPL (v2.1 or later)',
-  'ISC GENERATED FILE',
-  'LGPL (v2.1 or later)',
-  'LGPL (v2.1 or later) GENERATED FILE',
-  'MIT/X11 (BSD like)',
-  'Public domain LGPL (v2.1 or later)',
+    'BSD (3 clause) LGPL (v2.1 or later)',
+    'ISC GENERATED FILE',
+    'LGPL (v2.1 or later)',
+    'LGPL (v2.1 or later) GENERATED FILE',
+    'MIT/X11 (BSD like)',
+    'Public domain LGPL (v2.1 or later)',
 ]
 
 
@@ -678,10 +772,10 @@ LICENSE_WHITELIST = [
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the files
 # you're adding have acceptable licenses.
 UNKNOWN_WHITELIST = [
-  # From of Independent JPEG group. No named license, but usage is allowed.
-  os.path.join('libavcodec', 'jrevdct.c'),
-  os.path.join('libavcodec', 'jfdctfst.c'),
-  os.path.join('libavcodec', 'jfdctint_template.c'),
+    # From of Independent JPEG group. No named license, but usage is allowed.
+    os.path.join('libavcodec', 'jrevdct.c'),
+    os.path.join('libavcodec', 'jfdctfst.c'),
+    os.path.join('libavcodec', 'jfdctint_template.c'),
 ]
 
 
@@ -696,7 +790,7 @@ EXOTIC_INCLUDE_REGEX = re.compile('#\s*include\s+[^"<\s].+')
 RENAME_PREFIX = 'autorename'
 
 
-def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
+def GetIncludedSources(file_path, source_dir, include_set):
   """ Recurse over include tree, accumulating absolute paths to all included
   files (including the seed file) in include_set.
 
@@ -733,7 +827,7 @@ def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
     if not include_match:
       if EXOTIC_INCLUDE_REGEX.search(line):
         print 'WARNING: Investigate whacky include line:', line
-      continue;
+      continue
 
     include_file_path = include_match.group(1)
 
@@ -741,11 +835,11 @@ def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
     # and we'll checking their validity below.
     include_path_in_current_dir = os.path.join(current_dir, include_file_path)
     include_path_in_source_dir = os.path.join(source_dir, include_file_path)
-    resolved_include_path = '';
+    resolved_include_path = ''
 
     # Check if file is in current directory.
     if os.path.isfile(include_path_in_current_dir):
-      resolved_include_path = include_path_in_current_dir;
+      resolved_include_path = include_path_in_current_dir
     # Else, check source_dir (should be FFmpeg root).
     elif os.path.isfile(include_path_in_source_dir):
       resolved_include_path = include_path_in_source_dir
@@ -753,7 +847,7 @@ def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
     elif include_file_path in IGNORED_INCLUDE_FILES:
       continue
     else:
-      exit('Failed to find file', include_file_path)
+      exit('Failed to find file ' + include_file_path)
 
     # At this point we've found the file. Check if its in our ignore list which
     # means that the list should be updated to no longer mention this file.
@@ -761,55 +855,47 @@ def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
       print('Found %s in IGNORED_INCLUDE_FILES. Consider updating the list '
             'to remove this file.' % str(include_file_path))
 
-    GetIncludedSources(resolved_include_path, source_dir, include_set, depth + 1)
+    GetIncludedSources(resolved_include_path, source_dir, include_set)
 
 
-def CheckLicenseForSource(source, source_dir, print_licenses):
+def CheckLicensesForSources(sources, source_dir, print_licenses):
   # Assumed to be two back from source_dir (e.g. third_party/ffmpeg/../..).
   source_root = os.path.abspath(
       os.path.join(source_dir, os.path.pardir, os.path.pardir))
 
   licensecheck_path = os.path.abspath(os.path.join(
-      source_root, 'third_party', 'devscripts', 'licensecheck.pl'));
+      source_root, 'third_party', 'devscripts', 'licensecheck.pl'))
   if not os.path.exists(licensecheck_path):
     exit('Could not find licensecheck.pl: ' + str(licensecheck_path))
 
-  check_process = subprocess.Popen([licensecheck_path,
-                                    '-l', '100',
-                                    os.path.abspath(source)],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-  stdout, stderr = check_process.communicate()
+  check_process = subprocess.Popen(
+      [licensecheck_path, '-m', '-l', '100']
+      + [os.path.abspath(s) for s in sources], stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE)
+  stdout, _ = check_process.communicate()
 
   # Get the filename and license out of the stdout. stdout is expected to be
   # "/abspath/to/file: *No copyright* SOME LICENSE".
-  filename, license = stdout.split(':', 1)
-  license = license.replace('*No copyright*', '').strip()
-  rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
+  for line in stdout.strip().splitlines():
+    filename, licensename = line.split('\t', 1)
+    licensename = licensename.replace('*No copyright*', '').strip()
+    rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
 
-  if (license in LICENSE_WHITELIST or
-     (license == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
-    if print_licenses:
-      print filename, ':', license
-    return True
+    if (licensename in LICENSE_WHITELIST or
+        (licensename == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
+      if print_licenses:
+        print filename, ':', licensename
+      continue
 
-  print 'UNEXPECTED LICENSE: %s: %s' % (filename, license)
-  return False
+    print 'UNEXPECTED LICENSE: %s: %s' % (filename, licensename)
+    return False
+
+  return True
 
 
-def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
-  # Build up set of all sources and includes.
-  sources_to_check = set()
-  for source_set in disjoint_sets:
-    for source in source_set.sources:
-      GetIncludedSources(source, source_dir, sources_to_check)
-
-  # Check licenses for all included sources.
-  all_checks_passed = True
-  for source in sources_to_check:
-    if not CheckLicenseForSource(source, source_dir, print_licenses):
-      all_checks_passed = False
-  return all_checks_passed
+def CheckLicensesForStaticLinking(sources_to_check, source_dir, print_licenses):
+  print 'Checking licenses...'
+  return CheckLicensesForSources(sources_to_check, source_dir, print_licenses)
 
 
 def FixObjectBasenameCollisions(disjoint_sets, all_sources):
@@ -825,7 +911,7 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
   detect the presence of a renamed file in all_sources which is overridden and
   warn that it should be removed."""
 
-  SourceRename = collections.namedtuple("SourceRename", "old_name, new_name")
+  SourceRename = collections.namedtuple('SourceRename', 'old_name, new_name')
   known_basenames = set()
   all_renames = set()
 
@@ -852,10 +938,11 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
         known_basenames.add(basename)
 
     for rename in renames:
-      print "fixing basename collision: %s -> %s" % (rename.old_name, rename.new_name)
+      print 'Fixing basename collision: %s -> %s' % (rename.old_name,
+                                                     rename.new_name)
 
       shutil.copy2(rename.old_name, rename.new_name)
-      source_set.sources.remove(rename.old_name);
+      source_set.sources.remove(rename.old_name)
       source_set.sources.add(rename.new_name)
       all_renames.add(rename.new_name)
 
@@ -864,11 +951,20 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
   # collision is now resolved by some external/upstream change.
   for source_name in all_sources:
     if RENAME_PREFIX in source_name and source_name not in all_renames:
-      print "WARNING: %s no longer collides. DELETE ME!" % source_name
+      print 'WARNING: %s no longer collides. DELETE ME!' % source_name
+
+
+def UpdateCredits(sources_to_check, source_dir):
+  print 'Updating ffmpeg credits...'
+  updater = credits_updater.CreditsUpdater(source_dir)
+  for source_name in sources_to_check:
+    updater.ProcessFile(source_name)
+  updater.PrintStats()
+  updater.WriteCredits()
 
 
 def main():
-  options, args = ParseOptions()
+  options, _ = ParseOptions()
 
   # Generate map of FFmpeg source files.
   source_dir = options.source_dir
@@ -877,9 +973,9 @@ def main():
 
   sets = []
 
-  for arch in SUPPORTED_ARCHITECTURES:
-    for target in SUPPORTED_TARGETS:
-      for platform in SUPPORTED_PLATFORMS:
+  for arch in SUPPORT_MATRIX[Attr.ARCHITECTURE]:
+    for target in SUPPORT_MATRIX[Attr.TARGET]:
+      for platform in SUPPORT_MATRIX[Attr.PLATFORM]:
         # Assume build directory is of the form build.$arch.$platform/$target.
         name = ''.join(['build.', arch, '.', platform])
         build_dir = os.path.join(options.build_dir, name, target)
@@ -891,35 +987,46 @@ def main():
 
         # Generate the set of source files to build said target.
         s = GetSourceFileSet(object_to_sources, object_files)
-        sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
+        sets.append(SourceSet(s, set([SourceListCondition(arch, target,
+                                                          platform)])))
 
   sets = CreatePairwiseDisjointSets(sets)
+
+  # TODO(chcunningham): Logic reduction is not working right; it's incorrectly
+  # treating reducing a few x86 only files to be unconditionally included.  See
+  # http://crbug.com/535788 for details.
+  #
+  # for source_set in sets:
+  #   ReduceConditionalLogic(source_set)
 
   if not sets:
     exit('ERROR: failed to find any source sets. ' +
          'Are build_dir (%s) and/or source_dir (%s) options correct?' %
-              (options.build_dir, options.source_dir))
+         (options.build_dir, options.source_dir))
 
-  FixObjectBasenameCollisions(sets, source_files);
+  FixObjectBasenameCollisions(sets, source_files)
 
-  if not CheckLicensesForStaticLinking(sets, source_dir,
+  # Build up set of all sources and includes.
+  sources_to_check = set()
+  for source_set in sets:
+    for source in source_set.sources:
+      GetIncludedSources(source, source_dir, sources_to_check)
+
+  if not CheckLicensesForStaticLinking(sources_to_check, source_dir,
                                        options.print_licenses):
-    exit ('GENERATE FAILED: invalid licenses detected.')
+    exit('GENERATE FAILED: invalid licenses detected.')
   print 'License checks passed.'
+  UpdateCredits(sources_to_check, source_dir)
 
-  # Open for writing.
-  if options.output_gn:
-    outfile = 'ffmpeg_generated.gni'
-  else:
-    outfile = 'ffmpeg_generated.gypi'
-  output_name = os.path.join(options.source_dir, outfile)
-  print 'Output:', output_name
+  def WriteOutputFile(outfile, func):
+    output_name = os.path.join(options.source_dir, outfile)
+    print 'Output:', output_name
 
-  with open(output_name, 'w') as fd:
-    if options.output_gn:
-      WriteGn(fd, options.build_dir, sets)
-    else:
-      WriteGyp(fd, options.build_dir, sets)
+    with open(output_name, 'w') as fd:
+      func(fd, sets)
+
+  WriteOutputFile('ffmpeg_generated.gni', WriteGn)
+  WriteOutputFile('ffmpeg_generated.gypi', WriteGyp)
 
 if __name__ == '__main__':
   main()

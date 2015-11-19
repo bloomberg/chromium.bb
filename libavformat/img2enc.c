@@ -30,6 +30,7 @@
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
+#include "img2.h"
 
 typedef struct VideoMuxData {
     const AVClass *class;  /**< Class for private options. */
@@ -37,9 +38,12 @@ typedef struct VideoMuxData {
     int is_pipe;
     int split_planes;       /**< use independent file for each Y, U, V plane */
     char path[1024];
+    char tmp[4][1024];
+    char target[4][1024];
     int update;
     int use_strftime;
     const char *muxer;
+    int use_rename;
 } VideoMuxData;
 
 static int write_header(AVFormatContext *s)
@@ -47,6 +51,7 @@ static int write_header(AVFormatContext *s)
     VideoMuxData *img = s->priv_data;
     AVStream *st = s->streams[0];
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(st->codec->pix_fmt);
+    const char *proto = avio_find_protocol_name(s->filename);
 
     av_strlcpy(img->path, s->filename, sizeof(img->path));
 
@@ -67,6 +72,9 @@ static int write_header(AVFormatContext *s)
                              &&(desc->flags & AV_PIX_FMT_FLAG_PLANAR)
                              && desc->nb_components >= 3;
     }
+
+    img->use_rename = proto && !strcmp(proto, "file");
+
     return 0;
 }
 
@@ -78,6 +86,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     AVCodecContext *codec = s->streams[pkt->stream_index]->codec;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(codec->pix_fmt);
     int i;
+    int nb_renames = 0;
 
     if (!img->is_pipe) {
         if (img->update) {
@@ -99,9 +108,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
             return AVERROR(EINVAL);
         }
         for (i = 0; i < 4; i++) {
-            if (avio_open2(&pb[i], filename, AVIO_FLAG_WRITE,
+            snprintf(img->tmp[i], sizeof(img->tmp[i]), "%s.tmp", filename);
+            av_strlcpy(img->target[i], filename, sizeof(img->target[i]));
+            if (avio_open2(&pb[i], img->use_rename ? img->tmp[i] : filename, AVIO_FLAG_WRITE,
                            &s->interrupt_callback, NULL) < 0) {
-                av_log(s, AV_LOG_ERROR, "Could not open file : %s\n", filename);
+                av_log(s, AV_LOG_ERROR, "Could not open file : %s\n", img->use_rename ? img->tmp[i] : filename);
                 return AVERROR(EIO);
             }
 
@@ -109,6 +120,8 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
                 break;
             filename[strlen(filename) - 1] = "UVAx"[i];
         }
+        if (img->use_rename)
+            nb_renames = i + 1;
     } else {
         pb[0] = s->pb;
     }
@@ -116,7 +129,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     if (img->split_planes) {
         int ysize = codec->width * codec->height;
         int usize = FF_CEIL_RSHIFT(codec->width, desc->log2_chroma_w) * FF_CEIL_RSHIFT(codec->height, desc->log2_chroma_h);
-        if (desc->comp[0].depth_minus1 >= 8) {
+        if (desc->comp[0].depth >= 9) {
             ysize *= 2;
             usize *= 2;
         }
@@ -154,11 +167,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
             (ret = avformat_write_header(fmt, NULL))                      < 0 ||
             (ret = av_interleaved_write_frame(fmt, &pkt2))                < 0 ||
             (ret = av_write_trailer(fmt))                                 < 0) {
-            av_free_packet(&pkt2);
+            av_packet_unref(&pkt2);
             avformat_free_context(fmt);
             return ret;
         }
-        av_free_packet(&pkt2);
+        av_packet_unref(&pkt2);
         avformat_free_context(fmt);
     } else {
         avio_write(pb[0], pkt->data, pkt->size);
@@ -166,10 +179,24 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     avio_flush(pb[0]);
     if (!img->is_pipe) {
         avio_closep(&pb[0]);
+        for (i = 0; i < nb_renames; i++) {
+            ff_rename(img->tmp[i], img->target[i], s);
+        }
     }
 
     img->img_number++;
     return 0;
+}
+
+static int query_codec(enum AVCodecID id, int std_compliance)
+{
+    int i;
+    for (i = 0; ff_img_tags[i].id != AV_CODEC_ID_NONE; i++)
+        if (ff_img_tags[i].id == id)
+            return 1;
+
+    // Anything really can be stored in img2
+    return std_compliance < FF_COMPLIANCE_NORMAL;
 }
 
 #define OFFSET(x) offsetof(VideoMuxData, x)
@@ -200,6 +227,7 @@ AVOutputFormat ff_image2_muxer = {
     .video_codec    = AV_CODEC_ID_MJPEG,
     .write_header   = write_header,
     .write_packet   = write_packet,
+    .query_codec    = query_codec,
     .flags          = AVFMT_NOTIMESTAMPS | AVFMT_NODIMENSIONS | AVFMT_NOFILE,
     .priv_class     = &img2mux_class,
 };
@@ -212,6 +240,7 @@ AVOutputFormat ff_image2pipe_muxer = {
     .video_codec    = AV_CODEC_ID_MJPEG,
     .write_header   = write_header,
     .write_packet   = write_packet,
+    .query_codec    = query_codec,
     .flags          = AVFMT_NOTIMESTAMPS | AVFMT_NODIMENSIONS
 };
 #endif

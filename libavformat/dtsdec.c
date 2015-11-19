@@ -34,7 +34,7 @@ static int dts_probe(AVProbeData *p)
     int markers[4*16] = {0};
     int sum, max, i;
     int64_t diff = 0;
-    uint8_t hdr[12 + FF_INPUT_BUFFER_PADDING_SIZE] = { 0 };
+    uint8_t hdr[12 + AV_INPUT_BUFFER_PADDING_SIZE] = { 0 };
 
     buf = p->buf + FFMIN(4096, p->buf_size);
 
@@ -50,9 +50,11 @@ static int dts_probe(AVProbeData *p)
             diff += FFABS(((int16_t)AV_RL16(buf)) - (int16_t)AV_RL16(buf-4));
 
         /* regular bitstream */
-        if (state == DCA_SYNCWORD_CORE_BE)
+        if (state == DCA_SYNCWORD_CORE_BE &&
+            (bytestream_get_be16(&bufp) & 0xFC00) == 0xFC00)
             marker = 0;
-        else if (state == DCA_SYNCWORD_CORE_LE)
+        else if (state == DCA_SYNCWORD_CORE_LE &&
+                 (bytestream_get_be16(&bufp) & 0x00FC) == 0x00FC)
             marker = 1;
 
         /* 14 bits big-endian bitstream */

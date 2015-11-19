@@ -101,7 +101,7 @@ static const AVOption rotate_options[] = {
     { "oh",        "set output height expression", OFFSET(outh_expr_str), AV_OPT_TYPE_STRING, {.str="ih"}, CHAR_MIN, CHAR_MAX, .flags=FLAGS },
     { "fillcolor", "set background fill color",    OFFSET(fillcolor_str), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, .flags=FLAGS },
     { "c",         "set background fill color",    OFFSET(fillcolor_str), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, .flags=FLAGS },
-    { "bilinear",  "use bilinear interpolation",   OFFSET(use_bilinear),  AV_OPT_TYPE_INT, {.i64=1}, 0, 1, .flags=FLAGS },
+    { "bilinear",  "use bilinear interpolation",   OFFSET(use_bilinear),  AV_OPT_TYPE_BOOL, {.i64=1}, 0, 1, .flags=FLAGS },
     { NULL }
 };
 
@@ -145,8 +145,10 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
-    return 0;
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
 }
 
 static double get_rotated_w(void *opaque, double angle)
@@ -237,12 +239,12 @@ static int config_props(AVFilterLink *outlink)
                            func1_names, func1, NULL, NULL, rot, 0, ctx);
     rot->var_values[VAR_OUT_W] = rot->var_values[VAR_OW] = res;
     rot->outw = res + 0.5;
-    SET_SIZE_EXPR(outh, "out_w");
+    SET_SIZE_EXPR(outh, "out_h");
     rot->var_values[VAR_OUT_H] = rot->var_values[VAR_OH] = res;
     rot->outh = res + 0.5;
 
     /* evaluate the width again, as it may depend on the evaluated output height */
-    SET_SIZE_EXPR(outw, "out_h");
+    SET_SIZE_EXPR(outw, "out_w");
     rot->var_values[VAR_OUT_W] = rot->var_values[VAR_OW] = res;
     rot->outw = res + 0.5;
 
