@@ -59,7 +59,6 @@ public:
     // The height of our flow thread portion
     LayoutUnit logicalHeightInFlowThread() const { return m_logicalBottomInFlowThread - m_logicalTopInFlowThread; }
 
-    bool heightIsAuto() const;
     void resetColumnHeight();
     bool recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode);
 

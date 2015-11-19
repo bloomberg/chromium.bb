@@ -39,20 +39,12 @@ LayoutUnit MultiColumnFragmentainerGroup::blockOffsetInEnclosingFlowThread() con
     return logicalTop() + m_columnSet.logicalTop() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFlowThread();
 }
 
-bool MultiColumnFragmentainerGroup::heightIsAuto() const
-{
-    // Only the last row may have auto height, and thus be balanced. There are no good reasons to
-    // balance the preceding rows, and that could potentially lead to an insane number of layout
-    // passes as well.
-    return isLastGroup() && m_columnSet.heightIsAuto();
-}
-
 void MultiColumnFragmentainerGroup::resetColumnHeight()
 {
     m_maxColumnHeight = calculateMaxColumnHeight();
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    if (heightIsAuto()) {
+    if (m_columnSet.heightIsAuto()) {
         LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
         if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
             // Even if height is auto, we set an initial height, in order to tell how much content
@@ -72,7 +64,10 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
 
     m_maxColumnHeight = calculateMaxColumnHeight();
 
-    if (heightIsAuto()) {
+    // Only the last row may have auto height, and thus be balanced. There are no good reasons to
+    // balance the preceding rows, and that could potentially lead to an insane number of layout
+    // passes as well.
+    if (isLastGroup() && m_columnSet.heightIsAuto()) {
         LayoutUnit newColumnHeight = calculateColumnHeight(calculationMode);
         setAndConstrainColumnHeight(newColumnHeight);
         // After having calculated an initial column height, the multicol container typically needs at
