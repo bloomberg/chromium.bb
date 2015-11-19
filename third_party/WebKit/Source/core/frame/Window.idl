@@ -62,7 +62,7 @@
     [Replaceable, DoNotCheckSecurity] readonly attribute Window parent;
     [CheckSecurity=Node, Custom=Getter] readonly attribute Element? frameElement;
     // FIXME: open() should have 4 optional arguments with defaults.
-    [Custom] Window open(DOMString url, DOMString target, optional DOMString features);
+    [Custom] Window? open(DOMString url, DOMString target, optional DOMString features);
     // FIXME: These getters should not have [NotEnumerable].
     [NotEnumerable, DoNotCheckSecurity] getter Window (unsigned long index);
     [Custom, NotEnumerable, DoNotCheckSecurity] getter object (DOMString name);

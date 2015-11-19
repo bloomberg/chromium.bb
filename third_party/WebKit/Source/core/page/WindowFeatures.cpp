@@ -48,6 +48,7 @@ WindowFeatures::WindowFeatures(const String& features)
     , resizable(true)
     , fullscreen(false)
     , dialog(false)
+    , noopener(false)
 {
     /*
      The IE rule is: all features except for channelmode and fullscreen default to YES, but
@@ -120,6 +121,7 @@ WindowFeatures::WindowFeatures(const String& features)
 
         String keyString(buffer.substring(keyBegin, keyEnd - keyBegin));
         String valueString(buffer.substring(valueBegin, valueEnd - valueBegin));
+
         setWindowFeature(keyString, valueString);
     }
 }
@@ -161,6 +163,8 @@ void WindowFeatures::setWindowFeature(const String& keyString, const String& val
         fullscreen = value;
     } else if (keyString == "scrollbars") {
         scrollbarsVisible = value;
+    } else if (keyString == "noopener") {
+        noopener = true;
     } else if (value == 1) {
         additionalFeatures.append(keyString);
     }
@@ -174,6 +178,7 @@ WindowFeatures::WindowFeatures(const String& dialogFeaturesString, const IntRect
     , locationBarVisible(false)
     , fullscreen(false)
     , dialog(true)
+    , noopener(false)
 {
     DialogFeaturesMap features;
     parseDialogFeatures(dialogFeaturesString, features);

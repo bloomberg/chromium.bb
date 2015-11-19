@@ -298,6 +298,56 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_NE(orig_site_instance, noopener_blank_site_instance);
 }
 
+// 'noopener' also works from 'window.open'
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       SwapProcessWithWindowOpenAndNoopener) {
+  StartEmbeddedServer();
+
+  NavigateToPageWithLinks(shell());
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance.get());
+
+  // Test opening a window with the 'noopener' feature.
+  ShellAddedObserver new_shell_observer;
+  bool hasWindowReference = true;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "    openWindowWithTargetAndFeatures('/title2.html', '', 'noopener')"
+      ");",
+      &hasWindowReference));
+  // We should not get a reference to the opened window.
+  EXPECT_FALSE(hasWindowReference);
+
+  // Wait for the window to open.
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Wait for the cross-site transition in the new tab to finish.
+  WaitForLoadStop(new_shell->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
+
+  EXPECT_EQ("/title2.html",
+            new_shell->web_contents()->GetLastCommittedURL().path());
+
+  // Check that `window.opener` is not set.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell->web_contents(),
+      "window.domAutomationController.send(window.opener == null);", &success));
+  EXPECT_TRUE(success);
+
+  // Should have a new SiteInstance.
+  scoped_refptr<SiteInstance> noopener_blank_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, noopener_blank_site_instance);
+}
+
 // As of crbug.com/69267, we create a new BrowsingInstance (and SiteInstance)
 // for rel=noreferrer links in new windows, even to same site pages and named
 // targets.

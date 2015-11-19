@@ -3911,6 +3911,7 @@
             'page/NetworkStateNotifierTest.cpp',
             'page/PagePopupClientTest.cpp',
             'page/PrintContextTest.cpp',
+            'page/WindowFeaturesTest.cpp',
             'page/scrolling/ScrollStateTest.cpp',
             'paint/LayerClipRecorderTest.cpp',
             'paint/LayoutObjectDrawingRecorderTest.cpp',

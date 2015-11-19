@@ -29,6 +29,7 @@
 #ifndef WindowFeatures_h
 #define WindowFeatures_h
 
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 class IntRect;
 
-struct WindowFeatures {
+struct CORE_EXPORT WindowFeatures {
     DISALLOW_NEW();
     WindowFeatures()
         : x(0)
@@ -56,6 +57,7 @@ struct WindowFeatures {
         , resizable(true)
         , fullscreen(false)
         , dialog(false)
+        , noopener(false)
     {
     }
     explicit WindowFeatures(const String& windowFeaturesString);
@@ -79,6 +81,8 @@ struct WindowFeatures {
 
     bool fullscreen;
     bool dialog;
+
+    bool noopener;
 
     Vector<String> additionalFeatures;
 
