@@ -1,52 +1,25 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
-    margin-bottom: 24px;
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    extendSelectionForwardByLineCommand();
-    extendSelectionForwardByCharacterCommand();
-    justifyCenterCommand();
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable>
-
-<div class="explanation">
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<p>
 Should see the "foo" and "baz" lines centered in their own red boxes. The "baz" line should not be centered.
-</div>
-
-<div id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">
-foo
-<div class="editing">
-bar
-</div>
-baz
-</div>
-</div>
-
+</p>
+<div id="sample" contenteditable>foo<div>bar</div>baz</div>
+<div id="log"></div>
 <script>
-runEditingTest();
-</script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
 
-</body>
-</html>
+    selection.collapse(sample, 0);
+    selection.extend(sample.childNodes[1].firstChild, 1);
+    document.execCommand('justifyCenter');
+
+    assert_equals(sample.innerHTML, '<div style="text-align: center;">foo</div><div style="text-align: center;">bar</div>baz', 'innerHTML');
+    assert_false(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, sample.firstChild.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+    assert_equals(selection.focusNode, sample.childNodes[1].firstChild, 'focusNode');
+    assert_equals(selection.focusOffset, 1, 'focusOffset');
+});
+</script>

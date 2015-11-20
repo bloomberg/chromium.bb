@@ -1,53 +1,24 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
-    margin-bottom: 24px;
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<p>Should see the "bar" and "baz" lines centered in their own boxes. The "foo"
+line should not be centered.</p>
+<div id="sample" contenteditable>foo<div>bar<br>baz</div></div>
+<div id="log"></div>
 <script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
 
-function editingTest() {
-    moveSelectionForwardByLineCommand();
-    extendSelectionForwardByLineCommand();
-    extendSelectionForwardByCharacterCommand();
-    justifyCenterCommand();
-}
+    selection.collapse(sample.childNodes[1].firstChild, 0);
+    selection.extend(sample.childNodes[1].lastChild, 1);
+    document.execCommand('justifyCenter');
 
+    assert_equals(sample.innerHTML, 'foo<div><div style="text-align: center;">bar</div><div style="text-align: center;">baz</div></div>', 'innerHTML');
+    assert_false(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, sample.childNodes[1].firstChild.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+    assert_equals(selection.focusNode, sample.childNodes[1].lastChild.firstChild, 'focusNode');
+    assert_equals(selection.focusOffset, 1, 'focusOffset');
+});
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable>
-
-<div class="explanation">
-Should see the "bar" and "baz" lines centered in their own red boxes. The "foo" line should not be centered.
-</div>
-
-<div id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">
-foo
-<div class="editing">
-bar
-<br>baz
-</div>
-</div>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
