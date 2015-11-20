@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_util.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -399,18 +400,12 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
       DisableAutoResizeForTesting(new_size);
 }
 
-struct ToLower {
-  base::char16 operator()(base::char16 c) { return tolower(c); }
-};
-
 // Returns True if node1 < node2.
 bool HistoryEntryCompareLess(HistoryEntry::HistoryNode* node1,
                              HistoryEntry::HistoryNode* node2) {
   base::string16 target1 = node1->item().target();
   base::string16 target2 = node2->item().target();
-  std::transform(target1.begin(), target1.end(), target1.begin(), ToLower());
-  std::transform(target2.begin(), target2.end(), target2.begin(), ToLower());
-  return target1 < target2;
+  return base::CompareCaseInsensitiveASCII(target1, target2) < 0;
 }
 
 std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
