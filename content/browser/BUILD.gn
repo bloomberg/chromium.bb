@@ -381,6 +381,7 @@ source_set("browser") {
               ".",
               "//content")
       sources -= [ "renderer_host/begin_frame_observer_proxy.cc" ]
+      deps += [ "//ui/android" ]
     }
 
     deps -= [ "//device/battery" ]
@@ -388,7 +389,6 @@ source_set("browser") {
       "//content/public/android:jni",
       "//media",
       "//mojo/android:libsystem_java",
-      "//ui/android",
     ]
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
     libs += [ "jnigraphics" ]
