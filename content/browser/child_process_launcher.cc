@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -445,12 +444,6 @@ void ChildProcessLauncher::DidLaunch(
   if (!process.IsValid())
     LOG(ERROR) << "Failed to launch child process";
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465841 ChildProcessLauncher::Context::Notify::Start"));
-
   if (instance.get()) {
     instance->Notify(zygote,
 #if defined(OS_ANDROID)
@@ -458,11 +451,6 @@ void ChildProcessLauncher::DidLaunch(
 #endif
                      process.Pass());
   } else {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "465841 ChildProcessLauncher::Context::Notify::ProcessTerminate"));
     if (process.IsValid() && terminate_on_shutdown) {
       // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
       // don't this on the UI/IO threads.
@@ -487,18 +475,8 @@ void ChildProcessLauncher::Notify(
   zygote_ = zygote;
 #endif
   if (process_.IsValid()) {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "465841 ChildProcessLauncher::Context::Notify::ProcessLaunched"));
     client_->OnProcessLaunched();
   } else {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "465841 ChildProcessLauncher::Context::Notify::ProcessFailed"));
     termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;
     client_->OnProcessLaunchFailed();
   }
