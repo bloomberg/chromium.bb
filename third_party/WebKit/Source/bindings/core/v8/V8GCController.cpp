@@ -274,12 +274,16 @@ void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfo
 
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
-    if (ThreadState::current())
-        ThreadState::current()->willStartV8GC();
-
     if (isMainThread()) {
         ScriptForbiddenScope::enter();
     }
+
+    // TODO(haraken): It is not safe to run finalizers in a prologue callback
+    // because V8AbstractEventListener's destructor cann call into V8. We
+    // should post a task to schedule willStartV8GC() and avoid running it
+    // inside the prologue callback.
+    // if (ThreadState::current())
+    //     ThreadState::current()->willStartV8GC();
 
     // TODO(haraken): It would be nice if the GC callbacks passed the Isolate
     // directly.
