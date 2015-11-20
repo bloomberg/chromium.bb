@@ -63,7 +63,7 @@ const char kGetLabelInfo_Help[] =
     "\n"
     "  \"root_out_dir\"\n"
     "      The root of the output file tree for the target. This will\n"
-    "      match the value of the \"root_gen_dir\" variable when inside that\n"
+    "      match the value of the \"root_out_dir\" variable when inside that\n"
     "      target's declaration.\n"
     "\n"
     "  \"label_no_toolchain\"\n"
