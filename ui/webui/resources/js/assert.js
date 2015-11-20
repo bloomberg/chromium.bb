@@ -16,12 +16,15 @@
  * @return {T} A non-null |condition|.
  */
 function assert(condition, opt_message) {
-  'use strict';
   if (!condition) {
-    var msg = 'Assertion failed';
+    var message = 'Assertion failed';
     if (opt_message)
-      msg = msg + ': ' + opt_message;
-    throw new Error(msg);
+      message = message + ': ' + opt_message;
+    var error = new Error(message);
+    var global = function() { return this; }();
+    if (global.traceAssertionsForTesting)
+      console.warn(error.stack);
+    throw error;
   }
   return condition;
 }
@@ -48,7 +51,7 @@ function assert(condition, opt_message) {
  * @param {string=} opt_message A message to show when this is hit.
  */
 function assertNotReached(opt_message) {
-  throw new Error(opt_message || 'Unreachable code hit');
+  assert(false, opt_message || 'Unreachable code hit');
 }
 
 /**
@@ -59,9 +62,7 @@ function assertNotReached(opt_message) {
  * @template T
  */
 function assertInstanceof(value, type, opt_message) {
-  if (!(value instanceof type)) {
-    throw new Error(opt_message ||
-                    value + ' is not a[n] ' + (type.name || typeof type));
-  }
+  assert(value instanceof type,
+      opt_message || value + ' is not a[n] ' + (type.name || typeof type));
   return value;
 }

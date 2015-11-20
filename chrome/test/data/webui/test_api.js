@@ -6,6 +6,9 @@
  * @fileoverview Library providing basic test framework functionality.
  */
 
+// See assert.js for where this is used.
+this.traceAssertionsForTesting = true;
+
 /**
  * Namespace for |Test|.
  * @type {Object}
