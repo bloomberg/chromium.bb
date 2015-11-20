@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "blimp/net/stream_socket_connection.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_client_socket.h"
@@ -19,7 +20,7 @@ TCPClientTransport::TCPClientTransport(const net::AddressList& addresses,
 
 TCPClientTransport::~TCPClientTransport() {}
 
-int TCPClientTransport::Connect(const net::CompletionCallback& callback) {
+void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
   DCHECK(!socket_);
   DCHECK(!callback.is_null());
 
@@ -31,11 +32,15 @@ int TCPClientTransport::Connect(const net::CompletionCallback& callback) {
   int result = socket_->Connect(completion_callback);
   if (result == net::ERR_IO_PENDING) {
     connect_callback_ = callback;
-  } else if (result != net::OK) {
+    return;
+  }
+
+  if (result != net::OK) {
     socket_ = nullptr;
   }
 
-  return result;
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, result));
 }
 
 scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
@@ -45,6 +50,7 @@ scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
 }
 
 void TCPClientTransport::OnTCPConnectComplete(int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
   DCHECK(socket_);
   if (result != net::OK) {
     socket_ = nullptr;

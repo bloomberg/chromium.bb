@@ -50,11 +50,11 @@ class TCPTransportTest : public testing::Test {
 
 TEST_F(TCPTransportTest, Connect) {
   net::TestCompletionCallback accept_callback;
-  ASSERT_EQ(net::ERR_IO_PENDING, server_->Connect(accept_callback.callback()));
+  server_->Connect(accept_callback.callback());
 
   net::TestCompletionCallback connect_callback;
   TCPClientTransport client(GetLocalAddressList(), nullptr);
-  ASSERT_EQ(net::ERR_IO_PENDING, client.Connect(connect_callback.callback()));
+  client.Connect(connect_callback.callback());
 
   EXPECT_EQ(net::OK, connect_callback.WaitForResult());
   EXPECT_EQ(net::OK, accept_callback.WaitForResult());
@@ -63,22 +63,22 @@ TEST_F(TCPTransportTest, Connect) {
 
 TEST_F(TCPTransportTest, TwoClientConnections) {
   net::TestCompletionCallback accept_callback1;
-  ASSERT_EQ(net::ERR_IO_PENDING, server_->Connect(accept_callback1.callback()));
+  server_->Connect(accept_callback1.callback());
 
   net::TestCompletionCallback connect_callback1;
   TCPClientTransport client1(GetLocalAddressList(), nullptr);
-  ASSERT_EQ(net::ERR_IO_PENDING, client1.Connect(connect_callback1.callback()));
+  client1.Connect(connect_callback1.callback());
 
   net::TestCompletionCallback connect_callback2;
   TCPClientTransport client2(GetLocalAddressList(), nullptr);
-  ASSERT_EQ(net::ERR_IO_PENDING, client2.Connect(connect_callback2.callback()));
+  client2.Connect(connect_callback2.callback());
 
   EXPECT_EQ(net::OK, connect_callback1.WaitForResult());
   EXPECT_EQ(net::OK, accept_callback1.WaitForResult());
   EXPECT_TRUE(server_->TakeConnection() != nullptr);
 
   net::TestCompletionCallback accept_callback2;
-  ASSERT_EQ(net::OK, server_->Connect(accept_callback2.callback()));
+  server_->Connect(accept_callback2.callback());
   EXPECT_EQ(net::OK, connect_callback2.WaitForResult());
   EXPECT_EQ(net::OK, accept_callback2.WaitForResult());
   EXPECT_TRUE(server_->TakeConnection() != nullptr);
