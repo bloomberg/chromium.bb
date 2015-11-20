@@ -215,7 +215,7 @@ public:
     String debugName() const { return "CompositedLayerMapping for " + owningLayer().debugName(); }
 
 private:
-    static IntRect recomputeInterestRect(const GraphicsLayer*, LayoutObject* owningLayoutObject);
+    IntRect recomputeInterestRect(const GraphicsLayer*) const;
     static bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize);
 
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);

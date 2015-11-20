@@ -20,9 +20,9 @@ public:
         : m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) { }
 
 protected:
-    IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
+    IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer)
     {
-        return CompositedLayerMapping::recomputeInterestRect(graphicsLayer, owningLayoutObject);
+        return static_cast<CompositedLayerMapping*>(graphicsLayer->client())->recomputeInterestRect(graphicsLayer);
     }
 
     IntRect computeInterestRect(const CompositedLayerMapping* compositedLayerMapping, GraphicsLayer* graphicsLayer, IntRect previousInterestRect)
@@ -75,7 +75,7 @@ TEST_F(CompositedLayerMappingTest, SimpleInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, TallLayerInterestRect)
@@ -88,7 +88,7 @@ TEST_F(CompositedLayerMappingTest, TallLayerInterestRect)
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     // Screen-space visible content rect is [8, 8, 200, 600]. Mapping back to local, adding 4000px in all directions, then
     // clipping, yields this rect.
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect)
@@ -103,7 +103,7 @@ TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect)
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     ASSERT_TRUE(paintLayer->compositedLayerMapping());
     // recomputeInterestRect computes the interest rect; computeInterestRect applies the extra setting to paint everything.
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 10000), computeInterestRect(paintLayer->compositedLayerMapping(), paintLayer->graphicsLayerBacking(), IntRect()));
 }
 
@@ -117,7 +117,7 @@ TEST_F(CompositedLayerMappingTest, RotatedInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect)
@@ -131,7 +131,7 @@ TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4000), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4000), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect)
@@ -143,7 +143,7 @@ TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, RotatedTallInterestRect)
@@ -155,7 +155,7 @@ TEST_F(CompositedLayerMappingTest, RotatedTallInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4000), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4000), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, WideLayerInterestRect)
@@ -168,7 +168,7 @@ TEST_F(CompositedLayerMappingTest, WideLayerInterestRect)
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
     // Screen-space visible content rect is [8, 8, 800, 200] (the screen is 800x600).
     // Mapping back to local, adding 4000px in all directions, then clipping, yields this rect.
-    EXPECT_RECT_EQ(IntRect(0, 0, 4792, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 4792, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, FixedPositionInterestRect)
@@ -180,7 +180,7 @@ TEST_F(CompositedLayerMappingTest, FixedPositionInterestRect)
     Element* element = document().getElementById("target");
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-    EXPECT_RECT_EQ(IntRect(0, 0, 300, 400), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 300, 400), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, LayerOffscreenInterestRect)
@@ -194,7 +194,7 @@ TEST_F(CompositedLayerMappingTest, LayerOffscreenInterestRect)
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
     // Offscreen layers are painted as usual.
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollingLayerInterestRect)
@@ -210,7 +210,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingLayerInterestRect)
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     // Offscreen layers are painted as usual.
     ASSERT_TRUE(paintLayer->compositedLayerMapping()->scrollingLayer());
-    EXPECT_RECT_EQ(IntRect(0, 0, 195, 4592), recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 195, 4592), recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling()));
 }
 
 TEST_F(CompositedLayerMappingTest, ClippedBigLayer)
@@ -224,7 +224,7 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer)
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     // Offscreen layers are painted as usual.
-    EXPECT_RECT_EQ(IntRect(0, 0, 4001, 4001), recomputeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 4001, 4001), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, ClippingMaskLayer)
@@ -325,8 +325,11 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintScrollScena
     EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll)
+TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll)
 {
+    if (document().frame()->settings()->rootLayerScrolls())
+        return;
+
     setBodyInnerHTML(
         "<style>"
         "  ::-webkit-scrollbar { width: 0; height: 0; }"
@@ -341,57 +344,144 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll)
     document().view()->setScrollPosition(IntPoint(0, 300), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
     // Still use the previous interest rect because the recomputed rect hasn't changed enough.
-    EXPECT_RECT_EQ(IntRect(0, 0, 800, 4900), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 4900), recomputeInterestRect(rootScrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600), previousInterestRect(rootScrollingLayer));
 
     document().view()->setScrollPosition(IntPoint(0, 600), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
     // Use recomputed interest rect because it changed enough.
-    EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200), recomputeInterestRect(rootScrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200), previousInterestRect(rootScrollingLayer));
 
     document().view()->setScrollPosition(IntPoint(0, 5400), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
-    EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
+    EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), recomputeInterestRect(rootScrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), previousInterestRect(rootScrollingLayer));
 
     document().view()->setScrollPosition(IntPoint(0, 9000), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
     // Still use the previous interest rect because it contains the recomputed interest rect.
-    EXPECT_RECT_EQ(IntRect(0, 5000, 800, 5000), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
+    EXPECT_RECT_EQ(IntRect(0, 5000, 800, 5000), recomputeInterestRect(rootScrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), previousInterestRect(rootScrollingLayer));
 
     document().view()->setScrollPosition(IntPoint(0, 2000), ProgrammaticScroll);
     // Use recomputed interest rect because it changed enough.
     document().view()->updateAllLifecyclePhases();
-    EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600), recomputeInterestRect(rootScrollingLayer));
     EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600), previousInterestRect(rootScrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectShouldNotChangeOnPaintInvalidation)
+TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll)
 {
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+
     setBodyInnerHTML(
         "<style>"
         "  ::-webkit-scrollbar { width: 0; height: 0; }"
         "  body { margin: 0; }"
         "</style>"
-        "<div id='div' style='width: 100px; height: 10000px'>Text</div>");
+        "<div id='scroller' style='width: 400px; height: 400px; overflow: scroll'>"
+        "  <div id='content' style='width: 100px; height: 10000px'>Text</div>"
+        "</div");
 
-    GraphicsLayer* rootScrollingLayer = document().layoutView()->layer()->graphicsLayerBackingForScrolling();
-
-    document().view()->setScrollPosition(IntPoint(0, 5400), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
-    document().view()->setScrollPosition(IntPoint(0, 9400), ProgrammaticScroll);
+    Element* scroller = document().getElementById("scroller");
+    GraphicsLayer* scrollingLayer = scroller->layoutBox()->layer()->graphicsLayerBackingForScrolling();
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 4600), previousInterestRect(scrollingLayer));
+
+    scroller->setScrollTop(300);
+    document().view()->updateAllLifecyclePhases();
+    // Still use the previous interest rect because the recomputed rect hasn't changed enough.
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 4900), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 4600), previousInterestRect(scrollingLayer));
+
+    scroller->setScrollTop(600);
+    document().view()->updateAllLifecyclePhases();
+    // Use recomputed interest rect because it changed enough.
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 5200), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 5200), previousInterestRect(scrollingLayer));
+
+    scroller->setScrollTop(5400);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
+
+    scroller->setScrollTop(9000);
+    document().view()->updateAllLifecyclePhases();
+    // Still use the previous interest rect because it contains the recomputed interest rect.
+    EXPECT_RECT_EQ(IntRect(0, 5000, 400, 5000), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
+
+    scroller->setScrollTop(2000);
+    // Use recomputed interest rect because it changed enough.
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 6600), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 0, 400, 6600), previousInterestRect(scrollingLayer));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectShouldNotChangeOnPaintInvalidation)
+{
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    setBodyInnerHTML(
+        "<style>"
+        "  ::-webkit-scrollbar { width: 0; height: 0; }"
+        "  body { margin: 0; }"
+        "</style>"
+        "<div id='scroller' style='width: 400px; height: 400px; overflow: scroll'>"
+        "  <div id='content' style='width: 100px; height: 10000px'>Text</div>"
+        "</div");
+
+    document().view()->updateAllLifecyclePhases();
+    Element* scroller = document().getElementById("scroller");
+    GraphicsLayer* scrollingLayer = scroller->layoutBox()->layer()->graphicsLayerBackingForScrolling();
+
+    scroller->setScrollTop(5400);
+    document().view()->updateAllLifecyclePhases();
+    scroller->setScrollTop(9400);
     // The above code creates an interest rect bigger than the interest rect if recomputed now.
     document().view()->updateAllLifecyclePhases();
-    EXPECT_RECT_EQ(IntRect(0, 5400, 800, 4600), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
-    EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), previousInterestRect(rootScrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
 
     // Paint invalidation and repaint should not change previous paint interest rect.
-    document().getElementById("div")->setTextContent("Change");
+    document().getElementById("content")->setTextContent("Change");
     document().view()->updateAllLifecyclePhases();
-    EXPECT_RECT_EQ(IntRect(0, 5400, 800, 4600), recomputeInterestRect(rootScrollingLayer, document().layoutView()));
-    EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600), previousInterestRect(rootScrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600), recomputeInterestRect(scrollingLayer));
+    EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600), previousInterestRect(scrollingLayer));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithNegativeOverflow)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0 }</style>"
+        "<div style='position: absolute; top: -500px; width: 200px; height: 700px; will-change: transform'></div>"
+        "<div id='squashed' style='position: absolute; top: 190px'>"
+        "  <div style='width: 100px; height: 100px; text-indent: -10000px'>text</div>"
+        "</div>");
+
+    CompositedLayerMapping* groupedMapping = document().getElementById("squashed")->layoutBox()->layer()->groupedMapping();
+    // The squashing layer is at (-10000, 190, 10100, 100) in viewport coordinates.
+    // The following rect is at (-4000, 190, 4100, 100) in viewport coordinates.
+    EXPECT_RECT_EQ(IntRect(6000, 0, 4100, 100), groupedMapping->computeInterestRect(groupedMapping->squashingLayer(), IntRect()));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithAncestorClip)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div style='overflow: hidden; width: 400px; height: 400px'>"
+        "  <div style='position: relative; backface-visibility: hidden'>"
+        "    <div style='position: absolute; top: -500px; width: 200px; height: 700px; backface-visibility: hidden'></div>"
+        // Above overflow:hidden div and two composited layers make the squashing layer a child of an ancestor clipping layer.
+        "    <div id='squashed' style='height: 1000px; width: 10000px; right: 0; position: absolute'></div>"
+        "  </div>"
+        "</div>");
+
+    CompositedLayerMapping* groupedMapping = document().getElementById("squashed")->layoutBox()->layer()->groupedMapping();
+    // The squashing layer is at (-9600, 0, 10000, 1000) in viewport coordinates.
+    // The following rect is at (-4000, 0, 4400, 1000) in viewport coordinates.
+    EXPECT_RECT_EQ(IntRect(5600, 0, 4400, 1000), groupedMapping->computeInterestRect(groupedMapping->squashingLayer(), IntRect()));
 }
 
 } // namespace blink

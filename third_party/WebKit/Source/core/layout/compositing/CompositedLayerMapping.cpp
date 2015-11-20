@@ -2192,28 +2192,42 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
 // cc::DisplayListRecordingSource::UpdateAndExpandInvalidation() before we keep only one copy of the algorithm.
 static const int kPixelDistanceToRecord = 4000;
 
-IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
+IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graphicsLayer) const
 {
     FloatRect graphicsLayerBounds(FloatPoint(), graphicsLayer->size());
 
-    // Start with the bounds of the graphics layer in the space of the owning LayoutObject.
+    IntSize offsetFromAnchorLayoutObject;
+    const LayoutBoxModelObject* anchorLayoutObject;
+    if (graphicsLayer == m_squashingLayer) {
+        // All squashed layers have the same clip and transform space, so we can use the first squashed layer's
+        // layoutObject to map the squashing layer's bounds into viewport space, with offsetFromAnchorLayoutObject
+        // to translate squashing layer's bounds into the first squashed layer's space.
+        anchorLayoutObject = m_squashedLayers[0].paintLayer->layoutObject();
+        offsetFromAnchorLayoutObject = m_squashedLayers[0].offsetFromLayoutObject;
+    } else {
+        ASSERT(graphicsLayer == m_graphicsLayer || graphicsLayer == m_scrollingContentsLayer);
+        anchorLayoutObject = m_owningLayer.layoutObject();
+        offsetFromAnchorLayoutObject = graphicsLayer->offsetFromLayoutObject();
+    }
+
+    // Start with the bounds of the graphics layer in the space of the anchor LayoutObject.
     FloatRect graphicsLayerBoundsInObjectSpace(graphicsLayerBounds);
-    graphicsLayerBoundsInObjectSpace.move(graphicsLayer->offsetFromLayoutObject());
+    graphicsLayerBoundsInObjectSpace.move(offsetFromAnchorLayoutObject);
 
     // Now map the bounds to its visible content rect in screen space, including applying clips along the way.
     LayoutRect visibleContentRect(graphicsLayerBoundsInObjectSpace);
-    LayoutView* rootView = owningLayoutObject->view();
+    LayoutView* rootView = anchorLayoutObject->view();
     while (rootView->frame()->ownerLayoutObject())
         rootView = rootView->frame()->ownerLayoutObject()->view();
-    owningLayoutObject->mapRectToPaintInvalidationBacking(rootView, visibleContentRect, 0);
+    anchorLayoutObject->mapRectToPaintInvalidationBacking(rootView, visibleContentRect, 0);
     visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
     // Map the visible content rect from screen space to local graphics layer space.
     IntRect localInterestRect;
     // If the visible content rect is empty, then it makes no sense to map it back since there is nothing to map.
     if (!visibleContentRect.isEmpty()) {
-        localInterestRect = owningLayoutObject->absoluteToLocalQuad(FloatRect(visibleContentRect), UseTransforms).enclosingBoundingBox();
-        localInterestRect.move(-graphicsLayer->offsetFromLayoutObject());
+        localInterestRect = anchorLayoutObject->absoluteToLocalQuad(FloatRect(visibleContentRect), UseTransforms).enclosingBoundingBox();
+        localInterestRect.move(-offsetFromAnchorLayoutObject);
     }
     // Expand by interest rect padding amount.
     localInterestRect.inflate(kPixelDistanceToRecord);
@@ -2261,10 +2275,11 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
 {
     // Paint the whole layer if "mainFrameClipsContent" is false, meaning that WebPreferences::record_whole_document is true.
     bool shouldPaintWholePage = !m_owningLayer.layoutObject()->document().settings()->mainFrameClipsContent();
-    if (shouldPaintWholePage || (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer))
+    if (shouldPaintWholePage
+        || (graphicsLayer != m_graphicsLayer && graphicsLayer != m_squashingLayer && graphicsLayer != m_squashingLayer && graphicsLayer != m_scrollingContentsLayer))
         return IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
 
-    IntRect newInterestRect = recomputeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
+    IntRect newInterestRect = recomputeInterestRect(graphicsLayer);
     if (interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, expandedIntSize(graphicsLayer->size())))
         return newInterestRect;
     return previousInterestRect;
