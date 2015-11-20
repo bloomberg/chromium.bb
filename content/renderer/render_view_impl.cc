@@ -713,16 +713,14 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     main_render_frame_->Initialize();
 
 #if defined(OS_ANDROID)
-  content_detectors_.push_back(linked_ptr<ContentDetector>(
-      new AddressDetector()));
+  content_detectors_.push_back(make_scoped_ptr(new AddressDetector()));
   const std::string& contry_iso =
       params.renderer_preferences.network_contry_iso;
   if (!contry_iso.empty()) {
-    content_detectors_.push_back(linked_ptr<ContentDetector>(
-        new PhoneNumberDetector(contry_iso)));
+    content_detectors_.push_back(
+        make_scoped_ptr(new PhoneNumberDetector(contry_iso)));
   }
-  content_detectors_.push_back(linked_ptr<ContentDetector>(
-      new EmailDetector()));
+  content_detectors_.push_back(make_scoped_ptr(new EmailDetector()));
 #endif
 
   RenderThread::Get()->AddRoute(routing_id_, this);
@@ -3344,8 +3342,8 @@ bool RenderViewImpl::ScheduleFileChooser(
     return false;
   }
 
-  file_chooser_completions_.push_back(linked_ptr<PendingFileChooser>(
-      new PendingFileChooser(params, completion)));
+  file_chooser_completions_.push_back(
+      make_scoped_ptr(new PendingFileChooser(params, completion)));
   if (file_chooser_completions_.size() == 1) {
     // Actually show the browse dialog when this is the first request.
     Send(new ViewHostMsg_RunFileChooser(routing_id_, params));
@@ -3442,9 +3440,8 @@ WebContentDetectionResult RenderViewImpl::detectContentAround(
 
   // Process the position with all the registered content detectors until
   // a match is found. Priority is provided by their relative order.
-  for (ContentDetectorList::const_iterator it = content_detectors_.begin();
-      it != content_detectors_.end(); ++it) {
-    ContentDetector::Result content = (*it)->FindTappedContent(touch_hit);
+  for (const auto& detector : content_detectors_) {
+    ContentDetector::Result content = detector->FindTappedContent(touch_hit);
     if (content.valid) {
       return WebContentDetectionResult(content.content_boundaries,
           base::UTF8ToUTF16(content.text), content.intent_url);

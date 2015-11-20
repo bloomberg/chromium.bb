@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -2119,14 +2118,11 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
   if (handled)
     return;
 
-  std::vector<linked_ptr<WebInputEvent> > events =
-      CreateSimulatedWebInputEvents(
-          input_event,
-          view_data_.rect.point.x + view_data_.rect.size.width / 2,
-          view_data_.rect.point.y + view_data_.rect.size.height / 2);
-  for (std::vector<linked_ptr<WebInputEvent> >::iterator it = events.begin();
-       it != events.end();
-       ++it) {
+  std::vector<scoped_ptr<WebInputEvent>> events = CreateSimulatedWebInputEvents(
+      input_event, view_data_.rect.point.x + view_data_.rect.size.width / 2,
+      view_data_.rect.point.y + view_data_.rect.size.height / 2);
+  for (std::vector<scoped_ptr<WebInputEvent>>::iterator it = events.begin();
+       it != events.end(); ++it) {
     web_view->handleInputEvent(*it->get());
   }
 }

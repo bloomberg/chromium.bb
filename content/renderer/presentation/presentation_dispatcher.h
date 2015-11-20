@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
@@ -125,7 +124,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.
-  using MessageRequestQueue = std::queue<linked_ptr<SendMessageRequest>>;
+  using MessageRequestQueue = std::queue<scoped_ptr<SendMessageRequest>>;
   MessageRequestQueue message_request_queue_;
 
   enum class ListeningState {

@@ -1042,7 +1042,7 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
       texture_size_ = frame->video_frame->coded_size();
     }
 
-    pending_frames_.push(linked_ptr<PendingFrame>(frame.release()));
+    pending_frames_.push(std::move(frame));
     SendPictures();
   }
 }
@@ -1051,7 +1051,7 @@ void VideoDecoderShim::SendPictures() {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
   while (!pending_frames_.empty() && !available_textures_.empty()) {
-    const linked_ptr<PendingFrame>& frame = pending_frames_.front();
+    const scoped_ptr<PendingFrame>& frame = pending_frames_.front();
 
     TextureIdSet::iterator it = available_textures_.begin();
     uint32_t texture_id = *it;

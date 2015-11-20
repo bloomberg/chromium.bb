@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_instance.h"

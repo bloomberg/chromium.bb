@@ -23,7 +23,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/containers/hash_tables.h"
-#include "base/memory/linked_ptr.h"
 #endif
 
 struct NPObject;

@@ -633,12 +633,12 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
 
 // Generate a coherent sequence of input events to simulate a user event.
 // From src/components/test_runner/event_sender.cc.
-std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
+std::vector<scoped_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
     const ppapi::InputEventData& event,
     int plugin_x,
     int plugin_y) {
-  std::vector<linked_ptr<WebInputEvent> > events;
-  linked_ptr<WebInputEvent> original_event(CreateWebInputEvent(event));
+  std::vector<scoped_ptr<WebInputEvent>> events;
+  scoped_ptr<WebInputEvent> original_event(CreateWebInputEvent(event));
 
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
@@ -650,7 +650,7 @@ std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
     case PP_INPUTEVENT_TYPE_TOUCHEND:
     case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-      events.push_back(original_event);
+      events.push_back(std::move(original_event));
       break;
 
     case PP_INPUTEVENT_TYPE_WHEEL: {
@@ -658,7 +658,7 @@ std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
           static_cast<WebMouseWheelEvent*>(original_event.get());
       web_mouse_wheel_event->x = plugin_x;
       web_mouse_wheel_event->y = plugin_y;
-      events.push_back(original_event);
+      events.push_back(std::move(original_event));
       break;
     }
 
@@ -672,7 +672,7 @@ std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
       if (web_keyboard_event->type == WebInputEvent::KeyDown)
         web_keyboard_event->type = WebInputEvent::RawKeyDown;
 #endif
-      events.push_back(original_event);
+      events.push_back(std::move(original_event));
       break;
     }
 
@@ -708,16 +708,16 @@ std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
 
       *key_up_event = *web_char_event = *key_down_event;
 
-      events.push_back(linked_ptr<WebInputEvent>(key_down_event.release()));
+      events.push_back(std::move(key_down_event));
 
       if (generate_char) {
         web_char_event->type = WebInputEvent::Char;
         web_char_event->keyIdentifier[0] = '\0';
-        events.push_back(original_event);
+        events.push_back(std::move(original_event));
       }
 
       key_up_event->type = WebInputEvent::KeyUp;
-      events.push_back(linked_ptr<WebInputEvent>(key_up_event.release()));
+      events.push_back(std::move(key_up_event));
       break;
     }
 

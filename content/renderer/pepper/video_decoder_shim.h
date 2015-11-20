@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -111,7 +110,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   CompletedDecodeQueue completed_decodes_;
 
   // Queue of decoded frames that await rgb->yuv conversion.
-  typedef std::queue<linked_ptr<PendingFrame> > PendingFrameQueue;
+  typedef std::queue<scoped_ptr<PendingFrame>> PendingFrameQueue;
   PendingFrameQueue pending_frames_;
 
   // The optimal number of textures to allocate for decoder_impl_.

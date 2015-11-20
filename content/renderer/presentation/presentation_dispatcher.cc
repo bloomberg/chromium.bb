@@ -125,7 +125,7 @@ void PresentationDispatcher::sendString(
     return;
   }
 
-  message_request_queue_.push(make_linked_ptr(
+  message_request_queue_.push(make_scoped_ptr(
       CreateSendTextMessageRequest(presentationUrl, presentationId, message)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
@@ -144,7 +144,7 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  message_request_queue_.push(make_linked_ptr(
+  message_request_queue_.push(make_scoped_ptr(
       CreateSendBinaryMessageRequest(presentationUrl, presentationId,
                                      presentation::PresentationMessageType::
                                          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER,
@@ -166,7 +166,7 @@ void PresentationDispatcher::sendBlobData(
     return;
   }
 
-  message_request_queue_.push(make_linked_ptr(CreateSendBinaryMessageRequest(
+  message_request_queue_.push(make_scoped_ptr(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB,
       data, length)));

@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
@@ -935,8 +935,7 @@ class CONTENT_EXPORT RenderViewImpl
   size_t expected_content_intent_id_;
 
   // List of click-based content detectors.
-  typedef std::vector< linked_ptr<ContentDetector> > ContentDetectorList;
-  ContentDetectorList content_detectors_;
+  std::vector<scoped_ptr<ContentDetector>> content_detectors_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;
@@ -982,7 +981,7 @@ class CONTENT_EXPORT RenderViewImpl
   // callback, and the remaining elements are the other file chooser completion
   // still waiting to be run (in order).
   struct PendingFileChooser;
-  std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
+  std::deque<scoped_ptr<PendingFileChooser>> file_chooser_completions_;
 
   // The current directory enumeration callback
   std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;

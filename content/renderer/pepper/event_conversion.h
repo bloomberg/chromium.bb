@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -40,7 +40,7 @@ CONTENT_EXPORT blink::WebInputEvent* CreateWebInputEvent(
 // Creates an array of WebInputEvents to make the given event look like a user
 // input event on all platforms. |plugin_x| and |plugin_y| should be the
 // coordinates of a point within the plugin's area on the page.
-std::vector<linked_ptr<blink::WebInputEvent> > CreateSimulatedWebInputEvents(
+std::vector<scoped_ptr<blink::WebInputEvent>> CreateSimulatedWebInputEvents(
     const ppapi::InputEventData& event,
     int plugin_x,
     int plugin_y);
