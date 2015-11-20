@@ -2780,17 +2780,20 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
   }
 
-  if (!ssl_config_.rc4_enabled) {
-    const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
-    const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
-    for (int i = 0; i < num_ciphers; i++) {
-      SSLCipherSuiteInfo info;
-      if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) !=
-          SECSuccess) {
-        continue;
-      }
-      if (info.symCipher == ssl_calg_rc4)
-        SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
+  const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
+  const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
+  for (int i = 0; i < num_ciphers; i++) {
+    SSLCipherSuiteInfo info;
+    if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) !=
+        SECSuccess) {
+      continue;
+    }
+    if (info.symCipher == ssl_calg_rc4 && !ssl_config_.rc4_enabled)
+      SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
+    if (info.keaType == ssl_kea_dh &&
+        !ssl_config_.deprecated_cipher_suites_enabled) {
+      // Only offer DHE on the second handshake. https://crbug.com/538690
+      SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
     }
   }
 

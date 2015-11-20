@@ -937,6 +937,9 @@ int SSLClientSocketOpenSSL::Init() {
     // which cause them to require the version downgrade
     // (https://crbug.com/433406).
     command.append(":ECDHE-RSA-AES256-SHA384");
+  } else {
+    // Only offer DHE on the second handshake. https://crbug.com/538690
+    command.append(":!kDHE");
   }
 
   // Remove any disabled ciphers.

@@ -2520,6 +2520,25 @@ TEST_F(SSLClientSocketTest, RC4Enabled) {
   EXPECT_EQ(OK, rv);
 }
 
+// Test that DHE is only enabled if deprecated_cipher_suites_enabled is set.
+TEST_F(SSLClientSocketTest, DHEDeprecated) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // Normal handshakes with DHE do not work.
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
+
+  // Enabling deprecated ciphers works fine.
+  ssl_config.deprecated_cipher_suites_enabled = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_EQ(OK, rv);
+}
+
 // Tests that enabling deprecated ciphers shards the session cache.
 TEST_F(SSLClientSocketTest, DeprecatedShardSessionCache) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
@@ -2695,6 +2714,8 @@ TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
   client_config.alpn_protos.push_back(kProtoHTTP11);
 #endif
   client_config.npn_protos.push_back(kProtoHTTP11);
+  // DHE is only advertised when deprecated ciphers are enabled.
+  client_config.deprecated_cipher_suites_enabled = true;
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
 
