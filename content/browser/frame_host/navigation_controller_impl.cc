@@ -1382,6 +1382,9 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
   }
 
   WebPreferences prefs = rfh->GetRenderViewHost()->GetWebkitPreferences();
+  const url::Origin& committed_origin = static_cast<RenderFrameHostImpl*>(rfh)
+                                            ->frame_tree_node()
+                                            ->current_origin();
   bool is_same_origin = last_committed_url.is_empty() ||
                         // TODO(japhet): We should only permit navigations
                         // originating from about:blank to be in-page if the
@@ -1393,7 +1396,7 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
                         last_committed_url.GetOrigin() == url.GetOrigin() ||
                         !prefs.web_security_enabled ||
                         (prefs.allow_universal_access_from_file_urls &&
-                         last_committed_url.SchemeIs(url::kFileScheme));
+                         committed_origin.scheme() == url::kFileScheme);
   if (!is_same_origin && renderer_says_in_page) {
     bad_message::ReceivedBadMessage(rfh->GetProcess(),
                                     bad_message::NC_IN_PAGE_NAVIGATION);

@@ -286,6 +286,12 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
   params.original_request_url = url_copy;
 
+  // In most cases, the origin will match the URL's origin.  Tests that need to
+  // check corner cases (like about:blank) should specify the origin param
+  // manually.
+  url::Origin origin(url_copy);
+  params.origin = origin;
+
   url::Replacements<char> replacements;
   replacements.ClearRef();
   params.was_within_same_page =

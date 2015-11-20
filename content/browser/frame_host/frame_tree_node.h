@@ -112,6 +112,7 @@ class CONTENT_EXPORT FrameTreeNode {
     return children_[index].get();
   }
 
+  // Returns the URL of the last committed page in this frame.
   const GURL& current_url() const {
     return current_url_;
   }
@@ -123,6 +124,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns true iff SetCurrentURL has been called with a non-blank URL.
   bool has_committed_real_load() const {
     return has_committed_real_load_;
+  }
+
+  // Returns the origin of the last committed page in this frame.
+  const url::Origin& current_origin() const {
+    return replication_state_.origin;
   }
 
   // Set the current origin and notify proxies about the update.

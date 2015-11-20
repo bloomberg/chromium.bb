@@ -3605,6 +3605,21 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   EXPECT_TRUE(controller.IsURLInPageNavigation(other_url, true,
       main_test_rfh()));
 
+  // Don't believe the renderer if it claims a cross-origin navigation is
+  // in-page.
+  const GURL different_origin_url("http://www.example.com");
+  MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
+  EXPECT_EQ(0, rph->bad_msg_count());
+  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
+                                                main_test_rfh()));
+  EXPECT_EQ(1, rph->bad_msg_count());
+}
+
+// Tests that IsInPageNavigation behaves properly with the
+// allow_universal_access_from_file_urls flag.
+TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
+  NavigationControllerImpl& controller = controller_impl();
+
   // Test allow_universal_access_from_file_urls flag.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
@@ -3613,32 +3628,51 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   test_rvh()->UpdateWebkitPreferences(prefs);
   prefs = test_rvh()->GetWebkitPreferences();
   EXPECT_TRUE(prefs.allow_universal_access_from_file_urls);
-  // Allow in page navigation if existing URL is file scheme.
+
+  // Allow in page navigation to be cross-origin if existing URL is file scheme.
   const GURL file_url("file:///foo/index.html");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(0, false, file_url);
+  const url::Origin file_origin(file_url);
+  main_test_rfh()->NavigateAndCommitRendererInitiated(0, true, file_url);
+  EXPECT_TRUE(file_origin.IsSameOriginWith(
+      main_test_rfh()->frame_tree_node()->current_origin()));
   EXPECT_EQ(0, rph->bad_msg_count());
   EXPECT_TRUE(controller.IsURLInPageNavigation(different_origin_url, true,
       main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
-  // Don't honor allow_universal_access_from_file_urls if existing URL is
+
+  // Doing a replaceState to a cross-origin URL is thus allowed.
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 1;
+  params.nav_entry_id = 1;
+  params.did_create_new_entry = false;
+  params.url = different_origin_url;
+  params.origin = file_origin;
+  params.transition = ui::PAGE_TRANSITION_LINK;
+  params.gesture = NavigationGestureUser;
+  params.page_state = PageState::CreateFromURL(different_origin_url);
+  params.was_within_same_page = true;
+  params.is_post = false;
+  params.post_id = -1;
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(different_origin_url,
+                                                          false);
+  main_test_rfh()->PrepareForCommit();
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
+
+  // At this point, we should still consider the current origin to be file://,
+  // so that a file URL would still be in-page.  See https://crbug.com/553418.
+  EXPECT_TRUE(file_origin.IsSameOriginWith(
+      main_test_rfh()->frame_tree_node()->current_origin()));
+  EXPECT_TRUE(
+      controller.IsURLInPageNavigation(file_url, true, main_test_rfh()));
+  EXPECT_EQ(0, rph->bad_msg_count());
+
+  // Don't honor allow_universal_access_from_file_urls if actual URL is
   // not file scheme.
-  main_test_rfh()->NavigateAndCommitRendererInitiated(0, false, url);
+  const GURL url("http://www.google.com/home.html");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(2, true, url);
   EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
-
-  // Remove allow_universal_access_from_file_urls flag.
-  prefs.allow_universal_access_from_file_urls = false;
-  test_rvh()->UpdateWebkitPreferences(prefs);
-  prefs = test_rvh()->GetWebkitPreferences();
-  EXPECT_FALSE(prefs.allow_universal_access_from_file_urls);
-
-  // Don't believe the renderer if it claims a cross-origin navigation is
-  // in-page.
-  EXPECT_EQ(1, rph->bad_msg_count());
-  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
-      main_test_rfh()));
-  EXPECT_EQ(2, rph->bad_msg_count());
 }
 
 // Some pages can have subframes with the same base URL (minus the reference) as
