@@ -17,7 +17,7 @@ class DomPageSet(story.StorySet):
 
   def __init__(self):
     super(DomPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/dom']))
 
     urls_list = [

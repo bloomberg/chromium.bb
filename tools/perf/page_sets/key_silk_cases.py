@@ -77,7 +77,7 @@ class Page3(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page3, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 

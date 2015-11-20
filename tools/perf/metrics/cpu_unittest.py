@@ -7,7 +7,7 @@ import unittest
 from metrics import cpu
 
 # Testing private method.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 class CpuMetricTest(unittest.TestCase):
   def testSubtractCpuStats(self):
     # The result computed is a ratio of cpu time used to time elapsed.

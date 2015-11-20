@@ -122,7 +122,7 @@ class MemoryMetric(Metric):
           histogram_data, self._histogram_start[h['name']])
 
   # Optional argument trace_name is not in base class Metric.
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def AddResults(self, tab, results, trace_name=None):
     """Add results for this page to the results object."""
     if not self._browser.supports_memory_metrics:

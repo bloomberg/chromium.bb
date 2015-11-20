@@ -88,7 +88,7 @@ class MobileMemoryPageSet(story.StorySet):
     urls_list = [
       # Why: Renderer process memory bloat
       'http://techcrunch.com',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://techcrunch.com/2014/02/17/pixel-brings-brings-old-school-video-game-art-to-life-in-your-home/',
       'http://techcrunch.com/2014/02/15/kickstarter-coins-2/',
       'http://techcrunch.com/2014/02/15/was-y-combinator-worth-it/',

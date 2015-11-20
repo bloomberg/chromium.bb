@@ -17,7 +17,7 @@ class BloatPageSet(story.StorySet):
 
   def __init__(self):
     super(BloatPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/bloat']),
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 

@@ -88,7 +88,7 @@ class GoogleDocPage(KeyDesktopSitesPage):
 
   def __init__(self, page_set):
     super(GoogleDocPage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='https://docs.google.com/a/google.com/document/d/1XMAtPiVFZfItsMUOYl39v5YA8bcSPe4LDrVO25OdsCU/edit',
       page_set=page_set)
 
@@ -779,22 +779,22 @@ class KeyDesktopSitesPageSet(story.StorySet):
       'http://www.smh.com.au/',
       'http://www.businessweek.com/',
       'http://www.nationalgeographic.com/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.wunderground.com/cgi-bin/findweather/getForecast?query=94035&sp=KCAMOUNT24',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.accuweather.com/en/search-locations?zipcode=mountain%20view,%20ca',
       'http://www.weather.com/weather/right-now/Mountain+View+CA+94043',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://weather.yahoo.com/united-states/california/mountain-view-12797130/',
       'http://www.yr.no/place/Norway/Oslo/Oslo/Oslo/',
       'http://www.metoffice.gov.uk/',
       'http://www.intellicast.com/Local/Weather.aspx?location=USCA0746',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.shutterstock.com/cat.mhtml?searchterm=google&search_group=&lang=en&search_source=search_form',
       'http://www.flickr.com/search/?q=monkeys&f=hp',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/?page=3',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/show/with/4403158307/',
       'http://www.apple.com/iphone/',
       'http://www.taobao.com/index_global.php',
@@ -809,18 +809,18 @@ class KeyDesktopSitesPageSet(story.StorySet):
       'http://9gag.com/gag/5202885',
       'http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria',
       'http://twitter.github.com/bootstrap/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://reviews.cnet.com/8301-13727_7-57431192-263/disable-elastic-scrolling-in-os-x/',
       'http://mlb.com',
       'http://thenounproject.com/zh-cn/',
       'http://allrecipes.com/recipe/chicken-pot-pie-ix/',
       'http://www.gamespot.com/',
       'http://valleywag.com/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://gawker.com/5939683/based-on-a-true-story-is-a-rotten-lie-i-hope-you-never-believe',
       'http://www.imdb.com/title/tt0910970/',
       'http://www.html5rocks.com/en/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://athome.kimvallee.com/2010/03/why-to-splurge-on-a-high-end-dishwasher/',
       ('http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2012_08_31_sfnmlb_chnmlb_1'
       '&mode=wrap#gid=2012_08_31_sfnmlb_chnmlb_1&mode=box'),

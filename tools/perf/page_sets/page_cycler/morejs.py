@@ -16,7 +16,7 @@ class MorejsPageSet(story.StorySet):
 
   def __init__(self):
     super(MorejsPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/morejs']),
       cloud_storage_bucket=story.PARTNER_BUCKET)
 

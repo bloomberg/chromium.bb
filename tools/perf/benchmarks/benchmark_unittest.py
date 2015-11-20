@@ -27,7 +27,7 @@ def _GetAllPerfBenchmarks():
       index_by_class_name=True).values()
 
 def _BenchmarkOptionsTestGenerator(benchmark):
-  def testBenchmarkOptions(self):  # pylint: disable=W0613
+  def testBenchmarkOptions(self):  # pylint: disable=unused-argument
     """Invalid options will raise benchmark.InvalidOptionsError."""
     options = browser_options.BrowserFinderOptions()
     parser = options.CreateParser()

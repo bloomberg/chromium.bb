@@ -36,7 +36,7 @@ class KeySearchMobilePageSet(story.StorySet):
       # Why: A reasonable search term with images but no ads usually
       'http://www.google.com/search?q=orange',
       # Why: An address search
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'https://www.google.com/search?q=1600+Amphitheatre+Pkwy%2C+Mountain+View%2C+CA',
       # Why: A search for a known actor
       'http://www.google.com/search?q=tom+hanks',

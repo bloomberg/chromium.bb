@@ -39,7 +39,7 @@ class TheVergeArticlePage(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(TheVergeArticlePage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy',
       page_set=page_set)
 
@@ -59,7 +59,7 @@ class CnnArticlePage(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(CnnArticlePage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://www.cnn.com/2012/10/03/politics/michelle-obama-debate/index.html',
       page_set=page_set)
 
@@ -123,7 +123,7 @@ class YahooAnswersPage(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(YahooAnswersPage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://answers.yahoo.com/question/index?qid=20110117024343AAopj8f',
       page_set=page_set)
 

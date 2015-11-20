@@ -48,18 +48,18 @@ class ToughWebglCasesPageSet(story.StorySet):
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     urls_list = [
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html',
       'http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html',
       'http://webglsamples.googlecode.com/hg/aquarium/aquarium.html',
       'http://webglsamples.googlecode.com/hg/blob/blob.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://webglsamples.googlecode.com/hg/dynamic-cubemap/dynamic-cubemap.html'
     ]
     for url in urls_list:

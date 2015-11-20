@@ -31,7 +31,7 @@ def _WaitAction(action_runner):
     '!document.body.addEventListener("touchstart", function() {})')
 
 def _CreateInfiniteScrollPageClass(base_page_cls):
-  class DerivedSmoothPage(base_page_cls):  # pylint: disable=W0232
+  class DerivedSmoothPage(base_page_cls):  # pylint: disable=no-init
     def RunPageInteractions(self, action_runner):
       _WaitAction(action_runner)
       _ScrollAction(action_runner, self.scroll_amount)

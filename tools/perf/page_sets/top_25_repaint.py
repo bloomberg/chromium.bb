@@ -29,7 +29,7 @@ class TopRepaintPage(page_module.Page):
 
 
 def _CreatePageClassWithRepaintInteractions(page_cls, mode, width, height):
-  class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
+  class DerivedRepaintPage(page_cls):  # pylint: disable=no-init
 
     def RunPageInteractions(self, action_runner):
       repaint_helpers.Repaint(

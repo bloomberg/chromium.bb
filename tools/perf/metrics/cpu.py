@@ -37,7 +37,7 @@ class CpuMetric(Metric):
     self._stop_cpu = self._browser.cpu_stats
 
   # Optional argument trace_name is not in base class Metric.
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def AddResults(self, tab, results, trace_name='cpu_utilization'):
     if not self._browser.supports_cpu_metrics:
       return

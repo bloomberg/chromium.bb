@@ -191,7 +191,7 @@ class WeatherDotComPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(WeatherDotComPage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://www.weather.com/weather/right-now/Mountain+View+CA+94043',
       page_set=page_set, name='Weather.com')
 

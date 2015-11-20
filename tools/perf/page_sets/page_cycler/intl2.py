@@ -8,7 +8,7 @@ class Intl2Page(page_module.Page):
 
   def __init__(self, url, page_set):
     super(Intl2Page, self).__init__(url=url, page_set=page_set)
-    # pylint: disable=C0301
+    # pylint: disable=line-too-long
 
 
 class Intl2PageSet(story.StorySet):
@@ -19,7 +19,7 @@ class Intl2PageSet(story.StorySet):
 
   def __init__(self):
     super(Intl2PageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/intl2']))
 
     urls_list = [

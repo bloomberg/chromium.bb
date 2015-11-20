@@ -48,7 +48,7 @@ TOP_2013_URLS = [
   'http://youku.com',
   'http://www.flickr.com/photos/thomashawk/',
   'http://www.flickr.com/photos/thomashawk/sets/72157600284219965/detail/',
-   # pylint: disable=C0301
+   # pylint: disable=line-too-long
   'http://search.yahoo.com/search?ei=UTF-8&trackingType=go_search_home&p=barack+obama&fr=hsusgo1&sa.x=0&sa.y=0',
   'http://www.conduit.com/',
   'http://ifeng.com',
@@ -56,13 +56,13 @@ TOP_2013_URLS = [
   'http://hao123.com',
   'http://aol.com',
   'http://zedo.com',
-   # pylint: disable=C0301
+   # pylint: disable=line-too-long
   'http://search.mywebsearch.com/mywebsearch/GGmain.jhtml?searchfor=barack+obama',
   'http://cnn.com',
   'http://portal.ebay.de/deutschland-schraubt-angebote',
   'http://www.adobe.com/products/photoshopfamily.html?promoid=JOLIW',
   'http://global.rakuten.com/us/',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://laundry.about.com/od/kidsandlaundry/f/How-Do-I-Wash-A-Backpack.htm',
   'http://thepiratebay.se/search/barack%20obama/0/99/0',
   'http://360buy.com',
@@ -70,7 +70,7 @@ TOP_2013_URLS = [
   'http://alibaba.com',
   'http://chinaz.com',
   'http://www.sogou.com/web?query=barack+obama',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   ('http://www.amazon.de/gp/product/B0051QVF7A/ref=amb_link_170625867_1/'
    '275-4711375-4099801?ie=UTF8&nav_sdd=aps&pf_rd_m=A3JWKAKR8XB7XF&'
    'pf_rd_s=center-1&pf_rd_r=1C0XDBPB12WHDM63V11R&pf_rd_t=101&pf_rd_p'
@@ -83,7 +83,7 @@ TOP_2013_URLS = [
   'http://imgur.com/gallery/b90ZE',
   'http://home.alipay.com/bank/paymentKJ.htm',
   'http://amazon.co.jp',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster-than-an-unsorted-array',
   'http://www.google.com/doubleclick/',
   'http://search.4shared.com/q/CCAD/1/barack%20obama',
@@ -105,7 +105,7 @@ TOP_2013_URLS = [
   'http://www.tianya.cn/bbs/index.shtml',
   'http://ehow.com',
   'http://theproject.badoo.com/final.phtml',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.bankofamerica.com/deposits/checksave/index.cfm?template=check_eBanking',
   'http://vimeo.com',
   'http://360.cn',
@@ -138,7 +138,7 @@ TOP_2013_URLS = [
   'http://sourceforge.net/projects/xoops/?source=frontpage&position=1',
   'http://onet.pl',
   'http://guardian.co.uk',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'https://www.wellsfargo.com/jump/enterprise/doublediscount?msc=5589&mplx=10918-70119-3408-64',
   'http://wikimediafoundation.org/wiki/Home',
   'http://xunlei.com',
@@ -146,7 +146,7 @@ TOP_2013_URLS = [
   'http://skype.com',
   'http://etsy.com',
   'http://bild.de',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://search.naver.com/search.naver?where=nexearch&query=barack+obama&sm=top_hty&fbm=0&ie=utf8',
   'http://statcounter.com/features/?PHPSESSID=bbjcvjr681bcul4vqvgq2qgmo7',
   'http://iqiyi.com',
@@ -165,7 +165,7 @@ TOP_2013_URLS = [
   'http://www.filestube.com/search.html?q=barack+obama&select=All',
   'http://xinhuanet.com',
   'http://www.salesforce.com/sales-cloud/overview/',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.squidoo.com/make-cards-and-gift-bags-with-antique-photos',
   'http://www.domaintools.com/research/',
   'http://download.cnet.com/windows/?tag=hdr;brandnav',
@@ -174,7 +174,7 @@ TOP_2013_URLS = [
   'http://ucoz.ru',
   'http://free.fr',
   'http://nicovideo.jp',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.yelp.com/search?find_desc=food&find_loc=San+Jose%2C+CA&ns=1',
   'http://slideshare.net',
   'http://archive.org/web/web.php',
@@ -184,7 +184,7 @@ TOP_2013_URLS = [
   'http://v.it168.com/',
   'http://nbcolympics.com',
   'http://hootsuite.com',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.scribd.com/doc/52210329/The-Masters-Augusta-National-s-Amen-Corner-up-close',
   'http://themeforest.net',
   'http://4399.com',
@@ -194,7 +194,7 @@ TOP_2013_URLS = [
   'http://csdn.net',
   'http://telegraph.co.uk',
   'http://taringa.net',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.tripadvisor.com/Tourism-g32701-Mendocino_California-Vacations.html',
   'http://pof.com',
   'http://wp.pl',
@@ -219,19 +219,19 @@ TOP_2013_URLS = [
   'http://hudong.com',
   'http://espncricinfo.com',
   'http://china.com',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.ups.com/content/us/en/bussol/browse/smallbiz/new-to-ups.html?WT.svl=SolExp',
   'http://letv.com',
   'http://ero-advertising.com',
   'http://mashable.com',
   'http://iminent.com',
   'http://rutracker.org',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.shopping.hp.com/en_US/home-office/-/products/Laptops/Laptops',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.clickbank.com/buy_products.htm?dores=true&mainCategoryId=1340&sortField=POPULARITY&b1=1340',
   'http://b.hatena.ne.jp/',
-  # pylint: disable=C0301
+  # pylint: disable=line-too-long
   'http://www.youdao.com/search?q=barack+obama&ue=utf8&keyfrom=web.index',
   'http://forbes.com',
   'http://nbcnews.com',

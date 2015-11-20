@@ -48,47 +48,47 @@ class MediaCnsCasesPageSet(story.StorySet):
     super(MediaCnsCasesPageSet, self).__init__()
 
     urls_list = [
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_webm&src=tulip2.webm&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_webm&src=tulip2.webm&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_webm&src=tulip2.webm&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_ogv&src=tulip2.ogv&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_ogv&src=tulip2.ogv&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_ogv&src=tulip2.ogv&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_mp4&src=tulip2.mp4&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_mp4&src=tulip2.mp4&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_mp4&src=tulip2.mp4&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_wav&src=tulip2.wav&type=audio&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_wav&src=tulip2.wav&type=audio&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_wav&src=tulip2.wav&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_ogg&src=tulip2.ogg&type=audio&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_ogg&src=tulip2.ogg&type=audio&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_ogg&src=tulip2.ogg&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_mp3&src=tulip2.mp3&type=audio&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_mp3&src=tulip2.mp3&type=audio&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_mp3&src=tulip2.mp3&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=no_constraints_m4a&src=tulip2.m4a&type=audio&net=none',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=cable_m4a&src=tulip2.m4a&type=audio&net=cable',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_m4a&src=tulip2.m4a&type=audio&net=wifi'
     ]
 
@@ -96,19 +96,19 @@ class MediaCnsCasesPageSet(story.StorySet):
       self.AddStory(BasicPlayPage(url, self))
 
     urls_list2 = [
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_mp3&src=tulip2.mp3&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_m4a&src=tulip2.m4a&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_ogg&src=tulip2.ogg&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_wav&src=tulip2.wav&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_mp4&src=tulip2.mp4&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_ogv&src=tulip2.ogv&type=audio&net=wifi',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_video_cases/video.html?id=wifi_webm&src=tulip2.webm&type=audio&net=wifi'
     ]
 

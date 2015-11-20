@@ -28,7 +28,7 @@ class IntlHiRuPageSet(story.StorySet):
       # Why: #12 site in Russia
       'http://www.rambler.ru/',
       'http://apeha.ru/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://yandex.ru/yandsearch?lr=102567&text=%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0',
       'http://photofile.ru/',
       'http://ru.wikipedia.org/',

@@ -17,7 +17,7 @@ class DhtmlPageSet(story.StorySet):
 
   def __init__(self):
     super(DhtmlPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/dhtml']),
       cloud_storage_bucket=story.PARTNER_BUCKET)
 

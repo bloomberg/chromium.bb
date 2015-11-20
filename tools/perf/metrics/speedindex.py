@@ -49,7 +49,7 @@ class SpeedIndexMetric(Metric):
     self._impl.Stop(tab)
 
   # Optional argument chart_name is not in base class Metric.
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def AddResults(self, tab, results, chart_name=None):
     """Calculate the speed index and add it to the results."""
     try:

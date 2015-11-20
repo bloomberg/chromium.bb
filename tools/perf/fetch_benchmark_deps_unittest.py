@@ -7,7 +7,7 @@ import sys
 import unittest
 import StringIO
 
-import mock # pylint: disable=F0401
+import mock # pylint: disable=import-error
 
 import fetch_benchmark_deps
 

@@ -29,7 +29,7 @@ class IntlEsFrPtBrPageSet(story.StorySet):
     urls_list = [
       'http://elmundo.es/',
       'http://terra.es/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.ebay.es/sch/i.html?_sacat=382&_trkparms=clkid%3D6548971389060485883&_qi=RTM1381637',
       'http://www.eltiempo.es/talavera-de-la-reina.html',
       'http://www.free.fr/adsl/index.html',
@@ -39,7 +39,7 @@ class IntlEsFrPtBrPageSet(story.StorySet):
       # Why: #5 site in Brazil
       'http://www.uol.com.br/',
       # Why: #10 site in Brazil
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://produto.mercadolivre.com.br/MLB-468424957-pelicula-protetora-smartphone-h5500-e-h5300-43-frete-free-_JM'
     ]
 

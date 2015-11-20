@@ -15,7 +15,7 @@ from metrics import keychain_metric
 
 
 # Allow testing protected members in the unit test.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 class MockMemoryMetric(object):
   """Used instead of simple_mock.MockObject so that the precise order and

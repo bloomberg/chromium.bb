@@ -49,7 +49,7 @@ class IntlJaZhPageSet(story.StorySet):
       # Why: #4 Chinese site
       'http://www.sina.com.cn/',
       # Why: #5 Chinese site
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.google.com.hk/#q=%E9%82%84%E6%8F%90%E4%BE%9B&fp=c44d333e710cb480',
       'http://udn.com/NEWS/mainpage.shtml',
       'http://ruten.com.tw/'

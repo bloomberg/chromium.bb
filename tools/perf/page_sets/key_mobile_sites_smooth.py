@@ -14,7 +14,7 @@ def _IssueMarkerAndScroll(action_runner):
 
 
 def _CreatePageClassWithSmoothInteractions(page_cls):
-  class DerivedSmoothPage(page_cls):  # pylint: disable=W0232
+  class DerivedSmoothPage(page_cls):  # pylint: disable=no-init
 
     def RunPageInteractions(self, action_runner):
       _IssueMarkerAndScroll(action_runner)

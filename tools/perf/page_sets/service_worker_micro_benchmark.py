@@ -25,7 +25,7 @@ class ServiceWorkerMicroBenchmarkPageSet(story.StorySet):
         archive_data_file=archive_data_file_path,
         cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    # pylint: disable=C0301
+    # pylint: disable=line-too-long
     # The code of localhost:8091 is placed in
     # https://github.com/coonsta/Service-Worker-Performance
     # but currently the following is used:

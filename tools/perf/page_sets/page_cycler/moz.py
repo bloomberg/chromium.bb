@@ -16,7 +16,7 @@ class MozPageSet(story.StorySet):
 
   def __init__(self):
     super(MozPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/moz']),
       cloud_storage_bucket=story.PARTNER_BUCKET)
 

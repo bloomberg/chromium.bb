@@ -55,7 +55,7 @@ class ProfileGeneratorUnitTest(unittest.TestCase):
 
     # If we can copy the directory, we're golden!
     sandbox_dir_copy = os.path.join(self.test_directory, "sandbox_copy")
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     shutil.copytree(sandbox_dir, sandbox_dir_copy,
         ignore=profile_generator._IsPseudoFile)
 

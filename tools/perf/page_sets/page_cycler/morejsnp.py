@@ -16,16 +16,16 @@ class MorejsnpPageSet(story.StorySet):
 
   def __init__(self):
     super(MorejsnpPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/morejsnp']),
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       'file://../../../../data/page_cycler/morejsnp/blog.chromium.org/',
       'file://../../../../data/page_cycler/morejsnp/dev.chromium.org/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://../../../../data/page_cycler/morejsnp/googleblog.blogspot.com1/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://../../../../data/page_cycler/morejsnp/googleblog.blogspot.com2/',
       'file://../../../../data/page_cycler/morejsnp/test.blogspot.com/',
       'file://../../../../data/page_cycler/morejsnp/www.igoogle.com/',

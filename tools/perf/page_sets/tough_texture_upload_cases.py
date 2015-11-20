@@ -30,11 +30,11 @@ class ToughTextureUploadCasesPageSet(story.StorySet):
 
     urls_list = [
       'file://tough_texture_upload_cases/background_color_animation.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_texture_upload_cases/background_color_animation_and_transform_animation.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_texture_upload_cases/background_color_animation_with_gradient.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_texture_upload_cases/background_color_animation_with_gradient_and_transform_animation.html',
       'file://tough_texture_upload_cases/small_texture_uploads.html',
       'file://tough_texture_upload_cases/medium_texture_uploads.html',

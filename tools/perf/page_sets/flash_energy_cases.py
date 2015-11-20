@@ -25,7 +25,7 @@ class FlashEnergyCasesPageSet(story.StorySet):
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         'http://v.qq.com/cover/d/dm9vn9cnsn2v2gx.html?ptag=v.newplaybutton.program.dpjd',
         'http://videos.huffingtonpost.com/politics/protesters-march-to-hong-kong-leaders-home-518476075',
         'http://nos.nl/video/712855-eerste-beelden-na-de-aanslag-in-canada.html',

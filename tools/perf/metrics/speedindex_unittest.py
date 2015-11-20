@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # These tests access private methods in the speedindex module.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 import unittest
 
@@ -14,7 +14,7 @@ from metrics import speedindex
 
 
 class FakeImageUtil(object):
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   def GetColorHistogram(self, image, ignore_color=None, tolerance=None):
     return image.ColorHistogram()
 
@@ -31,7 +31,7 @@ class FakeBitmap(object):
   def __init__(self, r, g, b):
     self._histogram = color_histogram.ColorHistogram(r, g, b, rgba_color.WHITE)
 
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   def ColorHistogram(self, ignore_color=None, tolerance=None):
     return self._histogram
 

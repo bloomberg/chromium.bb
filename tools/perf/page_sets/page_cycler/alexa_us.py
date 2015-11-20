@@ -17,11 +17,11 @@ class AlexaUsPageSet(story.StorySet):
 
   def __init__(self):
     super(AlexaUsPageSet, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       serving_dirs=set(['../../../../data/page_cycler/alexa_us']))
 
     urls_list = [
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://../../../../data/page_cycler/alexa_us/accountservices.passport.net/',
       'file://../../../../data/page_cycler/alexa_us/sfbay.craigslist.org/',
       'file://../../../../data/page_cycler/alexa_us/www.amazon.com/',

@@ -9,14 +9,14 @@ from page_sets import google_pages
 IDLE_TIME_IN_SECONDS = 100
 
 def _CreateIdlePageClass(base_page_cls):
-  class DerivedIdlePage(base_page_cls):  # pylint: disable=W0232
+  class DerivedIdlePage(base_page_cls):  # pylint: disable=no-init
     def RunPageInteractions(self, action_runner):
       action_runner.Wait(IDLE_TIME_IN_SECONDS)
   return DerivedIdlePage
 
 
 def _CreateIdleBackgroundPageClass(base_page_cls):
-  class DerivedIdlePage(base_page_cls):  # pylint: disable=W0232
+  class DerivedIdlePage(base_page_cls):  # pylint: disable=no-init
     def RunPageInteractions(self, action_runner):
       action_runner.tab.browser.tabs.New()
       action_runner.Wait(IDLE_TIME_IN_SECONDS)

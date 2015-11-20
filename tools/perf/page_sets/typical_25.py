@@ -94,7 +94,7 @@ class Typical25PageSet(story.StorySet):
       'http://allrecipes.com/Recipe/Pull-Apart-Hot-Cross-Buns/Detail.aspx',
       'http://www.html5rocks.com/en/',
       'http://www.mlb.com/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://gawker.com/5939683/based-on-a-true-story-is-a-rotten-lie-i-hope-you-never-believe',
       'http://www.imdb.com/title/tt0910970/',
       'http://www.flickr.com/search/?q=monkeys&f=hp',
@@ -106,7 +106,7 @@ class Typical25PageSet(story.StorySet):
       'http://colorado.edu',
       ('http://www.ticketmaster.com/JAY-Z-and-Justin-Timberlake-tickets/artist/'
        '1837448?brand=none&tm_link=tm_homeA_rc_name2'),
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://www.theverge.com/2013/3/5/4061684/inside-ted-the-smartest-bubble-in-the-world',
       'http://www.airbnb.com/',
       'http://www.ign.com/',

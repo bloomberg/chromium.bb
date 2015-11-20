@@ -25,7 +25,7 @@ class MicrosofFirefliesPage(ToughCanvasCasesPage):
 
   def __init__(self, page_set):
     super(MicrosofFirefliesPage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html',
       page_set=page_set)
 
@@ -50,7 +50,7 @@ class ToughCanvasCasesPageSet(story.StorySet):
     urls_list = [
       'http://mudcu.be/labs/JS1k/BreathingGalaxies.html',
       'http://runway.countlessprojects.com/prototype/performance_test.html',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html',
       'http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html',
       'http://acko.net/dumpx/996b.html',
@@ -72,13 +72,13 @@ class ToughCanvasCasesPageSet(story.StorySet):
       'http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html',
       'http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html',
       'http://www.smashcat.org/av/canvas_test/',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=canvas_sprite&back=canvas',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient',
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15',
       'file://tough_canvas_cases/canvas-font-cycler.html',
       'file://tough_canvas_cases/canvas-animation-no-clear.html',

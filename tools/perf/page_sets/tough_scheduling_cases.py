@@ -37,7 +37,7 @@ class Page2(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page2, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/simple_text_page.html?main_very_busy',
         page_set=page_set)
 
@@ -50,7 +50,7 @@ class Page3(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page3, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/simple_text_page.html?medium_layers',
         page_set=page_set)
 
@@ -67,7 +67,7 @@ class Page4(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page4, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/simple_text_page.html?many_layers',
         page_set=page_set)
 
@@ -84,7 +84,7 @@ class Page5(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page5, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/simple_text_page.html?medium_raster',
         page_set=page_set)
 
@@ -101,7 +101,7 @@ class Page6(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page6, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/simple_text_page.html?heavy_raster',
         page_set=page_set)
 
@@ -118,7 +118,7 @@ class Page7(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page7, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/touch_handler_scrolling.html?medium_handler',
         page_set=page_set)
 
@@ -132,7 +132,7 @@ class Page8(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page8, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/touch_handler_scrolling.html?slow_handler',
         page_set=page_set)
 
@@ -146,7 +146,7 @@ class Page9(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page9, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/touch_handler_scrolling.html?janky_handler',
         page_set=page_set)
 
@@ -161,7 +161,7 @@ class Page10(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page10, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/touch_handler_scrolling.html?occasionally_janky_handler',
         page_set=page_set)
 
@@ -176,7 +176,7 @@ class Page11(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(Page11, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='file://tough_scheduling_cases/touch_handler_scrolling.html?super_slow_handler',
         page_set=page_set)
 

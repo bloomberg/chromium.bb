@@ -241,7 +241,7 @@ class WordpressPage(Top7StressPage):
 
   def __init__(self, page_set):
     super(WordpressPage, self).__init__(
-      # pylint: disable=C0301
+      # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=page_set,
       name='Wordpress')
@@ -249,7 +249,7 @@ class WordpressPage(Top7StressPage):
   def RunNavigateSteps(self, action_runner):
     super(WordpressPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
 
   def RunPageInteractions(self, action_runner):
@@ -259,7 +259,7 @@ class WordpressPage(Top7StressPage):
     # and ensure scheduling of idle tasks.
     action_runner.Wait(0.3)
     action_runner.ClickElement(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
     action_runner.WaitForNavigate()
     with action_runner.CreateGestureInteraction('ScrollAction'):

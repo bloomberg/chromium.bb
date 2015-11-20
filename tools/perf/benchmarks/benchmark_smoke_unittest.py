@@ -46,7 +46,7 @@ def SmokeTestGenerator(benchmark):
     benchmark.options['pageset_repeat'] = 1
     benchmark.options['page_repeat'] = 1
 
-    class SinglePageBenchmark(benchmark):  # pylint: disable=W0232
+    class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
       def CreateStorySet(self, options):
         # pylint: disable=E1002
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
@@ -128,7 +128,7 @@ def load_tests(loader, standard_tests, pattern):
     method = SmokeTestGenerator(benchmark)
 
     # Make sure any decorators are propagated from the original declaration.
-    # (access to protected members) pylint: disable=W0212
+    # (access to protected members) pylint: disable=protected-access
     # TODO(dpranke): Since we only pick the first test from every class
     # (above), if that test is disabled, we'll end up not running *any*
     # test from the class. We should probably discover all of the tests

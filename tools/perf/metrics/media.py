@@ -36,7 +36,7 @@ class MediaMetric(Metric):
     self._results = tab.EvaluateJavaScript('window.__getAllMetrics()')
 
   # Optional |exclude_metrics| args are not in base class Metric.
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def AddResults(self, tab, results, exclude_metrics=None):
     """Reports all recorded metrics as Telemetry perf results."""
     exclude_metrics = exclude_metrics or []

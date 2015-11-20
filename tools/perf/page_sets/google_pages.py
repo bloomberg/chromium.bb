@@ -46,7 +46,7 @@ class GoogleDocPage(GooglePages):
   def __init__(self, page_set,
                shared_page_state_class=shared_page_state.SharedPageState):
     super(GoogleDocPage, self).__init__(
-        # pylint: disable=C0301
+        # pylint: disable=line-too-long
         url='https://docs.google.com/document/d/1X-IKNjtEnx-WW5JIKRLsyhz5sbsat3mfTpAPUSX3_s4/view',
         page_set=page_set,
         shared_page_state_class=shared_page_state_class)

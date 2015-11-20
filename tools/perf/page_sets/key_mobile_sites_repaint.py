@@ -11,7 +11,7 @@ from page_sets import repaint_helpers
 
 
 def _CreatePageClassWithRepaintInteractions(page_cls, mode, height, width):
-  class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
+  class DerivedRepaintPage(page_cls):  # pylint: disable=no-init
 
     def RunPageInteractions(self, action_runner):
       repaint_helpers.Repaint(
