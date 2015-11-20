@@ -182,8 +182,6 @@
       'blink_common',
       'blink_heap_asm_stubs',
       'blink_prerequisites',
-      '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/cc/cc.gyp:cc',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
       '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
@@ -199,8 +197,6 @@
       '<(libjpeg_gyp_path):libjpeg',
     ],
     'export_dependent_settings': [
-      '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/cc/cc.gyp:cc',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
       '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',

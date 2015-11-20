@@ -27,6 +27,7 @@
 
 namespace blink {
 class WebFilterOperations;
+class WebLayerClient;
 struct WebFloatRect;
 }
 
@@ -45,7 +46,7 @@ namespace cc_blink {
 
 class WebToCCAnimationDelegateAdapter;
 
-class WebLayerImpl : public blink::WebLayer {
+class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
  public:
   CC_BLINK_EXPORT WebLayerImpl();
   CC_BLINK_EXPORT explicit WebLayerImpl(scoped_refptr<cc::Layer>);
@@ -145,14 +146,18 @@ class WebLayerImpl : public blink::WebLayer {
   blink::WebLayerPositionConstraint positionConstraint() const override;
   void setScrollClient(blink::WebLayerScrollClient* client) override;
   bool isOrphan() const override;
-  void setLayerClient(cc::LayerClient* client) override;
-  const cc::Layer* ccLayer() const override;
+  void setWebLayerClient(blink::WebLayerClient* client) override;
+
+  // LayerClient implementation.
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo()
+      override;
 
   void setScrollParent(blink::WebLayer* parent) override;
   void setClipParent(blink::WebLayer* parent) override;
 
  protected:
   scoped_refptr<cc::Layer> layer_;
+  blink::WebLayerClient* web_layer_client_;
 
   bool contents_opaque_is_fixed_;
 

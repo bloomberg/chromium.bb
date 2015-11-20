@@ -1,6 +1,4 @@
 include_rules = [
-    "+base/memory",
-    "+base/trace_event",
     "+mozilla",
     "+platform",
     "+public/platform",

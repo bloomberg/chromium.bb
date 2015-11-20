@@ -42,14 +42,10 @@
 class SkMatrix44;
 class SkImageFilter;
 
-namespace cc {
-class Layer;
-class LayerClient;
-}
-
 namespace blink {
 class WebCompositorAnimationDelegate;
 class WebFilterOperations;
+class WebLayerClient;
 class WebLayerScrollClient;
 struct WebFloatPoint;
 struct WebLayerPositionConstraint;
@@ -242,11 +238,7 @@ public:
     // True if the layer is not part of a tree attached to a WebLayerTreeView.
     virtual bool isOrphan() const = 0;
 
-    // Sets the cc-side layer client.
-    virtual void setLayerClient(cc::LayerClient*) = 0;
-
-    // Gets the underlying cc layer.
-    virtual const cc::Layer* ccLayer() const = 0;
+    virtual void setWebLayerClient(WebLayerClient*) = 0;
 };
 
 } // namespace blink

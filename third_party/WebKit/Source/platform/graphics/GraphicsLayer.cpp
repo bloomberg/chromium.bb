@@ -28,9 +28,7 @@
 
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
-#include "base/trace_event/trace_event_argument.h"
 #include "platform/DragImage.h"
-#include "platform/JSONValues.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -51,13 +49,13 @@
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebGraphicsLayerDebugInfo.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
@@ -126,7 +124,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_contentLayerDelegate = adoptPtr(new ContentLayerDelegate(this));
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_contentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
-    m_layer->layer()->setLayerClient(this);
+    m_layer->layer()->setWebLayerClient(this);
 
     // TODO(rbyers): Expose control over this to the web - crbug.com/489802:
     setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
@@ -456,7 +454,7 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
     m_contentsLayer = contentsLayer;
     m_contentsLayerId = m_contentsLayer->id();
 
-    m_contentsLayer->setLayerClient(this);
+    m_contentsLayer->setWebLayerClient(this);
     m_contentsLayer->setTransformOrigin(FloatPoint3D());
     m_contentsLayer->setUseParentBackfaceVisibility(true);
 
@@ -485,6 +483,13 @@ void GraphicsLayer::clearContentsLayerIfUnregistered()
 GraphicsLayerDebugInfo& GraphicsLayer::debugInfo()
 {
     return m_debugInfo;
+}
+
+WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfoFor(WebLayer* layer)
+{
+    GraphicsLayerDebugInfo* clone = m_debugInfo.clone();
+    clone->setDebugName(debugName(layer));
+    return clone;
 }
 
 WebLayer* GraphicsLayer::contentsLayerIfRegistered()
@@ -766,12 +771,7 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
     return json->toPrettyJSONString();
 }
 
-static const cc::Layer* ccLayerForWebLayer(const WebLayer* webLayer)
-{
-    return webLayer ? webLayer->ccLayer() : nullptr;
-}
-
-String GraphicsLayer::debugName(cc::Layer* layer) const
+String GraphicsLayer::debugName(WebLayer* webLayer) const
 {
     String name;
     if (!m_client)
@@ -779,17 +779,17 @@ String GraphicsLayer::debugName(cc::Layer* layer) const
 
     String highlightDebugName;
     for (size_t i = 0; i < m_linkHighlights.size(); ++i) {
-        if (layer == ccLayerForWebLayer(m_linkHighlights[i]->layer())) {
+        if (webLayer == m_linkHighlights[i]->layer()) {
             highlightDebugName = "LinkHighlight[" + String::number(i) + "] for " + m_client->debugName(this);
             break;
         }
     }
 
-    if (layer == ccLayerForWebLayer(m_contentsLayer)) {
+    if (webLayer == m_contentsLayer) {
         name = "ContentsLayer for " + m_client->debugName(this);
     } else if (!highlightDebugName.isEmpty()) {
         name = highlightDebugName;
-    } else if (layer == ccLayerForWebLayer(m_layer->layer())) {
+    } else if (webLayer == m_layer->layer()) {
         name = m_client->debugName(this);
     } else {
         ASSERT_NOT_REACHED();
@@ -1143,7 +1143,7 @@ void GraphicsLayer::addLinkHighlight(LinkHighlight* linkHighlight)
 {
     ASSERT(linkHighlight && !m_linkHighlights.contains(linkHighlight));
     m_linkHighlights.append(linkHighlight);
-    linkHighlight->layer()->setLayerClient(this);
+    linkHighlight->layer()->setWebLayerClient(this);
     updateChildList();
 }
 
@@ -1189,13 +1189,6 @@ void GraphicsLayer::didScroll()
         // so we need to use the ScrollableArea version. The FrameView method should go away soon anyway.
         m_scrollableArea->ScrollableArea::setScrollPosition(newPosition, CompositorScroll);
     }
-}
-
-scoped_refptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDebugInfo(cc::Layer* layer)
-{
-    scoped_refptr<base::trace_event::TracedValue> tracedValue = m_debugInfo.asTracedValue();
-    tracedValue->SetString("layer_name", WTF::StringUTF8Adaptor(debugName(layer)).asStringPiece());
-    return tracedValue;
 }
 
 PaintController* GraphicsLayer::paintController()

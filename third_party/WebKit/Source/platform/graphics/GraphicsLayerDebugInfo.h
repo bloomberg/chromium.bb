@@ -31,27 +31,26 @@
 #ifndef GraphicsLayerDebugInfo_h
 #define GraphicsLayerDebugInfo_h
 
-#include "base/memory/ref_counted.h"
+#include "platform/JSONValues.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
-#include "wtf/Vector.h"
+#include "public/platform/WebGraphicsLayerDebugInfo.h"
 
-namespace base {
-namespace trace_event {
-class TracedValue;
-}
-}
+#include "wtf/Vector.h"
 
 namespace blink {
 
-class GraphicsLayerDebugInfo {
+class GraphicsLayerDebugInfo final : public WebGraphicsLayerDebugInfo {
 public:
     GraphicsLayerDebugInfo();
-    ~GraphicsLayerDebugInfo();
+    ~GraphicsLayerDebugInfo() override;
 
-    scoped_refptr<base::trace_event::TracedValue> asTracedValue() const;
+    void appendAsTraceFormat(WebString* out) const override;
 
+    GraphicsLayerDebugInfo* clone() const;
+
+    void setDebugName(const String& name) { m_debugName = name; }
     CompositingReasons compositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
@@ -60,15 +59,17 @@ public:
     void clearAnnotatedInvalidateRects();
 
 private:
-    void appendAnnotatedInvalidateRects(base::trace_event::TracedValue*) const;
-    void appendCompositingReasons(base::trace_event::TracedValue*) const;
-    void appendOwnerNodeId(base::trace_event::TracedValue*) const;
+    void appendAnnotatedInvalidateRects(JSONObject*) const;
+    void appendCompositingReasons(JSONObject*) const;
+    void appendDebugName(JSONObject*) const;
+    void appendOwnerNodeId(JSONObject*) const;
 
     struct AnnotatedInvalidationRect {
         FloatRect rect;
         PaintInvalidationReason reason;
     };
 
+    String m_debugName;
     CompositingReasons m_compositingReasons;
     int m_ownerNodeId;
     Vector<AnnotatedInvalidationRect> m_invalidations;

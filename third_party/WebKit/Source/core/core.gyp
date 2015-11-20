@@ -706,7 +706,6 @@
         '../platform/platform_generated.gyp:make_platform_generated',
 
         '../wtf/wtf.gyp:wtf',
-        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/gin/gin.gyp:gin',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
@@ -721,7 +720,6 @@
       'export_dependent_settings': [
         '../platform/blink_platform.gyp:blink_platform',
         '../wtf/wtf.gyp:wtf',
-        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
