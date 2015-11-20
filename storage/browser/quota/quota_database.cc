@@ -4,6 +4,7 @@
 
 #include "storage/browser/quota/quota_database.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -793,22 +794,14 @@ bool QuotaDatabase::DumpOriginInfoTable(
 
 bool operator<(const QuotaDatabase::QuotaTableEntry& lhs,
                const QuotaDatabase::QuotaTableEntry& rhs) {
-  if (lhs.host < rhs.host) return true;
-  if (rhs.host < lhs.host) return false;
-  if (lhs.type < rhs.type) return true;
-  if (rhs.type < lhs.type) return false;
-  return lhs.quota < rhs.quota;
+  return std::tie(lhs.host, lhs.type, lhs.quota) <
+         std::tie(rhs.host, rhs.type, rhs.quota);
 }
 
 bool operator<(const QuotaDatabase::OriginInfoTableEntry& lhs,
                const QuotaDatabase::OriginInfoTableEntry& rhs) {
-  if (lhs.origin < rhs.origin) return true;
-  if (rhs.origin < lhs.origin) return false;
-  if (lhs.type < rhs.type) return true;
-  if (rhs.type < lhs.type) return false;
-  if (lhs.used_count < rhs.used_count) return true;
-  if (rhs.used_count < lhs.used_count) return false;
-  return lhs.last_access_time < rhs.last_access_time;
+  return std::tie(lhs.origin, lhs.type, lhs.used_count, lhs.last_access_time) <
+         std::tie(rhs.origin, rhs.type, rhs.used_count, rhs.last_access_time);
 }
 
 }  // namespace storage
