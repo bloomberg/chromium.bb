@@ -5,6 +5,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 #include <map>
+#include <tuple>
 
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
@@ -346,13 +347,8 @@ class VectorIconCache {
         : id(id), dip_size(dip_size), color(color), badge_id(badge_id) {}
 
     bool operator<(const IconDescription& other) const {
-      if (id != other.id)
-        return id < other.id;
-      if (dip_size != other.dip_size)
-        return dip_size < other.dip_size;
-      if (color != other.color)
-        return color < other.color;
-      return badge_id < other.badge_id;
+      return std::tie(id, dip_size, color, badge_id) <
+             std::tie(other.id, other.dip_size, other.color, other.badge_id);
     }
 
     VectorIconId id;

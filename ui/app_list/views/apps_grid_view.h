@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <tuple>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -243,10 +244,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
       return page != other.page || slot != other.slot;
     }
     bool operator<(const Index& other) const {
-      if (page != other.page)
-        return page < other.page;
-
-      return slot < other.slot;
+      return std::tie(page, slot) < std::tie(other.page, other.slot);
     }
 
     int page;  // Which page an item view is on.

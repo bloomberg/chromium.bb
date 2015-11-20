@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <tuple>
 
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
@@ -83,7 +84,7 @@ class GFX_EXPORT Point {
   // This comparison is required to use Point in sets, or sorted
   // vectors.
   bool operator<(const Point& rhs) const {
-    return (y_ == rhs.y_) ? (x_ < rhs.x_) : (y_ < rhs.y_);
+    return std::tie(y_, x_) < std::tie(rhs.y_, rhs.x_);
   }
 
   // Returns a string representation of point.
