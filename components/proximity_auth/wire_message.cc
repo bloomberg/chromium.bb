@@ -6,11 +6,11 @@
 
 #include <limits>
 
+#include "base/base64url.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/logging/logging.h"
 
 // The wire messages have a simple format:
@@ -106,7 +106,9 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
   }
 
   std::string payload;
-  if (!Base64UrlDecode(payload_base64, &payload)) {
+  if (!base::Base64UrlDecode(payload_base64,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &payload)) {
     PA_LOG(WARNING) << "Error: Invalid base64 encoding for payload.";
     return scoped_ptr<WireMessage>();
   }
@@ -126,7 +128,8 @@ std::string WireMessage::Serialize() const {
     body.SetString(kPermitIdKey, permit_id_);
 
   std::string base64_payload;
-  Base64UrlEncode(payload_, &base64_payload);
+  base::Base64UrlEncode(payload_, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &base64_payload);
   body.SetString(kPayloadKey, base64_payload);
 
   std::string json_body;

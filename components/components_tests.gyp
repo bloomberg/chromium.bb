@@ -536,7 +536,6 @@
       'proximity_auth/bluetooth_connection_unittest.cc',
       'proximity_auth/bluetooth_throttler_impl_unittest.cc',
       'proximity_auth/connection_unittest.cc',
-      'proximity_auth/cryptauth/base64url_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_client_impl_unittest.cc',

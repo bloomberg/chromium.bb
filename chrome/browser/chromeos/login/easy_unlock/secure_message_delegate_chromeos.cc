@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

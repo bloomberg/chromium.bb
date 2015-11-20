@@ -4,8 +4,6 @@
 
 source_set("cryptauth") {
   sources = [
-    "base64url.cc",
-    "base64url.h",
     "cryptauth_access_token_fetcher.h",
     "cryptauth_access_token_fetcher_impl.cc",
     "cryptauth_access_token_fetcher_impl.h",
@@ -39,9 +37,9 @@ source_set("cryptauth") {
 
   deps = [
     "//base",
-    "//crypto",
     "//components/gcm_driver",
     "//components/proximity_auth/logging",
+    "//crypto",
     "//google_apis",
     "//net",
   ]
@@ -79,7 +77,6 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "base64url_unittest.cc",
     "cryptauth_access_token_fetcher_impl_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",

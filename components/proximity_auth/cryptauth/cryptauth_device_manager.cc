@@ -4,10 +4,10 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
+#include "base/base64url.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler_impl.h"
@@ -42,9 +42,15 @@ scoped_ptr<base::DictionaryValue> UnlockKeyToDictionary(
   // We store the device information in Base64Url form because dictionary values
   // must be valid UTF8 strings.
   std::string public_key_b64, device_name_b64, bluetooth_address_b64;
-  Base64UrlEncode(device.public_key(), &public_key_b64);
-  Base64UrlEncode(device.friendly_device_name(), &device_name_b64);
-  Base64UrlEncode(device.bluetooth_address(), &bluetooth_address_b64);
+  base::Base64UrlEncode(device.public_key(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &public_key_b64);
+  base::Base64UrlEncode(device.friendly_device_name(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &device_name_b64);
+  base::Base64UrlEncode(device.bluetooth_address(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &bluetooth_address_b64);
 
   dictionary->SetString(kExternalDeviceKeyPublicKey, public_key_b64);
   dictionary->SetString(kExternalDeviceKeyDeviceName, device_name_b64);
@@ -69,9 +75,15 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   // We store the device information in Base64Url form because dictionary values
   // must be valid UTF8 strings.
   std::string public_key, device_name, bluetooth_address;
-  if (!Base64UrlDecode(public_key_b64, &public_key) ||
-      !Base64UrlDecode(device_name_b64, &device_name) ||
-      !Base64UrlDecode(bluetooth_address_b64, &bluetooth_address)) {
+  if (!base::Base64UrlDecode(public_key_b64,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &public_key) ||
+      !base::Base64UrlDecode(device_name_b64,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &device_name) ||
+      !base::Base64UrlDecode(bluetooth_address_b64,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &bluetooth_address)) {
     return false;
   }
 

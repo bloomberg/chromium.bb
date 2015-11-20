@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 
+#include "base/base64url.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/switches.h"
@@ -129,7 +129,9 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
   }
 
   std::string device_public_key_base64;
-  proximity_auth::Base64UrlEncode(device_public_key, &device_public_key_base64);
+  base::Base64UrlEncode(device_public_key,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &device_public_key_base64);
   for (const auto& device_data : it->second->devices) {
     if (device_data.public_key == device_public_key_base64) {
       PA_LOG(INFO) << "Wrapping challenge for " << user_id << "...";
@@ -427,9 +429,19 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   // TODO(tengs): Currently, ProximityAuthSystem only supports one device. Once
   // multiple devices are supported, we need to load all devices.
   std::string decoded_public_key, decoded_psk, decoded_challenge;
-  proximity_auth::Base64UrlDecode(devices[0].public_key, &decoded_public_key);
-  proximity_auth::Base64UrlDecode(devices[0].psk, &decoded_psk);
-  proximity_auth::Base64UrlDecode(devices[0].challenge, &decoded_challenge);
+  if (!base::Base64UrlDecode(devices[0].public_key,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &decoded_public_key) ||
+      !base::Base64UrlDecode(devices[0].psk,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &decoded_psk) ||
+      !base::Base64UrlDecode(devices[0].challenge,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &decoded_challenge)) {
+    PA_LOG(ERROR) << "Unable to base64url decode the input data.";
+    return;
+  }
+
   proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
       devices[0].bluetooth_type ==
               chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE

@@ -4,12 +4,12 @@
 
 #include "components/proximity_auth/device_to_device_authenticator.h"
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
 #include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"
 #include "components/proximity_auth/proximity_auth_test_util.h"
@@ -142,10 +142,14 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
 
   void SetUp() override {
     // Set up the session asymmetric keys for both the local and remote devices.
-    Base64UrlDecode(kInitiatorSessionPublicKeyBase64,
-                    &local_session_public_key_);
-    Base64UrlDecode(kResponderSessionPublicKeyBase64,
-                    &remote_session_public_key_);
+    ASSERT_TRUE(
+        base::Base64UrlDecode(kInitiatorSessionPublicKeyBase64,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &local_session_public_key_));
+    ASSERT_TRUE(
+        base::Base64UrlDecode(kResponderSessionPublicKeyBase64,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &remote_session_public_key_));
     remote_session_private_key_ =
         secure_message_delegate_->GetPrivateKeyForPublicKey(
             remote_session_public_key_),

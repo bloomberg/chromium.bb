@@ -4,12 +4,12 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 
+#include "base/base64url.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
@@ -175,8 +175,12 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
         new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
 
     std::string public_key_b64, private_key_b64;
-    Base64UrlEncode(public_key_, &public_key_b64);
-    Base64UrlEncode(private_key_, &private_key_b64);
+    base::Base64UrlEncode(public_key_,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &public_key_b64);
+    base::Base64UrlEncode(private_key_,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &private_key_b64);
     pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPublicKey,
                             public_key_b64);
     pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPrivateKey,

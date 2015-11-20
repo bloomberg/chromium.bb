@@ -4,11 +4,11 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 
+#include "base/base64url.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
@@ -164,9 +164,9 @@ scoped_ptr<SyncScheduler> CryptAuthEnrollmentManager::CreateSyncScheduler() {
 
 std::string CryptAuthEnrollmentManager::GetUserPublicKey() {
   std::string public_key;
-  if (!Base64UrlDecode(
+  if (!base::Base64UrlDecode(
           pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPublicKey),
-          &public_key)) {
+          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &public_key)) {
     PA_LOG(ERROR) << "Invalid public key stored in user prefs.";
     return std::string();
   }
@@ -175,9 +175,9 @@ std::string CryptAuthEnrollmentManager::GetUserPublicKey() {
 
 std::string CryptAuthEnrollmentManager::GetUserPrivateKey() {
   std::string private_key;
-  if (!Base64UrlDecode(
+  if (!base::Base64UrlDecode(
           pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPrivateKey),
-          &private_key)) {
+          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &private_key)) {
     PA_LOG(ERROR) << "Invalid private key stored in user prefs.";
     return std::string();
   }
@@ -204,8 +204,12 @@ void CryptAuthEnrollmentManager::OnKeyPairGenerated(
     // Store the keypair in Base64 format because pref values require readable
     // string values.
     std::string public_key_b64, private_key_b64;
-    Base64UrlEncode(public_key, &public_key_b64);
-    Base64UrlEncode(private_key, &private_key_b64);
+    base::Base64UrlEncode(public_key,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &public_key_b64);
+    base::Base64UrlEncode(private_key,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &private_key_b64);
     pref_service_->SetString(prefs::kCryptAuthEnrollmentUserPublicKey,
                              public_key_b64);
     pref_service_->SetString(prefs::kCryptAuthEnrollmentUserPrivateKey,
@@ -275,7 +279,9 @@ void CryptAuthEnrollmentManager::DoCryptAuthEnrollmentWithKeys() {
   device_info.set_device_software_package(kDeviceSoftwarePackage);
 
   std::string public_key_b64;
-  Base64UrlEncode(GetUserPublicKey(), &public_key_b64);
+  base::Base64UrlEncode(GetUserPublicKey(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &public_key_b64);
   PA_LOG(INFO) << "Making enrollment:\n"
                << "  public_key: " << public_key_b64 << "\n"
                << "  invocation_reason: " << invocation_reason << "\n"

@@ -6,9 +6,9 @@
 
 #include <math.h>
 
+#include "base/base64url.h"
 #include "base/md5.h"
 #include "base/sha1.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 
 namespace proximity_auth {
 
@@ -34,8 +34,9 @@ int64_t HashStringToInt64(const std::string& string) {
 std::string CalculateDeviceUserId(const std::string& device_id,
                                   const std::string& user_id) {
   std::string device_user_id;
-  Base64UrlEncode(base::SHA1HashString(device_id + "|" + user_id),
-                  &device_user_id);
+  base::Base64UrlEncode(base::SHA1HashString(device_id + "|" + user_id),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &device_user_id);
   return device_user_id;
 }
 

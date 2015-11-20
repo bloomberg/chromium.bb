@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64url.h"
 #include "base/bind.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_initiator_operations.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"
@@ -59,14 +59,18 @@ class ProximityAuthDeviceToDeviceOperationsTest : public testing::Test {
   ~ProximityAuthDeviceToDeviceOperationsTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(Base64UrlDecode(kInitiatorSessionPublicKeyBase64,
-                                &local_session_public_key_));
+    ASSERT_TRUE(
+        base::Base64UrlDecode(kInitiatorSessionPublicKeyBase64,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &local_session_public_key_));
     local_session_private_key_ =
         secure_message_delegate_.GetPrivateKeyForPublicKey(
             local_session_public_key_);
 
-    ASSERT_TRUE(Base64UrlDecode(kResponderSessionPublicKeyBase64,
-                                &remote_session_public_key_));
+    ASSERT_TRUE(
+        base::Base64UrlDecode(kResponderSessionPublicKeyBase64,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &remote_session_public_key_));
     remote_session_private_key_ =
         secure_message_delegate_.GetPrivateKeyForPublicKey(
             remote_session_public_key_);

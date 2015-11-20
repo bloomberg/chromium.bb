@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -24,7 +25,6 @@
 #include "chromeos/login/user_names.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
@@ -127,8 +127,12 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
   for (const auto& device : remote_devices) {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     std::string b64_public_key, b64_psk;
-    proximity_auth::Base64UrlEncode(device.public_key, &b64_public_key);
-    proximity_auth::Base64UrlEncode(device.persistent_symmetric_key, &b64_psk);
+    base::Base64UrlEncode(device.public_key,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &b64_public_key);
+    base::Base64UrlEncode(device.persistent_symmetric_key,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &b64_psk);
 
     dict->SetString("name", device.name);
     dict->SetString("psk", b64_psk);
@@ -298,7 +302,13 @@ void EasyUnlockServiceRegular::SetRemoteBleDevices(
       // devices.
       if (GetCryptAuthDeviceManager()) {
         std::string public_key;
-        proximity_auth::Base64UrlDecode(b64_public_key, &public_key);
+        if (!base::Base64UrlDecode(b64_public_key,
+                                   base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                                   &public_key)) {
+          PA_LOG(ERROR) << "Unable to base64url decode the public key: "
+                        << b64_public_key;
+          return;
+        }
         const std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
             GetCryptAuthDeviceManager()->unlock_keys();
         auto iterator = std::find_if(

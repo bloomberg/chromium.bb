@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,7 +18,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/login/auth/key.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
@@ -121,7 +121,9 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
   }
 
   std::string device_pub_key;
-  if (!proximity_auth::Base64UrlDecode(device_->public_key, &device_pub_key)) {
+  if (!base::Base64UrlDecode(device_->public_key,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &device_pub_key)) {
     PA_LOG(ERROR) << "Easy unlock failed to decode device public key.";
     callback_.Run(false);
     return;

@@ -172,8 +172,6 @@
         '../net/net.gyp:net',
       ],
       'sources': [
-        "proximity_auth/cryptauth/base64url.cc",
-        "proximity_auth/cryptauth/base64url.h",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher.h",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.cc",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h",

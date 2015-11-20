@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -30,7 +31,6 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/bluetooth_util.h"
-#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
@@ -602,10 +602,12 @@ void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
       EasyUnlockService::Get(profile)
           ->proximity_auth_client()
           ->GetCryptAuthEnrollmentManager();
-  proximity_auth::Base64UrlEncode(enrollment_manager->GetUserPublicKey(),
-                                  user_public_key);
-  proximity_auth::Base64UrlEncode(enrollment_manager->GetUserPrivateKey(),
-                                  user_private_key);
+  base::Base64UrlEncode(enrollment_manager->GetUserPublicKey(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        user_public_key);
+  base::Base64UrlEncode(enrollment_manager->GetUserPrivateKey(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        user_private_key);
 }
 
 void EasyUnlockPrivateGetPermitAccessFunction::
@@ -781,8 +783,12 @@ void EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice(
     const cryptauth::ExternalDeviceInfo& device,
     const std::string& persistent_symmetric_key) {
   std::string b64_public_key, b64_psk;
-  proximity_auth::Base64UrlEncode(device.public_key(), &b64_public_key);
-  proximity_auth::Base64UrlEncode(persistent_symmetric_key, &b64_psk);
+  base::Base64UrlEncode(device.public_key(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &b64_public_key);
+  base::Base64UrlEncode(persistent_symmetric_key,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &b64_psk);
 
   // Fill in the JSON dictionary containing a single unlock key's data.
   scoped_ptr<base::DictionaryValue> device_dictionary(
