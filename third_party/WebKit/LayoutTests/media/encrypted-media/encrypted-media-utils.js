@@ -291,7 +291,7 @@ function playVideoAndWaitForTimeupdate(video, content, duration)
         video.addEventListener('timeupdate', function listener(event) {
             if (event.target.currentTime < duration)
                 return;
-            video.removeEventListener(listener);
+            video.removeEventListener('timeupdate', listener);
             resolve('success');
         });
     });

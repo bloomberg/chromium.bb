@@ -15,7 +15,7 @@
             {
                 return new Promise(function(resolve) {
                     video.addEventListener('encrypted', function listener(e) {
-                        video.removeEventListener(listener);
+                        video.removeEventListener('encrypted', listener);
                         resolve();
                     });
                 });

@@ -53,7 +53,7 @@
                         // ensures we see both events.
                         if (++encryptedEventCount != 2)
                             return;
-                        video.removeEventListener(listener);
+                        video.removeEventListener('encrypted', listener);
 
                         var mediaKeySession = video.mediaKeys.createSession();
                         mediaKeySession.generateRequest(e.initDataType, e.initData).then(function(result) {
@@ -75,7 +75,7 @@
                     video.addEventListener('timeupdate', function listener(e) {
                         if (e.target.currentTime < 0.2)
                             return;
-                        video.removeEventListener(listener);
+                        video.removeEventListener('timeupdate', listener);
                         resolve(e);
                     });
                 });

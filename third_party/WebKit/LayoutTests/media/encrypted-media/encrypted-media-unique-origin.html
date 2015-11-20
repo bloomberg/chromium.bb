@@ -26,7 +26,7 @@
                 return new Promise(function(resolve) {
                     self.addEventListener('message', function listener(e) {
                         resolve(e.data);
-                        self.removeEventListener(listener);
+                        self.removeEventListener('message', listener);
                     });
                 });
             }

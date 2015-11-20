@@ -115,7 +115,7 @@
                         if (++encryptedEventCount != 2)
                             return;
 
-                        video.removeEventListener(listener);
+                        video.removeEventListener('encrypted', listener);
                         resolve(e);
                     });
                 });
@@ -137,7 +137,7 @@
                         // occur once. http://crbug.com/461903
 //                      assert_equals(waitingForKeyEventCount, 1, 'Multiple waitingforkey events');
 
-                        video.removeEventListener(listener);
+                        video.removeEventListener('waitingforkey', listener);
                         resolve(e);
                     });
                 });
@@ -153,7 +153,7 @@
                         ++debugTimeUpdateEventCount;
                         if (video.currentTime < 0.2)
                             return;
-                        video.removeEventListener(listener);
+                        video.removeEventListener('timeupdate', listener);
                         resolve(e);
                     });
                 });

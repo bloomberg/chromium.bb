@@ -39,7 +39,7 @@ ChromeVoxNextE2ETest.prototype = {
             evt.target.docUrl.indexOf('test') == -1)
           return;
 
-        r.removeEventListener(listener);
+        r.removeEventListener('loadComplete', listener, true);
         callback && callback(evt.target);
         callback = null;
       };

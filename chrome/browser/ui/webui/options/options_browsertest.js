@@ -194,7 +194,7 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
         window.setTimeout(function() {
           assertFalse(dntOverlay.visible);
           assertEquals(confirmInterstitial, dntCheckbox.checked);
-          dntOverlay.removeEventListener(visibleChangeHandler);
+          dntOverlay.removeEventListener('visibleChange', visibleChangeHandler);
           testDone();
         }, 0);
         break;
@@ -247,7 +247,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
         window.setTimeout(function() {
           assertFalse(dntOverlay.visible);
           assertTrue(dntCheckbox.checked);
-          dntOverlay.removeEventListener(visibleChangeHandler);
+          dntOverlay.removeEventListener('visibleChange', visibleChangeHandler);
           dntCheckbox.click();
         }, 0);
         break;
