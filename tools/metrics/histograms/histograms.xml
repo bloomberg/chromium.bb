@@ -5739,6 +5739,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.ChecksumStatus" enum="CryptohomeChecksumStatus">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    Checksum status of critical persistent data used by Cryptohome. This status
+    is recorded every time the cryptohomed daemon reads a file.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.Errors" enum="CryptohomeError">
   <owner>dkrahn@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
@@ -56925,6 +56933,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="TPM owner delegate not allowed to reset"/>
   <int value="4" label="TPM owner delegate does not exist"/>
   <int value="5" label="Failed to query dictionary attack counter"/>
+</enum>
+
+<enum name="CryptohomeChecksumStatus" type="int">
+  <int value="0" label="Checksum OK"/>
+  <int value="1" label="Checksum does not exist"/>
+  <int value="2" label="Checksum read error"/>
+  <int value="3" label="Checksum mismatch"/>
 </enum>
 
 <enum name="CryptohomeError" type="int">
