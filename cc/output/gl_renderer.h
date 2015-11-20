@@ -264,7 +264,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       std::vector<scoped_ptr<ResourceProvider::ScopedReadLockGL>>;
   OverlayResourceLockList pending_overlay_resources_;
   OverlayResourceLockList in_use_overlay_resources_;
-  OverlayResourceLockList previous_swap_overlay_resources_;
+  OverlayResourceLockList previous_swap_overlay_resources_[2];
 
   RendererCapabilitiesImpl capabilities_;
 

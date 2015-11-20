@@ -383,7 +383,8 @@ GLRenderer::~GLRenderer() {
     pending_async_read_pixels_.pop_back();
   }
 
-  previous_swap_overlay_resources_.clear();
+  previous_swap_overlay_resources_[1].clear();
+  previous_swap_overlay_resources_[0].clear();
   in_use_overlay_resources_.clear();
 
   CleanupSharedObjects();
@@ -2628,10 +2629,16 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   output_surface_->SwapBuffers(&compositor_frame);
 
   // We always hold onto resources for an extra frame, to make sure we don't
-  // update the buffer while it's being scanned out.
-  previous_swap_overlay_resources_.clear();
-  previous_swap_overlay_resources_.swap(in_use_overlay_resources_);
-
+  // update the buffer while it's being scanned out. On some platforms, hold
+  // on to resources for an extra frame.
+  if (settings_->delay_releasing_overlay_resources) {
+    previous_swap_overlay_resources_[1].clear();
+    previous_swap_overlay_resources_[1].swap(
+        previous_swap_overlay_resources_[0]);
+  } else {
+    previous_swap_overlay_resources_[0].clear();
+  }
+  previous_swap_overlay_resources_[0].swap(in_use_overlay_resources_);
   in_use_overlay_resources_.swap(pending_overlay_resources_);
 
   swap_buffer_rect_ = gfx::Rect();

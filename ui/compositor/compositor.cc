@@ -112,6 +112,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);
 #if defined(OS_WIN)
   settings.renderer_settings.finish_rendering_on_resize = true;
+#elif defined(OS_MACOSX)
+  settings.renderer_settings.delay_releasing_overlay_resources = true;
 #endif
 
   // These flags should be mirrored by renderer versions in content/renderer/.

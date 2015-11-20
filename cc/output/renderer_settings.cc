@@ -18,6 +18,7 @@ RendererSettings::RendererSettings()
       finish_rendering_on_resize(false),
       should_clear_root_render_pass(true),
       disable_display_vsync(false),
+      delay_releasing_overlay_resources(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       use_rgba_4444_textures(false),
