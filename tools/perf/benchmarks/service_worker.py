@@ -95,6 +95,7 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index = speedindex.SpeedIndexMetric()
     self._page_open_times = collections.defaultdict(int)
 
+  # TODO(falken): Remove when reference build rolls. crbug.com/458538
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         '--enable-experimental-web-platform-features'
@@ -146,52 +147,27 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
 
 
 class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
-  """Measure JS land values and TRACE_EVENTs"""
+  """Record results reported by the JS microbenchmark."""
 
   def __init__(self):
     super(_ServiceWorkerMicroBenchmarkMeasurement, self).__init__()
-    self._timeline_controller = timeline_controller.TimelineController()
-
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs([
-        '--enable-experimental-web-platform-features'
-      ])
-
-  def WillNavigateToPage(self, page, tab):
-    self._timeline_controller.SetUp(page, tab)
-    self._timeline_controller.Start(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    runner = action_runner.ActionRunner(tab)
-    # timeline_controller requires creation of at least a single interaction
-    # record. service_worker should be refactored to follow the
-    # timeline_based_measurement or it should not re-use timeline_controller
-    # logic for start & stop tracing.
-    with runner.CreateInteraction('_DummyInteraction'):
-      pass
     tab.WaitForJavaScriptExpression('window.done', 40)
-    self._timeline_controller.Stop(tab, results)
-
-    # Measure JavaScript-land
     json = tab.EvaluateJavaScript('window.results || {}')
     for key, value in json.iteritems():
       results.AddValue(scalar.ScalarValue(
           results.current_page, key, value['units'], value['value']))
 
-    # Retrieve TRACE_EVENTs
-    timeline_metric = _ServiceWorkerTimelineMetric()
-    browser_process = self._timeline_controller.model.browser_process
-    filter_text = '(RegisterServiceWorker|'\
-                  'UnregisterServiceWorker|'\
-                  'ProcessAllocate|'\
-                  'FindRegistrationForDocument|'\
-                  'DispatchFetchEvent)'
-    timeline_metric.AddResultsOfEvents(
-        browser_process, 'IOThread', filter_text , results)
-
 
 class ServiceWorkerPerfTest(perf_benchmark.PerfBenchmark):
-  """Performance test on public applications using ServiceWorker"""
+  """Performance test of pages using ServiceWorker.
+
+  The page set contains pages like Trained to Thrill and svgomg.
+  Execution time of these pages will be shown as Speed Index, and TRACE_EVENTs
+  are subsidiary information to understand performance regressions in more
+  detail.
+  """
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet
 
@@ -200,17 +176,15 @@ class ServiceWorkerPerfTest(perf_benchmark.PerfBenchmark):
     return 'service_worker.service_worker'
 
 
-# Disabled due to redness on the tree. crbug.com/442752
+# The reference build is disabled. crbug.com/442752
 # TODO(horo): Enable after the reference build newer than M39 will be rolled.
 @benchmark.Disabled('reference')
 class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
-  """This test measures the performance of pages using ServiceWorker.
+  """This test is a microbenchmark of service worker.
 
-  As a page set, two benchamrk pages (many registration, many concurrent
-  fetching) and one application (Trained-to-thrill:
-  https://jakearchibald.github.io/trained-to-thrill/) are included. Execution
-  time of these pages will be shown as Speed Index, and TRACE_EVENTs are
-  subsidiary information to know more detail performance regression.
+  The page set is a benchmark page that generates many concurrent requests
+  handled by a service worker that does respondWith(new Response()). The test
+  result is the response times.
   """
   test = _ServiceWorkerMicroBenchmarkMeasurement
   page_set = page_sets.ServiceWorkerMicroBenchmarkPageSet
