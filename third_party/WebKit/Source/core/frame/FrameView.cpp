@@ -2382,23 +2382,27 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     }
 
     if (LayoutView* view = layoutView()) {
-        TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
+        {
+            TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
-        // This was required for slimming paint v1 but is only temporarily
-        // needed for slimming paint v2.
-        view->compositor()->updateIfNeededRecursive();
-        scrollContentsIfNeededRecursive();
+            // This was required for slimming paint v1 but is only temporarily
+            // needed for slimming paint v2.
+            view->compositor()->updateIfNeededRecursive();
+            scrollContentsIfNeededRecursive();
 
-        ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+            ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+
+            if (phases == AllPhases) {
+                invalidateTreeIfNeededRecursive();
+
+                if (view->compositor()->inCompositingMode())
+                    scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+                updateCompositedSelectionIfNeeded();
+            }
+        }
 
         if (phases == AllPhases) {
-            invalidateTreeIfNeededRecursive();
-
-            if (view->compositor()->inCompositingMode())
-                scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
-
-            updateCompositedSelectionIfNeeded();
-
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
 
