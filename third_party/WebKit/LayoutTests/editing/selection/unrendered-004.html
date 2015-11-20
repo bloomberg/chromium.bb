@@ -1,41 +1,21 @@
-<html> 
-<head>
-
-<style>
-body { overflow:hidden; }
-.editing { 
-    border: solid red 50px;
-    font-size: 24px; 
-    line-height: 48px; 
-    padding: 24px; 
-    margin: 64px;
-    width: 600px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    var elem = document.getElementById("test-2");
-    var selection = window.getSelection();
-    selection.collapse(elem.firstChild, 2);
-    extendSelectionForwardByCharacterCommand();    
-    moveSelectionBackwardByCharacterCommand();    
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <div contenteditable id="root" class="editing">
-<span id="test-1">foo</span><span id="test-2" style='display: none;'>bar</span> baz
+<span id="sample">foo</span><span id="start" style="display: none;">bar</span> baz
 </div>
-
+<div id="log"></div>
 <script>
-runEditingTest();
-</script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
 
-</body>
-</html>
+    selection.collapse(document.getElementById('start').firstChild, 2);
+    selection.modify('extend', 'forward', 'character');
+    selection.modify('move', 'backward', 'character');
+
+    assert_true(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 3, 'anchorOffset');
+});
+</script>
