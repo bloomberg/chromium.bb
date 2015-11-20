@@ -737,7 +737,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     return newLogicalTop;
 }
 
-static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit remainingLogicalHeight)
+static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit remainingLogicalHeight)
 {
     bool wantsStrutOnBlock = false;
     if (!block.style()->hasAutoOrphans() && block.style()->orphans() >= lineIndex) {
@@ -760,6 +760,14 @@ static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const Roo
             wantsStrutOnBlock = true;
     }
     return wantsStrutOnBlock && block.allowsPaginationStrut();
+}
+
+static LayoutUnit calculateStrutForPropagation(const LayoutBlockFlow& blockFlow, LayoutUnit lineLogicalOffset)
+{
+    LayoutUnit paginationStrut = std::max<LayoutUnit>(LayoutUnit(), lineLogicalOffset);
+    if (blockFlow.isFloating())
+        paginationStrut += blockFlow.marginBefore(); // Floats' margins do not collapse with page or column boundaries.
+    return paginationStrut;
 }
 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
@@ -805,10 +813,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             // content-less portions (struts) at the beginning of a block before a break, if it can
             // be avoided. After all, that's the reason for setting struts on blocks and not lines
             // in the first place.
-            LayoutUnit paginationStrut = remainingLogicalHeight + std::max<LayoutUnit>(0, logicalOffset);
-            if (isFloating())
-                paginationStrut += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
-            setPaginationStrutPropagatedFromChild(paginationStrut);
+            setPaginationStrutPropagatedFromChild(calculateStrutForPropagation(*this, remainingLogicalHeight + logicalOffset));
         } else {
             logicalOffset += remainingLogicalHeight;
             delta += remainingLogicalHeight;
@@ -819,6 +824,27 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // We're at the very top of a page or column.
         if (lineBox != firstRootBox())
             lineBox.setIsFirstAfterPageBreak(true);
+        // If this is the first line in the block, and the block has a top border, padding, or (in
+        // case it's a float) margin, we may want to set a strut on the block, so that everything
+        // ends up in the next column or page. Setting a strut on the block is also important when
+        // it comes to satisfying orphan requirements.
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight))
+            setPaginationStrutPropagatedFromChild(calculateStrutForPropagation(*this, logicalOffset));
+    } else if (lineBox == firstRootBox() && allowsPaginationStrut()) {
+        // This is the first line in the block. The block may still start in the previous column or
+        // page, and if that's the case, attempt to pull it over to where this line is, so that we
+        // don't split the top border, padding, or (in case it's a float) margin.
+        LayoutUnit totalLogicalOffset = logicalOffset;
+        if (isFloating())
+            totalLogicalOffset += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
+        LayoutUnit strut = remainingLogicalHeight + totalLogicalOffset - pageLogicalHeight;
+        if (strut > 0) {
+            // The block starts in a previous column or page. Set a strut on the block if there's
+            // room for the top border, padding and (if it's a float) margin and the line in one
+            // column or page.
+            if (totalLogicalOffset + lineHeight <= pageLogicalHeight)
+                setPaginationStrutPropagatedFromChild(strut);
+        }
     }
 
     paginatedContentWasLaidOut(logicalOffset);
