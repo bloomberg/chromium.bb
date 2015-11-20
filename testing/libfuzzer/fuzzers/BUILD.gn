@@ -1,0 +1,195 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Individual libfuzzer tests that didn't find their home yet.
+
+import("//build/config/features.gni")
+import("//testing/test.gni")
+
+test("brotli_fuzzer") {
+  sources = [
+    "brotli_fuzzer.cc",
+  ]
+  deps = [
+    "//testing/libfuzzer:libfuzzer_main",
+    "//third_party/brotli:brotli",
+  ]
+}
+
+test("courgette_fuzzer") {
+  sources = [
+    "courgette_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//courgette:courgette_lib",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("dns_record_fuzzer") {
+  sources = [
+    "dns_record_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("ftp_ctrl_response_fuzzer") {
+  sources = [
+    "ftp_ctrl_response_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("ftp_directory_listing_fuzzer") {
+  sources = [
+    "ftp_directory_listing_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("language_detection_fuzzer") {
+  sources = [
+    "language_detection_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//components/translate/core/language_detection:language_detection",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+if (proprietary_codecs) {
+  test("mp4_box_reader_fuzzer") {
+    sources = [
+      "mp4_box_reader_fuzzer.cc",
+    ]
+    deps = [
+      "//base",
+      "//media",
+      "//testing/libfuzzer:libfuzzer_main",
+    ]
+  }
+
+  test("es_parser_adts_fuzzer") {
+    sources = [
+      "es_parser_adts_fuzzer.cc",
+    ]
+    deps = [
+      "//base",
+      "//media",
+      "//testing/libfuzzer:libfuzzer_main",
+    ]
+  }
+
+  test("es_parser_h264_fuzzer") {
+    sources = [
+      "es_parser_h264_fuzzer.cc",
+    ]
+    deps = [
+      "//base",
+      "//media",
+      "//testing/libfuzzer:libfuzzer_main",
+    ]
+  }
+
+  test("es_parser_mpeg1audio_fuzzer") {
+    sources = [
+      "es_parser_mpeg1audio_fuzzer.cc",
+    ]
+    deps = [
+      "//base",
+      "//media",
+      "//testing/libfuzzer:libfuzzer_main",
+    ]
+  }
+}
+
+test("snappy_fuzzer") {
+  sources = [
+    "snappy_fuzzer.cc",
+  ]
+  deps = [
+    "//testing/libfuzzer:libfuzzer_main",
+    "//third_party/snappy:snappy",
+  ]
+}
+
+test("string_tokenizer_fuzzer") {
+  sources = [
+    "string_tokenizer_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("string_to_int_fuzzer") {
+  sources = [
+    "string_to_int_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("unescape_url_component_fuzzer") {
+  sources = [
+    "unescape_url_component_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("url_parse_fuzzer") {
+  sources = [
+    "url_parse_fuzzer.cc",
+  ]
+  deps = [
+    "//testing/libfuzzer:libfuzzer_main",
+    "//url:url",
+  ]
+}
+
+test("vp9_parser_fuzzer") {
+  sources = [
+    "vp9_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//media",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
+
+test("v8_json_parser_fuzzer") {
+  sources = [
+    "v8_json_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//testing/libfuzzer:libfuzzer_main",
+    "//v8",
+    "//v8:v8_libplatform",
+  ]
+  data = [
+    "$root_out_dir/natives_blob.bin",
+    "$root_out_dir/snapshot_blob.bin",
+  ]
+}

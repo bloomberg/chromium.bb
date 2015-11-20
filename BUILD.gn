@@ -705,7 +705,11 @@ group("gn_only") {
   }
 
   if (use_libfuzzer) {
-    deps += [ "//testing/libfuzzer:libfuzzer_main" ]
+    # these are needed only for gn to discover build files.
+    deps += [
+      "//testing/libfuzzer:libfuzzer_main",
+      "//testing/libfuzzer/fuzzers:string_to_int_fuzzer"
+    ]
   }
 }
 
