@@ -791,6 +791,9 @@ const char kUIPrioritizeInGpuProcess[] = "ui-prioritize-in-gpu-process";
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
+// Use the Mandoline UI Service in the Chrome render process.
+const char kUseMusInRenderer[] = "use-mus-in-renderer";
+
 // Enable native GPU memory buffer support when available.
 const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
 

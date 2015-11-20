@@ -133,6 +133,11 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/browser/web_contents/web_contents_view_mus.h"
+#include "content/public/common/mojo_shell_connection.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -1360,21 +1365,25 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
+  view_.reset(
+      CreateWebContentsView(this, delegate, &render_view_host_delegate_view_));
+
   if (browser_plugin_guest_ &&
       !BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    scoped_ptr<WebContentsView> platform_view(CreateWebContentsView(
-        this, delegate, &render_view_host_delegate_view_));
-
-    WebContentsViewGuest* rv = new WebContentsViewGuest(
-        this, browser_plugin_guest_.get(), platform_view.Pass(),
-        render_view_host_delegate_view_);
-    render_view_host_delegate_view_ = rv;
-    view_.reset(rv);
-  } else {
-    // Regular WebContentsView.
-    view_.reset(CreateWebContentsView(
-        this, delegate, &render_view_host_delegate_view_));
+    view_.reset(new WebContentsViewGuest(this, browser_plugin_guest_.get(),
+                                         view_.Pass(),
+                                         &render_view_host_delegate_view_));
   }
+
+#if defined(MOJO_SHELL_CLIENT)
+  if (MojoShellConnection::Get() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMusInRenderer)) {
+    view_.reset(new WebContentsViewMus(this, view_.Pass(),
+                                       &render_view_host_delegate_view_));
+  }
+#endif
+
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
 

@@ -48,9 +48,9 @@ source_set("browser") {
     "//net:extras",
     "//skia",
     "//sql",
+    "//third_party/WebKit/public:blink_headers",
     "//third_party/npapi",
     "//third_party/re2",
-    "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
     "//third_party/zlib:zip",
     "//ui/accessibility",
@@ -422,16 +422,20 @@ source_set("browser") {
 
   if (use_aura) {
     deps += [
+      "//components/bitmap_uploader",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
       "//ui/views/mus:for_component",
       "//ui/wm",
-      "//components/bitmap_uploader",
     ]
     sources += [
       "compositor/software_output_device_mus.cc",
       "compositor/software_output_device_mus.h",
+      "frame_host/render_widget_host_view_mus.cc",
+      "frame_host/render_widget_host_view_mus.h",
+      "web_contents/web_contents_view_mus.cc",
+      "web_contents/web_contents_view_mus.h",
     ]
     defines += [ "MOJO_RUNNER_CLIENT" ]
   } else {  # Not aura.
