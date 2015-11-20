@@ -12,6 +12,18 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
 
+// Set PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL if this platform has a
+// specific implementation of NativeViewAccessibility::Create().
+#undef PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL
+
+#if defined(OS_WIN)
+#define PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL 1
+#endif
+
+#if defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS)
+#define PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL 1
+#endif
+
 namespace views {
 
 class View;
