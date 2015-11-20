@@ -71,6 +71,7 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
     // |window|. So do not allow dispatching from here. Instead, dispatch the
     // event through the WindowEventDispatcher that owns |target|.
     Window* new_root = target->GetRootWindow();
+    DCHECK(new_root);
     if (event->IsLocatedEvent()) {
       // The event has been transformed to be in |target|'s coordinate system.
       // But dispatching the event through the EventProcessor requires the event

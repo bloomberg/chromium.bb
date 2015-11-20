@@ -15,6 +15,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace wm {
 
@@ -73,6 +74,22 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     capture_controller_.reset();
 
     AuraTestBase::TearDown();
+  }
+
+  aura::Window* CreateNormalWindowWithBounds(int id,
+                                             aura::Window* parent,
+                                             const gfx::Rect& bounds,
+                                             aura::WindowDelegate* delegate) {
+    aura::Window* window = new aura::Window(
+        delegate
+            ? delegate
+            : aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate());
+    window->set_id(id);
+    window->Init(ui::LAYER_TEXTURED);
+    parent->AddChild(window);
+    window->SetBounds(bounds);
+    window->Show();
+    return window;
   }
 
   aura::Window* GetCaptureWindow() {
@@ -190,6 +207,70 @@ TEST_F(CaptureControllerTest, ReparentedWhileCaptured) {
   EXPECT_EQ(nullptr, GetSecondCaptureWindow());
   EXPECT_FALSE(delegate->HasNativeCapture());
   EXPECT_FALSE(delegate2->HasNativeCapture());
+}
+
+// A delegate that deletes a window on scroll cancel gesture event.
+class GestureEventDeleteWindowOnScrollEnd
+    : public aura::test::TestWindowDelegate {
+ public:
+  GestureEventDeleteWindowOnScrollEnd() {}
+
+  void SetWindow(scoped_ptr<aura::Window> window) { window_ = window.Pass(); }
+  aura::Window* window() { return window_.get(); }
+
+  // aura::test::TestWindowDelegate:
+  void OnGestureEvent(ui::GestureEvent* gesture) override {
+    TestWindowDelegate::OnGestureEvent(gesture);
+    if (gesture->type() != ui::ET_GESTURE_SCROLL_END)
+      return;
+    window_.reset();
+  }
+
+ private:
+  scoped_ptr<aura::Window> window_;
+  DISALLOW_COPY_AND_ASSIGN(GestureEventDeleteWindowOnScrollEnd);
+};
+
+// Tests a scenario when a window gets deleted while a capture is being set on
+// it and when that window releases its capture prior to being deleted.
+// This scenario should end safely without capture being set.
+TEST_F(CaptureControllerTest, GestureResetWithCapture) {
+  scoped_ptr<GestureEventDeleteWindowOnScrollEnd> delegate(
+      new GestureEventDeleteWindowOnScrollEnd());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window1(
+      CreateNormalWindowWithBounds(-1235, root_window(), bounds, nullptr));
+
+  bounds.Offset(0, 100);
+  scoped_ptr<aura::Window> window2(CreateNormalWindowWithBounds(
+      -1234, root_window(), bounds, delegate.get()));
+  delegate->SetWindow(window1.Pass());
+
+  ui::test::EventGenerator event_generator(root_window());
+  const int position_x = bounds.x() + 1;
+  int position_y = bounds.y() + 1;
+  event_generator.MoveTouch(gfx::Point(position_x, position_y));
+  event_generator.PressTouch();
+  for (int idx = 0 ; idx < 20 ; idx++, position_y++)
+    event_generator.MoveTouch(gfx::Point(position_x, position_y));
+
+  // Setting capture on |window1| cancels touch gestures that are active on
+  // |window2|. GestureEventDeleteWindowOnScrollEnd will then delete |window1|
+  // and should release capture on it.
+  delegate->window()->SetCapture();
+
+  // capture should not be set upon exit from SetCapture() above.
+  aura::client::CaptureClient* capture_client =
+      aura::client::GetCaptureClient(root_window());
+  ASSERT_NE(nullptr, capture_client);
+  EXPECT_EQ(nullptr, capture_client->GetCaptureWindow());
+
+  // Send a mouse click. We no longer hold capture so this should not crash.
+  ui::MouseEvent mouse_press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             base::TimeDelta(), 0, 0);
+  DispatchEventUsingWindowDispatcher(&mouse_press);
 }
 
 }  // namespace wm

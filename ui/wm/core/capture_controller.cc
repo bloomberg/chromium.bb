@@ -6,6 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace wm {
@@ -44,8 +45,16 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
 
   // If we're starting a new capture, cancel all touches that aren't
   // targeted to the capturing window.
-  if (new_capture_window)
+  if (new_capture_window) {
+    // Cancelling touches might cause |new_capture_window| to get deleted.
+    // Track |new_capture_window| and check if it still exists before
+    // committing |capture_window_|.
+    aura::WindowTracker tracker;
+    tracker.Add(new_capture_window);
     ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(new_capture_window);
+    if (!tracker.Contains(new_capture_window))
+      new_capture_window = nullptr;
+  }
 
   capture_window_ = new_capture_window;
   aura::Window* capture_root_window =
