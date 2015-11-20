@@ -87,7 +87,6 @@ class GcdPrivateAPITest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
-    command_line->AppendSwitch(switches::kEnablePrivetV3);
   }
 
   scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(

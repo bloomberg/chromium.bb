@@ -4,10 +4,8 @@
 
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -29,9 +27,6 @@ class PrivetV3ContextGetterTest : public testing::Test,
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrivetV3);
-
     context_getter_ = new extensions::PrivetV3ContextGetter(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }

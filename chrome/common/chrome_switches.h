@@ -137,7 +137,6 @@ extern const char kEnablePdfMaterialUI[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
-extern const char kEnablePrivetV3[];
 extern const char kEnableProfiling[];
 extern const char kEnablePushApiBackgroundMode[];
 extern const char kEnableQuic[];

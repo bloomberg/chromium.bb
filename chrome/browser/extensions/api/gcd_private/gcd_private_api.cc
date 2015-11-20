@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/thread_task_runner_handle.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -127,11 +125,6 @@ GcdPrivateAPIImpl* GcdPrivateAPIImpl::Get(content::BrowserContext* context) {
 void GcdPrivateAPIImpl::CreateSession(const std::string& service_name,
                                       const CreateSessionCallback& callback) {
   int session_id = last_session_id_++;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivetV3)) {
-    return callback.Run(session_id, gcd_private::STATUS_SESSIONERROR,
-                        base::DictionaryValue());
-  }
   auto& session_data = sessions_[session_id];
   session_data.resolver.reset(new local_discovery::EndpointResolver());
   session_data.resolver->Start(

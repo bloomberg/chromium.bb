@@ -5,11 +5,9 @@
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/hmac.h"
@@ -70,9 +68,6 @@ class PrivetV3SessionTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrivetV3);
-
     scoped_refptr<PrivetV3ContextGetter> context_getter =
         new PrivetV3ContextGetter(base::ThreadTaskRunnerHandle::Get());
 

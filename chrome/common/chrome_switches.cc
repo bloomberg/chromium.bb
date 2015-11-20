@@ -474,9 +474,6 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
-// Enables Privet sessions. Temporarily for feature under development.
-const char kEnablePrivetV3[] = "enable-privet-v3";
-
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
 // --enable-profiling=0
