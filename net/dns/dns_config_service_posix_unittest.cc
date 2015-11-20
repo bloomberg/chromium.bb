@@ -41,6 +41,10 @@ const char* const kNameserversIPv6[] = {
 };
 #endif
 
+void DummyConfigCallback(const DnsConfig& config) {
+  // Do nothing
+}
+
 // Fills in |res| with sane configuration.
 void InitializeResState(res_state res) {
   memset(res, 0, sizeof(*res));
@@ -164,6 +168,16 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
             internal::ConvertResStateToDnsConfig(res, &config));
 }
 
+TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
+  // Regression test to verify crash does not occur if DnsConfigServicePosix
+  // instance is destroyed while SerialWorker jobs have posted to worker pool.
+  scoped_ptr<internal::DnsConfigServicePosix> service(
+      new internal::DnsConfigServicePosix());
+  service->ReadConfig(base::Bind(&DummyConfigCallback));
+  service.reset();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
+}
+
 }  // namespace
 
 #else  // OS_ANDROID
@@ -198,6 +212,10 @@ class DnsConfigServicePosixTest : public testing::Test {
     service_->SetDnsConfigForTesting(&test_config_);
   }
 
+  void MockHostsFilePath(const char* file_path) {
+    service_->SetHostsFilePathForTesting(file_path);
+  }
+
   void SetUp() override {
     // TODO(pauljensen): Get rid of GetExternalStorageDirectory() when
     // crbug.com/475568 is fixed.  For now creating a temp file in the
@@ -226,7 +244,7 @@ class DnsConfigServicePosixTest : public testing::Test {
   void StartWatching() {
     creation_time_ = base::Time::Now();
     service_.reset(new DnsConfigServicePosix());
-    service_->file_path_hosts_ = temp_file_.value().c_str();
+    MockHostsFilePath(temp_file_.value().c_str());
     MockDNSConfig("8.8.8.8");
     seen_config_ = false;
     service_->WatchConfig(base::Bind(

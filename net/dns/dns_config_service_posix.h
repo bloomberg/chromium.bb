@@ -48,6 +48,7 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
 #endif
 
   void SetDnsConfigForTesting(const DnsConfig* dns_config);
+  void SetHostsFilePathForTesting(const base::FilePath::CharType* file_path);
 
  protected:
   // DnsConfigService:
@@ -55,7 +56,6 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
   bool StartWatching() override;
 
  private:
-  friend class DnsConfigServicePosixTest;
   class Watcher;
   class ConfigReader;
   class HostsReader;
