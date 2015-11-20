@@ -462,6 +462,9 @@ class SmoothnessToughAdCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_ad_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/555089
 
 # http://crbug.com/496684 (reference)
 # http://crbug.com/522619 (mac/win)

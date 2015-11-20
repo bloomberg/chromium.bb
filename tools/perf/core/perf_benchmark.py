@@ -62,3 +62,10 @@ class PerfBenchmark(benchmark.Benchmark):
         os.path.join(variations_dir,
         'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(
             possible_browser.target_os)))
+
+  @staticmethod
+  def IsSvelte(possible_browser):
+    """Returns whether a possible_browser is on a svelte Android build."""
+    if possible_browser.target_os == 'android':
+      return possible_browser.platform.IsSvelte()
+    return False
