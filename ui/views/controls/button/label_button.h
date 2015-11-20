@@ -27,6 +27,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // The length of the hover fade animation.
   static const int kHoverAnimationDurationMs;
 
+  // Amount to inset each edge of the button when drawing the focus rectangle.
+  static const int kFocusRectInset;
+
   static const char kViewClassName[];
 
   LabelButton(ButtonListener* listener, const base::string16& text);

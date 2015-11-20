@@ -45,6 +45,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
           extensions::FeatureSwitch::extension_action_redesign()
               ->IsEnabled()),
       destroyed_(nullptr),
+      margin_trailing_(0),
       weak_factory_(this) {
   if (!ui::MaterialDesignController::IsModeMaterial())
     icon_painter_.reset(new AppMenuIconPainter(this));
@@ -181,6 +182,17 @@ void AppMenuButton::UpdateIcon() {
                                  color));
 }
 
+void AppMenuButton::SetTrailingMargin(int margin) {
+  margin_trailing_ = margin;
+
+  UpdateThemedBorder();
+
+  const int inset = LabelButton::kFocusRectInset;
+  SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
+      gfx::Insets(inset, inset, inset, inset + margin)));
+  InvalidateLayout();
+}
+
 void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
@@ -201,6 +213,27 @@ void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 const char* AppMenuButton::GetClassName() const {
   return "AppMenuButton";
+}
+
+scoped_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
+    const {
+  scoped_ptr<views::LabelButtonBorder> border =
+      MenuButton::CreateDefaultBorder();
+
+  // Adjust border insets to follow the margin change,
+  // which will be reflected in where the border is painted
+  // through GetThemePaintRect().
+  gfx::Insets insets(border->GetInsets());
+  insets += gfx::Insets(0, 0, 0, margin_trailing_);
+  border->set_insets(insets);
+
+  return border.Pass();
+}
+
+gfx::Rect AppMenuButton::GetThemePaintRect() const {
+  gfx::Rect rect(MenuButton::GetThemePaintRect());
+  rect.Inset(0, 0, margin_trailing_, 0);
+  return rect;
 }
 
 bool AppMenuButton::GetDropFormats(
@@ -229,9 +262,12 @@ void AppMenuButton::Layout() {
 
   // ToolbarView extends the bounds of the app button to the right in maximized
   // mode. So instead of using the center point of local bounds, we use the
-  // center point of preferred size which doesn't change in maximized mode.
-  ink_drop_animation_controller_->SetInkDropCenter(
-      gfx::Rect(GetPreferredSize()).CenterPoint());
+  // center point (adjusted for RTL layouts) of preferred size which doesn't
+  // change in maximized mode.
+  const int visible_width = GetPreferredSize().width();
+  ink_drop_animation_controller_->SetInkDropCenter(gfx::Point(
+      (GetMirroredXWithWidthInView(0, visible_width) + visible_width) / 2,
+      height() / 2));
 }
 
 void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -266,6 +302,10 @@ void AppMenuButton::OnPaint(gfx::Canvas* canvas) {
   views::MenuButton::OnPaint(canvas);
   if (ui::MaterialDesignController::IsModeMaterial())
     return;
-  icon_painter_->Paint(canvas, GetThemeProvider(), gfx::Rect(size()),
+  // Use GetPreferredSize() to center the icon inside the visible bounds rather
+  // than the whole size() (which may refer to hit test region extended to the
+  // end of the toolbar in maximized mode).
+  icon_painter_->Paint(canvas, GetThemeProvider(),
+                       gfx::Rect(GetPreferredSize()),
                        AppMenuIconPainter::BEZEL_NONE);
 }

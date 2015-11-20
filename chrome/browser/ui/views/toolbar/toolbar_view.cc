@@ -626,6 +626,7 @@ void ToolbarView::Layout() {
     app_menu_width += insets.right();
   app_menu_button_->SetBounds(next_element_x, child_y, app_menu_width,
                               child_height);
+  app_menu_button_->SetTrailingMargin(maximized ? insets.right() : 0);
 }
 
 void ToolbarView::OnThemeChanged() {

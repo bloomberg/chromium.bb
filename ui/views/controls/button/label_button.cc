@@ -52,8 +52,7 @@ namespace views {
 
 // static
 const int LabelButton::kHoverAnimationDurationMs = 170;
-
-// static
+const int LabelButton::kFocusRectInset = 3;
 const char LabelButton::kViewClassName[] = "LabelButton";
 
 LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
@@ -81,8 +80,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Inset the button focus rect from the actual border; roughly match Windows.
-  SetFocusPainter(
-      Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(3, 3, 3, 3)));
+  SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
+      kFocusRectInset, kFocusRectInset, kFocusRectInset, kFocusRectInset)));
 }
 
 LabelButton::~LabelButton() {}

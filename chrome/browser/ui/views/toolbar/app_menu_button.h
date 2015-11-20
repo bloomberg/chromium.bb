@@ -62,6 +62,10 @@ class AppMenuButton : public views::InkDropHost,
   // Only used in MD.
   void UpdateIcon();
 
+  // Sets |margin_trailing_| when the browser is maximized and updates layout
+  // to make the focus rectangle centered.
+  void SetTrailingMargin(int margin);
+
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
@@ -73,6 +77,8 @@ class AppMenuButton : public views::InkDropHost,
 
   // views::MenuButton:
   const char* GetClassName() const override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  gfx::Rect GetThemePaintRect() const override;
   bool GetDropFormats(
       int* formats,
       std::set<ui::Clipboard::FormatType>* format_types) override;
@@ -113,6 +119,10 @@ class AppMenuButton : public views::InkDropHost,
   // Used by ShowMenu() to detect when |this| has been deleted; see comments
   // there.
   bool* destroyed_;
+
+  // Any trailing margin to be applied. Used when the browser is in
+  // a maximized state to extend to the full window width.
+  int margin_trailing_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<AppMenuButton> weak_factory_;

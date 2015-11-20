@@ -16,7 +16,7 @@ class Border;
 class ButtonListener;
 }
 
-// A subclass of ToolbarButton to allow the back button's hittest region to
+// A subclass of ToolbarButton to allow the back button's hit test region to
 // extend all the way to the start of the toolbar (i.e. the screen edge) in
 // maximized mode, to benefit from Fitt's Law.  The button images and focus
 // border are still drawn with the normal square shape.
@@ -27,6 +27,8 @@ class BackButton : public ToolbarButton {
   BackButton(views::ButtonListener* listener, ui::MenuModel* model);
   ~BackButton() override;
 
+  // Sets |margin_leading_| when the browser is maximized and updates layout
+  // to make the focus rectangle centered.
   void SetLeadingMargin(int margin);
 
  protected:
