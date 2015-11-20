@@ -151,7 +151,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             // Do nothing.
         } else {
             DoubleOrString doubleOrStringMember;
-            V8DoubleOrString::toImpl(isolate, doubleOrStringMemberValue, doubleOrStringMember, exceptionState);
+            V8DoubleOrString::toImpl(isolate, doubleOrStringMemberValue, doubleOrStringMember, UnionTypeConversionMode::NotNullable, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setDoubleOrStringMember(doubleOrStringMember);
@@ -340,7 +340,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             // Do nothing.
         } else {
             DoubleOrString otherDoubleOrStringMember;
-            V8DoubleOrString::toImpl(isolate, otherDoubleOrStringMemberValue, otherDoubleOrStringMember, exceptionState);
+            V8DoubleOrString::toImpl(isolate, otherDoubleOrStringMemberValue, otherDoubleOrStringMember, UnionTypeConversionMode::NotNullable, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setOtherDoubleOrStringMember(otherDoubleOrStringMember);
@@ -455,7 +455,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             // Do nothing.
         } else {
             TestInterface2OrUint8Array testInterface2OrUint8ArrayMember;
-            V8TestInterface2OrUint8Array::toImpl(isolate, testInterface2OrUint8ArrayMemberValue, testInterface2OrUint8ArrayMember, exceptionState);
+            V8TestInterface2OrUint8Array::toImpl(isolate, testInterface2OrUint8ArrayMemberValue, testInterface2OrUint8ArrayMember, UnionTypeConversionMode::NotNullable, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setTestInterface2OrUint8ArrayMember(testInterface2OrUint8ArrayMember);

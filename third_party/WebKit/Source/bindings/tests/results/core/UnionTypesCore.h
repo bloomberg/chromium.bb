@@ -71,7 +71,7 @@ private:
 
 class V8ArrayBufferOrArrayBufferViewOrDictionary final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
@@ -131,7 +131,7 @@ private:
 
 class V8BooleanOrStringOrUnrestrictedDouble final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
@@ -184,7 +184,7 @@ private:
 
 class V8DoubleOrString final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, DoubleOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, DoubleOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
@@ -237,7 +237,7 @@ private:
 
 class V8LongOrTestDictionary final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrTestDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrTestDictionary&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
@@ -290,7 +290,7 @@ private:
 
 class V8NodeOrNodeList final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
@@ -350,7 +350,7 @@ private:
 
 class V8StringOrArrayBufferOrArrayBufferView final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrArrayBufferOrArrayBufferView&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrArrayBufferOrArrayBufferView&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
@@ -403,7 +403,7 @@ private:
 
 class V8StringOrDouble final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
@@ -456,7 +456,7 @@ private:
 
 class V8StringOrStringSequence final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrStringSequence&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrStringSequence&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
@@ -509,7 +509,7 @@ private:
 
 class V8TestEnumOrDouble final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
@@ -562,7 +562,7 @@ private:
 
 class V8TestInterface2OrUint8Array final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
@@ -615,7 +615,7 @@ private:
 
 class V8TestInterfaceGarbageCollectedOrString final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
@@ -668,7 +668,7 @@ private:
 
 class V8TestInterfaceOrLong final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
@@ -721,7 +721,7 @@ private:
 
 class V8TestInterfaceOrTestInterfaceEmpty final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrTestInterfaceEmpty&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrTestInterfaceEmpty&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
@@ -774,7 +774,7 @@ private:
 
 class V8TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
@@ -827,7 +827,7 @@ private:
 
 class V8UnrestrictedDoubleOrString final {
 public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, UnrestrictedDoubleOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, UnrestrictedDoubleOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
@@ -841,16 +841,6 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubl
 template <>
 struct NativeValueTraits<UnrestrictedDoubleOrString> {
     CORE_EXPORT static UnrestrictedDoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
-class V8DoubleOrStringOrNull final {
-public:
-    static void toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
-    {
-        if (isUndefinedOrNull(v8Value))
-            return;
-        V8DoubleOrString::toImpl(isolate, v8Value, impl, exceptionState);
-    }
 };
 
 } // namespace blink

@@ -54,7 +54,7 @@ private:
 
 class V8BooleanOrString final {
 public:
-    MODULES_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrString&, ExceptionState&);
+    MODULES_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
 MODULES_EXPORT v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);

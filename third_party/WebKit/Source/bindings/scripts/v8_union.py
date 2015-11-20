@@ -40,18 +40,14 @@ def union_context(union_types, interfaces_info):
     # distinguishing (A or B)? and (A? or B) doesn't make sense.
     container_cpp_types = set()
     union_types_for_containers = set()
-    nullable_cpp_types = set()
     for union_type in union_types:
         cpp_type = union_type.cpp_type
         if cpp_type not in container_cpp_types:
             union_types_for_containers.add(union_type)
             container_cpp_types.add(cpp_type)
-        if union_type.includes_nullable_type:
-            nullable_cpp_types.add(cpp_type)
 
     union_types_for_containers = sorted(union_types_for_containers,
                                         key=lambda union_type: union_type.cpp_type)
-    nullable_cpp_types = sorted(nullable_cpp_types)
 
     return {
         'containers': [container_context(union_type, interfaces_info)
@@ -59,7 +55,6 @@ def union_context(union_types, interfaces_info):
         'cpp_includes': sorted(cpp_includes - UNION_CPP_INCLUDES_BLACKLIST),
         'header_forward_decls': sorted(header_forward_decls),
         'header_includes': sorted(header_includes),
-        'nullable_cpp_types': nullable_cpp_types,
     }
 
 

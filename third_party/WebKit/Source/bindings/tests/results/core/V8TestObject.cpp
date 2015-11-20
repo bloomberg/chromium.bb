@@ -1962,7 +1962,7 @@ static void doubleOrStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleOrStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DoubleOrString cppValue;
-    V8DoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8DoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoubleOrStringAttribute(cppValue);
@@ -1998,7 +1998,7 @@ static void doubleOrStringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleOrStringOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DoubleOrString cppValue;
-    V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8DoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoubleOrStringOrNullAttribute(cppValue);
@@ -2034,7 +2034,7 @@ static void doubleOrNullStringAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleOrNullStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DoubleOrString cppValue;
-    V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8DoubleOrNullOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoubleOrNullStringAttribute(cppValue);
@@ -2070,7 +2070,7 @@ static void stringOrStringSequenceAttributeAttributeSetter(v8::Local<v8::Value> 
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringOrStringSequenceAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     StringOrStringSequence cppValue;
-    V8StringOrStringSequence::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8StringOrStringSequence::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setStringOrStringSequenceAttribute(cppValue);
@@ -2106,7 +2106,7 @@ static void testEnumOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     ExceptionState exceptionState(ExceptionState::SetterContext, "testEnumOrDoubleAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestEnumOrDouble cppValue;
-    V8TestEnumOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8TestEnumOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setTestEnumOrDoubleAttribute(cppValue);
@@ -2142,7 +2142,7 @@ static void unrestrictedDoubleOrStringAttributeAttributeSetter(v8::Local<v8::Val
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleOrStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     UnrestrictedDoubleOrString cppValue;
-    V8UnrestrictedDoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8UnrestrictedDoubleOrString::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setUnrestrictedDoubleOrStringAttribute(cppValue);
@@ -7370,7 +7370,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DoubleOrString arg;
     {
-        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7395,7 +7395,7 @@ static void voidMethodDoubleOrDOMStringOrNullArgMethod(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DoubleOrString arg;
     {
-        V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7420,7 +7420,7 @@ static void voidMethodDoubleOrNullOrDOMStringArgMethod(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DoubleOrString arg;
     {
-        V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8DoubleOrNullOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7445,7 +7445,7 @@ static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(const v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     StringOrArrayBufferOrArrayBufferView arg;
     {
-        V8StringOrArrayBufferOrArrayBufferView::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8StringOrArrayBufferOrArrayBufferView::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7470,7 +7470,7 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ArrayBufferOrArrayBufferViewOrDictionary arg;
     {
-        V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -8548,21 +8548,21 @@ static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallback
     DoubleOrString defaultNullArg;
     {
         if (!info[0]->IsUndefined()) {
-            V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, exceptionState);
+            V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, UnionTypeConversionMode::NotNullable, exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         } else {
             defaultLongArg.setDouble(10);
         }
         if (!info[1]->IsUndefined()) {
-            V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, exceptionState);
+            V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::Nullable, exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         } else {
             defaultStringArg.setString(String("foo"));
         }
         if (!info[2]->IsUndefined()) {
-            V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[2], defaultNullArg, exceptionState);
+            V8DoubleOrString::toImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::Nullable, exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         } else {
@@ -12228,7 +12228,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, exceptionState);
+        V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

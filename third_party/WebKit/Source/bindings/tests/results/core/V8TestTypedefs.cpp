@@ -112,6 +112,42 @@ static void tAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8:
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+    StringOrDouble result;
+    impl->domStringOrDoubleOrNullAttribute(result);
+    v8SetReturnValue(info, result);
+}
+
+static void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "domStringOrDoubleOrNullAttribute", "TestTypedefs", holder, info.GetIsolate());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
+    StringOrDouble cppValue;
+    V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::Nullable, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    impl->setDomStringOrDoubleOrNullAttribute(cppValue);
+}
+
+static void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayOfLongsArg", "TestTypedefs", info.Holder(), info.GetIsolate());
@@ -330,6 +366,7 @@ const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
 
 const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
     {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"domStringOrDoubleOrNullAttribute", TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetterCallback, TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {

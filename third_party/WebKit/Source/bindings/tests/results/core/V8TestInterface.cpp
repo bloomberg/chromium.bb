@@ -338,7 +338,7 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringOrDoubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     StringOrDouble cppValue;
-    V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, exceptionState);
+    V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setStringOrDoubleAttribute(cppValue);

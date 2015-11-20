@@ -114,7 +114,7 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
             addEventListenerMethodEpilogueCustom(info, impl);
             return;
         }
-        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, exceptionState);
+        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -160,7 +160,7 @@ void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackIn
             removeEventListenerMethodEpilogueCustom(info, impl);
             return;
         }
-        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, exceptionState);
+        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

@@ -48,6 +48,7 @@ typedef (DOMString or double) DOMStringOrDouble;
 ] interface TestTypedefs {
     attribute ULongLong uLongLongAttribute;
     attribute T tAttribute;
+    attribute DOMStringOrDouble? domStringOrDoubleOrNullAttribute;
 
     void voidMethodArrayOfLongsArg(optional ArrayOfLongs arrayOfLongsArg);
 

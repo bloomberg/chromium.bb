@@ -64,15 +64,17 @@ DEFINE_TRACE({{container.cpp_class}})
     {% endfor %}
 }
 
-void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
+void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{container.cpp_class}}& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
         return;
 
     {# The numbers in the following comments refer to the steps described in
-       http://heycam.github.io/webidl/#es-union
-       NOTE: Step 1 (null or undefined) is handled in *OrNull::toImpl()
-       FIXME: Implement all necessary steps #}
+       http://heycam.github.io/webidl/#es-union #}
+    {# 1. null or undefined #}
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+        return;
+
     {# 3. Platform objects (interfaces) #}
     {% for interface in container.interface_types %}
     {{assign_and_return_if_hasinstance(interface) | indent}}
@@ -194,7 +196,7 @@ v8::Local<v8::Value> toV8(const {{container.cpp_class}}& impl, v8::Local<v8::Obj
 {{container.cpp_class}} NativeValueTraits<{{container.cpp_class}}>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     {{container.cpp_class}} impl;
-    V8{{container.cpp_class}}::toImpl(isolate, value, impl, exceptionState);
+    V8{{container.cpp_class}}::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 

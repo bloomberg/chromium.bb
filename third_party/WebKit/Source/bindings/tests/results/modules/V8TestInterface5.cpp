@@ -584,7 +584,7 @@ static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
     BooleanOrString arg;
     {
-        V8BooleanOrString::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8BooleanOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -609,7 +609,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
     DoubleOrString arg;
     {
-        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

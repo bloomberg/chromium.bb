@@ -104,9 +104,12 @@ DEFINE_TRACE(ArrayBufferOrArrayBufferViewOrDictionary)
 {
 }
 
-void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, ExceptionState& exceptionState)
+void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
@@ -152,7 +155,7 @@ v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, 
 ArrayBufferOrArrayBufferViewOrDictionary NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     ArrayBufferOrArrayBufferViewOrDictionary impl;
-    V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(isolate, value, impl, exceptionState);
+    V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -229,9 +232,12 @@ DEFINE_TRACE(BooleanOrStringOrUnrestrictedDouble)
 {
 }
 
-void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, ExceptionState& exceptionState)
+void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsBoolean()) {
@@ -277,7 +283,7 @@ v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::L
 BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     BooleanOrStringOrUnrestrictedDouble impl;
-    V8BooleanOrStringOrUnrestrictedDouble::toImpl(isolate, value, impl, exceptionState);
+    V8BooleanOrStringOrUnrestrictedDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -334,9 +340,12 @@ DEFINE_TRACE(DoubleOrString)
 {
 }
 
-void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
+void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsNumber()) {
@@ -375,7 +384,7 @@ v8::Local<v8::Value> toV8(const DoubleOrString& impl, v8::Local<v8::Object> crea
 DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     DoubleOrString impl;
-    V8DoubleOrString::toImpl(isolate, value, impl, exceptionState);
+    V8DoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -433,9 +442,12 @@ DEFINE_TRACE(LongOrTestDictionary)
     visitor->trace(m_testDictionary);
 }
 
-void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, ExceptionState& exceptionState)
+void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
@@ -483,7 +495,7 @@ v8::Local<v8::Value> toV8(const LongOrTestDictionary& impl, v8::Local<v8::Object
 LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     LongOrTestDictionary impl;
-    V8LongOrTestDictionary::toImpl(isolate, value, impl, exceptionState);
+    V8LongOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -542,9 +554,12 @@ DEFINE_TRACE(NodeOrNodeList)
     visitor->trace(m_nodeList);
 }
 
-void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, ExceptionState& exceptionState)
+void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8Node::hasInstance(v8Value, isolate)) {
@@ -580,7 +595,7 @@ v8::Local<v8::Value> toV8(const NodeOrNodeList& impl, v8::Local<v8::Object> crea
 NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     NodeOrNodeList impl;
-    V8NodeOrNodeList::toImpl(isolate, value, impl, exceptionState);
+    V8NodeOrNodeList::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -657,9 +672,12 @@ DEFINE_TRACE(StringOrArrayBufferOrArrayBufferView)
 {
 }
 
-void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, ExceptionState& exceptionState)
+void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
@@ -704,7 +722,7 @@ v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::
 StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     StringOrArrayBufferOrArrayBufferView impl;
-    V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, exceptionState);
+    V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -761,9 +779,12 @@ DEFINE_TRACE(StringOrDouble)
 {
 }
 
-void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, ExceptionState& exceptionState)
+void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsNumber()) {
@@ -802,7 +823,7 @@ v8::Local<v8::Value> toV8(const StringOrDouble& impl, v8::Local<v8::Object> crea
 StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     StringOrDouble impl;
-    V8StringOrDouble::toImpl(isolate, value, impl, exceptionState);
+    V8StringOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -859,9 +880,12 @@ DEFINE_TRACE(StringOrStringSequence)
 {
 }
 
-void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, ExceptionState& exceptionState)
+void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsArray()) {
@@ -900,7 +924,7 @@ v8::Local<v8::Value> toV8(const StringOrStringSequence& impl, v8::Local<v8::Obje
 StringOrStringSequence NativeValueTraits<StringOrStringSequence>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     StringOrStringSequence impl;
-    V8StringOrStringSequence::toImpl(isolate, value, impl, exceptionState);
+    V8StringOrStringSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -968,9 +992,12 @@ DEFINE_TRACE(TestEnumOrDouble)
 {
 }
 
-void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, ExceptionState& exceptionState)
+void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsNumber()) {
@@ -1017,7 +1044,7 @@ v8::Local<v8::Value> toV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> cr
 TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestEnumOrDouble impl;
-    V8TestEnumOrDouble::toImpl(isolate, value, impl, exceptionState);
+    V8TestEnumOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1074,9 +1101,12 @@ DEFINE_TRACE(TestInterface2OrUint8Array)
 {
 }
 
-void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, ExceptionState& exceptionState)
+void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8TestInterface2::hasInstance(v8Value, isolate)) {
@@ -1112,7 +1142,7 @@ v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::
 TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestInterface2OrUint8Array impl;
-    V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, exceptionState);
+    V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1170,9 +1200,12 @@ DEFINE_TRACE(TestInterfaceGarbageCollectedOrString)
     visitor->trace(m_testInterfaceGarbageCollected);
 }
 
-void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, ExceptionState& exceptionState)
+void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
@@ -1209,7 +1242,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8:
 TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestInterfaceGarbageCollectedOrString impl;
-    V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, exceptionState);
+    V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1266,9 +1299,12 @@ DEFINE_TRACE(TestInterfaceOrLong)
 {
 }
 
-void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, ExceptionState& exceptionState)
+void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -1313,7 +1349,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object>
 TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestInterfaceOrLong impl;
-    V8TestInterfaceOrLong::toImpl(isolate, value, impl, exceptionState);
+    V8TestInterfaceOrLong::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1370,9 +1406,12 @@ DEFINE_TRACE(TestInterfaceOrTestInterfaceEmpty)
 {
 }
 
-void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, ExceptionState& exceptionState)
+void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -1408,7 +1447,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Loc
 TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestInterfaceOrTestInterfaceEmpty impl;
-    V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, exceptionState);
+    V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1467,9 +1506,12 @@ DEFINE_TRACE(TestInterfaceWillBeGarbageCollectedOrTestDictionary)
     visitor->trace(m_testDictionary);
 }
 
-void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, ExceptionState& exceptionState)
+void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (V8TestInterfaceWillBeGarbageCollected::hasInstance(v8Value, isolate)) {
@@ -1508,7 +1550,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDiction
 TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestInterfaceWillBeGarbageCollectedOrTestDictionary impl;
-    V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, exceptionState);
+    V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 
@@ -1565,9 +1607,12 @@ DEFINE_TRACE(UnrestrictedDoubleOrString)
 {
 }
 
-void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, ExceptionState& exceptionState)
+void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())
+        return;
+
+    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
     if (v8Value->IsNumber()) {
@@ -1606,7 +1651,7 @@ v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
 UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     UnrestrictedDoubleOrString impl;
-    V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, exceptionState);
+    V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 

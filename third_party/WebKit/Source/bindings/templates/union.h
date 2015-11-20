@@ -49,7 +49,7 @@ private:
 
 class V8{{container.cpp_class}} final {
 public:
-    {{exported}}static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
+    {{exported}}static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{container.cpp_class}}&, UnionTypeConversionMode, ExceptionState&);
 };
 
 {{exported}}v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
@@ -63,20 +63,6 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_c
 template <>
 struct NativeValueTraits<{{container.cpp_class}}> {
     {{exported}}static {{container.cpp_class}} nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
-{% endfor %}
-{% for cpp_type in nullable_cpp_types %}
-class V8{{cpp_type}}OrNull final {
-public:
-    static void toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{cpp_type}}& impl, ExceptionState& exceptionState)
-    {
-        {# http://heycam.github.io/webidl/#es-union #}
-        {# 1. null or undefined #}
-        if (isUndefinedOrNull(v8Value))
-            return;
-        V8{{cpp_type}}::toImpl(isolate, v8Value, impl, exceptionState);
-    }
 };
 
 {% endfor %}
