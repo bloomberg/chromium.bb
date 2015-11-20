@@ -142,10 +142,11 @@ bool ParseFtpDirectoryListingLs(
     if (columns.size() == 2 && !received_total_line) {
       received_total_line = true;
 
+      // Some FTP servers incorrectly return a negative integer for "n". Since
+      // this value is ignored anyway, just check any valid integer was
+      // provided.
       int64 total_number;
       if (!base::StringToInt64(columns[1], &total_number))
-        return false;
-      if (total_number < 0)
         return false;
 
       continue;
