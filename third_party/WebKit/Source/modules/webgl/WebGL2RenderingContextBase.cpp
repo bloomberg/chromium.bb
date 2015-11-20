@@ -94,6 +94,9 @@ const GLenum kSupportedInternalFormatsStorage[] = {
     GL_DEPTH_COMPONENT32F,
     GL_DEPTH24_STENCIL8,
     GL_DEPTH32F_STENCIL8,
+};
+
+const GLenum kCompressedTextureFormatsETC2EAC[] = {
     GL_COMPRESSED_R11_EAC,
     GL_COMPRESSED_SIGNED_R11_EAC,
     GL_COMPRESSED_RG11_EAC,
@@ -110,6 +113,8 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passed
     : WebGLRenderingContextBase(passedCanvas, context, requestedAttributes)
 {
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + arraysize(kSupportedInternalFormatsStorage));
+    m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
+    m_compressedTextureFormatsETC2EAC.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
 }
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
@@ -584,6 +589,11 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
     WebGLTexture* tex = validateTextureBinding(functionName, target, false);
     if (!tex)
         return false;
+
+    if (functionType == TexStorageType3D && target != GL_TEXTURE_2D_ARRAY && m_compressedTextureFormatsETC2EAC.find(internalformat) != m_compressedTextureFormatsETC2EAC.end()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "target for ETC2/EAC internal formats must be TEXTURE_2D_ARRAY");
+        return false;
+    }
 
     if (m_supportedInternalFormatsStorage.find(internalformat) == m_supportedInternalFormatsStorage.end()) {
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
