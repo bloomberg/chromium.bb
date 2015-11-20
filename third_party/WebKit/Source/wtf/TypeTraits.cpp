@@ -25,78 +25,14 @@
 #include "Assertions.h"
 #include "Noncopyable.h"
 
+#include <type_traits>
+
 namespace WTF {
 
-static_assert(IsInteger<bool>::value, "bool should be an integer");
-static_assert(IsInteger<char>::value, "char should be an integer");
-static_assert(IsInteger<signed char>::value, "signed char should be an integer");
-static_assert(IsInteger<unsigned char>::value, "unsigned char should be an integer");
-static_assert(IsInteger<short>::value, "short should be an integer");
-static_assert(IsInteger<unsigned short>::value, "unsigned short should be an integer");
-static_assert(IsInteger<int>::value, "int should be an integer");
-static_assert(IsInteger<unsigned>::value, "unsigned int should be an integer");
-static_assert(IsInteger<long>::value, "long should be an integer");
-static_assert(IsInteger<unsigned long>::value, "unsigned long should be an integer");
-static_assert(IsInteger<long long>::value, "long long should be an integer");
-static_assert(IsInteger<unsigned long long>::value, "unsigned long long should be an integer");
-#if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-static_assert(IsInteger<wchar_t>::value, "wchar_t should be an integer");
-#endif
-static_assert(!IsInteger<char*>::value, "char pointer should not be an integer");
-static_assert(!IsInteger<const char*>::value, "const char pointer should not be an integer");
-static_assert(!IsInteger<volatile char*>::value, "volatile char pointer should not be an integer");
-static_assert(!IsInteger<double>::value, "double should not be an integer");
-static_assert(!IsInteger<float>::value, "float should not be an integer");
-
-static_assert(IsFloatingPoint<float>::value, "float should be floating point");
-static_assert(IsFloatingPoint<double>::value, "double should be floating point");
-static_assert(IsFloatingPoint<long double>::value, "long double should be floating point");
-static_assert(!IsFloatingPoint<int>::value, "int should not be floating point");
-
-static_assert(IsPointer<void*>::value, "void* should be a pointer");
-static_assert(IsPointer<char*>::value, "char* should be a pointer");
-static_assert(IsPointer<const char*>::value, "const char* should be a pointer");
-static_assert(!IsPointer<char>::value, "char should not be a pointer");
-static_assert(!IsPointer<int>::value, "int should not be a pointer");
-static_assert(!IsPointer<long>::value, "long should not be a pointer");
-
-enum TestEnum { TestEnumValue };
-static_assert(IsEnum<TestEnum>::value, "enum should be an enumerated type");
-static_assert(!IsEnum<int>::value, "int should not be an enumerated type");
-static_assert(!IsEnum<TestEnum*>::value, "enum* should not be an enumerated type");
-
-static_assert(IsScalar<TestEnum>::value, "enum should be scalar");
-static_assert(IsScalar<int>::value, "int should be scalar");
-static_assert(IsScalar<TestEnum*>::value, "enum* should be scalar");
-static_assert(IsScalar<double>::value, "double should be scalar");
-
-static_assert(IsPod<bool>::value, "bool should be a POD");
-static_assert(IsPod<char>::value, "char should be a POD");
-static_assert(IsPod<signed char>::value, "signed char should be a POD");
-static_assert(IsPod<unsigned char>::value, "unsigned char should be a POD");
-static_assert(IsPod<short>::value, "short should be a POD");
-static_assert(IsPod<unsigned short>::value, "unsigned short should be a POD");
-static_assert(IsPod<int>::value, "int should be a POD");
-static_assert(IsPod<unsigned>::value, "unsigned int should be a POD");
-static_assert(IsPod<long>::value, "long should be a POD");
-static_assert(IsPod<unsigned long>::value, "unsigned long should be a POD");
-static_assert(IsPod<long long>::value, "long long should be a POD");
-static_assert(IsPod<unsigned long long>::value, "unsigned long long should be a POD");
-#if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-static_assert(IsPod<wchar_t>::value, "wchar_t should be a POD");
-#endif
-static_assert(IsPod<char*>::value, "char* should be a POD");
-static_assert(IsPod<const char*>::value, "const char* should be a POD");
-static_assert(IsPod<volatile char*>::value, "volatile char* should be a POD");
-static_assert(IsPod<double>::value, "double should be a POD");
-static_assert(IsPod<long double>::value, "long double should be a POD");
-static_assert(IsPod<float>::value, "float should be a POD");
 struct VirtualClass {
     virtual void A() { }
 };
 static_assert(!IsTriviallyMoveAssignable<VirtualClass>::value, "VirtualClass should not be trivially move assignable");
-static_assert(!IsScalar<VirtualClass>::value, "classes should not be scalar");
-static_assert(IsScalar<VirtualClass*>::value, "pointers to classes should be scalar");
 
 struct DestructorClass {
     ~DestructorClass() { }
@@ -225,12 +161,8 @@ static_assert((IsSameType<int, RemoveReference<int>::Type>::value), "RemoveRefer
 static_assert((IsSameType<int, RemoveReference<int&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
 static_assert((IsSameType<int, RemoveReference<int&&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
 
-
 typedef int IntArray[];
 typedef int IntArraySized[4];
-
-static_assert((IsArray<IntArray>::value), "IsArray should recognize arrays");
-static_assert((IsArray<IntArraySized>::value), "IsArray should recognize sized arrays");
 
 static_assert((IsSameType<int, RemoveExtent<IntArray>::Type>::value), "RemoveExtent should return the array element type of an array");
 static_assert((IsSameType<int, RemoveExtent<IntArraySized>::Type>::value), "RemoveExtent should return the array element type of a sized array");

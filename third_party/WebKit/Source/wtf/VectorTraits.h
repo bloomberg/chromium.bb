@@ -24,6 +24,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
+#include <type_traits>
 #include <utility>
 
 namespace WTF {
@@ -45,7 +46,7 @@ struct VectorTraitsBase {
     static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
     static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
     static const bool canFillWithMemset = IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
-    static const bool canCompareWithMemcmp = IsScalar<T>::value; // Types without padding.
+    static const bool canCompareWithMemcmp = std::is_scalar<T>::value; // Types without padding.
     template <typename U = void>
     struct NeedsTracingLazily {
         static const bool value = NeedsTracing<T>::value;
@@ -108,7 +109,7 @@ struct VectorTraits<std::pair<First, Second>> {
 
 #define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value || !IsScalar<ClassName>::value, "macro not needed"); \
+static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value || !std::is_scalar<ClassName>::value, "macro not needed"); \
 template <> \
 struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> {}; \
 }

@@ -59,7 +59,8 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "wtf/MathExtras.h"
-#include "wtf/TypeTraits.h"
+
+#include <type_traits>
 
 namespace blink {
 
@@ -95,7 +96,7 @@ BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* valu
 
 template<typename T> T animatableValueClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
 {
-    static_assert(WTF::IsInteger<T>::value, "should use integral type T when rounding values");
+    static_assert(std::is_integral<T>::value, "should use integral type T when rounding values");
     return clampTo<T>(roundForImpreciseConversion<T>(toAnimatableDouble(value)->toDouble()), min, max);
 }
 

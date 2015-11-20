@@ -31,11 +31,7 @@ template<typename T> class RawPtr;
 
 // The following are provided in this file:
 //
-//   IsInteger<T>::value
-//   IsPod<T>::value
 //   IsConvertibleToInteger<T>::value
-//
-//   IsArray<T>::value
 //
 //   IsSameType<T, U>::value
 //
@@ -51,50 +47,6 @@ template<typename T> class RawPtr;
 template <bool Predicate, class T = void> struct EnableIf;
 template <class T> struct EnableIf<true, T> { typedef T Type; };
 
-template <typename T> struct IsInteger           { static const bool value = false; };
-template <> struct IsInteger<bool>               { static const bool value = true; };
-template <> struct IsInteger<char>               { static const bool value = true; };
-template <> struct IsInteger<signed char>        { static const bool value = true; };
-template <> struct IsInteger<unsigned char>      { static const bool value = true; };
-template <> struct IsInteger<short>              { static const bool value = true; };
-template <> struct IsInteger<unsigned short>     { static const bool value = true; };
-template <> struct IsInteger<int>                { static const bool value = true; };
-template <> struct IsInteger<unsigned>           { static const bool value = true; };
-template <> struct IsInteger<long>               { static const bool value = true; };
-template <> struct IsInteger<unsigned long>      { static const bool value = true; };
-template <> struct IsInteger<long long>          { static const bool value = true; };
-template <> struct IsInteger<unsigned long long> { static const bool value = true; };
-#if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-template <> struct IsInteger<wchar_t>            { static const bool value = true; };
-#endif
-
-template <typename T> struct IsFloatingPoint     { static const bool value = false; };
-template <> struct IsFloatingPoint<float>        { static const bool value = true; };
-template <> struct IsFloatingPoint<double>       { static const bool value = true; };
-template <> struct IsFloatingPoint<long double>  { static const bool value = true; };
-
-template <typename T> struct IsArithmetic        { static const bool value = IsInteger<T>::value || IsFloatingPoint<T>::value; };
-
-template <typename T> struct IsPointer {
-    static const bool value = false;
-};
-
-template <typename P> struct IsPointer<const P*> {
-    static const bool value = true;
-};
-
-template <typename P> struct IsPointer<P*> {
-    static const bool value = true;
-};
-
-template <typename T> struct IsEnum {
-    static const bool value = __is_enum(T);
-};
-
-template <typename T> struct IsScalar {
-    static const bool value = IsEnum<T>::value || IsArithmetic<T>::value || IsPointer<T>::value;
-};
-
 template <typename T> struct IsWeak {
     static const bool value = false;
 };
@@ -102,10 +54,6 @@ template <typename T> struct IsWeak {
 enum WeakHandlingFlag {
     NoWeakHandlingInCollections,
     WeakHandlingInCollections
-};
-
-template <typename T> struct IsPod {
-    static const bool value = __is_pod(T);
 };
 
 template <typename T> struct IsTriviallyCopyAssignable {
@@ -147,7 +95,7 @@ template <typename T> class IsConvertibleToInteger {
     };
 
 public:
-    static const bool value = IsInteger<T>::value || IsConvertibleToDouble<!IsInteger<T>::value, T>::value;
+    static const bool value = std::is_integral<T>::value || IsConvertibleToDouble<!std::is_integral<T>::value, T>::value;
 };
 
 template <typename From, typename To> class IsPointerConvertible {
@@ -162,18 +110,6 @@ public:
     enum {
         Value = (sizeof(YesType) == sizeof(convertCheck(static_cast<From*>(0))))
     };
-};
-
-template <class T> struct IsArray {
-    static const bool value = false;
-};
-
-template <class T> struct IsArray<T[]> {
-    static const bool value = true;
-};
-
-template <class T, size_t N> struct IsArray<T[N]> {
-    static const bool value = true;
 };
 
 template <typename T, typename U> struct IsSameType {

@@ -27,6 +27,7 @@
 #include "wtf/TypeTraits.h"
 #include <limits>
 #include <string.h> // For memset.
+#include <type_traits>
 #include <utility>
 
 namespace WTF {
@@ -76,7 +77,7 @@ template <typename T> struct GenericHashTraitsBase<true, T> : GenericHashTraitsB
     static bool isDeletedValue(T value) { return value == static_cast<T>(-1); }
 };
 
-template <typename T> struct GenericHashTraits : GenericHashTraitsBase<IsInteger<T>::value, T> {
+template <typename T> struct GenericHashTraits : GenericHashTraitsBase<std::is_integral<T>::value, T> {
     typedef T TraitType;
     typedef T EmptyValueType;
 
