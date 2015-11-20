@@ -33,7 +33,8 @@ void PageNotificationDelegate::NotificationClosed() {
 
   sender->Send(new PlatformNotificationMsg_DidClose(notification_id_));
   static_cast<RenderProcessHostImpl*>(sender)
-      ->notification_message_filter()->DidCloseNotification(notification_id_);
+      ->notification_message_filter()
+      ->DidCloseNotification(notification_id_);
 }
 
 void PageNotificationDelegate::NotificationClick() {

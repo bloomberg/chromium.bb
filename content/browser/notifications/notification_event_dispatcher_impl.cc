@@ -67,8 +67,7 @@ void NotificationClickEventFinished(
       break;
   }
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(dispatch_complete_callback, status));
 }
 
@@ -83,9 +82,9 @@ void DispatchNotificationClickEventOnRegistration(
         service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(OS_ANDROID)
-    // This LOG(INFO) deliberately exists to help track down the cause of
-    // https://crbug.com/534537, where notifications sometimes do not react to
-    // the user clicking on them. It should be removed once that's fixed.
+  // This LOG(INFO) deliberately exists to help track down the cause of
+  // https://crbug.com/534537, where notifications sometimes do not react to
+  // the user clicking on them. It should be removed once that's fixed.
   LOG(INFO) << "Trying to dispatch notification for SW with status: "
             << service_worker_status << " action_index: " << action_index;
 #endif
@@ -95,12 +94,10 @@ void DispatchNotificationClickEventOnRegistration(
                    service_worker_registration);
 
     DCHECK(service_worker_registration->active_version());
-    service_worker_registration->active_version()->
-        DispatchNotificationClickEvent(
-            dispatch_event_callback,
-            notification_database_data.notification_id,
-            notification_database_data.notification_data,
-            action_index);
+    service_worker_registration->active_version()
+        ->DispatchNotificationClickEvent(
+            dispatch_event_callback, notification_database_data.notification_id,
+            notification_database_data.notification_data, action_index);
     return;
   }
 
@@ -134,8 +131,7 @@ void DispatchNotificationClickEventOnRegistration(
       break;
   }
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(dispatch_complete_callback, status));
 }
 
@@ -159,16 +155,14 @@ void FindServiceWorkerRegistration(
 #endif
   if (!success) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(dispatch_complete_callback,
                    PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR));
     return;
   }
 
   service_worker_context->FindReadyRegistrationForId(
-      notification_database_data.service_worker_registration_id,
-      origin,
+      notification_database_data.service_worker_registration_id, origin,
       base::Bind(&DispatchNotificationClickEventOnRegistration,
                  notification_database_data, action_index,
                  dispatch_complete_callback));
@@ -185,11 +179,9 @@ void ReadNotificationDatabaseData(
     scoped_refptr<PlatformNotificationContextImpl> notification_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   notification_context->ReadNotificationData(
-      persistent_notification_id,
-      origin,
-      base::Bind(&FindServiceWorkerRegistration,
-                 origin, action_index, dispatch_complete_callback,
-                 service_worker_context));
+      persistent_notification_id, origin,
+      base::Bind(&FindServiceWorkerRegistration, origin, action_index,
+                 dispatch_complete_callback, service_worker_context));
 }
 
 }  // namespace
@@ -231,15 +223,10 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
           partition->GetPlatformNotificationContext());
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ReadNotificationDatabaseData,
-                 persistent_notification_id,
-                 origin,
-                 action_index,
-                 dispatch_complete_callback,
-                 service_worker_context,
-                 notification_context));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ReadNotificationDatabaseData, persistent_notification_id,
+                 origin, action_index, dispatch_complete_callback,
+                 service_worker_context, notification_context));
 }
 
 }  // namespace content

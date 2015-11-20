@@ -39,8 +39,8 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter implementation. Called on the UI thread.
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OverrideThreadForMessage(
-      const IPC::Message& message, content::BrowserThread::ID* thread) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
 
  protected:
   ~NotificationMessageFilter() override;
@@ -67,9 +67,8 @@ class NotificationMessageFilter : public BrowserMessageFilter {
                           const GURL& origin,
                           const std::string& filter_tag);
   void OnClosePlatformNotification(int notification_id);
-  void OnClosePersistentNotification(
-      const GURL& origin,
-      int64_t persistent_notification_id);
+  void OnClosePersistentNotification(const GURL& origin,
+                                     int64_t persistent_notification_id);
 
   // Callback to be invoked by the notification context when the notification
   // data for the persistent notification may have been written, as indicated by
@@ -107,9 +106,8 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   // cases where the renderer shouldn't send messages if it weren't the case. If
   // no permission has been granted, a bad message has been received and the
   // renderer should be killed accordingly.
-  bool VerifyNotificationPermissionGranted(
-      PlatformNotificationService* service,
-      const GURL& origin);
+  bool VerifyNotificationPermissionGranted(PlatformNotificationService* service,
+                                           const GURL& origin);
 
   int process_id_;
   scoped_refptr<PlatformNotificationContextImpl> notification_context_;

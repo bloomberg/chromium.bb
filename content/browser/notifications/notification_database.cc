@@ -68,8 +68,7 @@ std::string CreateDataPrefix(const GURL& origin) {
   if (!origin.is_valid())
     return kDataKeyPrefix;
 
-  return base::StringPrintf("%s%s%c",
-                            kDataKeyPrefix,
+  return base::StringPrintf("%s%s%c", kDataKeyPrefix,
                             storage::GetIdentifierFromOrigin(origin).c_str(),
                             kKeySeparator);
 }
@@ -98,8 +97,7 @@ NotificationDatabase::Status DeserializedNotificationData(
 }  // namespace
 
 NotificationDatabase::NotificationDatabase(const base::FilePath& path)
-    : path_(path) {
-}
+    : path_(path) {}
 
 NotificationDatabase::~NotificationDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -111,8 +109,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
 
   if (!create_if_missing) {
-    if (IsInMemoryDatabase() ||
-        !base::PathExists(path_) ||
+    if (IsInMemoryDatabase() || !base::PathExists(path_) ||
         base::IsDirectoryEmpty(path_)) {
       return NotificationDatabase::STATUS_ERROR_NOT_FOUND;
     }
@@ -164,8 +161,7 @@ NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
                                       notification_database_data);
 }
 
-NotificationDatabase::Status
-NotificationDatabase::ReadAllNotificationData(
+NotificationDatabase::Status NotificationDatabase::ReadAllNotificationData(
     std::vector<NotificationDatabaseData>* notification_data_vector) const {
   return ReadAllNotificationDataInternal(GURL() /* origin */,
                                          kInvalidServiceWorkerRegistrationId,
@@ -176,9 +172,8 @@ NotificationDatabase::Status
 NotificationDatabase::ReadAllNotificationDataForOrigin(
     const GURL& origin,
     std::vector<NotificationDatabaseData>* notification_data_vector) const {
-  return ReadAllNotificationDataInternal(origin,
-                                         kInvalidServiceWorkerRegistrationId,
-                                         notification_data_vector);
+  return ReadAllNotificationDataInternal(
+      origin, kInvalidServiceWorkerRegistrationId, notification_data_vector);
 }
 
 NotificationDatabase::Status
@@ -186,8 +181,7 @@ NotificationDatabase::ReadAllNotificationDataForServiceWorkerRegistration(
     const GURL& origin,
     int64_t service_worker_registration_id,
     std::vector<NotificationDatabaseData>* notification_data_vector) const {
-  return ReadAllNotificationDataInternal(origin,
-                                         service_worker_registration_id,
+  return ReadAllNotificationDataInternal(origin, service_worker_registration_id,
                                          notification_data_vector);
 }
 
@@ -206,8 +200,7 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
   storage_data.notification_id = next_notification_id_;
 
   std::string serialized_data;
-  if (!SerializeNotificationDatabaseData(storage_data,
-                                         &serialized_data)) {
+  if (!SerializeNotificationDatabaseData(storage_data, &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << origin;
     return STATUS_ERROR_FAILED;
@@ -218,8 +211,8 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
   batch.Put(kNextNotificationIdKey,
             base::Int64ToString(next_notification_id_ + 1));
 
-  Status status = LevelDBStatusToStatus(
-      db_->Write(leveldb::WriteOptions(), &batch));
+  Status status =
+      LevelDBStatusToStatus(db_->Write(leveldb::WriteOptions(), &batch));
   if (status != STATUS_OK)
     return status;
 
@@ -243,9 +236,8 @@ NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataForOrigin(
     const GURL& origin,
     std::set<int64_t>* deleted_notification_set) {
-  return DeleteAllNotificationDataInternal(origin,
-                                           kInvalidServiceWorkerRegistrationId,
-                                           deleted_notification_set);
+  return DeleteAllNotificationDataInternal(
+      origin, kInvalidServiceWorkerRegistrationId, deleted_notification_set);
 }
 
 NotificationDatabase::Status
@@ -253,9 +245,8 @@ NotificationDatabase::DeleteAllNotificationDataForServiceWorkerRegistration(
     const GURL& origin,
     int64_t service_worker_registration_id,
     std::set<int64_t>* deleted_notification_set) {
-  return DeleteAllNotificationDataInternal(origin,
-                                           service_worker_registration_id,
-                                           deleted_notification_set);
+  return DeleteAllNotificationDataInternal(
+      origin, service_worker_registration_id, deleted_notification_set);
 }
 
 NotificationDatabase::Status NotificationDatabase::Destroy() {
@@ -359,7 +350,7 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
         return status;
 
       if (notification_database_data.service_worker_registration_id !=
-              service_worker_registration_id) {
+          service_worker_registration_id) {
         continue;
       }
     }

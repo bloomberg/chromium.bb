@@ -22,14 +22,13 @@ const struct {
   const char* origin;
   int64_t service_worker_registration_id;
 } kExampleNotificationData[] = {
-  { "https://example.com",   0 },
-  { "https://example.com",   kExampleServiceWorkerRegistrationId },
-  { "https://example.com",   kExampleServiceWorkerRegistrationId },
-  { "https://example.com",   kExampleServiceWorkerRegistrationId + 1 },
-  { "https://chrome.com",    0 },
-  { "https://chrome.com",    0 },
-  { "https://chrome.com",    kExampleServiceWorkerRegistrationId }
-};
+    {"https://example.com", 0},
+    {"https://example.com", kExampleServiceWorkerRegistrationId},
+    {"https://example.com", kExampleServiceWorkerRegistrationId},
+    {"https://example.com", kExampleServiceWorkerRegistrationId + 1},
+    {"https://chrome.com", 0},
+    {"https://chrome.com", 0},
+    {"https://chrome.com", kExampleServiceWorkerRegistrationId}};
 
 class NotificationDatabaseTest : public ::testing::Test {
  protected:
@@ -39,8 +38,7 @@ class NotificationDatabaseTest : public ::testing::Test {
   }
 
   // Creates a new NotificationDatabase instance in |path|.
-  NotificationDatabase* CreateDatabaseOnFileSystem(
-      const base::FilePath& path) {
+  NotificationDatabase* CreateDatabaseOnFileSystem(const base::FilePath& path) {
     return new NotificationDatabase(path);
   }
 
@@ -57,8 +55,7 @@ class NotificationDatabaseTest : public ::testing::Test {
         service_worker_registration_id;
 
     ASSERT_EQ(NotificationDatabase::STATUS_OK,
-              database->WriteNotificationData(origin,
-                                              database_data,
+              database->WriteNotificationData(origin, database_data,
                                               notification_id));
   }
 
@@ -68,8 +65,7 @@ class NotificationDatabaseTest : public ::testing::Test {
     int64_t notification_id;
     for (size_t i = 0; i < arraysize(kExampleNotificationData); ++i) {
       ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-          database,
-          GURL(kExampleNotificationData[i].origin),
+          database, GURL(kExampleNotificationData[i].origin),
           kExampleNotificationData[i].service_worker_registration_id,
           &notification_id));
     }
@@ -210,15 +206,13 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrementsStorage) {
   database_data.notification_id = -1;
 
   int64_t notification_id = 0;
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
 
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadNotificationData(notification_id,
-                                           origin,
-                                           &database_data));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->ReadNotificationData(notification_id, origin, &database_data));
 
   EXPECT_EQ(notification_id, database_data.notification_id);
 }
@@ -238,18 +232,16 @@ TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
   NotificationDatabaseData database_data;
   int64_t notification_id = 0;
 
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
   EXPECT_EQ(notification_id, 1);
 
   // Deliberately write an invalid value as the next notification id. When
   // re-opening the database, the Open() method should realize that an invalid
   // value is being read, and mark the database as corrupted.
-  ASSERT_NO_FATAL_FAILURE(WriteLevelDBKeyValuePair(database.get(),
-                                                   "NEXT_NOTIFICATION_ID",
-                                                   "-42"));
+  ASSERT_NO_FATAL_FAILURE(
+      WriteLevelDBKeyValuePair(database.get(), "NEXT_NOTIFICATION_ID", "-42"));
 
   database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_CORRUPTED,
@@ -266,8 +258,7 @@ TEST_F(NotificationDatabaseTest, ReadInvalidNotificationData) {
   // Reading the notification data for a notification that does not exist should
   // return the ERROR_NOT_FOUND status code.
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadNotificationData(9001,
-                                           GURL("https://chrome.com"),
+            database->ReadNotificationData(9001, GURL("https://chrome.com"),
                                            &database_data));
 }
 
@@ -282,23 +273,21 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataDifferentOrigin) {
   NotificationDatabaseData database_data, read_database_data;
   database_data.notification_data.title = base::UTF8ToUTF16("My Notification");
 
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
 
   // Reading the notification from the database when given a different origin
   // should return the ERROR_NOT_FOUND status code.
-  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadNotificationData(notification_id,
-                                           GURL("https://chrome.com"),
-                                           &read_database_data));
+  EXPECT_EQ(
+      NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadNotificationData(
+          notification_id, GURL("https://chrome.com"), &read_database_data));
 
   // However, reading the notification from the database with the same origin
   // should return STATUS_OK and the associated notification data.
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadNotificationData(notification_id,
-                                           origin,
+            database->ReadNotificationData(notification_id, origin,
                                            &read_database_data));
 
   EXPECT_EQ(database_data.notification_data.title,
@@ -332,15 +321,13 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
 
   // Write the constructed notification to the database, and then immediately
   // read it back from the database again as well.
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
 
   NotificationDatabaseData read_database_data;
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadNotificationData(notification_id,
-                                           origin,
+            database->ReadNotificationData(notification_id, origin,
                                            &read_database_data));
 
   // Verify that all members retrieved from the database are exactly the same
@@ -386,8 +373,7 @@ TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
   // of each of them matches with how they were created.
   for (int i = 1; i <= 10; ++i) {
     ASSERT_EQ(NotificationDatabase::STATUS_OK,
-              database->ReadNotificationData(i /* notification_id */,
-                                             origin,
+              database->ReadNotificationData(i /* notification_id */, origin,
                                              &database_data));
 
     EXPECT_EQ(i, database_data.service_worker_registration_id);
@@ -401,8 +387,7 @@ TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationData) {
 
   // Deleting non-existing notifications is not considered to be a failure.
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->DeleteNotificationData(9001,
-                                             GURL("https://chrome.com")));
+            database->DeleteNotificationData(9001, GURL("https://chrome.com")));
 }
 
 TEST_F(NotificationDatabaseTest, DeleteNotificationDataSameOrigin) {
@@ -415,25 +400,22 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataSameOrigin) {
   NotificationDatabaseData database_data;
   GURL origin("https://example.com");
 
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
 
   // Reading a notification after writing one should succeed.
-  EXPECT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadNotificationData(notification_id,
-                                           origin,
-                                           &database_data));
+  EXPECT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->ReadNotificationData(notification_id, origin, &database_data));
 
   // Delete the notification which was just written to the database, and verify
   // that reading it again will fail.
   EXPECT_EQ(NotificationDatabase::STATUS_OK,
             database->DeleteNotificationData(notification_id, origin));
-  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadNotificationData(notification_id,
-                                           origin,
-                                           &database_data));
+  EXPECT_EQ(
+      NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadNotificationData(notification_id, origin, &database_data));
 }
 
 TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
@@ -446,10 +428,9 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
   NotificationDatabaseData database_data;
   GURL origin("https://example.com");
 
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->WriteNotificationData(origin,
-                                            database_data,
-                                            &notification_id));
+  ASSERT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->WriteNotificationData(origin, database_data, &notification_id));
 
   // Attempting to delete the notification with a different origin, but with the
   // same |notification_id|, should not return an error (the notification could
@@ -459,10 +440,9 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
             database->DeleteNotificationData(notification_id,
                                              GURL("https://chrome.com")));
 
-  EXPECT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadNotificationData(notification_id,
-                                           origin,
-                                           &database_data));
+  EXPECT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->ReadNotificationData(notification_id, origin, &database_data));
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
@@ -575,8 +555,7 @@ TEST_F(NotificationDatabaseTest,
   std::set<int64_t> deleted_notification_set;
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->DeleteAllNotificationDataForServiceWorkerRegistration(
-                origin,
-                kExampleServiceWorkerRegistrationId,
+                origin, kExampleServiceWorkerRegistrationId,
                 &deleted_notification_set));
 
   EXPECT_EQ(2u, deleted_notification_set.size());

@@ -77,13 +77,10 @@ void NotificationManager::show(
   }
 
   pending_notifications_.FetchPageNotificationResources(
-      notification_data,
-      delegate,
+      notification_data, delegate,
       base::Bind(&NotificationManager::DisplayPageNotification,
                  base::Unretained(this),  // this owns |pending_notifications_|
-                 origin,
-                 notification_data,
-                 delegate));
+                 origin, notification_data, delegate));
 }
 
 void NotificationManager::showPersistent(
@@ -94,7 +91,8 @@ void NotificationManager::showPersistent(
   DCHECK(service_worker_registration);
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
-          service_worker_registration)->registration_id();
+          service_worker_registration)
+          ->registration_id();
 
   scoped_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(callbacks);
 
@@ -116,11 +114,9 @@ void NotificationManager::showPersistent(
   }
 
   if (notification_data.icon.isEmpty()) {
-    DisplayPersistentNotification(origin,
-                                  notification_data,
+    DisplayPersistentNotification(origin, notification_data,
                                   service_worker_registration_id,
-                                  owned_callbacks.Pass(),
-                                  SkBitmap());
+                                  owned_callbacks.Pass(), SkBitmap());
     return;
   }
 
@@ -128,9 +124,7 @@ void NotificationManager::showPersistent(
       notification_data,
       base::Bind(&NotificationManager::DisplayPersistentNotification,
                  base::Unretained(this),  // this owns |pending_notifications_|
-                 origin,
-                 notification_data,
-                 service_worker_registration_id,
+                 origin, notification_data, service_worker_registration_id,
                  base::Passed(&owned_callbacks)));
 }
 
@@ -156,12 +150,9 @@ void NotificationManager::getNotifications(
 
   pending_get_notification_requests_.AddWithID(callbacks, request_id);
 
-  thread_safe_sender_->Send(
-      new PlatformNotificationHostMsg_GetNotifications(
-          request_id,
-          service_worker_registration_id,
-          origin,
-          base::UTF16ToUTF8(base::StringPiece16(filter_tag))));
+  thread_safe_sender_->Send(new PlatformNotificationHostMsg_GetNotifications(
+      request_id, service_worker_registration_id, origin,
+      base::UTF16ToUTF8(base::StringPiece16(filter_tag))));
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {

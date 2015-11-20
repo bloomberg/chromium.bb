@@ -29,8 +29,7 @@ PlatformNotificationData ToPlatformNotificationData(
           PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
       break;
     case WebNotificationData::DirectionAuto:
-      platform_data.direction =
-          PlatformNotificationData::DIRECTION_AUTO;
+      platform_data.direction = PlatformNotificationData::DIRECTION_AUTO;
       break;
   }
 

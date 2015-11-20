@@ -37,9 +37,7 @@ class NotificationIdGeneratorTest : public ::testing::Test {
   NotificationIdGeneratorTest()
       : generator_(&browser_context_, kRenderProcessId) {}
 
-  void SetUp() override {
-
-  }
+  void SetUp() override {}
 
  protected:
   GURL origin() const { return GURL("https://example.com"); }
@@ -65,30 +63,26 @@ class NotificationIdGeneratorTest : public ::testing::Test {
 // in exactly the same notification ids being generated.
 TEST_F(NotificationIdGeneratorTest, DeterministicGeneration) {
   // Persistent notifications.
-  EXPECT_EQ(
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId));
 
-  EXPECT_EQ(
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_EQ(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId));
 
-  EXPECT_EQ(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId));
 }
 
 // Uniqueness of notification ids will be impacted by the browser context.
@@ -98,30 +92,26 @@ TEST_F(NotificationIdGeneratorTest, DifferentBrowserContexts) {
                                            kRenderProcessId);
 
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId),
-      second_generator.GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId),
+            second_generator.GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId));
 
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId),
-      second_generator.GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId),
+            second_generator.GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      second_generator.GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            second_generator.GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId));
 
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId),
-      second_generator.GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId),
+            second_generator.GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId));
 }
 
 // Uniqueness of notification ids will be impacted by the fact whether the
@@ -131,15 +121,15 @@ TEST_F(NotificationIdGeneratorTest, DifferentIncognitoStates) {
 
   // Persistent notifications.
   std::string normal_persistent_notification_id =
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId);
+      generator()->GenerateForPersistentNotification(origin(), kExampleTag,
+                                                     kPersistentNotificationId);
 
   browser_context()->set_incognito(true);
   ASSERT_TRUE(browser_context()->IsOffTheRecord());
 
   std::string incognito_persistent_notification_id =
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId);
+      generator()->GenerateForPersistentNotification(origin(), kExampleTag,
+                                                     kPersistentNotificationId);
 
   EXPECT_NE(normal_persistent_notification_id,
             incognito_persistent_notification_id);
@@ -169,18 +159,16 @@ TEST_F(NotificationIdGeneratorTest, DifferentOrigins) {
   GURL different_origin("https://example2.com");
 
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          different_origin, kExampleTag, kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                different_origin, kExampleTag, kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          different_origin, kExampleTag, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                different_origin, kExampleTag, kNonPersistentNotificationId));
 }
 
 // The tag, when non-empty, will impact the generated notification id.
@@ -188,18 +176,16 @@ TEST_F(NotificationIdGeneratorTest, DifferentTags) {
   const std::string& different_tag = std::string(kExampleTag) + "2";
 
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin(), different_tag, kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin(), different_tag, kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin(), different_tag, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin(), different_tag, kNonPersistentNotificationId));
 }
 
 // The persistent or non-persistent notification id will impact the generated
@@ -209,47 +195,40 @@ TEST_F(NotificationIdGeneratorTest, DifferentIds) {
                                            kRenderProcessId + 1);
 
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId + 1));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId + 1));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId + 1));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId + 1));
 
   // Non-persistent when a tag is being used.
-  EXPECT_EQ(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      second_generator.GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            second_generator.GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId));
 }
 
 // Using a numeric tag that could resemble a persistent notification id should
 // not be equal to a notification without a tag, but with that id.
 TEST_F(NotificationIdGeneratorTest, NumericTagAmbiguity) {
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin(),
-          base::Int64ToString(kPersistentNotificationId),
-          kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin(), base::Int64ToString(kPersistentNotificationId),
+                kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(),
-          base::IntToString(kNonPersistentNotificationId),
-          kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), base::IntToString(kNonPersistentNotificationId),
+                kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId));
 }
 
 // Using port numbers and a tag which, when concatenated, could end up being
@@ -259,18 +238,16 @@ TEST_F(NotificationIdGeneratorTest, OriginPortAmbiguity) {
   GURL origin_8051("https://example.com:8051");
 
   // Persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForPersistentNotification(
-          origin_805, "17", kPersistentNotificationId),
-      generator()->GenerateForPersistentNotification(
-          origin_8051, "7", kPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForPersistentNotification(
+                origin_805, "17", kPersistentNotificationId),
+            generator()->GenerateForPersistentNotification(
+                origin_8051, "7", kPersistentNotificationId));
 
   // Non-persistent notifications.
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin_805, "17", kNonPersistentNotificationId),
-      generator()->GenerateForNonPersistentNotification(
-          origin_8051, "7", kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin_805, "17", kNonPersistentNotificationId),
+            generator()->GenerateForNonPersistentNotification(
+                origin_8051, "7", kNonPersistentNotificationId));
 }
 
 // -----------------------------------------------------------------------------
@@ -283,17 +260,15 @@ TEST_F(NotificationIdGeneratorTest, PersistentDifferentRenderProcessIds) {
   NotificationIdGenerator second_generator(browser_context(),
                                            kRenderProcessId + 1);
 
-  EXPECT_EQ(
-      generator()->GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId),
-      second_generator.GenerateForPersistentNotification(
-          origin(), kExampleTag, kPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId),
+            second_generator.GenerateForPersistentNotification(
+                origin(), kExampleTag, kPersistentNotificationId));
 
-  EXPECT_EQ(
-      generator()->GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId),
-      second_generator.GenerateForPersistentNotification(
-          origin(), "" /* tag */, kPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId),
+            second_generator.GenerateForPersistentNotification(
+                origin(), "" /* tag */, kPersistentNotificationId));
 }
 
 // -----------------------------------------------------------------------------
@@ -308,17 +283,15 @@ TEST_F(NotificationIdGeneratorTest, NonPersistentDifferentRenderProcessIds) {
   NotificationIdGenerator second_generator(browser_context(),
                                            kRenderProcessId + 1);
 
-  EXPECT_EQ(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId),
-      second_generator.GenerateForNonPersistentNotification(
-          origin(), kExampleTag, kNonPersistentNotificationId));
+  EXPECT_EQ(generator()->GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId),
+            second_generator.GenerateForNonPersistentNotification(
+                origin(), kExampleTag, kNonPersistentNotificationId));
 
-  EXPECT_NE(
-      generator()->GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId),
-      second_generator.GenerateForNonPersistentNotification(
-          origin(), "" /* tag */, kNonPersistentNotificationId));
+  EXPECT_NE(generator()->GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId),
+            second_generator.GenerateForNonPersistentNotification(
+                origin(), "" /* tag */, kNonPersistentNotificationId));
 }
 
 // Concatenation of the render process id and the non-persistent notification

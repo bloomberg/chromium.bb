@@ -12,8 +12,7 @@ namespace content {
 
 NotificationDispatcher::NotificationDispatcher(
     ThreadSafeSender* thread_safe_sender)
-    : WorkerThreadMessageFilter(thread_safe_sender) {
-}
+    : WorkerThreadMessageFilter(thread_safe_sender) {}
 
 NotificationDispatcher::~NotificationDispatcher() {}
 
@@ -33,8 +32,8 @@ bool NotificationDispatcher::ShouldHandleMessage(
 void NotificationDispatcher::OnFilteredMessageReceived(
     const IPC::Message& msg) {
   NotificationManager::ThreadSpecificInstance(thread_safe_sender(),
-                                              main_thread_task_runner(),
-                                              this)->OnMessageReceived(msg);
+                                              main_thread_task_runner(), this)
+      ->OnMessageReceived(msg);
 }
 
 bool NotificationDispatcher::GetWorkerThreadIdForMessage(

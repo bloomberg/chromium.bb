@@ -22,8 +22,8 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
-const int kNotificationVibrationPattern[] = { 100, 200, 300 };
-const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
+const int kNotificationVibrationPattern[] = {100, 200, 300};
+const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   std::vector<int> vibration_pattern(
@@ -61,14 +61,14 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   std::string serialized_data;
 
   // Serialize the data in |notification_data| to the string |serialized_data|.
-  ASSERT_TRUE(SerializeNotificationDatabaseData(database_data,
-                                                &serialized_data));
+  ASSERT_TRUE(
+      SerializeNotificationDatabaseData(database_data, &serialized_data));
 
   NotificationDatabaseData copied_data;
 
   // Deserialize the data in |serialized_data| to |copied_data|.
-  ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
-                                                  &copied_data));
+  ASSERT_TRUE(
+      DeserializeNotificationDatabaseData(serialized_data, &copied_data));
 
   EXPECT_EQ(database_data.notification_id, copied_data.notification_id);
   EXPECT_EQ(database_data.origin, copied_data.origin);
@@ -86,7 +86,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(notification_data.icon, copied_notification_data.icon);
 
   EXPECT_THAT(copied_notification_data.vibration_pattern,
-      testing::ElementsAreArray(kNotificationVibrationPattern));
+              testing::ElementsAreArray(kNotificationVibrationPattern));
 
   EXPECT_EQ(notification_data.silent, copied_notification_data.silent);
   EXPECT_EQ(notification_data.require_interaction,
@@ -108,10 +108,9 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
   PlatformNotificationData::Direction directions[] = {
-    PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
-    PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
-    PlatformNotificationData::DIRECTION_AUTO
-  };
+      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
+      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
+      PlatformNotificationData::DIRECTION_AUTO};
 
   for (size_t i = 0; i < arraysize(directions); ++i) {
     PlatformNotificationData notification_data;
@@ -121,12 +120,12 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
     database_data.notification_data = notification_data;
 
     std::string serialized_data;
-    ASSERT_TRUE(SerializeNotificationDatabaseData(database_data,
-                                                  &serialized_data));
+    ASSERT_TRUE(
+        SerializeNotificationDatabaseData(database_data, &serialized_data));
 
     NotificationDatabaseData copied_data;
-    ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
-                                                    &copied_data));
+    ASSERT_TRUE(
+        DeserializeNotificationDatabaseData(serialized_data, &copied_data));
 
     EXPECT_EQ(directions[i], copied_data.notification_data.direction);
   }

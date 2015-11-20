@@ -12,8 +12,8 @@
 namespace content {
 
 // Converts Blink WebNotificationData to PlatformNotificationData.
-CONTENT_EXPORT PlatformNotificationData ToPlatformNotificationData(
-    const blink::WebNotificationData& web_data);
+CONTENT_EXPORT PlatformNotificationData
+ToPlatformNotificationData(const blink::WebNotificationData& web_data);
 
 // Converts PlatformNotificationData to Blink WebNotificationData.
 CONTENT_EXPORT blink::WebNotificationData ToWebNotificationData(

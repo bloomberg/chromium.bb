@@ -21,8 +21,8 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
-const int kNotificationVibrationPattern[] = { 100, 200, 300 };
-const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
+const int kNotificationVibrationPattern[] = {100, 200, 300};
+const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
 const char kAction1Name[] = "btn1";
 const char kAction1Title[] = "Button 1";
 const char kAction2Name[] = "btn2";
@@ -40,11 +40,11 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
       kNotificationVibrationPattern, arraysize(kNotificationVibrationPattern));
   web_data.silent = true;
   web_data.requireInteraction = true;
-  web_data.data = blink::WebVector<char>(kNotificationData,
-                                         arraysize(kNotificationData));
+  web_data.data =
+      blink::WebVector<char>(kNotificationData, arraysize(kNotificationData));
 
-  web_data.actions = blink::WebVector<blink::WebNotificationAction>(
-      static_cast<size_t>(2));
+  web_data.actions =
+      blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(2));
   web_data.actions[0].action = blink::WebString::fromUTF8(kAction1Name);
   web_data.actions[0].title = blink::WebString::fromUTF8(kAction1Title);
   web_data.actions[1].action = blink::WebString::fromUTF8(kAction2Name);
@@ -62,7 +62,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_TRUE(platform_data.require_interaction);
 
   EXPECT_THAT(platform_data.vibration_pattern,
-      testing::ElementsAreArray(kNotificationVibrationPattern));
+              testing::ElementsAreArray(kNotificationVibrationPattern));
 
   ASSERT_EQ(web_data.data.size(), platform_data.data.size());
   for (size_t i = 0; i < web_data.data.size(); ++i)
@@ -84,8 +84,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
 
   PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);
-  platform_data.direction =
-      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+  platform_data.direction = PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;

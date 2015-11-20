@@ -56,8 +56,8 @@ class NotificationManager : public blink::WebNotificationManager,
   void close(blink::WebNotificationDelegate* delegate) override;
   void closePersistent(const blink::WebSecurityOrigin& origin,
                        int64_t persistent_notification_id) override;
-  void notifyDelegateDestroyed(blink::WebNotificationDelegate* delegate)
-      override;
+  void notifyDelegateDestroyed(
+      blink::WebNotificationDelegate* delegate) override;
   blink::WebNotificationPermission checkPermission(
       const blink::WebSecurityOrigin& origin) override;
   size_t maxActions() override;
@@ -66,10 +66,9 @@ class NotificationManager : public blink::WebNotificationManager,
   bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  NotificationManager(
-      ThreadSafeSender* thread_safe_sender,
-      base::SingleThreadTaskRunner* main_thread_task_runner,
-      NotificationDispatcher* notification_dispatcher);
+  NotificationManager(ThreadSafeSender* thread_safe_sender,
+                      base::SingleThreadTaskRunner* main_thread_task_runner,
+                      NotificationDispatcher* notification_dispatcher);
 
   // IPC message handlers.
   void OnDidShow(int notification_id);

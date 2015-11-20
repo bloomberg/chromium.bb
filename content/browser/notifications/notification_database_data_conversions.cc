@@ -51,8 +51,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
 
   if (payload.vibration_pattern().size() > 0) {
     notification_data->vibration_pattern.assign(
-        payload.vibration_pattern().begin(),
-        payload.vibration_pattern().end());
+        payload.vibration_pattern().begin(), payload.vibration_pattern().end());
   }
 
   notification_data->silent = payload.silent();

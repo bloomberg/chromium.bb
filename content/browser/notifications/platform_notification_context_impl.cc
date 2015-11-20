@@ -72,8 +72,7 @@ void PlatformNotificationContextImpl::Initialize() {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PlatformNotificationContextImpl::InitializeOnIO, this));
 }
 
@@ -88,8 +87,7 @@ void PlatformNotificationContextImpl::InitializeOnIO() {
 void PlatformNotificationContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PlatformNotificationContextImpl::ShutdownOnIO, this));
 }
 
@@ -107,9 +105,9 @@ void PlatformNotificationContextImpl::ReadNotificationData(
     const ReadResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContextImpl::DoReadNotificationData,
-                  this, notification_id, origin, callback),
-       base::Bind(callback, false /* success */, NotificationDatabaseData()));
+      base::Bind(&PlatformNotificationContextImpl::DoReadNotificationData, this,
+                 notification_id, origin, callback),
+      base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
 void PlatformNotificationContextImpl::DoReadNotificationData(
@@ -120,19 +118,15 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
 
   NotificationDatabaseData database_data;
   NotificationDatabase::Status status =
-      database_->ReadNotificationData(notification_id,
-                                      origin,
-                                      &database_data);
+      database_->ReadNotificationData(notification_id, origin, &database_data);
 
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult",
-                            status, NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult", status,
+                            NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(callback,
-                                       true /* success */,
-                                       database_data));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, true /* success */, database_data));
     return;
   }
 
@@ -141,31 +135,29 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
     DestroyDatabase();
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
 void PlatformNotificationContextImpl::
     ReadAllNotificationDataForServiceWorkerRegistration(
-    const GURL& origin,
-    int64_t service_worker_registration_id,
-    const ReadAllResultCallback& callback) {
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        const ReadAllResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContextImpl::
-                      DoReadAllNotificationDataForServiceWorkerRegistration,
-                  this, origin, service_worker_registration_id, callback),
-       base::Bind(callback,
-                  false /* success */,
-                  std::vector<NotificationDatabaseData>()));
+      base::Bind(&PlatformNotificationContextImpl::
+                     DoReadAllNotificationDataForServiceWorkerRegistration,
+                 this, origin, service_worker_registration_id, callback),
+      base::Bind(callback, false /* success */,
+                 std::vector<NotificationDatabaseData>()));
 }
 
 void PlatformNotificationContextImpl::
     DoReadAllNotificationDataForServiceWorkerRegistration(
-    const GURL& origin,
-    int64_t service_worker_registration_id,
-    const ReadAllResultCallback& callback) {
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        const ReadAllResultCallback& callback) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<NotificationDatabaseData> notification_datas;
@@ -178,11 +170,9 @@ void PlatformNotificationContextImpl::
                             status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(callback,
-                                       true /* success */,
-                                       notification_datas));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, true /* success */, notification_datas));
     return;
   }
 
@@ -190,12 +180,9 @@ void PlatformNotificationContextImpl::
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
     DestroyDatabase();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback,
-                 false /* success */,
-                 std::vector<NotificationDatabaseData>()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, false /* success */,
+                                     std::vector<NotificationDatabaseData>()));
 }
 
 void PlatformNotificationContextImpl::WriteNotificationData(
@@ -204,9 +191,9 @@ void PlatformNotificationContextImpl::WriteNotificationData(
     const WriteResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContextImpl::DoWriteNotificationData,
-                  this, origin, database_data, callback),
-       base::Bind(callback, false /* success */, 0 /* notification_id */));
+      base::Bind(&PlatformNotificationContextImpl::DoWriteNotificationData,
+                 this, origin, database_data, callback),
+      base::Bind(callback, false /* success */, 0 /* notification_id */));
 }
 
 void PlatformNotificationContextImpl::DoWriteNotificationData(
@@ -217,20 +204,16 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 
   int64_t notification_id = 0;
   NotificationDatabase::Status status =
-      database_->WriteNotificationData(origin,
-                                       database_data,
-                                       &notification_id);
+      database_->WriteNotificationData(origin, database_data, &notification_id);
 
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.WriteResult",
-                            status, NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.WriteResult", status,
+                            NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
     DCHECK_GT(notification_id, 0);
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(callback,
-                                       true /* success */,
-                                       notification_id));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, true /* success */, notification_id));
     return;
   }
 
@@ -239,8 +222,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     DestroyDatabase();
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(callback, false /* success */, 0 /* notification_id */));
 }
 
@@ -250,9 +232,9 @@ void PlatformNotificationContextImpl::DeleteNotificationData(
     const DeleteResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContextImpl::DoDeleteNotificationData,
-                  this, notification_id, origin, callback),
-       base::Bind(callback, false /* success */));
+      base::Bind(&PlatformNotificationContextImpl::DoDeleteNotificationData,
+                 this, notification_id, origin, callback),
+      base::Bind(callback, false /* success */));
 }
 
 void PlatformNotificationContextImpl::DoDeleteNotificationData(
@@ -264,8 +246,8 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
   NotificationDatabase::Status status =
       database_->DeleteNotificationData(notification_id, origin);
 
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteResult",
-                            status, NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteResult", status,
+                            NotificationDatabase::STATUS_COUNT);
 
   bool success = status == NotificationDatabase::STATUS_OK;
 
@@ -277,8 +259,7 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
     success = true;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, success));
 }
 
@@ -302,11 +283,11 @@ void PlatformNotificationContextImpl::
   std::set<int64_t> deleted_notifications_set;
   NotificationDatabase::Status status =
       database_->DeleteAllNotificationDataForServiceWorkerRegistration(
-            origin, service_worker_registration_id, &deleted_notifications_set);
+          origin, service_worker_registration_id, &deleted_notifications_set);
 
   UMA_HISTOGRAM_ENUMERATION(
-      "Notifications.Database.DeleteServiceWorkerRegistrationResult",
-      status, NotificationDatabase::STATUS_COUNT);
+      "Notifications.Database.DeleteServiceWorkerRegistrationResult", status,
+      NotificationDatabase::STATUS_COUNT);
 
   // Blow away the database if a corruption error occurred during the deletion.
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
@@ -319,8 +300,9 @@ void PlatformNotificationContextImpl::
 void PlatformNotificationContextImpl::OnStorageWiped() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-      base::Bind(base::IgnoreResult(
-          &PlatformNotificationContextImpl::DestroyDatabase), this),
+      base::Bind(
+          base::IgnoreResult(&PlatformNotificationContextImpl::DestroyDatabase),
+          this),
       base::Bind(&DoNothing));
 }
 
@@ -337,9 +319,8 @@ void PlatformNotificationContextImpl::LazyInitialize(
   }
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PlatformNotificationContextImpl::OpenDatabase,
-                 this, success_closure, failure_closure));
+      FROM_HERE, base::Bind(&PlatformNotificationContextImpl::OpenDatabase,
+                            this, success_closure, failure_closure));
 }
 
 void PlatformNotificationContextImpl::OpenDatabase(
@@ -356,8 +337,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
   NotificationDatabase::Status status =
       database_->Open(true /* create_if_missing */);
 
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.OpenResult",
-                            status, NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.OpenResult", status,
+                            NotificationDatabase::STATUS_COUNT);
 
   // TODO(peter): Do finer-grained synchronization here.
   if (prune_database_on_open_) {
@@ -379,8 +360,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
       status = database_->Open(true /* create_if_missing */);
 
       UMA_HISTOGRAM_ENUMERATION(
-          "Notifications.Database.OpenAfterCorruptionResult",
-          status, NotificationDatabase::STATUS_COUNT);
+          "Notifications.Database.OpenAfterCorruptionResult", status,
+          NotificationDatabase::STATUS_COUNT);
     }
   }
 
@@ -399,8 +380,8 @@ bool PlatformNotificationContextImpl::DestroyDatabase() {
   DCHECK(database_);
 
   NotificationDatabase::Status status = database_->Destroy();
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DestroyResult",
-                            status, NotificationDatabase::STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DestroyResult", status,
+                            NotificationDatabase::STATUS_COUNT);
 
   database_.reset();
 

@@ -50,11 +50,10 @@ void NotificationImageLoader::StartOnMainThread(int notification_id,
   url_loader_->loadAsynchronously(request, this);
 }
 
-void NotificationImageLoader::didReceiveData(
-    WebURLLoader* loader,
-    const char* data,
-    int data_length,
-    int encoded_data_length) {
+void NotificationImageLoader::didReceiveData(WebURLLoader* loader,
+                                             const char* data,
+                                             int data_length,
+                                             int encoded_data_length) {
   DCHECK(!completed_);
   DCHECK_GT(data_length, 0);
 
