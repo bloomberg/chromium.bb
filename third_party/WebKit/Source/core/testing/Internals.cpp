@@ -944,19 +944,6 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     return builder.toString();
 }
 
-bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionState& exceptionState)
-{
-    ASSERT(textField);
-    if (isHTMLInputElement(*textField))
-        return toHTMLInputElement(*textField).lastChangeWasUserEdit();
-
-    if (isHTMLTextAreaElement(*textField))
-        return toHTMLTextAreaElement(*textField).lastChangeWasUserEdit();
-
-    exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a TEXTAREA.");
-    return false;
-}
-
 bool Internals::elementShouldAutoComplete(Element* element, ExceptionState& exceptionState)
 {
     ASSERT(element);

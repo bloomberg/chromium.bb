@@ -166,7 +166,6 @@ public:
     void setFrameViewPosition(Document*, long x, long y, ExceptionState&);
     String viewportAsText(Document*, float devicePixelRatio, int availableWidth, int availableHeight, ExceptionState&);
 
-    bool wasLastChangeUserEdit(Element* textField, ExceptionState&);
     bool elementShouldAutoComplete(Element* inputElement, ExceptionState&);
     String suggestedValue(Element*, ExceptionState&);
     void setSuggestedValue(Element*, const String&, ExceptionState&);

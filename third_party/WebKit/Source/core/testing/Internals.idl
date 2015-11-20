@@ -119,7 +119,6 @@
                                                                        long availableWidth,
                                                                        long availableHeight);
 
-    [RaisesException, TypeChecking=Interface] boolean wasLastChangeUserEdit(Element textField);
     [RaisesException, TypeChecking=Interface] boolean elementShouldAutoComplete(Element inputElement);
     [RaisesException, TypeChecking=Interface] DOMString suggestedValue(Element inputElement);
     [RaisesException, TypeChecking=Interface] void setSuggestedValue(Element inputElement, DOMString value);
