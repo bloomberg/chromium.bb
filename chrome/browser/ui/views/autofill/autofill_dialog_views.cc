@@ -311,7 +311,8 @@ class NotificationView : public views::View,
   }
 
   // views::StyledLabelListener implementation.
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override {
     delegate_->LinkClicked(data_.link_url());
   }

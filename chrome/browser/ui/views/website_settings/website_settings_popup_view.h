@@ -88,7 +88,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::StyledLabelListener implementation.
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // views::TabbedPaneListener implementations.

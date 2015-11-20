@@ -61,7 +61,8 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   gfx::Size GetPreferredSize() const override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // content::WebContentsObserver:

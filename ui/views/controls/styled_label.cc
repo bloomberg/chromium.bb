@@ -215,7 +215,7 @@ void StyledLabel::PreferredSizeChanged() {
 
 void StyledLabel::LinkClicked(Link* source, int event_flags) {
   if (listener_)
-    listener_->StyledLabelLinkClicked(link_targets_[source], event_flags);
+    listener_->StyledLabelLinkClicked(this, link_targets_[source], event_flags);
 }
 
 gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {

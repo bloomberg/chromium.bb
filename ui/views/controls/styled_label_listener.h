@@ -13,10 +13,13 @@ class Range;
 
 namespace views {
 
+class StyledLabel;
+
 // A listener interface for StyledLabel.
 class VIEWS_EXPORT StyledLabelListener {
  public:
-  virtual void StyledLabelLinkClicked(const gfx::Range& range,
+  virtual void StyledLabelLinkClicked(StyledLabel* label,
+                                      const gfx::Range& range,
                                       int event_flags) = 0;
 
  protected:

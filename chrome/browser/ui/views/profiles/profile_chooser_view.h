@@ -96,7 +96,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void LinkClicked(views::Link* sender, int event_flags) override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // views::TextfieldController:

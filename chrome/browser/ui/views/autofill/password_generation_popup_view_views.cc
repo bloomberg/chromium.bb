@@ -251,7 +251,9 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 void PasswordGenerationPopupViewViews::StyledLabelLinkClicked(
-    const gfx::Range& range, int event_flags) {
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
   controller_->OnSavedPasswordsLinkClicked();
 }
 

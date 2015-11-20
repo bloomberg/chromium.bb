@@ -128,6 +128,7 @@ void ProximityAuthErrorBubbleView::WebContentsDestroyed() {
 }
 
 void ProximityAuthErrorBubbleView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
   if (!web_contents())

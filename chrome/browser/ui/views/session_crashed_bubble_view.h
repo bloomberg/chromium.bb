@@ -71,7 +71,8 @@ class SessionCrashedBubbleView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener methods.
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // content::WebContentsObserver methods.

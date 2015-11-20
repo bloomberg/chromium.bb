@@ -52,6 +52,7 @@
       'browser/ui/autofill/password_generation_popup_view.h',
       'browser/ui/autofill/popup_controller_common.cc',
       'browser/ui/autofill/popup_controller_common.h',
+      'browser/ui/autofill/save_card_bubble_controller.cc',
       'browser/ui/autofill/save_card_bubble_controller.h',
       'browser/ui/autofill/save_card_bubble_controller_impl.cc',
       'browser/ui/autofill/save_card_bubble_controller_impl.h',

@@ -128,8 +128,10 @@ gfx::Size PlatformVerificationDialog::GetPreferredSize() const {
                    GetHeightForWidth(kDialogMaxWidthInPixel));
 }
 
-void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
-                                                        int event_flags) {
+void PlatformVerificationDialog::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
 

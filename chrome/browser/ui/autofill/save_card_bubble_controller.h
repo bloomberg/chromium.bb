@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_SAVE_CARD_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_SAVE_CARD_BUBBLE_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/range/range.h"
+#include "url/gurl.h"
 
 namespace autofill {
 
@@ -15,6 +19,21 @@ class SaveCardBubbleView;
 // Interface that exposes controller functionality to SaveCardBubbleView.
 class SaveCardBubbleController {
  public:
+  struct LegalMessageLine {
+    struct Link {
+      gfx::Range range;
+      GURL url;
+    };
+
+    LegalMessageLine();
+    ~LegalMessageLine();
+
+    base::string16 text;
+    std::vector<Link> links;
+  };
+
+  typedef std::vector<LegalMessageLine> LegalMessageLines;
+
   // Returns the title that should be displayed in the bubble.
   virtual base::string16 GetWindowTitle() const = 0;
 
@@ -22,10 +41,17 @@ class SaveCardBubbleController {
   // Returns an empty string if no message should be displayed.
   virtual base::string16 GetExplanatoryMessage() const = 0;
 
+  // Interaction.
   virtual void OnSaveButton() = 0;
   virtual void OnCancelButton() = 0;
   virtual void OnLearnMoreClicked() = 0;
+  virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void OnBubbleClosed() = 0;
+
+  // State.
+
+  // Returns empty vector if no legal message should be shown.
+  virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
 
  protected:
   SaveCardBubbleController() {}

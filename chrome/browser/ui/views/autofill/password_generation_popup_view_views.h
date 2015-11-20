@@ -50,7 +50,8 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::StyledLabelListener implementation
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // Sub views. Used to change bounds when updating. Weak references.

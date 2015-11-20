@@ -398,7 +398,8 @@ void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
   RestorePreviousSession(sender);
 }
 
-void SessionCrashedBubbleView::StyledLabelLinkClicked(const gfx::Range& range,
+void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                      const gfx::Range& range,
                                                       int event_flags) {
   browser_->OpenURL(content::OpenURLParams(
       GURL("https://support.google.com/chrome/answer/96817"),

@@ -232,6 +232,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 }
 
 void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
+    views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
   chrome::NavigateParams params(

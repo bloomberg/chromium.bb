@@ -235,7 +235,8 @@ class ManagePasswordsBubbleView::AccountChooserView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // Adds |password_forms| to the layout remembering their |type|.
@@ -322,6 +323,7 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
 }
 
 void ManagePasswordsBubbleView::AccountChooserView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
   DCHECK_EQ(range, parent_->model()->title_brand_link_range());
@@ -345,7 +347,8 @@ class ManagePasswordsBubbleView::AutoSigninView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // views::WidgetObserver:
@@ -442,7 +445,9 @@ void ManagePasswordsBubbleView::AutoSigninView::ButtonPressed(
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::StyledLabelLinkClicked(
-    const gfx::Range& range, int event_flags) {
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
   DCHECK_EQ(range, parent_->model()->autosignin_welcome_link_range());
   parent_->model()->OnBrandLinkClicked();
 }
@@ -481,7 +486,8 @@ class ManagePasswordsBubbleView::PendingView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
@@ -567,6 +573,7 @@ void ManagePasswordsBubbleView::PendingView::ButtonPressed(
 }
 
 void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
   DCHECK_EQ(range, parent_->model()->title_brand_link_range());
@@ -689,7 +696,8 @@ class ManagePasswordsBubbleView::SaveConfirmationView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener implementation
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
@@ -734,7 +742,9 @@ ManagePasswordsBubbleView::SaveConfirmationView::~SaveConfirmationView() {
 }
 
 void ManagePasswordsBubbleView::SaveConfirmationView::StyledLabelLinkClicked(
-    const gfx::Range& range, int event_flags) {
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
   DCHECK_EQ(range, parent_->model()->save_confirmation_link_range());
   parent_->model()->OnManageLinkClicked();
   parent_->Close();
@@ -816,7 +826,8 @@ class ManagePasswordsBubbleView::UpdatePendingView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
@@ -898,6 +909,7 @@ void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
 }
 
 void ManagePasswordsBubbleView::UpdatePendingView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
   DCHECK_EQ(range, parent_->model()->title_brand_link_range());

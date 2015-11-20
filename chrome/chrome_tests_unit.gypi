@@ -541,6 +541,7 @@
     'chrome_unit_tests_non_mobile_sources': [
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
+      'browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc',
       'browser/ui/website_settings/mock_permission_bubble_view.cc',
       'browser/ui/website_settings/mock_permission_bubble_view.h',
     ],

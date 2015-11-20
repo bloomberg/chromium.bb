@@ -71,7 +71,8 @@ BookmarkSyncPromoView::BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate)
   AddChildView(promo_label);
 }
 
-void BookmarkSyncPromoView::StyledLabelLinkClicked(const gfx::Range& range,
+void BookmarkSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                   const gfx::Range& range,
                                                    int event_flags) {
   delegate_->OnSignInLinkClicked();
 }

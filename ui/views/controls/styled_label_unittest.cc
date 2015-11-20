@@ -27,7 +27,8 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
   ~StyledLabelTest() override {}
 
   // StyledLabelListener implementation.
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override {}
 
  protected:

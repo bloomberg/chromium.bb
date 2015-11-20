@@ -910,7 +910,8 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
   }
 }
 
-void WebsiteSettingsPopupView::StyledLabelLinkClicked(const gfx::Range& range,
+void WebsiteSettingsPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                      const gfx::Range& range,
                                                       int event_flags) {
   presenter_->RecordWebsiteSettingsAction(
       WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);

@@ -52,7 +52,8 @@ class ProximityAuthErrorBubbleView : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // The message text shown in the bubble.

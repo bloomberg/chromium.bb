@@ -21,7 +21,8 @@ class BookmarkSyncPromoView : public views::StyledLabelListener,
 
  private:
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // views::View:

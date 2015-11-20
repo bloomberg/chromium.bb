@@ -31,6 +31,35 @@ class SaveCardBubbleControllerImpl
   void InitializeForUpload(const base::Closure& save_card_callback,
                            scoped_ptr<base::DictionaryValue> legal_message);
 
+  // TODO(bondd): Combine SetLegalMessage() with InitializeForUpload().
+  // Example of valid |lines| data:
+  // [ {
+  //   "template" : "The legal documents are: {0} and {1}",
+  //   "template_parameter" : [ {
+  //     "display_text" : "Terms of Service",
+  //     "url": "http://www.example.com/tos"
+  //    }, {
+  //     "display_text" : "Privacy Policy",
+  //     "url": "http://www.example.com/pp"
+  //    } ],
+  // }, {
+  //   "template" : "This is the second line and it has no parameters"
+  // } ]
+  //
+  // Caveats:
+  // 1. '{' and '}' may be displayed by escaping them with an apostrophe in the
+  //    template string, e.g. "template" : "Here is a literal '{'"
+  // 2. Two or more consecutive dollar signs in the template string will not
+  //    expand correctly.
+  // 3. "${" anywhere in the template string is invalid.
+  // 4. "\n" embedded anywhere in the template string, or an empty template
+  //    string, can be used to separate paragraphs. It is not possible to create
+  //    a completely blank line by using two consecutive newlines (they will be
+  //    treated as a single newline by views::StyledLabel).
+  //
+  // Returns false if contents of |lines| are invalid.
+  bool SetLegalMessage(const base::ListValue& lines);
+
   // InitializeForLocalSave() or InitializeForUpload() must be called first.
   void ShowBubble(bool user_action);
 
@@ -46,7 +75,10 @@ class SaveCardBubbleControllerImpl
   void OnSaveButton() override;
   void OnCancelButton() override;
   void OnLearnMoreClicked() override;
+  void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnBubbleClosed() override;
+
+  const LegalMessageLines& GetLegalMessageLines() const override;
 
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
@@ -56,6 +88,8 @@ class SaveCardBubbleControllerImpl
 
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();
+
+  void OpenUrl(const GURL& url);
 
   // content::WebContentsObserver:
   void DidNavigateMainFrame(
@@ -72,6 +106,9 @@ class SaveCardBubbleControllerImpl
 
   // Governs whether the upload or local save version of the UI should be shown.
   bool is_uploading_;
+
+  // If no legal message should be shown then this variable is an empty vector.
+  LegalMessageLines legal_message_lines_;
 
   // Used to measure the amount of time on a page; if it's less than some
   // reasonable limit, then don't close the bubble upon navigation.

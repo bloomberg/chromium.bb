@@ -992,8 +992,9 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   }
 }
 
-void ProfileChooserView::StyledLabelLinkClicked(
-    const gfx::Range& range, int event_flags) {
+void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
   chrome::ShowSettings(browser_);
 }
 

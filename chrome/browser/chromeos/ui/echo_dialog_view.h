@@ -62,7 +62,8 @@ class EchoDialogView : public views::DialogDelegateView,
   bool ShouldShowWindowIcon() const override;
 
   // views::LinkListener override.
-  void StyledLabelLinkClicked(const gfx::Range& range,
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
                               int event_flags) override;
 
   // views::View override.

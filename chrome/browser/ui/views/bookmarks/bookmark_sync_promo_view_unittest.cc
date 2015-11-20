@@ -7,10 +7,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
+#include "ui/views/controls/styled_label.h"
 
 class BookmarkSyncPromoViewTest : public BookmarkBubbleDelegate,
                                   public testing::Test {
@@ -33,8 +35,9 @@ TEST_F(BookmarkSyncPromoViewTest, SignInLink) {
   sync_promo.reset(new BookmarkSyncPromoView(this));
 
   // Simulate clicking the "Sign in" link.
+  views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);
   views::StyledLabelListener* listener = sync_promo.get();
-  listener->StyledLabelLinkClicked(gfx::Range(), ui::EF_NONE);
+  listener->StyledLabelLinkClicked(&styled_label, gfx::Range(), ui::EF_NONE);
 
   EXPECT_EQ(1, sign_in_clicked_count_);
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -13,10 +14,14 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
 using views::GridLayout;
+
+namespace autofill {
 
 namespace {
 
@@ -32,9 +37,20 @@ const bool kIsOkButtonOnLeftSide = true;
 const bool kIsOkButtonOnLeftSide = false;
 #endif
 
-}  // namespace
+scoped_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
+    const SaveCardBubbleController::LegalMessageLine& line,
+    views::StyledLabelListener* listener) {
+  scoped_ptr<views::StyledLabel> label(
+      new views::StyledLabel(line.text, listener));
+  for (const SaveCardBubbleController::LegalMessageLine::Link& link :
+       line.links) {
+    label->AddStyleRange(link.range,
+                         views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
+  return label;
+}
 
-namespace autofill {
+}  // namespace
 
 SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          content::WebContents* web_contents,
@@ -92,15 +108,40 @@ void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
   controller_->OnLearnMoreClicked();
 }
 
-void SaveCardBubbleViews::Init() {
+void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                 const gfx::Range& range,
+                                                 int event_flags) {
+  // Index of |label| within its parent's view hierarchy is the same as the
+  // legal message line index. DCHECK this assumption to guard against future
+  // layout changes.
+  DCHECK_EQ(static_cast<size_t>(label->parent()->child_count()),
+            controller_->GetLegalMessageLines().size());
+
+  const auto& links =
+      controller_->GetLegalMessageLines()[label->parent()->GetIndexOf(label)]
+          .links;
+  for (const SaveCardBubbleController::LegalMessageLine::Link& link : links) {
+    if (link.range == range) {
+      controller_->OnLegalMessageLinkClicked(link.url);
+      return;
+    }
+  }
+
+  // |range| was not found.
+  NOTREACHED();
+}
+
+// Create view containing everything except for the footnote.
+scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   enum {
     COLUMN_SET_ID_SPACER,
     COLUMN_SET_ID_EXPLANATION,
     COLUMN_SET_ID_BUTTONS,
   };
 
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
+  scoped_ptr<View> view(new View());
+  GridLayout* layout = new GridLayout(view.get());
+  view->SetLayoutManager(layout);
 
   // Add a column set with padding to establish a minimum width.
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_SPACER);
@@ -144,6 +185,7 @@ void SaveCardBubbleViews::Init() {
 
   // Create "learn more" link and add it to layout.
   learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link_->SetUnderline(false);
   learn_more_link_->set_listener(this);
   layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
   layout->AddView(learn_more_link_);
@@ -167,8 +209,38 @@ void SaveCardBubbleViews::Init() {
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
+  return view;
+}
+
+// Create view containing the legal message text.
+scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
+  // Use BoxLayout to provide insets around the label.
+  scoped_ptr<View> view(new View());
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           GetBubbleFrameView()->GetTitleInsets().left(),
+                           views::kRelatedControlVerticalSpacing, 0));
+  view->SetBorder(
+      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
+  view->set_background(
+      views::Background::CreateSolidBackground(kLightShadingColor));
+
+  // Add a StyledLabel for each line of the legal message.
+  for (const SaveCardBubbleController::LegalMessageLine& line :
+       controller_->GetLegalMessageLines()) {
+    view->AddChildView(CreateLegalMessageLineLabel(line, this).release());
+  }
+
+  return view;
+}
+
+void SaveCardBubbleViews::Init() {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  AddChildView(CreateMainContentView().release());
+  if (!controller_->GetLegalMessageLines().empty())
+    AddChildView(CreateFootnoteView().release());
+
   set_margins(gfx::Insets(1, 0, 1, 0));
-  Layout();
 }
 
 }  // namespace autofill
