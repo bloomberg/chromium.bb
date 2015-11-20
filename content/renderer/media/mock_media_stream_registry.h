@@ -20,6 +20,7 @@ class MockMediaStreamRegistry final : public MediaStreamRegistryInterface {
 
   void Init(const std::string& stream_url);
   void AddVideoTrack(const std::string& track_id);
+  void AddAudioTrack(const std::string& track_id);
   blink::WebMediaStream GetMediaStream(const std::string& url) override;
 
   const blink::WebMediaStream test_stream() const { return test_stream_; }

@@ -20,6 +20,8 @@ class WebString;
 }  // namespace blink
 
 namespace media {
+class AudioBus;
+class AudioParameters;
 class VideoFrame;
 class WebmMuxer;
 }  // namespace media
@@ -27,6 +29,7 @@ class WebmMuxer;
 namespace content {
 
 class VideoTrackRecorder;
+class AudioTrackRecorder;
 
 // MediaRecorderHandler orchestrates the creation, lifetime management and
 // mapping between:
@@ -37,7 +40,6 @@ class VideoTrackRecorder;
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread. (Note that a BindToCurrentLoop is used to
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
-// TODO(mcasas): http://crbug.com/528519 Implement audio recording.
 class CONTENT_EXPORT MediaRecorderHandler final
     : public NON_EXPORTED_BASE(blink::WebMediaRecorderHandler) {
  public:
@@ -62,10 +64,16 @@ class CONTENT_EXPORT MediaRecorderHandler final
                       scoped_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
+  void OnEncodedAudio(const media::AudioParameters& params,
+                      scoped_ptr<std::string> encoded_data,
+                      base::TimeTicks timestamp);
   void WriteData(base::StringPiece data);
 
   void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
                               const base::TimeTicks& timestamp);
+  void OnAudioBusForTesting(const media::AudioBus& audio_bus,
+                            const base::TimeTicks& timestamp);
+  void SetAudioFormatForTesting(const media::AudioParameters& params);
 
   // Bound to the main render thread.
   base::ThreadChecker main_render_thread_checker_;
@@ -86,6 +94,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   blink::WebMediaRecorderHandlerClient* client_;
 
   ScopedVector<VideoTrackRecorder> video_recorders_;
+  ScopedVector<AudioTrackRecorder> audio_recorders_;
 
 #if !defined(MEDIA_DISABLE_LIBWEBM)
   // Worker class doing the actual Webm Muxing work.
