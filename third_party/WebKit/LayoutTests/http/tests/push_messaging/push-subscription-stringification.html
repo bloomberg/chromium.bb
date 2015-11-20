@@ -10,6 +10,12 @@
 </head>
 <body>
 <script>
+// Converts an ArrayBuffer to a base64url encoded string.
+function ArrayBufferToBase64UrlEncodedString(buffer) {
+    var base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+    return base64.replace(/\//g, '_').replace(/\+/g, '-');
+}
+
 async_test(function(test) {
     var workerUrl = 'resources/empty_worker.js';
     var workerScope = 'resources/scope/' + location.pathname;
@@ -33,13 +39,13 @@ async_test(function(test) {
 
             assert_own_property(reflectedObject, 'keys');
             assert_own_property(reflectedObject.keys, 'p256dh');
+            assert_own_property(reflectedObject.keys, 'auth');
 
-            var key = btoa(String.fromCharCode.apply(null, new Uint8Array(pushSubscription.getKey('p256dh'))));
-
-            // Convert |key| to the base64url alphabet by replacing non-URL safe characters.
-            key = key.replace(/\//g, '_').replace(/\+/g, '-');
+            var key = ArrayBufferToBase64UrlEncodedString(pushSubscription.getKey('p256dh')),
+                auth = ArrayBufferToBase64UrlEncodedString(pushSubscription.getKey('auth'));
 
             assert_equals(reflectedObject.keys.p256dh, key);
+            assert_equals(reflectedObject.keys.auth, auth);
 
             return service_worker_unregister_and_done(test, workerScope);
         })

@@ -31,15 +31,17 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 // Messages sent from the browser to the child process.
 
-IPC_MESSAGE_ROUTED3(PushMessagingMsg_SubscribeFromDocumentSuccess,
+IPC_MESSAGE_ROUTED4(PushMessagingMsg_SubscribeFromDocumentSuccess,
                     int32_t /* request_id */,
                     GURL /* push_endpoint */,
-                    std::vector<uint8_t> /* p256dh */)
+                    std::vector<uint8_t> /* p256dh */,
+                    std::vector<uint8_t> /* auth */)
 
-IPC_MESSAGE_CONTROL3(PushMessagingMsg_SubscribeFromWorkerSuccess,
+IPC_MESSAGE_CONTROL4(PushMessagingMsg_SubscribeFromWorkerSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
-                     std::vector<uint8_t> /* p256dh */)
+                     std::vector<uint8_t> /* p256dh */,
+                     std::vector<uint8_t> /* auth */)
 
 IPC_MESSAGE_ROUTED2(PushMessagingMsg_SubscribeFromDocumentError,
                     int32_t /* request_id */,
@@ -58,12 +60,13 @@ IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnsubscribeError,
                      blink::WebPushError::ErrorType /* error_type */,
                      std::string /* error_message */)
 
-IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
+IPC_MESSAGE_CONTROL4(PushMessagingMsg_GetSubscriptionSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
-                     std::vector<uint8_t> /* p256dh */)
+                     std::vector<uint8_t> /* p256dh */,
+                     std::vector<uint8_t> /* auth */)
 
-IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationError,
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetSubscriptionError,
                      int32_t /* request_id */,
                      content::PushGetRegistrationStatus /* status */)
 
@@ -93,7 +96,7 @@ IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_Unsubscribe,
                      int32_t /* request_id */,
                      int64_t /* service_worker_registration_id */)
 
-IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetRegistration,
+IPC_MESSAGE_CONTROL2(PushMessagingHostMsg_GetSubscription,
                      int32_t /* request_id */,
                      int64_t /* service_worker_registration_id */)
 

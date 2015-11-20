@@ -69,10 +69,11 @@ void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
 void ForwardPublicEncryptionKeysToIOThreadProxy(
     const PushMessagingService::PublicKeyCallback& callback,
     bool success,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, success, p256dh));
+                          base::Bind(callback, success, p256dh, auth));
 }
 
 // Concatenates the subscription id with the endpoint base to create a new
@@ -149,6 +150,7 @@ class PushMessagingMessageFilter::Core {
   void DidRegister(const RegisterData& data,
                    const std::string& push_registration_id,
                    const std::vector<uint8_t>& p256dh,
+                   const std::vector<uint8_t>& auth,
                    PushRegistrationStatus status);
 
   // Private Unregister methods on UI thread -----------------------------------
@@ -233,7 +235,7 @@ bool PushMessagingMessageFilter::OnMessageReceived(
                         OnSubscribeFromWorker)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Unsubscribe,
                         OnUnsubscribe)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetRegistration, OnGetRegistration)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetSubscription, OnGetSubscription)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
                         OnGetPermissionStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -264,7 +266,7 @@ void PushMessagingMessageFilter::OnSubscribeFromDocument(
           service_worker_registration_id);
   if (!service_worker_registration ||
       !service_worker_registration->active_version()) {
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
     return;
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
@@ -293,7 +295,7 @@ void PushMessagingMessageFilter::OnSubscribeFromWorker(
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
     return;
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
@@ -308,7 +310,7 @@ void PushMessagingMessageFilter::DidPersistSenderId(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK)
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
   else
     CheckForExistingRegistration(data, sender_id);
 }
@@ -366,15 +368,17 @@ void PushMessagingMessageFilter::DidGetEncryptionKeys(
     const RegisterData& data,
     const std::string& push_registration_id,
     bool success,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
+    SendSubscriptionError(
+        data, PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
     return;
   }
 
-  SendRegisterSuccess(data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
-                      push_registration_id, p256dh);
+  SendSubscriptionSuccess(data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
+                          push_registration_id, p256dh, auth);
 }
 
 void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
@@ -383,7 +387,7 @@ void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
     return;
   }
   BrowserThread::PostTask(
@@ -402,7 +406,7 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
       // TODO(johnme): Might be better not to expose the API in this case.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&PushMessagingMessageFilter::SendRegisterError,
+          base::Bind(&PushMessagingMessageFilter::SendSubscriptionError,
                      io_parent_,
                      data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
     } else {
@@ -412,7 +416,7 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
         // Throw a permission denied error under the same circumstances.
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(&PushMessagingMessageFilter::SendRegisterError,
+            base::Bind(&PushMessagingMessageFilter::SendSubscriptionError,
                        io_parent_,
                        data,
                        PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
@@ -452,25 +456,27 @@ void PushMessagingMessageFilter::Core::DidRegister(
     const RegisterData& data,
     const std::string& push_registration_id,
     const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::PersistRegistrationOnIO,
-                   io_parent_, data, push_registration_id, p256dh));
+                   io_parent_, data, push_registration_id, p256dh, auth));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingMessageFilter::SendRegisterError, io_parent_,
-                   data, status));
+        base::Bind(&PushMessagingMessageFilter::SendSubscriptionError,
+                   io_parent_, data, status));
   }
 }
 
 void PushMessagingMessageFilter::PersistRegistrationOnIO(
     const RegisterData& data,
     const std::string& push_registration_id,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->StoreRegistrationUserData(
       data.service_worker_registration_id,
@@ -479,26 +485,27 @@ void PushMessagingMessageFilter::PersistRegistrationOnIO(
       push_registration_id,
       base::Bind(&PushMessagingMessageFilter::DidPersistRegistrationOnIO,
                  weak_factory_io_to_io_.GetWeakPtr(),
-                 data, push_registration_id, p256dh));
+                 data, push_registration_id, p256dh, auth));
 }
 
 void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
     const RegisterData& data,
     const std::string& push_registration_id,
     const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
-    SendRegisterSuccess(data,
-                        PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
-                        push_registration_id, p256dh);
+    SendSubscriptionSuccess(data,
+                            PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
+                            push_registration_id, p256dh, auth);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
   }
 }
 
-void PushMessagingMessageFilter::SendRegisterError(
+void PushMessagingMessageFilter::SendSubscriptionError(
     const RegisterData& data, PushRegistrationStatus status) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -512,31 +519,32 @@ void PushMessagingMessageFilter::SendRegisterError(
   RecordRegistrationStatus(status);
 }
 
-void PushMessagingMessageFilter::SendRegisterSuccess(
+void PushMessagingMessageFilter::SendSubscriptionSuccess(
     const RegisterData& data,
     PushRegistrationStatus status,
-    const std::string& push_registration_id,
-    const std::vector<uint8_t>& p256dh) {
+    const std::string& push_subscription_id,
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (push_endpoint_base_.is_empty()) {
     // This shouldn't be possible in incognito mode, since we've already checked
     // that we have an existing registration. Hence it's ok to throw an error.
     DCHECK(!ui_core_->is_incognito());
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
+    SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
     return;
   }
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_SubscribeFromDocumentSuccess(
         data.render_frame_id,
         data.request_id,
-        CreatePushEndpoint(push_endpoint_base_, push_registration_id),
-        p256dh));
+        CreatePushEndpoint(push_endpoint_base_, push_subscription_id),
+        p256dh, auth));
   } else {
     Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
         data.request_id,
-        CreatePushEndpoint(push_endpoint_base_, push_registration_id),
-        p256dh));
+        CreatePushEndpoint(push_endpoint_base_, push_subscription_id),
+        p256dh, auth));
   }
   RecordRegistrationStatus(status);
 }
@@ -755,11 +763,11 @@ void PushMessagingMessageFilter::DidUnregister(
   RecordUnregistrationStatus(unregistration_status);
 }
 
-// GetRegistration methods on both IO and UI threads, merged in order of use
+// GetSubscription methods on both IO and UI threads, merged in order of use
 // from PushMessagingMessageFilter and Core.
 // -----------------------------------------------------------------------------
 
-void PushMessagingMessageFilter::OnGetRegistration(
+void PushMessagingMessageFilter::OnGetSubscription(
     int request_id,
     int64_t service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -767,15 +775,15 @@ void PushMessagingMessageFilter::OnGetRegistration(
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
-      base::Bind(&PushMessagingMessageFilter::DidGetRegistration,
+      base::Bind(&PushMessagingMessageFilter::DidGetSubscription,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
                  service_worker_registration_id));
 }
 
-void PushMessagingMessageFilter::DidGetRegistration(
+void PushMessagingMessageFilter::DidGetSubscription(
     int request_id,
     int64_t service_worker_registration_id,
-    const std::string& push_registration_id,
+    const std::string& push_subscription_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PushGetRegistrationStatus get_status =
@@ -794,10 +802,10 @@ void PushMessagingMessageFilter::DidGetRegistration(
       const GURL origin = service_worker_context_->GetLiveRegistration(
           service_worker_registration_id)->pattern().GetOrigin();
       const GURL endpoint =
-          CreatePushEndpoint(push_endpoint_base_, push_registration_id);
+          CreatePushEndpoint(push_endpoint_base_, push_subscription_id);
 
       auto callback =
-          base::Bind(&PushMessagingMessageFilter::DidGetRegistrationKeys,
+          base::Bind(&PushMessagingMessageFilter::DidGetSubscriptionKeys,
                      weak_factory_io_to_io_.GetWeakPtr(), request_id, endpoint);
 
       BrowserThread::PostTask(
@@ -839,28 +847,29 @@ void PushMessagingMessageFilter::DidGetRegistration(
       break;
     }
   }
-  Send(new PushMessagingMsg_GetRegistrationError(request_id, get_status));
+  Send(new PushMessagingMsg_GetSubscriptionError(request_id, get_status));
   RecordGetRegistrationStatus(get_status);
 }
 
-void PushMessagingMessageFilter::DidGetRegistrationKeys(
+void PushMessagingMessageFilter::DidGetSubscriptionKeys(
     int request_id,
     const GURL& endpoint,
     bool success,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
     PushGetRegistrationStatus status =
         PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE;
 
-    Send(new PushMessagingMsg_GetRegistrationError(request_id, status));
+    Send(new PushMessagingMsg_GetSubscriptionError(request_id, status));
 
     RecordGetRegistrationStatus(status);
     return;
   }
 
-  Send(new PushMessagingMsg_GetRegistrationSuccess(request_id, endpoint,
-                                                   p256dh));
+  Send(new PushMessagingMsg_GetSubscriptionSuccess(request_id, endpoint,
+                                                   p256dh, auth));
 
   RecordGetRegistrationStatus(PUSH_GETREGISTRATION_STATUS_SUCCESS);
 }
@@ -939,7 +948,8 @@ void PushMessagingMessageFilter::Core::GetPublicEncryptionKeyOnUI(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(io_thread_callback, false /* success */,
-                                     std::vector<uint8_t>()));
+                                     std::vector<uint8_t>() /* public_key */,
+                                     std::vector<uint8_t>() /* auth */));
 }
 
 void PushMessagingMessageFilter::Core::Send(IPC::Message* message) {

@@ -102,7 +102,7 @@ void PushProvider::getSubscription(
   subscription_callbacks_.AddWithID(callbacks, request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
-  thread_safe_sender_->Send(new PushMessagingHostMsg_GetRegistration(
+  thread_safe_sender_->Send(new PushMessagingHostMsg_GetSubscription(
       request_id, service_worker_registration_id));
 }
 
@@ -131,10 +131,10 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
                         OnUnsubscribeSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeError,
                         OnUnsubscribeError);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationSuccess,
-                        OnGetRegistrationSuccess);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationError,
-                        OnGetRegistrationError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetSubscriptionSuccess,
+                        OnGetSubscriptionSuccess);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_GetSubscriptionError,
+                        OnGetSubscriptionError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusSuccess,
                         OnGetPermissionStatusSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetPermissionStatusError,
@@ -148,14 +148,15 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
 void PushProvider::OnSubscribeFromWorkerSuccess(
     int request_id,
     const GURL& endpoint,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
   callbacks->onSuccess(blink::adoptWebPtr(
-      new blink::WebPushSubscription(endpoint, p256dh)));
+      new blink::WebPushSubscription(endpoint, p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -205,22 +206,23 @@ void PushProvider::OnUnsubscribeError(
   unsubscribe_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnGetRegistrationSuccess(
+void PushProvider::OnGetSubscriptionSuccess(
     int request_id,
     const GURL& endpoint,
-    const std::vector<uint8_t>& p256dh) {
+    const std::vector<uint8_t>& p256dh,
+    const std::vector<uint8_t>& auth) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
   callbacks->onSuccess(blink::adoptWebPtr(
-      new blink::WebPushSubscription(endpoint, p256dh)));
+      new blink::WebPushSubscription(endpoint, p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnGetRegistrationError(
+void PushProvider::OnGetSubscriptionError(
     int request_id,
     PushGetRegistrationStatus status) {
   blink::WebPushSubscriptionCallbacks* callbacks =

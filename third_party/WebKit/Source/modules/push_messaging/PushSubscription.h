@@ -42,7 +42,9 @@ private:
     PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
 
     KURL m_endpoint;
+
     RefPtr<DOMArrayBuffer> m_p256dh;
+    RefPtr<DOMArrayBuffer> m_auth;
 
     Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };

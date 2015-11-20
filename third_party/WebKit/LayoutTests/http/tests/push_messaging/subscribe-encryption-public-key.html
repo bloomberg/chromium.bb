@@ -21,10 +21,13 @@
             async_test(function(test) {
                 var workerUrl = 'resources/empty_worker.js';
                 var workerScope = 'resources/scope/' + location.pathname;
-                var swRegistration, encryptionKey;
+                var swRegistration, encryptionKey, encryptionAuth;
 
                 // Length of a NIST P-256 point in uncompressed form per SEC1 2.3.3.
                 var EXPECTED_KEY_LENGTH = 65;
+
+                // Minimum length of the authentication information, in bytes.
+                var MINIMUM_AUTH_LENGTH = 12;
 
                 // The first byte in an uncompressed P-256 point per SEC1 2.3.3.
                 var UNCOMPRESSED_POINT_FORM = 0x04;
@@ -54,15 +57,23 @@
                         // The first byte of the key should be the uncompressed point form indicator.
                         assert_equals(new Uint8Array(key)[0], UNCOMPRESSED_POINT_FORM);
 
+                        // Verify that authentication information is available in the subscription.
+                        var auth = pushSubscription.getKey('auth');
+
+                        assert_not_equals(auth, null);
+                        assert_true(auth.byteLength >= MINIMUM_AUTH_LENGTH);
+
                         // Getting a key with an unsupported algorithm should throw an exception.
                         assert_throws(TypeError(), () => pushSubscription.getKey('petercurve9001'));
 
                         encryptionKey = SerializeArrayBuffer(key);
+                        encryptionAuth = SerializeArrayBuffer(auth);
 
                         return swRegistration.pushManager.getSubscription();
                     })
                     .then(function(pushSubscription) {
                         assert_equals(SerializeArrayBuffer(pushSubscription.getKey('p256dh')), encryptionKey);
+                        assert_equals(SerializeArrayBuffer(pushSubscription.getKey('auth')), encryptionAuth);
 
                         return service_worker_unregister_and_done(test, workerScope);
                     })

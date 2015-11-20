@@ -29,6 +29,14 @@ const uint8_t kTestP256Key[] = {
 static_assert(sizeof(kTestP256Key) == 65,
               "The fake public key must be a valid P-256 uncompressed point.");
 
+// 92-bit (12 byte) authentication key associated with a subscription.
+const uint8_t kAuthentication[] = {
+  0xA5, 0xD9, 0x3C, 0x43, 0x0C, 0x00, 0xA9, 0xE3, 0x1E, 0x65, 0xBF, 0xA1
+};
+
+static_assert(sizeof(kAuthentication) == 12,
+              "The fake authentication key must be at least 12 bytes in size.");
+
 blink::WebPushPermissionStatus ToWebPushPermissionStatus(
     PermissionStatus status) {
   switch (status) {
@@ -78,11 +86,14 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
       blink::WebPushPermissionStatusGranted) {
     std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
+    std::vector<uint8_t> auth(
+        kAuthentication, kAuthentication + arraysize(kAuthentication));
 
-    callback.Run("layoutTestRegistrationId", p256dh,
+    callback.Run("layoutTestRegistrationId", p256dh, auth,
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
-    callback.Run("registration_id", std::vector<uint8_t>(),
+    callback.Run("registration_id", std::vector<uint8_t>() /* p256dh */,
+                 std::vector<uint8_t>() /* auth */,
                  PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
   }
 }
@@ -93,8 +104,10 @@ void LayoutTestPushMessagingService::GetPublicEncryptionKey(
     const PublicKeyCallback& callback) {
   std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
+  std::vector<uint8_t> auth(
+        kAuthentication, kAuthentication + arraysize(kAuthentication));
 
-  callback.Run(true /* success */, p256dh);
+  callback.Run(true /* success */, p256dh, auth);
 }
 
 blink::WebPushPermissionStatus

@@ -29,8 +29,8 @@ bool PushDispatcher::ShouldHandleMessage(const IPC::Message& msg) const {
   // RenderFrameObserver.
   return msg.type() == PushMessagingMsg_SubscribeFromWorkerSuccess::ID ||
          msg.type() == PushMessagingMsg_SubscribeFromWorkerError::ID ||
-         msg.type() == PushMessagingMsg_GetRegistrationSuccess::ID ||
-         msg.type() == PushMessagingMsg_GetRegistrationError::ID ||
+         msg.type() == PushMessagingMsg_GetSubscriptionSuccess::ID ||
+         msg.type() == PushMessagingMsg_GetSubscriptionError::ID ||
          msg.type() == PushMessagingMsg_GetPermissionStatusSuccess::ID ||
          msg.type() == PushMessagingMsg_GetPermissionStatusError::ID ||
          msg.type() == PushMessagingMsg_UnsubscribeSuccess::ID ||

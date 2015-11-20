@@ -27,12 +27,14 @@ class CONTENT_EXPORT PushMessagingService {
   using RegisterCallback =
       base::Callback<void(const std::string& registration_id,
                           const std::vector<uint8_t>& p256dh,
+                          const std::vector<uint8_t>& auth,
                           PushRegistrationStatus status)>;
   using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
 
   using PublicKeyCallback = base::Callback<void(
       bool success,
-      const std::vector<uint8_t>& p256dh)>;
+      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& auth)>;
 
   using StringCallback = base::Callback<void(const std::string& data,
                                              bool success,

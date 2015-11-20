@@ -12,15 +12,17 @@
 namespace blink {
 
 struct WebPushSubscription {
-    // The |endpoint| and |p256dh| must both be unique for each subscription.
-    WebPushSubscription(const WebURL& endpoint, const WebVector<unsigned char>& p256dh)
+    // The |endpoint|, |p256dh| and |auth| must all be unique for each subscription.
+    WebPushSubscription(const WebURL& endpoint, const WebVector<unsigned char>& p256dh, const WebVector<unsigned char>& auth)
         : endpoint(endpoint)
         , p256dh(p256dh)
+        , auth(auth)
     {
     }
 
     WebURL endpoint;
     WebVector<unsigned char> p256dh;
+    WebVector<unsigned char> auth;
 };
 
 } // namespace blink
