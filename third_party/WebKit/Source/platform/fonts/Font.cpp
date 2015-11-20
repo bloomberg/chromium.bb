@@ -451,6 +451,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
         node = GlyphPageTreeNode::getRootChild(fontDataAt(0), pageNumber);
         m_fontFallbackList->setPageNode(pageNumber, node);
     }
+    RELEASE_ASSERT(node); // Diagnosing crbug.com/446566 crash bug.
 
     GlyphPage* page = 0;
     if (variant == NormalVariant) {
