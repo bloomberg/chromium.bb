@@ -37,20 +37,13 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
 
 }  // namespace
 
-EmulationHandler::EmulationHandler(page::PageHandler* page_handler)
+EmulationHandler::EmulationHandler()
     : touch_emulation_enabled_(false),
       device_emulation_enabled_(false),
-      page_handler_(page_handler),
-      host_(nullptr)
-{
-  page_handler->SetScreencastListener(this);
+      host_(nullptr) {
 }
 
 EmulationHandler::~EmulationHandler() {
-}
-
-void EmulationHandler::ScreencastEnabledChanged() {
-   UpdateTouchEventEmulationState();
 }
 
 void EmulationHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
@@ -216,8 +209,7 @@ void EmulationHandler::UpdateTouchEventEmulationState() {
       host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (!widget_host)
     return;
-  bool enabled = touch_emulation_enabled_ ||
-      page_handler_->screencast_enabled();
+  bool enabled = touch_emulation_enabled_;
   ui::GestureProviderConfigType config_type =
       TouchEmulationConfigurationToType(touch_emulation_configuration_);
   widget_host->SetTouchEventEmulationEnabled(enabled, config_type);

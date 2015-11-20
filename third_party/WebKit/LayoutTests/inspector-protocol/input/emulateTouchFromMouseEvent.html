@@ -119,7 +119,7 @@ function test()
     }
 
     InspectorTest.sendCommand("Page.enable", {}, function() {
-        InspectorTest.sendCommand("Page.startScreencast", {}, sendNextEvent);
+        InspectorTest.sendCommand("Page.setTouchEmulationEnabled", { enabled: true }, sendNextEvent);
     });
 }
 

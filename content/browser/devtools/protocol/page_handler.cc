@@ -104,7 +104,6 @@ PageHandler::PageHandler()
       color_picker_(new ColorPicker(base::Bind(
           &PageHandler::OnColorPicked, base::Unretained(this)))),
       host_(nullptr),
-      screencast_listener_(nullptr),
       weak_factory_(this) {
 }
 
@@ -188,10 +187,6 @@ void PageHandler::DidDetachInterstitialPage() {
   client_->InterstitialHidden(InterstitialHiddenParams::Create());
 }
 
-void PageHandler::SetScreencastListener(ScreencastListener* listener) {
-  screencast_listener_ = listener;
-}
-
 Response PageHandler::Enable() {
   enabled_ = true;
   return Response::FallThrough();
@@ -201,8 +196,6 @@ Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
   color_picker_->SetEnabled(false);
-  if (screencast_listener_)
-    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 
@@ -319,15 +312,11 @@ Response PageHandler::StartScreencast(const std::string* format,
           new ViewMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
     }
   }
-  if (screencast_listener_)
-    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 
 Response PageHandler::StopScreencast() {
   screencast_enabled_ = false;
-  if (screencast_listener_)
-    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 

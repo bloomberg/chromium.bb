@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_EMULATION_HANDLER_H_
 
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
-#include "content/browser/devtools/protocol/page_handler.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
 namespace content {
@@ -20,15 +19,12 @@ namespace page { class PageHandler; }
 
 namespace emulation {
 
-class EmulationHandler : public page::PageHandler::ScreencastListener {
+class EmulationHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
 
-  explicit EmulationHandler(page::PageHandler* page_handler);
-  ~EmulationHandler() override;
-
-  // page::PageHandler::ScreencastListener implementation.
-  void ScreencastEnabledChanged() override;
+  EmulationHandler();
+  ~EmulationHandler();
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void Detached();
@@ -67,7 +63,6 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
   bool device_emulation_enabled_;
   blink::WebDeviceEmulationParams device_emulation_params_;
 
-  page::PageHandler* page_handler_;
   RenderFrameHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(EmulationHandler);

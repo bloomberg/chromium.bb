@@ -31,12 +31,6 @@ class PageHandler : public NotificationObserver {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
-  class ScreencastListener {
-   public:
-    virtual ~ScreencastListener() { }
-    virtual void ScreencastEnabledChanged() = 0;
-  };
-
   PageHandler();
   ~PageHandler() override;
 
@@ -48,7 +42,6 @@ class PageHandler : public NotificationObserver {
       frame_metadata);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
-  void SetScreencastListener(ScreencastListener* listener);
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
 
   Response Enable();
@@ -125,7 +118,6 @@ class PageHandler : public NotificationObserver {
 
   RenderFrameHostImpl* host_;
   scoped_ptr<Client> client_;
-  ScreencastListener* screencast_listener_;
   NotificationRegistrar registrar_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 

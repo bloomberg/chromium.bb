@@ -344,7 +344,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     security_handler_.reset(new devtools::security::SecurityHandler());
     page_handler_.reset(new devtools::page::PageHandler());
     emulation_handler_.reset(
-        new devtools::emulation::EmulationHandler(page_handler_.get()));
+        new devtools::emulation::EmulationHandler());
     dispatcher->SetSecurityHandler(security_handler_.get());
     dispatcher->SetPageHandler(page_handler_.get());
     dispatcher->SetEmulationHandler(emulation_handler_.get());
