@@ -544,6 +544,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     ASSERT(m_initialized);
 #endif
 
+    if (!m_layoutObject)
+        return true;
+
     // Check first if any of the common reasons cause this element to be ignored.
     // Then process other use cases that need to be applied to all the various roles
     // that AXLayoutObjects take on.
