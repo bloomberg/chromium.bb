@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
-#include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
+#include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
