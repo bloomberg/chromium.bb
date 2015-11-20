@@ -51,14 +51,13 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int GetResponseCode() const override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   // Reader completion callbacks.
   void OnReadInfoComplete(int result);
   void OnReadComplete(int result);
 
   // Helpers
-  void StartAsync();
   const net::HttpResponseInfo* http_info() const;
   bool is_range_request() const { return range_requested_.IsValid(); }
   void SetupRangeResponse(int response_data_size);

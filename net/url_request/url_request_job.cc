@@ -101,46 +101,45 @@ void URLRequestJob::DetachRequest() {
   request_ = NULL;
 }
 
-// This function calls ReadRawData to get stream data. If a filter exists, it
-// passes the data to the attached filter. It then returns the output from
-// filter back to the caller.
+// This function calls ReadData to get stream data. If a filter exists, passes
+// the data to the attached filter. Then returns the output from filter back to
+// the caller.
 bool URLRequestJob::Read(IOBuffer* buf, int buf_size, int *bytes_read) {
+  bool rv = false;
+
   DCHECK_LT(buf_size, 1000000);  // Sanity check.
   DCHECK(buf);
   DCHECK(bytes_read);
   DCHECK(filtered_read_buffer_.get() == NULL);
   DCHECK_EQ(0, filtered_read_buffer_len_);
 
-  Error error = OK;
   *bytes_read = 0;
 
   // Skip Filter if not present.
-  if (!filter_) {
-    error = ReadRawDataHelper(buf, buf_size, bytes_read);
+  if (!filter_.get()) {
+    rv = ReadRawDataHelper(buf, buf_size, bytes_read);
   } else {
     // Save the caller's buffers while we do IO
     // in the filter's buffers.
     filtered_read_buffer_ = buf;
     filtered_read_buffer_len_ = buf_size;
 
-    error = ReadFilteredData(bytes_read);
+    if (ReadFilteredData(bytes_read)) {
+      rv = true;  // We have data to return.
 
-    // Synchronous EOF from the filter.
-    if (error == OK && *bytes_read == 0)
-      DoneReading();
+      // It is fine to call DoneReading even if ReadFilteredData receives 0
+      // bytes from the net, but we avoid making that call if we know for
+      // sure that's the case (ReadRawDataHelper path).
+      if (*bytes_read == 0)
+        DoneReading();
+    } else {
+      rv = false;  // Error, or a new IO is pending.
+    }
   }
 
-  if (error == OK) {
-    // If URLRequestJob read zero bytes, the job is at EOF.
-    if (*bytes_read == 0)
-      NotifyDone(URLRequestStatus());
-  } else if (error == ERR_IO_PENDING) {
-    SetStatus(URLRequestStatus::FromError(ERR_IO_PENDING));
-  } else {
-    NotifyDone(URLRequestStatus::FromError(error));
-    *bytes_read = -1;
-  }
-  return error == OK;
+  if (rv && *bytes_read == 0)
+    NotifyDone(URLRequestStatus());
+  return rv;
 }
 
 void URLRequestJob::StopCaching() {
@@ -481,21 +480,11 @@ void URLRequestJob::NotifyHeadersComplete() {
   request_->NotifyResponseStarted();
 }
 
-void URLRequestJob::ConvertResultToError(int result, Error* error, int* count) {
-  if (result >= 0) {
-    *error = OK;
-    *count = result;
-  } else {
-    *error = static_cast<Error>(result);
-    *count = 0;
-  }
-}
-
-void URLRequestJob::ReadRawDataComplete(int result) {
+void URLRequestJob::NotifyReadComplete(int bytes_read) {
   // TODO(cbentzel): Remove ScopedTracker below once crbug.com/475755 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "475755 URLRequestJob::RawReadCompleted"));
+          "475755 URLRequestJob::NotifyReadComplete"));
 
   if (!request_ || !request_->has_delegate())
     return;  // The request was destroyed, so there is no more work to do.
@@ -508,52 +497,11 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   // The headers should be complete before reads complete
   DCHECK(has_handled_response_);
 
-  Error error;
-  int bytes_read;
-  ConvertResultToError(result, &error, &bytes_read);
+  OnRawReadComplete(bytes_read);
 
-  DCHECK_NE(ERR_IO_PENDING, error);
-
-  // Synchronize the URLRequest state machine with the URLRequestJob state
-  // machine. If this read succeeded, either the request is at EOF and the
-  // URLRequest state machine goes to 'finished', or it is not and the
-  // URLRequest state machine goes to 'success'. If the read failed, the
-  // URLRequest state machine goes directly to 'finished'.
-  //
-  // Update the URLRequest's status first, so that NotifyReadCompleted has an
-  // accurate view of the request.
-  if (error == OK && bytes_read > 0) {
-    SetStatus(URLRequestStatus());
-  } else {
-    NotifyDone(URLRequestStatus::FromError(error));
-  }
-
-  GatherRawReadStats(error, bytes_read);
-
-  if (filter_.get() && error == OK) {
-    int filter_bytes_read = 0;
-    // Tell the filter that it has more data.
-    PushInputToFilter(bytes_read);
-
-    // Filter the data.
-    error = ReadFilteredData(&filter_bytes_read);
-
-    if (!filter_bytes_read)
-      DoneReading();
-
-    DVLOG(1) << __FUNCTION__ << "() "
-             << "\"" << (request_ ? request_->url().spec() : "???") << "\""
-             << " pre bytes read = " << bytes_read
-             << " pre total = " << prefilter_bytes_read_
-             << " post total = " << postfilter_bytes_read_;
-    bytes_read = filter_bytes_read;
-  } else {
-    DVLOG(1) << __FUNCTION__ << "() "
-             << "\"" << (request_ ? request_->url().spec() : "???") << "\""
-             << " pre bytes read = " << bytes_read
-             << " pre total = " << prefilter_bytes_read_
-             << " post total = " << postfilter_bytes_read_;
-  }
+  // Don't notify if we had an error.
+  if (!request_->status().is_success())
+    return;
 
   // When notifying the delegate, the delegate can release the request
   // (and thus release 'this').  After calling to the delegate, we must
@@ -562,10 +510,25 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   // survival until we can get out of this method.
   scoped_refptr<URLRequestJob> self_preservation(this);
 
-  // NotifyReadCompleted should be called after SetStatus or NotifyDone updates
-  // the status.
-  if (error == OK)
+  if (filter_.get()) {
+    // Tell the filter that it has more data
+    FilteredDataRead(bytes_read);
+
+    // Filter the data.
+    int filter_bytes_read = 0;
+    if (ReadFilteredData(&filter_bytes_read)) {
+      if (!filter_bytes_read)
+        DoneReading();
+      request_->NotifyReadCompleted(filter_bytes_read);
+    }
+  } else {
     request_->NotifyReadCompleted(bytes_read);
+  }
+  DVLOG(1) << __FUNCTION__ << "() "
+           << "\"" << (request_ ? request_->url().spec() : "???") << "\""
+           << " pre bytes read = " << bytes_read
+           << " pre total = " << prefilter_bytes_read_
+           << " post total = " << postfilter_bytes_read_;
 }
 
 void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
@@ -592,7 +555,7 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
   // the response before getting here.
   DCHECK(has_handled_response_ || !status.is_success());
 
-  // As with RawReadCompleted, we need to take care to notice if we were
+  // As with NotifyReadComplete, we need to take care to notice if we were
   // destroyed during a delegate callback.
   if (request_) {
     request_->set_is_pending(false);
@@ -675,8 +638,10 @@ void URLRequestJob::OnCallToDelegateComplete() {
   request_->OnCallToDelegateComplete();
 }
 
-int URLRequestJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  return 0;
+bool URLRequestJob::ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) {
+  DCHECK(bytes_read);
+  *bytes_read = 0;
+  return true;
 }
 
 void URLRequestJob::DoneReading() {
@@ -686,34 +651,38 @@ void URLRequestJob::DoneReading() {
 void URLRequestJob::DoneReadingRedirectResponse() {
 }
 
-void URLRequestJob::PushInputToFilter(int bytes_read) {
+void URLRequestJob::FilteredDataRead(int bytes_read) {
   DCHECK(filter_);
   filter_->FlushStreamBuffer(bytes_read);
 }
 
-Error URLRequestJob::ReadFilteredData(int* bytes_read) {
+bool URLRequestJob::ReadFilteredData(int* bytes_read) {
   DCHECK(filter_);
   DCHECK(filtered_read_buffer_.get());
   DCHECK_GT(filtered_read_buffer_len_, 0);
   DCHECK_LT(filtered_read_buffer_len_, 1000000);  // Sanity check.
-  DCHECK(!raw_read_buffer_);
+  DCHECK(!raw_read_buffer_.get());
 
   *bytes_read = 0;
-  Error error = ERR_FAILED;
+  bool rv = false;
 
   for (;;) {
     if (is_done())
-      return OK;
+      return true;
 
     if (!filter_needs_more_output_space_ && !filter_->stream_data_len()) {
       // We don't have any raw data to work with, so read from the transaction.
       int filtered_data_read;
-      error = ReadRawDataForFilter(&filtered_data_read);
-      // If ReadRawDataForFilter returned some data, fall through to the case
-      // below; otherwise, return early.
-      if (error != OK || filtered_data_read == 0)
-        return error;
-      filter_->FlushStreamBuffer(filtered_data_read);
+      if (ReadRawDataForFilter(&filtered_data_read)) {
+        if (filtered_data_read > 0) {
+          // Give data to filter.
+          filter_->FlushStreamBuffer(filtered_data_read);
+        } else {
+          return true;  // EOF.
+        }
+      } else {
+        return false;  // IO Pending (or error).
+      }
     }
 
     if ((filter_->stream_data_len() || filter_needs_more_output_space_) &&
@@ -739,7 +708,7 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
           filter_needs_more_output_space_ = false;
           *bytes_read = filtered_data_len;
           postfilter_bytes_read_ += filtered_data_len;
-          error = OK;
+          rv = true;
           break;
         }
         case Filter::FILTER_NEED_MORE_DATA: {
@@ -752,7 +721,7 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
           if (filtered_data_len > 0) {
             *bytes_read = filtered_data_len;
             postfilter_bytes_read_ += filtered_data_len;
-            error = OK;
+            rv = true;
           } else {
             // Read again since we haven't received enough data yet (e.g., we
             // may not have a complete gzip header yet).
@@ -763,7 +732,7 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
         case Filter::FILTER_OK: {
           *bytes_read = filtered_data_len;
           postfilter_bytes_read_ += filtered_data_len;
-          error = OK;
+          rv = true;
           break;
         }
         case Filter::FILTER_ERROR: {
@@ -771,19 +740,21 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
                    << "\"" << (request_ ? request_->url().spec() : "???")
                    << "\"" << " Filter Error";
           filter_needs_more_output_space_ = false;
-          error = ERR_CONTENT_DECODING_FAILED;
+          NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
+                                      ERR_CONTENT_DECODING_FAILED));
+          rv = false;
           break;
         }
         default: {
           NOTREACHED();
           filter_needs_more_output_space_ = false;
-          error = ERR_FAILED;
+          rv = false;
           break;
         }
       }
 
       // If logging all bytes is enabled, log the filtered bytes read.
-      if (error == OK && request() && filtered_data_len > 0 &&
+      if (rv && request() && filtered_data_len > 0 &&
           request()->net_log().IsCapturing()) {
         request()->net_log().AddByteTransferEvent(
             NetLog::TYPE_URL_REQUEST_JOB_FILTERED_BYTES_READ, filtered_data_len,
@@ -791,18 +762,18 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
       }
     } else {
       // we are done, or there is no data left.
-      error = OK;
+      rv = true;
     }
     break;
   }
 
-  if (error == OK) {
+  if (rv) {
     // When we successfully finished a read, we no longer need to save the
     // caller's buffers. Release our reference.
     filtered_read_buffer_ = NULL;
     filtered_read_buffer_len_ = 0;
   }
-  return error;
+  return rv;
 }
 
 void URLRequestJob::DestroyFilters() {
@@ -835,8 +806,9 @@ void URLRequestJob::SetProxyServer(const HostPortPair& proxy_server) {
   request_->proxy_server_ = proxy_server;
 }
 
-Error URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
-  Error error = ERR_FAILED;
+bool URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
+  bool rv = false;
+
   DCHECK(bytes_read);
   DCHECK(filter_.get());
 
@@ -848,28 +820,30 @@ Error URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
   if (!filter_->stream_data_len() && !is_done()) {
     IOBuffer* stream_buffer = filter_->stream_buffer();
     int stream_buffer_size = filter_->stream_buffer_size();
-    error = ReadRawDataHelper(stream_buffer, stream_buffer_size, bytes_read);
+    rv = ReadRawDataHelper(stream_buffer, stream_buffer_size, bytes_read);
   }
-  return error;
+  return rv;
 }
 
-Error URLRequestJob::ReadRawDataHelper(IOBuffer* buf,
-                                       int buf_size,
-                                       int* bytes_read) {
-  DCHECK(!raw_read_buffer_);
+bool URLRequestJob::ReadRawDataHelper(IOBuffer* buf,
+                                      int buf_size,
+                                      int* bytes_read) {
+  DCHECK(!request_->status().is_io_pending());
+  DCHECK(raw_read_buffer_.get() == NULL);
 
-  // Keep a pointer to the read buffer, so we have access to it in
-  // GatherRawReadStats() in the event that the read completes asynchronously.
+  // Keep a pointer to the read buffer, so we have access to it in the
+  // OnRawReadComplete() callback in the event that the read completes
+  // asynchronously.
   raw_read_buffer_ = buf;
-  Error error;
-  ConvertResultToError(ReadRawData(buf, buf_size), &error, bytes_read);
+  bool rv = ReadRawData(buf, buf_size, bytes_read);
 
-  if (error != ERR_IO_PENDING) {
-    // If the read completes synchronously, either success or failure, invoke
-    // GatherRawReadStats so we can account for the completed read.
-    GatherRawReadStats(error, *bytes_read);
+  if (!request_->status().is_io_pending()) {
+    // If the read completes synchronously, either success or failure,
+    // invoke the OnRawReadComplete callback so we can account for the
+    // completed read.
+    OnRawReadComplete(*bytes_read);
   }
-  return error;
+  return rv;
 }
 
 void URLRequestJob::FollowRedirect(const RedirectInfo& redirect_info) {
@@ -878,16 +852,9 @@ void URLRequestJob::FollowRedirect(const RedirectInfo& redirect_info) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
 
-void URLRequestJob::GatherRawReadStats(Error error, int bytes_read) {
-  DCHECK(raw_read_buffer_ || bytes_read == 0);
-  DCHECK_NE(ERR_IO_PENDING, error);
-
-  if (error != OK) {
-    raw_read_buffer_ = nullptr;
-    return;
-  }
-  // If |filter_| is non-NULL, bytes will be logged after it is applied
-  // instead.
+void URLRequestJob::OnRawReadComplete(int bytes_read) {
+  DCHECK(raw_read_buffer_.get());
+  // If |filter_| is non-NULL, bytes will be logged after it is applied instead.
   if (!filter_.get() && request() && bytes_read > 0 &&
       request()->net_log().IsCapturing()) {
     request()->net_log().AddByteTransferEvent(
@@ -898,7 +865,7 @@ void URLRequestJob::GatherRawReadStats(Error error, int bytes_read) {
   if (bytes_read > 0) {
     RecordBytesRead(bytes_read);
   }
-  raw_read_buffer_ = nullptr;
+  raw_read_buffer_ = NULL;
 }
 
 void URLRequestJob::RecordBytesRead(int bytes_read) {

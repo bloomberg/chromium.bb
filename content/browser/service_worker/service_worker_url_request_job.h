@@ -87,7 +87,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   int GetResponseCode() const override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   // net::URLRequest::Delegate overrides that read the blob from the
   // ServiceWorkerFetchResponse.

@@ -32,7 +32,7 @@ class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
   // URLRequestJob methods:
   void Start() override;
   void Kill() override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool GetCharset(std::string* charset) override;
 
   // FilterContext methods (via URLRequestJob):

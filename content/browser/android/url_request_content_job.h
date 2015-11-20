@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -43,7 +42,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
   // net::URLRequestJob:
   void Start() override;
   void Kill() override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
   bool GetMimeType(std::string* mime_type) const override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
@@ -80,7 +79,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
   void DidSeek(int64 result);
 
   // Callback after data is asynchronously read from the content URI into |buf|.
-  void DidRead(int result);
+  void DidRead(scoped_refptr<net::IOBuffer> buf, int result);
 
   // The full path of the content URI.
   base::FilePath content_path_;
@@ -90,7 +89,6 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
   const scoped_refptr<base::TaskRunner> content_task_runner_;
 
   net::HttpByteRange byte_range_;
-  net::Error range_parse_result_;
   int64 remaining_bytes_;
 
   bool io_pending_;

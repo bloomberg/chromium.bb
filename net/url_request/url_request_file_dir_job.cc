@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -65,19 +66,24 @@ void URLRequestFileDirJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int URLRequestFileDirJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  if (is_done())
-    return 0;
+bool URLRequestFileDirJob::ReadRawData(IOBuffer* buf,
+                                       int buf_size,
+                                       int* bytes_read) {
+  DCHECK(bytes_read);
+  *bytes_read = 0;
 
-  int bytes_read = 0;
-  if (FillReadBuffer(buf->data(), buf_size, &bytes_read))
-    return bytes_read;
+  if (is_done())
+    return true;
+
+  if (FillReadBuffer(buf->data(), buf_size, bytes_read))
+    return true;
 
   // We are waiting for more data
   read_pending_ = true;
   read_buffer_ = buf;
   read_buffer_length_ = buf_size;
-  return ERR_IO_PENDING;
+  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+  return false;
 }
 
 bool URLRequestFileDirJob::GetMimeType(std::string* mime_type) const {
@@ -126,45 +132,40 @@ void URLRequestFileDirJob::OnListFile(
       data.info.GetLastModifiedTime()));
 
   // TODO(darin): coalesce more?
-  CompleteRead(OK);
+  CompleteRead();
 }
 
 void URLRequestFileDirJob::OnListDone(int error) {
   DCHECK(!canceled_);
-  DCHECK_LE(error, OK);
-  if (error == OK)
+  if (error != OK) {
+    read_pending_ = false;
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, error));
+  } else {
     list_complete_ = true;
-  CompleteRead(static_cast<Error>(error));
+    CompleteRead();
+  }
 }
 
 URLRequestFileDirJob::~URLRequestFileDirJob() {}
 
-void URLRequestFileDirJob::CompleteRead(Error status) {
-  DCHECK_LE(status, OK);
-  DCHECK_NE(status, ERR_IO_PENDING);
-
-  // Do nothing if there is no read pending.
-  if (!read_pending_)
-    return;
-
-  int result = status;
-  if (status == OK) {
-    int filled_bytes = 0;
+void URLRequestFileDirJob::CompleteRead() {
+  if (read_pending_) {
+    int bytes_read;
     if (FillReadBuffer(read_buffer_->data(), read_buffer_length_,
-                       &filled_bytes)) {
-      result = filled_bytes;
+                       &bytes_read)) {
       // We completed the read, so reset the read buffer.
+      read_pending_ = false;
       read_buffer_ = NULL;
       read_buffer_length_ = 0;
+
+      SetStatus(URLRequestStatus());
+      NotifyReadComplete(bytes_read);
     } else {
       NOTREACHED();
       // TODO: Better error code.
-      result = ERR_FAILED;
+      NotifyDone(URLRequestStatus::FromError(ERR_FAILED));
     }
   }
-
-  read_pending_ = false;
-  ReadRawDataComplete(result);
 }
 
 bool URLRequestFileDirJob::FillReadBuffer(char* buf, int buf_size,

@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
@@ -39,7 +38,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   // URLRequestJob:
   void Start() override;
   void Kill() override;
-  int ReadRawData(IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
   Filter* SetupFilter() const override;
   bool GetMimeType(std::string* mime_type) const override;
@@ -98,11 +97,8 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   FileMetaInfo meta_info_;
   const scoped_refptr<base::TaskRunner> file_task_runner_;
 
-  std::vector<HttpByteRange> byte_ranges_;
   HttpByteRange byte_range_;
   int64 remaining_bytes_;
-
-  Error range_parse_result_;
 
   base::WeakPtrFactory<URLRequestFileJob> weak_ptr_factory_;
 

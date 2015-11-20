@@ -40,6 +40,8 @@ StreamURLRequestJob::~StreamURLRequestJob() {
 }
 
 void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
+  // Clear the IO_PENDING status.
+  SetStatus(net::URLRequestStatus());
   // Do nothing if pending_buffer_ is empty, i.e. there's no ReadRawData()
   // operation waiting for IO completion.
   if (!pending_buffer_.get())
@@ -48,22 +50,24 @@ void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
   // pending_buffer_ is set to the IOBuffer instance provided to ReadRawData()
   // by URLRequestJob.
 
-  int result = 0;
+  int bytes_read;
   switch (stream_->ReadRawData(pending_buffer_.get(), pending_buffer_size_,
-                               &result)) {
+                               &bytes_read)) {
     case Stream::STREAM_HAS_DATA:
-      DCHECK_GT(result, 0);
+      DCHECK_GT(bytes_read, 0);
       break;
     case Stream::STREAM_COMPLETE:
-      // Ensure ReadRawData gives net::OK.
-      DCHECK_EQ(net::OK, result);
+      // Ensure this. Calling NotifyReadComplete call with 0 signals
+      // completion.
+      bytes_read = 0;
       break;
     case Stream::STREAM_EMPTY:
       NOTREACHED();
       break;
     case Stream::STREAM_ABORTED:
       // Handle this as connection reset.
-      result = net::ERR_CONNECTION_RESET;
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_CONNECTION_RESET));
       break;
   }
 
@@ -72,9 +76,8 @@ void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
   pending_buffer_ = NULL;
   pending_buffer_size_ = 0;
 
-  if (result > 0)
-    total_bytes_read_ += result;
-  ReadRawDataComplete(result);
+  total_bytes_read_ += bytes_read;
+  NotifyReadComplete(bytes_read);
 }
 
 // net::URLRequestJob methods.
@@ -91,40 +94,43 @@ void StreamURLRequestJob::Kill() {
   ClearStream();
 }
 
-int StreamURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
-  // TODO(ellyjones): This is not right. The old code returned true here, but
-  // ReadRawData's old contract was to return true only for synchronous
-  // successes, which had the effect of treating all errors as synchronous EOFs.
-  // See https://crbug.com/508957
+bool StreamURLRequestJob::ReadRawData(net::IOBuffer* buf,
+                                      int buf_size,
+                                      int* bytes_read) {
   if (request_failed_)
-    return 0;
+    return true;
 
   DCHECK(buf);
+  DCHECK(bytes_read);
   int to_read = buf_size;
   if (max_range_ && to_read) {
     if (to_read + total_bytes_read_ > max_range_)
       to_read = max_range_ - total_bytes_read_;
 
-    if (to_read == 0)
-      return 0;
+    if (to_read <= 0) {
+      *bytes_read = 0;
+      return true;
+    }
   }
 
-  int bytes_read = 0;
-  switch (stream_->ReadRawData(buf, to_read, &bytes_read)) {
+  switch (stream_->ReadRawData(buf, to_read, bytes_read)) {
     case Stream::STREAM_HAS_DATA:
     case Stream::STREAM_COMPLETE:
-      total_bytes_read_ += bytes_read;
-      return bytes_read;
+      total_bytes_read_ += *bytes_read;
+      return true;
     case Stream::STREAM_EMPTY:
       pending_buffer_ = buf;
       pending_buffer_size_ = to_read;
-      return net::ERR_IO_PENDING;
+      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+      return false;
     case Stream::STREAM_ABORTED:
       // Handle this as connection reset.
-      return net::ERR_CONNECTION_RESET;
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_CONNECTION_RESET));
+      return false;
   }
   NOTREACHED();
-  return net::ERR_FAILED;
+  return false;
 }
 
 bool StreamURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -183,8 +189,13 @@ void StreamURLRequestJob::DidStart() {
 void StreamURLRequestJob::NotifyFailure(int error_code) {
   request_failed_ = true;
 
-  // This method can only be called before headers are set.
-  DCHECK(!headers_set_);
+  // If we already return the headers on success, we can't change the headers
+  // now. Instead, we just error out.
+  if (headers_set_) {
+    NotifyDone(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, error_code));
+    return;
+  }
 
   // TODO(zork): Share these with BlobURLRequestJob.
   net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;

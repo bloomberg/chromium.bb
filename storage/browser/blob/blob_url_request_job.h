@@ -44,7 +44,7 @@ class STORAGE_EXPORT BlobURLRequestJob
   // net::URLRequestJob methods.
   void Start() override;
   void Kill() override;
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int GetResponseCode() const override;
