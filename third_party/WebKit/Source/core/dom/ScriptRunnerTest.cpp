@@ -10,6 +10,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebViewScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,23 +96,12 @@ public:
     Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
 };
 
-class MockPlatform : public Platform, public WebScheduler {
+class MockPlatform : public TestingPlatformSupport, public WebScheduler {
 public:
     MockPlatform()
         : m_mockWebThread(this)
         , m_mockWebTaskRunner(&m_tasks)
     {
-    }
-
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
-    {
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-
-    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
-    {
-        static const unsigned char tracingIsDisabled = 0;
-        return &tracingIsDisabled;
     }
 
     WebThread* currentThread() override { return &m_mockWebThread; }
@@ -163,16 +153,14 @@ private:
 
 class ScriptRunnerTest : public testing::Test {
 public:
+    ScriptRunnerTest()
+        : m_document(Document::create())
+        , m_element(m_document->createElement("foo", ASSERT_NO_EXCEPTION))
+    {
+    }
+
     void SetUp() override
     {
-        m_document = Document::create();
-        m_element = m_document->createElement("foo", ASSERT_NO_EXCEPTION);
-
-        m_oldPlatform = Platform::current();
-
-        // Force Platform::initialize to create a new one pointing at MockPlatform.
-        Platform::initialize(&m_platform);
-
         // We have to create ScriptRunner after initializing platform, because we need
         // Platform::current()->currentThread()->scheduler()->loadingTaskRunner()
         // to be initialized before creating ScriptRunner to save it in constructor.
@@ -182,15 +170,13 @@ public:
     void TearDown() override
     {
         m_scriptRunner.release();
-        Platform::initialize(m_oldPlatform);
     }
 
     RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<Element> m_element;
+    MockPlatform m_platform;
     OwnPtrWillBePersistent<ScriptRunner> m_scriptRunner;
     WTF::Vector<int> m_order;
-    MockPlatform m_platform;
-    Platform* m_oldPlatform; // NOT OWNED
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async)

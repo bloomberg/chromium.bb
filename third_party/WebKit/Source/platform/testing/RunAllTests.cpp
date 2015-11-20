@@ -31,8 +31,8 @@
 #include "config.h"
 
 #include "platform/EventTracer.h"
-#include "platform/TestingPlatformSupport.h"
 #include "platform/heap/Heap.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
@@ -66,8 +66,7 @@ int main(int argc, char** argv)
     WTF::initialize(CurrentTime, CurrentTime, CurrentTime, nullptr, nullptr);
     WTF::initializeMainThread(0);
 
-    blink::TestingPlatformSupport::Config platformConfig;
-    blink::TestingPlatformSupport platform(platformConfig);
+    blink::TestingPlatformSupport platform;
 
     blink::Heap::init();
     blink::ThreadState::attachMainThread();

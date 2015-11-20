@@ -8,6 +8,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +18,9 @@ namespace blink {
 
 namespace {
 
-class MockPlatform final : public Platform {
+class MockPlatform final : public TestingPlatformSupport {
 public:
-    MockPlatform() : m_oldPlatform(Platform::current()) { }
+    MockPlatform() { }
     ~MockPlatform() override { }
 
     // From blink::Platform:
@@ -33,43 +34,8 @@ public:
         return m_cachedURLs;
     }
 
-    WebThread* currentThread() override
-    {
-        return m_oldPlatform->currentThread();
-    }
-
-    // These blink::Platform methods must be overriden to make a usable object.
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
-    {
-        static const unsigned char tracingIsDisabled = 0;
-        return &tracingIsDisabled;
-    }
-
 private:
-    Platform* m_oldPlatform; // Not owned.
     Vector<WebURL> m_cachedURLs;
-};
-
-class AutoInstallMockPlatform {
-public:
-    AutoInstallMockPlatform()
-    {
-        m_oldPlatform = Platform::current();
-        Platform::initialize(&m_mockPlatform);
-    }
-    ~AutoInstallMockPlatform()
-    {
-        Platform::initialize(m_oldPlatform);
-    }
-    MockPlatform* platform() { return &m_mockPlatform; }
-private:
-    MockPlatform m_mockPlatform;
-    Platform* m_oldPlatform;
 };
 
 PassOwnPtr<ResourceResponse> createTestResourceResponse()
@@ -93,19 +59,19 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse* response)
 
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform)
 {
-    AutoInstallMockPlatform mock;
+    MockPlatform mock;
     OwnPtr<ResourceResponse> response(createTestResourceResponse());
     createTestResourceAndSetCachedMetadata(response.get());
-    EXPECT_EQ(1u, mock.platform()->cachedURLs().size());
+    EXPECT_EQ(1u, mock.cachedURLs().size());
 }
 
 TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker)
 {
-    AutoInstallMockPlatform mock;
+    MockPlatform mock;
     OwnPtr<ResourceResponse> response(createTestResourceResponse());
     response->setWasFetchedViaServiceWorker(true);
     createTestResourceAndSetCachedMetadata(response.get());
-    EXPECT_EQ(0u, mock.platform()->cachedURLs().size());
+    EXPECT_EQ(0u, mock.cachedURLs().size());
 }
 
 } // namespace blink
