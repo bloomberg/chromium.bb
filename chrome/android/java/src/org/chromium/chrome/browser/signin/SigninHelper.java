@@ -181,7 +181,7 @@ public class SigninHelper {
         }
 
         // Always check for account deleted.
-        if (!accountExists(syncAccount)) {
+        if (!accountExists(mContext, syncAccount)) {
             // It is possible that Chrome got to this point without account
             // rename notification. Let us signout before doing a rename.
             // updateAccountRenameData(mContext, new SystemAccountChangeEventChecker());
@@ -284,8 +284,8 @@ public class SigninHelper {
         });
     }
 
-    private boolean accountExists(Account account) {
-        Account[] accounts = AccountManagerHelper.get(mContext).getGoogleAccounts();
+    private static boolean accountExists(Context context, Account account) {
+        Account[] accounts = AccountManagerHelper.get(context).getGoogleAccounts();
         for (Account a : accounts) {
             if (a.equals(account)) {
                 return true;
@@ -352,7 +352,8 @@ public class SigninHelper {
         int newIndex = eventIndex;
 
         try {
-            outerLoop: while (true) {
+        outerLoop:
+            while (true) {
                 List<String> nameChanges = checker.getAccountChangeEvents(context,
                         newIndex, newName);
 
@@ -361,8 +362,12 @@ public class SigninHelper {
                         // We have found a rename event of the current account.
                         // We need to check if that account is further renamed.
                         newName = name;
-                        newIndex = 0; // Start from the beginning of the new account.
-                        continue outerLoop;
+                        if (!accountExists(context, AccountManagerHelper.get(context)
+                                                            .createAccountFromName(newName))) {
+                            newIndex = 0; // Start from the beginning of the new account.
+                            continue outerLoop;
+                        }
+                        break;
                     }
                 }
 

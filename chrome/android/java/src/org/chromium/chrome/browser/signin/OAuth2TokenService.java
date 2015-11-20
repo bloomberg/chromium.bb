@@ -275,8 +275,26 @@ public final class OAuth2TokenService
             Context context, boolean forceNotifications) {
         String currentlySignedInAccount =
                 ChromeSigninController.get(context).getSignedInAccountName();
+        if (currentlySignedInAccount != null
+                && isSignedInAccountChanged(context, currentlySignedInAccount)) {
+            // Set currentlySignedInAccount to null for validation if signed-in account was changed
+            // (renamed or removed from the device), this will cause all credentials in token
+            // service be revoked.
+            // Could only get here during Chrome cold startup.
+            // After chrome started, SigninHelper and AccountsChangedReceiver will handle account
+            // change (re-signin or sign out signed-in account).
+            currentlySignedInAccount = null;
+        }
         nativeValidateAccounts(mNativeOAuth2TokenServiceDelegateAndroid, currentlySignedInAccount,
                 forceNotifications);
+    }
+
+    private boolean isSignedInAccountChanged(Context context, String signedInAccountName) {
+        String[] accountNames = getSystemAccountNames(context);
+        for (String accountName : accountNames) {
+            if (accountName.equals(signedInAccountName)) return false;
+        }
+        return true;
     }
 
     /**

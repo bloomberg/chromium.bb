@@ -4,12 +4,16 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.sync.test.util.AccountHolder;
+import org.chromium.sync.test.util.MockAccountManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +24,7 @@ import java.util.Map;
  * Instrumentation tests for {@link SigninHelper}.
  */
 public class SigninHelperTest extends InstrumentationTestCase {
+    private MockAccountManager mAccountManager;
     private AdvancedMockContext mContext;
     private MockChangeEventChecker mEventChecker;
 
@@ -27,6 +32,10 @@ public class SigninHelperTest extends InstrumentationTestCase {
     public void setUp() {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         mEventChecker = new MockChangeEventChecker();
+
+        // Mock out the account manager on the device.
+        mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
+        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
     }
 
     @SmallTest
@@ -101,6 +110,22 @@ public class SigninHelperTest extends InstrumentationTestCase {
         mEventChecker.insertRenameEvent("Y", "X"); // Unrelated.
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
+        SigninHelper.updateAccountRenameData(mContext, mEventChecker);
+        assertEquals("D", getNewSignedInAccountName());
+    }
+
+    @SmallTest
+    public void testLoopedAccountRename() {
+        setSignedInAccountName("A");
+        mEventChecker.insertRenameEvent("Z", "Y"); // Unrelated.
+        mEventChecker.insertRenameEvent("A", "B");
+        mEventChecker.insertRenameEvent("Y", "X"); // Unrelated.
+        mEventChecker.insertRenameEvent("B", "C");
+        mEventChecker.insertRenameEvent("C", "D");
+        mEventChecker.insertRenameEvent("D", "A"); // Looped.
+        Account account = AccountManagerHelper.createAccountFromName("D");
+        AccountHolder accountHolder = AccountHolder.create().account(account).build();
+        mAccountManager.addAccountHolderExplicitly(accountHolder);
         SigninHelper.updateAccountRenameData(mContext, mEventChecker);
         assertEquals("D", getNewSignedInAccountName());
     }
