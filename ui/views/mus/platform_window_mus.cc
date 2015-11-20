@@ -31,7 +31,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   // We need accelerated widget numbers to be different for each
   // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
   // has this property.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   delegate_->OnAcceleratedWidgetAvailable(
       reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++),
       mus_window_->viewport_metrics().device_pixel_ratio);
