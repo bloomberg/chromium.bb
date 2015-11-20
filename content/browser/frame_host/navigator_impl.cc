@@ -576,9 +576,10 @@ void NavigatorImpl::RequestTransferURL(
     bool should_replace_current_entry,
     bool user_gesture) {
   GURL dest_url(url);
+  RenderFrameHostImpl* current_render_frame_host =
+      GetRenderManager(render_frame_host)->current_frame_host();
   SiteInstance* current_site_instance =
-      GetRenderManager(render_frame_host)->current_frame_host()->
-          GetSiteInstance();
+      current_render_frame_host->GetSiteInstance();
   if (!GetContentClient()->browser()->ShouldAllowOpenURL(
           current_site_instance, url)) {
     dest_url = GURL(url::kAboutBlankURL);
@@ -605,7 +606,7 @@ void NavigatorImpl::RequestTransferURL(
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
 
-  if (GetRenderManager(render_frame_host)->web_ui()) {
+  if (current_render_frame_host->web_ui()) {
     // Web UI pages sometimes want to override the page transition type for
     // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
     // automatically generated suggestions).  We don't override other types
@@ -613,8 +614,7 @@ void NavigatorImpl::RequestTransferURL(
     if (ui::PageTransitionCoreTypeIs(
         params.transition, ui::PAGE_TRANSITION_LINK))
       params.transition =
-          GetRenderManager(render_frame_host)->web_ui()->
-              GetLinkTransitionType();
+          current_render_frame_host->web_ui()->GetLinkTransitionType();
 
     // Note also that we hide the referrer for Web UI pages. We don't really
     // want web sites to see a referrer of "chrome://blah" (and some

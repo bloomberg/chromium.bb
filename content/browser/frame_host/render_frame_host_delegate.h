@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/browser/site_instance.h"
@@ -171,6 +172,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // refactoring for --site-per-process mode is further along.  See
   // https://crbug.com/330264.
   virtual void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {}
+
+  // Creates a WebUI object for a frame navigating to |url|. If no WebUI
+  // applies, returns null.
+  virtual scoped_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(const GURL& url);
 
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.

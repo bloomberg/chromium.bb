@@ -76,6 +76,11 @@ bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
   return false;
 }
 
+scoped_ptr<WebUIImpl> RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
+    const GURL& url) {
+  return nullptr;
+}
+
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
     RenderFrameHostDelegate::GetParentNativeViewAccessible() {

@@ -25,13 +25,13 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   WebUIImpl(WebContents* contents, const std::string& frame_name);
   ~WebUIImpl() override;
 
-  // Called by WebContentsImpl when the RenderView is first created. This is
-  // *not* called for every page load because in some cases
-  // RenderFrameHostManager will reuse RenderView instances.
+  // Called when a RenderView is created for a WebUI (reload after a renderer
+  // crash) or when a WebUI is created for an RenderView (i.e. navigating from
+  // chrome://downloads to chrome://bookmarks) or when both are new (i.e.
+  // opening a new tab).
   void RenderViewCreated(RenderViewHost* render_view_host);
 
-  // Called by WebContentsImpl when the RenderView is reused. This happens on
-  // refresh or when the main page is navigated within the same SiteInstance.
+  // Called when a RenderView is reused for the same WebUI type (i.e. reload).
   void RenderViewReused(RenderViewHost* render_view_host, bool was_main_frame);
 
   // WebUI implementation:
