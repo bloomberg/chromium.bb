@@ -223,6 +223,51 @@ template("java_binary_script") {
 template("dex") {
   set_sources_assignment_filter([])
 
+  _enable_multidex = defined(invoker.enable_multidex) && invoker.enable_multidex
+
+  if (_enable_multidex) {
+    _main_dex_list_path = invoker.output + ".main_dex_list"
+    _main_dex_list_target_name = "${target_name}__main_dex_list"
+    action(_main_dex_list_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "inputs",
+                               "sources",
+                               "testonly",
+                             ])
+
+      script = "//build/android/gyp/main_dex_list.py"
+      depfile = "$target_gen_dir/$target_name.d"
+
+      main_dex_rules = "//build/android/main_dex_classes.flags"
+
+      outputs = [
+        depfile,
+        _main_dex_list_path,
+      ]
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--android-sdk-tools",
+        rebased_android_sdk_build_tools,
+        "--main-dex-list-path",
+        rebase_path(_main_dex_list_path, root_build_dir),
+        "--main-dex-rules-path",
+        rebase_path(main_dex_rules, root_build_dir),
+      ]
+
+      if (defined(invoker.args)) {
+        args += invoker.args
+      }
+
+      if (defined(invoker.sources)) {
+        args += rebase_path(invoker.sources, root_build_dir)
+      }
+    }
+  }
+
   assert(defined(invoker.output))
   action(target_name) {
     forward_variables_from(invoker,
@@ -256,6 +301,16 @@ template("dex") {
 
     if (defined(invoker.no_locals) && invoker.no_locals) {
       args += [ "--no-locals=1" ]
+    }
+
+    if (_enable_multidex) {
+      args += [
+        "--multi-dex",
+        "--main-dex-list-path",
+        rebase_path(_main_dex_list_path, root_build_dir),
+      ]
+      deps += [ ":${_main_dex_list_target_name}" ]
+      inputs += [ _main_dex_list_path ]
     }
 
     if (defined(invoker.args)) {

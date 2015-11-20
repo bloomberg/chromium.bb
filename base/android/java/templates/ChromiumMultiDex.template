@@ -22,15 +22,21 @@ public class ChromiumMultiDex {
     private static final String TAG = "base_multidex";
 
     /**
-     *  Installs secondary dexes if possible.
+     *  Installs secondary dexes if possible/necessary.
      *
      *  Isolated processes (e.g. renderer processes) can't load secondary dex files on
      *  K and below, so we don't even try in that case.
      *
+     *  In release builds, this is a no-op because:
+     *    - multidex isn't necessary in release builds because we run proguard there and
+     *      thus aren't threatening to hit the dex limit; and
+     *    - calling MultiDex.install, even in the absence of secondary dexes, causes a
+     *      significant regression in start-up time (crbug.com/525695).
+     *
      *  @param context The application context.
      */
     @VisibleForTesting
-#if defined(CONFIGURATION_NAME_Debug)
+#if defined(MULTIDEX_CONFIGURATION_Debug)
     public static void install(Context context) {
         try {
             // TODO(jbudorick): Back out this version check once support for K & below works.

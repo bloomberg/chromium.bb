@@ -155,7 +155,12 @@ def main(args):
           apk.writestr('lib/%s/%s' % (options.android_abi, name), ':)',
                        zipfile.ZIP_STORED)
         if options.dex_file:
-          apk.write(options.dex_file, 'classes.dex')
+          if options.dex_file.endswith('.zip'):
+            with zipfile.ZipFile(options.dex_file, 'r') as dex_zip:
+              for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
+                apk.writestr(dex, dex_zip.read(dex))
+          else:
+            apk.write(options.dex_file, 'classes.dex')
 
         if options.emma_device_jar:
           # Add EMMA Java resources to APK.

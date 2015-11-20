@@ -60,13 +60,14 @@ def _ParseArgs(args):
                          'include in the main dex.')
   parser.add_option('--multidex-configuration-path',
                     help='A JSON file containing multidex build configuration.')
+  parser.add_option('--multi-dex', default=False, action='store_true',
+                    help='Generate multiple dex files.')
 
   options, paths = parser.parse_args(args)
 
   required_options = ('android_sdk_tools',)
   build_utils.CheckOptions(options, parser, required=required_options)
 
-  options.multi_dex = False
   if options.multidex_configuration_path:
     with open(options.multidex_configuration_path) as multidex_config_file:
       multidex_config = json.loads(multidex_config_file.read())

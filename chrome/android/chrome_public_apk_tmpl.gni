@@ -23,7 +23,9 @@ template("chrome_public_apk_tmpl") {
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
-    if (!is_debug) {
+    if (is_debug) {
+      enable_multidex = true
+    } else {
       proguard_enabled = true
       _prev_proguard_configs = []
       if (defined(proguard_configs)) {

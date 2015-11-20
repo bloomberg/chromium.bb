@@ -1731,6 +1731,9 @@ if (is_android) {
     sources = [
       "android/java/templates/ChromiumMultiDex.template",
     ]
+    if (is_debug) {
+      defines = [ "MULTIDEX_CONFIGURATION_Debug" ]
+    }
     package_name = "org/chromium/base/multidex"
   }
 

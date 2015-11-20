@@ -1240,7 +1240,12 @@ template("android_apk") {
   _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
   _template_name = target_name
 
-  final_dex_path = "$gen_dir/classes.dex"
+  enable_multidex = defined(invoker.enable_multidex) && invoker.enable_multidex
+  if (enable_multidex) {
+    final_dex_path = "$gen_dir/classes.dex.zip"
+  } else {
+    final_dex_path = "$gen_dir/classes.dex"
+  }
   final_dex_target_name = "${_template_name}__final_dex"
 
   _final_apk_path = ""
@@ -1552,18 +1557,27 @@ template("android_apk") {
     _dex_sources = [ _proguard_jar_path ]
     _dex_deps = [ ":$_proguard_target" ]
   } else {
-    _dex_sources = [ _lib_dex_path ]
+    if (enable_multidex) {
+      _dex_sources = [ _jar_path ]
+    } else {
+      _dex_sources = [ _lib_dex_path ]
+    }
     _dex_deps = [ ":$java_target" ]
   }
 
   dex("$final_dex_target_name") {
+    forward_variables_from(invoker, [ "enable_multidex" ])
     deps = _dex_deps + [ ":$build_config_target" ]
     inputs = [
       _build_config,
     ]
     sources = _dex_sources
     output = final_dex_path
-    _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
+    if (enable_multidex) {
+      _dex_arg_key = "${_rebased_build_config}:dist_jar:dependency_jars"
+    } else {
+      _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
+    }
     args = [ "--inputs=@FileArg($_dex_arg_key)" ]
 
     if (emma_coverage && !_emma_never_instrument) {

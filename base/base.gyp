@@ -1470,7 +1470,7 @@
             'package_name': 'org/chromium/base/multidex',
             'template_deps': [],
             'additional_gcc_preprocess_options': [
-              '--defines', 'CONFIGURATION_NAME_<(CONFIGURATION_NAME)',
+              '--defines', 'MULTIDEX_CONFIGURATION_<(CONFIGURATION_NAME)',
             ],
           },
           'includes': ['../build/android/java_cpp_template.gypi'],

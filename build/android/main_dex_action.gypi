@@ -10,8 +10,8 @@
 #    'action_name': 'some name for the action'
 #    'actions': [
 #      'variables': {
-#        'jar_path': 'path to jar',
-#        'output_path': 'output path'
+#        'jar_paths': ['path to jar', ...],
+#        'output_path': 'output path',
 #      },
 #      'includes': [ 'relative/path/to/main_dex_action.gypi' ],
 #    ],
@@ -27,7 +27,7 @@
     'main_dex_rules_path': '<(DEPTH)/build/android/main_dex_classes.flags',
   },
   'inputs': [
-    '<(jar_path)',
+    '<@(jar_paths)',
     '<(main_dex_list_script)',
     '<(main_dex_rules_path)',
     '<(multidex_configuration_path)',
