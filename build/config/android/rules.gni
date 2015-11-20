@@ -1072,6 +1072,8 @@ template("java_prebuilt") {
 #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
 #      is used.
 #
+#   emma_never_instrument: Disables EMMA Java code coverage for this target.
+#
 # Example
 #   android_library("foo_java") {
 #     java_files = [
@@ -1365,6 +1367,8 @@ template("android_apk") {
     _proguard_jar_path = "$base_path.proguard.jar"
   }
 
+  _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
+
   build_config_target = "${_template_name}__build_config"
   write_build_config(build_config_target) {
     forward_variables_from(invoker, [ "apk_under_test" ])
@@ -1478,6 +1482,7 @@ template("android_apk") {
     srcjar_deps = _srcjar_deps
     jar_path = _jar_path
     dex_path = _lib_dex_path
+    emma_never_instrument = _emma_never_instrument
 
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -1559,6 +1564,11 @@ template("android_apk") {
     output = final_dex_path
     _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
     args = [ "--inputs=@FileArg($_dex_arg_key)" ]
+
+    if (emma_coverage && !_emma_never_instrument) {
+      no_locals = true
+      sources += [ "$android_sdk_root/tools/lib/emma_device.jar" ]
+    }
   }
 
   if (_native_libs != []) {
@@ -1638,6 +1648,7 @@ template("android_apk") {
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
     create_density_splits = _create_density_splits
+    emma_instrument = emma_coverage && !_emma_never_instrument
 
     if (!defined(extensions_to_not_compress)) {
       # Allow icu data, v8 snapshots, and pak files to be loaded directly from

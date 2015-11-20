@@ -469,8 +469,6 @@ template("process_java_prebuilt") {
 
   _input_jar_path = invoker.input_jar_path
   _output_jar_path = invoker.output_jar_path
-  _output_ijar_path = get_path_info(_output_jar_path, "dir") + "/" +
-                      get_path_info(_output_jar_path, "name") + ".interface.jar"
 
   assert(invoker.build_config != "")
 
@@ -519,18 +517,79 @@ template("process_java_prebuilt") {
     }
   }
 
-  generate_interface_jar("${target_name}__ijar") {
-    input_jar = _output_jar_path
-    output_jar = _output_ijar_path
-    deps = [
+  group(target_name) {
+    forward_variables_from(invoker, [ "visibility" ])
+    public_deps = [
       ":$_output_jar_target",
     ]
+  }
+}
+
+template("emma_instr") {
+  set_sources_assignment_filter([])
+  forward_variables_from(invoker, [ "testonly" ])
+
+  assert(invoker.source_files != [] || true)  # Mark as used
+
+  if (invoker.emma_instrument) {
+    _output_jar_target = "${target_name}__process"
+    _coverage_file = "$target_out_dir/${target_name}.em"
+    _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
+    _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
+    _rebased_source_files = rebase_path(invoker.source_files, root_build_dir)
+    action(_output_jar_target) {
+      forward_variables_from(invoker, [ "deps" ])
+
+      script = "//build/android/gyp/emma_instr.py"
+      depfile = "${target_gen_dir}/${target_name}.d"
+      inputs = [
+        _emma_jar,
+        invoker.input_jar_path,
+      ]
+      outputs = [
+        depfile,
+        _coverage_file,
+        _source_dirs_listing_file,
+        invoker.output_jar_path,
+      ]
+      args = [
+        "instrument_jar",
+        "--input-path",
+        rebase_path(invoker.input_jar_path, root_build_dir),
+        "--output-path",
+        rebase_path(invoker.output_jar_path, root_build_dir),
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--coverage-file",
+        rebase_path(_coverage_file, root_build_dir),
+        "--sources-list-file",
+        rebase_path(_source_dirs_listing_file, root_build_dir),
+        "--source-files=$_rebased_source_files",
+        "--src-root",
+        rebase_path("//", root_build_dir),
+        "--emma-jar",
+        rebase_path(_emma_jar, root_build_dir),
+        "--filter-string",
+        emma_filter,
+      ]
+    }
+  } else {
+    _output_jar_target = "${target_name}__copy_jar"
+    copy(_output_jar_target) {
+      forward_variables_from(invoker, [ "deps" ])
+
+      sources = [
+        invoker.input_jar_path,
+      ]
+      outputs = [
+        invoker.output_jar_path,
+      ]
+    }
   }
 
   group(target_name) {
     forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
-      ":${target_name}__ijar",
       ":$_output_jar_target",
     ]
   }
@@ -612,6 +671,12 @@ template("package_apk") {
     }
     if (_native_lib_placeholders != []) {
       args += [ "--native-lib-placeholders=$_native_lib_placeholders" ]
+    }
+
+    if (defined(invoker.emma_instrument) && invoker.emma_instrument) {
+      _emma_device_jar = "$android_sdk_root/tools/lib/emma_device.jar"
+      _rebased_emma_device_jar = rebase_path(_emma_device_jar, root_build_dir)
+      args += [ "--emma-device-jar=$_rebased_emma_device_jar" ]
     }
   }
 }
@@ -881,6 +946,7 @@ template("create_apk") {
     forward_variables_from(invoker,
                            [
                              "assets_build_config",
+                             "emma_instrument",
                              "native_lib_placeholders",
                              "native_libs_dir",
                            ])
@@ -896,7 +962,11 @@ template("create_apk") {
 
   _incremental_package_target = "${target_name}_incremental__package"
   package_apk(_incremental_package_target) {
-    forward_variables_from(invoker, [ "assets_build_config" ])
+    forward_variables_from(invoker,
+                           [
+                             "assets_build_config",
+                             "emma_instrument",
+                           ])
     _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
     deps = _incremental_deps + [
              ":${_incremental_package_resources_target_name}",
@@ -1003,6 +1073,8 @@ template("java_prebuilt_impl") {
   # so do not put them under gen/.
   _target_dir_name = get_label_info(":$target_name", "dir")
   _jar_path = "$root_out_dir/lib.java$_target_dir_name/$target_name.jar"
+  _ijar_path =
+      "$root_out_dir/lib.java$_target_dir_name/$target_name.interface.jar"
   _build_config = _base_path + ".build_config"
 
   if (_supports_android) {
@@ -1021,6 +1093,7 @@ template("java_prebuilt_impl") {
 
   _build_config_target_name = "${_template_name}__build_config"
   _process_jar_target_name = "${_template_name}__process_jar"
+  _ijar_target_name = "${_template_name}__ijar"
   if (_supports_android) {
     _dex_target_name = "${_template_name}__dex"
   }
@@ -1040,7 +1113,10 @@ template("java_prebuilt_impl") {
   }
 
   process_java_prebuilt(_process_jar_target_name) {
-    visibility = [ ":$_template_name" ]
+    visibility = [
+      ":$_ijar_target_name",
+      ":$_template_name",
+    ]
     if (_supports_android) {
       visibility += [ ":$_dex_target_name" ]
     }
@@ -1055,6 +1131,14 @@ template("java_prebuilt_impl") {
     output_jar_path = _jar_path
 
     deps = [ ":$_build_config_target_name" ] + _deps + _jar_deps
+  }
+
+  generate_interface_jar(_ijar_target_name) {
+    input_jar = _jar_path
+    output_jar = _ijar_path
+    deps = [
+      ":$_process_jar_target_name",
+    ]
   }
 
   if (_supports_android) {
@@ -1088,6 +1172,7 @@ template("java_prebuilt_impl") {
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
     deps = [
+      ":$_ijar_target_name",
       ":$_process_jar_target_name",
     ]
     if (_supports_android) {
@@ -1128,7 +1213,11 @@ template("compile_java") {
 
   _java_files = invoker.java_files
   _final_jar_path = invoker.jar_path
-  _intermediate_jar_path = "$target_gen_dir/$target_name.initial.jar"
+  _javac_jar_path = "$target_gen_dir/$target_name.javac.jar"
+  _process_prebuilt_jar_path =
+      "$target_gen_dir/$target_name.process_prebuilt.jar"
+  _final_ijar_path = get_path_info(_final_jar_path, "dir") + "/" +
+                     get_path_info(_final_jar_path, "name") + ".interface.jar"
 
   _build_config = invoker.build_config
 
@@ -1183,10 +1272,12 @@ template("compile_java") {
   assert(_srcjar_deps == [] || true)
 
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
-  _rebased_jar_path = rebase_path(_intermediate_jar_path, root_build_dir)
+  _rebased_jar_path = rebase_path(_javac_jar_path, root_build_dir)
 
   _javac_target_name = "${target_name}__javac"
-  _finish_target_name = "${target_name}__finish"
+  _process_prebuilt_target_name = "${target_name}__process_prebuilt"
+  _emma_instr_target_name = "${target_name}__emma_instr"
+  _ijar_target_name = "${target_name}__ijar"
   _final_target_name = target_name
 
   action(_javac_target_name) {
@@ -1199,8 +1290,8 @@ template("compile_java") {
 
     outputs = [
       depfile,
-      _intermediate_jar_path,
-      _intermediate_jar_path + ".md5.stamp",
+      _javac_jar_path,
+      _javac_jar_path + ".md5.stamp",
     ]
     sources = _java_files + _java_srcjars
     inputs = [
@@ -1221,7 +1312,7 @@ template("compile_java") {
     if (_enable_incremental_javac) {
       args += [ "--incremental" ]
       deps += [ "//third_party/jmake" ]
-      outputs += [ "${_intermediate_jar_path}.pdb" ]
+      outputs += [ "${_javac_jar_path}.pdb" ]
     }
     if (_supports_android) {
       if (defined(invoker.alternative_android_sdk_ijar)) {
@@ -1251,12 +1342,10 @@ template("compile_java") {
     args += rebase_path(_java_files, root_build_dir)
   }
 
-  process_java_prebuilt(_finish_target_name) {
-    visibility = [ ":$_final_target_name" ]
-
+  process_java_prebuilt(_process_prebuilt_target_name) {
     build_config = _build_config
-    input_jar_path = _intermediate_jar_path
-    output_jar_path = _final_jar_path
+    input_jar_path = _javac_jar_path
+    output_jar_path = _process_prebuilt_jar_path
     if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
       proguard_preprocess = invoker.proguard_preprocess
       proguard_config = invoker.proguard_config
@@ -1266,10 +1355,36 @@ template("compile_java") {
     ]
   }
 
+  emma_instr(_emma_instr_target_name) {
+    visibility = [
+      ":$_ijar_target_name",
+      ":$_final_target_name",
+    ]
+
+    forward_variables_from(invoker, [ "emma_instrument" ])
+
+    input_jar_path = _process_prebuilt_jar_path
+    output_jar_path = _final_jar_path
+    source_files = _java_files
+
+    deps = [
+      ":$_process_prebuilt_target_name",
+    ]
+  }
+
+  generate_interface_jar(_ijar_target_name) {
+    input_jar = _final_jar_path
+    output_jar = _final_ijar_path
+    deps = [
+      ":$_emma_instr_target_name",
+    ]
+  }
+
   group(_final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
-      ":$_finish_target_name",
+      ":$_emma_instr_target_name",
+      ":$_ijar_target_name",
     ]
   }
 }
@@ -1311,6 +1426,18 @@ template("java_library_impl") {
   _run_findbugs = defined(invoker.run_findbugs) && invoker.run_findbugs
   assert(_run_findbugs || true)  # Mark as used.
 
+  _chromium_code = true
+  if (defined(invoker.chromium_code)) {
+    _chromium_code = invoker.chromium_code
+  }
+
+  _emma_never_instrument = !_chromium_code
+  if (defined(invoker.emma_never_instrument)) {
+    _emma_never_instrument = invoker.emma_never_instrument
+  }
+  assert(_emma_never_instrument || true)  # Mark as used
+  _emma_instrument = emma_coverage && !_emma_never_instrument
+
   if (_supports_android) {
     _dex_path = _base_path + ".dex.jar"
     if (defined(invoker.dex_path)) {
@@ -1349,11 +1476,6 @@ template("java_library_impl") {
         dex_path = _dex_path
       }
     }
-  }
-
-  _chromium_code = true
-  if (defined(invoker.chromium_code)) {
-    _chromium_code = invoker.chromium_code
   }
 
   _srcjar_deps = []
@@ -1414,6 +1536,7 @@ template("java_library_impl") {
     srcjars = _srcjars
     chromium_code = _chromium_code
     supports_android = _supports_android
+    emma_instrument = _emma_instrument
     deps = build_config_deps
   }
 
@@ -1466,6 +1589,7 @@ template("java_library_impl") {
         _jar_path,
       ]
       output = _dex_path
+      no_locals = _emma_instrument
       deps = [
         ":$_compile_java_target",
       ]

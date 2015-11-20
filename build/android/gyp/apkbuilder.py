@@ -51,6 +51,8 @@ def _ParseArgs(args):
   parser.add_argument('--native-lib-placeholders',
                       help='GYP-list of native library placeholders to add.',
                       default='[]')
+  parser.add_argument('--emma-device-jar',
+                      help='Path to emma_device.jar to include.')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGypList(options.assets)
   options.uncompressed_assets = build_utils.ParseGypList(
@@ -122,6 +124,9 @@ def main(args):
   if options.dex_file:
     input_paths.append(options.dex_file)
 
+  if options.emma_device_jar:
+    input_paths.append(options.emma_device_jar)
+
   input_strings = [options.android_abi, options.native_lib_placeholders]
 
   for path in itertools.chain(options.assets, options.uncompressed_assets):
@@ -151,6 +156,23 @@ def main(args):
                        zipfile.ZIP_STORED)
         if options.dex_file:
           apk.write(options.dex_file, 'classes.dex')
+
+        if options.emma_device_jar:
+          # Add EMMA Java resources to APK.
+          with zipfile.ZipFile(options.emma_device_jar, 'r') as emma_device_jar:
+            for emma_device_jar_entry in emma_device_jar.namelist():
+              entry_name_lower = emma_device_jar_entry.lower()
+              if entry_name_lower.startswith('meta-inf/'):
+                continue
+
+              if entry_name_lower.endswith('/'):
+                continue
+
+              if entry_name_lower.endswith('.class'):
+                continue
+
+              apk.writestr(emma_device_jar_entry,
+                           emma_device_jar.read(emma_device_jar_entry))
 
       shutil.move(tmp_apk, options.output_apk)
     finally:

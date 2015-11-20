@@ -69,6 +69,15 @@ if (is_android) {
     # Set to true to enable the Errorprone compiler
     use_errorprone_java_compiler = false
 
+    # Enables EMMA Java code coverage. Instruments classes during build to
+    # produce .ec files during runtime
+    emma_coverage = false
+
+    # EMMA filter string consisting of a list of inclusion/exclusion patterns
+    # separated with whitespace and/or comma. Only has effect if
+    # emma_coverage==true
+    emma_filter = ""
+
     # Disables process isolation when building _incremental targets.
     # Required for Android M+ due to SELinux policies (stronger sandboxing).
     disable_incremental_isolated_processes = false
