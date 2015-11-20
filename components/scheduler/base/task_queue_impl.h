@@ -11,18 +11,19 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/base/lazy_now.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
+class LazyNow;
+class TimeDomain;
 class TaskQueueManager;
 
 namespace internal {
-
 class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
  public:
   TaskQueueImpl(TaskQueueManager* task_queue_manager,
+                const scoped_refptr<TimeDomain>& time_domain,
                 const Spec& spec,
                 const char* disabled_by_default_tracing_category,
                 const char* disabled_by_default_verbose_tracing_category);
@@ -81,9 +82,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-
-  bool NextPendingDelayedTaskRunTime(
-      base::TimeTicks* next_pending_delayed_task);
+  void SetTimeDomain(const scoped_refptr<TimeDomain>& time_domain) override;
 
   void UpdateWorkQueue(LazyNow* lazy_now,
                        bool should_trigger_wakeup,
@@ -124,9 +123,8 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   // Delayed task posted to the underlying run loop, which locks
   // |any_thread_lock_| and calls MoveReadyDelayedTasksToIncomingQueueLocked to
-  // process dealyed tasks
-  // that need to be run now.  Thread safe, but in practice it's always called
-  // from the main thread.
+  // process dealyed tasks that need to be run now.  Thread safe, but in
+  // practice it's always called from the main thread.
   void MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now);
 
   // Test support functions.  These should not be used in production code.
@@ -135,6 +133,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   size_t WorkQueueSizeForTest() const {
     return main_thread_only().work_queue.size();
   }
+  size_t IncomingQueueSizeForTest() const;
 
   // Can be called on any thread.
   static const char* PumpPolicyToString(TaskQueue::PumpPolicy pump_policy);
@@ -153,7 +152,9 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   };
 
   struct AnyThread {
-    AnyThread(TaskQueueManager* task_queue_manager, PumpPolicy pump_policy);
+    AnyThread(TaskQueueManager* task_queue_manager,
+              PumpPolicy pump_policy,
+              const scoped_refptr<TimeDomain>& time_domain);
     ~AnyThread();
 
     // TaskQueueManager is maintained in two copies: inside AnyThread and inside
@@ -164,10 +165,11 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     std::queue<Task> incoming_queue;
     PumpPolicy pump_policy;
     std::priority_queue<Task> delayed_task_queue;
+    scoped_refptr<TimeDomain> time_domain;
   };
 
   struct MainThreadOnly {
-    explicit MainThreadOnly(TaskQueueManager* task_queue_manager);
+    MainThreadOnly(TaskQueueManager* task_queue_manager);
     ~MainThreadOnly();
 
     // Another copy of TaskQueueManager for lock-free access from the main
@@ -190,9 +192,10 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
                              const base::Closure& task,
                              base::TimeTicks desired_run_time,
                              TaskType task_type);
+  void ScheduleDelayedWorkTask(const scoped_refptr<TimeDomain> time_domain,
+                               base::TimeTicks desired_run_time);
 
-  // Enqueues any delayed tasks which should be run now on the incoming_queue_
-  // and calls ScheduleDelayedWorkLocked to ensure future tasks are scheduled.
+  // Enqueues any delayed tasks which should be run now on the incoming_queue_.
   // Must be called with |any_thread_lock_| locked.
   void MoveReadyDelayedTasksToIncomingQueueLocked(LazyNow* lazy_now);
 

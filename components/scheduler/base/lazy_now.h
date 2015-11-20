@@ -12,7 +12,6 @@ class TickClock;
 }
 
 namespace scheduler {
-namespace internal {
 
 // Now() is somewhat expensive so it makes sense not to call Now() unless we
 // really need to.
@@ -31,7 +30,6 @@ class LazyNow {
   base::TimeTicks now_;
 };
 
-}  // namespace internal
 }  // namespace scheduler
 
 #endif  // COMPONENTS_SCHEDULER_BASE_LAZY_NOW_H_

@@ -5,14 +5,21 @@
 #include "components/scheduler/base/task_queue_sets.h"
 
 #include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/base/virtual_time_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace scheduler {
+class TimeDomain;
+
 namespace internal {
 
 class TaskQueueSetsTest : public testing::Test {
  public:
-  void SetUp() override { task_queue_sets_.reset(new TaskQueueSets(kNumSets)); }
+  void SetUp() override {
+    virtual_time_domain_ = make_scoped_refptr<VirtualTimeDomain>(
+        new VirtualTimeDomain(base::TimeTicks()));
+    task_queue_sets_.reset(new TaskQueueSets(kNumSets));
+  }
 
  protected:
   enum {
@@ -22,7 +29,8 @@ class TaskQueueSetsTest : public testing::Test {
   TaskQueueImpl* NewTaskQueue(const char* queue_name) {
     scoped_refptr<internal::TaskQueueImpl> queue =
         make_scoped_refptr(new internal::TaskQueueImpl(
-            nullptr, TaskQueue::Spec(queue_name), "test", "test"));
+            nullptr, virtual_time_domain_, TaskQueue::Spec(queue_name), "test",
+            "test"));
     task_queues_.push_back(queue);
     return queue.get();
   }
@@ -33,6 +41,7 @@ class TaskQueueSetsTest : public testing::Test {
     return fake_task;
   }
 
+  scoped_refptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<internal::TaskQueueImpl>> task_queues_;
   scoped_ptr<TaskQueueSets> task_queue_sets_;
 };

@@ -9,6 +9,7 @@
 #include "base/pending_task.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/base/virtual_time_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,10 +75,12 @@ class TaskQueueSelectorTest : public testing::Test {
 
  protected:
   void SetUp() final {
+    virtual_time_domain_ = make_scoped_refptr<VirtualTimeDomain>(
+        new VirtualTimeDomain(base::TimeTicks()));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
-      scoped_refptr<TaskQueueImpl> task_queue =
-          make_scoped_refptr(new TaskQueueImpl(
-              nullptr, TaskQueue::Spec("test queue"), "test", "test"));
+      scoped_refptr<TaskQueueImpl> task_queue = make_scoped_refptr(
+          new TaskQueueImpl(nullptr, virtual_time_domain_,
+                            TaskQueue::Spec("test queue"), "test", "test"));
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(task_queue);
     }
@@ -90,6 +93,7 @@ class TaskQueueSelectorTest : public testing::Test {
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
   TaskQueueSelector selector_;
+  scoped_refptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
 };

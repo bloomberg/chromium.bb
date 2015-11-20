@@ -8,15 +8,11 @@
 #include <set>
 
 #include "base/bind.h"
-#include "components/scheduler/base/lazy_now.h"
+#include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/task_queue_sets.h"
-
-namespace {
-const int64_t kMaxTimeTicks = std::numeric_limits<int64>::max();
-}
 
 namespace scheduler {
 
@@ -46,6 +42,10 @@ TaskQueueManager::TaskQueueManager(
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
   do_work_closure_ =
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
+
+  real_time_domain_ =
+      make_scoped_refptr(new RealTimeDomain(delegate.get(), do_work_closure_));
+  RegisterTimeDomain(real_time_domain_);
 }
 
 TaskQueueManager::~TaskQueueManager() {
@@ -58,14 +58,28 @@ TaskQueueManager::~TaskQueueManager() {
   selector_.SetTaskQueueSelectorObserver(nullptr);
 }
 
+void TaskQueueManager::RegisterTimeDomain(
+    const scoped_refptr<TimeDomain>& time_domain) {
+  time_domains_.insert(time_domain);
+}
+
+void TaskQueueManager::UnregisterTimeDomain(
+    const scoped_refptr<TimeDomain>& time_domain) {
+  time_domains_.erase(time_domain);
+}
+
 scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
     const TaskQueue::Spec& spec) {
   TRACE_EVENT1(tracing_category_,
                "TaskQueueManager::NewTaskQueue", "queue_name", spec.name);
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  TimeDomain* time_domain =
+      spec.time_domain ? spec.time_domain : real_time_domain_.get();
+  DCHECK(time_domains_.find(make_scoped_refptr(time_domain)) !=
+         time_domains_.end());
   scoped_refptr<internal::TaskQueueImpl> queue(
       make_scoped_refptr(new internal::TaskQueueImpl(
-          this, spec, disabled_by_default_tracing_category_,
+          this, time_domain, spec, disabled_by_default_tracing_category_,
           disabled_by_default_verbose_tracing_category_)));
   queues_.insert(queue);
   selector_.AddQueue(queue.get());
@@ -91,156 +105,16 @@ void TaskQueueManager::UnregisterTaskQueue(
   queues_to_delete_.insert(task_queue);
   queues_.erase(task_queue);
   selector_.RemoveQueue(task_queue.get());
-
-  // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
-  // little awkward since it's keyed by time. O(n) running time.
-  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
-       iter != delayed_wakeup_multimap_.end();) {
-    if (iter->second == task_queue.get()) {
-      DelayedWakeupMultimap::iterator temp = iter;
-      iter++;
-      // O(1) amortized.
-      delayed_wakeup_multimap_.erase(temp);
-    } else {
-      iter++;
-    }
-  }
-
-  // |newly_updatable_| might contain |task_queue|, we use
-  // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-  updatable_queue_set_.erase(task_queue.get());
-}
-
-base::TimeTicks TaskQueueManager::NextPendingDelayedTaskRunTime() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  bool found_pending_task = false;
-  base::TimeTicks next_pending_delayed_task(
-      base::TimeTicks::FromInternalValue(kMaxTimeTicks));
-  for (auto& queue : queues_) {
-    base::TimeTicks queues_next_pending_delayed_task;
-    if (queue->NextPendingDelayedTaskRunTime(
-            &queues_next_pending_delayed_task)) {
-      found_pending_task = true;
-      next_pending_delayed_task =
-          std::min(next_pending_delayed_task, queues_next_pending_delayed_task);
-    }
-  }
-
-  if (!found_pending_task)
-    return base::TimeTicks();
-
-  DCHECK_NE(next_pending_delayed_task,
-            base::TimeTicks::FromInternalValue(kMaxTimeTicks));
-  return next_pending_delayed_task;
-}
-
-void TaskQueueManager::RegisterAsUpdatableTaskQueue(
-    internal::TaskQueueImpl* queue) {
-  base::AutoLock lock(newly_updatable_lock_);
-  newly_updatable_.push_back(queue);
-}
-
-void TaskQueueManager::UnregisterAsUpdatableTaskQueue(
-    internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-#ifndef NDEBUG
-  {
-    base::AutoLock lock(newly_updatable_lock_);
-    DCHECK(!(updatable_queue_set_.find(queue) == updatable_queue_set_.end() &&
-             std::find(newly_updatable_.begin(), newly_updatable_.end(),
-                       queue) != newly_updatable_.end()));
-  }
-#endif
-  updatable_queue_set_.erase(queue);
-}
-
-void TaskQueueManager::MoveNewlyUpdatableQueuesIntoUpdatableQueueSet() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  base::AutoLock lock(newly_updatable_lock_);
-  while (!newly_updatable_.empty()) {
-    updatable_queue_set_.insert(newly_updatable_.back());
-    newly_updatable_.pop_back();
-  }
 }
 
 void TaskQueueManager::UpdateWorkQueues(
     bool should_trigger_wakeup,
     const internal::TaskQueueImpl::Task* previous_task) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
-  internal::LazyNow lazy_now(delegate().get());
 
-  // Move any ready delayed tasks into the incomming queues.
-  WakeupReadyDelayedQueues(&lazy_now);
-
-  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-
-  auto iter = updatable_queue_set_.begin();
-  while (iter != updatable_queue_set_.end()) {
-    internal::TaskQueueImpl* queue = *iter++;
-    // NOTE Update work queue may erase itself from |updatable_queue_set_|.
-    // This is fine, erasing an element won't invalidate any interator, as long
-    // as the iterator isn't the element being delated.
-    if (queue->work_queue().empty())
-      queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
-  }
-}
-
-void TaskQueueManager::ScheduleDelayedWorkTask(
-    scoped_refptr<internal::TaskQueueImpl> queue,
-    base::TimeTicks delayed_run_time) {
-  internal::LazyNow lazy_now(delegate().get());
-  ScheduleDelayedWork(queue.get(), delayed_run_time, &lazy_now);
-}
-
-void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
-                                           base::TimeTicks delayed_run_time,
-                                           internal::LazyNow* lazy_now) {
-  if (!delegate_->BelongsToCurrentThread()) {
-    // NOTE posting a delayed task from a different thread is not expected to be
-    // common. This pathway is less optimal than perhaps it could be because
-    // it causes two main thread tasks to be run.  Should this assumption prove
-    // to be false in future, we may need to revisit this.
-    delegate_->PostTask(
-        FROM_HERE, base::Bind(&TaskQueueManager::ScheduleDelayedWorkTask,
-                              weak_factory_.GetWeakPtr(),
-                              scoped_refptr<internal::TaskQueueImpl>(queue),
-                              delayed_run_time));
-    return;
-  }
-
-  // Make sure there's one (and only one) task posted to |delegate_|
-  // to call |DelayedDoWork| at |delayed_run_time|.
-  if (delayed_wakeup_multimap_.find(delayed_run_time) ==
-      delayed_wakeup_multimap_.end()) {
-    base::TimeDelta delay =
-        std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
-    delegate_->PostDelayedTask(FROM_HERE, do_work_closure_, delay);
-  }
-  delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
-}
-
-void TaskQueueManager::WakeupReadyDelayedQueues(internal::LazyNow* lazy_now) {
-  // Wake up any queues with pending delayed work.  Note std::multipmap stores
-  // the elements sorted by key, so the begin() iterator points to the earliest
-  // queue to wakeup.
-  std::set<internal::TaskQueueImpl*> dedup_set;
-  while (!delayed_wakeup_multimap_.empty()) {
-    DelayedWakeupMultimap::iterator next_wakeup =
-        delayed_wakeup_multimap_.begin();
-    if (next_wakeup->first > lazy_now->Now())
-      break;
-    // A queue could have any number of delayed tasks pending so it's worthwhile
-    // deduping calls to MoveReadyDelayedTasksToIncomingQueue since it takes a
-    // lock.  NOTE the order in which these are called matters since the order
-    // in which EnqueueTaskLocks is called is respected when choosing which
-    // queue to execute a task from.
-    if (dedup_set.insert(next_wakeup->second).second)
-      next_wakeup->second->MoveReadyDelayedTasksToIncomingQueue(lazy_now);
-    delayed_wakeup_multimap_.erase(next_wakeup);
+  for (const scoped_refptr<TimeDomain>& time_domain : time_domains_) {
+    time_domain->UpdateWorkQueues(should_trigger_wakeup, previous_task);
   }
 }
 
@@ -303,12 +177,20 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
   // TODO(alexclarke): Consider refactoring the above loop to terminate only
   // when there's no more work left to be done, rather than posting a
   // continuation task.
-  if (!selector_.EnabledWorkQueuesEmpty()) {
+  if (!selector_.EnabledWorkQueuesEmpty() || TryAdvanceTimeDomains()) {
     MaybePostDoWorkOnMainRunner();
   } else {
     // Tell the task runner we have no more work.
     delegate_->OnNoMoreImmediateWork();
   }
+}
+
+bool TaskQueueManager::TryAdvanceTimeDomains() {
+  bool can_advance = false;
+  for (const scoped_refptr<TimeDomain>& time_domain : time_domains_) {
+    can_advance |= time_domain->MaybeAdvanceTime();
+  }
+  return can_advance;
 }
 
 bool TaskQueueManager::SelectQueueToService(
@@ -426,9 +308,9 @@ TaskQueueManager::AsValueWithSelectorResult(
   if (should_run)
     state->SetString("selected_queue", selected_queue->GetName());
 
-  state->BeginArray("updatable_queue_set");
-  for (auto& queue : updatable_queue_set_)
-    state->AppendString(queue->GetName());
+  state->BeginArray("time_domains");
+  for (auto& time_domain : time_domains_)
+    time_domain->AsValueInto(state.get());
   state->EndArray();
   return state;
 }

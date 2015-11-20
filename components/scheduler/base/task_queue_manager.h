@@ -30,10 +30,12 @@ class TracedValue;
 
 namespace scheduler {
 namespace internal {
-class LazyNow;
 class TaskQueueImpl;
 }  // namespace internal
 
+class LazyNow;
+class RealTimeDomain;
+class TimeDomain;
 class TaskQueueManagerDelegate;
 
 // The task queue manager provides N task queues and a selector interface for
@@ -59,12 +61,6 @@ class SCHEDULER_EXPORT TaskQueueManager
                    const char* disabled_by_default_tracing_category,
                    const char* disabled_by_default_verbose_tracing_category);
   ~TaskQueueManager() override;
-
-  // Returns the time of the next pending delayed task in any queue.  Ignores
-  // any delayed tasks whose delay has expired. Returns a null TimeTicks object
-  // if no tasks are pending.  NOTE this is somewhat expensive since every queue
-  // will get locked.
-  base::TimeTicks NextPendingDelayedTaskRunTime();
 
   // Set the number of tasks executed in a single invocation of the task queue
   // manager. Increasing the batch size can reduce the overhead of yielding
@@ -103,8 +99,16 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Returns the delegate used by the TaskQueueManager.
   const scoped_refptr<TaskQueueManagerDelegate>& delegate() const;
 
+  // Time domains must be registered for the task queues to get updated.
+  void RegisterTimeDomain(const scoped_refptr<TimeDomain>& time_domain);
+  void UnregisterTimeDomain(const scoped_refptr<TimeDomain>& time_domain);
+
+  const scoped_refptr<RealTimeDomain>& real_time_domain() const {
+    return real_time_domain_;
+  }
+
  private:
-  friend class internal::LazyNow;
+  friend class LazyNow;
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerTest;
 
@@ -166,34 +170,14 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   int GetNextSequenceNumber();
 
+  bool TryAdvanceTimeDomains();
+
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::TaskQueueImpl* selected_queue) const;
 
-  // Causes DoWork to start calling UpdateWorkQueue for |queue|. Can be called
-  // from any thread.
-  void RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
-
-  // Prevents DoWork from calling UpdateWorkQueue for |queue|. Must be called
-  // from the thread the TaskQueueManager was created on.
-  void UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
-
-  // Schedule a call to DoWork at |delayed_run_time| which indirectly calls
-  // TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for |queue|.
-  // Can be called from any thread.
-  void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
-                           base::TimeTicks delayed_run_time,
-                           internal::LazyNow* lazy_now);
-
-  // Function calling ScheduleDelayedWork that's suitable for use in base::Bind.
-  void ScheduleDelayedWorkTask(scoped_refptr<internal::TaskQueueImpl> queue,
-                               base::TimeTicks delayed_run_time);
-
-  // Call TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for each
-  // registered queue for which the delay has elapsed.
-  void WakeupReadyDelayedQueues(internal::LazyNow* lazy_now);
-
-  void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
+  std::set<scoped_refptr<TimeDomain>> time_domains_;
+  scoped_refptr<RealTimeDomain> real_time_domain_;
 
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
 
@@ -201,19 +185,6 @@ class SCHEDULER_EXPORT TaskQueueManager
   // raw pointers and doesn't expect the rug to be pulled out from underneath.
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_to_delete_;
 
-  // This lock guards only |newly_updatable_|.  It's not expected to be heavily
-  // contended.
-  base::Lock newly_updatable_lock_;
-  std::vector<internal::TaskQueueImpl*> newly_updatable_;
-
-  // Set of task queues with avaliable work on the incoming queue.  This should
-  // only be accessed from the main thread.
-  std::set<internal::TaskQueueImpl*> updatable_queue_set_;
-
-  typedef std::multimap<base::TimeTicks, internal::TaskQueueImpl*>
-      DelayedWakeupMultimap;
-
-  DelayedWakeupMultimap delayed_wakeup_multimap_;
 
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
@@ -241,6 +212,7 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   Observer* observer_;  // NOT OWNED
   scoped_refptr<DeletionSentinel> deletion_sentinel_;
+  scoped_refptr<TimeDomain> time_domain_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);

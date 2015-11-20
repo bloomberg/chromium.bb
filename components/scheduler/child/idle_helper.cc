@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/child/scheduler_helper.h"
@@ -76,17 +77,17 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
     return IdlePeriodState::NOT_IN_IDLE_PERIOD;
   }
 
-  base::TimeTicks next_pending_delayed_task =
-      helper_->NextPendingDelayedTaskRunTime();
+  base::TimeTicks next_pending_delayed_task;
   base::TimeDelta max_long_idle_period_duration =
       base::TimeDelta::FromMilliseconds(kMaximumIdlePeriodMillis);
   base::TimeDelta long_idle_period_duration;
-  if (next_pending_delayed_task.is_null()) {
-    long_idle_period_duration = max_long_idle_period_duration;
-  } else {
+  if (helper_->real_time_domain()->NextScheduledRunTime(
+          &next_pending_delayed_task)) {
     // Limit the idle period duration to be before the next pending task.
     long_idle_period_duration = std::min(next_pending_delayed_task - now,
                                          max_long_idle_period_duration);
+  } else {
+    long_idle_period_duration = max_long_idle_period_duration;
   }
 
   if (long_idle_period_duration >=
