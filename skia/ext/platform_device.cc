@@ -15,7 +15,6 @@ const char kDevicePlatformBehaviour[] = "CrDevicePlatformBehaviour";
 
 #if defined(OS_MACOSX)
 const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
-#endif
 
 void SetBoolMetaData(const SkCanvas& canvas, const char* key,  bool value) {
   SkMetaData& meta = skia::getMetaData(canvas);
@@ -29,10 +28,12 @@ bool GetBoolMetaData(const SkCanvas& canvas, const char* key) {
     value = false;
   return value;
 }
+#endif
 
 }  // namespace
 
-void SetPlatformDevice(SkBaseDevice* device, PlatformDevice* platform_behaviour) {
+void SetPlatformDevice(SkBaseDevice* device,
+                       PlatformDevice* platform_behaviour) {
   SkMetaData& meta_data = device->getMetaData();
   meta_data.setPtr(kDevicePlatformBehaviour, platform_behaviour);
 }
