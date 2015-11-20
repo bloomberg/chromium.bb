@@ -5,25 +5,41 @@
 #ifndef UI_VIEWS_TOUCHUI_TOUCH_SELECTION_MENU_RUNNER_VIEWS_H_
 #define UI_VIEWS_TOUCHUI_TOUCH_SELECTION_MENU_RUNNER_VIEWS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 #include "ui/views/views_export.h"
 
 namespace views {
+class Button;
+class Widget;
 
 // Views implementation for TouchSelectionMenuRunner.
 class VIEWS_EXPORT TouchSelectionMenuRunnerViews
     : public ui::TouchSelectionMenuRunner {
  public:
+  // Test API to access internal state in tests.
+  class VIEWS_EXPORT TestApi {
+   public:
+    explicit TestApi(TouchSelectionMenuRunnerViews* menu_runner);
+    ~TestApi();
+
+    gfx::Rect GetAnchorRect() const;
+    Button* GetFirstButton() const;
+    Widget* GetWidget() const;
+
+   private:
+    TouchSelectionMenuRunnerViews* menu_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   TouchSelectionMenuRunnerViews();
   ~TouchSelectionMenuRunnerViews() override;
 
  private:
-  friend class TouchSelectionMenuRunnerViewsTest;
+  friend class TouchSelectionMenuRunnerViewsTestApi;
   class Menu;
-
-  // Helper for tests.
-  gfx::Rect GetAnchorRectForTest() const;
 
   // ui::TouchSelectionMenuRunner:
   bool IsMenuAvailable(
