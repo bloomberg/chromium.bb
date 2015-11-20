@@ -111,9 +111,10 @@ class AutofillWebDataBackendImpl
   scoped_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
   scoped_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
 
-  // Returns the number of autofill entries whose interval between creation date
-  // and last usage is entirely contained between [|begin|, |end|).
-  scoped_ptr<WDTypedResult> GetCountOfEntriesContainedBetween(
+  // Returns the number of values such that all for autofill entries with that
+  // value, the interval between creation date and last usage is entirely
+  // contained between [|begin|, |end|).
+  scoped_ptr<WDTypedResult> GetCountOfValuesContainedBetween(
       const base::Time& begin,
       const base::Time& end,
       WebDatabase* db);

@@ -274,7 +274,7 @@ TEST_F(AutofillTableTest, Autofill) {
   EXPECT_EQ(4U, v.size());
 }
 
-TEST_F(AutofillTableTest, Autofill_GetCountOfEntriesContainedBetween) {
+TEST_F(AutofillTableTest, Autofill_GetCountOfValuesContainedBetween) {
   AutofillChangeList changes;
   // This test makes time comparisons that are precise to a microsecond, but the
   // database uses the time_t format which is only precise to a second.
@@ -292,7 +292,7 @@ TEST_F(AutofillTableTest, Autofill_GetCountOfEntriesContainedBetween) {
       { "Name", "Clark Kent" },
       { "Name", "Superman" },
       { "Name", "Clark Sutter" },
-      { "Name", "Clark Kent" }
+      { "Nomen", "Clark Kent" }
   };
 
   for (Entry entry : entries) {
@@ -303,47 +303,46 @@ TEST_F(AutofillTableTest, Autofill_GetCountOfEntriesContainedBetween) {
     now += second;
   }
 
-  // Only "Alter ego" : "Superman" is entirely contained within the
-  // first second.
-  EXPECT_EQ(1, table_->GetCountOfEntriesContainedBetween(
+  // While the entry "Alter ego" : "Superman" is entirely contained within
+  // the first second, the value "Superman" itself appears in another entry,
+  // so it is not contained.
+  EXPECT_EQ(0, table_->GetCountOfValuesContainedBetween(
       begin, begin + second));
 
-  // No other entries are entirely contained within the first three seconds
+  // No values are entirely contained within the first three seconds either
   // (note that the second time constraint is exclusive).
-  EXPECT_EQ(1, table_->GetCountOfEntriesContainedBetween(
+  EXPECT_EQ(0, table_->GetCountOfValuesContainedBetween(
       begin, begin + 3 * second));
 
-  // "Name" : "Superman" is entirely contained within the first four seconds.
-  // We already have an entry for "Superman", but with different field name,
-  // so we should now count two different entries.
-  EXPECT_EQ(2, table_->GetCountOfEntriesContainedBetween(
+  // Only "Superman" is entirely contained within the first four seconds.
+  EXPECT_EQ(1, table_->GetCountOfValuesContainedBetween(
       begin, begin + 4 * second));
 
-  // "Name" : {"Superman", "Clark Kent", "Clark Sutter"} are contained between
-  // the first and seventh second.
-  EXPECT_EQ(3, table_->GetCountOfEntriesContainedBetween(
+  // "Clark Kent" and "Clark Sutter" are contained between the first
+  // and seventh second.
+  EXPECT_EQ(2, table_->GetCountOfValuesContainedBetween(
       begin + second, begin + 7 * second));
 
-  // Beginning from the second second, "Name" : "Superman" is not contained.
-  EXPECT_EQ(2, table_->GetCountOfEntriesContainedBetween(
-      begin + 2 * second, begin + 7 * second));
+  // Beginning from the third second, "Clark Kent" is not contained.
+  EXPECT_EQ(1, table_->GetCountOfValuesContainedBetween(
+      begin + 3 * second, begin + 7 * second));
 
-  // We have four entries total.
-  EXPECT_EQ(4, table_->GetCountOfEntriesContainedBetween(
+  // We have three distinct values total.
+  EXPECT_EQ(3, table_->GetCountOfValuesContainedBetween(
       begin, begin + 7 * second));
 
   // And we should get the same result for unlimited time interval.
-  EXPECT_EQ(4, table_->GetCountOfEntriesContainedBetween(Time(), Time::Max()));
+  EXPECT_EQ(3, table_->GetCountOfValuesContainedBetween(Time(), Time::Max()));
 
   // The null time interval is also interpreted as unlimited.
-  EXPECT_EQ(4, table_->GetCountOfEntriesContainedBetween(Time(), Time()));
+  EXPECT_EQ(3, table_->GetCountOfValuesContainedBetween(Time(), Time()));
 
   // An interval that does not fully contain any entries returns zero.
-  EXPECT_EQ(0, table_->GetCountOfEntriesContainedBetween(
+  EXPECT_EQ(0, table_->GetCountOfValuesContainedBetween(
       begin + second, begin + 2 * second));
 
   // So does an interval which has no intersection with any entry.
-  EXPECT_EQ(0, table_->GetCountOfEntriesContainedBetween(Time(), begin));
+  EXPECT_EQ(0, table_->GetCountOfValuesContainedBetween(Time(), begin));
 }
 
 TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {

@@ -256,13 +256,13 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
 }
 
 scoped_ptr<WDTypedResult>
-    AutofillWebDataBackendImpl::GetCountOfEntriesContainedBetween(
+    AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
         const base::Time& begin,
         const base::Time& end,
         WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   int value = AutofillTable::FromWebDatabase(db)
-      ->GetCountOfEntriesContainedBetween(begin, end);
+      ->GetCountOfValuesContainedBetween(begin, end);
   return scoped_ptr<WDTypedResult>(
       new WDResult<int>(AUTOFILL_VALUE_RESULT, value));
 }

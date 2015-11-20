@@ -272,10 +272,11 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool RemoveFormElement(const base::string16& name,
                                  const base::string16& value);
 
-  // Returns the number of autofill entries whose interval between creation date
-  // and last usage is entirely contained between [|begin|, |end|).
-  virtual int GetCountOfEntriesContainedBetween(const base::Time& begin,
-                                                const base::Time& end);
+  // Returns the number of unique values such that for all autofill entries with
+  // that value, the interval between creation date and last usage is entirely
+  // contained between [|begin|, |end|).
+  virtual int GetCountOfValuesContainedBetween(const base::Time& begin,
+                                               const base::Time& end);
 
   // Retrieves all of the entries in the autofill table.
   virtual bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
@@ -414,7 +415,7 @@ class AutofillTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_GetCountOfEntriesContainedBetween);
+      Autofill_GetCountOfValuesContainedBetween);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_RemoveBetweenChanges);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_UpdateDontReplace);
   FRIEND_TEST_ALL_PREFIXES(

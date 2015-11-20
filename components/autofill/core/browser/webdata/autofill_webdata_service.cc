@@ -132,10 +132,10 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerProfiles(
 }
 
 WebDataServiceBase::Handle
-    AutofillWebDataService::GetCountOfEntriesContainedBetween(
+    AutofillWebDataService::GetCountOfValuesContainedBetween(
         const Time& begin, const Time& end, WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::GetCountOfEntriesContainedBetween,
+      Bind(&AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween,
            autofill_backend_, begin, end),
            consumer);
 }

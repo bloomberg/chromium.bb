@@ -56,8 +56,19 @@ void AutofillCounter::Count() {
   // and last modified time) lies within the deletion time range. Otherwise,
   // it only decreases the count property, but always to a nonzero value,
   // and the suggestion is retained. Therefore here as well, we must only count
-  // the entry that are entirely contained in [start, base::Time::Max()).
-  suggestions_query_ = web_data_service_->GetCountOfEntriesContainedBetween(
+  // the entries that are entirely contained in [start, base::Time::Max()).
+  // Further, many of these entries may contain the same values, as they are
+  // simply the same data point entered on different forms. For example,
+  // [name, value] pairs such as:
+  //     ["mail", "example@example.com"]
+  //     ["email", "example@example.com"]
+  //     ["e-mail", "example@example.com"]
+  // are stored as three separate entries, but from the user's perspective,
+  // they constitute the same suggestion - "my email". Therefore, for the final
+  // output, we will consider all entries with the same value as one suggestion,
+  // and increment the counter only if all entries with the given value are
+  // contained in the interval [start, base::Time::Max()).
+  suggestions_query_ = web_data_service_->GetCountOfValuesContainedBetween(
       start, base::Time::Max(), this);
 
   // Count the credit cards.

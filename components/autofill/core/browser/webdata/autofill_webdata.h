@@ -74,10 +74,10 @@ class AutofillWebData {
   virtual WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) = 0;
 
-  // Schedules a task to count the number of entries contained in the time
-  // interval [|begin|, |end|). |begin| and |end| can be null to indicate
-  // no time limitation.
-  virtual WebDataServiceBase::Handle GetCountOfEntriesContainedBetween(
+  // Schedules a task to count the number of unique autofill values contained
+  // in the time interval [|begin|, |end|). |begin| and |end| can be null
+  // to indicate no time limitation.
+  virtual WebDataServiceBase::Handle GetCountOfValuesContainedBetween(
       const base::Time& begin,
       const base::Time& end,
       WebDataServiceConsumer* consumer) = 0;

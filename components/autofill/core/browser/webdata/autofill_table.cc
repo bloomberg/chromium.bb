@@ -700,15 +700,19 @@ bool AutofillTable::AddFormFieldValuesTime(
   return result;
 }
 
-int AutofillTable::GetCountOfEntriesContainedBetween(
+int AutofillTable::GetCountOfValuesContainedBetween(
     const Time& begin,
     const Time& end) {
   const time_t begin_time_t = begin.ToTimeT();
   const time_t end_time_t = GetEndTime(end);
 
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT COUNT(*) FROM autofill "
-      "WHERE date_created >= ? AND date_last_used < ?"));
+      "SELECT COUNT(DISTINCT(value1)) FROM ( "
+      "  SELECT value AS value1 FROM autofill "
+      "  WHERE NOT EXISTS ( "
+      "    SELECT value AS value2, date_created, date_last_used FROM autofill "
+      "    WHERE value1 = value2 AND "
+      "          (date_created < ? OR date_last_used >= ?)))"));
   s.BindInt64(0, begin_time_t);
   s.BindInt64(1, end_time_t);
 

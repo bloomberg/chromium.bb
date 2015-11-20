@@ -73,7 +73,7 @@ class AutofillWebDataService : public AutofillWebData,
   WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) override;
 
-  WebDataServiceBase::Handle GetCountOfEntriesContainedBetween(
+  WebDataServiceBase::Handle GetCountOfValuesContainedBetween(
       const base::Time& begin,
       const base::Time& end,
       WebDataServiceConsumer* consumer) override;

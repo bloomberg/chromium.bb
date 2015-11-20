@@ -93,7 +93,7 @@ void AwFormDatabaseService::HasFormDataImpl(
     WaitableEvent* completion,
     bool* result) {
   WebDataServiceBase::Handle pending_query_handle =
-      autofill_data_->GetCountOfEntriesContainedBetween(
+      autofill_data_->GetCountOfValuesContainedBetween(
           base::Time(), base::Time::Max(), this);
   PendingQuery query;
   query.result = result;
