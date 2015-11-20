@@ -7,6 +7,7 @@ assertSVGResponsive({
   getter(target) {
     return Array.from(target.animatedPoints).map(p => `${p.x} ${p.y}`).join(', ');
   },
+  from: neutralKeyframe,
   to: '10 20, 30 40',
   configurations: [{
     state: {underlying: '10 10, 20 20'},

@@ -7,12 +7,15 @@ Exported functions:
 assertCSSResponsive
 assertSVGResponsive
 
+Exported objects:
+neutralKeyframe
+
 Options format: {
   ?targetTag: <Target element tag name>,
   property: <Property/Attribute name>,
   ?getter(target): <Reads animated value from target>,
-  ?from: <Value>,
-  ?to: <Value>,
+  from: <Value>,
+  to: <Value>,
   configurations: [{
     state: {
       ?underlying: <Value>,
@@ -33,6 +36,7 @@ state to every other configuration (n * (n - 1) complexity) and asserts that
 each destination configuration's expectations are met.
 Each animation target can be assigned custom styles via the ".target" selector.
 This test is designed to catch stale interpolation caches.
+Set from/to to the exported neutralKeyframe object to use neutral keyframes.
 */
 
 (function() {
@@ -40,6 +44,7 @@ This test is designed to catch stale interpolation caches.
 var pendingResponsiveTests = [];
 var htmlNamespace = 'http://www.w3.org/1999/xhtml';
 var svgNamespace = 'http://www.w3.org/2000/svg';
+var neutralKeyframe = {};
 
 function assertCSSResponsive(options) {
   pendingResponsiveTests.push({
@@ -140,22 +145,26 @@ function setState(bindings, targets, property, state) {
   }
 }
 
-function keyframeText(options, keyframeName) {
-  return (keyframeName in options) ? `[${options[keyframeName]}]` : 'neutral';
+function isNeutralKeyframe(keyframe) {
+  return keyframe === neutralKeyframe;
 }
 
-function createKeyframes(prefixedProperty, options) {
+function keyframeText(keyframe) {
+  return isNeutralKeyframe(keyframe) ? 'neutral' : `[${keyframe}]`;
+}
+
+function createKeyframes(prefixedProperty, from, to) {
   var keyframes = [];
-  if ('from' in options) {
+  if (!isNeutralKeyframe(from)) {
     keyframes.push({
       offset: 0,
-      [prefixedProperty]: options.from,
+      [prefixedProperty]: from,
     });
   }
-  if ('to' in options) {
+  if (!isNeutralKeyframe(to)) {
     keyframes.push({
       offset: 1,
-      [prefixedProperty]: options.to,
+      [prefixedProperty]: to,
     });
   }
   return keyframes;
@@ -181,11 +190,11 @@ function runPendingResponsiveTests() {
       var bindings = responsiveTest.bindings;
       var property = options.property;
       var prefixedProperty = bindings.prefixProperty(property);
+      assert_true('from' in options);
+      assert_true('to' in options);
       var from = options.from;
       var to = options.to;
-      var keyframes = createKeyframes(prefixedProperty, options);
-      var fromText = keyframeText(options, 'from');
-      var toText = keyframeText(options, 'to');
+      var keyframes = createKeyframes(prefixedProperty, from, to);
 
       var stateTransitions = createStateTransitions(options.configurations);
       stateTransitions.forEach(function(stateTransition) {
@@ -207,7 +216,7 @@ function runPendingResponsiveTests() {
               var actual = bindings.getAnimatedValue(target, property);
               test(function() {
                 assert_equals(actual, expectation.is);
-              }, `Animation on property <${prefixedProperty}> from ${fromText} to ${toText} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
+              }, `Animation on property <${prefixedProperty}> from ${keyframeText(from)} to ${keyframeText(to)} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
             }
           },
         });
@@ -248,5 +257,6 @@ loadScript('../../resources/testharness.js').then(function() {
 
 window.assertCSSResponsive = assertCSSResponsive;
 window.assertSVGResponsive = assertSVGResponsive;
+window.neutralKeyframe = neutralKeyframe;
 
 })();
