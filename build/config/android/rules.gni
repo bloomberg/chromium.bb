@@ -938,8 +938,8 @@ template("junit_binary") {
       "//testing/android/junit:junit_test_support",
       "//third_party/junit",
       "//third_party/mockito:mockito_java",
-      "//third_party/robolectric:robolectric_java",
       "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
+      "//third_party/robolectric:robolectric_java",
     ]
   }
 }
@@ -1527,8 +1527,8 @@ template("android_apk") {
     proguard(_proguard_target) {
       deps = [
         ":$build_config_target",
-        ":$process_resources_target",
         ":$java_target",
+        ":$process_resources_target",
       ]
       inputs = [
                  _build_config,
@@ -1669,8 +1669,7 @@ template("android_apk") {
     if (_native_libs != [] && !_create_abi_split) {
       native_libs_dir = _native_libs_dir
 
-      # Placeholders are not necessary for L+, so add them here, but don't
-      # bother to create them in the case of splits.
+      # Placeholders necessary for some older devices.
       # http://crbug.com/395038
       forward_variables_from(invoker, [ "native_lib_placeholders" ])
 
@@ -1707,9 +1706,14 @@ template("android_apk") {
       keystore_password = _keystore_password
 
       native_libs_dir = _native_libs_dir
+
+      # Placeholders necessary for some older devices.
+      # http://crbug.com/395038
+      forward_variables_from(invoker, [ "native_lib_placeholders" ])
+
       deps = [
-        ":${_prepare_native_target_name}",
         ":${_manifest_rule}",
+        ":${_prepare_native_target_name}",
       ]
       incremental_deps = deps
     }
@@ -1770,8 +1774,8 @@ template("android_apk") {
     # actual target, but instead loads them at runtime, we need to explicitly
     # depend on them here.
     public_deps = [
-      ":${_template_name}__create_incremental",
       ":${_create_incremental_script_rule_name}",
+      ":${_template_name}__create_incremental",
       ":${java_target}",
     ]
     if (_native_libs != []) {
