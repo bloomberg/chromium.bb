@@ -81,11 +81,12 @@ TEST_F(ExtensionToolbarIconSurfacingBubbleTest,
     views::test::TestWidgetObserver bubble_observer(bubble_widget);
     EXPECT_FALSE(delegate.close_action());
 
-    // Close the bubble. The delegate should be told it was dismissed.
-    bubble_widget->Close();
+    // Close the bubble by activating another widget. The delegate should be
+    // told it was dismissed.
+    anchor_widget->Activate();
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(delegate.close_action());
-    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS,
+    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION,
               *delegate.close_action());
     EXPECT_TRUE(bubble_observer.widget_closed());
   }

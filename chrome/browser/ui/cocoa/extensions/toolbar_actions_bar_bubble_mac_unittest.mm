@@ -117,11 +117,14 @@ void ToolbarActionsBarBubbleMacTest::TestBubbleButton(
     case ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE:
       button = [bubble actionButton];
       break;
-    case ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS:
+    case ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION:
       button = [bubble dismissButton];
       break;
     case ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE:
       button = [bubble learnMoreButton];
+      break;
+    case ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION:
+      NOTREACHED();  // Deactivation is tested below.
       break;
   }
   ASSERT_TRUE(button);
@@ -144,7 +147,7 @@ void ToolbarActionsBarBubbleMacTest::TestBubbleButton(
 TEST_F(ToolbarActionsBarBubbleMacTest, CloseActionAndDismiss) {
   // Test all the possible actions.
   TestBubbleButton(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE);
-  TestBubbleButton(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+  TestBubbleButton(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
   TestBubbleButton(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
 
   {
@@ -160,7 +163,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, CloseActionAndDismiss) {
     [bubble close];
     chrome::testing::NSRunLoopRunAllPending();
     ASSERT_TRUE(delegate.close_action());
-    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS,
+    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION,
               *delegate.close_action());
     EXPECT_TRUE([windowObserver windowIsClosing]);
   }

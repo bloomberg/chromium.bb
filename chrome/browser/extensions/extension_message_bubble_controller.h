@@ -24,8 +24,9 @@ class ExtensionMessageBubbleController {
   enum BubbleAction {
     ACTION_LEARN_MORE = 0,
     ACTION_EXECUTE,
-    ACTION_DISMISS,
-    ACTION_BOUNDARY, // Must be the last value.
+    ACTION_DISMISS_USER_ACTION,
+    ACTION_DISMISS_DEACTIVATION,
+    ACTION_BOUNDARY,  // Must be the last value.
   };
 
   class Delegate {
@@ -74,14 +75,22 @@ class ExtensionMessageBubbleController {
     virtual void LogExtensionCount(size_t count) = 0;
     virtual void LogAction(BubbleAction action) = 0;
 
-    // Has the user acknowledged info about the extension the bubble reports.
-    virtual bool HasBubbleInfoBeenAcknowledged(const std::string& extension_id);
-    virtual void SetBubbleInfoBeenAcknowledged(const std::string& extension_id,
-                                               bool value);
+    // Returns a key unique to the type of bubble that can be used to retrieve
+    // state specific to the type (e.g., shown for profiles).
+    virtual const char* GetKey() = 0;
 
-    // Returns the set of profiles for which this bubble has been shown.
-    // If profiles are not tracked, returns null (default).
-    virtual std::set<Profile*>* GetProfileSet();
+    // Whether the "shown for profiles" set should be cleared if an action is
+    // taken on the bubble. This defaults to true, since once an action is
+    // taken, the extension will usually either be acknowledged or removed, and
+    // the bubble won't show for that extension.
+    // This should be false in cases where there is no acknowledgment option
+    // (as in the developer-mode extension warning).
+    virtual bool ClearProfileSetAfterAction();
+
+    // Has the user acknowledged info about the extension the bubble reports.
+    bool HasBubbleInfoBeenAcknowledged(const std::string& extension_id);
+    void SetBubbleInfoBeenAcknowledged(const std::string& extension_id,
+                                       bool value);
 
    protected:
     Profile* profile() { return profile_; }
@@ -141,8 +150,10 @@ class ExtensionMessageBubbleController {
 
   // Callbacks from bubble. Declared virtual for testing purposes.
   virtual void OnBubbleAction();
-  virtual void OnBubbleDismiss();
+  virtual void OnBubbleDismiss(bool dismissed_by_deactivation);
   virtual void OnLinkClicked();
+
+  void ClearProfileListForTesting();
 
   static void set_should_ignore_learn_more_for_testing(
       bool should_ignore_learn_more);
@@ -156,6 +167,8 @@ class ExtensionMessageBubbleController {
 
   // Performs cleanup after the bubble closes.
   void OnClose();
+
+  std::set<Profile*>* GetProfileSet();
 
   // A weak pointer to the Browser we are associated with. Not owned by us.
   Browser* browser_;

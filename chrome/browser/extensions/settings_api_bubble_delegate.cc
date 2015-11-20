@@ -238,4 +238,17 @@ void SettingsApiBubbleDelegate::LogAction(
   }
 }
 
+const char* SettingsApiBubbleDelegate::GetKey() {
+  switch (type_) {
+    case BUBBLE_TYPE_HOME_PAGE:
+      return "SettingsApiBubbleDelegate.HomePage";
+    case BUBBLE_TYPE_STARTUP_PAGES:
+      return "SettingsApiBubbleDelegate.StartupPages";
+    case BUBBLE_TYPE_SEARCH_ENGINE:
+      return "SettingsApiBubbleDelegate.SearchEngine";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace extensions

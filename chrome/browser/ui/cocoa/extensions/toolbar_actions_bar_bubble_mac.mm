@@ -106,7 +106,7 @@ CGFloat kMinWidth = 320.0;
 - (void)windowWillClose:(NSNotification*)notification {
   if (!acknowledged_) {
     delegate_->OnBubbleClosed(
-        ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+        ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION);
     acknowledged_ = YES;
   }
   [super windowWillClose:notification];
@@ -327,7 +327,7 @@ CGFloat kMinWidth = 320.0;
   if (learnMoreButton_ && sender == learnMoreButton_) {
     action = ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE;
   } else if (dismissButton_ && sender == dismissButton_) {
-    action = ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS;
+    action = ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION;
   } else {
     DCHECK_EQ(sender, actionButton_);
     action = ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE;

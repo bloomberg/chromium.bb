@@ -78,7 +78,11 @@ void ExtensionToolbarIconSurfacingBubble::OnWidgetDestroying(
     views::Widget* widget) {
   BubbleDelegateView::OnWidgetDestroying(widget);
   if (!acknowledged_) {
-    delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+    ToolbarActionsBarBubbleDelegate::CloseAction close_action =
+        close_reason() == CloseReason::DEACTIVATION
+            ? ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION
+            : ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION;
+    delegate_->OnBubbleClosed(close_action);
     acknowledged_ = true;
   }
 }

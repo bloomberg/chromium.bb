@@ -40,9 +40,8 @@ class DevModeBubbleDelegate
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
-  std::set<Profile*>* GetProfileSet() override;
-
-  static void ClearProfileListForTesting();
+  const char* GetKey() override;
+  bool ClearProfileSetAfterAction() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);

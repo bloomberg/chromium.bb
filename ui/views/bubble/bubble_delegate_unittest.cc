@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/base/hit_test.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -35,6 +37,10 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   // BubbleDelegateView overrides:
   View* GetInitiallyFocusedView() override { return view_; }
   gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+
+  BubbleFrameView* GetBubbleFrameViewForTest() const {
+    return GetBubbleFrameView();
+  }
 
  private:
   View* view_;
@@ -259,6 +265,55 @@ TEST_F(BubbleDelegateTest, NotActivatable) {
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
   EXPECT_FALSE(bubble_widget->CanActivate());
+}
+
+TEST_F(BubbleDelegateTest, CloseReasons) {
+  {
+    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+        anchor_widget->GetContentsView(), BubbleBorder::NONE);
+    bubble_delegate->set_close_on_deactivate(true);
+    Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+    bubble_widget->Show();
+    anchor_widget->Activate();
+    EXPECT_TRUE(bubble_widget->IsClosed());
+    EXPECT_EQ(BubbleDelegateView::CloseReason::DEACTIVATION,
+              bubble_delegate->close_reason());
+  }
+
+  {
+    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+        anchor_widget->GetContentsView(), BubbleBorder::NONE);
+    bubble_delegate->set_close_on_esc(true);
+    Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+    bubble_widget->Show();
+    // Cast as a test hack to access AcceleratorPressed() (which is protected
+    // in BubbleDelegate).
+    static_cast<View*>(bubble_delegate)
+        ->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+    EXPECT_TRUE(bubble_widget->IsClosed());
+    EXPECT_EQ(BubbleDelegateView::CloseReason::ESCAPE,
+              bubble_delegate->close_reason());
+  }
+
+  {
+    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    TestBubbleDelegateView* bubble_delegate =
+        new TestBubbleDelegateView(anchor_widget->GetContentsView());
+    Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+    bubble_widget->Show();
+    BubbleFrameView* frame_view = bubble_delegate->GetBubbleFrameViewForTest();
+    LabelButton* close_button = frame_view->close_;
+    ASSERT_TRUE(close_button);
+    frame_view->ButtonPressed(
+        close_button,
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
+                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
+    EXPECT_TRUE(bubble_widget->IsClosed());
+    EXPECT_EQ(BubbleDelegateView::CloseReason::CLOSE_BUTTON,
+              bubble_delegate->close_reason());
+  }
 }
 
 }  // namespace views

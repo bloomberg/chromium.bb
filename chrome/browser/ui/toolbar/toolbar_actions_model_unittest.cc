@@ -1229,7 +1229,8 @@ TEST_F(ToolbarActionsModelUnitTest, ToolbarModelHighlightsForToolbarRedesign) {
 
   scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble(
       new ExtensionToolbarIconSurfacingBubbleDelegate(profile()));
-  bubble->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
+  bubble->OnBubbleClosed(
+      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
 
   EXPECT_FALSE(toolbar_model->is_highlighting());
   EXPECT_EQ(ToolbarActionsModel::HIGHLIGHT_NONE,

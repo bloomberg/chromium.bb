@@ -39,6 +39,7 @@ class NtpOverriddenBubbleDelegate
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
+  const char* GetKey() override;
 
  private:
   // The ID of the extension we are showing the bubble for.
