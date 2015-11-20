@@ -54,10 +54,9 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     areAnyMembersSet |= isBodySet;
 
     if (areAnyMembersSet) {
-        // If any of init's members are present, unset request's
-        // omit-Origin-header flag, set request's referrer to "client",
-        // and request's referrer policy to the empty string.
-        //
+        // A part of the Request constructor algorithm is performed here. See
+        // the comments in the Request constructor code for the detail.
+
         // We need to use "about:client" instead of |clientReferrerString|,
         // because "about:client" => |clientReferrerString| conversion is done
         // in Request::createRequestWithRequestOrString.
