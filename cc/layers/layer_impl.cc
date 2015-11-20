@@ -880,6 +880,7 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
       }
 
       transform_tree.set_needs_update(true);
+      layer_tree_impl()->set_needs_update_draw_properties();
     }
   }
 }

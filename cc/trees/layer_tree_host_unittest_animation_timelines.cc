@@ -1000,7 +1000,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTimelinesTestAnimationFinishesDuringCommit);
 
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
 // if we destroy LayerAnimationController and ElementAnimations.
-class DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
+class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
     : public LayerTreeHostTimelinesTest {
  public:
   void SetupTree() override {
@@ -1013,11 +1013,13 @@ class DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    if (host_impl->active_tree()->source_frame_number() == 2) {
+    if (host_impl->active_tree()->source_frame_number() == 1) {
       EXPECT_TRUE(host_impl->active_tree());
       EXPECT_TRUE(host_impl->active_tree()->root_layer());
       EXPECT_TRUE(host_impl->pending_tree());
       EXPECT_TRUE(host_impl->pending_tree()->root_layer());
+
+      EXPECT_EQ(2, host_impl->pending_tree()->source_frame_number());
 
       EXPECT_TRUE(host_impl->active_tree()
                       ->root_layer()
@@ -1025,10 +1027,15 @@ class DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
       EXPECT_FALSE(host_impl->pending_tree()
                        ->root_layer()
                        ->screen_space_transform_is_animating());
+    } else if (host_impl->active_tree()->source_frame_number() == 2) {
+      EXPECT_FALSE(host_impl->active_tree()
+                       ->root_layer()
+                       ->screen_space_transform_is_animating());
+      EXPECT_FALSE(host_impl->pending_tree()
+                       ->root_layer()
+                       ->screen_space_transform_is_animating());
     }
   }
-
-  void WillCommit() override {}
 
   void DidCommit() override { PostSetNeedsCommitToMainThread(); }
 
@@ -1049,7 +1056,7 @@ class DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
 };
 
 MULTI_THREAD_TEST_F(
-    DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction);
+    LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction);
 
 // Check that we invalidate property trees on AnimationPlayer::SetNeedsCommit.
 class LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit
