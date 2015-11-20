@@ -369,6 +369,8 @@ component("sandbox_services") {
   }
 
   if (is_nacl_nonsfi) {
+    cflags = [ "-fgnu-inline-asm" ]
+
     sources -= [
       "services/init_process_reaper.cc",
       "services/init_process_reaper.h",
