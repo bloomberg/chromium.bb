@@ -66,12 +66,7 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
 
   std::vector<SurfaceId> new_referenced_surfaces;
   if (current_frame_) {
-    for (auto& render_pass :
-         current_frame_->delegated_frame_data->render_pass_list) {
-      new_referenced_surfaces.insert(new_referenced_surfaces.end(),
-                                     render_pass->referenced_surfaces.begin(),
-                                     render_pass->referenced_surfaces.end());
-    }
+    new_referenced_surfaces = current_frame_->metadata.referenced_surfaces;
   }
 
   if (previous_frame) {

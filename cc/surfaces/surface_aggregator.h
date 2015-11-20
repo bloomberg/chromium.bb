@@ -60,6 +60,15 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     gfx::Rect rect;
   };
 
+  struct PrewalkResult {
+    PrewalkResult();
+    ~PrewalkResult();
+    bool has_copy_requests = false;
+    // This is the set of Surfaces that were referenced by another Surface, but
+    // not included in a SurfaceDrawQuad.
+    std::set<SurfaceId> undrawn_surfaces;
+  };
+
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
@@ -83,7 +92,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_pass,
       SurfaceId surface_id);
-  gfx::Rect PrewalkTree(SurfaceId surface_id);
+  gfx::Rect PrewalkTree(SurfaceId surface_id, PrewalkResult* result);
+  void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const DelegatedFrameData* frame_data, Surface* surface);
 
   // Remove Surfaces that were referenced before but aren't currently

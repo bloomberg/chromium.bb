@@ -318,6 +318,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(selection)
   IPC_STRUCT_TRAITS_MEMBER(latency_info)
   IPC_STRUCT_TRAITS_MEMBER(satisfies_sequences)
+  IPC_STRUCT_TRAITS_MEMBER(referenced_surfaces)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)

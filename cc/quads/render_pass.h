@@ -117,10 +117,6 @@ class CC_EXPORT RenderPass {
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
 
-  // This vector contains the complete set of SurfaceIds referenced by
-  // DrawQuads in quad_list.
-  std::vector<SurfaceId> referenced_surfaces;
-
  protected:
   explicit RenderPass(size_t num_layers);
   RenderPass();
