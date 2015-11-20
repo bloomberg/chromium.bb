@@ -52760,6 +52760,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Call.AudioBitrateReceivedInKbps" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average audio bitrate received during a call, counted from first packet
+    received until Call instance is destroyed. Only mesured for calls that are
+    at least 10 seconds long.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Call.BitrateReceivedInKbps" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average total bitrate received during a call (audio + video + RTCP), counted
+    from first packet received until Call instance is destroyed. Only mesured
+    for calls that are at least 10 seconds long.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Call.RtcpBitrateReceivedInBps" units="bits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average RTCP bitrate received during a call, counted from first packet
+    received until Call instance is destroyed. Only mesured for calls that are
+    at least 10 seconds long.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Call.VideoBitrateReceivedInKbps" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average video bitrate received during a call, counted from first packet
+    received until Call instance is destroyed. Only mesured for calls that are
+    at least 10 seconds long.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
   <owner>perkj@chromium.org</owner>
   <summary>
@@ -53456,6 +53492,126 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of sent bits over RTX per second for a sent video stream.
     Recorded when a stream is removed. The total number of bytes is divided by
     the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.BandwidthLimitedResolutionInPercent"
+    units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Percentage of sent frames that are limited in resolution due to bandwidth
+    for a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.BandwidthLimitedResolutionsDisabled"
+    units="disabled resolutions">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    For frames that are limited in resolution due to bandwidth, the average
+    number of disabled resolutions is recorded for a sent (screen content) video
+    stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.EncodeTimeInMs" units="ms">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average encode time per frame for a sent (screen content) video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.InputHeightInPixels" units="pixels">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average input height per frame (for incoming frames to video engine) for
+    a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.InputWidthInPixels" units="pixels">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average input width per frame (for incoming frames to video engine) for
+    a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.KeyFramesSentInPermille"
+    units="permille">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Permille of frames that are key frames for a sent (screen content) video
+    stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.QualityLimitedResolutionDownscales"
+    units="downscales">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    For frames that are downscaled in resolution due to quality, the average
+    number of downscales is recorded for a sent (screen content) video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.QualityLimitedResolutionInPercent"
+    units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Percentage of sent frames that are downscaled in resolution due to quality
+    for a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SendSideDelayInMs" units="ms">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average delay (of average delays) of sent packets for a sent (screen
+    content) video stream. Recorded when a stream is removed. The delay is
+    measured from a frame is input to video engine until a packet is sent to the
+    network. For each sent packet, the average delay of all sent packets over
+    the last second is reported. The average of these reported delays is
+    recorded.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SendSideDelayMaxInMs" units="ms">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average delay (of max delays) of sent packets for a sent (screen
+    content) video stream. Recorded when a stream is removed. The delay is
+    measured from a frame is input to video engine until a packet is sent to the
+    network. For each sent packet, the maximum delay of all sent packets over
+    the last second is reported. The average of these reported delays is
+    recorded.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SentFramesPerSecond" units="fps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent frames per second for a sent (screen content) video
+    stream. Recorded when a stream is removed. The total number of frames is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SentHeightInPixels" units="pixels">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average sent height per frame for a sent (screen content) video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SentWidthInPixels" units="pixels">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The average sent width per frame for a sent (screen content) video stream.
+    Recorded when a stream is removed.
   </summary>
 </histogram>
 
