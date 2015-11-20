@@ -150,7 +150,7 @@ TracingControllerImpl::TracingControllerImpl()
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
       is_system_tracing_(false),
 #endif
-      is_tracing_(TraceLog::GetInstance()->IsEnabled()),
+      is_tracing_(false),
       is_monitoring_(false),
       is_power_tracing_(false) {
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
@@ -234,6 +234,10 @@ bool TracingControllerImpl::StartTracing(
         EtwSystemEventConsumer::GetInstance()->StartSystemTracing();
 #endif
   }
+
+  // TraceLog may have been enabled in startup tracing before threads are ready.
+  if (TraceLog::GetInstance()->IsEnabled())
+    return true;
 
   base::Closure on_start_tracing_done_callback =
       base::Bind(&TracingControllerImpl::OnStartTracingDone,

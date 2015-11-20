@@ -131,6 +131,12 @@ void DevToolsAgent::didExitDebugLoop() {
 }
 
 void DevToolsAgent::enableTracing(const WebString& category_filter) {
+  // Tracing is already started by DevTools TracingHandler::Start for the
+  // renderer target in the browser process. It will eventually start tracing in
+  // the renderer process via IPC. But we still need a redundant
+  // TraceLog::SetEnabled call here for
+  // InspectorTracingAgent::emitMetadataEvents(), at which point, we are not
+  // sure if tracing is already started in the renderer process.
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(
       base::trace_event::TraceConfig(category_filter.utf8(), ""),

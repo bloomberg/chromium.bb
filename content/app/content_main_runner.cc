@@ -615,8 +615,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       base::RouteStdioToConsole(true);
 #endif
 
+#if !defined(OS_ANDROID)
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
-    // ignored.
+    // ignored. For Android, startup tracing is enabled in an even earlier place
+    // content/app/android/library_loader_hooks.cc.
     if (command_line.HasSwitch(switches::kTraceStartup)) {
       base::trace_event::TraceConfig trace_config(
           command_line.GetSwitchValueASCII(switches::kTraceStartup),
@@ -627,11 +629,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     } else if (process_type != switches::kZygoteProcess &&
                process_type != switches::kRendererProcess) {
       if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+        // This checks kTraceConfigFile switch.
         base::trace_event::TraceLog::GetInstance()->SetEnabled(
             tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
             base::trace_event::TraceLog::RECORDING_MODE);
       }
     }
+#endif  // !OS_ANDROID
 
 #if defined(OS_WIN)
     // Enable exporting of events to ETW if requested on the command line.

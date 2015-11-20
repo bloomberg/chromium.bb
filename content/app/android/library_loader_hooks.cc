@@ -97,17 +97,17 @@ bool EnsureJniRegistered(JNIEnv* env) {
 bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
   if (command_line->HasSwitch(switches::kTraceStartup)) {
     base::trace_event::TraceConfig trace_config(
         command_line->GetSwitchValueASCII(switches::kTraceStartup), "");
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-  } else {
-    if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
-      base::trace_event::TraceLog::GetInstance()->SetEnabled(
-          tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
-          base::trace_event::TraceLog::RECORDING_MODE);
-    }
+  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+    // This checks kTraceConfigFile switch.
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
+        base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   // Android's main browser loop is custom so we set the browser

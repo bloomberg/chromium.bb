@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -34,6 +33,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tracing_controller.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/browser_util_win.h"
@@ -354,9 +354,9 @@ void StartShutdownTracing() {
   if (command_line.HasSwitch(switches::kTraceShutdown)) {
     base::trace_event::TraceConfig trace_config(
         command_line.GetSwitchValueASCII(switches::kTraceShutdown), "");
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+    content::TracingController::GetInstance()->StartTracing(
         trace_config,
-        base::trace_event::TraceLog::RECORDING_MODE);
+        content::TracingController::StartTracingDoneCallback());
   }
   TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }

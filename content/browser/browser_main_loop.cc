@@ -598,10 +598,27 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   if (parts_)
     parts_->PostMainMessageLoopStart();
 
+  // Start startup tracing through TracingController's interface. TraceLog has
+  // been enabled in content_main_runner where threads are not available. Now We
+  // need to start tracing for all other tracing agents, which require threads.
+  if (parsed_command_line_.HasSwitch(switches::kTraceStartup)) {
+    base::trace_event::TraceConfig trace_config(
+        parsed_command_line_.GetSwitchValueASCII(switches::kTraceStartup),
+        base::trace_event::RECORD_UNTIL_FULL);
+    TracingController::GetInstance()->StartTracing(
+        trace_config,
+        TracingController::StartTracingDoneCallback());
+  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+    // This checks kTraceConfigFile switch.
+    TracingController::GetInstance()->StartTracing(
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
+        TracingController::StartTracingDoneCallback());
+  }
 #if !defined(OS_IOS)
-  // Start tracing to a file if needed. Only do this after starting the main
-  // message loop to avoid calling MessagePumpForUI::ScheduleWork() before
-  // MessagePumpForUI::Start() as it will crash the browser.
+  // Start tracing to a file for certain duration if needed. Only do this after
+  // starting the main message loop to avoid calling
+  // MessagePumpForUI::ScheduleWork() before MessagePumpForUI::Start() as it
+  // will crash the browser.
   if (is_tracing_startup_for_duration_) {
     TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracingForDuration");
     InitStartupTracingForDuration(parsed_command_line_);
@@ -1420,9 +1437,6 @@ base::FilePath BrowserMainLoop::GetStartupTraceFileName(
 void BrowserMainLoop::InitStartupTracingForDuration(
     const base::CommandLine& command_line) {
   DCHECK(is_tracing_startup_for_duration_);
-
-  // Initialize the tracing controller, required for memory tracing.
-  TracingController::GetInstance();
 
   startup_trace_file_ = GetStartupTraceFileName(parsed_command_line_);
 
