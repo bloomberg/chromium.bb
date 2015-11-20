@@ -31,4 +31,9 @@
     <!-- TabSwitcher - Maximum amount to tilt tabs in over scroll in degrees. -->
     <integer name="over_scroll_angle">15</integer>
 
+    <!-- Font to use for an InfoBar's message, corresponding to a Roboto Bold.
+         Looks almost, but not quite, entirely unlike Roboto Medium, which doesn't exist pre-L. -->
+    <string name="infobar_message_typeface">sans-serif</string>
+    <integer name="infobar_message_textstyle">1</integer>
+
 </resources>

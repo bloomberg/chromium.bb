@@ -191,7 +191,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
                 && !needsAlwaysPanel()
                 && !mOptions.triggeredFromMenu()) {
             // Fully expanded version of the "Always Translate" InfoBar.
-            layout.setCustomContent(TranslateAlwaysPanel.createAlwaysToggle(context, mOptions));
+            TranslateAlwaysPanel.createAlwaysToggle(layout, mOptions);
         }
     }
 

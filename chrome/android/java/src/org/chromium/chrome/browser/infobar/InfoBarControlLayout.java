@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -36,7 +37,7 @@ import org.chromium.chrome.R;
  *
  * TODO(dfalcantara): Standardize all the possible control types.
  */
-public class InfoBarControlLayout extends ViewGroup {
+public final class InfoBarControlLayout extends ViewGroup {
 
     /**
      * Extends the regular LayoutParams by determining where a control should be located.
@@ -46,22 +47,35 @@ public class InfoBarControlLayout extends ViewGroup {
         public int start;
         public int top;
         public int columnsRequired;
+        private boolean mMustBeFullWidth;
 
-        ControlLayoutParams() {
+        /**
+         * Stores values required for laying out this ViewGroup's children.
+         *
+         * This is set up as a private method to mitigate attempts at adding controls to the layout
+         * that aren't provided by the InfoBarControlLayout.
+         */
+        private ControlLayoutParams() {
             super(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         }
     }
 
     private final int mMaxInfoBarWidth;
-    private final int mMarginBetweenItems;
+    private final int mMarginBetweenRows;
+    private final int mMarginBetweenColumns;
 
-    public InfoBarControlLayout(Context context) {
+    /**
+     * Do not call this method directly; use {@link InfoBarLayout#addControlLayout()}.
+     */
+    InfoBarControlLayout(Context context) {
         super(context);
 
         Resources resources = context.getResources();
         mMaxInfoBarWidth = resources.getDimensionPixelSize(R.dimen.infobar_max_width);
-        mMarginBetweenItems =
-                resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_items);
+        mMarginBetweenRows =
+                resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_rows);
+        mMarginBetweenColumns =
+                resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_columns);
     }
 
     @Override
@@ -71,7 +85,8 @@ public class InfoBarControlLayout extends ViewGroup {
 
         int fullWidth = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED
                 ? mMaxInfoBarWidth : MeasureSpec.getSize(widthMeasureSpec);
-        int columnWidth = Math.max(0, (fullWidth - mMarginBetweenItems) / 2);
+        int columnWidth = Math.max(0, (fullWidth - mMarginBetweenColumns) / 2);
+
         int atMostFullWidthSpec = MeasureSpec.makeMeasureSpec(fullWidth, MeasureSpec.AT_MOST);
         int exactlyFullWidthSpec = MeasureSpec.makeMeasureSpec(fullWidth, MeasureSpec.EXACTLY);
         int exactlyColumnWidthSpec = MeasureSpec.makeMeasureSpec(columnWidth, MeasureSpec.EXACTLY);
@@ -83,7 +98,8 @@ public class InfoBarControlLayout extends ViewGroup {
             View child = getChildAt(i);
             measureChild(child, atMostFullWidthSpec, unspecifiedSpec);
 
-            if (child.getMeasuredWidth() <= columnWidth) {
+            if (child.getMeasuredWidth() <= columnWidth
+                    && !getControlLayoutParams(child).mMustBeFullWidth) {
                 // Stretch out the control to take up a column width.
                 getControlLayoutParams(child).columnsRequired = 1;
                 measureChild(child, exactlyColumnWidthSpec, unspecifiedSpec);
@@ -106,7 +122,7 @@ public class InfoBarControlLayout extends ViewGroup {
 
             // If there isn't enough room left for the control, move to the next row.
             if (columnsAvailable < lp.columnsRequired) {
-                layoutHeight += currentRowHeight + mMarginBetweenItems;
+                layoutHeight += currentRowHeight + mMarginBetweenRows;
                 nextChildStart = 0;
                 nextChildTop = layoutHeight;
                 currentRowHeight = 0;
@@ -117,7 +133,7 @@ public class InfoBarControlLayout extends ViewGroup {
             lp.start = nextChildStart;
             currentRowHeight = Math.max(currentRowHeight, child.getMeasuredHeight());
             columnsAvailable -= lp.columnsRequired;
-            nextChildStart += lp.columnsRequired * (columnWidth + mMarginBetweenItems);
+            nextChildStart += lp.columnsRequired * (columnWidth + mMarginBetweenColumns);
         }
 
         // Compute the ViewGroup's height, accounting for the final row's height.
@@ -199,15 +215,53 @@ public class InfoBarControlLayout extends ViewGroup {
     }
 
     /**
-     * Creates and adds a control with additional text describing what an InfoBar is for.
+     * Creates and adds a full-width control with additional text describing what an InfoBar is for.
      */
     public View addDescription(CharSequence message) {
+        ControlLayoutParams params = new ControlLayoutParams();
+        params.mMustBeFullWidth = true;
+
         TextView descriptionView = (TextView) LayoutInflater.from(getContext()).inflate(
                 R.layout.infobar_control_description, this, false);
-        addView(descriptionView, new ControlLayoutParams());
+        addView(descriptionView, params);
+
         descriptionView.setText(message);
         descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
         return descriptionView;
+    }
+
+    /**
+     * Creates and adds a control that shows a review rating score.
+     *
+     * @param rating Fractional rating out of 5 stars.
+     */
+    public View addRatingBar(float rating) {
+        View ratingLayout = LayoutInflater.from(getContext()).inflate(
+                R.layout.infobar_control_rating, this, false);
+        addView(ratingLayout, new ControlLayoutParams());
+
+        RatingBar ratingView = (RatingBar) ratingLayout.findViewById(R.id.control_rating);
+        ratingView.setRating(rating);
+        return ratingView;
+    }
+
+    /**
+     * Do NOT call this method directly from outside {@link InfoBarLayout#InfoBarLayout()}.
+     *
+     * Adds a full-width control showing the main InfoBar message.  For other text, you should call
+     * {@link InfoBarControlLayout#addDescription(CharSequence)} instead.
+     */
+    TextView addMainMessage(CharSequence mainMessage) {
+        ControlLayoutParams params = new ControlLayoutParams();
+        params.mMustBeFullWidth = true;
+
+        TextView messageView = (TextView) LayoutInflater.from(getContext()).inflate(
+                R.layout.infobar_control_message, this, false);
+        addView(messageView, params);
+
+        messageView.setText(mainMessage);
+        messageView.setMovementMethod(LinkMovementMethod.getInstance());
+        return messageView;
     }
 
     /**

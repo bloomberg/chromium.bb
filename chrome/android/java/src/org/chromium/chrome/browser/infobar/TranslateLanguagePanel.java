@@ -74,10 +74,9 @@ public class TranslateLanguagePanel
         layout.setMessage(changeLanguage);
 
         // Set up the spinners.
-        InfoBarControlLayout controlLayout = new InfoBarControlLayout(context);
+        InfoBarControlLayout controlLayout = layout.addControlLayout();
         View sourceSpinnerView = controlLayout.addSpinner(R.id.translate_infobar_source_spinner);
         View targetSpinnerView = controlLayout.addSpinner(R.id.translate_infobar_target_spinner);
-        layout.setCustomContent(controlLayout);
 
         mSourceSpinner =
                 (Spinner) sourceSpinnerView.findViewById(R.id.translate_infobar_source_spinner);

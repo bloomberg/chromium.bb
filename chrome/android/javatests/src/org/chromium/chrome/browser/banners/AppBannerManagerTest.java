@@ -211,8 +211,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 if (infobars.size() != 1) return false;
                 if (!(infobars.get(0) instanceof AppBannerInfoBarAndroid)) return false;
 
-                TextView textView =
-                        (TextView) infobars.get(0).getContentWrapper().findViewById(R.id.app_name);
+                TextView textView = (TextView) infobars.get(0).getContentWrapper().findViewById(
+                        R.id.infobar_message);
                 if (textView == null) return false;
                 return TextUtils.equals(textView.getText(), title);
             }

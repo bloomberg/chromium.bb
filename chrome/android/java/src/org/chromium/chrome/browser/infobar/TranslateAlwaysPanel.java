@@ -27,7 +27,7 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
                 R.string.translate_infobar_translation_done, mOptions.targetLanguage()));
 
         if (!mOptions.triggeredFromMenu()) {
-            layout.setCustomContent(createAlwaysToggle(context, mOptions));
+            createAlwaysToggle(layout, mOptions);
         }
 
         layout.setButtons(context.getString(R.string.translate_button_done),
@@ -46,12 +46,11 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
     /**
      * Creates a toggle that shows the current status of the "Always translate <language>" option.
      */
-    static InfoBarControlLayout createAlwaysToggle(Context context, TranslateOptions options) {
-        InfoBarControlLayout controlLayout = new InfoBarControlLayout(context);
-        controlLayout.addSwitch(0,
-                context.getString(R.string.translate_always_text, options.sourceLanguage()),
-                R.id.translate_infobar_always_toggle,
+    static void createAlwaysToggle(InfoBarLayout layout, TranslateOptions options) {
+        InfoBarControlLayout controlLayout = layout.addControlLayout();
+        String description = layout.getContext().getString(
+                R.string.translate_always_text, options.sourceLanguage());
+        controlLayout.addSwitch(0, description, R.id.translate_infobar_always_toggle,
                 options.alwaysTranslateLanguageState());
-        return controlLayout;
     }
 }

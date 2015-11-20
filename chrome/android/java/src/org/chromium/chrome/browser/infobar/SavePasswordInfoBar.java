@@ -58,9 +58,8 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
         }
 
         if (!TextUtils.isEmpty(mFirstRunExperienceMessage)) {
-            InfoBarControlLayout controlLayout = new InfoBarControlLayout(getContext());
+            InfoBarControlLayout controlLayout = layout.addControlLayout();
             controlLayout.addDescription(mFirstRunExperienceMessage);
-            layout.setCustomContent(controlLayout);
         }
     }
 }

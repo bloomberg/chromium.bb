@@ -7,13 +7,9 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.view.ViewCompat;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RatingBar;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
@@ -32,7 +28,8 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     // Views composing the infobar.
     private Button mButton;
-    private ViewGroup mTitleView;
+    private InfoBarControlLayout mMessageLayout;
+    private View mTitleView;
     private View mIconView;
 
     private final String mAppTitle;
@@ -69,14 +66,10 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mButton = layout.getPrimaryButton();
         mIconView = layout.getIcon();
         layout.setIsUsingBigIcon();
+        layout.setMessage(mAppTitle);
 
-        mTitleView = (ViewGroup) LayoutInflater.from(getContext()).inflate(
-                R.layout.app_banner_title, null);
-        TextView appName = (TextView) mTitleView.findViewById(R.id.app_name);
-        RatingBar ratingView = (RatingBar) mTitleView.findViewById(R.id.rating_bar);
-        TextView webAppUrl = (TextView) mTitleView.findViewById(R.id.web_app_url);
-        appName.setText(mAppTitle);
-        layout.setMessageView(mTitleView);
+        mMessageLayout = layout.getMessageLayout();
+        mTitleView = layout.getMessageTextView();
 
         Context context = getContext();
         if (mAppData != null) {
@@ -84,40 +77,38 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
             ImageView playLogo = new ImageView(layout.getContext());
             playLogo.setImageResource(R.drawable.google_play);
             layout.setCustomViewInButtonRow(playLogo);
-
-            ratingView.setRating(mAppData.rating());
             layout.getPrimaryButton().setButtonColor(ApiCompatibilityUtils.getColor(
                     getContext().getResources(),
                     R.color.app_banner_install_button_bg));
-            mTitleView.setContentDescription(context.getString(
+            mMessageLayout.addRatingBar(mAppData.rating());
+            mMessageLayout.setContentDescription(context.getString(
                     R.string.app_banner_view_native_app_accessibility, mAppTitle,
                     mAppData.rating()));
-            mTitleView.removeView(webAppUrl);
             updateButton();
         } else {
             // Web app.
-            webAppUrl.setText(mAppUrl);
-            mTitleView.setContentDescription(context.getString(
+            mMessageLayout.addDescription(mAppUrl);
+            mMessageLayout.setContentDescription(context.getString(
                     R.string.app_banner_view_web_app_accessibility, mAppTitle,
                     mAppUrl));
-            mTitleView.removeView(ratingView);
-
         }
 
         // Hide uninteresting views from accessibility.
-        ViewCompat.setImportantForAccessibility(ratingView, View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         if (mIconView != null) {
             ViewCompat.setImportantForAccessibility(mIconView, View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         }
 
-        // Set up clicking on the controls to bring up the app details.
+        // Clicking on the controls brings up the app's details.  The OnClickListener has to be
+        // added to both the TextView and its parent because the TextView has special handling for
+        // links within the text.
+        mMessageLayout.setOnClickListener(this);
         mTitleView.setOnClickListener(this);
         if (mIconView != null) mIconView.setOnClickListener(this);
     }
 
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
-        if (mInstallState == INSTALL_STATE_INSTALLING) {
+        if (isPrimaryButton && mInstallState == INSTALL_STATE_INSTALLING) {
             setControlsEnabled(true);
             updateButton();
             return;
@@ -133,7 +124,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     }
 
     private void updateButton() {
-        assert mAppData != null;
+        if (mButton == null || mAppData == null) return;
 
         String text;
         String accessibilityText = null;
@@ -156,7 +147,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     @Override
     public void onClick(View v) {
-        if (v == mTitleView || v == mIconView) onLinkClicked();
+        if (v == mMessageLayout || v == mTitleView || v == mIconView) onLinkClicked();
     }
 
     private static String getAddToHomescreenText() {

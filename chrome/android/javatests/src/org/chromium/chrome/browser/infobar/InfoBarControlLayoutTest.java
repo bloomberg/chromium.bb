@@ -13,6 +13,7 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarControlLayout.ControlLayoutParams;
 
 /**
  * Tests for InfoBarControlLayout.  This suite doesn't check for specific details, like margins
@@ -72,34 +73,71 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
 
+        ControlLayoutParams params1 = InfoBarControlLayout.getControlLayoutParams(switch1);
+        ControlLayoutParams params2 = InfoBarControlLayout.getControlLayoutParams(switch2);
+        ControlLayoutParams params3 = InfoBarControlLayout.getControlLayoutParams(switch3);
+        ControlLayoutParams params4 = InfoBarControlLayout.getControlLayoutParams(switch4);
+        ControlLayoutParams params5 = InfoBarControlLayout.getControlLayoutParams(switch5);
+
         // Small control takes only half the width of the layout.
-        assertEquals(0, layout.getControlLayoutParams(switch1).top);
-        assertEquals(0, layout.getControlLayoutParams(switch1).start);
+        assertEquals(0, params1.top);
+        assertEquals(0, params1.start);
         assertTrue(switch1.getMeasuredWidth() < mMaxInfoBarWidth);
 
         // Big control gets shunted onto the next row and takes up the whole space.
-        assertTrue(layout.getControlLayoutParams(switch2).top > switch1.getMeasuredHeight());
-        assertEquals(0, layout.getControlLayoutParams(switch2).start);
+        assertTrue(params2.top > switch1.getMeasuredHeight());
+        assertEquals(0, params2.start);
         assertEquals(mMaxInfoBarWidth, switch2.getMeasuredWidth());
 
         // Small control gets placed onto the next line and takes only half the width.
-        int bottomOfSwitch2 =
-                layout.getControlLayoutParams(switch2).top + switch2.getMeasuredHeight();
-        assertTrue(layout.getControlLayoutParams(switch3).top > bottomOfSwitch2);
-        assertEquals(0, layout.getControlLayoutParams(switch3).start);
+        int bottomOfSwitch2 = params2.top + switch2.getMeasuredHeight();
+        assertTrue(params3.top > bottomOfSwitch2);
+        assertEquals(0, params3.start);
         assertTrue(switch3.getMeasuredWidth() < mMaxInfoBarWidth);
 
         // Small control gets placed next to the previous small control.
-        assertEquals(layout.getControlLayoutParams(switch3).top,
-                layout.getControlLayoutParams(switch4).top);
-        assertTrue(layout.getControlLayoutParams(switch4).start > switch3.getMeasuredWidth());
+        assertEquals(params3.top, params4.top);
+        assertTrue(params4.start > switch3.getMeasuredWidth());
         assertTrue(switch4.getMeasuredWidth() < mMaxInfoBarWidth);
 
         // Last small control has no room left and gets put on its own line.
-        int bottomOfSwitch4 =
-                layout.getControlLayoutParams(switch4).top + switch4.getMeasuredHeight();
-        assertTrue(layout.getControlLayoutParams(switch5).top > bottomOfSwitch4);
-        assertEquals(0, layout.getControlLayoutParams(switch5).start);
+        int bottomOfSwitch4 = params4.top + switch4.getMeasuredHeight();
+        assertTrue(params5.top > bottomOfSwitch4);
+        assertEquals(0, params5.start);
         assertTrue(switch5.getMeasuredWidth() < mMaxInfoBarWidth);
+    }
+
+    /**
+     * Tests that the message is always the full width of the layout.
+     */
+    @SmallTest
+    @UiThreadTest
+    public void testFullWidthMessageControl() {
+        // Add two controls to the layout.  The main message automatically requests the full width.
+        InfoBarControlLayout layout = new InfoBarControlLayout(mContext);
+        layout.setLayoutParams(
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        View view1 = layout.addMainMessage("A");
+        View view2 = layout.addSwitch(0, "B", SWITCH_ID_2, false);
+
+        // Trigger the measurement algorithm.
+        int parentWidthSpec =
+                MeasureSpec.makeMeasureSpec(mMaxInfoBarWidth, MeasureSpec.AT_MOST);
+        int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        layout.measure(parentWidthSpec, parentHeightSpec);
+
+        ControlLayoutParams params1 = InfoBarControlLayout.getControlLayoutParams(view1);
+        ControlLayoutParams params2 = InfoBarControlLayout.getControlLayoutParams(view2);
+
+        // Main message takes up the full space.
+        assertEquals(0, params1.top);
+        assertEquals(0, params1.start);
+        assertEquals(mMaxInfoBarWidth, view1.getMeasuredWidth());
+
+        // Small control gets shunted onto the next row.
+        assertTrue(params2.top > view1.getMeasuredHeight());
+        assertEquals(0, params2.start);
+        assertTrue(mMaxInfoBarWidth > view2.getMeasuredWidth());
     }
 }

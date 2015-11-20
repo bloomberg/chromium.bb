@@ -54,8 +54,7 @@ public class AutoSigninFirstRunInfoBar extends ConfirmInfoBar {
             }, mExplanationLinkStart, mExplanationLinkEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
-        InfoBarControlLayout controlLayout = new InfoBarControlLayout(getContext());
+        InfoBarControlLayout controlLayout = layout.addControlLayout();
         controlLayout.addDescription(explanation);
-        layout.setCustomContent(controlLayout);
     }
 }
