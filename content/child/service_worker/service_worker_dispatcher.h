@@ -180,11 +180,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnAssociateRegistrationWithServiceWorker(
-      int thread_id,
-      int provider_id,
-      const ServiceWorkerRegistrationObjectInfo& info,
-      const ServiceWorkerVersionAttributes& attrs);
   void OnAssociateRegistration(int thread_id,
                                int provider_id,
                                const ServiceWorkerRegistrationObjectInfo& info,

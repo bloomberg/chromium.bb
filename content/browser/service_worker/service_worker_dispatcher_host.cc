@@ -820,8 +820,8 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
   GetRegistrationObjectInfoAndVersionAttributes(
       provider_host->AsWeakPtr(), registration, &info, &attrs);
 
-  Send(new ServiceWorkerMsg_AssociateRegistrationWithServiceWorker(
-      kDocumentMainThreadId, provider_id, info, attrs));
+  Send(new ServiceWorkerMsg_AssociateRegistration(kDocumentMainThreadId,
+                                                  provider_id, info, attrs));
 }
 
 ServiceWorkerRegistrationHandle*

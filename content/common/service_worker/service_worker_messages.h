@@ -303,14 +303,6 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
 // extract it and dispatch the message to the correct ServiceWorkerDispatcher
 // on the correct thread.
 
-// Informs the child process of the registration associated with the service
-// worker.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_AssociateRegistrationWithServiceWorker,
-                     int /* thread_id*/,
-                     int /* provider_id */,
-                     content::ServiceWorkerRegistrationObjectInfo,
-                     content::ServiceWorkerVersionAttributes)
-
 // Informs the child process that the given provider gets associated or
 // disassociated with the registration.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_AssociateRegistration,
