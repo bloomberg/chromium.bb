@@ -97,30 +97,10 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info)
     if (hasCompositedLayerMapping) {
         bool parented = false;
         if (layer.layoutObject()->isLayoutPart())
-            parented = PaintLayerCompositor::parentFrameContentLayers(toLayoutPart(layer.layoutObject()));
+            parented = PaintLayerCompositor::attachFrameContentLayersToIframeLayer(toLayoutPart(layer.layoutObject()));
 
         if (!parented)
-            currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);
-
-        // If the layer has a clipping layer the overflow controls layers will be siblings of the clipping layer.
-        // Otherwise, the overflow control layers are normal children.
-        // FIXME: Why isn't this handled in CLM updateInternalHierarchy?
-        if (!currentCompositedLayerMapping->hasClippingLayer() && !currentCompositedLayerMapping->hasScrollingLayer()) {
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForHorizontalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForVerticalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForScrollCorner()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-        }
+            currentCompositedLayerMapping->setSublayers(layerChildren);
 
         if (shouldAppendLayer(layer))
             info.childLayersOfEnclosingCompositedLayer->append(currentCompositedLayerMapping->childForSuperlayers());
