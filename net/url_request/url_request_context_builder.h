@@ -88,6 +88,7 @@ class NET_EXPORT URLRequestContextBuilder {
     bool use_alternative_services;
     bool enable_quic;
     QuicTagVector quic_connection_options;
+    std::string ssl_session_cache_shard;
   };
 
   URLRequestContextBuilder();
@@ -190,6 +191,11 @@ class NET_EXPORT URLRequestContextBuilder {
       const QuicTagVector& quic_connection_options) {
     http_network_session_params_.quic_connection_options =
         quic_connection_options;
+  }
+
+  void set_ssl_session_cache_shard(const std::string& ssl_session_cache_shard) {
+    http_network_session_params_.ssl_session_cache_shard =
+        ssl_session_cache_shard;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {

@@ -391,6 +391,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
+  network_session_params.ssl_session_cache_shard =
+      http_network_session_params_.ssl_session_cache_shard;
 
   storage->set_http_network_session(
       make_scoped_ptr(new HttpNetworkSession(network_session_params)));
