@@ -48,6 +48,8 @@
     # through GYP_DEFINES.
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
+      # If you update the default value below, be sure to update the one in
+      # ../config.gyp, too!
       'enable_oilpan%': 0,
       'detailed_memory_infra%': 0,
       'blink_logging_always_on%': 0,
