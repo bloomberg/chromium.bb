@@ -54,6 +54,11 @@ DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
 #if defined(OS_WIN)
   return reinterpret_cast<DesktopMediaID::Id>(accelerated_widget);
+#elif defined(OS_ANDROID)
+  // TODO(bshe): We may need to revisit this for Android platform. See
+  // crbug.com/557424.
+  NOTIMPLEMENTED();
+  return reinterpret_cast<DesktopMediaID::Id>(accelerated_widget);
 #else
   return static_cast<DesktopMediaID::Id>(accelerated_widget);
 #endif

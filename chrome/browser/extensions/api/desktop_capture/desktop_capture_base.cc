@@ -130,7 +130,12 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
 
     // DesktopMediaPicker is implemented only for Windows, OSX and
     // Aura Linux builds.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+    // TODO(bshe): Use ANDROID_JAVA_UI flag here after it landed.
+#if (defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)) || defined(OS_MACOSX)
+    // TODO(bshe): This is called if chrome.desktopCapture.chooseDesktopMedia
+    // or chrome.webrtcDesktopCapturePrivate.chooseDesktopMedia are called by
+    // extensions. Simply return error message on Android platform for now.
+    // Revisit this when necessary. See crbug.com/557424.
     picker_ = DesktopMediaPicker::Create();
 #else
     error_ = "Desktop Capture API is not yet implemented for this platform.";
