@@ -31,6 +31,7 @@
 #ifndef BlobData_h
 #define BlobData_h
 
+#include "base/gtest_prod_util.h"
 #include "platform/FileMetadata.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -185,7 +186,7 @@ public:
     long long length() const;
 
 private:
-    friend class BlobDataTest_Consolidation_Test;
+    FRIEND_TEST_ALL_PREFIXES(BlobDataTest, Consolidation);
 
     BlobData() { }
 

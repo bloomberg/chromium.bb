@@ -29,6 +29,7 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
+#include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -236,12 +237,10 @@ public:
     void transferPrivilegesFrom(PassOwnPtr<PrivilegeData>);
 
 private:
-    // FIXME: After the merge with the Chromium repo, this should be refactored
-    // to use FRIEND_TEST in base/gtest_prod_util.h.
     friend class SecurityOriginTest;
-    friend class SecurityOriginTest_Suborigins_Test;
-    friend class SecurityOriginTest_SuboriginsParsing_Test;
-    friend class SecurityOriginTest_SuboriginsIsSameSchemeHostPortAndSuborigin_Test;
+    FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, Suborigins);
+    FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, SuboriginsParsing);
+    FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin);
 
     SecurityOrigin();
     explicit SecurityOrigin(const KURL&);

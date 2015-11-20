@@ -25,6 +25,7 @@
 #ifndef RTCDataChannel_h
 #define RTCDataChannel_h
 
+#include "base/gtest_prod_util.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -133,8 +134,7 @@ private:
 
     unsigned m_bufferedAmountLowThreshold;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class RTCDataChannelTest_BufferedAmountLow_Test; // NOLINT
+    FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 };
 
 } // namespace blink

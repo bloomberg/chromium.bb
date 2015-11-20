@@ -25,6 +25,7 @@
 #ifndef DynamicsCompressorNode_h
 #define DynamicsCompressorNode_h
 
+#include "base/gtest_prod_util.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
@@ -58,8 +59,7 @@ private:
     RefPtr<AudioParamHandler> m_attack;
     RefPtr<AudioParamHandler> m_release;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class DynamicsCompressorNodeTest_ProcessorLifetime_Test;
+    FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
 };
 
 class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
@@ -86,8 +86,7 @@ private:
     Member<AudioParam> m_attack;
     Member<AudioParam> m_release;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class DynamicsCompressorNodeTest_ProcessorLifetime_Test;
+    FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
 };
 
 } // namespace blink

@@ -5,6 +5,7 @@
 #ifndef StereoPannerNode_h
 #define StereoPannerNode_h
 
+#include "base/gtest_prod_util.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioBus.h"
@@ -35,8 +36,7 @@ private:
 
     AudioFloatArray m_sampleAccuratePanValues;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class StereoPannerNodeTest_StereoPannerLifetime_Test;
+    FRIEND_TEST_ALL_PREFIXES(StereoPannerNodeTest, StereoPannerLifetime);
 };
 
 class StereoPannerNode final : public AudioNode {

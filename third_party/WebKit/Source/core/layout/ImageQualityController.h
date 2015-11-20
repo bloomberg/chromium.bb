@@ -31,6 +31,7 @@
 #ifndef ImageQualityController_h
 #define ImageQualityController_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"
@@ -79,12 +80,12 @@ private:
     bool m_liveResizeOptimizationIsActive;
 
     // For calling set().
-    friend class LayoutPartTest_DestroyUpdatesImageQualityController_Test;
+    FRIEND_TEST_ALL_PREFIXES(LayoutPartTest, DestroyUpdatesImageQualityController);
 
     // For calling setTimer(),
-    friend class ImageQualityControllerTest_LowQualityFilterForLiveResize_Test;
-    friend class ImageQualityControllerTest_LowQualityFilterForResizingImage_Test;
-    friend class ImageQualityControllerTest_DontKickTheAnimationTimerWhenPaintingAtTheSameSize_Test;
+    FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, LowQualityFilterForLiveResize);
+    FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, LowQualityFilterForResizingImage);
+    FRIEND_TEST_ALL_PREFIXES(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSameSize);
 };
 
 } // namespace blink

@@ -25,6 +25,7 @@
 #ifndef ConvolverNode_h
 #define ConvolverNode_h
 
+#include "base/gtest_prod_util.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/OwnPtr.h"
@@ -68,8 +69,7 @@ private:
     // Normalize the impulse response or not. Must default to true.
     bool m_normalize;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class ConvolverNodeTest_ReverbLifetime_Test;
+    FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };
 
 class MODULES_EXPORT ConvolverNode final : public AudioNode {
@@ -86,8 +86,7 @@ private:
     ConvolverNode(AbstractAudioContext&, float sampleRate);
     ConvolverHandler& convolverHandler() const;
 
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class ConvolverNodeTest_ReverbLifetime_Test;
+    FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };
 
 } // namespace blink
