@@ -93,7 +93,7 @@ public:
 
 private:
     CSSPropertyParser(CSSParserValueList*, const CSSParserTokenRange&, const CSSParserContext&,
-        WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
+        WillBeHeapVector<CSSProperty, 256>&);
 
     bool parseValue(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID);

@@ -33,8 +33,7 @@
 namespace blink {
 
 CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList, const CSSParserTokenRange& range,
-    const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>& parsedProperties,
-    StyleRule::Type ruleType)
+    const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>& parsedProperties)
     : m_valueList(valueList)
     , m_range(range)
     , m_context(context)
@@ -54,7 +53,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     CSSParserValueList valueList(range);
     if (!valueList.size())
         return false; // Parser error
-    CSSPropertyParser parser(&valueList, range, context, parsedProperties, ruleType);
+    CSSPropertyParser parser(&valueList, range, context, parsedProperties);
     CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
     bool parseSuccess;
 
