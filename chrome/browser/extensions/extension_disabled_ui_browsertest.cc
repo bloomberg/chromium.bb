@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "sync/protocol/extension_specifics.pb.h"
@@ -208,12 +209,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   extensions::ExtensionUpdater::CheckParams params;
   service_->updater()->set_default_check_params(params);
 
+  extensions::TestExtensionRegistryObserver install_observer(registry_);
   sync_service->ProcessSyncChanges(
       FROM_HERE,
       syncer::SyncChangeList(
           1, sync_data.GetSyncChange(syncer::SyncChange::ACTION_ADD)));
 
-  WaitForExtensionInstall();
+  install_observer.WaitForExtensionWillBeInstalled();
   content::RunAllBlockingPoolTasksUntilIdle();
 
   extension = service_->GetExtensionById(extension_id, true);
@@ -261,6 +263,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
                                          base::Time::Now(),
                                          syncer::AttachmentIdList(),
                                          syncer::AttachmentServiceProxy());
+
+  extensions::TestExtensionRegistryObserver install_observer(registry_);
   ExtensionSyncService::Get(profile())->ProcessSyncChanges(
       FROM_HERE,
       syncer::SyncChangeList(
@@ -268,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
                                 syncer::SyncChange::ACTION_ADD,
                                 sync_data)));
 
-  WaitForExtensionInstall();
+  install_observer.WaitForExtensionWillBeInstalled();
   content::RunAllBlockingPoolTasksUntilIdle();
 
   const Extension* extension = service_->GetExtensionById(extension_id, true);

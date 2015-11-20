@@ -243,12 +243,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     return observer_->WaitForPageActionVisibilityChangeTo(count);
   }
 
-  // Waits until an extension is installed and loaded. Returns true if an
-  // install happened before timeout.
-  bool WaitForExtensionInstall() {
-    return observer_->WaitForExtensionInstall();
-  }
-
   // Wait for an extension install error to be raised. Returns true if an
   // error was raised.
   bool WaitForExtensionInstallError() {

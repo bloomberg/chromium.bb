@@ -58,13 +58,6 @@ enum NotificationType {
   // UpdatedExtensionPermissionsInfo, and the source is a BrowserContext*.
   NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
 
-  // Sent immediately before new extensions are installed or existing
-  // extensions are updated. The details are an InstalledExtensionInfo, and the
-  // source is a BrowserContext*.
-  //
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-
   // An error occured during extension install. The details are a string with
   // details about why the install failed.
   NOTIFICATION_EXTENSION_INSTALL_ERROR,

@@ -32,10 +32,6 @@ class ExtensionTestNotificationObserver
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count);
 
-  // Waits until an extension is installed and loaded. Returns true if an
-  // install happened before timeout.
-  bool WaitForExtensionInstall();
-
   // Wait for an extension install error to be raised. Returns true if an
   // error was raised.
   bool WaitForExtensionInstallError();

@@ -1936,12 +1936,6 @@ void ExtensionService::FinishInstallation(
   }
   bool from_ephemeral =
       was_ephemeral && !extension_prefs_->IsEphemeralApp(extension->id());
-  extensions::InstalledExtensionInfo details(
-      extension, is_update, from_ephemeral, old_name);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::Source<Profile>(profile_),
-      content::Details<const extensions::InstalledExtensionInfo>(&details));
 
   registry_->TriggerOnWillBeInstalled(
       extension, is_update, from_ephemeral, old_name);
@@ -1989,16 +1983,6 @@ void ExtensionService::PromoteEphemeralApp(
 
   // Fire install-related events to allow observers to handle the promotion
   // of the ephemeral app.
-  extensions::InstalledExtensionInfo details(
-      extension,
-      true /* is update */,
-      true /* from ephemeral */,
-      extension->name() /* old name */);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::Source<Profile>(profile_),
-      content::Details<const extensions::InstalledExtensionInfo>(&details));
-
   registry_->TriggerOnWillBeInstalled(
       extension,
       true /* is update */,

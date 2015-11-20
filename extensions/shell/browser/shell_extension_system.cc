@@ -56,7 +56,7 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
   // * Call PermissionsUpdater::GrantActivePermissions().
   // * Call ExtensionService::SatisfyImports().
   // * Call ExtensionPrefs::OnExtensionInstalled().
-  // * Send NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED.
+  // * Call ExtensionRegistryObserver::OnExtensionWillbeInstalled().
 
   ExtensionRegistry::Get(browser_context_)->AddEnabled(extension.get());
 

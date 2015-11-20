@@ -172,13 +172,6 @@ bool ExtensionTestNotificationObserver::WaitForExtensionNotIdle(
   return true;
 }
 
-bool ExtensionTestNotificationObserver::WaitForExtensionInstall() {
-  int before = extension_installs_observed_;
-  WaitForNotification(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED);
-  return extension_installs_observed_ == (before + 1);
-}
-
 bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   content::WindowedNotificationObserver(
@@ -260,11 +253,6 @@ void ExtensionTestNotificationObserver::Observe(
             last_loaded_extension_id_.clear();
       }
       ++crx_installers_done_observed_;
-      break;
-
-    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED:
-      VLOG(1) << "Got EXTENSION_INSTALLED notification.";
-      ++extension_installs_observed_;
       break;
 
     case extensions::NOTIFICATION_EXTENSION_LOAD_ERROR:
