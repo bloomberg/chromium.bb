@@ -56,11 +56,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     private static final float SMALL_PANEL_WIDTH_THRESHOLD_DP = 680.f;
 
     /**
-     * The height of the Contextual Search Panel's Shadow in dps.
-     */
-    private static final float PANEL_SHADOW_HEIGHT_DP = 16.f;
-
-    /**
      * The brightness of the base page when the Panel is peeking.
      */
     private static final float BASE_PAGE_BRIGHTNESS_STATE_PEEKED = 1.f;
@@ -134,11 +129,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * The height of the Toolbar in dps.
      */
     private float mToolbarHeight;
-
-    /**
-     * The padding top of the Search Bar.
-     */
-    private float mSearchBarPaddingTop;
 
     /**
      * The height of the Search Bar when the Panel is peeking, in dps.
@@ -807,8 +797,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
         mToolbarHeight = mContext.getResources().getDimension(
                 getControlContainerHeightResource()) * mPxToDp;
 
-        mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
-
         mSearchBarHeightPeeking = mContext.getResources().getDimension(
                 R.dimen.contextual_search_bar_height) * mPxToDp;
         mSearchBarHeightMaximized = mContext.getResources().getDimension(
@@ -1260,8 +1248,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
         // consideration the height of the shadow (what is returned by the
         // getPanelFromHeight method). We need the measurement of the portion
         // of the Panel that occludes the page.
-        final float expandedHeight = getPanelHeightFromState(expandedState)
-                - mSearchBarPaddingTop;
+        final float expandedHeight = getPanelHeightFromState(expandedState);
 
         // Calculate the offset to center the selection on the available area.
         final float fullscreenHeight = getFullscreenHeight();
