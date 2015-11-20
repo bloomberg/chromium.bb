@@ -353,8 +353,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
             script_result);
 }
 
-// Disabled on Windows due to flakiness (http://crbug.com/554003).
-#if defined(OS_WIN)
+// Disabled on Windows and Linux due to flakiness (http://crbug.com/554003).
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_SubscribePersisted DISABLED_SubscribePersisted
 #else
 #define MAYBE_SubscribePersisted SubscribePersisted
