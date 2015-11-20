@@ -38,7 +38,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame_host.h"
@@ -71,8 +70,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
   RenderFrameHostManagerTestWebUIControllerFactory()
-      : should_create_webui_(false), type_(1) {
-    CHECK_NE(reinterpret_cast<WebUI::TypeID>(type_), WebUI::kNoWebUI);
+    : should_create_webui_(false) {
   }
   ~RenderFrameHostManagerTestWebUIControllerFactory() override {}
 
@@ -80,34 +78,16 @@ class RenderFrameHostManagerTestWebUIControllerFactory
     should_create_webui_ = should_create_webui;
   }
 
-  // This method simulates the expectation that different WebUI instance types
-  // would be created. The |type| value will be returned by GetWebUIType casted
-  // to WebUI::TypeID.
-  // As WebUI::TypeID is a typedef to void pointer, factory implementations
-  // return values that they know to be unique to their respective cases. So
-  // values set here should be safe if kept very low (just above zero).
-  void set_webui_type(uintptr_t type) {
-    CHECK_NE(reinterpret_cast<WebUI::TypeID>(type), WebUI::kNoWebUI);
-    type_ = type;
-  }
-
   // WebUIFactory implementation.
   WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
                                                const GURL& url) const override {
-    // If WebUI creation is enabled for the test and this is a WebUI URL,
-    // returns a new instance.
-    if (should_create_webui_ && HasWebUIScheme(url))
-      return new WebUIController(web_ui);
-    return nullptr;
+    if (!(should_create_webui_ && HasWebUIScheme(url)))
+      return NULL;
+    return new WebUIController(web_ui);
   }
 
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {
-    // If WebUI creation is enabled for the test and this is a WebUI URL,
-    // returns a mock WebUI type.
-    if (should_create_webui_ && HasWebUIScheme(url)) {
-      return reinterpret_cast<WebUI::TypeID>(type_);
-    }
     return WebUI::kNoWebUI;
   }
 
@@ -123,7 +103,6 @@ class RenderFrameHostManagerTestWebUIControllerFactory
 
  private:
   bool should_create_webui_;
-  uintptr_t type_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerTestWebUIControllerFactory);
 };
@@ -301,8 +280,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     factory_.set_should_create_webui(should_create_webui);
   }
 
-  void set_webui_type(int type) { factory_.set_webui_type(type); }
-
   void NavigateActiveAndCommit(const GURL& url) {
     // Note: we navigate the active RenderFrameHost because previous navigations
     // won't have committed yet, so NavigateAndCommit does the wrong thing
@@ -434,28 +411,12 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation)) {
-      NavigationControllerImpl* controller =
-          static_cast<NavigationControllerImpl*>(manager->current_frame_host()
-                                                     ->frame_tree_node()
-                                                     ->navigator()
-                                                     ->GetController());
-      // TODO(carlosk): This implementation below will not work with restore
-      // navigations. Method GetNavigationType should be exposed from
-      // navigator_impl.cc and used here to determine FrameMsg_Navigate_Type.
-      CHECK(entry.restore_type() == NavigationEntryImpl::RESTORE_NONE);
       scoped_ptr<NavigationRequest> navigation_request =
           NavigationRequest::CreateBrowserInitiated(
               manager->frame_tree_node_, frame_entry->url(),
               frame_entry->referrer(), *frame_entry, entry,
               FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
-              controller);
-
-      // Simulates request creation that triggers the 1st internal call to
-      // GetFrameHostForNavigation.
-      manager->DidCreateNavigationRequest(*navigation_request);
-
-      // And also simulates the 2nd and final call to GetFrameHostForNavigation
-      // that determines the final frame that will commit the navigation.
+              static_cast<NavigationControllerImpl*>(&controller()));
       TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
           manager->GetFrameHostForNavigation(*navigation_request));
       CHECK(frame_host);
@@ -1128,7 +1089,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   RenderFrameHostImpl* initial_rfh = manager->current_frame_host();
 
   EXPECT_FALSE(manager->current_host()->IsRenderViewLive());
-  EXPECT_FALSE(manager->current_frame_host()->web_ui());
+  EXPECT_FALSE(manager->web_ui());
   EXPECT_TRUE(initial_rfh);
 
   const GURL kUrl("chrome://foo");
@@ -1155,8 +1116,13 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateStateForNavigate() took the short cut path.
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
-  EXPECT_TRUE(manager->current_frame_host()->web_ui());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    EXPECT_FALSE(manager->speculative_web_ui());
+  } else {
+    EXPECT_FALSE(manager->pending_web_ui());
+  }
+  EXPECT_TRUE(manager->web_ui());
 
   // Commit.
   manager->DidNavigateFrame(host, true);
@@ -1225,8 +1191,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // No cross-process transition happens because we are already in the right
   // SiteInstance.  We should grant bindings immediately.
   EXPECT_EQ(host2, manager2->current_frame_host());
-  EXPECT_TRUE(manager2->GetNavigatingWebUI());
-  EXPECT_FALSE(host2->web_ui());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    EXPECT_TRUE(manager2->speculative_web_ui());
+  } else {
+    EXPECT_TRUE(manager2->pending_web_ui());
+  }
   EXPECT_TRUE(
       host2->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
@@ -1240,14 +1210,16 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasReused) {
   // Navigate to a WebUI page.
   const GURL kUrl1("chrome://foo");
   contents()->NavigateAndCommit(kUrl1);
-  WebUIImpl* web_ui = main_test_rfh()->web_ui();
+  RenderFrameHostManager* manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  WebUIImpl* web_ui = manager->web_ui();
   EXPECT_TRUE(web_ui);
 
   // Navigate to another WebUI page which should be same-site and keep the
   // current WebUI.
   const GURL kUrl2("chrome://foo/bar");
   contents()->NavigateAndCommit(kUrl2);
-  EXPECT_EQ(web_ui, main_test_rfh()->web_ui());
+  EXPECT_EQ(web_ui, manager->web_ui());
 }
 
 // Tests that a WebUI is correctly cleaned up when navigating from a chrome://
@@ -1258,12 +1230,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
   // Navigate to a WebUI page.
   const GURL kUrl1("chrome://foo");
   contents()->NavigateAndCommit(kUrl1);
-  EXPECT_TRUE(main_test_rfh()->web_ui());
+  EXPECT_TRUE(main_test_rfh()->frame_tree_node()->render_manager()->web_ui());
 
   // Navigate to a non-WebUI page.
   const GURL kUrl2("http://www.google.com");
   contents()->NavigateAndCommit(kUrl2);
-  EXPECT_FALSE(main_test_rfh()->web_ui());
+  EXPECT_FALSE(main_test_rfh()->frame_tree_node()->render_manager()->web_ui());
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
@@ -2688,256 +2660,6 @@ TEST_F(RenderFrameHostManagerTest,
   // page focus should propagate to the new subframe process.  Check that
   // process C received the proper focus message.
   VerifyPageFocusMessage(hostC->GetProcess(), true, proxy->GetRoutingID());
-}
-
-// Checks that a restore navigation to a WebUI works.
-TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
-  set_should_create_webui(true);
-
-  const GURL kInitUrl("chrome://foo/");
-  SiteInstanceImpl* initial_instance =
-      static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
-  initial_instance->SetSite(kInitUrl);
-  scoped_ptr<TestWebContents> web_contents(
-      TestWebContents::Create(browser_context(), initial_instance));
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
-  NavigationControllerImpl& controller = web_contents->GetController();
-
-  // Setup a restored entry.
-  std::vector<scoped_ptr<NavigationEntry>> entries;
-  scoped_ptr<NavigationEntry> new_entry =
-      NavigationControllerImpl::CreateNavigationEntry(
-          kInitUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, false, std::string(),
-          browser_context());
-  new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
-  controller.Restore(
-      0, NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
-  ASSERT_EQ(0u, entries.size());
-  ASSERT_EQ(1, controller.GetEntryCount());
-
-  RenderFrameHostImpl* initial_host = manager->current_frame_host();
-  ASSERT_TRUE(initial_host);
-  EXPECT_FALSE(initial_host->IsRenderFrameLive());
-  EXPECT_FALSE(initial_host->web_ui());
-
-  // Navigation request to an entry from a previous browsing session.
-  NavigationEntryImpl entry(nullptr /* instance */, 0 /* page_id */, kInitUrl,
-                            Referrer(), base::string16() /* title */,
-                            ui::PAGE_TRANSITION_RELOAD,
-                            false /* is_renderer_init */);
-  entry.set_restore_type(
-      NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY);
-  NavigateToEntry(manager, entry);
-
-  // As the initial renderer was not live, the new RenderFrameHost should be
-  // made immediately active at request time.
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-  TestRenderFrameHost* current_host =
-      static_cast<TestRenderFrameHost*>(manager->current_frame_host());
-  ASSERT_TRUE(current_host);
-  EXPECT_EQ(current_host, initial_host);
-  EXPECT_TRUE(current_host->IsRenderFrameLive());
-  WebUIImpl* web_ui = manager->GetNavigatingWebUI();
-  EXPECT_TRUE(web_ui);
-  EXPECT_EQ(web_ui, current_host->pending_web_ui());
-  EXPECT_FALSE(current_host->web_ui());
-
-  // The RenderFrameHost committed.
-  manager->DidNavigateFrame(current_host, true);
-  EXPECT_EQ(current_host, manager->current_frame_host());
-  EXPECT_EQ(web_ui, current_host->web_ui());
-  EXPECT_FALSE(current_host->pending_web_ui());
-}
-
-// RenderFrameHostManagerTest extension for PlzNavigate enabled tests.
-class RenderFrameHostManagerTestWithBrowserSideNavigation
-    : public RenderFrameHostManagerTest {
- public:
-  void SetUp() override {
-    EnableBrowserSideNavigation();
-    RenderFrameHostManagerTest::SetUp();
-  }
-};
-
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating from a renderer that is not live to a WebUI URL.
-TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
-       NavigateFromDeadRendererToWebUI) {
-  set_should_create_webui(true);
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
-
-  RenderFrameHostImpl* initial_host = manager->current_frame_host();
-  ASSERT_TRUE(initial_host);
-  EXPECT_FALSE(initial_host->IsRenderFrameLive());
-
-  // Navigation request.
-  const GURL kUrl("chrome://foo");
-  NavigationEntryImpl entry(nullptr /* instance */, -1 /* page_id */, kUrl,
-                            Referrer(), base::string16() /* title */,
-                            ui::PAGE_TRANSITION_TYPED,
-                            false /* is_renderer_init */);
-  FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
-  scoped_ptr<NavigationRequest> navigation_request =
-      NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
-
-  // As the initial RenderFrame was not live, the new RenderFrameHost should be
-  // made as active/current immediately along with its WebUI at request time.
-  TestRenderFrameHost* host =
-      static_cast<TestRenderFrameHost*>(manager->current_frame_host());
-  ASSERT_TRUE(host);
-  EXPECT_NE(host, initial_host);
-  EXPECT_TRUE(host->IsRenderFrameLive());
-  WebUIImpl* web_ui = host->web_ui();
-  EXPECT_TRUE(web_ui);
-  EXPECT_FALSE(host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-
-  // Prepare to commit, update the navigating RenderFrameHost.
-  EXPECT_EQ(host, manager->GetFrameHostForNavigation(*navigation_request));
-
-  // There should be a pending WebUI set to reuse the current one.
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
-
-  // No pending RenderFrameHost as the current one should be reused.
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-
-  // The RenderFrameHost committed.
-  manager->DidNavigateFrame(host, true);
-  EXPECT_EQ(host, manager->current_frame_host());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
-}
-
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating same-site between two WebUIs of the same type.
-TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
-       NavigateSameSiteBetweenWebUIs) {
-  set_should_create_webui(true);
-  NavigateActiveAndCommit(GURL("chrome://foo"));
-
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
-  TestRenderFrameHost* host =
-      static_cast<TestRenderFrameHost*>(manager->current_frame_host());
-  EXPECT_TRUE(host->IsRenderFrameLive());
-  WebUIImpl* web_ui = host->web_ui();
-  EXPECT_TRUE(web_ui);
-
-  // Navigation request. No change in the returned WebUI type.
-  const GURL kUrl("chrome://foo/bar");
-  NavigationEntryImpl entry(nullptr /* instance */, -1 /* page_id */, kUrl,
-                            Referrer(), base::string16() /* title */,
-                            ui::PAGE_TRANSITION_TYPED,
-                            false /* is_renderer_init */);
-  FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
-  scoped_ptr<NavigationRequest> navigation_request =
-      NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
-
-  // The current WebUI should still be in place and the pending WebUI should be
-  // set to reuse it.
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-
-  // Prepare to commit, update the navigating RenderFrameHost.
-  EXPECT_EQ(host, manager->GetFrameHostForNavigation(*navigation_request));
-
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-
-  // The RenderFrameHost committed.
-  manager->DidNavigateFrame(host, true);
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
-  EXPECT_FALSE(host->pending_web_ui());
-}
-
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating cross-site between two different WebUI types.
-TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
-       NavigateCrossSiteBetweenWebUIs) {
-  // Cross-site navigations will always cause the change of the WebUI instance
-  // but for consistency sake different types will be set for each navigation.
-  set_should_create_webui(true);
-  set_webui_type(1);
-  NavigateActiveAndCommit(GURL("chrome://foo"));
-
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
-  TestRenderFrameHost* host =
-      static_cast<TestRenderFrameHost*>(manager->current_frame_host());
-  EXPECT_TRUE(host->IsRenderFrameLive());
-  EXPECT_TRUE(host->web_ui());
-
-  // Set the WebUI controller to return a different WebUIType value. This will
-  // cause the next navigation to "chrome://bar" to require a different WebUI
-  // than the current one, forcing it to be treated as cross-site.
-  set_webui_type(2);
-
-  // Navigation request.
-  const GURL kUrl("chrome://bar");
-  NavigationEntryImpl entry(nullptr /* instance */, -1 /* page_id */, kUrl,
-                            Referrer(), base::string16() /* title */,
-                            ui::PAGE_TRANSITION_TYPED,
-                            false /* is_renderer_init */);
-  FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
-  scoped_ptr<NavigationRequest> navigation_request =
-      NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()));
-  manager->DidCreateNavigationRequest(*navigation_request);
-
-  // The current WebUI should still be in place and there should be a new
-  // active WebUI instance in the speculative RenderFrameHost.
-  EXPECT_TRUE(manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(manager->current_frame_host()->pending_web_ui());
-  TestRenderFrameHost* speculative_host =
-      static_cast<TestRenderFrameHost*>(GetPendingFrameHost(manager));
-  EXPECT_TRUE(speculative_host);
-  WebUIImpl* next_web_ui = manager->GetNavigatingWebUI();
-  EXPECT_TRUE(next_web_ui);
-  EXPECT_EQ(next_web_ui, speculative_host->web_ui());
-  EXPECT_NE(next_web_ui, manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(speculative_host->pending_web_ui());
-
-  // Prepare to commit, update the navigating RenderFrameHost.
-  EXPECT_EQ(speculative_host,
-            manager->GetFrameHostForNavigation(*navigation_request));
-
-  EXPECT_TRUE(manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(manager->current_frame_host()->pending_web_ui());
-  EXPECT_EQ(speculative_host, GetPendingFrameHost(manager));
-  EXPECT_NE(next_web_ui, manager->current_frame_host()->web_ui());
-  EXPECT_EQ(next_web_ui, speculative_host->web_ui());
-  EXPECT_EQ(next_web_ui, manager->GetNavigatingWebUI());
-  EXPECT_FALSE(speculative_host->pending_web_ui());
-
-  // The RenderFrameHost committed.
-  manager->DidNavigateFrame(speculative_host, true);
-  EXPECT_EQ(speculative_host, manager->current_frame_host());
-  EXPECT_EQ(next_web_ui, manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-  EXPECT_FALSE(speculative_host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
 }
 
 }  // namespace content
