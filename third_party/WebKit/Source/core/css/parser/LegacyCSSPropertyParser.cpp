@@ -600,17 +600,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
-    case CSSPropertyPaddingTop:          //// <padding-width> | inherit
-    case CSSPropertyPaddingRight:        //   Which is defined as
-    case CSSPropertyPaddingBottom:       //   <length> | <percentage>
-    case CSSPropertyPaddingLeft:         ////
-        unitless = FUnitlessQuirk;
-        // fall through
     case CSSPropertyWebkitPaddingStart:
     case CSSPropertyWebkitPaddingEnd:
     case CSSPropertyWebkitPaddingBefore:
     case CSSPropertyWebkitPaddingAfter:
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg | unitless);
+        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         break;
 
     case CSSPropertyVerticalAlign:
@@ -627,10 +621,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyLeft:                 // <length> | <percentage> | auto | inherit
     case CSSPropertyRight:                // <length> | <percentage> | auto | inherit
     case CSSPropertyTop:                  // <length> | <percentage> | auto | inherit
-    case CSSPropertyMarginTop:           //// <margin-width> | inherit
-    case CSSPropertyMarginRight:         //   Which is defined as
-    case CSSPropertyMarginBottom:        //   <length> | <percentage> | auto | inherit
-    case CSSPropertyMarginLeft:          ////
         unitless = FUnitlessQuirk;
         // fall through
     case CSSPropertyWebkitMarginStart:
@@ -973,12 +963,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderStyle:
         // <border-style>{1,4} | inherit
         return parse4Values(propId, borderStyleShorthand().properties(), important);
-    case CSSPropertyMargin:
-        // <margin-width>{1,4} | inherit
-        return parse4Values(propId, marginShorthand().properties(), important);
-    case CSSPropertyPadding:
-        // <padding-width>{1,4} | inherit
-        return parse4Values(propId, paddingShorthand().properties(), important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
     case CSSPropertyWebkitColumnRule:
@@ -1150,6 +1134,16 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
     case CSSPropertyPaintOrder:
+    case CSSPropertyMarginTop:
+    case CSSPropertyMarginRight:
+    case CSSPropertyMarginBottom:
+    case CSSPropertyMarginLeft:
+    case CSSPropertyMargin:
+    case CSSPropertyPaddingTop:
+    case CSSPropertyPaddingRight:
+    case CSSPropertyPaddingBottom:
+    case CSSPropertyPaddingLeft:
+    case CSSPropertyPadding:
     case CSSPropertyMarker:
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:

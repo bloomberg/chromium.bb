@@ -978,6 +978,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWidthOrHeight(CSSParserTokenRange
     return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMarginWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
+}
+
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeClipComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     if (range.peek().id() == CSSValueAuto)
@@ -1904,6 +1911,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
         return consumeWidthOrHeight(m_range, m_context);
+    case CSSPropertyMarginTop:
+    case CSSPropertyMarginRight:
+    case CSSPropertyMarginBottom:
+    case CSSPropertyMarginLeft:
+        return consumeMarginWidth(m_range, m_context.mode());
+    case CSSPropertyPaddingTop:
+    case CSSPropertyPaddingRight:
+    case CSSPropertyPaddingBottom:
+    case CSSPropertyPaddingLeft:
+        return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative, UnitlessQuirk::Allow);
     case CSSPropertyClip:
         return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:
@@ -2459,6 +2476,37 @@ bool CSSPropertyParser::consumeFlex(bool important)
     return true;
 }
 
+bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, bool important)
+{
+    ASSERT(shorthand.length() == 4);
+    const CSSPropertyID* longhands = shorthand.properties();
+    RefPtrWillBeRawPtr<CSSValue> top = parseSingleValue(longhands[0]);
+    if (!top)
+        return false;
+
+    RefPtrWillBeRawPtr<CSSValue> right = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> bottom = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> left = nullptr;
+    if ((right = parseSingleValue(longhands[1]))) {
+        if ((bottom = parseSingleValue(longhands[2])))
+            left = parseSingleValue(longhands[3]);
+    }
+
+    if (!right)
+        right = top;
+    if (!bottom)
+        bottom = top;
+    if (!left)
+        left = right;
+
+    addProperty(longhands[0], top.release(), important);
+    addProperty(longhands[1], right.release(), important);
+    addProperty(longhands[2], bottom.release(), important);
+    addProperty(longhands[3], left.release(), important);
+
+    return m_range.atEnd();
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -2536,6 +2584,10 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         addProperty(CSSPropertyTextDecoration, textDecoration.release(), important);
         return true;
     }
+    case CSSPropertyMargin:
+        return consume4Values(marginShorthand(), important);
+    case CSSPropertyPadding:
+        return consume4Values(paddingShorthand(), important);
     case CSSPropertyMotion:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeShorthandGreedily(motionShorthand(), important);
