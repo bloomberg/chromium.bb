@@ -24,14 +24,12 @@ class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
               SenderEncodedFrame* encoded_frame) final;
   void UpdateRates(uint32 new_bitrate) final;
   void GenerateKeyFrame() final;
-  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
   VideoSenderConfig video_config_;
   gfx::Size last_frame_size_;
   bool next_frame_is_key_;
   uint32 frame_id_;
-  uint32 frame_id_to_reference_;
   int frame_size_;
 };
 

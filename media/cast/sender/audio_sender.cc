@@ -105,9 +105,6 @@ base::TimeDelta AudioSender::GetInFlightMediaDuration() const {
   return RtpDeltaToTimeDelta(samples_in_flight, rtp_timebase());
 }
 
-void AudioSender::OnAck(uint32 frame_id) {
-}
-
 void AudioSender::OnEncodedAudioFrame(
     int encoder_bitrate,
     scoped_ptr<SenderEncodedFrame> encoded_frame,

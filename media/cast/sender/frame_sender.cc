@@ -295,8 +295,6 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     return;  // Cannot get an ACK without having first sent a frame.
 
   if (cast_feedback.missing_frames_and_packets.empty()) {
-    OnAck(cast_feedback.ack_frame_id);
-
     if (latest_acked_frame_id_ == cast_feedback.ack_frame_id) {
       VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
               << latest_acked_frame_id_;

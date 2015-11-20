@@ -33,29 +33,8 @@ class Vp8Encoder : public SoftwareVideoEncoder {
               SenderEncodedFrame* encoded_frame) final;
   void UpdateRates(uint32 new_bitrate) final;
   void GenerateKeyFrame() final;
-  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
-  enum { kNumberOfVp8VideoBuffers = 3 };
-
-  enum Vp8Buffers {
-    kAltRefBuffer = 0,
-    kGoldenBuffer = 1,
-    kLastBuffer = 2,
-    kNoBuffer = 3  // Note: must be last.
-  };
-
-  enum Vp8BufferState {
-    kBufferStartState,
-    kBufferSent,
-    kBufferAcked
-  };
-
-  struct BufferState {
-    uint32 frame_id;
-    Vp8BufferState state;
-  };
-
   bool is_initialized() const {
     // ConfigureForNewFrameSize() sets the timebase denominator value to
     // non-zero if the encoder is successfully initialized, and it is zero
@@ -68,19 +47,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // |encoder_| instance.
   void ConfigureForNewFrameSize(const gfx::Size& frame_size);
 
-  // Calculate which next Vp8 buffers to update with the next frame.
-  Vp8Buffers GetNextBufferToUpdate();
-
-  // Get encoder flags for our referenced encoder buffers.
-  // Return which previous frame to reference.
-  uint32 GetCodecReferenceFlags(vpx_codec_flags_t* flags);
-
-  // Get encoder flags for our encoder buffers to update with next frame.
-  void GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
-                           vpx_codec_flags_t* flags);
-
   const VideoSenderConfig cast_config_;
-  const bool use_multiple_video_buffers_;
 
   // VP8 internal objects.  These are valid for use only while is_initialized()
   // returns true.
@@ -100,16 +67,6 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 
   // The last encoded frame's ID.
   uint32 last_encoded_frame_id_;
-
-  // Used to track which buffers are old enough to be re-used.
-  uint32 last_acked_frame_id_;
-
-  // Used by GetNextBufferToUpdate() to track how many consecutive times the
-  // newest buffer had to be overwritten.
-  int undroppable_frames_;
-
-  // Tracks the lifecycle and dependency state of each of the three buffers.
-  BufferState buffer_state_[kNumberOfVp8VideoBuffers];
 
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;

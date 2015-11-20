@@ -94,9 +94,7 @@ struct VideoSenderConfig {
 
   // This field is used differently by various encoders. It defaults to 1.
   //
-  // For VP8, it should be 1 to operate in single-buffer mode, or 3 to operate
-  // in multi-buffer mode. See
-  // http://www.webmproject.org/docs/encoder-parameters/ for details.
+  // For VP8, this field is ignored.
   //
   // For H.264 on Mac or iOS, it controls the max number of frames the encoder
   // may hold before emitting a frame. A larger window may allow higher encoding

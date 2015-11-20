@@ -18,7 +18,6 @@ FakeSoftwareVideoEncoder::FakeSoftwareVideoEncoder(
     : video_config_(video_config),
       next_frame_is_key_(true),
       frame_id_(0),
-      frame_id_to_reference_(0),
       frame_size_(0) {
 }
 
@@ -75,10 +74,6 @@ void FakeSoftwareVideoEncoder::UpdateRates(uint32 new_bitrate) {
 
 void FakeSoftwareVideoEncoder::GenerateKeyFrame() {
   next_frame_is_key_ = true;
-}
-
-void FakeSoftwareVideoEncoder::LatestFrameIdToReference(uint32 frame_id) {
-  frame_id_to_reference_ = frame_id;
 }
 
 }  // namespace cast

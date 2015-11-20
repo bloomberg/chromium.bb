@@ -628,10 +628,6 @@ void H264VideoToolboxEncoder::GenerateKeyFrame() {
   encode_next_frame_as_keyframe_ = true;
 }
 
-void H264VideoToolboxEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
-  // Not supported by VideoToolbox in any meaningful manner.
-}
-
 scoped_ptr<VideoFrameFactory>
 H264VideoToolboxEncoder::CreateVideoFrameFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());

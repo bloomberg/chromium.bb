@@ -44,7 +44,6 @@ class ExternalVideoEncoder : public VideoEncoder {
       const FrameEncodedCallback& frame_encoded_callback) final;
   void SetBitRate(int new_bit_rate) final;
   void GenerateKeyFrame() final;
-  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
   class VEAClientImpl;

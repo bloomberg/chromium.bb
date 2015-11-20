@@ -47,7 +47,6 @@ class AudioSender : public FrameSender,
  protected:
   int GetNumberOfFramesInEncoder() const final;
   base::TimeDelta GetInFlightMediaDuration() const final;
-  void OnAck(uint32 frame_id) final;
 
  private:
   // Called by the |audio_encoder_| with the next EncodedFrame to send.

@@ -58,9 +58,6 @@ class VideoEncoder {
   // Inform the encoder to encode the next frame as a key frame.
   virtual void GenerateKeyFrame() = 0;
 
-  // Inform the encoder to only reference frames older or equal to frame_id;
-  virtual void LatestFrameIdToReference(uint32 frame_id) = 0;
-
   // Creates a |VideoFrameFactory| object to vend |VideoFrame| object with
   // encoder affinity (defined as offering some sort of performance benefit).
   // This is an optional capability and by default returns null.

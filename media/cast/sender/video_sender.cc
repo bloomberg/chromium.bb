@@ -271,10 +271,6 @@ base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
   }
 }
 
-void VideoSender::OnAck(uint32 frame_id) {
-  video_encoder_->LatestFrameIdToReference(frame_id);
-}
-
 // static
 int VideoSender::GetMaximumTargetBitrateForFrame(
     const media::VideoFrame& frame) {

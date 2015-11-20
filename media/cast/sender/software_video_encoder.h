@@ -38,9 +38,6 @@ class SoftwareVideoEncoder {
 
   // Set the next frame to be a key frame.
   virtual void GenerateKeyFrame() = 0;
-
-  // Set the last frame to reference.
-  virtual void LatestFrameIdToReference(uint32 frame_id) = 0;
 };
 
 }  // namespace cast

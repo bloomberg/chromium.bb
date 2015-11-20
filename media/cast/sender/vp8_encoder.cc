@@ -28,32 +28,11 @@ const int kRestartFramePeriods = 3;
 
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
-      use_multiple_video_buffers_(
-          cast_config_.max_number_of_video_buffers_used ==
-          kNumberOfVp8VideoBuffers),
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
       last_encoded_frame_id_(kStartFrameId),
-      last_acked_frame_id_(kStartFrameId),
-      undroppable_frames_(0),
       has_seen_zero_length_encoded_frame_(false) {
   config_.g_timebase.den = 0;  // Not initialized.
-
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    buffer_state_[i].frame_id = last_encoded_frame_id_;
-    buffer_state_[i].state = kBufferStartState;
-  }
-
-  // VP8 have 3 buffers available for prediction, with
-  // max_number_of_video_buffers_used set to 1 we maximize the coding efficiency
-  // however in this mode we can not skip frames in the receiver to catch up
-  // after a temporary network outage; with max_number_of_video_buffers_used
-  // set to 3 we allow 2 frames to be skipped by the receiver without error
-  // propagation.
-  DCHECK(cast_config_.max_number_of_video_buffers_used == 1 ||
-         cast_config_.max_number_of_video_buffers_used ==
-             kNumberOfVp8VideoBuffers)
-      << "Invalid argument";
 
   thread_checker_.DetachFromThread();
 }
@@ -77,8 +56,7 @@ void Vp8Encoder::ConfigureForNewFrameSize(const gfx::Size& frame_size) {
     // the old size, in terms of area, the existing encoder instance can
     // continue.  Otherwise, completely tear-down and re-create a new encoder to
     // avoid a shutdown crash.
-    if (frame_size.GetArea() <= gfx::Size(config_.g_w, config_.g_h).GetArea() &&
-        !use_multiple_video_buffers_) {
+    if (frame_size.GetArea() <= gfx::Size(config_.g_w, config_.g_h).GetArea()) {
       DVLOG(1) << "Continuing to use existing encoder at smaller frame size: "
                << gfx::Size(config_.g_w, config_.g_h).ToString() << " --> "
                << frame_size.ToString();
@@ -99,14 +77,6 @@ void Vp8Encoder::ConfigureForNewFrameSize(const gfx::Size& frame_size) {
              << frame_size.ToString();
   }
 
-  // Reset multi-buffer mode state.
-  last_acked_frame_id_ = last_encoded_frame_id_;
-  undroppable_frames_ = 0;
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    buffer_state_[i].frame_id = last_encoded_frame_id_;
-    buffer_state_[i].state = kBufferStartState;
-  }
-
   // Populate encoder configuration with default values.
   CHECK_EQ(vpx_codec_enc_config_default(vpx_codec_vp8_cx(), &config_, 0),
            VPX_CODEC_OK);
@@ -117,11 +87,7 @@ void Vp8Encoder::ConfigureForNewFrameSize(const gfx::Size& frame_size) {
   // Set the timebase to match that of base::TimeDelta.
   config_.g_timebase.num = 1;
   config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
-  if (use_multiple_video_buffers_) {
-    // We must enable error resilience when we use multiple buffers, due to
-    // codec requirements.
-    config_.g_error_resilient = 1;
-  }
+
   // |g_pass| and |g_lag_in_frames| must be "one pass" and zero, respectively,
   // in order for VP8 to support changing frame sizes during encoding:
   config_.g_pass = VPX_RC_ONE_PASS;
@@ -183,23 +149,6 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   if (!is_initialized() || gfx::Size(config_.g_w, config_.g_h) != frame_size)
     ConfigureForNewFrameSize(frame_size);
 
-  uint32 latest_frame_id_to_reference;
-  Vp8Buffers buffer_to_update;
-  vpx_codec_flags_t flags = 0;
-  if (key_frame_requested_) {
-    flags = VPX_EFLAG_FORCE_KF;
-    // Self reference.
-    latest_frame_id_to_reference = last_encoded_frame_id_ + 1;
-    // We can pick any buffer as buffer_to_update since we update
-    // them all.
-    buffer_to_update = kLastBuffer;
-  } else {
-    // Reference all acked frames (buffers).
-    latest_frame_id_to_reference = GetCodecReferenceFlags(&flags);
-    buffer_to_update = GetNextBufferToUpdate();
-    GetCodecUpdateFlags(buffer_to_update, &flags);
-  }
-
   // Wrapper for vpx_codec_encode() to access the YUV data in the |video_frame|.
   // Only the VISIBLE rectangle within |video_frame| is exposed to the codec.
   vpx_image_t vpx_image;
@@ -250,11 +199,9 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // zero to force the encoder to base its single-frame bandwidth calculations
   // entirely on |predicted_frame_duration| and the target bitrate setting being
   // micro-managed via calls to UpdateRates().
-  CHECK_EQ(vpx_codec_encode(&encoder_,
-                            &vpx_image,
-                            0,
+  CHECK_EQ(vpx_codec_encode(&encoder_, &vpx_image, 0,
                             predicted_frame_duration.InMicroseconds(),
-                            flags,
+                            key_frame_requested_ ? VPX_EFLAG_FORCE_KF : 0,
                             VPX_DL_REALTIME),
            VPX_CODEC_OK)
       << "BUG: Invalid arguments passed to vpx_codec_encode().";
@@ -275,7 +222,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       // Frame dependencies could theoretically be relaxed by looking for the
       // VPX_FRAME_IS_DROPPABLE flag, but in recent testing (Oct 2014), this
       // flag never seems to be set.
-      encoded_frame->referenced_frame_id = latest_frame_id_to_reference;
+      encoded_frame->referenced_frame_id = last_encoded_frame_id_ - 1;
     }
     encoded_frame->rtp_timestamp =
         TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
@@ -340,158 +287,6 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
 
   if (encoded_frame->dependency == EncodedFrame::KEY) {
     key_frame_requested_ = false;
-
-    for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-      buffer_state_[i].state = kBufferSent;
-      buffer_state_[i].frame_id = encoded_frame->frame_id;
-    }
-  } else {
-    if (buffer_to_update != kNoBuffer) {
-      buffer_state_[buffer_to_update].state = kBufferSent;
-      buffer_state_[buffer_to_update].frame_id = encoded_frame->frame_id;
-    }
-  }
-}
-
-uint32 Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
-  if (!use_multiple_video_buffers_)
-    return last_encoded_frame_id_;
-
-  const uint32 kMagicFrameOffset = 512;
-  // We set latest_frame_to_reference to an old frame so that
-  // IsNewerFrameId will work correctly.
-  uint32 latest_frame_to_reference =
-      last_encoded_frame_id_ - kMagicFrameOffset;
-
-  // Reference all acked frames.
-  // TODO(hubbe): We may also want to allow references to the
-  // last encoded frame, if that frame was assigned to a buffer.
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    if (buffer_state_[i].state == kBufferAcked) {
-      if (IsNewerFrameId(buffer_state_[i].frame_id,
-                         latest_frame_to_reference)) {
-        latest_frame_to_reference = buffer_state_[i].frame_id;
-      }
-    } else {
-      switch (i) {
-        case kAltRefBuffer:
-          *flags |= VP8_EFLAG_NO_REF_ARF;
-          break;
-        case kGoldenBuffer:
-          *flags |= VP8_EFLAG_NO_REF_GF;
-          break;
-        case kLastBuffer:
-          *flags |= VP8_EFLAG_NO_REF_LAST;
-          break;
-      }
-    }
-  }
-
-  if (latest_frame_to_reference ==
-      last_encoded_frame_id_ - kMagicFrameOffset) {
-    // We have nothing to reference, it's kind of like a key frame,
-    // but doesn't reset buffers.
-    latest_frame_to_reference = last_encoded_frame_id_ + 1;
-  }
-
-  return latest_frame_to_reference;
-}
-
-Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
-  if (!use_multiple_video_buffers_)
-    return kNoBuffer;
-
-  // The goal here is to make sure that we always keep one ACKed
-  // buffer while trying to get an ACK for a newer buffer as we go.
-  // Here are the rules for which buffer to select for update:
-  // 1. If there is a buffer in state kStartState, use it.
-  // 2. If there is a buffer other than the oldest buffer
-  //    which is Acked, use the oldest buffer.
-  // 3. If there are Sent buffers which are older than
-  //    latest_acked_frame_, use the oldest one.
-  // 4. If all else fails, just overwrite the newest buffer,
-  //    but no more than 3 times in a row.
-  //    TODO(hubbe): Figure out if 3 is optimal.
-  // Note, rule 1-3 describe cases where there is a "free" buffer
-  // that we can use. Rule 4 describes what happens when there is
-  // no free buffer available.
-
-  // Buffers, sorted from oldest frame to newest.
-  Vp8Encoder::Vp8Buffers buffers[kNumberOfVp8VideoBuffers];
-
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    Vp8Encoder::Vp8Buffers buffer = static_cast<Vp8Encoder::Vp8Buffers>(i);
-
-    // Rule 1
-    if (buffer_state_[buffer].state == kBufferStartState) {
-      undroppable_frames_ = 0;
-      return buffer;
-    }
-    buffers[buffer] = buffer;
-  }
-
-  // Sorting three elements with selection sort.
-  for (int i = 0; i < kNumberOfVp8VideoBuffers - 1; i++) {
-    for (int j = i + 1; j < kNumberOfVp8VideoBuffers; j++) {
-      if (IsOlderFrameId(buffer_state_[buffers[j]].frame_id,
-                         buffer_state_[buffers[i]].frame_id)) {
-        std::swap(buffers[i], buffers[j]);
-      }
-    }
-  }
-
-  // Rule 2
-  if (buffer_state_[buffers[1]].state == kBufferAcked ||
-      buffer_state_[buffers[2]].state == kBufferAcked) {
-    undroppable_frames_ = 0;
-    return buffers[0];
-  }
-
-  // Rule 3
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; i++) {
-    if (buffer_state_[buffers[i]].state == kBufferSent &&
-        IsOlderFrameId(buffer_state_[buffers[i]].frame_id,
-                       last_acked_frame_id_)) {
-      undroppable_frames_ = 0;
-      return buffers[i];
-    }
-  }
-
-  // Rule 4
-  if (undroppable_frames_ >= 3) {
-    undroppable_frames_ = 0;
-    return kNoBuffer;
-  } else {
-    undroppable_frames_++;
-    return buffers[kNumberOfVp8VideoBuffers - 1];
-  }
-}
-
-void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
-                                     vpx_codec_flags_t* flags) {
-  if (!use_multiple_video_buffers_)
-    return;
-
-  // Update at most one buffer, except for key-frames.
-  switch (buffer_to_update) {
-    case kAltRefBuffer:
-      *flags |= VP8_EFLAG_NO_UPD_GF;
-      *flags |= VP8_EFLAG_NO_UPD_LAST;
-      break;
-    case kLastBuffer:
-      *flags |= VP8_EFLAG_NO_UPD_GF;
-      *flags |= VP8_EFLAG_NO_UPD_ARF;
-      break;
-    case kGoldenBuffer:
-      *flags |= VP8_EFLAG_NO_UPD_ARF;
-      *flags |= VP8_EFLAG_NO_UPD_LAST;
-      break;
-    case kNoBuffer:
-      *flags |= VP8_EFLAG_NO_UPD_ARF;
-      *flags |= VP8_EFLAG_NO_UPD_GF;
-      *flags |= VP8_EFLAG_NO_UPD_LAST;
-      *flags |= VP8_EFLAG_NO_UPD_ENTROPY;
-      break;
   }
 }
 
@@ -513,23 +308,6 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   }
 
   VLOG(1) << "VP8 new rc_target_bitrate: " << new_bitrate_kbit << " kbps";
-}
-
-void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!use_multiple_video_buffers_)
-    return;
-
-  VLOG(2) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
-  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    if (frame_id == buffer_state_[i].frame_id) {
-      buffer_state_[i].state = kBufferAcked;
-      break;
-    }
-  }
-  if (IsOlderFrameId(last_acked_frame_id_, frame_id)) {
-    last_acked_frame_id_ = frame_id;
-  }
 }
 
 void Vp8Encoder::GenerateKeyFrame() {

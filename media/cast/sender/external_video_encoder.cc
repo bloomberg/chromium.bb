@@ -556,10 +556,6 @@ void ExternalVideoEncoder::GenerateKeyFrame() {
   key_frame_requested_ = true;
 }
 
-void ExternalVideoEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
-  // Do nothing.  Not supported.
-}
-
 void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     const VideoSenderConfig& video_config,
     uint32 first_frame_id,

@@ -59,10 +59,9 @@ class VideoEncoderTest
     RunTasksAndAdvanceClock();
   }
 
-  void CreateEncoder(bool three_buffer_mode) {
+  void CreateEncoder() {
     ASSERT_EQ(STATUS_UNINITIALIZED, operational_status_);
-    video_config_.max_number_of_video_buffers_used =
-        (three_buffer_mode ? 3 : 1);
+    video_config_.max_number_of_video_buffers_used = 1;
     video_encoder_ = VideoEncoder::Create(
         cast_environment_,
         video_config_,
@@ -280,7 +279,7 @@ class VideoEncoderTest
 // A simple test to encode ten frames of video, expecting to see one key frame
 // followed by nine delta frames.
 TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
-  CreateEncoder(false);
+  CreateEncoder();
   SetVEAFactoryAutoRespond(true);
 
   EXPECT_EQ(0, count_frames_delivered());
@@ -314,44 +313,12 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   ExpectVEAResponsesForExternalVideoEncoder(1, 3);
 }
 
-// Tests basic frame dependency rules when using the VP8 encoder in multi-buffer
-// mode.
-TEST_P(VideoEncoderTest, FramesDoNotDependOnUnackedFramesInMultiBufferMode) {
-  if (!is_testing_software_vp8_encoder())
-    return;  // Only test multibuffer mode for the software VP8 encoder.
-  CreateEncoder(true);
-
-  EXPECT_EQ(0, count_frames_delivered());
-
-  const gfx::Size frame_size(1280, 720);
-  EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size), 0, 0));
-  RunTasksAndAdvanceClock();
-
-  video_encoder()->LatestFrameIdToReference(0);
-  EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size), 1, 0));
-  RunTasksAndAdvanceClock();
-
-  video_encoder()->LatestFrameIdToReference(1);
-  EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size), 2, 1));
-  RunTasksAndAdvanceClock();
-
-  video_encoder()->LatestFrameIdToReference(2);
-
-  for (uint32 frame_id = 3; frame_id < 10; ++frame_id) {
-    EXPECT_TRUE(EncodeAndCheckDelivery(
-        CreateTestVideoFrame(frame_size), frame_id, 2));
-    RunTasksAndAdvanceClock();
-  }
-
-  EXPECT_EQ(10, count_frames_delivered());
-}
-
 // Tests that the encoder continues to output EncodedFrames as the frame size
 // changes.  See media/cast/receiver/video_decoder_unittest.cc for a complete
 // encode/decode cycle of varied frame sizes that actually checks the frame
 // content.
 TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
-  CreateEncoder(false);
+  CreateEncoder();
   SetVEAFactoryAutoRespond(true);
 
   EXPECT_EQ(0, count_frames_delivered());
@@ -416,7 +383,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
 // encoders, this tests that the encoder can be safely destroyed before the task
 // is run that delivers the first EncodedFrame.
 TEST_P(VideoEncoderTest, CanBeDestroyedBeforeVEAIsCreated) {
-  CreateEncoder(false);
+  CreateEncoder();
 
   // Send a frame to spawn creation of the ExternalVideoEncoder instance.
   EncodeAndCheckDelivery(CreateTestVideoFrame(gfx::Size(1280, 720)), 0, 0);

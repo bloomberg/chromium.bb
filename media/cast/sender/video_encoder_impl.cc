@@ -39,8 +39,6 @@ void EncodeVideoFrameOnEncoderThread(
   if (dynamic_config.key_frame_requested) {
     encoder->GenerateKeyFrame();
   }
-  encoder->LatestFrameIdToReference(
-      dynamic_config.latest_frame_id_to_reference);
   encoder->UpdateRates(dynamic_config.bit_rate);
 
   scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
@@ -86,7 +84,6 @@ VideoEncoderImpl::VideoEncoderImpl(
   }
 
   dynamic_config_.key_frame_requested = false;
-  dynamic_config_.latest_frame_id_to_reference = kStartFrameId;
   dynamic_config_.bit_rate = video_config.start_bitrate;
 
   cast_environment_->PostTask(
@@ -138,11 +135,6 @@ void VideoEncoderImpl::SetBitRate(int new_bit_rate) {
 // Inform the encoder to encode the next frame as a key frame.
 void VideoEncoderImpl::GenerateKeyFrame() {
   dynamic_config_.key_frame_requested = true;
-}
-
-// Inform the encoder to only reference frames older or equal to frame_id;
-void VideoEncoderImpl::LatestFrameIdToReference(uint32 frame_id) {
-  dynamic_config_.latest_frame_id_to_reference = frame_id;
 }
 
 }  //  namespace cast

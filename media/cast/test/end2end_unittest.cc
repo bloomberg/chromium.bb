@@ -961,45 +961,6 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   EXPECT_EQ(10, test_receiver_video_callback_->number_times_called());
 }
 
-TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
-  Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_OPUS, kDefaultAudioSamplingRate, 3);
-  int target_delay = 300;
-  video_sender_config_.max_playout_delay =
-      base::TimeDelta::FromMilliseconds(target_delay);
-  audio_sender_config_.max_playout_delay =
-      base::TimeDelta::FromMilliseconds(target_delay);
-  video_receiver_config_.rtp_max_delay_ms = target_delay;
-  Create();
-  sender_to_receiver_.DropAllPacketsBelongingToOddFrames();
-
-  int video_start = kVideoStart;
-  base::TimeTicks reference_time;
-
-  int i = 0;
-  for (; i < 20; ++i) {
-    reference_time = testing_clock_sender_->NowTicks();
-    SendVideoFrame(video_start, reference_time);
-
-    if (i % 2 == 0) {
-      test_receiver_video_callback_->AddExpectedResult(
-          video_start,
-          reference_time + base::TimeDelta::FromMilliseconds(target_delay),
-          i == 0);
-
-      // GetRawVideoFrame will not return the frame until we are close in
-      // time before we should render the frame.
-      cast_receiver_->RequestDecodedVideoFrame(
-          base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-                     test_receiver_video_callback_));
-    }
-    RunTasks(kFrameTimerMs);
-    video_start++;
-  }
-
-  RunTasks(2 * kFrameTimerMs + target_delay);  // Empty the pipeline.
-  EXPECT_EQ(i / 2, test_receiver_video_callback_->number_times_called());
-}
-
 TEST_F(End2EndTest, CryptoVideo) {
   Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_PCM16, 32000, 1);
 

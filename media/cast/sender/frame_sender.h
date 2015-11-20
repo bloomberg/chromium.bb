@@ -57,9 +57,6 @@ class FrameSender {
   // of sent, unacknowledged frames.
   virtual base::TimeDelta GetInFlightMediaDuration() const = 0;
 
-  // Called when we get an ACK for a frame.
-  virtual void OnAck(uint32 frame_id) = 0;
-
  protected:
   // Schedule and execute periodic sending of RTCP report.
   void ScheduleNextRtcpReport();

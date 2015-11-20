@@ -77,12 +77,6 @@ void SizeAdaptableVideoEncoderBase::GenerateKeyFrame() {
     encoder_->GenerateKeyFrame();
 }
 
-void SizeAdaptableVideoEncoderBase::LatestFrameIdToReference(uint32 frame_id) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (encoder_)
-    encoder_->LatestFrameIdToReference(frame_id);
-}
-
 scoped_ptr<VideoFrameFactory>
     SizeAdaptableVideoEncoderBase::CreateVideoFrameFactory() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
