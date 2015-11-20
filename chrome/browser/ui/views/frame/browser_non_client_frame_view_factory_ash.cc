@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_view.h"
-
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
+
+#include "chrome/browser/ui/views/frame/browser_view.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
@@ -17,10 +17,11 @@
 namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
-    BrowserFrame* frame, BrowserView* browser_view) {
+    BrowserFrame* frame,
+    BrowserView* browser_view) {
 #if !defined(OS_CHROMEOS)
-  if (browser_view->browser()->
-          host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
+  if (browser_view->browser()->host_desktop_type() ==
+      chrome::HOST_DESKTOP_TYPE_NATIVE) {
 #if defined(OS_WIN)
     if (frame->ShouldUseNativeFrame())
       return new GlassBrowserFrameView(frame, browser_view);
