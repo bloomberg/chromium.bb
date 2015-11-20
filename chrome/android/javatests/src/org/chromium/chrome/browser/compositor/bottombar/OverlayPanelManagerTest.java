@@ -7,14 +7,18 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelHost;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
  * Class responsible for testing the OverlayPanelManager.
@@ -32,6 +36,9 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
 
         private PanelPriority mPriority;
         private boolean mCanBeSuppressed;
+        private OverlayPanelHost mHost;
+        private ViewGroup mContainerView;
+        private DynamicResourceLoader mResourceLoader;
 
         public MockOverlayPanel(Context context, LayoutUpdateHost updateHost,
                 OverlayPanelManager panelManager, PanelPriority priority,
@@ -39,6 +46,36 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
             super(context, updateHost, panelManager);
             mPriority = priority;
             mCanBeSuppressed = canBeSuppressed;
+        }
+
+        @Override
+        public void setHost(OverlayPanelHost host) {
+            super.setHost(host);
+            mHost = host;
+        }
+
+        public OverlayPanelHost getHost() {
+            return mHost;
+        }
+
+        @Override
+        public void setContainerView(ViewGroup container) {
+            super.setContainerView(container);
+            mContainerView = container;
+        }
+
+        public ViewGroup getContainerView() {
+            return mContainerView;
+        }
+
+        @Override
+        public void setDynamicResourceLoader(DynamicResourceLoader loader) {
+            super.setDynamicResourceLoader(loader);
+            mResourceLoader = loader;
+        }
+
+        public DynamicResourceLoader getDynamicResourceLoader() {
+            return mResourceLoader;
         }
 
         @Override
@@ -184,5 +221,34 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         assertTrue(panelManager.getActivePanel() == null);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testLatePanelGetsNecessaryVars() {
+        Context context = getInstrumentation().getTargetContext();
+
+        OverlayPanelManager panelManager = new OverlayPanelManager();
+        MockOverlayPanel earlyPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
+
+        OverlayPanelHost host = new OverlayPanelHost() {
+                    @Override
+                    public void hideLayout(boolean immediately) {
+                        // Intentionally do nothing.
+                    }
+                };
+
+        // Set necessary vars before any other panels are registered in the manager.
+        panelManager.setPanelHost(host);
+        panelManager.setContainerView(new LinearLayout(getInstrumentation().getTargetContext()));
+        panelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
+
+        MockOverlayPanel latePanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
+
+        assertTrue(earlyPanel.getHost() == latePanel.getHost());
+        assertTrue(earlyPanel.getContainerView() == latePanel.getContainerView());
+        assertTrue(earlyPanel.getDynamicResourceLoader() == latePanel.getDynamicResourceLoader());
     }
 }
