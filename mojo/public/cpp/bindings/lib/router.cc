@@ -11,6 +11,8 @@ namespace internal {
 
 // ----------------------------------------------------------------------------
 
+namespace {
+
 class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(const SharedData<Router*>& router)
@@ -54,6 +56,8 @@ class ResponderThunk : public MessageReceiverWithStatus {
   bool accept_was_invoked_;
 };
 
+}  // namespace
+
 // ----------------------------------------------------------------------------
 
 Router::HandleIncomingMessageThunk::HandleIncomingMessageThunk(Router* router)
@@ -74,7 +78,7 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
                const MojoAsyncWaiter* waiter)
     : thunk_(this),
       filters_(filters.Pass()),
-      connector_(message_pipe.Pass(), waiter),
+      connector_(message_pipe.Pass(), Connector::SINGLE_THREADED_SEND, waiter),
       weak_self_(this),
       incoming_receiver_(nullptr),
       next_request_id_(0),

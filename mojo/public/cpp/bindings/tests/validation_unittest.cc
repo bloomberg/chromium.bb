@@ -221,7 +221,9 @@ class ValidationIntegrationTest : public ValidationTest {
    public:
     TestMessageReceiver(ValidationIntegrationTest* owner,
                         ScopedMessagePipeHandle handle)
-        : owner_(owner), connector_(handle.Pass()) {
+        : owner_(owner),
+          connector_(handle.Pass(),
+                     mojo::internal::Connector::SINGLE_THREADED_SEND) {
       connector_.set_enforce_errors_from_incoming_receiver(false);
     }
     ~TestMessageReceiver() override {}

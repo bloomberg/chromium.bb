@@ -100,8 +100,10 @@ class ConnectorTest : public testing::Test {
 };
 
 TEST_F(ConnectorTest, Basic) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -126,8 +128,10 @@ TEST_F(ConnectorTest, Basic) {
 }
 
 TEST_F(ConnectorTest, Basic_Synchronous) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -152,8 +156,10 @@ TEST_F(ConnectorTest, Basic_Synchronous) {
 }
 
 TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   MessageAccumulator accumulator;
   connector1.set_incoming_receiver(&accumulator);
@@ -178,8 +184,10 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
 }
 
 TEST_F(ConnectorTest, Basic_TwoMessages) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
 
@@ -208,8 +216,10 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
 }
 
 TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
 
@@ -238,7 +248,8 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
 }
 
 TEST_F(ConnectorTest, WriteToClosedPipe) {
-  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -265,8 +276,10 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
 }
 
 TEST_F(ConnectorTest, MessageWithHandles) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -304,8 +317,10 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   message_received.mutable_handles()->front() = Handle();
   // |smph| now owns this handle.
 
-  internal::Connector connector_received(smph.Pass());
-  internal::Connector connector_original(pipe.handle1.Pass());
+  internal::Connector connector_received(
+      smph.Pass(), internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector_original(
+      pipe.handle1.Pass(), internal::Connector::SINGLE_THREADED_SEND);
 
   Message message2;
   AllocMessage(kText, &message2);
@@ -324,15 +339,18 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
-  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
   // Close the other end of the pipe.
   handle1_.reset();
   ASSERT_FALSE(connector0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE));
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector* connector1 = new internal::Connector(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector* connector1 = new internal::Connector(
+      handle1_.Pass(), internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -358,8 +376,10 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
-  internal::Connector connector0(handle0_.Pass());
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
 
@@ -390,12 +410,14 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
 }
 
 TEST_F(ConnectorTest, RaiseError) {
-  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector0(handle0_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
   bool error_handler_called0 = false;
   connector0.set_connection_error_handler(
       [&error_handler_called0]() { error_handler_called0 = true; });
 
-  internal::Connector connector1(handle1_.Pass());
+  internal::Connector connector1(handle1_.Pass(),
+                                 internal::Connector::SINGLE_THREADED_SEND);
   bool error_handler_called1 = false;
   connector1.set_connection_error_handler(
       [&error_handler_called1]() { error_handler_called1 = true; });

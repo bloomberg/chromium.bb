@@ -1,51 +1,74 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
+#include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "mojo/public/cpp/bindings/tests/router_test_util.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
 namespace {
 
-class RouterTest : public testing::Test {
+using mojo::internal::InterfaceEndpointClient;
+using mojo::internal::MultiplexRouter;
+using mojo::internal::ScopedInterfaceEndpointHandle;
+
+class MultiplexRouterTest : public testing::Test {
  public:
-  RouterTest() : loop_(common::MessagePumpMojo::Create()) {}
+  MultiplexRouterTest() : loop_(common::MessagePumpMojo::Create()) {}
 
   void SetUp() override {
-    CreateMessagePipe(nullptr, &handle0_, &handle1_);
+    MessagePipe pipe;
+    router0_ = new MultiplexRouter(true, pipe.handle0.Pass());
+    router1_ = new MultiplexRouter(true, pipe.handle1.Pass());
+    router0_->CreateEndpointHandlePair(&endpoint0_, &endpoint1_);
+    endpoint1_ =
+        EmulatePassingEndpointHandle(endpoint1_.Pass(), router1_.get());
   }
 
   void TearDown() override {}
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 
+  ScopedInterfaceEndpointHandle EmulatePassingEndpointHandle(
+      ScopedInterfaceEndpointHandle handle,
+      MultiplexRouter* target) {
+    CHECK(!handle.is_local());
+
+    return target->CreateLocalEndpointHandle(handle.release());
+  }
+
  protected:
-  ScopedMessagePipeHandle handle0_;
-  ScopedMessagePipeHandle handle1_;
+  scoped_refptr<MultiplexRouter> router0_;
+  scoped_refptr<MultiplexRouter> router1_;
+  ScopedInterfaceEndpointHandle endpoint0_;
+  ScopedInterfaceEndpointHandle endpoint1_;
 
  private:
   base::MessageLoop loop_;
 };
 
-TEST_F(RouterTest, BasicRequestResponse) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
-
+TEST_F(MultiplexRouterTest, BasicRequestResponse) {
+  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
   ResponseGenerator generator;
-  router1.set_incoming_receiver(&generator);
+  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+                                  make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
   PumpMessages();
 
@@ -61,7 +84,7 @@ TEST_F(RouterTest, BasicRequestResponse) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  router0.AcceptWithResponder(&request2,
+  client0.AcceptWithResponder(&request2,
                               new MessageAccumulator(&message_queue));
 
   PumpMessages();
@@ -74,21 +97,21 @@ TEST_F(RouterTest, BasicRequestResponse) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
-TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
-
+TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
+  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
   ResponseGenerator generator;
-  router1.set_incoming_receiver(&generator);
+  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+                                  make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
-  router1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
-  router0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -102,11 +125,11 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  router0.AcceptWithResponder(&request2,
+  client0.AcceptWithResponder(&request2,
                               new MessageAccumulator(&message_queue));
 
-  router1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
-  router0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -116,40 +139,42 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
-TEST_F(RouterTest, RequestWithNoReceiver) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
+  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
+  InterfaceEndpointClient client1(endpoint1_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
 
-  // Without an incoming receiver set on router1, we expect router0 to observe
+  // Without an incoming receiver set on client1, we expect client0 to observe
   // an error as a result of sending a message.
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
   PumpMessages();
 
-  EXPECT_TRUE(router0.encountered_error());
-  EXPECT_TRUE(router1.encountered_error());
+  EXPECT_TRUE(client0.encountered_error());
+  EXPECT_TRUE(client1.encountered_error());
   EXPECT_TRUE(message_queue.IsEmpty());
 }
 
-// Tests Router using the LazyResponseGenerator. The responses will not be
-// sent until after the requests have been accepted.
-TEST_F(RouterTest, LazyResponses) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
-
+// Tests MultiplexRouter using the LazyResponseGenerator. The responses will not
+// be sent until after the requests have been accepted.
+TEST_F(MultiplexRouterTest, LazyResponses) {
+  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
   LazyResponseGenerator generator;
-  router1.set_incoming_receiver(&generator);
+  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+                                  make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
   PumpMessages();
 
   // The request has been received but the response has not been sent yet.
@@ -171,7 +196,7 @@ TEST_F(RouterTest, LazyResponses) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  router0.AcceptWithResponder(&request2,
+  client0.AcceptWithResponder(&request2,
                               new MessageAccumulator(&message_queue));
   PumpMessages();
 
@@ -193,25 +218,25 @@ TEST_F(RouterTest, LazyResponses) {
 // Tests that if the receiving application destroys the responder_ without
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
-TEST_F(RouterTest, MissingResponses) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
+TEST_F(MultiplexRouterTest, MissingResponses) {
+  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                  make_scoped_ptr(new PassThroughFilter()));
   bool error_handler_called0 = false;
-  router0.set_connection_error_handler(
+  client0.set_connection_error_handler(
       [&error_handler_called0]() { error_handler_called0 = true; });
 
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
-  bool error_handler_called1 = false;
-  router1.set_connection_error_handler(
-      [&error_handler_called1]() { error_handler_called1 = true; });
-
   LazyResponseGenerator generator;
-  router1.set_incoming_receiver(&generator);
+  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+                                  make_scoped_ptr(new PassThroughFilter()));
+  bool error_handler_called1 = false;
+  client1.set_connection_error_handler(
+      [&error_handler_called1]() { error_handler_called1 = true; });
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
   PumpMessages();
 
   // The request has been received but no response has been sent.
@@ -229,31 +254,31 @@ TEST_F(RouterTest, MissingResponses) {
   EXPECT_TRUE(error_handler_called1);
 
   // The error flag is set at both sides.
-  EXPECT_TRUE(router0.encountered_error());
-  EXPECT_TRUE(router1.encountered_error());
+  EXPECT_TRUE(client0.encountered_error());
+  EXPECT_TRUE(client1.encountered_error());
 
   // The message pipe handle is valid at both sides.
-  EXPECT_TRUE(router0.is_valid());
-  EXPECT_TRUE(router1.is_valid());
+  EXPECT_TRUE(router0_->is_valid());
+  EXPECT_TRUE(router1_->is_valid());
 }
 
-TEST_F(RouterTest, LateResponse) {
+TEST_F(MultiplexRouterTest, LateResponse) {
   // Test that things won't blow up if we try to send a message to a
   // MessageReceiver, which was given to us via AcceptWithResponder,
   // after the router has gone away.
 
   LazyResponseGenerator generator;
   {
-    internal::Router router0(handle0_.Pass(), internal::FilterChain());
-    internal::Router router1(handle1_.Pass(), internal::FilterChain());
-
-    router1.set_incoming_receiver(&generator);
+    InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+                                    make_scoped_ptr(new PassThroughFilter()));
+    InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+                                    make_scoped_ptr(new PassThroughFilter()));
 
     Message request;
     AllocRequestMessage(1, "hello", &request);
 
     MessageQueue message_queue;
-    router0.AcceptWithResponder(&request,
+    client0.AcceptWithResponder(&request,
                                 new MessageAccumulator(&message_queue));
 
     PumpMessages();
@@ -264,6 +289,8 @@ TEST_F(RouterTest, LateResponse) {
   EXPECT_FALSE(generator.responder_is_valid());
   generator.CompleteWithResponse();  // This should end up doing nothing.
 }
+
+// TODO(yzshen): add more tests.
 
 }  // namespace
 }  // namespace test

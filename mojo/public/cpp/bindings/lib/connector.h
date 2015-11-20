@@ -5,15 +5,19 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace mojo {
-class ErrorHandler;
+namespace base {
+class Lock;
+}
 
+namespace mojo {
 namespace internal {
 
 // The Connector class is responsible for performing read/write operations on a
@@ -21,13 +25,24 @@ namespace internal {
 // interface that it subclasses, and it forwards messages it reads through the
 // MessageReceiver interface assigned as its incoming receiver.
 //
-// NOTE: MessagePipe I/O is non-blocking.
-//
+// NOTE:
+//   - MessagePipe I/O is non-blocking.
+//   - Sending messages can be configured to be thread safe (please see comments
+//     of the constructor). Other than that, the object should only be accessed
+//     on the creating thread.
 class Connector : public MessageReceiver {
  public:
+  enum ConnectorConfig {
+    // Connector::Accept() is only called from a single thread.
+    SINGLE_THREADED_SEND,
+    // Connector::Accept() is allowed to be called from multiple threads.
+    MULTI_THREADED_SEND
+  };
+
   // The Connector takes ownership of |message_pipe|.
-  explicit Connector(
+  Connector(
       ScopedMessagePipeHandle message_pipe,
+      ConnectorConfig config,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   ~Connector() override;
 
@@ -35,6 +50,7 @@ class Connector : public MessageReceiver {
   // Connector will read messages from the pipe regardless of whether or not an
   // incoming receiver has been set.
   void set_incoming_receiver(MessageReceiver* receiver) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     incoming_receiver_ = receiver;
   }
 
@@ -42,18 +58,23 @@ class Connector : public MessageReceiver {
   // state, where no more messages will be processed. This method is used
   // during testing to prevent that from happening.
   void set_enforce_errors_from_incoming_receiver(bool enforce) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     enforce_errors_from_incoming_receiver_ = enforce;
   }
 
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
   void set_connection_error_handler(const Closure& error_handler) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     connection_error_handler_ = error_handler;
   }
 
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
-  bool encountered_error() const { return error_; }
+  bool encountered_error() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return error_;
+  }
 
   // Closes the pipe. The connector is put into a quiescent state.
   //
@@ -78,7 +99,10 @@ class Connector : public MessageReceiver {
   void RaiseError();
 
   // Is the connector bound to a MessagePipe handle?
-  bool is_valid() const { return message_pipe_.is_valid(); }
+  bool is_valid() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return message_pipe_.is_valid();
+  }
 
   // Waits for the next message on the pipe, blocking until one arrives,
   // |deadline| elapses, or an error happens. Returns |true| if a message has
@@ -92,7 +116,10 @@ class Connector : public MessageReceiver {
   // MessageReceiver implementation:
   bool Accept(Message* message) override;
 
-  MessagePipeHandle handle() const { return message_pipe_.get(); }
+  MessagePipeHandle handle() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return message_pipe_.get();
+  }
 
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);
@@ -132,6 +159,12 @@ class Connector : public MessageReceiver {
   // use this flag to allow for the Connector to be destroyed as a side-effect
   // of dispatching an incoming message.
   bool* destroyed_flag_;
+
+  // If sending messages is allowed from multiple threads, |lock_| is used to
+  // protect modifications to |message_pipe_| and |drop_writes_|.
+  scoped_ptr<base::Lock> lock_;
+
+  base::ThreadChecker thread_checker_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };
