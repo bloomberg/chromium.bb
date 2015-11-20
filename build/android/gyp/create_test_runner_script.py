@@ -44,7 +44,7 @@ if __name__ == '__main__':
   sys.exit(main())
 """
 
-def main():
+def main(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--script-output-path',
                       help='Output path for executable script.')
@@ -56,7 +56,10 @@ def main():
   group = parser.add_argument_group('Test runner path arguments.')
   group.add_argument('--output-directory')
   group.add_argument('--isolate-file-path')
-  args, test_runner_args = parser.parse_known_args()
+  group.add_argument('--apk-under-test')
+  group.add_argument('--test-apk')
+  args, test_runner_args = parser.parse_known_args(
+      build_utils.ExpandFileArgs(args))
 
   def RelativizePathToScript(path):
     """Returns the path relative to the output script directory."""
@@ -73,6 +76,12 @@ def main():
   if args.isolate_file_path:
     test_runner_path_args['--isolate-file-path'] = RelativizePathToScript(
         args.isolate_file_path)
+  if args.apk_under_test:
+    test_runner_path_args['--apk-under-test'] = RelativizePathToScript(
+        args.apk_under_test)
+  if args.test_apk:
+    test_runner_path_args['--test-apk'] = RelativizePathToScript(
+        args.test_apk)
 
   with open(args.script_output_path, 'w') as script:
     script.write(SCRIPT_TEMPLATE.format(
@@ -88,4 +97,4 @@ def main():
         build_utils.GetPythonDependencies())
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

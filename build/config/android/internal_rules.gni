@@ -452,6 +452,11 @@ template("write_build_config") {
           rebase_path(invoker.proguard_info, root_build_dir),
         ]
       }
+
+      if (defined(invoker.apk_path)) {
+        _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
+        args += [ "--apk-path=$_rebased_apk_path" ]
+      }
     }
 
     if (defined(invoker.srcjar)) {
@@ -1878,10 +1883,18 @@ template("test_runner_script") {
         invoker.test_suite,
       ]
     } else if (_test_type == "instrumentation") {
-      assert(defined(invoker.test_apk))
+      deps = [
+        "${invoker.apk_target}__build_config",
+      ]
+      _build_config =
+          get_label_info(invoker.apk_target, "target_gen_dir") + "/" +
+          get_label_info(invoker.apk_target, "name") + ".build_config"
+      _rebased_build_config = rebase_path(_build_config, root_build_dir)
       test_runner_args += [
         "--test-apk",
-        invoker.test_apk,
+        "@FileArg($_rebased_build_config:deps_info:apk_path)",
+        "--apk-under-test",
+        "@FileArg($_rebased_build_config:deps_info:tested_apk_path)",
       ]
     } else {
       assert(false, "Invalid test type: $_test_type.")

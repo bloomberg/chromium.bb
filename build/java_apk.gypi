@@ -155,7 +155,6 @@
     'resource_zip_path': '<(intermediate_dir)/<(_target_name).resources.zip',
     'shared_resources%': 0,
     'app_as_shared_library%': 0,
-    'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'final_apk_path_no_extension%': '<(PRODUCT_DIR)/apks/<(apk_name)',
     'final_abi_split_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name)-abi-<(android_app_abi).apk',
     'incomplete_apk_path': '<(intermediate_dir)/<(apk_name)-incomplete.apk',
@@ -181,6 +180,7 @@
       'unsigned_apk_path': '<(unsigned_apk_path)',
       'unsigned_abi_split_apk_path': '<(unsigned_abi_split_apk_path)',
       'create_abi_split%': '<(create_abi_split)',
+      'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
       'conditions': [
         ['gyp_managed_install == 1 and native_lib_target != ""', {
           'conditions': [
@@ -243,6 +243,7 @@
     ],
     'enable_errorprone%': 0,
     'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
+    'final_apk_path%': '<(final_apk_path)',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -259,12 +260,17 @@
           'debug_build_proguard_enabled': 'true',
         }
       }],
+      ['is_test_apk == 0', {
+        'variables': {
+          'tested_apk_path': '<(final_apk_path)',
+          'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
+          'tested_apk_dex_path': '<(dex_path)',
+          'tested_apk_is_multidex': '<(enable_multidex)',
+        }
+      }]
     ],
     'variables': {
       'apk_output_jar_path': '<(jar_path)',
-      'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
-      'tested_apk_dex_path': '<(dex_path)',
-      'tested_apk_is_multidex': '<(enable_multidex)',
     },
   },
   'conditions': [

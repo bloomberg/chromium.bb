@@ -1375,6 +1375,7 @@ template("android_apk") {
     type = "android_apk"
     jar_path = _jar_path
     dex_path = final_dex_path
+    apk_path = _final_apk_path
     resources_zip = resources_zip_path
     build_config = _build_config
     android_manifest = _android_manifest
@@ -1839,34 +1840,35 @@ template("android_apk") {
 #     ]
 #   }
 template("instrumentation_test_apk") {
-  set_sources_assignment_filter([])
   testonly = true
-  _template_name = target_name
+  _apk_target_name = "${target_name}__apk"
+  _test_runner_target_name = "${target_name}__test_runner_script"
 
-  if (defined(invoker.apk_name)) {
-    test_runner_data_dep = [ ":${_template_name}__test_runner_script" ]
-    test_runner_script("${_template_name}__test_runner_script") {
-      forward_variables_from(invoker, [ "isolate_file" ])
-      test_name = invoker.target_name
-      test_type = "instrumentation"
-      test_apk = invoker.apk_name
-    }
+  test_runner_script(_test_runner_target_name) {
+    forward_variables_from(invoker, [ "isolate_file" ])
+    test_name = invoker.target_name
+    test_type = "instrumentation"
+    apk_target = ":$_apk_target_name"
   }
 
-  android_apk(target_name) {
+  android_apk(_apk_target_name) {
     deps = []
     data_deps = []
     forward_variables_from(invoker, "*")
+    deps += [ "//testing/android/broker:broker_java" ]
     data_deps += [
       "//testing/android/driver:driver_apk",
       "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
-    if (defined(test_runner_data_dep)) {
-      data_deps += test_runner_data_dep
-    }
-    deps += [ "//testing/android/broker:broker_java" ]
     run_findbugs = false
+  }
+
+  group(target_name) {
+    public_deps = [
+      ":$_apk_target_name",
+      ":$_test_runner_target_name",
+    ]
   }
 }
 

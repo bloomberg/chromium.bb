@@ -41,7 +41,10 @@
         'script_name': 'run_<(test_suite_name)',
       }],
       ['test_type == "instrumentation"', {
-        'test_runner_args': ['--test-apk', '<(apk_name)'],
+        'test_runner_args': [
+          '--apk-under-test', '>(tested_apk_path)',
+          '--test-apk', '>(final_apk_path)',
+        ],
         'script_name': 'run_<(_target_name)',
       }],
       ['isolate_file != ""', {
