@@ -23,10 +23,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
-class WebURL;
-}
-
 namespace IPC {
 class Message;
 }
@@ -35,6 +31,7 @@ struct ServiceWorkerMsg_MessageToDocument_Params;
 
 namespace content {
 
+class ServiceWorkerHandleReference;
 class ServiceWorkerMessageFilter;
 class ServiceWorkerProviderContext;
 class ServiceWorkerRegistrationHandleReference;
@@ -263,6 +260,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       WebServiceWorkerRegistrationImpl* registration);
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
+
+  // Assumes that the given object information retains an interprocess handle
+  // reference passed from the browser process, and adopts it.
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
+      const ServiceWorkerRegistrationObjectInfo& info);
+  scoped_ptr<ServiceWorkerHandleReference> Adopt(
+      const ServiceWorkerObjectInfo& info);
 
   RegistrationCallbackMap pending_registration_callbacks_;
   UpdateCallbackMap pending_update_callbacks_;

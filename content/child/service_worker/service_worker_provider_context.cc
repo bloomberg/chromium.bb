@@ -163,18 +163,13 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
 }
 
 void ServiceWorkerProviderContext::OnAssociateRegistration(
-    const ServiceWorkerRegistrationObjectInfo& info,
-    const ServiceWorkerVersionAttributes& attrs) {
+    scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
+    scoped_ptr<ServiceWorkerHandleReference> installing,
+    scoped_ptr<ServiceWorkerHandleReference> waiting,
+    scoped_ptr<ServiceWorkerHandleReference> active) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  delegate_->AssociateRegistration(
-      ServiceWorkerRegistrationHandleReference::Adopt(
-          info, thread_safe_sender_.get()),
-      ServiceWorkerHandleReference::Adopt(attrs.installing,
-                                          thread_safe_sender_.get()),
-      ServiceWorkerHandleReference::Adopt(attrs.waiting,
-                                          thread_safe_sender_.get()),
-      ServiceWorkerHandleReference::Adopt(attrs.active,
-                                          thread_safe_sender_.get()));
+  delegate_->AssociateRegistration(registration.Pass(), installing.Pass(),
+                                   waiting.Pass(), active.Pass());
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {

@@ -49,8 +49,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
                                ThreadSafeSender* thread_safe_sender);
 
   // Called from ServiceWorkerDispatcher.
-  void OnAssociateRegistration(const ServiceWorkerRegistrationObjectInfo& info,
-                               const ServiceWorkerVersionAttributes& attrs);
+  void OnAssociateRegistration(
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      scoped_ptr<ServiceWorkerHandleReference> installing,
+      scoped_ptr<ServiceWorkerHandleReference> waiting,
+      scoped_ptr<ServiceWorkerHandleReference> active);
   void OnDisassociateRegistration();
   void OnSetControllerServiceWorker(
       scoped_ptr<ServiceWorkerHandleReference> controller);
