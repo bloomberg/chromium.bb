@@ -114,8 +114,6 @@ static PassRefPtr<TransformPaintPropertyNode> createPaintOffsetTranslationIfNeed
     if (context.paintOffset == LayoutPoint() || !shouldCreatePaintOffsetTranslationNode)
         return nullptr;
 
-    TransformationMatrix matrix;
-    matrix.translate(context.paintOffset.x(), context.paintOffset.y());
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPaintOffsetTranslation = TransformPaintPropertyNode::create(
         TransformationMatrix().translate(context.paintOffset.x(), context.paintOffset.y()),
         FloatPoint3D(), context.currentTransform);
