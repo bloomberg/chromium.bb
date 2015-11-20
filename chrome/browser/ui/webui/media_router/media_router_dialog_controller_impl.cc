@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
@@ -195,6 +196,8 @@ void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
 void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   DCHECK(!dialog_observer_.get());
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("media_router", "UI", initiator());
+
   Profile* profile =
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
   DCHECK(profile);
@@ -224,6 +227,9 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 #endif
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator(),
+                                      "WebContents created",
+                                      media_router_dialog);
 
   media_router_dialog_pending_ = true;
 

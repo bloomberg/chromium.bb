@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -212,6 +213,8 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   DCHECK(initiator);
   DCHECK(router_);
 
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator,
+                                      "MediaRouterUI::InitCommon", this);
   // Register for MediaRoute updates.
   routes_observer_.reset(new UIMediaRoutesObserver(
       router_,
@@ -262,6 +265,7 @@ void MediaRouterUI::Close() {
 }
 
 void MediaRouterUI::UIInitialized() {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("media_router", "UI", initiator_);
   ui_initialized_ = true;
 
   // Register for Issue updates.
