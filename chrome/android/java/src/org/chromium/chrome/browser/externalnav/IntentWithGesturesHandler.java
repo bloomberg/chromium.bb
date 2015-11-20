@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 
 import org.chromium.base.Log;
 import org.chromium.base.SecureRandomInitializer;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 /**
  * This class hold a token for the most recent launched external intent that has
@@ -37,6 +39,7 @@ public class IntentWithGesturesHandler {
     private static final Object INSTANCE_LOCK = new Object();
     private static IntentWithGesturesHandler sIntentWithGesturesHandler;
     private SecureRandom mSecureRandom;
+    private AsyncTask<Void, Void, SecureRandom> mSecureRandomInitializer;
     private byte[] mIntentToken;
     private String mUri;
 
@@ -52,20 +55,25 @@ public class IntentWithGesturesHandler {
         return sIntentWithGesturesHandler;
     }
 
-    @SuppressLint("TrulyRandom")
-    // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
-    // warns about, so this lint warning can safely be suppressed.
     private IntentWithGesturesHandler() {
-        try {
-            mSecureRandom = SecureRandom.getInstance("SHA1PRNG");
-            SecureRandomInitializer.initialize(mSecureRandom);
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Cannot create SecureRandom", e);
-            mSecureRandom = null;
-        } catch (IOException ioe) {
-            Log.e(TAG, "Cannot initialize SecureRandom", ioe);
-            mSecureRandom = null;
-        }
+        mSecureRandomInitializer = new AsyncTask<Void, Void, SecureRandom>() {
+            // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
+            // warns about, so this lint warning can safely be suppressed.
+            @SuppressLint("TrulyRandom")
+            @Override
+            protected SecureRandom doInBackground(Void... params) {
+                SecureRandom secureRandom = null;
+                try {
+                    secureRandom = SecureRandom.getInstance("SHA1PRNG");
+                    SecureRandomInitializer.initialize(secureRandom);
+                } catch (NoSuchAlgorithmException e) {
+                    Log.e(TAG, "Cannot create SecureRandom", e);
+                } catch (IOException ioe) {
+                    Log.e(TAG, "Cannot initialize SecureRandom", ioe);
+                }
+                return secureRandom;
+            }
+        }.execute();
     }
 
     /**
@@ -75,6 +83,14 @@ public class IntentWithGesturesHandler {
      * @param intent Intent with user gesture.
      */
     public void onNewIntentWithGesture(Intent intent) {
+        if (mSecureRandomInitializer != null) {
+            try {
+                mSecureRandom = mSecureRandomInitializer.get();
+            } catch (InterruptedException | ExecutionException e) {
+                Log.e(TAG, "Error fetching SecureRandom", e);
+            }
+            mSecureRandomInitializer = null;
+        }
         if (mSecureRandom == null) return;
         mIntentToken = new byte[32];
         mSecureRandom.nextBytes(mIntentToken);
