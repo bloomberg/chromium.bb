@@ -119,7 +119,6 @@ class CONTENT_EXPORT SavePackage
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
   SavePageType save_type() const { return save_type_; }
-  int contents_id() const { return contents_id_; }
   int id() const { return unique_id_; }
 
   void GetSaveInfo();
@@ -392,10 +391,6 @@ class CONTENT_EXPORT SavePackage
   // Indicates current waiting state when SavePackage try to get something
   // from outside.
   WaitState wait_state_;
-
-  // Since for one contents, it can only have one SavePackage in same time.
-  // Now we actually use render_process_id as the contents's unique id.
-  const int contents_id_;
 
   // Unique ID for this SavePackage.
   const int unique_id_;

@@ -13,21 +13,21 @@ SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
     : path(path),
       url(url),
       save_id(save_id),
+      save_package_id(-1),
       render_process_id(-1),
-      render_frame_id(-1),
+      render_frame_routing_id(-1),
       request_id(-1),
       total_bytes(0),
-      save_source(save_source) {
-}
+      save_source(save_source) {}
 
 SaveFileCreateInfo::SaveFileCreateInfo()
     : save_id(-1),
+      save_package_id(-1),
       render_process_id(-1),
-      render_frame_id(-1),
+      render_frame_routing_id(-1),
       request_id(-1),
       total_bytes(0),
-      save_source(SAVE_FILE_FROM_UNKNOWN) {
-}
+      save_source(SAVE_FILE_FROM_UNKNOWN) {}
 
 SaveFileCreateInfo::~SaveFileCreateInfo() {}
 

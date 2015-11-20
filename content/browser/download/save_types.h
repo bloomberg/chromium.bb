@@ -52,9 +52,11 @@ struct SaveFileCreateInfo {
   // The unique identifier for saving job, assigned at creation by
   // the SaveFileManager for its internal record keeping.
   int save_id;
+  // ID of SavePackage object.
+  int save_package_id;
   // IDs for looking up the contents we are associated with.
   int render_process_id;
-  int render_frame_id;
+  int render_frame_routing_id;
   // Handle for informing the ResourceDispatcherHost of a UI based cancel.
   int request_id;
   // Disposition info from HTTP response.

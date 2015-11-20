@@ -159,7 +159,6 @@ SavePackage::SavePackage(WebContents* web_contents,
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -192,7 +191,6 @@ SavePackage::SavePackage(WebContents* web_contents)
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -222,7 +220,6 @@ SavePackage::SavePackage(WebContents* web_contents,
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      contents_id_(0),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {}
@@ -615,11 +612,8 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   if (info->save_source == SaveFileCreateInfo::SAVE_FILE_FROM_FILE) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveFileManager::SaveLocalFile,
-                   file_manager_,
-                   save_item->url(),
-                   save_item->save_id(),
-                   contents_id()));
+        base::Bind(&SaveFileManager::SaveLocalFile, file_manager_,
+                   save_item->url(), save_item->save_id(), id()));
     return;
   }
 
@@ -1105,8 +1099,6 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   if (wait_state_ != HTML_DATA)
     return;
 
-  int id = contents_id();
-
   int frame_tree_node_id = sender->frame_tree_node()->frame_tree_node_id();
   auto it = frame_tree_node_id_to_save_item_.find(frame_tree_node_id);
   if (it == frame_tree_node_id_to_save_item_.end()) {
@@ -1156,12 +1148,8 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
               << " url = \"" << save_item->url().spec() << "\"";
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveFileManager::SaveFinished,
-                   file_manager_,
-                   save_item->save_id(),
-                   save_item->url(),
-                   id,
-                   true));
+        base::Bind(&SaveFileManager::SaveFinished, file_manager_,
+                   save_item->save_id(), save_item->url(), id(), true));
     number_of_frames_pending_response_--;
     DCHECK_LE(0, number_of_frames_pending_response_);
   }
@@ -1177,7 +1165,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&SaveFileManager::SaveFinished, file_manager_,
-                     it->second->save_id(), it->second->url(), id, true));
+                     it->second->save_id(), it->second->url(), id(), true));
     }
   }
 }

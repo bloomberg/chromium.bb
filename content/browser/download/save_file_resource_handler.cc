@@ -17,18 +17,19 @@
 namespace content {
 
 SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
+                                                 int save_package_id,
                                                  int render_process_host_id,
-                                                 int render_frame_id,
+                                                 int render_frame_routing_id,
                                                  const GURL& url,
                                                  SaveFileManager* manager)
     : ResourceHandler(request),
       save_id_(-1),
+      save_package_id_(save_package_id),
       render_process_id_(render_process_host_id),
-      render_frame_id_(render_frame_id),
+      render_frame_routing_id_(render_frame_routing_id),
       url_(url),
       content_length_(0),
-      save_manager_(manager) {
-}
+      save_manager_(manager) {}
 
 SaveFileResourceHandler::~SaveFileResourceHandler() {
 }
@@ -50,8 +51,9 @@ bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
   info->final_url = final_url_;
   info->total_bytes = content_length_;
   info->save_id = save_id_;
+  info->save_package_id = save_package_id_;
   info->render_process_id = render_process_id_;
-  info->render_frame_id = render_frame_id_;
+  info->render_frame_routing_id = render_frame_routing_id_;
   info->request_id = GetRequestID();
   info->content_disposition = content_disposition_;
   info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;
@@ -101,7 +103,8 @@ void SaveFileResourceHandler::OnResponseCompleted(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_id_, url_,
-          render_process_id_, status.is_success() && !status.is_io_pending()));
+                 save_package_id_,
+                 status.is_success() && !status.is_io_pending()));
   read_buffer_ = NULL;
 }
 
