@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/host_var_tracker.h"
 
+#include <tuple>
+
 #include "base/logging.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -32,9 +34,7 @@ HostVarTracker::V8ObjectVarKey::~V8ObjectVarKey() {}
 
 bool HostVarTracker::V8ObjectVarKey::operator<(
     const V8ObjectVarKey& other) const {
-  if (instance == other.instance)
-    return hash < other.hash;
-  return instance < other.instance;
+  return std::tie(instance, hash) < std::tie(other.instance, other.hash);
 }
 
 HostVarTracker::HostVarTracker()

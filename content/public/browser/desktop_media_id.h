@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_DESKTOP_MEDIA_ID_H_
 
 #include <string>
+#include <tuple>
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -54,12 +55,10 @@ struct CONTENT_EXPORT DesktopMediaID {
   // Operators so that DesktopMediaID can be used with STL containers.
   bool operator<(const DesktopMediaID& other) const {
 #if defined(USE_AURA)
-    return (type < other.type ||
-            (type == other.type &&
-             (id < other.id || (id == other.id &&
-                                aura_id < other.aura_id))));
+    return std::tie(type, id, aura_id) <
+           std::tie(other.type, other.id, other.aura_id);
 #else
-    return type < other.type || (type == other.type && id < other.id);
+    return std::tie(type, id) < std::tie(other.type, other.id);
 #endif
   }
   bool operator==(const DesktopMediaID& other) const {

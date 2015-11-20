@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
 #define CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
 
+#include <tuple>
+
 namespace content {
 
 // Uniquely identifies a net::URLRequest.
@@ -24,9 +26,8 @@ struct GlobalRequestID {
   int request_id;
 
   bool operator<(const GlobalRequestID& other) const {
-    if (child_id == other.child_id)
-      return request_id < other.request_id;
-    return child_id < other.child_id;
+    return std::tie(child_id, request_id) <
+           std::tie(other.child_id, other.request_id);
   }
   bool operator==(const GlobalRequestID& other) const {
     return child_id == other.child_id &&

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -112,9 +113,8 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
         : render_process_id(render_process_id),
           render_view_id(render_view_id) {}
     bool operator<(const RenderViewKey& other) const {
-      return render_process_id < other.render_process_id ||
-             ((render_process_id == other.render_process_id) &&
-              (render_view_id < other.render_view_id));
+      return std::tie(render_process_id, render_view_id) <
+             std::tie(other.render_process_id, other.render_view_id);
     }
   };
 

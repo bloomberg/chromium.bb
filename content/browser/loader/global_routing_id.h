@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_GLOBAL_ROUTING_ID_H_
 #define CONTENT_BROWSER_LOADER_GLOBAL_ROUTING_ID_H_
 
+#include <tuple>
+
 namespace content {
 
 // Uniquely identifies the route from which a net::URLRequest comes.
@@ -24,9 +26,8 @@ struct GlobalRoutingID {
   int route_id;
 
   bool operator<(const GlobalRoutingID& other) const {
-    if (child_id == other.child_id)
-      return route_id < other.route_id;
-    return child_id < other.child_id;
+    return std::tie(child_id, route_id) <
+           std::tie(other.child_id, other.route_id);
   }
   bool operator==(const GlobalRoutingID& other) const {
     return child_id == other.child_id &&

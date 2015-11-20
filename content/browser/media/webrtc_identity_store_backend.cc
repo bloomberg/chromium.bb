@@ -4,6 +4,8 @@
 
 #include "content/browser/media/webrtc_identity_store_backend.h"
 
+#include <tuple>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_vector.h"
@@ -53,8 +55,8 @@ struct WebRTCIdentityStoreBackend::IdentityKey {
       : origin(origin), identity_name(identity_name) {}
 
   bool operator<(const IdentityKey& other) const {
-    return origin < other.origin ||
-           (origin == other.origin && identity_name < other.identity_name);
+    return std::tie(origin, identity_name) <
+           std::tie(other.origin, other.identity_name);
   }
 
   GURL origin;
