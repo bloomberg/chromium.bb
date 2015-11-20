@@ -254,7 +254,7 @@ function test()
             {
                 thread.events().forEach(function(event)
                 {
-                   if (event.hasCategory(WebInspector.TracingModel.ConsoleEventCategory))
+                   if (event.hasCategory(WebInspector.TimelineModel.Category.Console))
                        InspectorTest.addResult(event.name);
                    else if (event.name === WebInspector.TimelineModel.RecordType.TimeStamp)
                        InspectorTest.addResult(event.args["data"]["message"]);
