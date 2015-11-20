@@ -19,6 +19,8 @@ source_set("gles2") {
     "command_buffer_local.cc",
     "command_buffer_local.h",
     "command_buffer_local_client.h",
+    "command_buffer_task_runner.cc",
+    "command_buffer_task_runner.h",
     "gpu_impl.cc",
     "gpu_impl.h",
     "gpu_memory_tracker.cc",
@@ -39,10 +41,10 @@ source_set("gles2") {
     "//gpu/config:config",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
-    "//ui/mojo/geometry:interfaces",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/mojo/geometry:interfaces",
   ]
 
   if (is_android) {
@@ -72,8 +74,8 @@ source_set("lib") {
     "//base",
     "//cc",
     "//components/mus/public/interfaces",
-    "//gpu/command_buffer/common",
     "//gpu/command_buffer/client",
+    "//gpu/command_buffer/common",
     "//gpu/config:config",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

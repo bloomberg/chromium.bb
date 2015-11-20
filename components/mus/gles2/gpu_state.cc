@@ -13,6 +13,7 @@ namespace mus {
 
 GpuState::GpuState(bool hardware_rendering_available)
     : control_thread_("gpu_command_buffer_control"),
+      command_buffer_task_runner_(new CommandBufferTaskRunner),
       sync_point_manager_(new gpu::SyncPointManager(true)),
       share_group_(new gfx::GLShareGroup),
       mailbox_manager_(new gpu::gles2::MailboxManagerImpl),

@@ -189,7 +189,9 @@ void CommandBufferLocal::RetireSyncPoint(uint32_t sync_point) {
 }
 
 void CommandBufferLocal::SignalSyncPoint(uint32_t sync_point,
-                                         const base::Closure& callback) {}
+                                         const base::Closure& callback) {
+  gpu_state_->sync_point_manager()->AddSyncPointCallback(sync_point, callback);
+}
 
 void CommandBufferLocal::SignalQuery(uint32_t query,
                                      const base::Closure& callback) {
@@ -269,13 +271,21 @@ void CommandBufferLocal::OnUpdateVSyncParameters(
 bool CommandBufferLocal::OnWaitSyncPoint(uint32_t sync_point) {
   if (!sync_point)
     return true;
-  if (gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point))
-    return true;
-  scheduler_->SetScheduled(false);
-  gpu_state_->sync_point_manager()->AddSyncPointCallback(
-      sync_point, base::Bind(&CommandBufferLocal::OnSyncPointRetired,
-                             weak_factory_.GetWeakPtr()));
-  return scheduler_->scheduled();
+
+  bool context_changed = false;
+  while (!gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point)) {
+    gpu_state_->command_buffer_task_runner()->RunOneTask();
+    context_changed = true;
+  }
+
+  // RunOneTask() changes the current GL context, so we have to recover it.
+  if (context_changed) {
+    if (!decoder_->MakeCurrent()) {
+      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+      command_buffer_->SetParseError(::gpu::error::kLostContext);
+    }
+  }
+  return true;
 }
 
 void CommandBufferLocal::OnFenceSyncRelease(uint64_t release) {
@@ -325,10 +335,6 @@ void CommandBufferLocal::OnParseError() {
 void CommandBufferLocal::OnContextLost(uint32_t reason) {
   if (client_)
     client_->DidLoseContext();
-}
-
-void CommandBufferLocal::OnSyncPointRetired() {
-  scheduler_->SetScheduled(true);
 }
 
 }  // namespace mus

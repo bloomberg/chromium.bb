@@ -189,10 +189,6 @@ void CommandBufferDriver::DestroyTransferBuffer(int32_t id) {
   command_buffer_->DestroyTransferBuffer(id);
 }
 
-void CommandBufferDriver::Echo(const mojo::Callback<void()>& callback) {
-  callback.Run();
-}
-
 void CommandBufferDriver::CreateImage(int32_t id,
                                       mojo::ScopedHandle memory_handle,
                                       int32 type,
@@ -272,6 +268,19 @@ void CommandBufferDriver::DestroyImage(int32_t id) {
   image_manager->RemoveImage(id);
 }
 
+bool CommandBufferDriver::IsScheduled() const {
+  return !scheduler_ || scheduler_->scheduled();
+}
+
+bool CommandBufferDriver::HasUnprocessedCommands() const {
+  if (command_buffer_) {
+    gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+    return command_buffer_->GetPutOffset() != state.get_offset &&
+        !gpu::error::IsError(state.error);
+  }
+  return false;
+}
+
 void CommandBufferDriver::OnParseError() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   OnContextLost(state.context_lost_reason);
@@ -330,6 +339,7 @@ bool CommandBufferDriver::OnWaitFenceSync(
 
 void CommandBufferDriver::OnSyncPointRetired() {
   scheduler_->SetScheduled(true);
+  gpu_state_->command_buffer_task_runner()->OnScheduled(this);
 }
 
 void CommandBufferDriver::OnContextLost(uint32_t reason) {

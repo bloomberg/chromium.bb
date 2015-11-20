@@ -92,7 +92,6 @@ class CommandBufferLocal : public gpu::GpuControl {
                        uint64_t release);
   void OnParseError();
   void OnContextLost(uint32_t reason);
-  void OnSyncPointRetired();
 
   gfx::AcceleratedWidget widget_;
   scoped_refptr<GpuState> gpu_state_;

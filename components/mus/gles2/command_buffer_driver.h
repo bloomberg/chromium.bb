@@ -61,7 +61,6 @@ class CommandBufferDriver {
                               mojo::ScopedSharedBufferHandle transfer_buffer,
                               uint32_t size);
   void DestroyTransferBuffer(int32_t id);
-  void Echo(const mojo::Callback<void()>& callback);
   void CreateImage(int32_t id,
                    mojo::ScopedHandle memory_handle,
                    int32_t type,
@@ -69,6 +68,8 @@ class CommandBufferDriver {
                    int32_t format,
                    int32_t internal_format);
   void DestroyImage(int32_t id);
+  bool IsScheduled() const;
+  bool HasUnprocessedCommands() const;
 
  private:
   bool MakeCurrent();

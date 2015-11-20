@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "components/mus/gles2/command_buffer_task_runner.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info.h"
@@ -30,6 +31,10 @@ class GpuState : public base::RefCounted<GpuState> {
   }
 
   void StopControlThread();
+
+  CommandBufferTaskRunner* command_buffer_task_runner() const {
+    return command_buffer_task_runner_.get();
+  }
 
   // These objects are intended to be used on the "driver" thread (i.e., the
   // thread on which GpuImpl instances are created).
@@ -54,6 +59,7 @@ class GpuState : public base::RefCounted<GpuState> {
   ~GpuState();
 
   base::Thread control_thread_;
+  scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
