@@ -73,8 +73,6 @@ Polymer({
    * @private
    */
   onToggleChange_: function(event) {
-    assert(CrSettingsPrefs.isInitialized);
-
     switch (this.category) {
       case settings.ContentSettingsTypes.COOKIES:
       case settings.ContentSettingsTypes.JAVASCRIPT:

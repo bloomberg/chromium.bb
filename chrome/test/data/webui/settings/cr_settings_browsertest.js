@@ -33,6 +33,8 @@ CrSettingsBrowserTest.prototype = {
     'pref_util_tests.js',
     'prefs_test_cases.js',
     'prefs_tests.js',
+    'site_list_tests.js',
+    'site_settings_category_tests.js',
   ]),
 };
 
@@ -53,6 +55,8 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   settings_dropdown_menu.registerTests();
   settings_prefUtil.registerTests();
   settings_prefs.registerTests();
+  site_list.registerTests();
+  site_settings_category.registerTests();
 
   // Run all registered tests.
   mocha.run();

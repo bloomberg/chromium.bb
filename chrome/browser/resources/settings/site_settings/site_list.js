@@ -107,9 +107,20 @@ Polymer({
 
   ready: function() {
     CrSettingsPrefs.initialized.then(function() {
-      this.setUpActionMenu_();
-      this.populateList_();
+      this.initialize_();
     }.bind(this));
+  },
+
+  /**
+   * One-time initialization routines for this class.
+   * @private
+   */
+  initialize_: function() {
+    this.setUpActionMenu_();
+    this.populateList_();
+
+    if (this.categoryEnabled)
+      this.$.category.opened = true;
   },
 
   /**

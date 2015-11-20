@@ -25,7 +25,7 @@
           <iron-icon id="icon" icon="icons:expand-more"></iron-icon>
         </div>
       </paper-item>
-      <paper-menu class="menu-content">
+      <paper-menu class="menu-content" id="listContainer">
         <template is="dom-repeat" items="{{sites_}}">
           <div class="site-list horizontal layout center">
             <iron-icon icon="[[computeSiteIcon_(item.url)]]"
