@@ -727,6 +727,7 @@ public class NewTabPageView extends FrameLayout
         // Re-apply the url focus change amount after a rotation to ensure the views are correctly
         // placed with their new layout configurations.
         setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        updateSearchBoxOnScroll();
     }
 
     // MostVisitedURLsObserver implementation
