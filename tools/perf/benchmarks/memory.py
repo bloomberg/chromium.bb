@@ -33,6 +33,10 @@ class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'memory.top_7_stress'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/555092
+
 
 class MemoryLongRunningIdleGmail(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption
