@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 
 #include <fcntl.h>
+#include <mach/mach_vm.h>
 #include <sys/mman.h>
 
 #include "base/command_line.h"
@@ -12,8 +13,12 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/mach_logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/synchronization/spin_wait.h"
+#include "base/time/time.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/attachment_broker_privileged_mac.h"
 #include "ipc/attachment_broker_unprivileged_mac.h"
@@ -30,12 +35,30 @@ const char kDataBuffer2[] = "The lazy dog and a fox.";
 const char kDataBuffer3[] = "Two green bears but not a potato.";
 const char kDataBuffer4[] = "Red potato is best potato.";
 const std::string g_service_switch_name = "service_name";
+const size_t g_large_message_size = 8 * 1024 * 1024;
+const int g_large_message_count = 1000;
+const size_t g_medium_message_size = 512 * 1024;
+
+// Running the message loop is expected to increase the number of resident
+// pages. The exact amount is non-deterministic, but for a simple test suite
+// like this one, the increase is expected to be less than 1 MB.
+const size_t g_expected_memory_increase = 1024 * 1024;
 
 enum TestResult {
   RESULT_UNKNOWN,
   RESULT_SUCCESS,
   RESULT_FAILURE,
 };
+
+mach_vm_size_t GetResidentSize() {
+  task_basic_info_64 info;
+  mach_msg_type_number_t count = TASK_BASIC_INFO_64_COUNT;
+  kern_return_t kr = task_info(mach_task_self(), TASK_BASIC_INFO_64,
+                               reinterpret_cast<task_info_t>(&info), &count);
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "Couldn't get resident size.";
+
+  return info.resident_size;
+}
 
 base::mac::ScopedMachSendRight GetMachPortFromBrokeredAttachment(
     const scoped_refptr<IPC::BrokerableAttachment>& attachment) {
@@ -418,6 +441,9 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
 
   void FinalCleanUp() {
     // There should be no leaked names.
+    SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(
+        base::TimeDelta::FromSeconds(10),
+        active_names_at_start_ == IPC::GetActiveNameCount());
     EXPECT_EQ(active_names_at_start_, IPC::GetActiveNameCount());
 
     // Close the channel so the client's OnChannelError() gets fired.
@@ -481,6 +507,12 @@ struct ChildProcessGlobals {
   // destroyed.
   scoped_ptr<IPC::AttachmentBrokerPrivilegedMac> broker;
   base::mac::ScopedMachSendRight server_task_port;
+
+  // Total resident memory before running the message loop.
+  mach_vm_size_t initial_resident_size;
+
+  // Whether to emit log statements while processing messages.
+  bool message_logging;
 };
 
 using OnMessageReceivedCallback = void (*)(IPC::Sender* sender,
@@ -510,6 +542,7 @@ scoped_ptr<ChildProcessGlobals> CommonChildProcessSetUp() {
       new IPC::AttachmentBrokerPrivilegedMac(&globals->port_provider));
   globals->port_provider.InsertEntry(getppid(), server_task_port.get());
   globals->server_task_port.reset(server_task_port.release());
+  globals->message_logging = true;
   return globals;
 }
 
@@ -528,17 +561,22 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
   globals->broker->RegisterCommunicationChannel(channel.get());
   CHECK(channel->Connect());
 
+  globals->initial_resident_size = GetResidentSize();
+
   while (true) {
-    LOG(INFO) << "Privileged process spinning run loop.";
+    if (globals->message_logging)
+      LOG(INFO) << "Privileged process spinning run loop.";
     base::MessageLoop::current()->Run();
     ProxyListener::Reason reason = listener.get_reason();
     if (reason == ProxyListener::CHANNEL_ERROR)
       break;
 
     while (listener.has_message()) {
-      LOG(INFO) << "Privileged process running callback.";
+      if (globals->message_logging)
+        LOG(INFO) << "Privileged process running callback.";
       callback(channel.get(), listener.get_first_message(), globals.get());
-      LOG(INFO) << "Privileged process finishing callback.";
+      if (globals->message_logging)
+        LOG(INFO) << "Privileged process finishing callback.";
       listener.pop_first_message();
     }
   }
@@ -1150,6 +1188,134 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelfDelayedPort) {
   return CommonPrivilegedProcessMain(
       &SendSharedMemoryHandleToSelfDelayedPortCallback,
       "SendSharedMemoryHandleToSelfDelayedPort");
+}
+
+// Tests the memory usage characteristics of attachment brokering a single large
+// message. This test has the *potential* to be flaky, since it compares
+// resident memory at different points in time, and that measurement is
+// non-deterministic.
+TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageLargeMessage) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  CommonSetUp("MemoryUsageLargeMessage");
+
+  std::string test_string(g_large_message_size, 'a');
+  SendMessage1(test_string);
+  base::MessageLoop::current()->Run();
+  CommonTearDown();
+}
+
+void MemoryUsageLargeMessageCallback(IPC::Sender* sender,
+                                     const IPC::Message& message,
+                                     ChildProcessGlobals* globals) {
+  EXPECT_LE(GetResidentSize(),
+            globals->initial_resident_size + g_expected_memory_increase);
+
+  base::SharedMemoryHandle shm(GetSharedMemoryHandleFromMsg1(message));
+  scoped_ptr<base::SharedMemory> shared_memory(
+      MapSharedMemoryHandle(shm, false));
+  EXPECT_LE(GetResidentSize(),
+            globals->initial_resident_size + g_expected_memory_increase);
+
+  char c = '\0';
+  void* addr = shared_memory->memory();
+  for (size_t i = 0; i < g_large_message_size; i += 1024) {
+    // Volatile prevents the compiler from optimizing out the read.
+    c += static_cast<volatile char*>(addr)[i];
+  }
+  EXPECT_GE(GetResidentSize(),
+            globals->initial_resident_size + g_large_message_size);
+
+  shared_memory.reset();
+  EXPECT_LE(GetResidentSize(),
+            globals->initial_resident_size + g_expected_memory_increase);
+
+  SendControlMessage(sender, true);
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(MemoryUsageLargeMessage) {
+  return CommonPrivilegedProcessMain(&MemoryUsageLargeMessageCallback,
+                                     "MemoryUsageLargeMessage");
+}
+
+// Tests the memory usage characteristics of attachment brokering many small
+// messages. This test has the *potential* to be flaky, since it compares
+// resident memory at different points in time, and that measurement is
+// non-deterministic.
+TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageManyMessages) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  CommonSetUp("MemoryUsageManyMessages");
+
+  for (int i = 0; i < g_large_message_count; ++i) {
+    std::string message = base::IntToString(i);
+    message += '\0';
+    size_t end = message.size();
+    message.resize(g_medium_message_size);
+    std::fill(message.begin() + end, message.end(), 'a');
+    SendMessage1(message);
+
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  if (get_result_listener()->get_result() == RESULT_UNKNOWN)
+    base::MessageLoop::current()->Run();
+
+  CommonTearDown();
+}
+
+void MemoryUsageManyMessagesCallback(IPC::Sender* sender,
+                                     const IPC::Message& message,
+                                     ChildProcessGlobals* globals) {
+  static char c = '\0';
+  static int message_index = 0;
+
+  {
+    // Map the shared memory, and make sure that its pages are counting towards
+    // resident size.
+    base::SharedMemoryHandle shm(GetSharedMemoryHandleFromMsg1(message));
+    scoped_ptr<base::SharedMemory> shared_memory(
+        MapSharedMemoryHandle(shm, false));
+
+    char* addr = static_cast<char*>(shared_memory->memory());
+    std::string message_string(addr);
+    int message_int;
+    ASSERT_TRUE(base::StringToInt(message_string, &message_int));
+    ASSERT_EQ(message_index, message_int);
+    for (size_t i = 0; i < g_medium_message_size; i += 1024) {
+      // Volatile prevents the compiler from optimizing out the read.
+      c += static_cast<volatile char*>(addr)[i];
+    }
+  }
+
+  ++message_index;
+
+  if (message_index == 1) {
+    // Disable message logging, since it significantly contributes towards total
+    // memory usage.
+    LOG(INFO) << "Disable privileged process message logging.";
+    globals->message_logging = false;
+  }
+
+  if (message_index == g_large_message_count) {
+    size_t memory_increase_kb =
+        (GetResidentSize() - globals->initial_resident_size) / 1024;
+    LOG(INFO) << "Increase in memory usage in KB: " << memory_increase_kb;
+
+    // The total increase in resident size should be less than 1MB. The exact
+    // amount is not deterministic.
+    bool success = memory_increase_kb < 1024;
+    SendControlMessage(sender, success);
+  }
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(MemoryUsageManyMessages) {
+  return CommonPrivilegedProcessMain(&MemoryUsageManyMessagesCallback,
+                                     "MemoryUsageManyMessages");
 }
 
 }  // namespace
