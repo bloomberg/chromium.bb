@@ -322,21 +322,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return The current X-position of the Contextual Search Panel.
-     */
-    protected float calculateSearchPanelX() {
-        return isFullscreenSizePanel() ? 0.f
-                : Math.round((getFullscreenWidth() - calculateSearchPanelWidth()) / 2.f);
-    }
-
-    /**
-     * @return The current Y-position of the Contextual Search Panel.
-     */
-    protected float calculateSearchPanelY() {
-        return getFullscreenHeight() - mHeight;
-    }
-
-    /**
      * @return The current width of the Contextual Search Panel.
      */
     protected float calculateSearchPanelWidth() {
@@ -971,9 +956,10 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * @param percentage The completion percentage of the transition.
      */
     private void updatePanelSize(float height, PanelState endState, float percentage) {
-        mOffsetX = calculateSearchPanelX();
-        mOffsetY = calculateSearchPanelY();
         mHeight = height;
+        mOffsetX = isFullscreenSizePanel() ? 0.f
+                : Math.round((getFullscreenWidth() - calculateSearchPanelWidth()) / 2.f);
+        mOffsetY = getFullscreenHeight() - mHeight;
         mIsMaximized = height == getPanelHeightFromState(PanelState.MAXIMIZED);
     }
 
