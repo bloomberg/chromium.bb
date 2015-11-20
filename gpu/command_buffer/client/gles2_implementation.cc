@@ -5493,7 +5493,7 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
       }
 
       helper_->WaitSyncTokenCHROMIUM(
-          static_cast<GLuint>(sync_token_data.namespace_id()),
+          static_cast<GLint>(sync_token_data.namespace_id()),
           sync_token_data.command_buffer_id(), sync_token_data.release_count());
     }
   }

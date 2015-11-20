@@ -16,7 +16,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     gpu::CommandBufferNamespace,
     gpu::CommandBufferNamespace::INVALID,
-    gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES)
+    gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities::ShaderPrecision)
   IPC_STRUCT_TRAITS_MEMBER(min_range)

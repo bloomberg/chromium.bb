@@ -340,14 +340,14 @@ scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
 
 scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
     CommandBufferNamespace namespace_id, uint64_t client_id) {
-  DCHECK_GE(namespace_id, 0);
-  DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_maps_));
-  base::AutoLock auto_lock(client_maps_lock_);
-
-  ClientMap& client_map = client_maps_[namespace_id];
-  ClientMap::iterator it = client_map.find(client_id);
-  if (it != client_map.end()) {
-    return it->second->client_state();
+  if (namespace_id >= 0) {
+    DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_maps_));
+    base::AutoLock auto_lock(client_maps_lock_);
+    ClientMap& client_map = client_maps_[namespace_id];
+    ClientMap::iterator it = client_map.find(client_id);
+    if (it != client_map.end()) {
+      return it->second->client_state();
+    }
   }
   return nullptr;
 }

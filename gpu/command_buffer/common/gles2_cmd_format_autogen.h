@@ -13591,7 +13591,7 @@ struct WaitSyncTokenCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _namespace_id,
+  void Init(GLint _namespace_id,
             GLuint64 _command_buffer_id,
             GLuint64 _release_count) {
     SetHeader();
@@ -13601,7 +13601,7 @@ struct WaitSyncTokenCHROMIUM {
   }
 
   void* Set(void* cmd,
-            GLuint _namespace_id,
+            GLint _namespace_id,
             GLuint64 _command_buffer_id,
             GLuint64 _release_count) {
     static_cast<ValueType*>(cmd)
@@ -13610,7 +13610,7 @@ struct WaitSyncTokenCHROMIUM {
   }
 
   gpu::CommandHeader header;
-  uint32_t namespace_id;
+  int32_t namespace_id;
   uint32_t command_buffer_id;
   uint32_t release_count;
 };

@@ -12125,8 +12125,16 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
   const gles2::cmds::WaitSyncTokenCHROMIUM& c =
       *static_cast<const gles2::cmds::WaitSyncTokenCHROMIUM*>(cmd_data);
 
+  const gpu::CommandBufferNamespace kMinNamespaceId =
+      gpu::CommandBufferNamespace::INVALID;
+  const gpu::CommandBufferNamespace kMaxNamespaceId =
+      gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES;
+
   const gpu::CommandBufferNamespace namespace_id =
-      static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
+      ((c.namespace_id >= static_cast<int32_t>(kMinNamespaceId)) &&
+       (c.namespace_id < static_cast<int32_t>(kMaxNamespaceId)))
+          ? static_cast<gpu::CommandBufferNamespace>(c.namespace_id)
+          : gpu::CommandBufferNamespace::INVALID;
   const uint64_t command_buffer_id = c.command_buffer_id;
   const uint64_t release = c.release_count;
   if (wait_fence_sync_callback_.is_null())
