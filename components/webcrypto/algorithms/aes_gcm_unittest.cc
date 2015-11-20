@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -24,8 +23,8 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
       new blink::WebCryptoAesGcmParams(
-          vector_as_array(&iv), static_cast<unsigned int>(iv.size()), true,
-          vector_as_array(&additional_data),
+          iv.data(), static_cast<unsigned int>(iv.size()), true,
+          additional_data.data(),
           static_cast<unsigned int>(additional_data.size()), true,
           tag_length_bits));
 }

@@ -9,7 +9,6 @@
 #include <openssl/digest.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
@@ -87,8 +86,8 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
   if (!aead_alg)
     return Status::ErrorUnexpected();
 
-  if (!EVP_AEAD_CTX_init(&ctx, aead_alg, vector_as_array(&raw_key),
-                         raw_key.size(), tag_length_bytes, NULL)) {
+  if (!EVP_AEAD_CTX_init(&ctx, aead_alg, raw_key.data(), raw_key.size(),
+                         tag_length_bytes, NULL)) {
     return Status::OperationError();
   }
 
@@ -103,7 +102,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
 
     buffer->resize(data.byte_length() - tag_length_bytes);
 
-    ok = EVP_AEAD_CTX_open(&ctx, vector_as_array(buffer), &len, buffer->size(),
+    ok = EVP_AEAD_CTX_open(&ctx, buffer->data(), &len, buffer->size(),
                            iv.bytes(), iv.byte_length(), data.bytes(),
                            data.byte_length(), additional_data.bytes(),
                            additional_data.byte_length());
@@ -112,7 +111,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
     // the output buffer is too small).
     buffer->resize(data.byte_length() + EVP_AEAD_max_overhead(aead_alg));
 
-    ok = EVP_AEAD_CTX_seal(&ctx, vector_as_array(buffer), &len, buffer->size(),
+    ok = EVP_AEAD_CTX_seal(&ctx, buffer->data(), &len, buffer->size(),
                            iv.bytes(), iv.byte_length(), data.bytes(),
                            data.byte_length(), additional_data.bytes(),
                            additional_data.byte_length());

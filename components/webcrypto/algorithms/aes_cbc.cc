@@ -7,7 +7,6 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -77,15 +76,13 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
 
   buffer->resize(output_max_len.ValueOrDie());
 
-  unsigned char* const buffer_data = vector_as_array(buffer);
-
   int output_len = 0;
-  if (!EVP_CipherUpdate(context.get(), buffer_data, &output_len, data.bytes(),
-                        data.byte_length())) {
+  if (!EVP_CipherUpdate(context.get(), buffer->data(), &output_len,
+                        data.bytes(), data.byte_length())) {
     return Status::OperationError();
   }
   int final_output_chunk_len = 0;
-  if (!EVP_CipherFinal_ex(context.get(), buffer_data + output_len,
+  if (!EVP_CipherFinal_ex(context.get(), buffer->data() + output_len,
                           &final_output_chunk_len)) {
     return Status::OperationError();
   }

@@ -7,7 +7,6 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -66,14 +65,9 @@ Status ConvertDerSignatureToWebCryptoSignature(
     std::vector<uint8_t>* signature) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const unsigned char* der_data = vector_as_array(signature);
   crypto::ScopedECDSA_SIG ecdsa_sig(
-      d2i_ECDSA_SIG(NULL, &der_data, static_cast<long>(signature->size())));
+      ECDSA_SIG_from_bytes(signature->data(), signature->size()));
   if (!ecdsa_sig.get())
-    return Status::ErrorUnexpected();
-
-  // |der_data| is updated to point to past the end of the DER structure.
-  if (der_data != vector_as_array(signature) + signature->size())
     return Status::ErrorUnexpected();
 
   // Determine the maximum length of r and s.
@@ -84,7 +78,7 @@ Status ConvertDerSignatureToWebCryptoSignature(
 
   signature->resize(order_size_bytes * 2);
 
-  if (!BN_bn2bin_padded(vector_as_array(signature), order_size_bytes,
+  if (!BN_bn2bin_padded(signature->data(), order_size_bytes,
                         ecdsa_sig.get()->r)) {
     return Status::ErrorUnexpected();
   }
@@ -149,7 +143,7 @@ Status ConvertWebCryptoSignatureToDerSignature(
 
   // DER-encode the signature.
   der_signature->resize(der_encoding_size);
-  uint8_t* result = vector_as_array(der_signature);
+  uint8_t* result = der_signature->data();
   if (0 > i2d_ECDSA_SIG(ecdsa_sig.get(), &result))
     return Status::OperationError();
 
@@ -205,7 +199,7 @@ class EcdsaImplementation : public EcAlgorithm {
     }
 
     buffer->resize(sig_len);
-    if (!EVP_DigestSignFinal(ctx.get(), vector_as_array(buffer), &sig_len))
+    if (!EVP_DigestSignFinal(ctx.get(), buffer->data(), &sig_len))
       return Status::OperationError();
     buffer->resize(sig_len);
 
@@ -250,7 +244,7 @@ class EcdsaImplementation : public EcAlgorithm {
     }
 
     *signature_match =
-        1 == EVP_DigestVerifyFinal(ctx.get(), vector_as_array(&der_signature),
+        1 == EVP_DigestVerifyFinal(ctx.get(), der_signature.data(),
                                    der_signature.size());
     return Status::Success();
   }

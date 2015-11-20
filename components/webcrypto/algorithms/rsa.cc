@@ -7,7 +7,6 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -232,7 +231,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 // Converts a BIGNUM to a big endian byte array.
 std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n) {
   std::vector<uint8_t> v(BN_num_bytes(n));
-  BN_bn2bin(n, vector_as_array(&v));
+  BN_bn2bin(n, v.data());
   return v;
 }
 

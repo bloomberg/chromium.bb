@@ -76,10 +76,9 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     const std::vector<uint8_t>& password = GetSymmetricKeyData(base_key);
 
     if (!PKCS5_PBKDF2_HMAC(
-            reinterpret_cast<const char*>(vector_as_array(&password)),
-            password.size(), params->salt().data(), params->salt().size(),
-            params->iterations(), digest_algorithm, keylen_bytes,
-            vector_as_array(derived_bytes))) {
+            reinterpret_cast<const char*>(password.data()), password.size(),
+            params->salt().data(), params->salt().size(), params->iterations(),
+            digest_algorithm, keylen_bytes, derived_bytes->data())) {
       return Status::OperationError();
     }
     return Status::Success();

@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "crypto/ec_private_key.h"
 
 namespace gcm {
@@ -72,11 +71,10 @@ bool CreateP256KeyPair(std::string* out_private_key,
     return false;
   }
 
-  out_private_key->assign(
-      reinterpret_cast<const char*>(vector_as_array(&private_key)),
-      private_key.size());
+  out_private_key->assign(reinterpret_cast<const char*>(private_key.data()),
+                          private_key.size());
   out_public_key_x509->assign(
-      reinterpret_cast<const char*>(vector_as_array(&public_key_x509)),
+      reinterpret_cast<const char*>(public_key_x509.data()),
       public_key_x509.size());
 
   // Concatenate the leading 0x04 byte and the two uncompressed points.

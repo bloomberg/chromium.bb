@@ -7,7 +7,6 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -112,9 +111,8 @@ class EcdhImplementation : public EcAlgorithm {
     // buffer than field_size_bytes).
     derived_bytes->resize(NumBitsToBytes(length_bits));
 
-    int result =
-        ECDH_compute_key(vector_as_array(derived_bytes), derived_bytes->size(),
-                         public_key_point, private_key_ec.get(), 0);
+    int result = ECDH_compute_key(derived_bytes->data(), derived_bytes->size(),
+                                  public_key_point, private_key_ec.get(), 0);
     if (result < 0 || static_cast<size_t>(result) != derived_bytes->size())
       return Status::OperationError();
 

@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -104,8 +103,7 @@ crypto::ScopedBIGNUM GetCounter(const CryptoData& counter_block,
       counter_block.bytes() + counter_block.byte_length());
   counter[0] &= ~(0xFF << counter_length_remainder_bits);
 
-  return crypto::ScopedBIGNUM(
-      BN_bin2bn(vector_as_array(&counter), counter.size(), NULL));
+  return crypto::ScopedBIGNUM(BN_bin2bn(counter.data(), counter.size(), NULL));
 }
 
 // Returns a counter block with the counter bits all set all zero.
@@ -206,7 +204,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   // wrapping-around, do it as a single call into BoringSSL.
   if (BN_cmp(num_blocks_until_reset.get(), num_output_blocks.get()) >= 0) {
     return AesCtrEncrypt128BitCounter(cipher, CryptoData(raw_key), data,
-                                      counter_block, vector_as_array(buffer));
+                                      counter_block, buffer->data());
   }
 
   // Otherwise the encryption needs to be done in 2 parts. The first part using
@@ -222,7 +220,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   // Encrypt the first part (before wrap-around).
   Status status = AesCtrEncrypt128BitCounter(
       cipher, CryptoData(raw_key), CryptoData(data.bytes(), input_size_part1),
-      counter_block, vector_as_array(buffer));
+      counter_block, buffer->data());
   if (status.IsError())
     return status;
 
@@ -234,8 +232,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
       cipher, CryptoData(raw_key),
       CryptoData(data.bytes() + input_size_part1,
                  data.byte_length() - input_size_part1),
-      CryptoData(counter_block_part2),
-      vector_as_array(buffer) + input_size_part1);
+      CryptoData(counter_block_part2), buffer->data() + input_size_part1);
 }
 
 class AesCtrImplementation : public AesAlgorithm {

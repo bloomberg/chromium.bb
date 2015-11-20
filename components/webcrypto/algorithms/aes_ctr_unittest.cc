@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -22,7 +21,7 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesCtr,
       new blink::WebCryptoAesCtrParams(
-          length_bits, vector_as_array(&counter),
+          length_bits, counter.data(),
           static_cast<unsigned int>(counter.size())));
 }
 
@@ -140,8 +139,8 @@ TEST_F(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
 
   // 16 and 17 AES blocks worth of data respectively (AES blocks are 16 bytes
   // long).
-  CryptoData input_16(vector_as_array(&buffer), 256);
-  CryptoData input_17(vector_as_array(&buffer), 272);
+  CryptoData input_16(buffer.data(), 256);
+  CryptoData input_17(buffer.data(), 272);
 
   std::vector<uint8_t> output;
 

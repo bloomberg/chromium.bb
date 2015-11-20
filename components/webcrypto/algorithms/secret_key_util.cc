@@ -6,7 +6,6 @@
 
 #include <openssl/rand.h>
 
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
@@ -25,10 +24,10 @@ Status GenerateWebCryptoSecretKey(const blink::WebCryptoKeyAlgorithm& algorithm,
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   unsigned int keylen_bytes = NumBitsToBytes(keylen_bits);
-  std::vector<unsigned char> random_bytes(keylen_bytes, 0);
+  std::vector<uint8_t> random_bytes(keylen_bytes, 0);
 
   if (keylen_bytes > 0) {
-    if (!RAND_bytes(vector_as_array(&random_bytes), keylen_bytes))
+    if (!RAND_bytes(random_bytes.data(), keylen_bytes))
       return Status::OperationError();
     TruncateToBitLength(keylen_bits, &random_bytes);
   }

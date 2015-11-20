@@ -6,7 +6,6 @@
 #include <openssl/hkdf.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -69,10 +68,10 @@ class HkdfImplementation : public AlgorithmImplementation {
     // Algorithm dispatch checks that the algorithm in |base_key| matches
     // |algorithm|.
     const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(base_key);
-    if (!HKDF(vector_as_array(derived_bytes), derived_bytes_len,
-              digest_algorithm, vector_as_array(&raw_key), raw_key.size(),
-              params->salt().data(), params->salt().size(),
-              params->info().data(), params->info().size())) {
+    if (!HKDF(derived_bytes->data(), derived_bytes_len, digest_algorithm,
+              raw_key.data(), raw_key.size(), params->salt().data(),
+              params->salt().size(), params->info().data(),
+              params->info().size())) {
       uint32_t error = ERR_get_error();
       if (ERR_GET_LIB(error) == ERR_LIB_HKDF &&
           ERR_GET_REASON(error) == HKDF_R_OUTPUT_TOO_LARGE) {

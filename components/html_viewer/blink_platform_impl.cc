@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
@@ -290,8 +289,7 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
   std::vector<base::WaitableEvent*> events;
   for (size_t i = 0; i < web_events.size(); ++i)
     events.push_back(static_cast<WebWaitableEventImpl*>(web_events[i])->impl());
-  size_t idx = base::WaitableEvent::WaitMany(
-      vector_as_array(&events), events.size());
+  size_t idx = base::WaitableEvent::WaitMany(events.data(), events.size());
   DCHECK_LT(idx, web_events.size());
   return web_events[idx];
 }

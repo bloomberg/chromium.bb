@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ownership {
@@ -70,10 +69,9 @@ TEST_F(OwnerKeyUtilImplTest, ImportPublicKey) {
   std::vector<uint8> public_key(kTestKeyData,
                                 kTestKeyData + sizeof(kTestKeyData));
   ASSERT_EQ(static_cast<int>(public_key.size()),
-            base::WriteFile(
-                key_file_,
-                reinterpret_cast<const char*>(vector_as_array(&public_key)),
-                public_key.size()));
+            base::WriteFile(key_file_,
+                            reinterpret_cast<const char*>(public_key.data()),
+                            public_key.size()));
   EXPECT_TRUE(util_->IsPublicKeyPresent());
 
   std::vector<uint8> from_disk;

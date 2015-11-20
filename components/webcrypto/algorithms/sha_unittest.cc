@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -69,7 +68,7 @@ TEST_F(WebCryptoShaTest, DigestSampleSetsInChunks) {
       size_t chunk_length = std::min(kChunkSizeBytes, length - chunk_index);
       std::vector<uint8_t> chunk(begin, begin + chunk_length);
       ASSERT_TRUE(chunk.size() > 0);
-      EXPECT_TRUE(digestor->consume(vector_as_array(&chunk),
+      EXPECT_TRUE(digestor->consume(chunk.data(),
                                     static_cast<unsigned int>(chunk.size())));
       chunk_index = chunk_index + chunk_length;
       begin = begin + chunk_length;

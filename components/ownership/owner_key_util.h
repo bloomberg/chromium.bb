@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "components/ownership/ownership_export.h"
 #include "crypto/scoped_nss_types.h"
 
@@ -34,7 +33,7 @@ class OWNERSHIP_EXPORT PublicKey
   bool is_loaded() const { return !data_.empty(); }
 
   std::string as_string() {
-    return std::string(reinterpret_cast<const char*>(vector_as_array(&data_)),
+    return std::string(reinterpret_cast<const char*>(data_.data()),
                        data_.size());
   }
 

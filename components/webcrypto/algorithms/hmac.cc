@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -95,12 +94,12 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
 
   buffer->resize(hmac_expected_length);
   crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
-      vector_as_array(buffer), hmac_expected_length);
+      buffer->data(), hmac_expected_length);
 
   unsigned int hmac_actual_length;
-  unsigned char* const success = HMAC(
-      digest_algorithm, vector_as_array(&raw_key), raw_key.size(), data.bytes(),
-      data.byte_length(), hmac_result.safe_buffer(), &hmac_actual_length);
+  unsigned char* const success =
+      HMAC(digest_algorithm, raw_key.data(), raw_key.size(), data.bytes(),
+           data.byte_length(), hmac_result.safe_buffer(), &hmac_actual_length);
   if (!success || hmac_actual_length != hmac_expected_length)
     return Status::OperationError();
 
@@ -250,10 +249,9 @@ class HmacImplementation : public AlgorithmImplementation {
       return status;
 
     // Do not allow verification of truncated MACs.
-    *signature_match =
-        result.size() == signature.byte_length() &&
-        crypto::SecureMemEqual(vector_as_array(&result), signature.bytes(),
-                               signature.byte_length());
+    *signature_match = result.size() == signature.byte_length() &&
+                       crypto::SecureMemEqual(result.data(), signature.bytes(),
+                                              signature.byte_length());
 
     return Status::Success();
   }

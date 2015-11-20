@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/crypto_data.h"
@@ -58,9 +57,8 @@ class DigestorImpl : public blink::WebCryptoDigestor {
   Status FinishWithVectorAndStatus(std::vector<uint8_t>* result) {
     const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
     result->resize(hash_expected_size);
-    unsigned char* const hash_buffer = vector_as_array(result);
     unsigned int hash_buffer_size;  // ignored
-    return FinishInternal(hash_buffer, &hash_buffer_size);
+    return FinishInternal(result->data(), &hash_buffer_size);
   }
 
  private:
