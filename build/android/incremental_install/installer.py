@@ -121,14 +121,12 @@ def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
       push_dex_timer.Stop(log=False)
 
   def check_selinux():
-    # Samsung started using SELinux before Marshmallow. There may be even more
-    # cases where this is required...
-    has_selinux = (device.build_version_sdk >= version_codes.MARSHMALLOW or
-                   device.GetProp('selinux.policy_version'))
+    # Marshmallow has no filesystem access whatsoever. It might be possible to
+    # get things working on Lollipop, but attempts so far have failed.
+    # http://crbug.com/558818
+    has_selinux = device.build_version_sdk >= version_codes.LOLLIPOP
     if has_selinux and apk.HasIsolatedProcesses():
-      raise Exception('Cannot use incremental installs on versions of Android '
-                      'where isoloated processes cannot access the filesystem '
-                      '(this includes Android M+, and Samsung L+) without '
+      raise Exception('Cannot use incremental installs on Android L+ without '
                       'first disabling isoloated processes.\n'
                       'To do so, use GN arg:\n'
                       '    disable_incremental_isolated_processes=true')
