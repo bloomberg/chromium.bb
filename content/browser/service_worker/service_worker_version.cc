@@ -1336,8 +1336,11 @@ void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClients",
                          request_id, "The number of clients", clients->size());
 
-  if (running_status() != RUNNING)
+  // When Clients.matchAll() is called on the script evaluation phase, the
+  // running status can be STARTING here.
+  if (running_status() != STARTING && running_status() != RUNNING)
     return;
+
   // Sort clients so that the most recently active tab is in the front.
   std::sort(clients->begin(), clients->end(), ServiceWorkerClientInfoSortMRU());
   embedded_worker_->SendMessage(
