@@ -5,6 +5,8 @@
 #ifndef CC_SURFACES_SURFACE_SEQUENCE_H_
 #define CC_SURFACES_SURFACE_SEQUENCE_H_
 
+#include <tuple>
+
 #include "base/containers/hash_tables.h"
 
 namespace cc {
@@ -31,9 +33,8 @@ inline bool operator!=(const SurfaceSequence& a, const SurfaceSequence& b) {
 }
 
 inline bool operator<(const SurfaceSequence& a, const SurfaceSequence& b) {
-  if (a.id_namespace != b.id_namespace)
-    return a.id_namespace < b.id_namespace;
-  return a.sequence < b.sequence;
+  return std::tie(a.id_namespace, a.sequence) <
+         std::tie(b.id_namespace, b.sequence);
 }
 
 }  // namespace cc

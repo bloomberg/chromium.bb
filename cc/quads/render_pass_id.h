@@ -5,6 +5,8 @@
 #ifndef CC_QUADS_RENDER_PASS_ID_H_
 #define CC_QUADS_RENDER_PASS_ID_H_
 
+#include <tuple>
+
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
@@ -27,8 +29,7 @@ class CC_EXPORT RenderPassId {
   }
   bool operator!=(const RenderPassId& other) const { return !(*this == other); }
   bool operator<(const RenderPassId& other) const {
-    return layer_id < other.layer_id ||
-           (layer_id == other.layer_id && index < other.index);
+    return std::tie(layer_id, index) < std::tie(other.layer_id, other.index);
   }
 };
 
