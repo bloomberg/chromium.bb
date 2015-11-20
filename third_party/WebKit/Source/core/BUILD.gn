@@ -49,10 +49,9 @@ source_set("generated") {
   deps = [
     ":make_core_generated",
     ":prerequisites",
-    "inspector:protocol_sources",
-    "inspector:instrumentation_sources",
     "//gin",
     "//skia",
+    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
@@ -61,7 +60,8 @@ source_set("generated") {
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",
-    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
+    "inspector:instrumentation_sources",
+    "inspector:protocol_sources",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
@@ -76,9 +76,9 @@ source_set("generated") {
 # GYP version: WebKit/Source/core/core.gyp:webcore_prerequisites
 source_set("prerequisites") {
   public_deps = [
-    "//third_party/WebKit/Source/wtf",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
+    "//third_party/WebKit/Source/wtf",
     "//third_party/angle:translator",
     "//third_party/iccjpeg",
     "//third_party/icu",
@@ -97,9 +97,9 @@ source_set("prerequisites") {
   ]
   deps = [
     ":make_core_generated",
-    "inspector:protocol_sources",
-    "inspector:instrumentation_sources",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
+    "inspector:instrumentation_sources",
+    "inspector:protocol_sources",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
@@ -137,10 +137,10 @@ source_set("core") {
   public_deps = [
     ":core_generated",
     "//skia",
-    "//third_party/npapi",
-    "//third_party/qcms",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/wtf",
+    "//third_party/npapi",
+    "//third_party/qcms",
     "//url",
     "//v8",
   ]
@@ -423,10 +423,9 @@ source_set("core_generated") {
   public_deps = [
     ":make_core_generated",
     ":prerequisites",
-    "inspector:protocol_sources",
-    "inspector:instrumentation_sources",
     "//gin",
     "//skia",
+    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
@@ -435,7 +434,8 @@ source_set("core_generated") {
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",
-    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
+    "inspector:instrumentation_sources",
+    "inspector:protocol_sources",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
@@ -496,8 +496,8 @@ generate_event_interfaces("core_event_interfaces") {
 group("generated_testing_idls") {
   public_deps = [
     ":generated_settings_macros",
-    ":generated_testing_idls_settings",
     ":generated_testing_idls_internal_runtime_flags",
+    ":generated_testing_idls_settings",
   ]
 }
 
@@ -572,36 +572,36 @@ action("generated_testing_idls_internal_runtime_flags") {
 # GYP version: WebKit/Source/core/core_generated.gyp:make_core_generated
 group("make_core_generated") {
   public_deps = [
-    ":make_core_generated_private_script",
-    ":make_core_generated_private_script_for_testing",
-    ":make_core_generated_html_entity_table",
+    ":make_core_generated_bison",
+    ":make_core_generated_css_property_metadata",
     ":make_core_generated_css_property_names",
     ":make_core_generated_css_tokenizer_codepoints",
-    ":make_core_generated_media_feature_names",
-    ":make_core_generated_media_features",
-    ":make_core_generated_media_type_names",
-    ":make_core_generated_style_property_shorthand",
-    ":make_core_generated_style_builder",
-    ":make_core_generated_css_property_metadata",
     ":make_core_generated_css_value_keywords",
-    ":make_core_generated_html_element_factory",
-    ":make_core_generated_html_element_type_helpers",
-    ":make_core_generated_svg_names",
-    ":make_core_generated_svg_element_type_helpers",
     ":make_core_generated_event_factory",
     ":make_core_generated_event_names",
     ":make_core_generated_event_target_names",
-    ":make_core_generated_math_ml_names",
-    ":make_core_generated_fetch_initiator_type_names",
     ":make_core_generated_event_type_names",
+    ":make_core_generated_fetch_initiator_type_names",
+    ":make_core_generated_html_element_factory",
+    ":make_core_generated_html_element_lookup_trie",
+    ":make_core_generated_html_element_type_helpers",
+    ":make_core_generated_html_entity_table",
     ":make_core_generated_html_tokenizer_names",
     ":make_core_generated_input_type_names",
-    ":make_core_generated_xlink_names",
-    ":make_core_generated_xml_ns_names",
-    ":make_core_generated_xml_names",
     ":make_core_generated_make_token_matcher_for_viewport",
-    ":make_core_generated_html_element_lookup_trie",
-    ":make_core_generated_bison",
+    ":make_core_generated_math_ml_names",
+    ":make_core_generated_media_feature_names",
+    ":make_core_generated_media_features",
+    ":make_core_generated_media_type_names",
+    ":make_core_generated_private_script",
+    ":make_core_generated_private_script_for_testing",
+    ":make_core_generated_style_builder",
+    ":make_core_generated_style_property_shorthand",
+    ":make_core_generated_svg_element_type_helpers",
+    ":make_core_generated_svg_names",
+    ":make_core_generated_xlink_names",
+    ":make_core_generated_xml_names",
+    ":make_core_generated_xml_ns_names",
   ]
 }
 

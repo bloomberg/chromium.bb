@@ -84,8 +84,8 @@ test("shell_dialogs_unittests") {
   deps = [
     ":shell_dialogs",
     "//base",
-    "//base/test:test_support",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

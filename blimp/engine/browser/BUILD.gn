@@ -23,8 +23,8 @@ source_set("browser") {
   deps = [
     "//base",
     "//blimp/common/proto",
-    "//blimp/net:blimp_net",
     "//blimp/engine/ui",
+    "//blimp/net:blimp_net",
     "//content",
     "//content/public/browser",
     "//content/public/common",

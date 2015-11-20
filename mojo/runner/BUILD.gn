@@ -102,10 +102,10 @@ source_set("init") {
   ]
 
   deps = [
-    "//mojo/runner/host:switches",
     "//base",
     "//base:base_static",
     "//base:i18n",
+    "//mojo/runner/host:switches",
   ]
 }
 
@@ -124,8 +124,8 @@ source_set("lib") {
   deps = [
     ":init",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//base:base_static",
+    "//base/third_party/dynamic_annotations",
     "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
     "//components/tracing:startup_tracing",

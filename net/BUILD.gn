@@ -1101,8 +1101,8 @@ if (is_linux) {
       ":net",
       ":test_support",
       "//build/config/sanitizers:deps",
-      "//testing/gtest",
       "//testing/gmock",
+      "//testing/gtest",
       "//third_party/boringssl",
     ]
   }
@@ -1158,8 +1158,8 @@ if (is_linux) {
     ]
     deps = [
       ":balsa",
-      ":epoll_server",
       ":epoll_quic_tools",
+      ":epoll_server",
       ":net",
       ":simple_quic_tools",
       "//base",
@@ -1174,8 +1174,8 @@ if (is_linux) {
     ]
     deps = [
       ":balsa",
-      ":epoll_server",
       ":epoll_quic_tools",
+      ":epoll_server",
       ":net",
       ":simple_quic_tools",
       "//base",

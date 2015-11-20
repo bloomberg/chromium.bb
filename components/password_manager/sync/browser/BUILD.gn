@@ -18,11 +18,11 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//google_apis",
     "//components/autofill/core/common",
     "//components/password_manager/core/browser",
     "//components/signin/core/browser",
     "//components/sync_driver",
+    "//google_apis",
     "//net",
     "//url",
   ]
@@ -38,6 +38,7 @@ source_set("unit_tests") {
     "sync_username_test_base.h",
   ]
   deps = [
+    ":browser",
     "//components/pref_registry",
     "//components/signin/core/common",
     "//components/sync_driver:test_support",
@@ -46,6 +47,5 @@ source_set("unit_tests") {
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
-    ":browser",
   ]
 }

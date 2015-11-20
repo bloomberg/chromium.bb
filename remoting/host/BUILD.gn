@@ -80,8 +80,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "//remoting/protocol",
       "//remoting/resources",
       "//ui/base",
-      "//ui/events/platform",
       "//ui/events:dom_keycode_converter",
+      "//ui/events/platform",
     ]
 
     if (enable_configuration_policy) {
@@ -313,9 +313,9 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     deps = [
       ":host",
       ":test_support",
-      "//remoting/host/setup",
       "//remoting/host/it2me:common",
       "//remoting/host/native_messaging",
+      "//remoting/host/setup",
       "//remoting/proto",
       "//skia",
       "//testing/gmock",
@@ -518,8 +518,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         ]
 
         deps = [
-          ":remoting_me2me_host_static",
           ":credits",
+          ":remoting_me2me_host_static",
           "//build/config/sanitizers:deps",
         ]
       }
@@ -536,8 +536,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           "//base",
           "//remoting/base:breakpad",
           "//remoting/host",
-          "//remoting/host/setup",
           "//remoting/host/native_messaging",
+          "//remoting/host/setup",
         ]
 
         configs += [ "//build/config/compiler:wexit_time_destructors" ]

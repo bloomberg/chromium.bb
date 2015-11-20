@@ -114,12 +114,12 @@ component("bluetooth") {
   all_dependent_configs = [ ":bluetooth_config" ]
 
   deps = [
-    "strings",
-    "uribeacon",
     "//base",
     "//crypto",
     "//net",
     "//ui/base",
+    "strings",
+    "uribeacon",
   ]
 
   if (is_android) {

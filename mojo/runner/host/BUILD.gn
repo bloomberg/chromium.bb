@@ -66,8 +66,8 @@ source_set("lib") {
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
-    "//mojo/runner/child:interfaces",
     "//mojo/runner:init",
+    "//mojo/runner/child:interfaces",
     "//mojo/shell",
     "//third_party/mojo/src/mojo/edk/system",
   ]

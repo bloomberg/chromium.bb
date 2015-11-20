@@ -53,8 +53,8 @@ static_library("user_prefs_tracked") {
   deps = [
     "//base:base",
     "//base:prefs",
-    "//crypto:crypto",
     "//components/pref_registry",
+    "//crypto:crypto",
   ]
 }
 

@@ -109,8 +109,8 @@ group("jingle_deps") {
   ]
   deps = [
     "//base",
-    "//net",
     "//crypto:platform",
+    "//net",
   ]
 }
 
@@ -233,8 +233,8 @@ static_library("libjingle") {
     ":jingle_deps",
   ]
   deps = [
-    "//third_party/webrtc/base:rtc_base",
     ":libjingle_p2p_constants",
+    "//third_party/webrtc/base:rtc_base",
   ]
 
   # From libjingle_common.gypi's conditions list.
@@ -492,8 +492,8 @@ if (enable_webrtc) {
     ]
 
     deps = [
-      "//third_party/webrtc/base:rtc_base",
       ":libjingle_webrtc_common",
+      "//third_party/webrtc/base:rtc_base",
     ]
   }
 }  # enable_webrtc

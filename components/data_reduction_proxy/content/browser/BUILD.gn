@@ -58,8 +58,8 @@ source_set("unit_tests") {
     "//content/public/common",
     "//content/test:test_support",
     "//net:test_support",
-    "//testing/gtest",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 
   if (is_android) {

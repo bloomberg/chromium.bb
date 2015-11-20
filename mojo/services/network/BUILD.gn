@@ -104,8 +104,8 @@ source_set("lib") {
     "//net",
     "//net:extras",
     "//net:http_server",
-    "//url",
     "//sql/mojo",
+    "//url",
   ]
 }
 

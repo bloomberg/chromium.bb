@@ -5,8 +5,8 @@
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
 source_set("cpp") {
   public_deps = [
-    ":sources",
     ":init_commandline",
+    ":sources",
   ]
 }
 

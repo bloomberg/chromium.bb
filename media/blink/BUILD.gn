@@ -106,8 +106,8 @@ test("media_blink_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
-    "//ui/gfx/geometry",
     "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
     "//url",
   ]
 

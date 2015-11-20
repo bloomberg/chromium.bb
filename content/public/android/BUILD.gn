@@ -32,22 +32,22 @@ android_library("content_java") {
   deps = [
     ":content_java_resources",
     "//base:base_java",
-    "//device/battery/android:battery_monitor_android",
     "//device/battery:mojo_bindings_java",
+    "//device/battery/android:battery_monitor_android",
     "//device/bluetooth:java",
-    "//device/vibration/android:vibration_manager_android",
     "//device/vibration:mojo_bindings_java",
+    "//device/vibration/android:vibration_manager_android",
     "//media/base/android:media_java",
     "//media/midi:midi_java",
     "//mojo/android:system_java",
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
     "//net/android:net_java",
+    "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_tools:android_support_v13_java",
+    "//third_party/jsr-305:jsr_305_javalib",
     "//ui/accessibility:ui_accessibility_java",
     "//ui/android:ui_java",
-    "//third_party/jsr-305:jsr_305_javalib",
-    "//third_party/WebKit/public:blink_headers_java",
 
     #"//content:content_common",
   ]
@@ -165,15 +165,16 @@ group("jni") {
 android_library("content_javatests") {
   testonly = true
   deps = [
+    ":content_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//content/shell/android:content_shell_apk_java",
     "//content/shell/android:content_shell_java",
     "//content/shell/android:content_shell_java_resources",
-    "//content/shell/android:content_shell_apk_java",
     "//content/shell/android:content_shell_test_java",
-    "//device/vibration/android:vibration_manager_android",
     "//device/vibration:mojo_bindings_java",
+    "//device/vibration/android:vibration_manager_android",
     "//media/base/android:media_java",
     "//mojo/android:system_java",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_java",
@@ -184,7 +185,6 @@ android_library("content_javatests") {
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:legacy_http_javalib",
     "//ui/android:ui_java",
-    ":content_java",
   ]
 
   DEPRECATED_java_in_dir = "javatests/src"

@@ -209,8 +209,8 @@ source_set("base") {
   defines = []
   public_deps = []
   deps = [
-    "//ui/events:events_base",
     "//skia",
+    "//ui/events:events_base",
   ]
   libs = []
   configs += [
@@ -358,8 +358,8 @@ source_set("test_support") {
   ]
   configs += [ "//media:media_config" ]
   deps = [
-    "//testing/gmock",
     "//media:shared_memory_support",
+    "//testing/gmock",
   ]
 }
 

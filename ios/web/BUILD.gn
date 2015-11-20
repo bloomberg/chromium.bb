@@ -20,6 +20,9 @@ config("config") {
 
 source_set("web") {
   deps = [
+    ":core",
+    ":js_resources",
+    ":user_agent",
     "//base",
     "//components/url_formatter",
     "//ios/net",
@@ -30,9 +33,6 @@ source_set("web") {
     "//ui/gfx/geometry:geometry",
     "//ui/resources",
     "//url",
-    ":core",
-    ":js_resources",
-    ":user_agent",
   ]
 
   sources = [
@@ -325,12 +325,12 @@ source_set("test_support") {
   testonly = true
 
   deps = [
+    ":web",
     "//ios/testing:ocmock_support",
     "//ios/third_party/gcdwebserver",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
-    ":web",
   ]
 
   sources = [
@@ -374,6 +374,8 @@ source_set("test_support") {
 
 test("ios_web_unittests") {
   deps = [
+    ":test_support",
+    ":web",
     "//base",
     "//base/test:test_support",
     "//ios/testing:ocmock_support",
@@ -382,8 +384,6 @@ test("ios_web_unittests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base:test_support",
-    ":test_support",
-    ":web",
   ]
 
   sources = [

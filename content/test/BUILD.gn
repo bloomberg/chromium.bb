@@ -43,12 +43,12 @@ source_set("test_support") {
     "//testing/gtest",
     "//ui/accessibility:ax_gen",
     "//ui/base",
-    "//ui/base/ime",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
-    "//ui/events:test_support",
     "//ui/events:gesture_detection",
+    "//ui/events:test_support",
     "//ui/gfx:test_support",
     "//ui/gl",
     "//ui/gl:test_support",
@@ -65,17 +65,17 @@ source_set("test_support") {
     public_deps += [ "//third_party/WebKit/public:blink" ]
     deps += [
       ":content_test_mojo_bindings",
+      "//cc",
+      "//cc:test_support",
       "//components/scheduler:scheduler",
       "//components/scheduler:test_support",
       "//content/browser/speech/proto",
-      "//content/public/child",
       "//content/gpu",
+      "//content/public/child",
       "//content/public/plugin",
       "//content/public/renderer",
       "//content/public/utility",
       "//content/shell:pak",
-      "//cc",
-      "//cc:test_support",
       "//ipc/mojo",
       "//media",
       "//mojo/application/public/cpp:cpp_for_chromium",
@@ -134,8 +134,8 @@ source_set("test_support") {
 
     if (use_aura || is_mac) {
       deps += [
-        "//ui/compositor",
         "//third_party/libvpx_new",
+        "//ui/compositor",
       ]
 
       sources += [
@@ -243,8 +243,8 @@ if (!is_ios) {
       "//components/test_runner:test_runner",
       "//content/public/common",
       "//skia",
-      "//v8",
       "//ui/accessibility:ax_gen",
+      "//v8",
     ]
 
     if (is_android) {
@@ -356,13 +356,13 @@ test("content_browsertests") {
     ":web_ui_test_mojo_bindings",
     "//base/allocator",
     "//base/test:test_support",
+    "//content:resources",
     "//content/browser/background_sync:background_sync_proto",
     "//content/common:mojo_bindings",
     "//content/gpu",
     "//content/public/common",
     "//content/public/plugin",
     "//content/public/renderer",
-    "//content:resources",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
     "//content/test:test_support",
@@ -372,10 +372,10 @@ test("content_browsertests") {
     "//gin",
     "//gpu",
     "//ipc:test_support",
+    "//media:shared_memory_support",
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base:test_support",
-    "//media:shared_memory_support",
     "//mojo/application/public/cpp:cpp_for_chromium",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
@@ -386,13 +386,13 @@ test("content_browsertests") {
     "//ppapi/proxy",
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/edk/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
     "//third_party/leveldatabase",
     "//third_party/mesa:osmesa",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/edk/test:test_support",
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/accessibility:ax_gen",
@@ -443,8 +443,8 @@ test("content_browsertests") {
         [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
     deps -= [ "//device/battery" ]
     deps += [
-      "//content/shell/android:content_shell_jni_headers",
       "//content/shell:content_shell_lib",
+      "//content/shell/android:content_shell_jni_headers",
       "//testing/android/native_test:native_test_support",
     ]
     apk_deps = [
@@ -549,9 +549,7 @@ test("content_unittests") {
     }
   }
 
-  configs += [
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":test_support",
@@ -604,8 +602,8 @@ test("content_unittests") {
       "//gpu",
       "//gpu:test_support",
       "//ipc:test_support",
-      "//media:test_support",
       "//media:shared_memory_support",
+      "//media:test_support",
       "//media/audio:test_support",
       "//media/base:test_support",
       "//media/midi:midi",
@@ -782,10 +780,10 @@ test("content_perftests") {
   deps = [
     "//base/allocator",
     "//base/test:test_support",
+    "//cc",
     "//content/public/browser",
     "//content/public/common",
     "//content/test:test_support",
-    "//cc",
     "//skia",
     "//testing/gtest",
     "//testing/perf",

@@ -18,11 +18,11 @@ if (is_android) {
 
     deps = [
       ":lib",
-      "public/interfaces",
       "//mojo/application/public/cpp:sources",
       "//mojo/public/cpp/bindings",
       "//mojo/services/tracing/public/interfaces",
       "//mojo/shell",
+      "public/interfaces",
     ]
   }
 } else {

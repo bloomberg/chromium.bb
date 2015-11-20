@@ -620,9 +620,9 @@ if (is_chrome_branded) {
 
 group("packed_resources") {
   public_deps = [
+    ":repack_chrome_100_percent",
     ":repack_locales_pack",
     ":repack_pseudo_locales_pack",
-    ":repack_chrome_100_percent",
   ]
 
   if (is_chrome_branded) {
@@ -659,15 +659,15 @@ repack("packed_extra_resources") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   deps = [
-    "//chrome/browser:resources",
     "//chrome/app/theme:chrome_unscaled_resources",
-    "//chrome/common:resources",
+    "//chrome/browser:resources",
     "//chrome/browser/resources:invalidations_resources",
     "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:signin_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
+    "//chrome/common:resources",
     "//components/resources",
     "//net:net_resources",
     "//ui/resources",
@@ -688,8 +688,8 @@ repack("packed_extra_resources") {
       "//chrome/browser/devtools:webrtc_device_provider_resources",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
-      "//chrome/browser/resources:settings_resources",
       "//chrome/browser/resources:quota_internals_resources",
+      "//chrome/browser/resources:settings_resources",
       "//chrome/browser/resources:sync_file_system_internals_resources",
       "//content/browser/devtools:devtools_resources",
     ]

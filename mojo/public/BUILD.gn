@@ -16,8 +16,8 @@ group("public") {
 
   if (is_android) {
     deps += [
-      "java:system",
       "java:bindings",
+      "java:system",
     ]
   }
 }

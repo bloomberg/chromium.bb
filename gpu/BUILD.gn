@@ -160,6 +160,9 @@ test("gl_tests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/common:gles2_utils",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
@@ -167,9 +170,6 @@ test("gl_tests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//gpu/command_buffer/common:gles2_utils",
-    "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_implementation",
   ]
 
   libs = []
@@ -299,18 +299,18 @@ test("gpu_unittests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/common:gles2_utils",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
     "//ui/gfx",
-    "//ui/gfx/geometry",
     "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
-    "//gpu/command_buffer/common:gles2_utils",
-    "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_implementation",
   ]
 }
 

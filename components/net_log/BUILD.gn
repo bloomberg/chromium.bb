@@ -26,9 +26,9 @@ source_set("unit_tests") {
     "net_log_temp_file_unittest.cc",
   ]
   deps = [
+    ":net_log",
     "//base",
     "//net",
     "//testing/gtest",
-    ":net_log",
   ]
 }

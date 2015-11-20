@@ -28,8 +28,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":wayland",
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
-    ":wayland",
   ]
 }

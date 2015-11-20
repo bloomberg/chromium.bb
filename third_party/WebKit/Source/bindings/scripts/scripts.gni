@@ -182,9 +182,8 @@ template("idl_compiler") {
       "//third_party/WebKit/Source/bindings/modules:interfaces_info",
       "//third_party/WebKit/Source/bindings/modules:modules_core_global_constructors_idls",
       "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
-
-      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
       "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
+      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
       "//third_party/WebKit/Source/core:generated_testing_idls",
     ]
   }
@@ -237,8 +236,8 @@ template("idl_impl") {
       "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
       "//third_party/WebKit/Source/bindings/modules:interfaces_info",
       "//third_party/WebKit/Source/bindings/modules:interfaces_info_individual_modules",
-      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
       "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
+      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
     ]
   }
 }

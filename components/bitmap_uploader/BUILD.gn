@@ -12,8 +12,8 @@ source_set("bitmap_uploader") {
 
   deps = [
     "//base",
-    "//components/mus/public/interfaces",
     "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//gpu",
     "//mojo/converters/surfaces",
     "//mojo/public/c/gles2",

@@ -60,8 +60,8 @@ static_library("search_engines") {
     "//components/metrics/proto",
     "//components/pref_registry",
     "//components/rappor",
-    "//components/sync_driver",
     "//components/strings",
+    "//components/sync_driver",
     "//components/url_formatter",
     "//components/webdata/common",
     "//google_apis",
@@ -114,8 +114,8 @@ source_set("unit_tests") {
   }
 
   deps = [
-    "//components/pref_registry:test_support",
     ":test_support",
+    "//components/pref_registry:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

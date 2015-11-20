@@ -55,9 +55,9 @@ source_set("update_client") {
     "//components/crx_file",
     "//courgette:courgette_lib",
     "//crypto",
+    "//net",
     "//third_party/libxml",
     "//third_party/zlib:zip",
-    "//net",
     "//ui/base",
     "//url",
   ]
@@ -80,8 +80,8 @@ source_set("test_support") {
   deps = [
     "//base",
     "//net:test_support",
-    "//testing/gtest",
     "//testing/gmock",
+    "//testing/gtest",
     "//url",
   ]
 }
@@ -100,13 +100,13 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":update_client",
     ":test_support",
+    ":update_client",
     "//base",
     "//courgette:courgette_lib",
     "//net:test_support",
-    "//testing/gtest",
     "//testing/gmock",
+    "//testing/gtest",
     "//third_party/libxml",
   ]
 }

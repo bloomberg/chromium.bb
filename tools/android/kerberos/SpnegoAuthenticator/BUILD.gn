@@ -12,9 +12,9 @@ android_apk("spnego_authenticator_apk") {
   apk_name = "SpnegoAuthenticator"
 
   deps = [
+    ":spnego_authenticator_apk_assets",
     "//base:base_java",
     "//net/android:net_java",
-    ":spnego_authenticator_apk_assets",
   ]
 
   java_files = [

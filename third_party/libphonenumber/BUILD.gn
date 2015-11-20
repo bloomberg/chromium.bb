@@ -113,8 +113,8 @@ test("libphonenumber_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/third_party/dynamic_annotations",
-    "//third_party/icu",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/icu",
   ]
 }

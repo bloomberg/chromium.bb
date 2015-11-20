@@ -9,8 +9,8 @@ group("all") {
   testonly = true
 
   deps = [
-    "//mojo",
     ":tests",
+    "//mojo",
   ]
 
   if (is_android) {

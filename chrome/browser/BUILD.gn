@@ -137,13 +137,13 @@ source_set("browser") {
     "//components/metrics:net",
     "//components/metrics:profiler",
     "//components/metrics:profiler_content",
-    "//components/metrics/proto:proto",
     "//components/metrics:ui",
+    "//components/metrics/proto:proto",
     "//components/metrics_services_manager",
     "//components/mime_util",
     "//components/navigation_metrics",
-    "//components/ntp_snippets",
     "//components/network_time",
+    "//components/ntp_snippets",
     "//components/offline_pages",
     "//components/omnibox/browser",
     "//components/os_crypt",
@@ -180,9 +180,9 @@ source_set("browser") {
     "//components/variations",
     "//components/variations/net",
     "//components/variations/service",
+    "//components/web_resource",
     "//components/webdata/common",
     "//components/webdata_services",
-    "//components/web_resource",
     "//content/public/browser",
     "//content/public/common",
     "//courgette:courgette_lib",
@@ -194,8 +194,8 @@ source_set("browser") {
     "//sync",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
-    "//third_party/libxml",
     "//third_party/libjingle",
+    "//third_party/libxml",
     "//third_party/widevine/cdm:version_h",
     "//third_party/zlib",
     "//third_party/zlib:minizip",
@@ -205,9 +205,9 @@ source_set("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/message_center",
+    "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/strings",
-    "//ui/resources",
   ]
   data_deps = []
 
@@ -657,8 +657,8 @@ source_set("browser") {
                            ".",
                            "//chrome")
     deps += [
-      "//printing",
       "//components/printing/browser",
+      "//printing",
     ]
 
     if (is_win) {
@@ -738,9 +738,9 @@ source_set("browser") {
       "//third_party/libaddressinput:util",
     ]
     deps -= [
-      "//third_party/libaddressinput",
       "//components/storage_monitor",
       "//components/web_modal",
+      "//third_party/libaddressinput",
     ]
     defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
 
@@ -1079,6 +1079,7 @@ source_set("test_support") {
   ]
   deps = [
     "//base:prefs_test_support",
+    "//chrome/app/theme:theme_resources",
     "//chrome/browser",
     "//chrome/common",
     "//chrome/common/safe_browsing:proto",
@@ -1089,7 +1090,6 @@ source_set("test_support") {
     "//components/syncable_prefs:test_support",
     "//components/user_prefs/tracked:user_prefs_tracked_test_support",
     "//content/test:test_support",
-    "//chrome/app/theme:theme_resources",
     "//net:test_support",
     "//skia",
     "//testing/gmock",

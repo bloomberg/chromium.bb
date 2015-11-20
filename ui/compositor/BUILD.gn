@@ -86,9 +86,9 @@ component("compositor") {
     # TODO(sky): before we make this real need to remove
     # IDR_BITMAP_BRUSH_IMAGE.
     deps += [
-      "//ui/resources",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
+      "//ui/resources",
     ]
   }
 }
@@ -130,8 +130,8 @@ source_set("test_support") {
   deps = [
     "//base/test:test_support",
     "//cc",
-    "//cc/surfaces",
     "//cc:test_support",
+    "//cc/surfaces",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",

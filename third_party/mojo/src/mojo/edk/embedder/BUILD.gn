@@ -138,8 +138,8 @@ source_set("embedder_unittests") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/test:test_support",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/edk/system:test_utils",
+    "//third_party/mojo/src/mojo/edk/test:test_support",
   ]
 }

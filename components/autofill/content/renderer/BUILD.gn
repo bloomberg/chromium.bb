@@ -35,8 +35,8 @@ static_library("renderer") {
     "//ipc",
     "//net",
     "//skia",
-    "//third_party/icu",
     "//third_party/WebKit/public:blink",
+    "//third_party/icu",
     "//ui/base",
   ]
 

@@ -378,9 +378,9 @@ if (is_mac) {
     include_dirs = [ "src/client/apple/Framework" ]
 
     deps = [
-      ":utilities",
       ":crash_inspector",
       ":crash_report_sender",
+      ":utilities",
     ]
   }
 
@@ -622,12 +622,12 @@ if (is_linux || is_android) {
 
     deps = [
       ":client",
-      ":processor_support",
       ":linux_dumper_unittest_helper",
+      ":processor_support",
       "//build/config/sanitizers:deps",
+      "//testing/gmock",
       "//testing/gtest",
       "//testing/gtest:gtest_main",
-      "//testing/gmock",
     ]
 
     include_dirs = [

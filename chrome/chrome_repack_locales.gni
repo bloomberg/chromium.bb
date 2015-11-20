@@ -66,8 +66,8 @@ template("_repack_one_locale") {
       deps += [
         "//content/app/strings",
         "//device/bluetooth/strings",
-        "//ui/strings:ui_strings",
         "//ui/strings:app_locale_settings",
+        "//ui/strings:ui_strings",
       ]
     }
     if (enable_autofill_dialog) {

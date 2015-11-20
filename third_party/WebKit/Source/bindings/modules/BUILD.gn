@@ -13,10 +13,10 @@ visibility = [ "//third_party/WebKit/*" ]
 # GYP version: Source/bindings/modules/generated.gyp:bindings_modules_generated
 group("bindings_modules_generated") {
   public_deps = [
-    ":modules_bindings_generated_event_interfaces",
     ":bindings_modules_generated_event_modules_factory",
     ":bindings_modules_generated_event_modules_names",
     ":bindings_modules_generated_event_target_modules_names",
+    ":modules_bindings_generated_event_interfaces",
   ]
 }
 

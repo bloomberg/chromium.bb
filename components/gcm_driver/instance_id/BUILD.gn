@@ -15,8 +15,8 @@ source_set("instance_id") {
 
   deps = [
     "//base",
-    "//crypto",
     "//components/gcm_driver",
+    "//crypto",
   ]
 
   if (is_android) {

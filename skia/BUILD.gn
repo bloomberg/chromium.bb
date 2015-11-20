@@ -471,9 +471,9 @@ component("skia") {
     sources += [ "ext/platform_device_linux.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
     deps += [
+      "//third_party/android_tools:cpu_features",
       "//third_party/expat",
       "//third_party/freetype-android:freetype",
-      "//third_party/android_tools:cpu_features",
     ]
   }
 
@@ -596,11 +596,11 @@ source_set("skia_opts") {
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources = gypi_skia_opts.sse2_sources
     deps += [
+      ":skia_opts_avx",
+      ":skia_opts_avx2",
       ":skia_opts_sse3",
       ":skia_opts_sse41",
       ":skia_opts_sse42",
-      ":skia_opts_avx",
-      ":skia_opts_avx2",
     ]
   } else if (current_cpu == "arm") {
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in

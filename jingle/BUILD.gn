@@ -92,11 +92,11 @@ if (enable_webrtc || !is_android) {
       "//third_party/libjingle",
     ]
     deps = [
+      ":jingle_glue",
       "//base",
       "//net",
       "//third_party/expat",
       "//url",
-      ":jingle_glue",
     ]
   }
 

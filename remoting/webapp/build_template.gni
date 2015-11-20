@@ -217,12 +217,12 @@ template("desktop_remoting_webapp") {
     ]
 
     deps = [
-      ":$locales_listfile",
       ":$background_html",
-      ":$message_window_html",
-      ":$wcs_sandbox_html",
-      ":$public_session_html",
+      ":$locales_listfile",
       ":$main_html",
+      ":$message_window_html",
+      ":$public_session_html",
+      ":$wcs_sandbox_html",
       "//remoting/resources",
       "//remoting/webapp:credits",
     ]
@@ -511,13 +511,13 @@ template("app_remoting_shared_module") {
     ]
 
     deps = [
-      ":$locales_listfile",
       ":$background_html",
       ":$feedback_consent_html",
       ":$loading_window_html",
+      ":$locales_listfile",
+      ":$main_html",
       ":$message_window_html",
       ":$wcs_sandbox_html",
-      ":$main_html",
       "//remoting/resources",
       "//remoting/webapp:credits",
     ]

@@ -12,7 +12,7 @@ source_set("common") {
   deps = [
     "//base",
     "//content/public/common",
-    "//media",
     "//ipc",
+    "//media",
   ]
 }

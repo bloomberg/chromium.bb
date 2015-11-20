@@ -12,8 +12,8 @@ group("tests") {
   testonly = true
   deps = [
     # TODO(use_chrome_edk): remove "2"
-    "test:js_unittests2",
     "test:js_integration_tests2",
+    "test:js_unittests2",
   ]
 }
 

@@ -144,7 +144,6 @@ if (enable_nacl) {
     deps = [
       ":nacl_common",
       ":nacl_switches",
-      "renderer/plugin:nacl_trusted_plugin",
       "//base",
       "//content/public/common",
       "//content/public/renderer",
@@ -154,6 +153,7 @@ if (enable_nacl) {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
       "//third_party/WebKit/public:blink",
+      "renderer/plugin:nacl_trusted_plugin",
     ]
   }
 
@@ -259,8 +259,8 @@ if (enable_nacl) {
         "loader/nonsfi/nonsfi_main.h",
       ]
       deps = [
-        ":nacl_switches",
         ":nacl_helper_nonsfi_sandbox",
+        ":nacl_switches",
         "//base",
         "//components/tracing",
         "//content",

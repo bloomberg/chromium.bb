@@ -6,8 +6,8 @@ import("//testing/test.gni")
 
 component("cast") {
   deps = [
-    ":sender",
     ":receiver",
+    ":sender",
   ]
 }
 

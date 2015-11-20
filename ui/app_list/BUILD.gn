@@ -245,22 +245,22 @@ if (is_linux && !is_chromeos) {
         "//content",
         "//content/public/browser",
         "//skia",
-        "//url",
         "//ui/base",
         "//ui/events",
         "//ui/resources",
         "//ui/resources:ui_test_pak",
         "//ui/views",
-        "//ui/views_content_client",
         "//ui/views/controls/webview",
+        "//ui/views_content_client",
+        "//url",
       ]
       if (is_win) {
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
 
         deps += [
-          "//sandbox",
           "//content:sandbox_helper_win",
+          "//sandbox",
         ]
       }
     }

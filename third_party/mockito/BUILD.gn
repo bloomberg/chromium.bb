@@ -21,8 +21,8 @@ java_library("mockito_java") {
   deps = [
     ":cglib_and_asm_java",
     ":objenesis_java",
-    "../junit:junit",
     "../junit:hamcrest",
+    "../junit:junit",
   ]
   DEPRECATED_java_in_dir = "src/src"
 }

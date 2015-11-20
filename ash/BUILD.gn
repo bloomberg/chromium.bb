@@ -96,15 +96,15 @@ component("ash") {
 
   if (is_chromeos) {
     deps += [
-      "//device/bluetooth",
-      "//ui/display",
-      "//ui/display/util",
       "//chromeos",
       "//chromeos:power_manager_proto",
+      "//device/bluetooth",
       "//third_party/qcms",
+      "//ui/chromeos:ui_chromeos",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
-      "//ui/chromeos:ui_chromeos",
+      "//ui/display",
+      "//ui/display/util",
     ]
   } else {
     sources -= [
@@ -245,7 +245,6 @@ static_library("ash_shell_lib") {
     "//ash/strings",
     "//base",
     "//base:i18n",
-
     "//net",
     "//skia",
     "//third_party/icu",
@@ -275,9 +274,9 @@ static_library("ash_shell_lib_with_content") {
 
   deps = [
     #"//chrome:packed_resources",  TODO(GYP)
+    ":ash_shell_lib",
     "//content",
     "//content/shell:content_shell_lib",
-    ":ash_shell_lib",
     "//skia",
   ]
 }
@@ -306,14 +305,14 @@ test("ash_unittests") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
-    "//ui/base/ime",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/events",
-    "//ui/events/devices",
-    "//ui/events:test_support",
     "//ui/events:gesture_detection",
+    "//ui/events:test_support",
+    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
@@ -361,13 +360,13 @@ test("ash_unittests") {
   if (is_chromeos) {
     sources += [ "first_run/first_run_helper_unittest.cc" ]
     deps += [
+      "//chromeos:power_manager_proto",
+      "//chromeos:test_support_without_gmock",
       "//device/bluetooth",
       "//ui/display",
       "//ui/display:test_support",
       "//ui/display:test_util",
       "//ui/display/types",
-      "//chromeos:power_manager_proto",
-      "//chromeos:test_support_without_gmock",
     ]
   } else {
     sources -= [

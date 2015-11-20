@@ -141,8 +141,8 @@ source_set("renderer_service") {
     ":media_client",
     "//base",
     "//media",
-    "//media/mojo/interfaces",
     "//media:shared_memory_support",
+    "//media/mojo/interfaces",
     "//mojo/common",
   ]
 }

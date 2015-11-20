@@ -22,8 +22,8 @@ source_set("metrics") {
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:profiler",
-    "//content/public/common",
     "//content/public/browser",
+    "//content/public/common",
   ]
 
   if (is_linux) {

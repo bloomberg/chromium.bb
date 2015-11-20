@@ -12,8 +12,8 @@ group("gpu") {
 
   deps = [
     ":MGL",
-    "../../platform/native:mgl_thunks",
     "../../platform/native:gles2",
+    "../../platform/native:mgl_thunks",
   ]
 }
 

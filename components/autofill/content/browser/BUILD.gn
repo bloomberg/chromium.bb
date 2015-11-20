@@ -78,8 +78,8 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
-    "//components/autofill/content/common",
     "//components/autofill/content/browser/wallet:test_support",
+    "//components/autofill/content/common",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",

@@ -46,8 +46,8 @@ source_set("unit_tests") {
 
   deps = [
     ":ble",
-    "//components/proximity_auth",
     "//base/test:test_support",
+    "//components/proximity_auth",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",

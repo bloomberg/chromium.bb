@@ -14,8 +14,8 @@ android_library("precache_java") {
 
 android_library("precache_javatests") {
   deps = [
-    "//base:base_java_test_support",
     ":precache_java",
+    "//base:base_java_test_support",
   ]
   DEPRECATED_java_in_dir = "javatests/src"
 }

@@ -10,9 +10,7 @@ mojom("interfaces") {
     "web_view.mojom",
   ]
 
-  import_dirs = [
-    "//mojo/services"
-  ]
+  import_dirs = [ "//mojo/services" ]
 
   deps = [
     "//components/mus/public/interfaces",

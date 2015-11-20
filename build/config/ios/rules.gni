@@ -169,8 +169,8 @@ template("ios_app") {
       identity = invoker.code_signing_identity
       application_path = "$root_build_dir/$app_name.app"
       deps = [
-        ":$plist_gen_target_name",
         ":$bin_gen_target_name",
+        ":$plist_gen_target_name",
       ]
     }
   } else {
@@ -181,8 +181,8 @@ template("ios_app") {
   # Top level group
   group(target_name) {
     deps = [
-      ":$plist_gen_target_name",
       ":$bin_gen_target_name",
+      ":$plist_gen_target_name",
     ]
     if (invoker.code_signing_identity != "") {
       deps += [ ":$code_sign_gen_target_name" ]

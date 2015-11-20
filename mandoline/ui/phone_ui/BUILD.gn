@@ -12,8 +12,8 @@ mojo_native_application("phone_ui") {
 
   deps = [
     ":lib",
-    "//mojo/application/public/cpp",
     "//components/web_view:web_view",
+    "//mojo/application/public/cpp",
   ]
 }
 

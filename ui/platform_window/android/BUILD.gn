@@ -20,14 +20,14 @@ component("android") {
   defines = [ "ANDROID_WINDOW_IMPLEMENTATION" ]
 
   deps = [
+    ":jni_headers",
+    ":platform_window_java",
     "//base",
     "//skia",
     "//ui/events:events",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    ":jni_headers",
-    ":platform_window_java",
   ]
 
   libs = [ "android" ]

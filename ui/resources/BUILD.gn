@@ -67,8 +67,8 @@ if (!is_mac) {
 if (is_ios || is_mac) {
   group("ui_test_pak") {
     public_deps = [
-      ":repack_ui_test_pak",
       ":repack_ui_test_mac_locale_pack",
+      ":repack_ui_test_pak",
     ]
   }
 } else {

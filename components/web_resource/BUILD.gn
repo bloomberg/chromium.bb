@@ -63,8 +63,8 @@ source_set("unit_tests") {
   }
 
   deps = [
-    ":web_resource",
     ":test_support",
+    ":web_resource",
     "//base",
     "//base:prefs_test_support",
     "//components/version_info",

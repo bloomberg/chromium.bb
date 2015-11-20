@@ -22,8 +22,8 @@ static_library("renderer") {
     "//content/public/renderer",
     "//gin",
     "//ppapi/shared_impl",
+    "//third_party/WebKit/public:blink",
     "//third_party/icu",
     "//v8",
-    "//third_party/WebKit/public:blink",
   ]
 }

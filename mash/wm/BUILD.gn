@@ -10,8 +10,8 @@ import("//tools/grit/repack.gni")
 group("wm") {
   testonly = true
   deps = [
-    ":example_wm",
     ":apptests",
+    ":example_wm",
   ]
 }
 
@@ -159,8 +159,8 @@ source_set("unittests") {
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/events",
-    "//ui/gfx/geometry",
     "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]

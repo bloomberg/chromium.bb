@@ -23,11 +23,11 @@ source_set("browser") {
   ]
 
   deps = [
+    ":injected_js",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//ios/public/provider/web",
     "//ios/web",
-    ":injected_js",
   ]
 }
 

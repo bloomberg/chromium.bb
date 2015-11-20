@@ -125,9 +125,9 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
   ppapi_cdm_adapter("widevinecdmadapter") {
     defines = []
     deps = [
-      ":widevinecdmadapter_resources",
-      ":widevinecdm",
       ":version_h",
+      ":widevinecdm",
+      ":widevinecdmadapter_resources",
       "//ppapi/cpp",
     ]
 

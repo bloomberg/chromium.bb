@@ -107,6 +107,7 @@ source_set("browser") {
     "//components/metrics/proto",
   ]
   deps = [
+    ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",
     "//base:prefs",
@@ -135,7 +136,6 @@ source_set("browser") {
     "//ui/base",
     "//ui/gfx",
     "//url",
-    ":in_memory_url_index_cache_proto",
   ]
 }
 
@@ -192,6 +192,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":browser",
+    ":test_support",
     "//base",
     "//components/open_from_clipboard:test_support",
     "//components/search",
@@ -200,7 +202,5 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//url",
-    ":browser",
-    ":test_support",
   ]
 }

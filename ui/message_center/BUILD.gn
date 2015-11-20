@@ -115,9 +115,9 @@ component("message_center") {
         "views/toast_contents_view.h",
       ]
       deps += [
+        "//ui/compositor",
         "//ui/events",
         "//ui/views",
-        "//ui/compositor",
       ]
     }
 

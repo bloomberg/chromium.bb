@@ -103,8 +103,8 @@ executable("views_examples_exe") {
   deps = [
     ":views_examples_lib",
     "//base",
-    "//build/config/sanitizers:deps",
     "//base:i18n",
+    "//build/config/sanitizers:deps",
     "//ui/base",
     "//ui/compositor",
     "//ui/compositor:test_support",

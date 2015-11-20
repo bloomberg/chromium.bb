@@ -53,7 +53,6 @@ group("remoting_all") {
     deps += [
       "//remoting:remoting_perftests",
       "//remoting/host",
-
       "//remoting/host:remoting_native_messaging_manifests",
     ]
 
@@ -182,8 +181,8 @@ if (!is_mac) {
         "//net:test_support",
         "//remoting/base",
         "//testing/gtest",
-        "//third_party/webrtc/modules/desktop_capture",
         "//third_party/libjingle",
+        "//third_party/webrtc/modules/desktop_capture",
       ]
 
       if (enable_webrtc) {

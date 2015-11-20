@@ -32,8 +32,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//chrome/installer/util",
     "//chrome/installer/launcher_support",
+    "//chrome/installer/util",
     "//components/variations",
     "//google_update",
   ]

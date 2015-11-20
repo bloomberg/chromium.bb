@@ -47,63 +47,66 @@ group("all_components") {
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/core/test",
+    "//components/infobars/core",
+    "//components/invalidation/impl",
+    "//components/invalidation/public",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
     "//components/metrics",
     "//components/net_log",
     "//components/network_time",
     "//components/ntp_snippets",
+    "//components/omnibox/browser",
+    "//components/open_from_clipboard",
+    "//components/os_crypt",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
+    "//components/pref_registry",
+    "//components/proxy_config",
+    "//components/rappor",
     "//components/search",
     "//components/search_engines",
     "//components/sessions",
-    "//components/sync_bookmarks",
-    "//components/undo",
-    "//components/update_client",
-    "//components/strings",
-    "//components/leveldb_proto",
-    "//components/pref_registry",
-    "//components/rappor",
-    "//components/proxy_config",
-    "//components/omnibox/browser",
-    "//components/open_from_clipboard",
-    "//components/infobars/core",
-    "//components/invalidation/impl",
-    "//components/invalidation/public",
     "//components/signin/core/browser",
+    "//components/strings",
     "//components/suggestions",
+    "//components/sync_bookmarks",
     "//components/sync_driver",
     "//components/syncable_prefs",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/undo",
+    "//components/update_client",
     "//components/upload_list",
     "//components/variations",
     "//components/variations/service",
     "//components/version_info",
     "//components/version_ui",
-    "//components/os_crypt",
     "//components/web_resource",
     "//components/webdata_services",
   ]
 
   if (!is_ios) {
     deps += [
-      "//components/bitmap_uploader",
-      "//components/certificate_reporting",
-      "//components/cdm/browser",
       "//components/about_handler",
+      "//components/app_modal",
       "//components/auto_login_parser",
       "//components/autofill/content/browser",
       "//components/autofill/content/common",
       "//components/autofill/content/renderer",
+      "//components/bitmap_uploader",
+      "//components/browsing_data",
       "//components/bubble",
       "//components/captive_portal",
       "//components/cdm/browser",
+      "//components/cdm/browser",
       "//components/cdm/common",
       "//components/cdm/renderer",
-      "//components/cloud_devices/common",
+      "//components/certificate_reporting",
+      "//components/certificate_transparency",
       "//components/chrome_apps",
+      "//components/cloud_devices/common",
       "//components/compression",
       "//components/cookie_config",
       "//components/crash/content/app",
@@ -120,6 +123,9 @@ group("all_components") {
       "//components/feedback",
       "//components/gcm_driver/crypto",
       "//components/gcm_driver/instance_id",
+      "//components/guest_view/browser",
+      "//components/guest_view/common",
+      "//components/guest_view/renderer",
       "//components/history/content/browser",
       "//components/json_schema",
       "//components/keyed_service/content",
@@ -143,18 +149,21 @@ group("all_components") {
       "//components/pdf/renderer",
       "//components/plugins/renderer",
       "//components/power",
-      "//components/precache/core",
       "//components/precache/content",
+      "//components/precache/core",
       "//components/query_parser",
       "//components/renderer_context_menu",
       "//components/resources:components_resources",
       "//components/safe_browsing_db",
+      "//components/safe_json",
+      "//components/scheduler",
       "//components/search_provider_logos",
       "//components/security_interstitials/core",
       "//components/ssl_config",
-      "//components/startup_metric_utils/common",
       "//components/startup_metric_utils/browser",
+      "//components/startup_metric_utils/common",
       "//components/sync_sessions",
+      "//components/test_runner",
       "//components/tracing",
       "//components/tracing:startup_tracing",
       "//components/translate/content/browser",
@@ -175,19 +184,10 @@ group("all_components") {
       "//components/web_cache/renderer",
       "//components/web_modal",
       "//components/webcrypto",
+      "//components/webcrypto",
       "//components/webdata/common",
       "//components/wifi",
       "//components/wifi_sync",
-      "//components/app_modal",
-      "//components/browsing_data",
-      "//components/certificate_transparency",
-      "//components/guest_view/browser",
-      "//components/guest_view/common",
-      "//components/guest_view/renderer",
-      "//components/safe_json",
-      "//components/scheduler",
-      "//components/test_runner",
-      "//components/webcrypto",
     ]
 
     if (enable_configuration_policy) {
@@ -210,11 +210,11 @@ group("all_components") {
       # TODO(agrieve): Add to main deps list once compile errors are resolved.
       deps += [
         "//components/audio_modem",
+        "//components/copresence",
         "//components/proximity_auth",
         "//components/proximity_auth/cryptauth",
-        "//components/webusb",
-        "//components/copresence",
         "//components/storage_monitor",
+        "//components/webusb",
       ]
     }
 
@@ -261,13 +261,13 @@ group("all_components") {
       "//components/autofill/content/browser",  # Blocked on content/blink.
       "//components/autofill/content/common",  # Blocked on content.
       "//components/autofill/content/renderer",  # Blocked on content/blink.
-      "//components/crash/content/app",  # Should work, needs checking.
-      "//components/crash/content/browser",  # Should work, needs checking.
       "//components/captive_portal",  # Should work, needs checking.
-      "//components/cloud_devices/common",  # Should work, needs checking.
       "//components/cdm/browser",  # Blocked on content.
       "//components/cdm/common",  # Blocked on content.
       "//components/cdm/renderer",  # Blocked on content.
+      "//components/cloud_devices/common",  # Should work, needs checking.
+      "//components/crash/content/app",  # Should work, needs checking.
+      "//components/crash/content/browser",  # Should work, needs checking.
       "//components/data_reduction_proxy/core/browser",  # Should work, needs checking.
       "//components/data_reduction_proxy/core/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.
@@ -283,16 +283,16 @@ group("all_components") {
       "//components/invalidation/impl",  # Should work, needs checking.
       "//components/invalidation/public",  # Should work, needs checking.
       "//components/json_schema",  # Should work, needs checking.
-      "//components/keyed_service/core",  # Blocked on content.
       "//components/keyed_service/content",  # Blocked on content.
+      "//components/keyed_service/core",  # Blocked on content.
       "//components/navigation_interception",  # Blocked on content.
       "//components/omnibox/browser",  # Should work, needs checking.
       "//components/password_manager/content/browser",  # Blocked on content.
       "//components/password_manager/core/browser",  # Should work, needs checking.
       "//components/password_manager/core/common",  # Should work, needs checking.
       "//components/plugins/renderer",  # Blocked on blink.
-      "//components/power",  # Blocked on content.
       "//components/policy",  # Blocked on content (indirectly via autofill).
+      "//components/power",  # Blocked on content.
       "//components/precache/content",  # Blocked on content.
       "//components/precache/core",  # Should work, needs checking.
       "//components/rappor",  # Should work, needs checking.
@@ -310,8 +310,8 @@ group("all_components") {
       "//components/visitedlink/renderer",  # Blocked on blink
       "//components/web_cache/browser",  # Blocked on content and blink.
       "//components/web_cache/renderer",  # Blocked on content and blink.
-      "//components/webdata_services",  # Should work, needs checking.
       "//components/web_modal",  # Blocked on content.
+      "//components/webdata_services",  # Should work, needs checking.
     ]
   }
 }
@@ -369,75 +369,63 @@ test("components_unittests") {
     "//components/history/core/common:unit_tests",
     "//components/invalidation/impl:unit_tests",
     "//components/keyed_service/core:unit_tests",
+    "//components/leveldb_proto:unit_tests",
     "//components/metrics:unit_tests",
     "//components/net_log:unit_tests",
     "//components/network_time:unit_tests",
+    "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
+    "//components/os_crypt:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",
     "//components/password_manager/sync/browser:unit_tests",
     "//components/proxy_config:unit_tests",
     "//components/rappor:unit_tests",
     "//components/search:unit_tests",
-    "//components/sessions:unit_tests",
-    "//components/syncable_prefs:unit_tests",
-    "//components/undo:unit_tests",
-    "//components/update_client:unit_tests",
-    "//components/upload_list:unit_tests",
-    "//net",
-    "//ui/base",
-    "//ui/resources:ui_test_pak",
     "//components/search_engines:unit_tests",
-    "//components/leveldb_proto:unit_tests",
+    "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",
     "//components/suggestions:unit_tests",
     "//components/sync_driver:unit_tests",
+    "//components/syncable_prefs:unit_tests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
     "//components/translate/core/language_detection:unit_tests",
+    "//components/undo:unit_tests",
+    "//components/update_client:unit_tests",
+    "//components/upload_list:unit_tests",
     "//components/variations:unit_tests",
     "//components/variations/service:unit_tests",
-    "//components/omnibox/browser:unit_tests",
-    "//components/os_crypt:unit_tests",
     "//components/web_resource:unit_tests",
+    "//net",
+    "//ui/base",
+    "//ui/resources:ui_test_pak",
   ]
 
   if (!is_ios) {
     deps += [
-      "//components/certificate_transparency:unit_tests",
-      "//components/data_use_measurement/content:unit_tests",
-      "//components/error_page/renderer:unit_tests",
-      "//components/guest_view/browser:unit_tests",
-      "//components/navigation_interception:unit_tests",
-      "//components/network_hints/renderer:unit_tests",
-      "//components/page_load_metrics/browser:unit_tests",
-      "//components/page_load_metrics/renderer:unit_tests",
-      "//components/power:unit_tests",
-      "//components/safe_json:unit_tests",
-      "//components/scheduler:unit_tests",
-      "//components/test_runner:test_runner",
-      "//components/tracing:unit_tests",
-      "//components/ui/zoom:unit_tests",
-      "//components/visitedlink/test:unit_tests",
-      "//components/web_cache/browser:unit_tests",
       "//components/auto_login_parser:unit_tests",
       "//components/autofill/content/browser:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
       "//components/bubble:unit_tests",
       "//components/captive_portal:unit_tests",
+      "//components/certificate_transparency:unit_tests",
       "//components/cloud_devices/common:unit_tests",
       "//components/component_updater:unit_tests",
       "//components/crx_file:unit_tests",
       "//components/data_reduction_proxy/content/browser:unit_tests",
       "//components/data_reduction_proxy/core/browser:unit_tests",
       "//components/data_reduction_proxy/core/common:unit_tests",
+      "//components/data_use_measurement/content:unit_tests",
       "//components/device_event_log:unit_tests",
       "//components/devtools_http_handler:unit_tests",
       "//components/dom_distiller/content:unit_tests",
       "//components/domain_reliability:unit_tests",
+      "//components/error_page/renderer:unit_tests",
       "//components/favicon/content:unit_tests",
       "//components/gcm_driver/crypto:unit_tests",
       "//components/gcm_driver/instance_id:unit_tests",
+      "//components/guest_view/browser:unit_tests",
       "//components/history/content/browser:unit_tests",
       "//components/json_schema:unit_tests",
       "//components/keyed_service/content:unit_tests",
@@ -445,23 +433,35 @@ test("components_unittests") {
       "//components/login:unit_tests",
       "//components/memory_pressure:unit_tests",
       "//components/mime_util:unit_tests",
+      "//components/navigation_interception:unit_tests",
+      "//components/network_hints/renderer:unit_tests",
       "//components/offline_pages:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
+      "//components/page_load_metrics/browser:unit_tests",
+      "//components/page_load_metrics/renderer:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
+      "//components/power:unit_tests",
       "//components/precache/content:unit_tests",
       "//components/precache/core:unit_tests",
       "//components/query_parser:unit_tests",
       "//components/safe_browsing_db:unit_tests",
-      "//components/search_engines:unit_tests",
+      "//components/safe_json:unit_tests",
+      "//components/scheduler:unit_tests",
       "//components/search:unit_tests",
+      "//components/search_engines:unit_tests",
       "//components/search_provider_logos:unit_tests",
       "//components/ssl_config:unit_tests",
       "//components/sync_bookmarks:unit_tests",
       "//components/sync_sessions:unit_tests",
+      "//components/test_runner:test_runner",
+      "//components/tracing:unit_tests",
+      "//components/ui/zoom:unit_tests",
       "//components/url_formatter:unit_tests",
       "//components/url_matcher:unit_tests",
       "//components/user_prefs/tracked:unit_tests",
+      "//components/visitedlink/test:unit_tests",
       "//components/wallpaper:unit_tests",
+      "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
       "//components/webdata/common:unit_tests",
 
@@ -648,14 +648,19 @@ test("components_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   deps = [
-    "strings",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "strings",
   ]
   if (!is_ios) {
     deps += [
+      "//components/tracing",
+      "//content/test:browsertest_support",
+      "//content/test:test_support",
+      "//device/bluetooth",
+      "//ui/base",
       "autofill/content/browser",
       "autofill/content/renderer",
       "content_settings/core/common",
@@ -665,11 +670,6 @@ test("components_browsertests") {
       "password_manager/content/browser",
       "password_manager/content/common",
       "password_manager/content/renderer",
-      "//components/tracing",
-      "//content/test:browsertest_support",
-      "//content/test:test_support",
-      "//device/bluetooth",
-      "//ui/base",
     ]
 
     data_deps = [
@@ -697,8 +697,8 @@ test("components_browsertests") {
     # a MANUAL component_browsertest.
     sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
     deps += [
-      "pref_registry:test_support",
       "//base:prefs_test_support",
+      "pref_registry:test_support",
     ]
   }
 
@@ -727,8 +727,8 @@ test("components_perftests") {
     deps += [
       "//base",
       "//base/test:test_support_perf",
-      "//content/test:test_support",
       "//components/visitedlink/browser",
+      "//content/test:test_support",
     ]
   }
 }

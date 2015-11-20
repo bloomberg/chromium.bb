@@ -52,8 +52,8 @@ component("fontconfig") {
   ]
 
   deps = [
-    "//third_party/zlib",
     "//third_party/libxml",
+    "//third_party/zlib",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

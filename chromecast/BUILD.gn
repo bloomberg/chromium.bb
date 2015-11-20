@@ -203,8 +203,8 @@ repack("cast_shell_pak") {
     "//content/app/resources",
     "//content/app/strings",
     "//net:net_resources",
-    "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:image_resources_grit",
+    "//third_party/WebKit/public:resources",
     "//ui/resources",
     "//ui/strings",
   ]

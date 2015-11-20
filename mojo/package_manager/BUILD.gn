@@ -33,8 +33,8 @@ test("unittests") {
     "//mojo/application/public/cpp",
     "//mojo/shell",
     "//mojo/shell:test_support",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
   ]
 }

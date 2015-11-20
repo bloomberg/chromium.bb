@@ -38,6 +38,11 @@ test("cast_media_unittests") {
 
   deps = [
     ":media",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//chromecast/base",
+    "//chromecast/base/metrics:test_support",
     "//chromecast/media/audio",
     "//chromecast/media/base:message_loop",
     "//chromecast/media/cma/backend",
@@ -45,11 +50,6 @@ test("cast_media_unittests") {
     "//chromecast/media/cma/ipc",
     "//chromecast/media/cma/ipc_streamer",
     "//chromecast/media/cma/pipeline",
-    "//base",
-    "//base:i18n",
-    "//base/test:test_support",
-    "//chromecast/base",
-    "//chromecast/base/metrics:test_support",
     "//chromecast/public",
     "//media",
     "//media/base:test_support",

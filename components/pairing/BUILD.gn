@@ -29,10 +29,10 @@ source_set("pairing") {
   ]
 
   deps = [
+    ":proto",
     "//base",
     "//device/bluetooth",
     "//net",
-    ":proto",
   ]
 }
 

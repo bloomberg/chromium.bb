@@ -58,7 +58,6 @@ static_library("gcm_driver") {
   ]
 
   deps = [
-    "crypto",
     "//base",
     "//components/gcm_driver/common",
     "//components/os_crypt",
@@ -67,6 +66,7 @@ static_library("gcm_driver") {
     "//net",
     "//sync/protocol",
     "//url:url",
+    "crypto",
   ]
 
   if (is_chromeos) {

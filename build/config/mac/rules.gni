@@ -195,10 +195,10 @@ template("mac_app") {
   group(copy_all_target_name) {
     visibility = [ ":$group_gen_target_name" ]
     deps = [
-      ":$struct_gen_target_name",
-      ":$copy_plist_gen_target_name",
       ":$copy_bin_target_name",
+      ":$copy_plist_gen_target_name",
       ":$copy_xib_target_name",
+      ":$struct_gen_target_name",
     ]
   }
 

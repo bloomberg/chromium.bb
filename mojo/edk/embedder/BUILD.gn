@@ -135,10 +135,10 @@ source_set("embedder_unittests2") {
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
     # declared in third party only for now.
-    "//third_party/mojo/src/mojo/edk/system",
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:test_support",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/system",
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are
     # declared in third party only for now.

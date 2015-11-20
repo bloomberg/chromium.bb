@@ -35,7 +35,6 @@ source_set("lib") {
   ]
 
   deps = [
-    "public/interfaces",
     "//base",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
@@ -52,6 +51,7 @@ source_set("lib") {
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
     "//url",
+    "public/interfaces",
   ]
 }
 

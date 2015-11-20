@@ -62,8 +62,8 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//base:i18n",
+    "//base:prefs",
     "//cc",
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
@@ -92,8 +92,8 @@ source_set("browser") {
     "//content/public/common",
     "//content/public/utility",
     "//gpu",
-    "//media",
     "//ipc",
+    "//media",
     "//net",
     "//ui/aura",
     "//ui/base",

@@ -54,10 +54,10 @@ source_set("shell") {
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
     "//mojo/application/public/cpp:sources",
-    "//url",
-    "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/util:filename_util",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//url",
   ]
 }
 
@@ -101,8 +101,8 @@ test("mojo_shell_unittests") {
     "//mojo/package_manager",
     "//mojo/public/cpp/system",
     "//mojo/util:filename_util",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//url",
   ]
 }

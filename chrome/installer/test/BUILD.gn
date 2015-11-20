@@ -38,8 +38,8 @@ source_set("alternate_version_generator_lib") {
   deps = [
     "//base",
     "//base:base_static",
-    "//chrome/installer/util",
     "//chrome/common:constants",
+    "//chrome/installer/util",
   ]
 }
 

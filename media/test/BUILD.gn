@@ -102,8 +102,8 @@ source_set("mojo_pipeline_integration_tests") {
       "//media/mojo/services:renderer_service",
       "//mojo/application/public/cpp:test_support",
       "//testing/gtest",
-      "//ui/gfx/geometry",
       "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
 
       # TODO(dalecurtis): Required since the gmock header is included in the
       # header for pipeline_integration_test_base.h.  This should be moved

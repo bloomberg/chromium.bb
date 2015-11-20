@@ -21,17 +21,17 @@ if (is_nacl) {
       "//base",
       "//components/tracing",
       "//gpu/command_buffer/client",
-      "//gpu/command_buffer/common",
       "//gpu/command_buffer/client:gles2_implementation",
+      "//gpu/command_buffer/common",
       "//gpu/ipc",
       "//ipc",
       "//media:shared_memory_support",
-      "//native_client/src/untrusted/irt:irt_core_lib",
-      "//native_client/src/shared/srpc",
-      "//native_client/src/shared/platform",
-      "//native_client/src/tools/tls_edit($host_toolchain)",
-      "//native_client/src/untrusted/nacl:imc_syscalls",
       "//native_client/src/shared/gio",
+      "//native_client/src/shared/platform",
+      "//native_client/src/shared/srpc",
+      "//native_client/src/tools/tls_edit($host_toolchain)",
+      "//native_client/src/untrusted/irt:irt_core_lib",
+      "//native_client/src/untrusted/nacl:imc_syscalls",
       "//ppapi/native_client/src/untrusted/pnacl_irt_shim:irt",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",
@@ -101,15 +101,15 @@ if (is_nacl) {
 
 group("irt") {
   public_deps = [
-    ":nacl_irt_debuglink(//build/toolchain/nacl:irt_${target_cpu})",
     ":nacl_irt_debug(//build/toolchain/nacl:irt_${target_cpu})",
+    ":nacl_irt_debuglink(//build/toolchain/nacl:irt_${target_cpu})",
   ]
 
   # On 32-bit Windows, we also ship the 64-bit IRT.
   if (is_win && target_cpu == "x86") {
     public_deps += [
-      ":nacl_irt_debuglink(//build/toolchain/nacl:irt_x64)",
       ":nacl_irt_debug(//build/toolchain/nacl:irt_x64)",
+      ":nacl_irt_debuglink(//build/toolchain/nacl:irt_x64)",
     ]
   }
 }

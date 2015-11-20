@@ -10,11 +10,11 @@ static_library("native_app_window") {
 
   deps = [
     "//base",
-    "//skia",
-    "//ui/views",
-    "//ui/views/controls/webview",
     "//content/public/browser",
     "//extensions/browser",
     "//extensions/common",
+    "//skia",
+    "//ui/views",
+    "//ui/views/controls/webview",
   ]
 }

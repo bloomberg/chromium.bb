@@ -79,8 +79,8 @@ executable("cloud_print_service_config") {
     ":config_version",
     ":exe_manifest",
     "//cloud_print/common:install_utils",
-    "//cloud_print/service:resources",
     "//cloud_print/service:lib",
+    "//cloud_print/service:resources",
   ]
 
   libs = [ "secur32.lib" ]
@@ -106,8 +106,8 @@ executable("cloud_print_service_setup") {
   deps = [
     ":exe_manifest",
     "//cloud_print/common:install_utils",
-    "//cloud_print/service:resources",
     "//cloud_print/service:lib",
+    "//cloud_print/service:resources",
   ]
 
   libs = [ "secur32.lib" ]

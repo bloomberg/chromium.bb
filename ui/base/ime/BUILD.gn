@@ -105,8 +105,8 @@ component("ime") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//base:i18n",
+    "//base/third_party/dynamic_annotations",
     "//net",
     "//third_party/icu",
     "//ui/base",
@@ -181,8 +181,8 @@ component("ime") {
 
   if (use_ozone) {
     deps += [
-      "//ui/ozone",
       "//ui/events/ozone:events_ozone_layout",
+      "//ui/ozone",
     ]
   }
 }

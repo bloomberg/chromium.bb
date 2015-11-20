@@ -25,7 +25,7 @@ java_prebuilt("robolectric_java") {
   jar_path = "lib/robolectric-2.4-jar-with-dependencies.jar"
   deps = [
     ":android-all-4.3_r2-robolectric-0",
-    ":tagsoup-1.2",
     ":json-20080701",
+    ":tagsoup-1.2",
   ]
 }

@@ -192,10 +192,10 @@ if (is_android) {
   android_apk("blimp_apk") {
     deps = [
       ":blimp_apk_manifest",
-      ":blimp_java",
-      ":blimp_java_resources",
       ":blimp_client",
       ":blimp_java",
+      ":blimp_java",
+      ":blimp_java_resources",
       "//base:base_java",
       google_play_services_resources,
     ]

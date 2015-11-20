@@ -35,6 +35,7 @@ component("mojo") {
   defines = [ "IPC_MOJO_IMPLEMENTATION" ]
 
   deps = [
+    ":client_channel",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//ipc",
@@ -42,7 +43,6 @@ component("mojo") {
     "//mojo/public/c/environment:environment",
     "//mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/edk/system",
-    ":client_channel",
   ]
 }
 

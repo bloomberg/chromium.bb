@@ -433,6 +433,7 @@ source_set("browser") {
   ]
 
   deps = [
+    ":injected_js",
     "//base",
     "//base:prefs",
     "//breakpad:client",
@@ -514,7 +515,6 @@ source_set("browser") {
     "//ui/base",
     "//ui/gfx",
     "//url",
-    ":injected_js",
 
     # TODO(crbug.com/459705): add support for resource packing and change the
     # dependency to be on the packed resources instead of the unpacked ones.
@@ -533,8 +533,8 @@ source_set("browser") {
 
   if (enable_rlz) {
     deps += [
-      "//components/rlz",
       ":rlz",
+      "//components/rlz",
     ]
   }
 

@@ -20,14 +20,16 @@ component("chromeos") {
     "//dbus",
   ]
   deps = [
+    ":cryptohome_proto",
+    ":power_manager_proto",
     "//base",
     "//base:i18n",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
     "//chromeos/ime:gencode",
     "//components/device_event_log",
-    "//components/policy/proto",
     "//components/onc",
+    "//components/policy/proto",
     "//components/proxy_config",
     "//components/signin/core/account_id",
     "//crypto",
@@ -37,8 +39,6 @@ component("chromeos") {
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",
     "//url",
-    ":cryptohome_proto",
-    ":power_manager_proto",
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
@@ -109,10 +109,10 @@ static_library("test_support_without_gmock") {
   testonly = true
   configs += [ "//build/config/linux:dbus" ]
   deps = [
-    "//crypto",
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
+    "//crypto",
   ]
   sources = [
     "dbus/fake_cros_disks_client.cc",
@@ -132,6 +132,9 @@ test("chromeos_unittests") {
     "//net/third_party/nss/ssl:ssl_config",
   ]
   deps = [
+    ":cryptohome_proto",
+    ":power_manager_proto",
+    ":test_support",
     "//base:prefs_test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -147,9 +150,6 @@ test("chromeos_unittests") {
     "//testing/gtest",
     "//third_party/icu",
     "//url",
-    ":cryptohome_proto",
-    ":power_manager_proto",
-    ":test_support",
   ]
   sources = gypi_values.chromeos_test_sources
   if (use_allocator != "none") {

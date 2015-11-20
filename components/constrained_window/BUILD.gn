@@ -12,8 +12,8 @@ source_set("constrained_window") {
   deps = [
     "//components/guest_view/browser",
     "//components/web_modal",
-    "//ui/views",
     "//skia",
+    "//ui/views",
   ]
 }
 

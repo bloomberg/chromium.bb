@@ -115,8 +115,8 @@ source_set("app_non_mac") {
 
   if (is_win) {
     deps += [
-      "//sandbox",
       "//breakpad:breakpad_handler",
+      "//sandbox",
 
       #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
     ]

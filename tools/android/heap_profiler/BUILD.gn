@@ -54,8 +54,8 @@ executable("heap_profiler_integrationtest") {
     "heap_profiler_integrationtest.cc",
   ]
   deps = [
-    "//testing/gtest",
     ":heap_profiler",
+    "//testing/gtest",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

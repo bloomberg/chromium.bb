@@ -24,11 +24,11 @@ source_set("ocmock_support") {
 
 test("ocmock_support_unittest") {
   deps = [
+    ":ocmock_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
-    ":ocmock_support",
   ]
 }

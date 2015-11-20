@@ -39,8 +39,8 @@ source_set("gles2") {
   configs += [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
-    "//mojo/public/c/gles2",
     "//mojo/public/c/environment",
+    "//mojo/public/c/gles2",
     "//mojo/public/c/system",
   ]
 

@@ -43,12 +43,12 @@ component("android") {
   defines = [ "UI_ANDROID_IMPLEMENTATION" ]
 
   deps = [
+    ":ui_android_jni_headers",
     "//base",
     "//cc",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    ":ui_android_jni_headers",
   ]
 }
 
@@ -143,8 +143,8 @@ android_library("ui_javatests") {
   DEPRECATED_java_in_dir = "javatests/src"
   testonly = true
   deps = [
-    ":ui_java_resources",
     ":ui_java",
+    ":ui_java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
   ]

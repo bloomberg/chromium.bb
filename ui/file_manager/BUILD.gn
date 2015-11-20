@@ -22,8 +22,8 @@ component("file_manager") {
     "file_manager_resource_util.h",
   ]
   deps = [
-    "//base",
     ":resources",
+    "//base",
   ]
   defines = [ "FILE_MANAGER_IMPLEMENTATION" ]
 }

@@ -19,13 +19,13 @@ source_set("browser") {
   ]
 
   deps = [
+    ":injected_js",
     "//base",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//ios/web",
     "//url",
-    ":injected_js",
   ]
 }
 
@@ -46,6 +46,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":browser",
     "//base",
     "//components/resources",
     "//components/translate/core/common",
@@ -54,6 +55,5 @@ source_set("unit_tests") {
     "//third_party/ocmock",
     "//ui/base",
     "//url",
-    ":browser",
   ]
 }

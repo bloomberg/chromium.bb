@@ -7,9 +7,9 @@ import("//build/config/android/rules.gni")
 group("android") {
   testonly = true
   deps = [
-    ":system_java",
     ":mojo_javatests",
     ":mojo_test_apk",
+    ":system_java",
   ]
 }
 
@@ -128,8 +128,8 @@ shared_library("mojo_java_unittests") {
     "//build/config/sanitizers:deps",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
-    "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/test_support:test_utils",
     "//third_party/mojo/src/mojo/edk/system",
   ]
   defines = [ "UNIT_TEST" ]
@@ -138,12 +138,12 @@ shared_library("mojo_java_unittests") {
 android_apk("mojo_test_apk") {
   testonly = true
   deps = [
-    ":mojo_javatests",
     ":mojo_java_unittests",
+    ":mojo_javatests",
     ":system_java",
     "//base:base_java",
-    "//mojo/public/java:bindings",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
+    "//mojo/public/java:bindings",
   ]
   native_libs = [ "libmojo_java_unittests.so" ]
   apk_name = "MojoTest"

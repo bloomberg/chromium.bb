@@ -67,18 +67,18 @@ static_library("devtools") {
 
   if (!is_android) {
     deps += [
-      "//chrome/app/theme:theme_resources",
-      "//chrome/common/extensions/api",
+      ":webrtc_device_provider_resources",
       "//chrome:extra_resources",
       "//chrome:resources",
       "//chrome:strings",
+      "//chrome/app/theme:theme_resources",
+      "//chrome/common/extensions/api",
       "//components/devtools_http_handler",
       "//net:http_server",
       "//skia",
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libusb",
-      ":webrtc_device_provider_resources",
     ]
     sources += [
       "chrome_devtools_discovery_provider.cc",

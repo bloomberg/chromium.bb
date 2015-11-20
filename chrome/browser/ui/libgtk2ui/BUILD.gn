@@ -92,12 +92,12 @@ component("libgtk2ui") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//base:i18n",
-    "//chrome/app/theme:theme_resources",
+    "//base/third_party/dynamic_annotations",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/app/theme:theme_resources",
     "//components/resources",
     "//content/public/browser",
     "//mojo/environment:chromium",

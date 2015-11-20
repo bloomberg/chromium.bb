@@ -98,8 +98,8 @@ action("module_names") {
 # GYP version: WebKit/Source/modules/modules_generated.gyp:make_modules_generated
 group("make_modules_generated") {
   public_deps = [
-    "//third_party/WebKit/Source/core:core_event_interfaces",
-    "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
     ":module_names",
+    "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
+    "//third_party/WebKit/Source/core:core_event_interfaces",
   ]
 }

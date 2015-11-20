@@ -143,15 +143,15 @@ source_set("test_support") {
   public_deps = [
     ":test_config",
     "//base",
-    "//base:i18n",
     "//base:base_static",
+    "//base:i18n",
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/libxml",
     "//third_party/icu:icuuc",
+    "//third_party/libxml",
   ]
 
   if (!is_posix) {

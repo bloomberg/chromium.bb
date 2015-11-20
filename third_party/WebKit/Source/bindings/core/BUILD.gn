@@ -17,8 +17,8 @@ compute_interfaces_info_individual("interfaces_info_individual_core") {
   component_info_file = "$bindings_core_output_dir/ComponentInfoCore.pickle"
   deps = [
     "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
-    "//third_party/WebKit/Source/core:generated_testing_idls_settings",
     "//third_party/WebKit/Source/core:generated_testing_idls_internal_runtime_flags",
+    "//third_party/WebKit/Source/core:generated_testing_idls_settings",
   ]
 }
 

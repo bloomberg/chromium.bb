@@ -151,8 +151,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":test_support",
     ":ar_test_driver_common",
+    ":test_support",
     "//base",
     "//net:test_support",
     "//testing/gmock",

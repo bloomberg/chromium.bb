@@ -26,9 +26,9 @@ android_library("policy_java") {
 android_library("policy_java_test_support") {
   testonly = true
   deps = [
+    ":policy_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    ":policy_java",
   ]
   java_files = [
     "javatests/src/org/chromium/policy/test/annotations/Policies.java",
@@ -51,8 +51,8 @@ junit_binary("components_policy_junit_tests") {
     "junit/src/org/chromium/policy/test/annotations/PoliciesTest.java",
   ]
   deps = [
-    ":policy_java_test_support",
     ":policy_java",
+    ":policy_java_test_support",
     "//base:base_java",
     "//third_party/junit:hamcrest",
   ]

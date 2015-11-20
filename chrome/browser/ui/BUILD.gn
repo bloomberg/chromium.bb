@@ -117,8 +117,8 @@ source_set("ui") {
       "//third_party/WebKit/public:resources",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/leveldatabase",
-      "//third_party/mojo/src/mojo/edk/system",
       "//third_party/libjingle",
+      "//third_party/mojo/src/mojo/edk/system",
       "//third_party/re2",
       "//ui/base/ime",
       "//ui/compositor",
@@ -399,9 +399,9 @@ source_set("ui") {
       "//chrome/installer/util:strings",
       "//components/search_engines",
       "//google_update",
-      "//third_party/wtl",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
+      "//third_party/wtl",
       "//ui/app_list",
     ]
     if (!is_chrome_branded) {

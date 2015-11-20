@@ -27,6 +27,9 @@ static_library("utility") {
   public_deps = []
   deps = [
     "//base",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/common",
     "//components/safe_json:safe_json_parser_message_filter",
     "//components/search_engines",
     "//components/strings",
@@ -36,9 +39,6 @@ static_library("utility") {
     "//media",
     "//skia",
     "//third_party/libxml",
-    "//chrome:resources",
-    "//chrome:strings",
-    "//chrome/common",
   ]
 
   if (!is_android) {

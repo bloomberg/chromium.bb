@@ -22,9 +22,9 @@ source_set("version_info") {
   ]
 
   deps = [
+    ":generate_version_info",
     "//base",
     "//components/strings",
-    ":generate_version_info",
   ]
 
   if (use_unofficial_version_number) {

@@ -280,8 +280,8 @@ test("sandbox_poc") {
   libs = [ "comctl32.lib" ]
 
   deps = [
-    ":sandbox",
     ":pocdll",
+    ":sandbox",
   ]
 }
 

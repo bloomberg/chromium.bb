@@ -42,9 +42,9 @@ android_library("web_contents_delegate_android_java") {
   deps = [
     ":web_contents_delegate_android_java_resources",
     "//base:base_java",
-    "//ui/android:ui_java",
     "//content/public/android:content_java",
     "//content/public/android:content_java_resources",
+    "//ui/android:ui_java",
   ]
   DEPRECATED_java_in_dir = "android/java/src"
 }

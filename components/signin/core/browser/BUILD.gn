@@ -68,12 +68,6 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//crypto",
-    "//google_apis",
-    "//net",
-    "//sql",
-    "//third_party/icu",
-    "//components/signin/core/common",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/google/core/browser",
@@ -81,8 +75,14 @@ source_set("browser") {
     "//components/keyed_service/core",
     "//components/metrics",
     "//components/os_crypt",
-    "//components/webdata/common",
     "//components/signin/core/account_id",
+    "//components/signin/core/common",
+    "//components/webdata/common",
+    "//crypto",
+    "//google_apis",
+    "//net",
+    "//sql",
+    "//third_party/icu",
   ]
 
   if (is_chromeos) {

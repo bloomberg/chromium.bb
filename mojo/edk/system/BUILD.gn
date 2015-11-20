@@ -79,11 +79,11 @@ static_library("system") {
   all_dependent_configs = [ ":system_config" ]
 
   public_deps = [
+    "../../../mojo/public/c/system",
+    "../../../mojo/public/cpp/system",
     "../embedder",
     "../embedder:delegates",
     "../embedder:platform",
-    "../../../mojo/public/c/system",
-    "../../../mojo/public/cpp/system",
   ]
 
   deps = [
@@ -103,8 +103,8 @@ group("tests") {
   testonly = true
   deps = [
     # TODO(use_chrome_edk): remove "2"
-    ":mojo_system_unittests2",
     ":mojo_message_pipe_perftests2",
+    ":mojo_system_unittests2",
   ]
 }
 
@@ -161,8 +161,8 @@ test("mojo_system_unittests2") {
     ":test_utils",
 
     # TODO(use_chrome_edk): remove "2"
-    "../embedder:embedder_unittests2",
     "../../../mojo/public/cpp/environment:standalone",
+    "../embedder:embedder_unittests2",
     "../test:test_support",
     "//base",
     "//base/test:test_support",
@@ -187,9 +187,9 @@ test("mojo_message_pipe_perftests2") {
 
   deps = [
     ":test_utils",
-    "../test:test_support",
-    "../test:run_all_perftests",
     "../../../mojo/public/cpp/environment:standalone",
+    "../test:run_all_perftests",
+    "../test:test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

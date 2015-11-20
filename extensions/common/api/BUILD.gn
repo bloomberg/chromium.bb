@@ -26,8 +26,8 @@ mojom("mojom") {
 # GYP version: extensions/common/api/api.gyp:extensions_api
 group("api") {
   public_deps = [
-    ":mojom",
     ":generated_api",
+    ":mojom",
   ]
 }
 

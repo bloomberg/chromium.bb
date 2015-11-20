@@ -51,9 +51,9 @@ static_library("service") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//base",
     "//chrome:strings",
     "//chrome/common",
-    "//base",
     "//components/cloud_devices/common",
     "//google_apis",
     "//jingle:notifier",

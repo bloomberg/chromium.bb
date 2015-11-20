@@ -717,8 +717,8 @@ if (!is_android) {  # TODO(GYP) enable for Android.
     }
 
     deps = [
-      ":mesa_headers",
       ":mesa",
+      ":mesa_headers",
       ":mesa_libglslcommon",
       "//build/config/sanitizers:deps",
     ]

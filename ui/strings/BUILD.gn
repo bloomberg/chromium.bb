@@ -8,8 +8,8 @@ import("//tools/grit/grit_rule.gni")
 # targets want both. You can depend on the individually if you need to.
 group("strings") {
   public_deps = [
-    ":ui_strings",
     ":app_locale_settings",
+    ":ui_strings",
   ]
 }
 

@@ -101,8 +101,8 @@ android_library("java") {
   java_files = [ "apk/src/org/chromium/mandoline/MandolineActivity.java" ]
 
   deps = [
-    "//mojo/runner:java",
     "//base:base_java",
+    "//mojo/runner:java",
   ]
 }
 
@@ -132,9 +132,9 @@ android_apk("mandoline_apk") {
     ":copy_mandoline_runner",
     ":java",
     ":mandoline_apk_resources",
+    "//base:base_java",
     "//mojo/runner:java",
     "//mojo/runner:resources",
-    "//base:base_java",
     "//ui/platform_window/android:platform_window_java",
     google_play_services_resources,
   ]

@@ -11,7 +11,7 @@ source_set("app_shim") {
   ]
 
   deps = [
-    "//chrome/common:app_mode_app_support",
     "//chrome:strings",
+    "//chrome/common:app_mode_app_support",
   ]
 }

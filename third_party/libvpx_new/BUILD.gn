@@ -277,13 +277,13 @@ static_library("libvpx_new") {
   deps = []
   if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
     deps += [
-      ":libvpx_yasm",
-      ":libvpx_intrinsics_mmx",
-      ":libvpx_intrinsics_sse2",
-      ":libvpx_intrinsics_ssse3",
-      ":libvpx_intrinsics_sse4_1",
       ":libvpx_intrinsics_avx",
       ":libvpx_intrinsics_avx2",
+      ":libvpx_intrinsics_mmx",
+      ":libvpx_intrinsics_sse2",
+      ":libvpx_intrinsics_sse4_1",
+      ":libvpx_intrinsics_ssse3",
+      ":libvpx_yasm",
     ]
   }
   if (cpu_arch_full == "arm-neon-cpu-detect") {

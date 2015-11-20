@@ -32,9 +32,9 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":rlz",
     "//net:test_support",
     "//rlz:test_support",
     "//ui/base",
-    ":rlz",
   ]
 }

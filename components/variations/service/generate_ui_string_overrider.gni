@@ -62,8 +62,8 @@ template("generate_ui_string_overrider") {
   source_set(target_name) {
     sources = get_target_outputs(":$gen_action_target_name")
     deps = [
-      "//components/variations/service",
       ":$gen_action_target_name",
+      "//components/variations/service",
     ]
 
     forward_variables_from(invoker, [ "visibility" ])

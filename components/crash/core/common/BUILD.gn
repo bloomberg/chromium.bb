@@ -27,9 +27,9 @@ source_set("unit_tests") {
       "objc_zombie_unittest.mm",
     ]
     deps = [
+      ":common",
       "//base",
       "//testing/gtest",
-      ":common",
     ]
   }
 }

@@ -24,12 +24,12 @@ source_set("crypto") {
   ]
 
   deps = [
-    "proto",
     "//base",
+    "//components/leveldb_proto",
     "//crypto",
     "//crypto:platform",
-    "//components/leveldb_proto",
     "//third_party/protobuf:protobuf_lite",
+    "proto",
   ]
 
   if (use_openssl) {

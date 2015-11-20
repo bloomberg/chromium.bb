@@ -9,10 +9,10 @@ android_library("sync_java") {
   deps = [
     "//base:base_java",
     "//net/android:net_java",
+    "//third_party/android_tools:android_gcm_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
-    "//third_party/android_tools:android_gcm_java",
   ]
   srcjar_deps = [ ":java_enums" ]
   DEPRECATED_java_in_dir = "java/src"

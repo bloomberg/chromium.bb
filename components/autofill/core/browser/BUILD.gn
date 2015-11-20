@@ -157,7 +157,6 @@ source_set("browser") {
     "//base",
     "//base:i18n",
     "//base:prefs",
-    "//third_party/re2",
     "//components/autofill/core/common",
     "//components/compression",
     "//components/data_use_measurement/core",
@@ -181,8 +180,9 @@ source_set("browser") {
     "//third_party/fips181",
     "//third_party/icu",
     "//third_party/libaddressinput:util",
-    "//third_party/libphonenumber",
     "//third_party/libjingle",
+    "//third_party/libphonenumber",
+    "//third_party/re2",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -218,10 +218,11 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":browser",
     "//base",
-    "//base/test:test_support",
     "//base:prefs",
     "//base:prefs_test_support",
+    "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/os_crypt",
@@ -233,9 +234,8 @@ source_set("test_support") {
     "//google_apis:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/gfx/geometry",
     "//ui/gfx:test_support",
-    ":browser",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -309,8 +309,8 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:util",
-    "//third_party/libphonenumber",
     "//third_party/libjingle",
+    "//third_party/libphonenumber",
     "//ui/base",
     "//url",
   ]

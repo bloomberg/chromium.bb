@@ -87,8 +87,8 @@ source_set("unit_tests") {
     "//components/test_runner:test_runner",
     "//crypto",
     "//crypto:platform",
-    "//testing/perf",
     "//testing/gtest",
+    "//testing/perf",
     "//third_party/WebKit/public:blink",
     "//third_party/re2",
   ]

@@ -55,13 +55,14 @@ source_set("extensions") {
     "//crypto",
     "//device/bluetooth",
     "//device/hid",
+    "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/common/api",
     "//extensions/common/api:api_registration",
     "//extensions/strings",
-    "//extensions:extensions_resources",
     "//net",
     "//skia",
+    "//storage/browser",
     "//storage/common",
     "//sync",
     "//third_party/WebKit/public:image_resources",
@@ -80,7 +81,6 @@ source_set("extensions") {
     "//ui/resources",
     "//ui/strings",
     "//url",
-    "//storage/browser",
   ]
 
   if (is_chromeos) {
@@ -91,10 +91,10 @@ source_set("extensions") {
     sources -= [ "api/music_manager_private/device_id_linux.cc" ]
     configs += [ "//build/config/linux:dbus" ]
     deps += [
-      "//third_party/protobuf:protobuf_lite",
       "//chromeos/ime:gencode",
       "//components/chrome_apps",
       "//remoting/host/it2me:common",
+      "//third_party/protobuf:protobuf_lite",
     ]
   } else {
     sources += [

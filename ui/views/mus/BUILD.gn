@@ -48,7 +48,6 @@ component("mus") {
     "//components/mus/public/interfaces",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//skia",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
@@ -59,6 +58,7 @@ component("mus") {
     "//mojo/platform_handle:for_component",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
+    "//skia",
     "//third_party/icu",
     "//ui/aura",
     "//ui/compositor",
@@ -93,8 +93,8 @@ repack("resources") {
   ]
   output = "$root_out_dir/views_mus_resources.pak"
   deps = [
-    "//ui/strings",
     "//ui/resources",
+    "//ui/strings",
     "//ui/views/resources",
   ]
 }

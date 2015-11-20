@@ -14,8 +14,8 @@ mojo_native_application("pdf_viewer") {
   deps = [
     "//base",
     "//components/bitmap_uploader",
-    "//components/mus/public/interfaces",
     "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//components/web_view/public/interfaces",
     "//gpu",
     "//mojo/application/public/cpp",

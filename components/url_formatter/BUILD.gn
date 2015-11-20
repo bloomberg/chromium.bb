@@ -19,8 +19,8 @@ source_set("url_formatter") {
 
   deps = [
     "//base",
-    "//third_party/icu",
     "//net",
+    "//third_party/icu",
     "//url",
   ]
 

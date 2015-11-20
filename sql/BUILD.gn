@@ -30,8 +30,8 @@ component("sql") {
 
   deps = [
     "//base",
-    "//third_party/sqlite",
     "//base/third_party/dynamic_annotations",
+    "//third_party/sqlite",
   ]
 }
 
@@ -100,8 +100,8 @@ test("sql_unittests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":sql",
     ":redirection_header",
+    ":sql",
     ":test_support",
     "//base/allocator",
     "//base/test:test_support",

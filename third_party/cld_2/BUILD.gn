@@ -113,8 +113,8 @@ static_library("cld2_static") {
   ]
 
   public_deps = [
-    ":cld_2",
     ":cld2_data",
+    ":cld_2",
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
