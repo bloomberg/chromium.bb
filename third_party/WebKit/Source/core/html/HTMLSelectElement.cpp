@@ -972,12 +972,14 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 void HTMLSelectElement::optionInserted(const HTMLOptionElement& option, bool optionIsSelected)
 {
     ASSERT(option.ownerSelectElement() == this);
+    setRecalcListItems();
     if (optionIsSelected)
         selectOption(option.index());
 }
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
+    setRecalcListItems();
     if (m_lastOnChangeOption == &option)
         m_lastOnChangeOption.clear();
     if (m_optionToScrollTo == &option)

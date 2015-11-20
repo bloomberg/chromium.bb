@@ -362,18 +362,14 @@ Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode
 
 void HTMLOptionElement::didNotifySubtreeInsertionsToDocument()
 {
-    if (HTMLSelectElement* select = ownerSelectElement()) {
-        select->setRecalcListItems();
+    if (HTMLSelectElement* select = ownerSelectElement())
         select->optionInserted(*this, m_isSelected);
-    }
 }
 
 void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint)) {
-        select->setRecalcListItems();
+    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint))
         select->optionRemoved(*this);
-    }
     HTMLElement::removedFrom(insertionPoint);
 }
 
