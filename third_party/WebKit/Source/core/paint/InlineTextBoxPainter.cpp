@@ -798,12 +798,19 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext* ctx, const
     unsigned paintStart = underlinePaintStart(underline);
     unsigned paintEnd = underlinePaintEnd(underline);
 
-    // start of line to draw, relative to paintOffset.
+    // start of line to draw
     float start = paintStart == static_cast<unsigned>(m_inlineTextBox.start()) ? 0 :
         m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // how much line to draw
     float width = (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) ? m_inlineTextBox.logicalWidth().toFloat() :
         m_inlineTextBox.lineLayoutItem().width(paintStart, paintEnd - paintStart, m_inlineTextBox.textPos() + start, m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+    // In RTL mode, start and width are computed from the right end of the text box:
+    // starting at |logicalWidth| - |start| and continuing left by |width| to
+    // |logicalWidth| - |start| - |width|. We will draw that line, but
+    // backwards: |logicalWidth| - |start| - |width| to |logicalWidth| - |start|.
+    if (!m_inlineTextBox.isLeftToRightDirection())
+        start = m_inlineTextBox.logicalWidth().toFloat() - width - start;
+
 
     // Thick marked text underlines are 2px thick as long as there is room for the 2px line under the baseline.
     // All other marked text underlines are 1px thick.

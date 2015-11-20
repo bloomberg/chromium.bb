@@ -110,6 +110,8 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] compositing/gestures [ WontFix ]
 
 # These tests are specific to Linux.
+[ Mac Win ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
+[ Mac Win ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
 [ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
 [ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
