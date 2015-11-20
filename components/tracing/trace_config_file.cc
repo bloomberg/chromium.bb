@@ -69,19 +69,25 @@ TraceConfigFile::TraceConfigFile()
     // default configuration for 5 sec.
     startup_duration_ = 5;
     is_enabled_ = true;
+    DLOG(WARNING) << "Use default trace config.";
     return;
   }
 
-  if (!base::PathExists(trace_config_file))
+  if (!base::PathExists(trace_config_file)) {
+    DLOG(WARNING) << "The trace config file does not exist.";
     return;
+  }
 
   std::string trace_config_file_content;
   if (!base::ReadFileToString(trace_config_file,
                               &trace_config_file_content,
                               kTraceConfigFileSizeLimit)) {
+    DLOG(WARNING) << "Cannot read the trace config file correctly.";
     return;
   }
   is_enabled_ = ParseTraceConfigFileContent(trace_config_file_content);
+  if (!is_enabled_)
+    DLOG(WARNING) << "Cannot parse the trace config file correctly.";
 }
 
 TraceConfigFile::~TraceConfigFile() {
