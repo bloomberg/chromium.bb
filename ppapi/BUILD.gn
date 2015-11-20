@@ -316,6 +316,7 @@ if (enable_nacl) {
     generate_nmf("ppapi_nacl_tests_nmf") {
       if (is_nacl_glibc) {
         nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
+        stage_dependencies = root_build_dir
       } else if (current_cpu == "pnacl") {
         nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
       } else {
