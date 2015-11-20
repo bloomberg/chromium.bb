@@ -82,6 +82,7 @@
         'select_file_dialog_impl.cc',
         'select_file_dialog_impl.h',
         'select_file_dialog_impl_gtk2.cc',
+        'select_file_dialog_impl_gtk2.h',
         'select_file_dialog_impl_kde.cc',
         'skia_utils_gtk2.cc',
         'skia_utils_gtk2.h',

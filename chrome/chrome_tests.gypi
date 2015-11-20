@@ -1696,6 +1696,8 @@
             # Note: list duplicated in GN build.
             'browser/ui/views/keyboard_access_browsertest.cc',
           ],
+          'sources': [ 'browser/ui/libgtk2ui/select_file_dialog_interactive_uitest.cc' ],
+          'dependencies': [ '../build/linux/system.gyp:gtk2' ],
         }, {  # Everything but desktop Linux.
           'sources': [ '<@(chrome_interactive_ui_test_non_desktop_linux_sources)' ],
         }],

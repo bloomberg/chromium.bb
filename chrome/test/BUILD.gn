@@ -397,6 +397,9 @@ if (!is_android) {
             # suites, it seems like one or another starts timing out too.
             "../browser/ui/views/keyboard_access_browsertest.cc",
           ]
+          sources +=
+              [ "../browser/ui/libgtk2ui/select_file_dialog_interactive_uitest.cc" ]
+          configs += [ "//build/config/linux/gtk2:gtk2_internal_config" ]
         }
       }
       if (is_chromeos || !use_x11) {
