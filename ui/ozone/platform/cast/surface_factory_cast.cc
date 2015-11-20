@@ -192,7 +192,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     int GetDmaBufFd() override { return -1; }
     int GetDmaBufPitch() override { return 0; }
     gfx::BufferFormat GetBufferFormat() override {
-      return gfx::BufferFormat::LAST;
+      return gfx::BufferFormat::BGRA_8888;
     }
     bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                               int plane_z_order,

@@ -295,7 +295,7 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::UYVY_422;
     default:
       NOTREACHED();
-      return gfx::BufferFormat::LAST;
+      return gfx::BufferFormat::BGRA_8888;
   }
 }
 }  // namespace ui
