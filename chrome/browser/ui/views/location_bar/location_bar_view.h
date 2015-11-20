@@ -275,11 +275,8 @@ class LocationBarView : public LocationBar,
   // |view| should add to the trailing width after the omnibox.
   int IncrementalMinimumWidth(views::View* view) const;
 
-  // Returns the thickness of any visible left and right edge, in pixels.
-  int GetHorizontalEdgeThickness() const;
-
-  // The same, but for the top and bottom edges.
-  int GetVerticalEdgeThickness() const;
+  // Returns the thickness of any visible edge, in pixels.
+  int GetEdgeThickness() const;
 
   // The vertical padding to be applied to all contained views.
   int VerticalPadding() const;

@@ -116,9 +116,6 @@ int GetEditLeadingInternalSpace() {
 
 // static
 
-// Thickness of the edges of the omnibox background images, for popup windows.
-const int kPopupEdgeThickness = 1;
-
 const char LocationBarView::kViewClassName[] = "LocationBarView";
 
 LocationBarView::LocationBarView(Browser* browser,
@@ -174,16 +171,18 @@ void LocationBarView::Init() {
   // not prepared for that.
   DCHECK(GetWidget());
 
-  if (is_popup_mode_) {
-    const int kOmniboxPopupBorderImages[] =
-        IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
-    border_painter_.reset(
-        views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
-  } else if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
-    border_painter_.reset(views::Painter::CreateImagePainter(
-        *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    if (is_popup_mode_) {
+      const int kOmniboxPopupBorderImages[] =
+          IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
+      border_painter_.reset(
+          views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
+    } else {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
+      border_painter_.reset(views::Painter::CreateImagePainter(
+          *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
+    }
   }
 
   location_icon_view_ = new LocationIconView(this);
@@ -209,7 +208,7 @@ void LocationBarView::Init() {
   const int kBubbleInteriorVerticalPadding =
       ui::MaterialDesignController::IsModeMaterial() ? 2 : 1;
   const int bubble_padding =
-      GetVerticalEdgeThickness() +
+      GetEdgeThickness() +
       GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
       kBubbleInteriorVerticalPadding;
   const int bubble_height = GetPreferredSize().height() - (bubble_padding * 2);
@@ -521,12 +520,13 @@ void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
 gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute minimum height.
   gfx::Size min_size;
-  // For non-material the size of the asset determines the size of the
-  // LocationBarView.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    min_size.set_height(GetLayoutConstant(LOCATION_BAR_HEIGHT));
-  else
+  if (ui::MaterialDesignController::IsModeMaterial() || is_popup_mode_) {
+    const int height = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+    const int edge_thickness = views::NonClientFrameView::kClientEdgeThickness;
+    min_size.set_height(height - (is_popup_mode_ ? (2 * edge_thickness) : 0));
+  } else {
     min_size = border_painter_->GetMinimumSize();
+  }
 
   if (!IsInitialized())
     return min_size;
@@ -536,8 +536,8 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   const int padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
 
   // Compute width of omnibox-leading content.
-  const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  int leading_width = horizontal_edge_thickness;
+  const int edge_thickness = GetEdgeThickness();
+  int leading_width = edge_thickness;
   if (ShouldShowKeywordBubble()) {
     // The selected keyword view can collapse completely.
   } else if (ShouldShowEVBubble()) {
@@ -549,7 +549,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   }
 
   // Compute width of omnibox-trailing content.
-  int trailing_width = horizontal_edge_thickness;
+  int trailing_width = edge_thickness;
   trailing_width += IncrementalMinimumWidth(star_view_) +
                     IncrementalMinimumWidth(translate_icon_view_) +
                     IncrementalMinimumWidth(open_pdf_in_reader_view_) +
@@ -579,10 +579,11 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+  const int edge_thickness = GetEdgeThickness();
   int trailing_edge_item_padding = 0;
   if (!ui::MaterialDesignController::IsModeMaterial()) {
-    trailing_edge_item_padding = item_padding - GetHorizontalEdgeThickness() -
-        omnibox_view_->GetInsets().right();
+    trailing_edge_item_padding =
+        item_padding - edge_thickness - omnibox_view_->GetInsets().right();
   }
 
   LocationBarLayout leading_decorations(
@@ -598,8 +599,7 @@ void LocationBarView::Layout() {
   // positioned relative to them (e.g. the "bookmark added" bubble if the user
   // hits ctrl-d).
   const int bubble_vertical_padding =
-      GetVerticalEdgeThickness() +
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING);
+      edge_thickness + GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING);
   const int bubble_height =
       std::max(height() - (bubble_vertical_padding * 2), 0);
   const int bubble_horizontal_padding =
@@ -690,8 +690,7 @@ void LocationBarView::Layout() {
   }
 
   // Perform layout.
-  const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  int full_width = width() - (2 * horizontal_edge_thickness);
+  int full_width = width() - (2 * edge_thickness);
 
   int entry_width = full_width;
   leading_decorations.LayoutPass1(&entry_width);
@@ -702,7 +701,7 @@ void LocationBarView::Layout() {
   int location_needed_width = omnibox_view_->GetTextWidth();
   int available_width = entry_width - location_needed_width;
   // The bounds must be wide enough for all the decorations to fit.
-  gfx::Rect location_bounds(horizontal_edge_thickness, vertical_padding,
+  gfx::Rect location_bounds(edge_thickness, vertical_padding,
                             std::max(full_width, full_width - entry_width),
                             location_height);
   leading_decorations.LayoutPass3(&location_bounds, &available_width);
@@ -788,13 +787,13 @@ void LocationBarView::Layout() {
 }
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return;
-
-  RefreshLocationIcon();
-  set_background(new BackgroundWith1PxBorder(
-      GetColor(BACKGROUND), SkColorSetARGB(0x4D, 0x00, 0x00, 0x00),
-      is_popup_mode_));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    RefreshLocationIcon();
+    if (!is_popup_mode_) {
+      set_background(new BackgroundWith1PxBorder(
+          GetColor(BACKGROUND), SkColorSetARGB(0x4D, 0x00, 0x00, 0x00)));
+    }
+  }
 }
 
 void LocationBarView::Update(const WebContents* contents) {
@@ -851,21 +850,12 @@ int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
           view->GetMinimumSize().width()) : 0;
 }
 
-int LocationBarView::GetHorizontalEdgeThickness() const {
-  // In maximized popup mode, there isn't any edge.
-  return (is_popup_mode_ && browser_ && browser_->window() &&
-          browser_->window()->IsMaximized()) ?
-      0 : GetVerticalEdgeThickness();
-}
-
-int LocationBarView::GetVerticalEdgeThickness() const {
-  return is_popup_mode_ ? kPopupEdgeThickness
-                        : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
+int LocationBarView::GetEdgeThickness() const {
+  return is_popup_mode_ ? 0 : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
 }
 
 int LocationBarView::VerticalPadding() const {
-  return is_popup_mode_ ?
-      kPopupEdgeThickness : GetLayoutConstant(LOCATION_BAR_VERTICAL_PADDING);
+  return is_popup_mode_ ? 0 : GetLayoutConstant(LOCATION_BAR_VERTICAL_PADDING);
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -1276,14 +1266,15 @@ void LocationBarView::OnFocus() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (ui::MaterialDesignController::IsModeMaterial())
+  if (ui::MaterialDesignController::IsModeMaterial() && !is_popup_mode_)
     return;  // The background and border are painted by our Background.
 
   // Fill the location bar background color behind the border.  Parts of the
   // border images are meant to rest atop the toolbar background and parts atop
   // the omnibox background, so we can't just blindly fill our entire bounds.
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(GetHorizontalEdgeThickness(), GetVerticalEdgeThickness());
+  const int edge_thickness = GetEdgeThickness();
+  bounds.Inset(edge_thickness, edge_thickness);
   SkColor color(GetColor(BACKGROUND));
   if (is_popup_mode_) {
     canvas->FillRect(bounds, color);
@@ -1311,17 +1302,10 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   if (show_focus_rect_ && HasFocus())
     recorder.canvas()->DrawFocusRect(omnibox_view_->bounds());
 
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return;  // The background and border are painted by our Background.
-
-  // Maximized popup windows don't draw the horizontal edges.  We implement this
-  // by simply expanding the paint area outside the view by the edge thickness.
-  gfx::Rect border_rect(GetContentsBounds());
-  if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
-    border_rect.Inset(-kPopupEdgeThickness, 0);
-
-  views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
-                                 border_rect);
+  if (!ui::MaterialDesignController::IsModeMaterial() && !is_popup_mode_) {
+    views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
+                                   GetContentsBounds());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1364,11 +1348,11 @@ bool LocationBarView::CanStartDragForView(View* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private gfx::AnimationDelegate implementation:
 void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
-  browser_->window()->ToolbarSizeChanged(true);
+  GetWidget()->non_client_view()->Layout();
 }
 
 void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
-  browser_->window()->ToolbarSizeChanged(false);
+  AnimationProgressed(animation);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

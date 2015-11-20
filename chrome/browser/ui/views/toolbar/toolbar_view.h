@@ -144,14 +144,9 @@ class ToolbarView : public views::AccessiblePaneView,
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
-
-  // Whether the toolbar view needs its background painted by the
-  // BrowserNonClientFrameView.
-  bool ShouldPaintBackground() const;
 
   enum {
     // The apparent horizontal space between most items, and the vertical

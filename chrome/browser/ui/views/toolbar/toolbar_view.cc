@@ -628,20 +628,6 @@ void ToolbarView::Layout() {
                               child_height);
 }
 
-void ToolbarView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-
-  if (is_display_mode_normal())
-    return;
-
-  // For glass, we need to draw a black line below the location bar to separate
-  // it from the content area.  For non-glass, the NonClientView draws the
-  // toolbar background below the location bar for us.
-  // NOTE: Keep this in sync with BrowserView::GetInfoBarSeparatorColor()!
-  if (GetWidget()->ShouldWindowContentsBeTransparent())
-    canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1), SK_ColorBLACK);
-}
-
 void ToolbarView::OnThemeChanged() {
   LoadImages();
 }
@@ -655,10 +641,6 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (focused_view && (focused_view->id() == VIEW_ID_OMNIBOX))
     return false;  // Let the omnibox handle all accelerator events.
   return AccessiblePaneView::AcceleratorPressed(accelerator);
-}
-
-bool ToolbarView::ShouldPaintBackground() const {
-  return display_mode_ == DISPLAYMODE_NORMAL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -737,9 +719,10 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
 }
 
 int ToolbarView::PopupTopSpacing() const {
-  const int kPopupTopSpacingNonGlass = 3;
-  return GetWidget()->ShouldWindowContentsBeTransparent() ?
-      0 : kPopupTopSpacingNonGlass;
+  const int kAdditionalPopupTopSpacingNonGlass = 2;
+  return views::NonClientFrameView::kClientEdgeThickness +
+      (GetWidget()->ShouldWindowContentsBeTransparent() ?
+          0 : kAdditionalPopupTopSpacingNonGlass);
 }
 
 gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
@@ -766,12 +749,8 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
     if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
       size.Enlarge(0, kAshBorderSpacing);
   } else {
-    const int kPopupBottomSpacingGlass = 1;
-    const int kPopupBottomSpacingNonGlass = 2;
     size.Enlarge(
-        0,
-        PopupTopSpacing() + (GetWidget()->ShouldWindowContentsBeTransparent() ?
-            kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass));
+        0, PopupTopSpacing() + views::NonClientFrameView::kClientEdgeThickness);
   }
   return size;
 }

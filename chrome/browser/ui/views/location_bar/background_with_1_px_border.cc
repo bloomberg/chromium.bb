@@ -14,38 +14,26 @@
 #include "ui/views/widget/widget.h"
 
 BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
-                                                 SkColor border,
-                                                 bool is_popup_mode)
-    : border_color_(border), is_popup_mode_(is_popup_mode) {
+                                                 SkColor border)
+    : border_color_(border) {
   SetNativeControlColor(background);
 }
 
 void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
                                     views::View* view) const {
+  gfx::RectF border_rect_f(view->GetContentsBounds());
+
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
-  const float kPreScaleOffset =
-      GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
-  const float kPostScaleOffset = -0.5f;
-  gfx::RectF border_rect_f(view->GetContentsBounds());
+  border_rect_f.Scale(scale);
+  const float inset =
+      GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) * scale - 0.5f;
+  border_rect_f.Inset(inset, inset);
+
   SkPath path;
-  if (is_popup_mode_) {
-    // Maximized popup windows don't draw the horizontal edges.  We implement
-    // this by not insetting the edge before scaling. The subsequent post
-    // scaling inset expands the paint area outside of the canvas.
-    border_rect_f.Inset(view->GetWidget()->IsMaximized() ? 0 : kPreScaleOffset,
-                        kPreScaleOffset);
-    border_rect_f.Scale(scale);
-    border_rect_f.Inset(kPostScaleOffset, kPostScaleOffset);
-    path.addRect(gfx::RectFToSkRect(border_rect_f));
-  } else {
-    border_rect_f.Inset(kPreScaleOffset, kPreScaleOffset);
-    border_rect_f.Scale(scale);
-    border_rect_f.Inset(kPostScaleOffset, kPostScaleOffset);
-    const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * scale);
-    path.addRoundRect(gfx::RectFToSkRect(border_rect_f), kCornerRadius,
-                      kCornerRadius);
-  }
+  const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * scale);
+  path.addRoundRect(gfx::RectFToSkRect(border_rect_f), kCornerRadius,
+                    kCornerRadius);
 
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);

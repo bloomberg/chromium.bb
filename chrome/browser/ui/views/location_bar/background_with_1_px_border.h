@@ -18,28 +18,17 @@ class View;
 }
 
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
-// border. This accounts for the scaling of the canvas, so that the border is
-// one pixel regardless of display scaling. When created for popup mode, the
-// border will be a rectangle, unless the window is maximized. A maximized popup
-// will remove the horizontal edges of the border.
-//
-// When created for non popups, the border will have rounded corners.
+// border with rounded corners. This accounts for the scaling of the canvas, so
+// that the border is one pixel regardless of display scaling.
 class BackgroundWith1PxBorder : public views::Background {
  public:
-  BackgroundWith1PxBorder(SkColor background,
-                          SkColor border,
-                          bool is_popup_mode);
+  BackgroundWith1PxBorder(SkColor background, SkColor border);
 
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
  private:
   // Color for the one pixel border.
   SkColor border_color_;
-
-  // If true the border will be a rectangle, and will not render the horizontal
-  // edges when the window is maximized. If false the border will have rounded
-  // corners.
-  bool is_popup_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
 };

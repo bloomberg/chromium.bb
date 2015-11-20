@@ -128,8 +128,7 @@ void IconLabelBubbleView::OnNativeThemeChanged(
   SkColor border_color = inverted ? SK_ColorWHITE : GetBorderColor();
   SkColor background_color =
       inverted ? SK_ColorWHITE : SkColorSetA(border_color, 0x13);
-  set_background(
-      new BackgroundWith1PxBorder(background_color, border_color, false));
+  set_background(new BackgroundWith1PxBorder(background_color, border_color));
   SetLabelBackgroundColor(background_color);
 }
 

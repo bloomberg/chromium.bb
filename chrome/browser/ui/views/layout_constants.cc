@@ -14,7 +14,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarBorderThickness[] = {2, 1, 1};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 4, 4};
   const int kLocationBarBubbleVerticalPadding[] = {1, 4, 4};
-  const int kLocationBarHeight[] = {0, 28, 32};
+  const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
   const int kNewTabButtonWidth[] = {34, 34, 34};

@@ -2051,11 +2051,7 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 // BrowserView, InfoBarContainerDelegate overrides:
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
-  // NOTE: Keep this in sync with ToolbarView::OnPaint()!
-  return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR) :
-      SK_ColorBLACK;
+  return GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
 }
 
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {

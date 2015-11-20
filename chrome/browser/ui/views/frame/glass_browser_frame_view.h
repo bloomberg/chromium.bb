@@ -74,9 +74,12 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // current state.
   int NonClientTopBorderHeight(bool restored) const;
 
+  // Returns whether the toolbar is currently visible.
+  bool IsToolbarVisible() const;
+
   // Paint various sub-components of this view.
   void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintRestoredClientEdge(gfx::Canvas* canvas);
+  void PaintClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
   void LayoutIncognitoIcon();
