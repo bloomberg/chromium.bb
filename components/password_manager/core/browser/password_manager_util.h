@@ -50,6 +50,12 @@ void TrimUsernameOnlyCredentials(
 std::vector<scoped_ptr<autofill::PasswordForm>> ConvertScopedVector(
     ScopedVector<autofill::PasswordForm> old_vector);
 
+// A convenience function for testing that |client| has a non-null LogManager
+// and that that LogManager returns true for IsLoggingActive. This function can
+// be removed once PasswordManagerClient::GetLogManager is implemented on iOS
+// and required to always return non-null.
+bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

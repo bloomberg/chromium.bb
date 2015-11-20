@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/sync_driver/sync_service.h"
 
 namespace password_manager_util {
@@ -83,6 +84,11 @@ std::vector<scoped_ptr<autofill::PasswordForm>> ConvertScopedVector(
   }
   old_vector.weak_clear();  // All owned by |new_vector| by now.
   return new_vector;
+}
+
+bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
+  const password_manager::LogManager* log_manager = client->GetLogManager();
+  return log_manager && log_manager->IsLoggingActive();
 }
 
 }  // namespace password_manager_util

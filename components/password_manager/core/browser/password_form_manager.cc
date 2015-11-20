@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -313,7 +314,7 @@ void PasswordFormManager::FetchDataFromPasswordStore(
   }
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
@@ -384,7 +385,7 @@ void PasswordFormManager::OnRequestDone(
   const size_t logins_result_size = logins_result.size();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
@@ -588,7 +589,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   }
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);

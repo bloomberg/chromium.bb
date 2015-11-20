@@ -26,6 +26,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -224,7 +225,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
       client_->IsSavingAndFillingEnabledForCurrentPage();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD);
@@ -454,7 +455,7 @@ void PasswordManager::CreatePendingLoginManagers(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<PasswordForm>& forms) {
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
@@ -528,7 +529,7 @@ void PasswordManager::CreatePendingLoginManagers(
 
 bool PasswordManager::CanProvisionalManagerSave() {
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
@@ -570,7 +571,7 @@ void PasswordManager::OnPasswordFormsRendered(
     bool did_stop_loading) {
   CreatePendingLoginManagers(driver, visible_forms);
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
@@ -648,7 +649,7 @@ void PasswordManager::OnInPageNavigation(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_IN_PAGE_NAVIGATION);
@@ -664,7 +665,7 @@ void PasswordManager::OnInPageNavigation(
 
 void PasswordManager::OnLoginSuccessful() {
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
@@ -729,7 +730,7 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
   DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILL);
@@ -757,7 +758,7 @@ void PasswordManager::AutofillHttpAuth(
   DCHECK_NE(PasswordForm::SCHEME_HTML, preferred_match.scheme);
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->GetLogManager()->IsLoggingActive()) {
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILLHTTPAUTH);
