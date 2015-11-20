@@ -103,7 +103,7 @@ public:
     virtual bool is2d() const { return false; }
     virtual void restoreCanvasMatrixClipStack(SkCanvas*) const { }
     virtual void reset() { }
-    virtual void clearRect(float x, float y, float width, float height) { }
+    virtual void clearRect(double x, double y, double width, double height) { }
     virtual void didSetSurfaceSize() { }
     virtual void setShouldAntialias(bool) { }
     virtual unsigned hitRegionsCount() const { return 0; }

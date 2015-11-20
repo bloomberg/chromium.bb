@@ -86,8 +86,8 @@ public:
     void fillStyle(StringOrCanvasGradientOrCanvasPattern&) const;
     void setFillStyle(const StringOrCanvasGradientOrCanvasPattern&);
 
-    float lineWidth() const;
-    void setLineWidth(float);
+    double lineWidth() const;
+    void setLineWidth(double);
 
     String lineCap() const;
     void setLineCap(const String&);
@@ -95,29 +95,29 @@ public:
     String lineJoin() const;
     void setLineJoin(const String&);
 
-    float miterLimit() const;
-    void setMiterLimit(float);
+    double miterLimit() const;
+    void setMiterLimit(double);
 
-    const Vector<float>& getLineDash() const;
-    void setLineDash(const Vector<float>&);
+    const Vector<double>& getLineDash() const;
+    void setLineDash(const Vector<double>&);
 
-    float lineDashOffset() const;
-    void setLineDashOffset(float);
+    double lineDashOffset() const;
+    void setLineDashOffset(double);
 
-    float shadowOffsetX() const;
-    void setShadowOffsetX(float);
+    double shadowOffsetX() const;
+    void setShadowOffsetX(double);
 
-    float shadowOffsetY() const;
-    void setShadowOffsetY(float);
+    double shadowOffsetY() const;
+    void setShadowOffsetY(double);
 
-    float shadowBlur() const;
-    void setShadowBlur(float);
+    double shadowBlur() const;
+    void setShadowBlur(double);
 
     String shadowColor() const;
     void setShadowColor(const String&);
 
-    float globalAlpha() const;
-    void setGlobalAlpha(float);
+    double globalAlpha() const;
+    void setGlobalAlpha(double);
 
     bool isContextLost() const override;
 
@@ -136,11 +136,11 @@ public:
     PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const;
     void setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
 
-    void scale(float sx, float sy);
-    void rotate(float angleInRadians);
-    void translate(float tx, float ty);
-    void transform(float m11, float m12, float m21, float m22, float dx, float dy);
-    void setTransform(float m11, float m12, float m21, float m22, float dx, float dy);
+    void scale(double sx, double sy);
+    void rotate(double angleInRadians);
+    void translate(double tx, double ty);
+    void transform(double m11, double m12, double m21, double m22, double dx, double dy);
+    void setTransform(double m11, double m12, double m21, double m22, double dx, double dy);
     void resetTransform();
 
     void beginPath();
@@ -152,32 +152,32 @@ public:
     void clip(const String& winding = "nonzero");
     void clip(Path2D*, const String& winding = "nonzero");
 
-    bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
-    bool isPointInPath(Path2D*, const float x, const float y, const String& winding = "nonzero");
-    bool isPointInStroke(const float x, const float y);
-    bool isPointInStroke(Path2D*, const float x, const float y);
+    bool isPointInPath(const double x, const double y, const String& winding = "nonzero");
+    bool isPointInPath(Path2D*, const double x, const double y, const String& winding = "nonzero");
+    bool isPointInStroke(const double x, const double y);
+    bool isPointInStroke(Path2D*, const double x, const double y);
 
     void scrollPathIntoView();
     void scrollPathIntoView(Path2D*);
 
-    void clearRect(float x, float y, float width, float height) override;
-    void fillRect(float x, float y, float width, float height);
-    void strokeRect(float x, float y, float width, float height);
+    void clearRect(double x, double y, double width, double height) override;
+    void fillRect(double x, double y, double width, double height);
+    void strokeRect(double x, double y, double width, double height);
 
-    void drawImage(const CanvasImageSourceUnion&, float x, float y, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawImage(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, double x, double y, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, double x, double y, double width, double height, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
+    void drawImage(CanvasImageSource*, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
 
-    CanvasGradient* createLinearGradient(float x0, float y0, float x1, float y1);
-    CanvasGradient* createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
+    CanvasGradient* createLinearGradient(double x0, double y0, double x1, double y1);
+    CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
     CanvasPattern* createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
     ImageData* createImageData(ImageData*) const;
-    ImageData* createImageData(float width, float height, ExceptionState&) const;
-    ImageData* getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
-    void putImageData(ImageData*, float dx, float dy, ExceptionState&);
-    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
+    ImageData* createImageData(double width, double height, ExceptionState&) const;
+    ImageData* getImageData(double sx, double sy, double sw, double sh, ExceptionState&) const;
+    void putImageData(ImageData*, double dx, double dy, ExceptionState&);
+    void putImageData(ImageData*, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState&);
 
     void reset() override;
 
@@ -193,10 +193,10 @@ public:
     String direction() const;
     void setDirection(const String&);
 
-    void fillText(const String& text, float x, float y);
-    void fillText(const String& text, float x, float y, float maxWidth);
-    void strokeText(const String& text, float x, float y);
-    void strokeText(const String& text, float x, float y, float maxWidth);
+    void fillText(const String& text, double x, double y);
+    void fillText(const String& text, double x, double y, double maxWidth);
+    void strokeText(const String& text, double x, double y);
+    void strokeText(const String& text, double x, double y, double maxWidth);
     TextMetrics* measureText(const String& text);
 
     bool imageSmoothingEnabled() const;
@@ -234,7 +234,7 @@ private:
     CanvasRenderingContext2DState& modifiableState();
     const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }
 
-    void setShadow(const FloatSize& offset, float blur, RGBA32 color);
+    void setShadow(const FloatSize& offset, double blur, RGBA32 color);
 
     void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
     void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
@@ -260,12 +260,12 @@ private:
     void drawImageInternal(SkCanvas*, CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
     void clipInternal(const Path&, const String& windingRuleString);
 
-    bool isPointInPathInternal(const Path&, const float x, const float y, const String& windingRuleString);
-    bool isPointInStrokeInternal(const Path&, const float x, const float y);
+    bool isPointInPathInternal(const Path&, const double x, const double y, const String& windingRuleString);
+    bool isPointInStrokeInternal(const Path&, const double x, const double y);
 
     void scrollPathIntoViewInternal(const Path&);
 
-    void drawTextInternal(const String&, float x, float y, CanvasRenderingContext2DState::PaintType, float* maxWidth = nullptr);
+    void drawTextInternal(const String&, double x, double y, CanvasRenderingContext2DState::PaintType, double* maxWidth = nullptr);
 
     const Font& accessFont();
     int getFontBaseline(const FontMetrics&) const;

@@ -55,14 +55,14 @@ public:
     void restore() { --m_unrealizedSaveCount; }
     void resetUnrealizedSaveCount() { m_unrealizedSaveCount = 0; }
 
-    void setLineDash(const Vector<float>&);
-    const Vector<float>& lineDash() const { return m_lineDash; }
+    void setLineDash(const Vector<double>&);
+    const Vector<double>& lineDash() const { return m_lineDash; }
 
     void setShouldAntialias(bool);
     bool shouldAntialias() const;
 
-    void setLineDashOffset(float);
-    float lineDashOffset() const { return m_lineDashOffset; }
+    void setLineDashOffset(double);
+    double lineDashOffset() const { return m_lineDashOffset; }
 
     // setTransform returns true iff transform is invertible;
     void setTransform(const AffineTransform&);
@@ -110,8 +110,8 @@ public:
     void setTextBaseline(TextBaseline baseline) { m_textBaseline = baseline; }
     TextBaseline textBaseline() const { return m_textBaseline; }
 
-    void setLineWidth(float lineWidth) { m_strokePaint.setStrokeWidth(lineWidth); }
-    float lineWidth() const { return m_strokePaint.getStrokeWidth(); }
+    void setLineWidth(double lineWidth) { m_strokePaint.setStrokeWidth(lineWidth); }
+    double lineWidth() const { return m_strokePaint.getStrokeWidth(); }
 
     void setLineCap(LineCap lineCap) { m_strokePaint.setStrokeCap(static_cast<SkPaint::Cap>(lineCap)); }
     LineCap lineCap() const { return static_cast<LineCap>(m_strokePaint.getStrokeCap()); }
@@ -119,21 +119,21 @@ public:
     void setLineJoin(LineJoin lineJoin) { m_strokePaint.setStrokeJoin(static_cast<SkPaint::Join>(lineJoin)); }
     LineJoin lineJoin() const { return static_cast<LineJoin>(m_strokePaint.getStrokeJoin()); }
 
-    void setMiterLimit(float miterLimit) { m_strokePaint.setStrokeMiter(miterLimit); }
-    float miterLimit() const { return m_strokePaint.getStrokeMiter(); }
+    void setMiterLimit(double miterLimit) { m_strokePaint.setStrokeMiter(miterLimit); }
+    double miterLimit() const { return m_strokePaint.getStrokeMiter(); }
 
-    void setShadowOffsetX(float);
-    void setShadowOffsetY(float);
+    void setShadowOffsetX(double);
+    void setShadowOffsetY(double);
     const FloatSize& shadowOffset() const { return m_shadowOffset; }
 
-    void setShadowBlur(float);
-    float shadowBlur() const { return m_shadowBlur; }
+    void setShadowBlur(double);
+    double shadowBlur() const { return m_shadowBlur; }
 
     void setShadowColor(SkColor);
     SkColor shadowColor() const { return m_shadowColor; }
 
-    void setGlobalAlpha(float);
-    float globalAlpha() const { return m_globalAlpha; }
+    void setGlobalAlpha(double);
+    double globalAlpha() const { return m_globalAlpha; }
 
     void setGlobalComposite(SkXfermode::Mode);
     SkXfermode::Mode globalComposite() const;
@@ -188,7 +188,7 @@ private:
     mutable SkPaint m_imagePaint;
 
     FloatSize m_shadowOffset;
-    float m_shadowBlur;
+    double m_shadowBlur;
     SkColor m_shadowColor;
     mutable RefPtr<SkDrawLooper> m_emptyDrawLooper;
     mutable RefPtr<SkDrawLooper> m_shadowOnlyDrawLooper;
@@ -196,10 +196,10 @@ private:
     mutable RefPtr<SkImageFilter> m_shadowOnlyImageFilter;
     mutable RefPtr<SkImageFilter> m_shadowAndForegroundImageFilter;
 
-    float m_globalAlpha;
+    double m_globalAlpha;
     AffineTransform m_transform;
-    Vector<float> m_lineDash;
-    float m_lineDashOffset;
+    Vector<double> m_lineDash;
+    double m_lineDashOffset;
 
     String m_unparsedFont;
     Font m_font;

@@ -183,7 +183,7 @@ TEST_F(CanvasRenderingContext2DAPITest, LineDashStateSave)
 {
     createContext(NonOpaque);
 
-    Vector<float> simpleDash;
+    Vector<double> simpleDash;
     simpleDash.append(4);
     simpleDash.append(2);
 
