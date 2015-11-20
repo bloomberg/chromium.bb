@@ -4,6 +4,8 @@
 
 #include "extensions/browser/process_map.h"
 
+#include <tuple>
+
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map_factory.h"
@@ -36,21 +38,9 @@ struct ProcessMap::Item {
   }
 
   bool operator<(const ProcessMap::Item& other) const {
-    if (extension_id < other.extension_id)
-      return true;
-
-    if (extension_id == other.extension_id &&
-        process_id < other.process_id) {
-      return true;
-    }
-
-    if (extension_id == other.extension_id &&
-        process_id == other.process_id &&
-        site_instance_id < other.site_instance_id) {
-      return true;
-    }
-
-    return false;
+    return std::tie(extension_id, process_id, site_instance_id) <
+           std::tie(other.extension_id, other.process_id,
+                    other.site_instance_id);
   }
 
   std::string extension_id;

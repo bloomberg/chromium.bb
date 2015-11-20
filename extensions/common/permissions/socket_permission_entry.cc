@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 #include "base/logging.h"
@@ -43,24 +44,10 @@ SocketPermissionEntry::SocketPermissionEntry()
 SocketPermissionEntry::~SocketPermissionEntry() {}
 
 bool SocketPermissionEntry::operator<(const SocketPermissionEntry& rhs) const {
-  if (pattern_.type < rhs.pattern_.type)
-    return true;
-  if (pattern_.type > rhs.pattern_.type)
-    return false;
-
-  if (pattern_.host < rhs.pattern_.host)
-    return true;
-  if (pattern_.host > rhs.pattern_.host)
-    return false;
-
-  if (match_subdomains_ < rhs.match_subdomains_)
-    return true;
-  if (match_subdomains_ > rhs.match_subdomains_)
-    return false;
-
-  if (pattern_.port < rhs.pattern_.port)
-    return true;
-  return false;
+  return std::tie(pattern_.type, pattern_.host, match_subdomains_,
+                  pattern_.port) <
+         std::tie(rhs.pattern_.type, rhs.pattern_.host, rhs.match_subdomains_,
+                  rhs.pattern_.port);
 }
 
 bool SocketPermissionEntry::operator==(const SocketPermissionEntry& rhs) const {

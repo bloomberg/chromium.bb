@@ -5,6 +5,7 @@
 #include "extensions/common/permissions/usb_device_permission_data.h"
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -90,13 +91,8 @@ bool UsbDevicePermissionData::FromValue(const base::Value* value) {
 
 bool UsbDevicePermissionData::operator<(
     const UsbDevicePermissionData& rhs) const {
-  if (vendor_id_ == rhs.vendor_id_) {
-    if (product_id_ == rhs.product_id_)
-      return interface_id_ < rhs.interface_id_;
-
-    return product_id_ < rhs.product_id_;
-  }
-  return vendor_id_ < rhs.vendor_id_;
+  return std::tie(vendor_id_, product_id_, interface_id_) <
+         std::tie(rhs.vendor_id_, rhs.product_id_, rhs.interface_id_);
 }
 
 bool UsbDevicePermissionData::operator==(

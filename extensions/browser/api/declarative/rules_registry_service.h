@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -43,9 +44,8 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
     RulesRegistryKey(const std::string& event_name, int rules_registry_id)
         : event_name(event_name), rules_registry_id(rules_registry_id) {}
     bool operator<(const RulesRegistryKey& other) const {
-      return (event_name < other.event_name) ||
-             ((event_name == other.event_name) &&
-              (rules_registry_id < other.rules_registry_id));
+      return std::tie(event_name, rules_registry_id) <
+             std::tie(other.event_name, other.rules_registry_id);
     }
   };
 

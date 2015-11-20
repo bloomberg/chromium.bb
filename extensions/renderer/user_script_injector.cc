@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/user_script_injector.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -36,12 +37,8 @@ struct RoutingInfoKey {
       : routing_id(routing_id), script_id(script_id) {}
 
   bool operator<(const RoutingInfoKey& other) const {
-    if (routing_id != other.routing_id)
-      return routing_id < other.routing_id;
-
-    if (script_id != other.script_id)
-      return script_id < other.script_id;
-    return false;  // keys are equal.
+    return std::tie(routing_id, script_id) <
+           std::tie(other.routing_id, other.script_id);
   }
 };
 

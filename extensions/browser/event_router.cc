@@ -4,6 +4,7 @@
 
 #include "extensions/browser/event_router.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -95,11 +96,8 @@ struct EventRouter::ListenerProcess {
       : process(process), extension_id(extension_id) {}
 
   bool operator<(const ListenerProcess& that) const {
-    if (process < that.process)
-      return true;
-    if (process == that.process && extension_id < that.extension_id)
-      return true;
-    return false;
+    return std::tie(process, extension_id) <
+           std::tie(that.process, that.extension_id);
   }
 };
 

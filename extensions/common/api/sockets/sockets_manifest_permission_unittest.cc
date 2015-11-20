@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <set>
+#include <tuple>
 
 #include "base/json/json_reader.h"
 #include "base/pickle.h"
@@ -67,10 +68,8 @@ struct CheckFormatEntry {
   // operators <, == are needed by container std::set and algorithms
   // std::set_includes and std::set_differences.
   bool operator<(const CheckFormatEntry& rhs) const {
-    if (operation_type == rhs.operation_type)
-      return host_pattern < rhs.host_pattern;
-
-    return operation_type < rhs.operation_type;
+    return std::tie(operation_type, host_pattern) <
+           std::tie(rhs.operation_type, rhs.host_pattern);
   }
 
   bool operator==(const CheckFormatEntry& rhs) const {
