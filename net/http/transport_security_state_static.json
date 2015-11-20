@@ -3196,7 +3196,6 @@
     { "name": "eroticen.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "eucl3d.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "firmapi.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "formationsfactory.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "freeweibo.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "funchestra.at", "include_subdomains": true, "mode": "force-https" },
     { "name": "gamenected.com", "include_subdomains": true, "mode": "force-https" },
