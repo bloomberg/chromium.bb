@@ -86,6 +86,7 @@
 
 #include <iosfwd>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -243,8 +244,8 @@ class scoped_ptr {
 
  public:
   // The element and deleter types.
-  typedef T element_type;
-  typedef D deleter_type;
+  using element_type = T;
+  using deleter_type = D;
 
   // Constructor.  Defaults to initializing with nullptr.
   scoped_ptr() : impl_(nullptr) {}
@@ -258,35 +259,78 @@ class scoped_ptr {
   // Constructor.  Allows construction from a nullptr.
   scoped_ptr(std::nullptr_t) : impl_(nullptr) {}
 
-  // Constructor.  Allows construction from a scoped_ptr rvalue for a
+  // Move constructor.
+  //
+  // IMPLEMENTATION NOTE: Clang requires a move constructor to be defined (and
+  // not just the conversion constructor) in order to warn on pessimizing moves.
+  // The requirements for the move constructor are specified in C++11
+  // 20.7.1.2.1.15-17, which has some subtleties around reference deleters. As
+  // we don't support reference (or move-only) deleters, the post conditions are
+  // trivially true: we always copy construct the deleter from other's deleter.
+  scoped_ptr(scoped_ptr&& other) : impl_(&other.impl_) {}
+
+  // Conversion constructor.  Allows construction from a scoped_ptr rvalue for a
   // convertible type and deleter.
   //
-  // IMPLEMENTATION NOTE: C++11 unique_ptr<> keeps this constructor distinct
-  // from the normal move constructor. By C++11 20.7.1.2.1.21, this constructor
-  // has different post-conditions if D is a reference type. Since this
-  // implementation does not support deleters with reference type,
-  // we do not need a separate move constructor allowing us to avoid one
-  // use of SFINAE. You only need to care about this if you modify the
-  // implementation of scoped_ptr.
-  template <typename U, typename V>
-  scoped_ptr(scoped_ptr<U, V>&& other)
-      : impl_(&other.impl_) {
-    COMPILE_ASSERT(!base::is_array<U>::value, U_cannot_be_an_array);
+  // IMPLEMENTATION NOTE: C++ 20.7.1.2.1.19 requires this constructor to only
+  // participate in overload resolution if all the following are true:
+  // - U is implicitly convertible to T: this is important for 2 reasons:
+  //     1. So type traits don't incorrectly return true, e.g.
+  //          std::is_convertible<scoped_ptr<Base>, scoped_ptr<Derived>>::value
+  //        should be false.
+  //     2. To make sure code like this compiles:
+  //        void F(scoped_ptr<int>);
+  //        void F(scoped_ptr<Base>);
+  //        // Ambiguous since both conversion constructors match.
+  //        F(scoped_ptr<Derived>());
+  // - U is not an array type: to prevent conversions from scoped_ptr<T[]> to
+  //   scoped_ptr<T>.
+  // - D is a reference type and E is the same type, or D is not a reference
+  //   type and E is implicitly convertible to D: again, we don't support
+  //   reference deleters, so we only worry about the latter requirement.
+  template <typename U,
+            typename E,
+            typename std::enable_if<!std::is_array<U>::value &&
+                                    std::is_convertible<U*, T*>::value &&
+                                    std::is_convertible<E, D>::value>::type* =
+                nullptr>
+  scoped_ptr(scoped_ptr<U, E>&& other)
+      : impl_(&other.impl_) {}
+
+  // operator=.
+  //
+  // IMPLEMENTATION NOTE: Unlike the move constructor, Clang does not appear to
+  // require a move assignment operator to trigger the pessimizing move warning:
+  // in this case, the warning triggers when moving a temporary. For consistency
+  // with the move constructor, we define it anyway. C++11 20.7.1.2.3.1-3
+  // defines several requirements around this: like the move constructor, the
+  // requirements are simplified by the fact that we don't support move-only or
+  // reference deleters.
+  scoped_ptr& operator=(scoped_ptr&& rhs) {
+    impl_.TakeState(&rhs.impl_);
+    return *this;
   }
 
   // operator=.  Allows assignment from a scoped_ptr rvalue for a convertible
   // type and deleter.
   //
   // IMPLEMENTATION NOTE: C++11 unique_ptr<> keeps this operator= distinct from
-  // the normal move assignment operator. By C++11 20.7.1.2.3.4, this templated
-  // form has different requirements on for move-only Deleters. Since this
-  // implementation does not support move-only Deleters, we do not need a
-  // separate move assignment operator allowing us to avoid one use of SFINAE.
-  // You only need to care about this if you modify the implementation of
-  // scoped_ptr.
-  template <typename U, typename V>
-  scoped_ptr& operator=(scoped_ptr<U, V>&& rhs) {
-    COMPILE_ASSERT(!base::is_array<U>::value, U_cannot_be_an_array);
+  // the normal move assignment operator. C++11 20.7.1.2.3.4-7 contains the
+  // requirement for this operator, but like the conversion constructor, the
+  // requirements are greatly simplified by not supporting move-only or
+  // reference deleters.
+  template <typename U,
+            typename E,
+            typename std::enable_if<!std::is_array<U>::value &&
+                                    std::is_convertible<U*, T*>::value &&
+                                    // Note that this really should be
+                                    // std::is_assignable, but <type_traits>
+                                    // appears to be missing this on some
+                                    // platforms. This is close enough (though
+                                    // it's not the same).
+                                    std::is_convertible<D, E>::value>::type* =
+                nullptr>
+  scoped_ptr& operator=(scoped_ptr<U, E>&& rhs) {
     impl_.TakeState(&rhs.impl_);
     return *this;
   }
@@ -362,8 +406,8 @@ class scoped_ptr<T[], D> {
 
  public:
   // The element and deleter types.
-  typedef T element_type;
-  typedef D deleter_type;
+  using element_type = T;
+  using deleter_type = D;
 
   // Constructor.  Defaults to initializing with nullptr.
   scoped_ptr() : impl_(nullptr) {}
