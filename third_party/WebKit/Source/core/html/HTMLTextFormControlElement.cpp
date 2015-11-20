@@ -99,7 +99,7 @@ void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement, W
 void HTMLTextFormControlElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::webkitEditableContentChanged && layoutObject() && layoutObject()->isTextControl()) {
-        m_lastChangeWasUserEdit = true;
+        m_lastChangeWasUserEdit = !document().isRunningExecCommand();
         subtreeHasChanged();
         return;
     }

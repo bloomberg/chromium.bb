@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -34,18 +35,18 @@ textarea.defaultValue = 'ab';
 textarea.minLength = 3;
 textarea.focus();
 textarea.setSelectionRange(2, 2);  // Move the cursor at the end.
-document.execCommand('delete');
+eventSender.keyDown('backspace');
 shouldBe('textarea.value.length', '1');
 shouldBeTrue('textarea.validity.tooShort');
 // Make the value empty, which means valid.
-document.execCommand('delete');
+eventSender.keyDown('backspace');
 shouldBe('textarea.value.length', '0');
 shouldBeFalse('textarea.validity.tooShort');
-document.execCommand('InsertText', false, 'ab');
+sendString('ab');
 shouldBe('textarea.value.length', '2');
 shouldBeTrue('textarea.validity.tooShort');
 // Make the value >=minLength.
-document.execCommand('InsertText', false, 'c');
+sendString('c');
 shouldBe('textarea.value.length', '3');
 shouldBeFalse('textarea.validity.tooShort');
 
@@ -61,7 +62,7 @@ debug('');
 debug('Disabling makes the control valid');
 textarea.focus();
 textarea.setSelectionRange(2, 2);  // Move the cursor at the end.
-document.execCommand('delete');
+eventSender.keyDown('backspace');
 shouldBeTrue('textarea.validity.tooShort');
 shouldBeFalse('textarea.disabled = true; textarea.validity.tooShort');
 shouldBeTrue('textarea.disabled = false; textarea.validity.tooShort');
@@ -75,7 +76,7 @@ parent.innerHTML = '<form><textarea minlength=3>ab</textarea></form>';
 textarea = parent.firstChild.firstChild;
 textarea.focus();
 textarea.setSelectionRange(2, 2);
-document.execCommand('delete');
+eventSender.keyDown('backspace');
 shouldBeTrue('textarea.validity.tooShort');
 parent.firstChild.reset();
 shouldBe('textarea.value', '"ab"');
@@ -102,7 +103,7 @@ textarea.value = fancyX + 'A'; // 4 characters, 2 grapheme cluster.
 textarea.minLength = 2;
 textarea.focus();
 shouldBeFalse('textarea.validity.tooShort');
-document.execCommand('delete'); // Make the value dirty, 1 grapheme remains.
+eventSender.keyDown('backspace'); // Make the value dirty, 1 grapheme remains.
 // Not too short because there are three characters.
 shouldBe('textarea.value.length', '3');
 shouldBeFalse('textarea.validity.tooShort');

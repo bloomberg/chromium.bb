@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -104,7 +105,7 @@ inputWithMax.maxLength = 3;
 inputWithMax.value = "abcdef";
 document.body.appendChild(inputWithMax);
 inputWithMax.focus();
-document.execCommand("delete");
+eventSender.keyDown("backspace");
 debug("input tooLong: " + inputWithMax.validationMessage);
 // fancyX should be treated as 3 characters.
 // U+0305 COMBINING OVERLINE
@@ -114,7 +115,7 @@ inputWithMax.maxLength = 2;
 inputWithMax.value = fancyX + "X";
 inputWithMax.focus();
 inputWithMax.setSelectionRange(4, 4);
-document.execCommand("delete");
+eventSender.keyDown("backspace");
 debug("input tooLong: " + inputWithMax.validationMessage);
 // The following test might show English text + Arabic digits. It's expected and
 // it never happens in products.
@@ -124,7 +125,7 @@ debug("input tooLong: " + inputWithMax.validationMessage);
 var textarea = document.createElement("textarea");
 document.body.appendChild(textarea);
 textarea.focus();
-document.execCommand("inserttext", false, "a\nbc");
+sendString("a\nbc");
 textarea.maxLength = 3;
 debug("textarea tooLong: " + textarea.validationMessage);
 
@@ -134,7 +135,7 @@ inputWithMin.minLength = 3;
 inputWithMin.value = "ab";
 document.body.appendChild(inputWithMin);
 inputWithMin.focus();
-document.execCommand("delete");
+eventSender.keyDown("backspace");
 debug("input tooShort: " + inputWithMin.validationMessage);
 // fancyX should be treated as 3 characters.
 // U+0305 COMBINING OVERLINE
@@ -144,7 +145,7 @@ inputWithMin.minLength = 4;
 inputWithMin.value = fancyX + "X";
 inputWithMin.focus();
 inputWithMin.setSelectionRange(4, 4);
-document.execCommand("delete");
+eventSender.keyDown("backspace");
 debug("input tooShort: " + inputWithMin.validationMessage);
 // The following test might show English text + Arabic digits. It's expected and
 // it never happens in products.
@@ -154,7 +155,7 @@ debug("input tooShort: " + inputWithMin.validationMessage);
 var textarea = document.createElement("textarea");
 document.body.appendChild(textarea);
 textarea.focus();
-document.execCommand("inserttext", false, "a\n");
+sendString("a\n");
 textarea.minLength = 4;
 debug("textarea tooShort: " + textarea.validationMessage);
 

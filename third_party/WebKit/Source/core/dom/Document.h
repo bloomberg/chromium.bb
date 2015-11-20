@@ -754,6 +754,7 @@ public:
     DocumentMarkerController& markers() const { return *m_markers; }
 
     bool execCommand(const String& command, bool showUI, const String& value, ExceptionState&);
+    bool isRunningExecCommand() const { return m_isRunningExecCommand; }
     bool queryCommandEnabled(const String& command, ExceptionState&);
     bool queryCommandIndeterm(const String& command, ExceptionState&);
     bool queryCommandState(const String& command, ExceptionState&);
@@ -1277,6 +1278,7 @@ private:
     DocumentEncodingData m_encodingData;
 
     bool m_designMode;
+    bool m_isRunningExecCommand;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
 #if ENABLE(OILPAN)

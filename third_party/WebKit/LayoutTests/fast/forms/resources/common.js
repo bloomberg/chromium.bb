@@ -215,3 +215,13 @@ function waitUntilLoadedAndAutofocused(callback) {
             callback();
     }, false);
 }
+
+function sendString(str) {
+    if (!window.eventSender) {
+        console.log('Require eventSender.');
+        return;
+    }
+    for (var i = 0; i < str.length; ++i)
+        eventSender.keyDown(str.charAt(i));
+}
+

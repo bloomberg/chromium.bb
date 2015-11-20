@@ -415,6 +415,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_xmlStandalone(StandaloneUnspecified)
     , m_hasXMLDeclaration(0)
     , m_designMode(false)
+    , m_isRunningExecCommand(false)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
     , m_useSecureKeyboardEntryWhenActive(false)
@@ -4399,13 +4400,12 @@ bool Document::execCommand(const String& commandName, bool, const String& value,
     // with script triggered by insertion, e.g. <iframe src="javascript:...">
     // <iframe onload="...">. This usage is valid as of the specification
     // although, it isn't common use case, rather it is used as attack code.
-    static bool inExecCommand = false;
-    if (inExecCommand) {
+    if (m_isRunningExecCommand) {
         String message = "We don't execute document.execCommand() this time, because it is called recursively.";
         addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return false;
     }
-    TemporaryChange<bool> executeScope(inExecCommand, true);
+    TemporaryChange<bool> executeScope(m_isRunningExecCommand, true);
 
     // Postpone DOM mutation events, which can execute scripts and change
     // DOM tree against implementation assumption.
