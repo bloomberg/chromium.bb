@@ -31,6 +31,10 @@ SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
   }
 
   DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+
+  if (!synthetic_pointer_)
+    synthetic_pointer_ = SyntheticPointer::Create(gesture_source_type_);
+
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT ||
       gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT)
     ForwardTouchOrMouseInputEvents(timestamp, target);
@@ -45,10 +49,13 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp, SyntheticGestureTarget* target) {
   switch (state_) {
     case PRESS:
-      Press(target, timestamp);
+      synthetic_pointer_->Press(params_.position.x(), params_.position.y(),
+                                target, timestamp);
+      synthetic_pointer_->DispatchEvent(target, timestamp);
       // Release immediately if duration is 0.
       if (params_.duration_ms == 0) {
-        Release(target, timestamp);
+        synthetic_pointer_->Release(0, target, timestamp);
+        synthetic_pointer_->DispatchEvent(target, timestamp);
         state_ = DONE;
       } else {
         start_time_ = timestamp;
@@ -57,7 +64,8 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
       break;
     case WAITING_TO_RELEASE:
       if (timestamp - start_time_ >= GetDuration()) {
-        Release(target, start_time_ + GetDuration());
+        synthetic_pointer_->Release(0, target, start_time_ + GetDuration());
+        synthetic_pointer_->DispatchEvent(target, start_time_ + GetDuration());
         state_ = DONE;
       }
       break;
@@ -65,46 +73,6 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
       NOTREACHED() << "State SETUP invalid for synthetic tap gesture.";
     case DONE:
       NOTREACHED() << "State DONE invalid for synthetic tap gesture.";
-  }
-}
-
-void SyntheticTapGesture::Press(SyntheticGestureTarget* target,
-                                const base::TimeTicks& timestamp) {
-  if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
-    touch_event_.PressPoint(params_.position.x(), params_.position.y());
-    touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    target->DispatchInputEventToPlatform(touch_event_);
-  } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
-    blink::WebMouseEvent mouse_event =
-        SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseDown,
-                                             params_.position.x(),
-                                             params_.position.y(),
-                                             0);
-    mouse_event.clickCount = 1;
-    mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    target->DispatchInputEventToPlatform(mouse_event);
-  } else {
-    NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
-  }
-}
-
-void SyntheticTapGesture::Release(SyntheticGestureTarget* target,
-                                  const base::TimeTicks& timestamp) {
-  if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
-    touch_event_.ReleasePoint(0);
-    touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    target->DispatchInputEventToPlatform(touch_event_);
-  } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
-    blink::WebMouseEvent mouse_event =
-        SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseUp,
-                                             params_.position.x(),
-                                             params_.position.y(),
-                                             0);
-    mouse_event.clickCount = 1;
-    mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    target->DispatchInputEventToPlatform(mouse_event);
-  } else {
-    NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
   }
 }
 

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_TARGET_H_
 
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 

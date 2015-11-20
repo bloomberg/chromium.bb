@@ -7,9 +7,9 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_pointer.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
@@ -33,15 +33,11 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
   void ForwardTouchOrMouseInputEvents(const base::TimeTicks& timestamp,
                                       SyntheticGestureTarget* target);
 
-  void Press(SyntheticGestureTarget* target, const base::TimeTicks& timestamp);
-  void Release(SyntheticGestureTarget* target,
-               const base::TimeTicks& timestamp);
-
   base::TimeDelta GetDuration() const;
 
   SyntheticTapGestureParams params_;
+  scoped_ptr<SyntheticPointer> synthetic_pointer_;
   base::TimeTicks start_time_;
-  SyntheticWebTouchEvent touch_event_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;
 

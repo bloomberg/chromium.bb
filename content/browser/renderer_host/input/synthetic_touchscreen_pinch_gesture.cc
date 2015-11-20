@@ -37,6 +37,10 @@ SyntheticGesture::Result SyntheticTouchscreenPinchGesture::ForwardInputEvents(
   }
 
   DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+
+  if (!synthetic_pointer_)
+    synthetic_pointer_ = SyntheticPointer::Create(gesture_source_type_);
+
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
     ForwardTouchInputEvents(timestamp, target);
   } else {
@@ -80,9 +84,9 @@ void SyntheticTouchscreenPinchGesture::ForwardTouchInputEvents(
 void SyntheticTouchscreenPinchGesture::PressTouchPoints(
     SyntheticGestureTarget* target,
     const base::TimeTicks& timestamp) {
-  touch_event_.PressPoint(params_.anchor.x(), start_y_0_);
-  touch_event_.PressPoint(params_.anchor.x(), start_y_1_);
-  ForwardTouchEvent(target, timestamp);
+  synthetic_pointer_->Press(params_.anchor.x(), start_y_0_, target, timestamp);
+  synthetic_pointer_->Press(params_.anchor.x(), start_y_1_, target, timestamp);
+  synthetic_pointer_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticTouchscreenPinchGesture::MoveTouchPoints(
@@ -93,24 +97,19 @@ void SyntheticTouchscreenPinchGesture::MoveTouchPoints(
   float current_y_0 = start_y_0_ + delta;
   float current_y_1 = start_y_1_ - delta;
 
-  touch_event_.MovePoint(0, params_.anchor.x(), current_y_0);
-  touch_event_.MovePoint(1, params_.anchor.x(), current_y_1);
-  ForwardTouchEvent(target, timestamp);
+  synthetic_pointer_->Move(0, params_.anchor.x(), current_y_0, target,
+                           timestamp);
+  synthetic_pointer_->Move(1, params_.anchor.x(), current_y_1, target,
+                           timestamp);
+  synthetic_pointer_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticTouchscreenPinchGesture::ReleaseTouchPoints(
     SyntheticGestureTarget* target,
     const base::TimeTicks& timestamp) {
-  touch_event_.ReleasePoint(0);
-  touch_event_.ReleasePoint(1);
-  ForwardTouchEvent(target, timestamp);
-}
-
-void SyntheticTouchscreenPinchGesture::ForwardTouchEvent(
-    SyntheticGestureTarget* target,
-    const base::TimeTicks& timestamp) {
-  touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-  target->DispatchInputEventToPlatform(touch_event_);
+  synthetic_pointer_->Release(0, target, timestamp);
+  synthetic_pointer_->Release(1, target, timestamp);
+  synthetic_pointer_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticTouchscreenPinchGesture::SetupCoordinatesAndStopTime(

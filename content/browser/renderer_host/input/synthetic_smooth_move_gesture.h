@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_pointer.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -69,27 +69,17 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   void ForwardMouseClickInputEvents(
       const base::TimeTicks& timestamp, SyntheticGestureTarget* target);
 
-  void ForwardTouchEvent(SyntheticGestureTarget* target,
-                         const base::TimeTicks& timestamp);
   void ForwardMouseWheelEvent(SyntheticGestureTarget* target,
                               const gfx::Vector2dF& delta,
                               const base::TimeTicks& timestamp) const;
 
-  void PressTouchPoint(SyntheticGestureTarget* target,
-                       const base::TimeTicks& timestamp);
-  void MoveTouchPoint(SyntheticGestureTarget* target,
-                      const gfx::Vector2dF& delta,
-                      const base::TimeTicks& timestamp);
-  void ReleaseTouchPoint(SyntheticGestureTarget* target,
-                         const base::TimeTicks& timestamp);
-
-  void PressMousePoint(SyntheticGestureTarget* target,
-                       const base::TimeTicks& timestamp);
-  void ReleaseMousePoint(SyntheticGestureTarget* target,
-                         const base::TimeTicks& timestamp);
-  void MoveMousePoint(SyntheticGestureTarget* target,
-                      const gfx::Vector2dF& delta,
-                      const base::TimeTicks& timestamp);
+  void PressPoint(SyntheticGestureTarget* target,
+                  const base::TimeTicks& timestamp);
+  void MovePoint(SyntheticGestureTarget* target,
+                 const gfx::Vector2dF& delta,
+                 const base::TimeTicks& timestamp);
+  void ReleasePoint(SyntheticGestureTarget* target,
+                    const base::TimeTicks& timestamp);
 
   void AddTouchSlopToFirstDistance(SyntheticGestureTarget* target);
   gfx::Vector2dF GetPositionDeltaAtTime(const base::TimeTicks& timestamp) const;
@@ -100,11 +90,11 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   bool MoveIsNoOp() const;
 
   SyntheticSmoothMoveGestureParams params_;
+  scoped_ptr<SyntheticPointer> synthetic_pointer_;
   // Used for mouse input.
   gfx::Vector2d current_move_segment_total_delta_discrete_;
   // Used for touch input.
   gfx::PointF current_move_segment_start_position_;
-  SyntheticWebTouchEvent touch_event_;
   GestureState state_;
   int current_move_segment_;
   base::TimeTicks current_move_segment_start_time_;
