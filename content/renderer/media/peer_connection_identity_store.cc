@@ -92,8 +92,7 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
 void ObserverOnSuccess(
     const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer,
     scoped_ptr<rtc::SSLIdentity> identity) {
-  rtc::scoped_ptr<rtc::SSLIdentity> rtc_scoped_ptr(identity.release());
-  observer->OnSuccess(rtc_scoped_ptr.Pass());
+  observer->OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity>(identity.release()));
 }
 
 }  // namespace

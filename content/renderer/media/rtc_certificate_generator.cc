@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/rtc_certificate_generator.h"
 
+#include <utility>
+
 #include "content/renderer/media/peer_connection_identity_store.h"
 #include "content/renderer/media/rtc_certificate.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -95,15 +97,14 @@ class RTCCertificateIdentityObserver
         rtc::kPemTypeRsaPrivateKey,
         reinterpret_cast<const unsigned char*>(der_private_key.data()),
         der_private_key.length());
-    rtc::scoped_ptr<rtc::SSLIdentity> identity(
-        rtc::SSLIdentity::FromPEMStrings(pem_key, pem_cert));
-    OnSuccess(identity.Pass());
+    OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity>(
+        rtc::SSLIdentity::FromPEMStrings(pem_key, pem_cert)));
   }
   void OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity> identity) override {
     DCHECK(signaling_thread_->BelongsToCurrentThread());
     DCHECK(observer_);
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-        rtc::RTCCertificate::Create(identity.Pass());
+        rtc::RTCCertificate::Create(std::move(identity));
     main_thread_->PostTask(FROM_HERE, base::Bind(
         &RTCCertificateIdentityObserver::DoCallbackOnMainThread,
         this, new RTCCertificate(key_params_, certificate)));

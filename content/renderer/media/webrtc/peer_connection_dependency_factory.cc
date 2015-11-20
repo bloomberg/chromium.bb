@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -545,11 +546,10 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
           socket_factory_.get(), port_config, requesting_origin,
           chrome_worker_thread_.task_runner());
 
-  return GetPcFactory()->CreatePeerConnection(config,
-                                              constraints,
-                                              pa_factory.get(),
-                                              identity_store.Pass(),
-                                              observer).get();
+  return GetPcFactory()
+      ->CreatePeerConnection(config, constraints, pa_factory.get(),
+                             std::move(identity_store), observer)
+      .get();
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
