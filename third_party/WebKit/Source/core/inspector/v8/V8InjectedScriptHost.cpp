@@ -66,18 +66,9 @@ void V8InjectedScriptHost::inspectedObjectCallback(const v8::FunctionCallbackInf
 
 static v8::Local<v8::String> functionDisplayName(v8::Local<v8::Function> function)
 {
-    v8::Local<v8::Value> value = function->GetDisplayName();
+    v8::Local<v8::Value> value = function->GetDebugName();
     if (value->IsString() && v8::Local<v8::String>::Cast(value)->Length())
         return v8::Local<v8::String>::Cast(value);
-
-    value = function->GetName();
-    if (value->IsString() && v8::Local<v8::String>::Cast(value)->Length())
-        return v8::Local<v8::String>::Cast(value);
-
-    value = function->GetInferredName();
-    if (value->IsString() && v8::Local<v8::String>::Cast(value)->Length())
-        return v8::Local<v8::String>::Cast(value);
-
     return v8::Local<v8::String>();
 }
 

@@ -87,7 +87,7 @@ DebuggerScript.getGeneratorObjectDetails = function(object)
         return null;
     var result = {
         "function": funcMirror.value(),
-        "functionName": DebuggerScript._displayFunctionName(funcMirror) || "",
+        "functionName": funcMirror.debugName(),
         "status": mirror.status()
     };
     var script = funcMirror.script();
@@ -362,17 +362,6 @@ DebuggerScript.isEvalCompilation = function(eventData)
     return (script.compilationType() === Debug.ScriptCompilationType.Eval);
 }
 
-DebuggerScript._displayFunctionName = function(funcMirror)
-{
-    if (!funcMirror.resolved())
-        return undefined
-    var displayName;
-    var valueMirror = funcMirror.property("displayName").value();
-    if (valueMirror && valueMirror.isString())
-        displayName = valueMirror.value();
-    return displayName || funcMirror.name() || funcMirror.inferredName();
-}
-
 // NOTE: This function is performance critical, as it can be run on every
 // statement that generates an async event (like addEventListener) to support
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
@@ -485,7 +474,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
 
     function functionName()
     {
-        return DebuggerScript._displayFunctionName(ensureFuncMirror());
+        return ensureFuncMirror().debugName();
     }
 
     function functionLine()
