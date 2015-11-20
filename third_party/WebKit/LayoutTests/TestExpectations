@@ -672,6 +672,9 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-0
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
 
+# Rebaseline for Skia roll
+crbug.com/559300 inspector/layers/layer-canvas-log.html [ Failure ]
+
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001q.html [ Failure ]

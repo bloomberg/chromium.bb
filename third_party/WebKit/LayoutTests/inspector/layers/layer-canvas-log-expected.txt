@@ -113,19 +113,10 @@ Canvas log:
         method : "save"
     }
     6 : {
-        method : "setMatrix"
+        method : "translate"
         params : {
-            matrix : [
-                1
-                0
-                0
-                0
-                1
-                71
-                0
-                0
-                1
-            ]
+            dx : 0
+            dy : 71
         }
     }
     7 : {
