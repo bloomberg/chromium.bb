@@ -214,6 +214,16 @@ struct NewWindowInfo {
 - (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
                                  toItem:(web::NavigationItem*)toItem;
 
+// Updates the internal state and informs the delegate that any outstanding load
+// operations are cancelled.
+- (void)loadCancelled;
+
+// Called when a load ends in an error.
+// TODO(stuartmorgan): Figure out if there's actually enough shared logic that
+// this makes sense. At the very least remove inMainFrame since that only makes
+// sense for UIWebView.
+- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame;
+
 #pragma mark - Internal methods for use by subclasses
 
 // The web view's view of the current URL. During page transitions
@@ -270,10 +280,6 @@ struct NewWindowInfo {
 // changed (e.g. view's background color). Web controller adds |webView| to its
 // content view.
 - (void)webViewDidChange;
-
-// Updates the internal state and informs the delegate that any outstanding load
-// operations are cancelled.
-- (void)loadCancelled;
 
 // Aborts any load for both the web view and web controller.
 - (void)abortLoad;
@@ -332,12 +338,6 @@ struct NewWindowInfo {
 - (void)registerLoadRequest:(const GURL&)URL
                    referrer:(const web::Referrer&)referrer
                  transition:(ui::PageTransition)transition;
-
-// Called when a load ends in an error.
-// TODO(stuartmorgan): Figure out if there's actually enough shared logic that
-// this makes sense. At the very least remove inMainFrame since that only makes
-// sense for UIWebView.
-- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame;
 
 // Update the appropriate parts of the model and broadcast to the embedder. This
 // may be called multiple times and thus must be idempotent.

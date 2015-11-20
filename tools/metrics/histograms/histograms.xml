@@ -8746,6 +8746,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.IOSDownloadPassKitResult"
+    enum="DownloadPassKitResult">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    Result when a user attempts to download a PassKit file on iOS with
+    WKWebView.
+  </summary>
+</histogram>
+
 <histogram name="Download.MaliciousDownloadClassified"
     enum="DownloadItem.DangerType">
   <owner>asanka@chromium.org</owner>
@@ -58055,6 +58064,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="New redirects + Content-Disposition"/>
   <int value="6" label="New validators + Content-Disposition"/>
   <int value="7" label="New redirects + validators + Content-Disposition"/>
+</enum>
+
+<enum name="DownloadPassKitResult" type="int">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Other Failure"/>
+  <int value="2" label="Unauthorized Failure"/>
+  <int value="3" label="Wrong MIME Type Failure"/>
 </enum>
 
 <enum name="DownloadSavePackageEvent" type="int">

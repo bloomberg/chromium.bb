@@ -24,6 +24,7 @@
 #include "ios/web/navigation/web_load_params.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
+#include "ios/web/public/browser_state.h"
 #include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
@@ -35,6 +36,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
+#import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
@@ -182,6 +184,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Referrer for the current page.
   base::scoped_nsobject<NSString> _currentReferrerString;
 
+  // Handles downloading PassKit data for WKWebView. Lazy initialized.
+  base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
+
   // Whether the web page is currently performing window.history.pushState or
   // window.history.replaceState
   // Set to YES on window.history.willChangeState message. To NO on
@@ -221,6 +226,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Identifier used for storing and retrieving certificates.
 @property(nonatomic, readonly) int certGroupID;
+
+// Downloader for PassKit files. Lazy initialized.
+@property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
@@ -671,6 +679,21 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)loadCompletedForURL:(const GURL&)loadedURL {
   // Nothing to do.
+}
+
+// Override |handleLoadError| to check for PassKit case.
+- (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
+  NSString* MIMEType = [_pendingNavigationInfo MIMEType];
+  if ([self.passKitDownloader isMIMETypePassKitType:MIMEType])
+    return;
+  [super handleLoadError:error inMainFrame:inMainFrame];
+}
+
+// Override |loadCancelled| to |cancelPendingDownload| for the
+// CRWPassKitDownloader.
+- (void)loadCancelled {
+  [_passKitDownloader cancelPendingDownload];
+  [super loadCancelled];
 }
 
 #pragma mark Private methods
@@ -1326,6 +1349,34 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return source != NAVIGATION;
 }
 
+- (CRWPassKitDownloader*)passKitDownloader {
+  if (_passKitDownloader) {
+    return _passKitDownloader.get();
+  }
+  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
+  web::PassKitCompletionHandler passKitCompletion = ^(NSData* data) {
+    base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
+        [weakSelf retain]);
+    if (!strongSelf) {
+      return;
+    }
+    // Cancel load to update web state, since the PassKit download happens
+    // through a separate flow. This follows the same flow as when PassKit is
+    // downloaded through UIWebView.
+    [strongSelf loadCancelled];
+    SEL didLoadPassKitObject = @selector(webController:didLoadPassKitObject:);
+    id<CRWWebDelegate> delegate = [strongSelf delegate];
+    if ([delegate respondsToSelector:didLoadPassKitObject]) {
+      [delegate webController:strongSelf didLoadPassKitObject:data];
+    }
+  };
+  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
+  _passKitDownloader.reset([[CRWPassKitDownloader alloc]
+      initWithContextGetter:browserState->GetRequestContext()
+          completionHandler:passKitCompletion]);
+  return _passKitDownloader.get();
+}
+
 #pragma mark -
 #pragma mark CRWWebViewScrollViewProxyObserver
 
@@ -1557,6 +1608,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     if (!allowNavigation && navigationResponse.isForMainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
+  }
+  if ([self.passKitDownloader
+          isMIMETypePassKitType:[_pendingNavigationInfo MIMEType]]) {
+    GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
+    [self.passKitDownloader downloadPassKitFileWithURL:URL];
   }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow

@@ -258,6 +258,13 @@ typedef void (^SSLErrorCallback)(BOOL);
 // Called when web view process has been terminated.
 - (void)webControllerWebProcessDidCrash:(CRWWebController*)webController;
 
+// Called when a PassKit file is downloaded. |data| should be the data from a
+// PassKit file, but this is not guaranteed, and the delegate is responsible for
+// error handling non PassKit data using -[PKPass initWithData:error:]. If the
+// download does not successfully complete, |data| will be nil.
+- (void)webController:(CRWWebController*)webController
+    didLoadPassKitObject:(NSData*)data;
+
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_
