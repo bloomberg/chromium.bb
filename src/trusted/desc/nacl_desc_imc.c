@@ -381,7 +381,6 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
     NaClDescImcConnectedDescDtor,
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
@@ -426,7 +425,6 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
     NaClDescImcDescDtor,  /* diff */
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
@@ -471,7 +469,6 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
     NaClDescXferableDataDescDtor,  /* diff */
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

@@ -139,7 +139,6 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
     NaClDescSyncSocketDtor,
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescSyncSocketRead,
   NaClDescSyncSocketWrite,
   NaClDescSeekNotImplemented,

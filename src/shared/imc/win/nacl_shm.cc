@@ -115,9 +115,3 @@ void* NaClMap(struct NaClDescEffector* effp,
   }
   return start;
 }
-
-int NaClUnmap(void* start, size_t length) {
-  /* TODO(shiki): Try from start to start + length */
-  UnmapViewOfFile(start);
-  return 0;
-}

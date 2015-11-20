@@ -288,14 +288,6 @@ void* NaClMap(struct NaClDescEffector* effp,
               void* start, size_t length, int prot, int flags,
               NaClHandle memory, off_t offset);
 
-/*
- * Unmaps the memory objects mapped within the specified process
- * address space range.
- *
- * NaClUnmap() returns 0 on success, and -1 on failure.
- */
-int NaClUnmap(void* start, size_t length);
-
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

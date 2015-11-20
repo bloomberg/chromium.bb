@@ -196,7 +196,6 @@ static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
     NaClDescConnCapDtor,
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

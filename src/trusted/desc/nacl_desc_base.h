@@ -183,18 +183,6 @@ struct NaClDescVtbl {
                    int                      flags,
                    nacl_off64_t             offset) NACL_WUR;
 
-#if NACL_WINDOWS
-  /*
-   * UnmapUnsafe really unmaps and leaves a hole in the address space.
-   * It is intended for use by Map (through the effector interface) to
-   * clear out memory according to the memory object that is backing
-   * the memory, prior to putting new memory in place.
-   */
-  int (*UnmapUnsafe)(struct NaClDesc          *vself,
-                     void                     *start_addr,
-                     size_t                   len) NACL_WUR;
-#endif
-
   ssize_t (*Read)(struct NaClDesc *vself,
                   void            *buf,
                   size_t          len) NACL_WUR;
@@ -562,17 +550,6 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     int                     prot,
                                     int                     flags,
                                     nacl_off64_t            offset);
-
-#if NACL_WINDOWS
-int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc  *vself,
-                                      void             *start_addr,
-                                      size_t           len);
-/* This is an initializer for use when defining NaClDescVtbl structs. */
-# define NACL_DESC_UNMAP_NOT_IMPLEMENTED \
-    NaClDescUnmapUnsafeNotImplemented,
-#else
-# define NACL_DESC_UNMAP_NOT_IMPLEMENTED /* empty */
-#endif
 
 ssize_t NaClDescReadNotImplemented(struct NaClDesc  *vself,
                                    void             *buf,

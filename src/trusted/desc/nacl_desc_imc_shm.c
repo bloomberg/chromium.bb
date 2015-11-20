@@ -210,39 +210,6 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   return (uintptr_t) start_addr;
 }
 
-#if NACL_WINDOWS
-static int NaClDescImcShmUnmapUnsafe(struct NaClDesc  *vself,
-                                     void             *start_addr,
-                                     size_t           len) {
-  int       retval;
-  uintptr_t addr;
-  uintptr_t end_addr;
-
-  UNREFERENCED_PARAMETER(vself);
-
-  retval = -NACL_ABI_EINVAL;
-
-  for (addr = (uintptr_t) start_addr, end_addr = addr + len;
-       addr < end_addr;
-       addr += NACL_MAP_PAGESIZE) {
-    int       status;
-
-    /*
-     * On windows, we must unmap "properly", since overmapping will
-     * not tear down existing page mappings.
-     */
-    status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
-    if (0 != status) {
-      NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
-      goto done;
-    }
-  }
-  retval = 0;
-done:
-  return retval;
-}
-#endif
-
 static int NaClDescImcShmFstat(struct NaClDesc         *vself,
                                struct nacl_abi_stat    *stbp) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
@@ -306,11 +273,6 @@ static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
     NaClDescImcShmDtor,
   },
   NaClDescImcShmMap,
-#if NACL_WINDOWS
-  NaClDescImcShmUnmapUnsafe,
-#else
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
-#endif
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

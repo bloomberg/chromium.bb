@@ -239,7 +239,3 @@ void* NaClMap(struct NaClDescEffector* effp,
   }
   return mmap(start, length, kPosixProt[prot & 7], adjusted, memory, offset);
 }
-
-int NaClUnmap(void* start, size_t length) {
-  return munmap(start, length);
-}

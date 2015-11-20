@@ -265,21 +265,6 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
   return (uintptr_t) -NACL_ABI_EINVAL;
 }
 
-#if NACL_WINDOWS
-int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
-                                      void                    *start_addr,
-                                      size_t                  len) {
-  UNREFERENCED_PARAMETER(start_addr);
-  UNREFERENCED_PARAMETER(len);
-
-  NaClLog(LOG_ERROR,
-          "Map method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
-#endif
-
 ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
                                    void                     *buf,
                                    size_t                   len) {
@@ -735,7 +720,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
     NaClDescDtor,
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

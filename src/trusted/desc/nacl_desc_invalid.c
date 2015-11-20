@@ -54,7 +54,6 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
     NaClDescDtorNotImplemented,
   },
   NaClDescMapNotImplemented,
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

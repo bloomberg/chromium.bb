@@ -231,15 +231,6 @@ uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
                            prot, flags, offset);
 }
 
-#if NACL_WINDOWS
-static int NaClDescIoDescUnmapUnsafe(struct NaClDesc  *vself,
-                                     void             *start_addr,
-                                     size_t           len) {
-  UNREFERENCED_PARAMETER(vself);
-  return NaClHostDescUnmapUnsafe(start_addr, len);
-}
-#endif
-
 static ssize_t NaClDescIoDescRead(struct NaClDesc          *vself,
                                   void                     *buf,
                                   size_t                   len) {
@@ -372,11 +363,6 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
     NaClDescIoDescDtor,
   },
   NaClDescIoDescMap,
-#if NACL_WINDOWS
-  NaClDescIoDescUnmapUnsafe,
-#else
-  NACL_DESC_UNMAP_NOT_IMPLEMENTED
-#endif
   NaClDescIoDescRead,
   NaClDescIoDescWrite,
   NaClDescIoDescSeek,
