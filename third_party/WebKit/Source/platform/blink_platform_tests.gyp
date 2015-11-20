@@ -82,6 +82,7 @@
         '../wtf/wtf.gyp:wtf',
         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/cc/blink/cc_blink.gyp:cc_blink',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
         '<(DEPTH)/url/url.gyp:url_lib',

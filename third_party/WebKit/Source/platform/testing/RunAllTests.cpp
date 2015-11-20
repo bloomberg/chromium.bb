@@ -41,6 +41,7 @@
 #include <base/bind_helpers.h>
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
+#include <cc/blink/web_compositor_support_impl.h>
 #include <string.h>
 
 static double CurrentTime()
@@ -67,6 +68,8 @@ int main(int argc, char** argv)
     WTF::initializeMainThread(0);
 
     blink::TestingPlatformSupport::Config platformConfig;
+    cc_blink::WebCompositorSupportImpl compositorSupport;
+    platformConfig.compositorSupport = &compositorSupport;
     blink::TestingPlatformSupport platform(platformConfig);
 
     blink::Heap::init();

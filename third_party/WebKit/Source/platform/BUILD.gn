@@ -397,6 +397,7 @@ test("platform_unittests") {
     "//base",
     "//base/allocator",
     "//base/test:test_support",
+    "//cc/blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

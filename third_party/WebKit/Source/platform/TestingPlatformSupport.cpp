@@ -102,4 +102,9 @@ WebString TestingPlatformSupport::defaultLocale()
     return WebString::fromUTF8("en-US");
 }
 
+WebCompositorSupport* TestingPlatformSupport::compositorSupport()
+{
+    return m_config.compositorSupport;
+}
+
 } // namespace blink

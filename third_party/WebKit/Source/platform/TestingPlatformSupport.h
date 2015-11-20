@@ -56,9 +56,12 @@ private:
 class TestingPlatformSupport : public Platform {
 public:
     struct Config {
-        Config() : hasDiscardableMemorySupport(false) { }
+        Config()
+            : hasDiscardableMemorySupport(false)
+            , compositorSupport(nullptr) { }
 
         bool hasDiscardableMemorySupport;
+        WebCompositorSupport* compositorSupport;
     };
 
     explicit TestingPlatformSupport(const Config&);
@@ -70,6 +73,7 @@ public:
     void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override;
     const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
     WebString defaultLocale() override;
+    WebCompositorSupport* compositorSupport() override;
 
 private:
     const Config m_config;
