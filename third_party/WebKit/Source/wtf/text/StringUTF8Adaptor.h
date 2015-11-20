@@ -31,6 +31,7 @@
 #ifndef StringUTF8Adaptor_h
 #define StringUTF8Adaptor_h
 
+#include "base/strings/string_piece.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
@@ -64,6 +65,8 @@ public:
 
     const char* data() const { return m_data; }
     size_t length() const { return m_length; }
+
+    base::StringPiece asStringPiece() const { return base::StringPiece(m_data, m_length); }
 
 private:
     CString m_utf8Buffer;
