@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -39,12 +39,11 @@ class TraceableDevToolsScreenshot
     if (!frame_.drawsNothing()) {
       std::vector<unsigned char> data;
       SkAutoLockPixels lock_image(frame_);
-      bool encoded = gfx::PNGCodec::Encode(
+      bool encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
-          gfx::PNGCodec::FORMAT_SkBitmap,
-          gfx::Size(frame_.width(), frame_.height()),
-          frame_.width() * frame_.bytesPerPixel(), false,
-          std::vector<gfx::PNGCodec::Comment>(), &data);
+          gfx::JPEGCodec::FORMAT_SkBitmap,
+          frame_.width(), frame_.height(),
+          frame_.width() * frame_.bytesPerPixel(), 80, &data);
       if (encoded) {
         std::string encoded_data;
         base::Base64Encode(
