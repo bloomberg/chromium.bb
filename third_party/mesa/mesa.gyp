@@ -762,5 +762,29 @@
         },
       ],
     }],
+    [ 'OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'wayland_drm_protocol',
+          'type': 'static_library',
+          'dependencies' : [
+            '../wayland/wayland.gyp:wayland_util',
+          ],
+          'include_dirs': [
+            '<(generated_src_dir)/egl/wayland/wayland-drm',
+          ],
+          'sources': [
+            '<(generated_src_dir)/egl/wayland/wayland-drm/wayland-drm-client-protocol.h',
+            '<(generated_src_dir)/egl/wayland/wayland-drm/wayland-drm-protocol.c',
+            '<(generated_src_dir)/egl/wayland/wayland-drm/wayland-drm-server-protocol.h',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(generated_src_dir)/egl/wayland/wayland-drm',
+            ],
+          },
+        },
+      ],
+    }],
   ],
 }
