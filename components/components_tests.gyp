@@ -225,9 +225,6 @@
       'copresence/rpc/rpc_handler_unittest.cc',
       'copresence/timed_map_unittest.cc',
     ],
-    'cronet_unittest_sources': [
-      'cronet/histogram_manager_unittest.cc',
-    ],
     'data_use_measurement_unittest_sources': [
       'data_use_measurement/content/data_use_measurement_unittest.cc',
     ],
@@ -1287,7 +1284,6 @@
         }],
         ['OS == "android"', {
           'sources': [
-            '<@(cronet_unittest_sources)',
             'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page_unittest.cc',
             'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle_unittest.cc',
             'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager_unittest.cc',

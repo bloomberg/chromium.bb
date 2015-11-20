@@ -38,8 +38,12 @@ public class QuicTest extends CronetTestBase {
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
-        JSONObject quicParams =
-                new JSONObject().put("connection_options", "PACE,IW10,FOO,DEADBEEF");
+        JSONObject quicParams = new JSONObject()
+                                        .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
+                                        .put("store_server_configs_in_properties", true)
+                                        .put("delay_tcp_race", true)
+                                        .put("max_number_of_lossy_connections", 10)
+                                        .put("packet_loss_threshold", 0.5);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
 
