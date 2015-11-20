@@ -26,6 +26,7 @@ class BluetoothPairingUITest : public WebUIBrowserTest {
 };
 
 BluetoothPairingUITest::BluetoothPairingUITest() {}
+
 BluetoothPairingUITest::~BluetoothPairingUITest() {}
 
 void BluetoothPairingUITest::ShowDialog() {
@@ -42,10 +43,13 @@ void BluetoothPairingUITest::ShowDialog() {
       new testing::NiceMock<device::MockBluetoothDevice>(
           nullptr,
           0,
-          "fake_bluetooth_device",
-          "11:12:13:14:15:16",
+          "Bluetooth 2.0 Mouse",
+          "28:CF:DA:00:00:00",
           kNotPaired,
           kNotConnected));
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(testing::_))
+      .WillOnce(testing::Return(mock_device_.get()));
 
   chromeos::BluetoothPairingDialog* dialog =
       new chromeos::BluetoothPairingDialog(

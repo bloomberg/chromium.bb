@@ -121,6 +121,12 @@ cr.define('options', function() {
      */
     systemTimezoneIsManaged_: false,
 
+    /**
+     * Cached bluetooth adapter state.
+     * @private {?chrome.bluetooth.AdapterState}
+     */
+    bluetoothAdapterState_: null,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -516,6 +522,24 @@ cr.define('options', function() {
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {
+        // Request the intial bluetooth adapter state.
+        var adapterStateChanged =
+            this.onBluetoothAdapterStateChanged_.bind(this);
+        chrome.bluetooth.getAdapterState(adapterStateChanged);
+
+        // Set up observers.
+        chrome.bluetooth.onAdapterStateChanged.addListener(adapterStateChanged);
+        var deviceAddedOrChanged =
+            this.onBluetoothDeviceAddedOrChanged_.bind(this);
+        chrome.bluetooth.onDeviceAdded.addListener(deviceAddedOrChanged);
+        chrome.bluetooth.onDeviceChanged.addListener(deviceAddedOrChanged);
+        chrome.bluetooth.onDeviceRemoved.addListener(
+            this.onBluetoothDeviceRemoved_.bind(this));
+
+        chrome.bluetoothPrivate.onPairing.addListener(
+            this.onBluetoothPrivatePairing_.bind(this));
+
+        // Initialize UI.
         options.system.bluetooth.BluetoothDeviceList.decorate(
             $('bluetooth-paired-devices-list'));
 
@@ -536,9 +560,7 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_BluetoothConnectPairedDevice']);
           var device = $('bluetooth-paired-devices-list').selectedItem;
-          var address = device.address;
-          chrome.send('updateBluetoothDevice', [address, 'connect']);
-          PageManager.closeOverlay();
+          BluetoothPairing.connect(device);
         };
 
         $('bluetooth-paired-devices-list').addEventListener('change',
@@ -2022,22 +2044,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Activate the Bluetooth settings section on the System settings page.
-     * @private
-     */
-    showBluetoothSettings_: function() {
-      $('bluetooth-devices').hidden = false;
-    },
-
-    /**
-     * Dectivates the Bluetooth settings section from the System settings page.
-     * @private
-     */
-    hideBluetoothSettings_: function() {
-      $('bluetooth-devices').hidden = true;
-    },
-
-    /**
      * Sets the state of the checkbox indicating if Bluetooth is turned on. The
      * state of the "Find devices" button and the list of discovered devices may
      * also be affected by a change to the state.
@@ -2049,27 +2055,88 @@ cr.define('options', function() {
       $('bluetooth-paired-devices-list').parentNode.hidden = !checked;
       $('bluetooth-add-device').hidden = !checked;
       $('bluetooth-reconnect-device').hidden = !checked;
-      // Flush list of previously discovered devices if bluetooth is turned off.
-      if (!checked) {
-        $('bluetooth-paired-devices-list').clear();
-        $('bluetooth-unpaired-devices-list').clear();
+    },
+
+    /**
+     * Process a bluetooth.onAdapterStateChanged event.
+     * @param {!chrome.bluetooth.AdapterState} state
+     * @private
+     */
+    onBluetoothAdapterStateChanged_: function(state) {
+      if (!state || !state.available) {
+        this.bluetoothAdapterState_ = null;
+        $('bluetooth-devices').hidden = true;
+        return;
+      }
+      $('bluetooth-devices').hidden = false;
+      this.bluetoothAdapterState_ = state;
+      this.setBluetoothState_(state.powered);
+
+      // Flush the device lists.
+      $('bluetooth-paired-devices-list').clear();
+      $('bluetooth-unpaired-devices-list').clear();
+      if (state.powered) {
+        options.BluetoothOptions.updateDiscoveryState(state.discovering);
+        // Update the device lists.
+        chrome.bluetooth.getDevices(function(devices) {
+          for (var device of devices)
+            this.updateBluetoothDevicesList_(device);
+        }.bind(this));
       } else {
-        chrome.send('getPairedBluetoothDevices');
+        options.BluetoothOptions.dismissOverlay();
       }
     },
 
     /**
-     * Process a bluetooth pairing event. event.device will be added to the list
-     * of available Bluetooth devices or updated if a device with a matching
-     * |address| property exists. If event.pairing is defined and not empty, the
-     * pairing dialog will be shown (if not already visible) and the event will
-     * be processed.
-     * @param {!BluetoothPairingEvent} event
+     * Process a bluetooth.onDeviceAdded or onDeviceChanged event and update the
+     * device list.
+     * @param {!chrome.bluetooth.Device} device
      * @private
      */
-    bluetoothPairingEvent_: function(event) {
-      var device = event.device;
-      var list = $('bluetooth-unpaired-devices-list');
+    onBluetoothDeviceAddedOrChanged_: function(device) {
+      this.updateBluetoothDevicesList_(device);
+    },
+
+    /**
+     * Process a bluetooth.onDeviceRemoved event and update the device list.
+     * @param {!chrome.bluetooth.Device} device
+     * @private
+     */
+    onBluetoothDeviceRemoved_: function(device) {
+      this.removeBluetoothDevice_(device.address);
+    },
+
+    /**
+     * Process a bluetoothPrivate onPairing event and update the device list.
+     * @param {!chrome.bluetoothPrivate.PairingEvent} pairing_event
+     * @private
+     */
+    onBluetoothPrivatePairing_: function(pairing_event) {
+      this.updateBluetoothDevicesList_(pairing_event.device);
+      BluetoothPairing.onBluetoothPairingEvent(pairing_event);
+    },
+
+    /**
+     * Add |device| to the appropriate list of Bluetooth devices.
+     * @param {!chrome.bluetooth.Device} device
+     * @private
+     */
+    addBluetoothDeviceToList_: function(device) {
+      // Display the "connecting" (already paired or not yet paired) and the
+      // paired devices in the same list.
+      if (device.paired || device.connecting)
+        $('bluetooth-paired-devices-list').appendDevice(device);
+      else
+        $('bluetooth-unpaired-devices-list').appendDevice(device);
+    },
+
+    /**
+     * Add |device| to the appropriate list of Bluetooth devices or update the
+     * entry if a device with a matching |address| property exists.
+     * @param {!chrome.bluetooth.Device} device
+     * @private
+     */
+    updateBluetoothDevicesList_: function(device) {
       // Display the "connecting" (already paired or not yet paired) and the
       // paired devices in the same list.
       if (device.paired || device.connecting) {
@@ -2078,7 +2145,6 @@ cr.define('options', function() {
         var index = $('bluetooth-unpaired-devices-list').find(device.address);
         if (index != undefined)
           $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
-        list = $('bluetooth-paired-devices-list');
       } else {
         // Test to see if the device is currently in the paired list, in which
         // case it should be removed from that list.
@@ -2086,12 +2152,7 @@ cr.define('options', function() {
         if (index != undefined)
           $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
-      list.appendDevice(device);
-
-      // One device can be in the process of pairing.  If found, display
-      // the Bluetooth pairing overlay.
-      if (event.pairing)
-        BluetoothPairing.showDialog(event);
+      this.addBluetoothDeviceToList_(device);
     },
 
     /**
@@ -2163,21 +2224,18 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   cr.makePublic(BrowserOptions, [
-    'bluetoothPairingEvent',
     'deleteCurrentProfile',
     'enableCertificateButton',
     'enableDisplaySettings',
     'enableFactoryResetSection',
     'getCurrentProfile',
     'getStartStopSyncButton',
-    'hideBluetoothSettings',
     'notifyInitializationComplete',
     'removeBluetoothDevice',
     'scrollToSection',
     'setAccountPictureManaged',
     'setWallpaperManaged',
     'setAutoOpenFileTypesDisplayed',
-    'setBluetoothState',
     'setCanSetTime',
     'setFontSize',
     'setHotwordRetrainLinkVisible',
@@ -2196,7 +2254,6 @@ cr.define('options', function() {
     'setupPageZoomSelector',
     'setupProxySettingsButton',
     'setAudioHistorySectionVisible',
-    'showBluetoothSettings',
     'showCreateProfileError',
     'showCreateProfileSuccess',
     'showCreateProfileWarning',

@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @typedef {{name: string,
- *            address: string,
- *            paired: boolean,
- *            connected: boolean,
- *            connecting: boolean,
- *            connectable: boolean}}
- */
-var BluetoothDevice;
-
 cr.define('options.system.bluetooth', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var DeletableItem = options.DeletableItem;
@@ -25,7 +15,7 @@ cr.define('options.system.bluetooth', function() {
 
   /**
    * Creates a new bluetooth list item.
-   * @param {BluetoothDevice} device Description of the Bluetooth device.
+   * @param {chrome.bluetooth.Device} device
    * @constructor
    * @extends {options.DeletableItem}
    */
@@ -47,7 +37,7 @@ cr.define('options.system.bluetooth', function() {
 
     /**
      * Description of the Bluetooth device.
-     * @type {?BluetoothDevice}
+     * @type {?chrome.bluetooth.Device}
      */
     data: null,
 
@@ -57,24 +47,28 @@ cr.define('options.system.bluetooth', function() {
       var label = this.ownerDocument.createElement('div');
       label.className = 'bluetooth-device-label';
       this.classList.add('bluetooth-device');
+
+      var connecting = !!this.data.connecting;
+      var connected = !!this.data.connected;
+      var connectable = !!this.data.connectable;
+      var paired = !!this.data.paired;
+
       // There are four kinds of devices we want to distinguish:
       //  * Connecting devices: in bold with a "connecting" label,
       //  * Connected devices: in bold,
       //  * Paired, not connected but connectable devices: regular and
       //  * Paired, not connected and not connectable devices: grayed out.
-      this.connected = this.data.connecting ||
-          (this.data.paired && this.data.connected);
-      this.notconnectable = this.data.paired && !this.data.connecting &&
-          !this.data.connected && !this.data.connectable;
+      this.connected = connecting || (paired && connected);
+      this.notconnectable = paired && !connecting &&
+          !connected && !connectable;
       // "paired" devices are those that are remembered but not connected.
-      this.paired = this.data.paired && !this.data.connected &&
-          this.data.connectable;
+      this.paired = paired && !connected && connectable;
 
       var content = this.data.name;
       // Update the device's label according to its state. A "connecting" device
       // can be in the process of connecting and pairing, so we check connecting
       // first.
-      if (this.data.connecting) {
+      if (connecting) {
         content = loadTimeData.getStringF('bluetoothDeviceConnecting',
             this.data.name);
       }
@@ -126,7 +120,7 @@ cr.define('options.system.bluetooth', function() {
      * Adds a bluetooth device to the list of available devices. A check is
      * made to see if the device is already in the list, in which case the
      * existing device is updated.
-     * @param {!BluetoothDevice} device
+     * @param {!chrome.bluetooth.Device} device
      * @return {boolean} True if the devies was successfully added or updated.
      */
     appendDevice: function(device) {
@@ -208,11 +202,12 @@ cr.define('options.system.bluetooth', function() {
         if (entry.address == address)
           return i;
       }
+      return undefined;
     },
 
     /**
      * @override
-     * @param {BluetoothDevice} entry
+     * @param {chrome.bluetooth.Device} entry
      */
     createItem: function(entry) {
       return new BluetoothListItem(entry);
@@ -283,9 +278,22 @@ cr.define('options.system.bluetooth', function() {
 
         // Inform the bluetooth adapter that we are disconnecting or
         // forgetting the device.
-        chrome.send('updateBluetoothDevice',
-          [item.data.address, item.connected ? 'disconnect' : 'forget']);
-
+        var address = item.data.address;
+        if (item.connected) {
+          chrome.bluetoothPrivate.disconnectAll(address, function() {
+            if (chrome.runtime.lastError) {
+              options.BluetoothPairing.showMessage(
+                  {message: 'bluetoothDisconnectFailed', address: address});
+            }
+          });
+        } else {
+          chrome.bluetoothPrivate.forgetDevice(address, function() {
+            if (chrome.runtime.lastError) {
+              options.BluetoothPairing.showMessage(
+                  {message: 'bluetoothForgetFailed', address: address});
+            }
+          });
+        }
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_BluetoothRemoveDevice']);
       }

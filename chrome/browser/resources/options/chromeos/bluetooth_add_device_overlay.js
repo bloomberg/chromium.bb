@@ -43,14 +43,8 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_BluetoothConnectNewDevice']);
         var device = self.deviceList_.selectedItem;
-        var address = device.address;
         PageManager.closeOverlay();
-        var pairingEvent = /** @type {!BluetoothPairingEvent} */ ({
-          pairing: BluetoothPairingEventType.STARTUP,
-          device: device
-        });
-        options.BluetoothPairing.showDialog(pairingEvent);
-        chrome.send('updateBluetoothDevice', [address, 'connect']);
+        options.BluetoothPairing.connect(device, true);
       };
 
       $('bluetooth-unpaired-devices-list').addEventListener('change',
@@ -74,13 +68,29 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
-      chrome.bluetooth.startDiscovery();
+      chrome.bluetooth.startDiscovery(function() {
+        if (chrome.runtime.lastError) {
+          console.error(
+              'Unexpected error calling bluetooth.startDiscovery: ' +
+              chrome.runtime.lastError.message);
+        }
+      });
       BluetoothOptions.updateDiscoveryState(true);
     },
 
     /** @override */
     didClosePage: function() {
-      chrome.bluetooth.stopDiscovery();
+      chrome.bluetooth.stopDiscovery(function() {
+        // The page may get closed before discovery started, so ignore any
+        // 'Failed to stop discovery' errors.
+        if (chrome.runtime.lastError &&
+            chrome.runtime.lastError.message != 'Failed to stop discovery') {
+          console.log(
+              'Unexpected error calling bluetooth.stopDiscovery: ' +
+                  chrome.runtime.lastError.message);
+
+        }
+      });
     },
 
     /**

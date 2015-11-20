@@ -145,6 +145,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
                             uint16 transmit_power,
                             uint16 max_transmit_power);
 
+  void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
+
   static const char kTestPinCode[];
   static const int kTestPassKey;
 
@@ -314,6 +316,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   int16 connection_rssi_;
   int16 transmit_power_;
   int16 max_transmit_power_;
+
+  // Controls the fake behavior to allow more extensive UI testing without
+  // having to cycle the discovery simulation.
+  bool delay_start_discovery_;
 };
 
 }  // namespace bluez

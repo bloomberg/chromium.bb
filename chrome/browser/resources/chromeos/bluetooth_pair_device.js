@@ -67,14 +67,15 @@ function load() {
   PageManager.register(pairingPage);
   PageManager.registerOverlay(BluetoothPairing.getInstance(), pairingPage);
 
+  // Since this UI is used to host a BluetoothPairing dialog we need to add
+  // an onPairing observer. (Normally that would be added in browser_options).
+  chrome.bluetoothPrivate.onPairing.addListener(
+      BluetoothPairing.onBluetoothPairingEvent);
+
+  // Show the BluetoothPairing dialog.
   var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
-  var device = /** @type {!BluetoothDevice} */ (args);
-  var event = /** @type {!BluetoothPairingEvent} */ ({
-    pairing: BluetoothPairingEventType.STARTUP,
-    device: device
-  });
-  BluetoothPairing.showDialog(event);
-  chrome.send('updateBluetoothDevice', [device.address, 'connect']);
+  var device = /** @type {!chrome.bluetooth.Device} */ (args);
+  BluetoothPairing.connect(device, true);
 }
 
 document.addEventListener('DOMContentLoaded', load);

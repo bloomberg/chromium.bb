@@ -93,6 +93,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://bluetooth-pairing/*",
       "chrome://md-settings/*",
       "chrome://settings/*",
       "chrome://settings-frame/*"
@@ -109,6 +110,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://bluetooth-pairing/*",
       "chrome://md-settings/*",
       "chrome://settings/*",
       "chrome://settings-frame/*"

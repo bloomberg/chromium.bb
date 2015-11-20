@@ -19,27 +19,12 @@ cr.define('options', function() {
 
   BrowserOptions.prototype = {
     __proto__: Page.prototype,
-  };
 
-  BrowserOptions.showBluetoothSettings = function() {
-  };
-
-  BrowserOptions.setBluetoothState = function() {
-  };
-
-  /**
-   * Handles bluetoothPairingEvent call, display the Bluetooth pairing overlay
-   * for the pairing device.
-   * @param {!BluetoothPairingEvent} event
-   */
-  BrowserOptions.bluetoothPairingEvent = function(event) {
-    // One device can be in the process of pairing.  If found, display
-    // the Bluetooth pairing overlay.
-    if (event.pairing)
-      BluetoothPairing.showDialog(event);
-  };
-
-  BrowserOptions.removeBluetoothDevice = function(address) {
+    /** @override */
+    initializePage: function() {
+      chrome.bluetoothPrivate.onPairing.addListener(
+          BluetoothPairing.onBluetoothPairingEvent);
+    }
   };
 
   // Export

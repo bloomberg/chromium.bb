@@ -96,7 +96,7 @@ chrome.bluetoothPrivate.NewAdapterState;
 /**
  * @typedef {{
  *   device: !chrome.bluetooth.Device,
- *   response: (!chrome.bluetoothPrivate.PairingResponse|undefined),
+ *   response: !chrome.bluetoothPrivate.PairingResponse,
  *   pincode: (string|undefined),
  *   passkey: (number|undefined)
  * }}

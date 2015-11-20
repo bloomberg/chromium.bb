@@ -175,7 +175,10 @@ class BluetoothBlueZTest : public testing::Test {
     dbus_setter->SetBluetoothAdapterClient(
         scoped_ptr<bluez::BluetoothAdapterClient>(
             fake_bluetooth_adapter_client_));
+
     fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
+    // Use the original fake behavior for these tests.
+    fake_bluetooth_device_client_->set_delay_start_discovery(true);
     dbus_setter->SetBluetoothDeviceClient(
         scoped_ptr<bluez::BluetoothDeviceClient>(
             fake_bluetooth_device_client_));

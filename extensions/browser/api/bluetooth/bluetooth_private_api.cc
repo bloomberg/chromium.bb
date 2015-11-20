@@ -108,6 +108,9 @@ bool ValidatePairingResponseOptions(
       (pincode || passkey))
     return false;
 
+  if (options.response == bt_private::PAIRING_RESPONSE_CANCEL)
+    return true;
+
   // Check the BluetoothDevice is in expecting the correct response.
   if (!device->ExpectingConfirmation() && !device->ExpectingPinCode() &&
       !device->ExpectingPasskey())

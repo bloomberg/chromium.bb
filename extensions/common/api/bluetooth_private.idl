@@ -91,7 +91,7 @@ namespace bluetoothPrivate {
     bluetooth.Device device;
 
     // The response type.
-    PairingResponse? response;
+    PairingResponse response;
 
     // A 1-16 character alphanumeric set in response to
     // <code>requestPincode</code>.

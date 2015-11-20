@@ -267,7 +267,8 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
       pairing_cancelled_(false),
       connection_rssi_(kUnkownPower),
       transmit_power_(kUnkownPower),
-      max_transmit_power_(kUnkownPower) {
+      max_transmit_power_(kUnkownPower),
+      delay_start_discovery_(false) {
   scoped_ptr<Properties> properties(new Properties(
       base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
                  base::Unretained(this), dbus::ObjectPath(kPairedDevicePath))));
@@ -548,12 +549,13 @@ void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
   VLOG(1) << "starting discovery simulation";
 
   discovery_simulation_step_ = 1;
+  int delay = delay_start_discovery_ ? simulation_interval_ms_ : 0;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
                  base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
+      base::TimeDelta::FromMilliseconds(delay));
 }
 
 void FakeBluetoothDeviceClient::EndDiscoverySimulation(
@@ -1041,12 +1043,17 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
   // Timer fires every .75s, the numbers below are arbitrary to give a feel
   // for a discovery process.
   VLOG(1) << "discovery simulation, step " << discovery_simulation_step_;
-  if (discovery_simulation_step_ == 2) {
+  uint32_t initial_step = delay_start_discovery_ ? 2 : 1;
+  if (discovery_simulation_step_ == initial_step) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kLegacyAutopairPath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kLowEnergyPath));
-
+    if (!delay_start_discovery_) {
+      // Include a device that requires a pairing overlay in the UI.
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kRequestPinCodePath));
+    }
   } else if (discovery_simulation_step_ == 4) {
     UpdateDeviceRSSI(dbus::ObjectPath(kLowEnergyPath),
                      base::RandInt(kMinRSSI, kMaxRSSI));
@@ -1064,11 +1071,12 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
   } else if (discovery_simulation_step_ == 8) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kDisplayPasskeyPath));
-    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kRequestPinCodePath));
+    if (delay_start_discovery_) {
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kRequestPinCodePath));
+    }
     UpdateDeviceRSSI(dbus::ObjectPath(kLowEnergyPath),
                      base::RandInt(kMinRSSI, kMaxRSSI));
-
   } else if (discovery_simulation_step_ == 10) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kConfirmPasskeyPath));
