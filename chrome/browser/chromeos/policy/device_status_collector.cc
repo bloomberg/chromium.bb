@@ -118,7 +118,8 @@ std::vector<em::VolumeInfo> GetVolumeInfo(
                             stat.f_frsize);
       result.push_back(info);
     } else {
-      LOG(ERROR) << "Unable to get volume status for " << mount_point;
+      LOG_IF(ERROR, !mount_point.empty()) << "Unable to get volume status for "
+                                          << mount_point;
     }
   }
   return result;
