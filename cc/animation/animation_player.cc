@@ -29,7 +29,6 @@ AnimationPlayer::AnimationPlayer(int id)
 AnimationPlayer::~AnimationPlayer() {
   DCHECK(!animation_timeline_);
   DCHECK(!element_animations_);
-  DCHECK(!layer_id_);
 }
 
 scoped_refptr<AnimationPlayer> AnimationPlayer::CreateImplInstance() const {
