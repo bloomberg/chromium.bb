@@ -63,7 +63,6 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
   void OnResponseStarted(net::URLRequest* request) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
-  void OnURLRequestJobOrphaned(net::URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,

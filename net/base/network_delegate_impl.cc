@@ -68,8 +68,6 @@ void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {
 void NetworkDelegateImpl::OnURLRequestDestroyed(URLRequest* request) {
 }
 
-void NetworkDelegateImpl::OnURLRequestJobOrphaned(URLRequest* request) {}
-
 void NetworkDelegateImpl::OnPACScriptError(int line_number,
                                            const base::string16& error) {
 }

@@ -175,12 +175,6 @@ void LayeredNetworkDelegate::OnURLRequestDestroyedInternal(
     URLRequest* request) {
 }
 
-void LayeredNetworkDelegate::OnURLRequestJobOrphaned(URLRequest* request) {
-  // This hook is only added to debug https://crbug.com/289715, so there is no
-  // need for a OnURLRequestJobOrphanedInternal hook.
-  nested_network_delegate_->NotifyURLRequestJobOrphaned(request);
-}
-
 void LayeredNetworkDelegate::OnPACScriptError(int line_number,
                                               const base::string16& error) {
   OnPACScriptErrorInternal(line_number, error);

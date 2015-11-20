@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/alias.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -1225,20 +1224,6 @@ void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
                                            base::Time::Now());
-}
-
-void ExtensionWebRequestEventRouter::OnURLRequestJobOrphaned(
-    void* browser_context,
-    const net::URLRequest* request) {
-  // See https://crbug.com/289715. While a URLRequest is blocking on an
-  // extension, it may not orphan jobs unless OnURLRequestDestroyed is called
-  // first.
-  //
-  // TODO(davidben): Remove this when the crash has been diagnosed.
-  char url_buf[128];
-  base::strlcpy(url_buf, request->url().spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-  CHECK_EQ(0u, blocked_requests_.count(request->identifier()));
 }
 
 void ExtensionWebRequestEventRouter::ClearPendingCallbacks(

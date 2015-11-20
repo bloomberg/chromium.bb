@@ -125,12 +125,6 @@ void NetworkDelegate::NotifyURLRequestDestroyed(URLRequest* request) {
   OnURLRequestDestroyed(request);
 }
 
-void NetworkDelegate::NotifyURLRequestJobOrphaned(URLRequest* request) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(request);
-  OnURLRequestJobOrphaned(request);
-}
-
 void NetworkDelegate::NotifyPACScriptError(int line_number,
                                            const base::string16& error) {
   DCHECK(CalledOnValidThread());

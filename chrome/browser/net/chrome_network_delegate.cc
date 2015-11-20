@@ -559,10 +559,6 @@ void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
   extensions_delegate_->OnURLRequestDestroyed(request);
 }
 
-void ChromeNetworkDelegate::OnURLRequestJobOrphaned(net::URLRequest* request) {
-  extensions_delegate_->OnURLRequestJobOrphaned(request);
-}
-
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
                                              const base::string16& error) {
   extensions_delegate_->OnPACScriptError(line_number, error);
