@@ -25,6 +25,7 @@ struct SYNC_EXPORT EntityDataTraits {
 };
 
 typedef syncer::ProtoValuePtr<EntityData, EntityDataTraits> EntityDataPtr;
+typedef std::vector<EntityDataPtr> EntityDataList;
 
 // A light-weight container for sync entity data which represents either
 // local data created on the ModelTypeService side or remote data created

@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/device_info_service.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "sync/api/model_type_change_processor.h"
 #include "sync/api/sync_error.h"
@@ -32,69 +34,42 @@ DeviceInfoService::DeviceInfoService(
 
 DeviceInfoService::~DeviceInfoService() {}
 
-syncer::SyncError DeviceInfoService::ApplySyncChanges() {
-  // TODO(skym): For every model change, if not local, apply to memory + disk.
-  // TODO(skym): For ever entity metadata change, apply to disk.
-  // TODO(skym): Apply type metadata to disk.
+syncer_v2::MetadataChanges* DeviceInfoService::CreateMetadataChanges() {
+  // TODO(skym): Implementation.
+  return nullptr;
+}
+
+syncer::SyncError DeviceInfoService::MergeSyncData(
+    syncer_v2::MetadataChanges* metadata_changes,
+    syncer_v2::EntityDataList entity_data_list) {
+  // TODO(skym): Implementation.
   return syncer::SyncError();
 }
 
-syncer::SyncError DeviceInfoService::LoadMetadata() {
-  // TODO(skym): Read out metadata from disk.
+syncer::SyncError DeviceInfoService::ApplySyncChanges(
+    syncer_v2::MetadataChanges* metadata_changes,
+    syncer_v2::EntityDataList entity_data_list) {
+  // TODO(skym): Implementation.
   return syncer::SyncError();
 }
 
-syncer::SyncError DeviceInfoService::UpdateMetadata() {
-  // TODO(skym): Persist metadata to disk.
-  return syncer::SyncError();
+void DeviceInfoService::LoadMetadata(MetadataCallback callback) {
+  // TODO(skym): Implementation.
 }
 
-syncer::SyncError DeviceInfoService::GetData() {
-  // TODO(skym): This is tricky. We're currently indexing data in memory by
-  // cache_guid, not client tags. And we cannot change this, because they're not
-  // equal on old clients. So maybe O(n*m) iterating through our map for every
-  // peice of data we were asked for? Alternative we could make a set, and do
-  // O(n + m). Another approach would to have two maps, which one ruling
-  // ownership. Or we could just read out of disk for this, instead of memory.
-  return syncer::SyncError();
+void DeviceInfoService::GetData(ClientKeyList client_keys,
+                                DataCallback callback) {
+  // TODO(skym): Implementation.
 }
 
-syncer::SyncError DeviceInfoService::GetAllData() {
-  // TODO(skym): Return all data from memory, unless we're not initialized.
-  return syncer::SyncError();
+void DeviceInfoService::GetAllData(DataCallback callback) {
+  // TODO(skym): Implementation.
 }
 
-syncer::SyncError DeviceInfoService::ClearMetadata() {
-  // We act a little differently than most sync services here. All functionality
-  // is to be shutdown and stopped, and all data is to be deleted.
-
-  bool was_syncing = IsSyncing();
-
-  all_data_.clear();
-  clear_local_device_backup_time();
-  clear_change_processor();
-
-  if (was_syncing) {
-    NotifyObservers();
-  }
-
-  // TODO(skym): Remove all data that's been persisted to storage.
-  // TODO(skym): Somehow remember we're no longer intialize.
-
-  return syncer::SyncError();
-}
-
-syncer_v2::ModelTypeChangeProcessor* DeviceInfoService::get_change_processor() {
-  return change_processor_.get();
-}
-
-void DeviceInfoService::set_change_processor(
-    scoped_ptr<syncer_v2::ModelTypeChangeProcessor> change_processor) {
-  change_processor_.swap(change_processor);
-}
-
-void DeviceInfoService::clear_change_processor() {
-  change_processor_.reset();
+std::string DeviceInfoService::GetClientTag(
+    const syncer_v2::EntityData* entity_data) {
+  // TODO(skym): Implementation.
+  return "";
 }
 
 bool DeviceInfoService::IsSyncing() const {

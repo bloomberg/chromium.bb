@@ -201,12 +201,12 @@ void SharedModelTypeProcessorTest::StartDone(
 
 void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,
                                              const std::string& value) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  type_processor_->Put(tag, GenerateSpecifics(tag, value));
+  sync_pb::EntitySpecifics specifics = GenerateSpecifics(tag, value);
+  type_processor_->Put(tag, std::string(), specifics, nullptr);
 }
 
 void SharedModelTypeProcessorTest::DeleteItem(const std::string& tag) {
-  type_processor_->Delete(tag);
+  type_processor_->Delete(tag, nullptr);
 }
 
 void SharedModelTypeProcessorTest::OnInitialSyncDone() {

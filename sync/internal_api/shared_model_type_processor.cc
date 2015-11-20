@@ -85,7 +85,7 @@ void SharedModelTypeProcessor::Start(StartCallback callback) {
 
   is_enabled_ = true;
 
-  // TODO: At some point, this should be loaded from storage.
+  // TODO(stanisc): At some point, this should be loaded from storage.
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
 
@@ -145,8 +145,14 @@ void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
   FlushPendingCommitRequests();
 }
 
-void SharedModelTypeProcessor::Put(const std::string& client_tag,
-                                   const sync_pb::EntitySpecifics& specifics) {
+void SharedModelTypeProcessor::Put(
+    const std::string& client_tag,
+    const std::string& non_unique_name,
+    const sync_pb::EntitySpecifics& specifics,
+    MetadataChanges* metadata_changes) {
+  // TODO(skym): Update for new approach. Different objects, different caching,
+  // different loopups, metadat_changes, etc.
+
   DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(specifics));
 
   const std::string client_tag_hash(
@@ -165,16 +171,20 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
   FlushPendingCommitRequests();
 }
 
-void SharedModelTypeProcessor::Delete(const std::string& client_tag) {
+void SharedModelTypeProcessor::Delete(const std::string& client_key,
+                                      MetadataChanges* metadata_changes) {
+  // TODO(skym): Update for new approach. Different caching, different lookup,
+  // metadata changes.
+
   const std::string client_tag_hash(
-      syncer::syncable::GenerateSyncableHash(type_, client_tag));
+      syncer::syncable::GenerateSyncableHash(type_, client_key));
 
   EntityMap::const_iterator it = entities_.find(client_tag_hash);
   if (it == entities_.end()) {
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
     DLOG(WARNING) << "Attempted to delete missing item."
-                  << " client tag: " << client_tag;
+                  << " client tag: " << client_key;
   } else {
     ModelTypeEntity* entity = it->second;
     entity->Delete();
@@ -266,7 +276,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
           response_data.response_version, data.is_deleted(), data.specifics,
           data.modification_time, response_data.encryption_key_name);
 
-      // TODO: Do something special when conflicts are detected.
+      // TODO(rlarocque): Do something special when conflicts are detected.
     }
 
     // If the received entity has out of date encryption, we schedule another
@@ -313,8 +323,8 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   // We may have new reasons to commit by the time this function is done.
   FlushPendingCommitRequests();
 
-  // TODO: Inform the model of the new or updated data.
-  // TODO: Persist the new data on disk.
+  // TODO(rlarocque): Inform the model of the new or updated data.
+  // TODO(rlarocque): Persist the new data on disk.
 }
 
 UpdateResponseDataList SharedModelTypeProcessor::GetPendingUpdates() {
@@ -342,4 +352,4 @@ void SharedModelTypeProcessor::ClearSyncState() {
   data_type_state_ = DataTypeState();
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

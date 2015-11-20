@@ -6,11 +6,11 @@
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "components/sync_driver/device_info_tracker.h"
 #include "components/sync_driver/local_device_info_provider.h"
@@ -30,8 +30,6 @@ class DeviceInfoSpecifics;
 
 namespace sync_driver_v2 {
 
-class ModelTypeChangeProcessor;
-
 // USS service implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
 // and allows public read access.
@@ -42,19 +40,18 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       sync_driver::LocalDeviceInfoProvider* local_device_info_provider);
   ~DeviceInfoService() override;
 
-  // TODO(skym): Update once these are added to ModelTypeService interface.
   // ModelTypeService implementation.
-  syncer::SyncError ApplySyncChanges();
-  syncer::SyncError LoadMetadata();
-  syncer::SyncError UpdateMetadata();
-  syncer::SyncError GetData();
-  syncer::SyncError GetAllData();
-  syncer::SyncError ClearMetadata();
-  // TODO(skym): See crbug/547087, do we need all these accessors?
-  syncer_v2::ModelTypeChangeProcessor* get_change_processor();
-  void set_change_processor(
-      scoped_ptr<syncer_v2::ModelTypeChangeProcessor> change_processor);
-  void clear_change_processor();
+  syncer_v2::MetadataChanges* CreateMetadataChanges() override;
+  syncer::SyncError MergeSyncData(
+      syncer_v2::MetadataChanges* metadata_changes,
+      syncer_v2::EntityDataList entity_data_list) override;
+  syncer::SyncError ApplySyncChanges(
+      syncer_v2::MetadataChanges* metadata_changes,
+      syncer_v2::EntityDataList entity_data_list) override;
+  void LoadMetadata(MetadataCallback callback) override;
+  void GetData(ClientKeyList client_keys, DataCallback callback) override;
+  void GetAllData(DataCallback callback) override;
+  std::string GetClientTag(const syncer_v2::EntityData* entity_data) override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
@@ -84,6 +81,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void StoreSpecifics(scoped_ptr<sync_pb::DeviceInfoSpecifics> specifics);
   // Delete SyncData from the cache.
   void DeleteSpecifics(const std::string& client_id);
+
   // Notify all registered observers.
   void NotifyObservers();
 
@@ -106,9 +104,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   // |local_device_info_provider_| isn't owned.
   const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
-
-  // Recieves ownership in set_change_processor(...).
-  scoped_ptr<syncer_v2::ModelTypeChangeProcessor> change_processor_;
 
   // TODO(skym): Switch to use client tag hash instead of cache guid as key.
   // Cache of all syncable and local data, stored by device cache guid.

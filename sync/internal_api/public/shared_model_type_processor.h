@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_
-#define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
+#define SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
+
+#include <string>
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -60,29 +62,16 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
   // Another call to Enable() can be used to re-establish this connection.
   void Disable();
 
-  // Callback used to process the handshake response from the sync thread.
-  void OnConnect(scoped_ptr<CommitQueue> worker) override;
-
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 
-  // Requests that an item be stored in sync.
-  void Put(const std::string& client_tag,
-           const sync_pb::EntitySpecifics& specifics);
-
-  // Deletes an item from sync.
-  void Delete(const std::string& client_tag);
-
-  // Informs this object that some of its commit requests have been
-  // successfully serviced.
-  void OnCommitCompleted(const DataTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
-
-  // Informs this object that there are some incoming updates is should
-  // handle.
-  void OnUpdateReceived(const DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates) override;
+  // ModelTypeChangeProcessor implementation.
+  void Put(const std::string& client_key,
+           const std::string& non_unique_name,
+           const sync_pb::EntitySpecifics& specifics,
+           MetadataChanges* metadata_changes) override;
+  void Delete(const std::string& client_key,
+              MetadataChanges* metadata_changes) override;
 
   // Returns the list of pending updates.
   //
@@ -95,6 +84,14 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
   base::WeakPtr<SharedModelTypeProcessor> AsWeakPtrForUI();
+
+  // ModelTypeProcessor implementation.
+  void OnConnect(scoped_ptr<CommitQueue> worker) override;
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list) override;
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& pending_updates) override;
 
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
@@ -155,4 +152,4 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
 
 }  // namespace syncer_v2
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
