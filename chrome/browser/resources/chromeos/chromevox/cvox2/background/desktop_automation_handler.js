@@ -141,7 +141,7 @@ DesktopAutomationHandler.prototype = {
       node = node.find({state: {focused: true}}) || node;
     }
 
-    if (evt.target.state.editable)
+    if (this.isEditable_(evt.target))
       this.createEditableTextHandlerIfNeeded_(evt.target);
 
     this.onEventDefault({target: node, type: 'focus'});
@@ -195,7 +195,7 @@ DesktopAutomationHandler.prototype = {
    * @param {Object} evt
    */
   onTextOrTextSelectionChanged: function(evt) {
-    if (!evt.target.state.editable)
+    if (!this.isEditable_(evt.target))
       return;
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
@@ -204,9 +204,6 @@ DesktopAutomationHandler.prototype = {
       return;
 
     if (!evt.target.state.focused)
-      return;
-
-    if (evt.target.role != RoleType.textField)
       return;
 
     if (!global.backgroundObj.currentRange) {
@@ -242,10 +239,8 @@ DesktopAutomationHandler.prototype = {
     if (!evt.target.state.focused)
       return;
 
-    // Value change events fire on web text fields and text areas when pressing
-    // enter; suppress them.
-    if (!global.backgroundObj.currentRange ||
-        evt.target.role != RoleType.textField) {
+    // Value change events fire on web editables when typing. Suppress them.
+    if (!global.backgroundObj.currentRange || !this.isEditable_(evt.target)) {
       this.onEventDefault(evt);
       global.backgroundObj.currentRange = cursors.Range.fromNode(evt.target);
     }
@@ -274,6 +269,18 @@ DesktopAutomationHandler.prototype = {
               node.state.protected,
               cvox.ChromeVox.tts);
     }
+  },
+
+  /**
+   * Returns true if |node| is editable.
+   * @param {AutomationNode} node
+   * @return {boolean}
+   * @private
+   */
+  isEditable_: function(node) {
+    // Remove the check for role after m47 whereafter the editable state can be
+    // used to know when to create an editable text handler.
+    return node.role == RoleType.textField || node.state.editable;
   }
 };
 
