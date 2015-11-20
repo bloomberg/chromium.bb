@@ -41,6 +41,19 @@
 
 namespace blink {
 
+// For a SetTarget event, if the relative difference between the current value and the target value
+// is less than this, consider them the same and just output the target value.  This value MUST be
+// larger than the single precision epsilon of 5.960465e-8.  Due to round-off, this value is not
+// achievable in general.
+const float kSetTargetThreshold = 5e-7;
+
+// For a SetTarget event, if the target value is 0, and the current value is less than this
+// threshold, consider the curve to have converged to 0.  We need a separate case from
+// kSetTargetThreshold because that uses relative error, which is never met if the target value is
+// 0, a common case.  This value MUST be larger than least positive normalized single precision
+// value (1.1754944e-38) because we normally operate with flush-to-zero enabled.
+const float kSetTargetZeroThreshold = 1e-20;
+
 static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionState)
 {
     if (value > 0)
@@ -544,46 +557,55 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                         if (rampStartFrame <= currentFrame && currentFrame < rampStartFrame + 1)
                             value = target + (value - target) * exp(-(currentFrame / sampleRate - time1) / timeConstant);
                     }
+
+                    // If the value is close enough to the target, just fill in the data with the
+                    // target value.
+                    if (fabs(value - target) < kSetTargetThreshold * fabs(target)
+                        || (!target && fabs(value) < kSetTargetZeroThreshold)) {
+                        for (; writeIndex < fillToFrame; ++writeIndex)
+                            values[writeIndex] = target;
+                    } else {
 #if CPU(X86) || CPU(X86_64)
-                    // Resolve recursion by expanding constants to achieve a 4-step loop unrolling.
-                    // v1 = v0 + (t - v0) * c
-                    // v2 = v1 + (t - v1) * c
-                    // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
-                    // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
-                    // v2 = v0 + (t - v0) * c * (2 - c)
-                    // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
-                    const float c0 = discreteTimeConstant;
-                    const float c1 = c0 * (2 - c0);
-                    const float c2 = c0 * ((c0 - 3) * c0 + 3);
-                    const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
+                        // Resolve recursion by expanding constants to achieve a 4-step loop unrolling.
+                        // v1 = v0 + (t - v0) * c
+                        // v2 = v1 + (t - v1) * c
+                        // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
+                        // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
+                        // v2 = v0 + (t - v0) * c * (2 - c)
+                        // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
+                        const float c0 = discreteTimeConstant;
+                        const float c1 = c0 * (2 - c0);
+                        const float c2 = c0 * ((c0 - 3) * c0 + 3);
+                        const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
 
-                    float delta;
-                    __m128 vC = _mm_set_ps(c2, c1, c0, 0);
-                    __m128 vDelta, vValue, vResult;
+                        float delta;
+                        __m128 vC = _mm_set_ps(c2, c1, c0, 0);
+                        __m128 vDelta, vValue, vResult;
 
-                    // Process 4 loop steps.
-                    unsigned fillToFrameTrunc = writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
-                    for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-                        delta = target - value;
-                        vDelta = _mm_set_ps1(delta);
-                        vValue = _mm_set_ps1(value);
+                        // Process 4 loop steps.
+                        unsigned fillToFrameTrunc = writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+                        for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+                            delta = target - value;
+                            vDelta = _mm_set_ps1(delta);
+                            vValue = _mm_set_ps1(value);
 
-                        vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
-                        _mm_storeu_ps(values + writeIndex, vResult);
+                            vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
+                            _mm_storeu_ps(values + writeIndex, vResult);
 
-                        // Update value for next iteration.
-                        value += delta * c3;
-                    }
+                            // Update value for next iteration.
+                            value += delta * c3;
+                        }
 #endif
-                    // Serially process remaining values
-                    for (; writeIndex < fillToFrame; ++writeIndex) {
-                        values[writeIndex] = value;
-                        value += (target - value) * discreteTimeConstant;
+                        // Serially process remaining values
+                        for (; writeIndex < fillToFrame; ++writeIndex) {
+                            values[writeIndex] = value;
+                            value += (target - value) * discreteTimeConstant;
+                        }
+
+                        currentFrame = fillToEndFrame;
+
+                        break;
                     }
-
-                    currentFrame = fillToEndFrame;
-
-                    break;
                 }
 
             case ParamEvent::SetValueCurve:
