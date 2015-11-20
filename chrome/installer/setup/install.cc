@@ -69,7 +69,10 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
     case ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH:
       message.append("Quick Launch ");
       break;
-    case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR:
+    case ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT:
+      message.append("Start menu ");
+      break;
+    case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:
       message.append("Start menu/" +
                      base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
                                      BrowserDistribution::SUBFOLDER_CHROME)) +
@@ -420,8 +423,24 @@ void CreateOrUpdateShortcuts(
           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {
     start_menu_properties.set_pin_to_taskbar(!do_not_create_taskbar_shortcut);
   }
+
+  // The attempt below to update the stortcut will fail if it does not already
+  // exist at the expected location on disk.  First check if it exists in the
+  // previous location (under a subdirectory) and, if so, move it to the new
+  // location.
+  base::FilePath old_shortcut_path;
+  ShellUtil::GetShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist,
+      shortcut_level, &old_shortcut_path);
+  if (base::PathExists(old_shortcut_path)) {
+    ShellUtil::MoveExistingShortcut(
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+        dist, start_menu_properties);
+  }
+
   ExecuteAndLogShortcutOperation(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
       start_menu_properties, shortcut_operation);
 }
 

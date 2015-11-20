@@ -306,7 +306,7 @@ void AppListServiceWin::CreateShortcut() {
   shortcut_locations.on_desktop = true;
   shortcut_locations.in_quick_launch_bar = true;
   shortcut_locations.applications_menu_location =
-      web_app::APP_MENU_LOCATION_SUBDIR_CHROME;
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROME_DEPRECATED;
   base::FilePath user_data_dir(
       g_browser_process->profile_manager()->user_data_dir());
 

@@ -252,10 +252,11 @@ int DoUninstallTasks(bool chrome_still_running) {
     base::FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
+          ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+          ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
       };
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
