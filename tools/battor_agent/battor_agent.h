@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
+#define TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
+
 #include <string>
 
 #include "base/macros.h"
@@ -73,3 +76,5 @@ class BattOrAgent {
 };
 
 }  // namespace battor
+
+#endif  // TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_

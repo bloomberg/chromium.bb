@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
+#define TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "device/serial/serial_io_handler.h"
@@ -31,3 +34,5 @@ class BattOrConnection {
 };
 
 }  // namespace battor
+
+#endif  // TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
