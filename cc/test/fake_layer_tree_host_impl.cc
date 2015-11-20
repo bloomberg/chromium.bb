@@ -43,7 +43,8 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
                         manager,
                         gpu_memory_buffer_manager,
                         task_graph_runner,
-                        0) {
+                        0),
+      notify_tile_state_changed_called_(false) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
   SetViewportSize(gfx::Size(100, 100));
@@ -61,6 +62,11 @@ void FakeLayerTreeHostImpl::CreatePendingTree() {
   float arbitrary_large_page_scale = 100000.f;
   pending_tree()->PushPageScaleFromMainThread(
       1.f, 1.f / arbitrary_large_page_scale, arbitrary_large_page_scale);
+}
+
+void FakeLayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
+  LayerTreeHostImpl::NotifyTileStateChanged(tile);
+  notify_tile_state_changed_called_ = true;
 }
 
 BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {

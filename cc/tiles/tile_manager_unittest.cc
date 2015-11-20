@@ -1578,16 +1578,31 @@ TEST_F(TileManagerTest, ActivateAndDrawWhenOOM) {
   global_state.hard_memory_limit_in_bytes = 1u;
   global_state.soft_memory_limit_in_bytes = 1u;
 
-  base::RunLoop run_loop;
-  EXPECT_FALSE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
-  EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
-      .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
-  host_impl_->tile_manager()->PrepareTiles(global_state);
-  EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    EXPECT_FALSE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    host_impl_->tile_manager()->PrepareTiles(global_state);
+    EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+    run_loop.Run();
+  }
 
   EXPECT_TRUE(host_impl_->tile_manager()->IsReadyToDraw());
   EXPECT_TRUE(host_impl_->tile_manager()->IsReadyToActivate());
+  EXPECT_TRUE(host_impl_->notify_tile_state_changed_called());
+
+  // Next PrepareTiles should skip NotifyTileStateChanged since all tiles
+  // are marked oom already.
+  {
+    base::RunLoop run_loop;
+    host_impl_->set_notify_tile_state_changed_called(false);
+    EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    host_impl_->tile_manager()->PrepareTiles(global_state);
+    run_loop.Run();
+    EXPECT_FALSE(host_impl_->notify_tile_state_changed_called());
+  }
 }
 
 TEST_F(TileManagerTest, LowResHasNoImage) {

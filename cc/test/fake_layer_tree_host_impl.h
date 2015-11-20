@@ -40,6 +40,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
   void CreatePendingTree() override;
 
+  void NotifyTileStateChanged(const Tile* tile) override;
   BeginFrameArgs CurrentBeginFrameArgs() const override;
   void AdvanceToNextFrame(base::TimeDelta advance_by);
   void UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -51,9 +52,17 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   using LayerTreeHostImpl::is_likely_to_require_a_draw;
   using LayerTreeHostImpl::RemoveRenderPasses;
 
+  bool notify_tile_state_changed_called() const {
+    return notify_tile_state_changed_called_;
+  }
+  void set_notify_tile_state_changed_called(bool called) {
+    notify_tile_state_changed_called_ = called;
+  }
+
  private:
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
+  bool notify_tile_state_changed_called_;
 };
 
 }  // namespace cc

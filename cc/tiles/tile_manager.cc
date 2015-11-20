@@ -931,6 +931,8 @@ bool TileManager::MarkTilesOutOfMemory(
 
   for (; !queue->IsEmpty(); queue->Pop()) {
     Tile* tile = queue->Top().tile();
+    if (tile->draw_info().IsReadyToDraw())
+      continue;
     tile->draw_info().set_oom();
     client_->NotifyTileStateChanged(tile);
   }
