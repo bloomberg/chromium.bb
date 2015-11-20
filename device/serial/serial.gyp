@@ -32,6 +32,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../../chromeos/chromeos.gyp:chromeos',
+            '../../dbus/dbus.gyp:dbus',
           ],
         }],
         ['use_udev == 1', {
