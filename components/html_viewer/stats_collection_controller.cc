@@ -79,10 +79,8 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
 
   v8::Context::Scope context_scope(context);
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:tracing");
   scoped_ptr<mojo::ApplicationConnection> connection =
-      app->ConnectToApplication(request.Pass());
+      app->ConnectToApplication("mojo:tracing");
   if (!connection)
     return nullptr;
   tracing::StartupPerformanceDataCollectorPtr collector_for_controller;
@@ -109,10 +107,8 @@ StatsCollectionController::ConnectToDataCollector(mojo::ApplicationImpl* app) {
     return nullptr;
   }
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:tracing");
   tracing::StartupPerformanceDataCollectorPtr collector;
-  app->ConnectToService(request.Pass(), &collector);
+  app->ConnectToService("mojo:tracing", &collector);
   return collector.Pass();
 }
 

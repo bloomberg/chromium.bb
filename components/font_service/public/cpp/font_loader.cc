@@ -30,10 +30,8 @@ FontLoader::FontLoader(mojo::Shell* shell) {
 }
 
 FontLoader::FontLoader(mojo::ApplicationImpl* application_impl) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:font_service");
   FontServicePtr font_service;
-  application_impl->ConnectToService(request.Pass(), &font_service);
+  application_impl->ConnectToService("mojo:font_service", &font_service);
 
   thread_ = new internal::FontServiceThread(font_service.Pass());
 }

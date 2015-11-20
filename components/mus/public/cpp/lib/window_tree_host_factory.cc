@@ -32,9 +32,7 @@ void CreateSingleWindowTreeHost(
     mojom::WindowManagerPtr window_manager,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:mus";
-  app->ConnectToService(request.Pass(), &factory);
+  app->ConnectToService("mojo:mus", &factory);
   CreateWindowTreeHost(factory.get(), mojom::WindowTreeHostClientPtr(),
                        delegate, host, window_manager.Pass(),
                        window_manager_delegate);

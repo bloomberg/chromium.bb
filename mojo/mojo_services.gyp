@@ -50,6 +50,18 @@
       ],
     },
     {
+      # GN version: //mojo/converters/network
+      'target_name': 'network_type_converters',
+      'type': 'static_library',
+      'dependencies': [
+        'network_service_bindings_lib',
+      ],
+      'sources': [
+        'converters/network/network_type_converters.cc',
+        'converters/network/network_type_converters.h',
+      ],
+    },
+    {
       'target_name': 'updater_bindings_mojom',
       'type': 'none',
       'variables': {

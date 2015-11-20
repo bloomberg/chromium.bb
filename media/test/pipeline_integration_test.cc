@@ -645,14 +645,7 @@ class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
 
  protected:
   scoped_ptr<Renderer> CreateRenderer() override {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:media");
-    mojo::ServiceProvider* service_provider =
-        application_impl()
-            ->ConnectToApplication(request.Pass())
-            ->GetServiceProvider();
-
-    mojo::ConnectToService(service_provider, &media_service_factory_);
+    application_impl()->ConnectToService("mojo:media", &media_service_factory_);
 
     interfaces::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));

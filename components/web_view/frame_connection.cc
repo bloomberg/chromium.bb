@@ -110,8 +110,9 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   filter->filter.insert("mojo:font_service", font_service_interfaces.Pass());
 #endif
 
-  application_connection_ = app->ConnectToApplicationWithCapabilityFilter(
-      request.Pass(), filter.Pass());
+  mojo::ApplicationImpl::ConnectParams params(request.Pass());
+  params.set_filter(filter.Pass());
+  application_connection_ = app->ConnectToApplication(&params);
   application_connection_->ConnectToService(&frame_client_);
   application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
 }

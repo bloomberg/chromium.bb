@@ -118,9 +118,7 @@ class ServiceApplication : public ApplicationDelegate,
     app_ = app;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
-    URLRequestPtr request(URLRequest::New());
-    request->url = String::From("test:validator");
-    app_->ConnectToService(request.Pass(), &validator_);
+    app_->ConnectToService("test:validator", &validator_);
   }
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     AddService<Safe>(connection);
@@ -170,16 +168,12 @@ bool TestApplication::ConfigureIncomingConnection(
   // TestApplications receive their Validator via the inbound connection.
   connection->ConnectToService(&validator_);
 
-  URLRequestPtr request(URLRequest::New());
-  request->url = String::From("test:service");
-  connection1_ = app_->ConnectToApplication(request.Pass());
+  connection1_ = app_->ConnectToApplication("test:service");
   connection1_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service"));
 
-  URLRequestPtr request2(URLRequest::New());
-  request2->url = String::From("test:service2");
-  connection2_ = app_->ConnectToApplication(request2.Pass());
+  connection2_ = app_->ConnectToApplication("test:service2");
   connection2_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service2"));

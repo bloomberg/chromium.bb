@@ -90,9 +90,8 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   // 1. Launch a process. (Actually, have the runner launch a process that
   //    launches a process. #becauselinkerrors).
   mojo::shell::test::mojom::DriverPtr driver;
-  application_impl()->ConnectToService(
-      URLRequest::From(std::string("exe:application_manager_apptest_driver")),
-      &driver);
+  application_impl()->ConnectToService("exe:application_manager_apptest_driver",
+                                       &driver);
 
   // 2. Wait for it to connect to us. (via mojo:application_manager_apptests)
   base::MessageLoop::current()->Run();

@@ -120,10 +120,8 @@ void FrameDevToolsAgent::RegisterAgentIfNecessary() {
   if (binding_.is_bound())
     return;
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:devtools_service";
   DevToolsRegistryPtr devtools_registry;
-  app_->ConnectToService(request.Pass(), &devtools_registry);
+  app_->ConnectToService("mojo:devtools_service", &devtools_registry);
 
   DevToolsAgentPtr agent;
   binding_.Bind(&agent);

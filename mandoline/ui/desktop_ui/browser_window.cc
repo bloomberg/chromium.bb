@@ -141,9 +141,7 @@ void BrowserWindow::Close() {
 void BrowserWindow::ShowOmnibox() {
   TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowOmnibox");
   if (!omnibox_.get()) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:omnibox");
-    omnibox_connection_ = app_->ConnectToApplication(request.Pass());
+    omnibox_connection_ = app_->ConnectToApplication("mojo:omnibox");
     omnibox_connection_->AddService<ViewEmbedder>(this);
     omnibox_connection_->ConnectToService(&omnibox_);
     omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
@@ -242,10 +240,8 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   if (!recorded_browser_startup_metrics &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:tracing");
     tracing::StartupPerformanceDataCollectorPtr collector;
-    app_->ConnectToService(request.Pass(), &collector);
+    app_->ConnectToService("mojo:tracing", &collector);
     collector->SetBrowserWindowDisplayTicks(display_ticks.ToInternalValue());
     collector->SetBrowserOpenTabsTimeDelta(open_tabs_delta.ToInternalValue());
     collector->SetBrowserMessageLoopStartTicks(

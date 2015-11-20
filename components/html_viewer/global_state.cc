@@ -124,9 +124,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
       DisplaysFromSizeAndScale(screen_size_in_pixels_, device_pixel_ratio_)));
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:mus");
-  app_->ConnectToService(request.Pass(), &gpu_service_);
+  app_->ConnectToService("mojo:mus", &gpu_service_);
   gpu_service_->GetGpuInfo(base::Bind(&GlobalState::GetGpuInfoCallback,
                                       base::Unretained(this)));
 

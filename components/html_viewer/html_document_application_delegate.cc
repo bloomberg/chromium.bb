@@ -91,11 +91,7 @@ void HTMLDocumentApplicationDelegate::OnTerminate() {
 
 // ApplicationDelegate;
 void HTMLDocumentApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:network_service");
-  scoped_ptr<mojo::ApplicationConnection> connection =
-      app_.ConnectToApplication(request.Pass());
-  connection->ConnectToService(&url_loader_factory_);
+  app_.ConnectToService("mojo:network_service", &url_loader_factory_);
 }
 
 bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(

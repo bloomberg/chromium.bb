@@ -228,12 +228,8 @@ class WindowServerTest : public WindowServerTestBase {
   // WindowTreeClient.
   mus::mojom::WindowTreeClientPtr
   ConnectToApplicationAndGetWindowServerClient() {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(application_impl()->url());
-    scoped_ptr<mojo::ApplicationConnection> connection =
-        application_impl()->ConnectToApplication(request.Pass());
     mus::mojom::WindowTreeClientPtr client;
-    connection->ConnectToService(&client);
+    application_impl()->ConnectToService(application_impl()->url(), &client);
     return client.Pass();
   }
 

@@ -26,6 +26,7 @@ include_rules = [
   "+mojo/common",
   "+mojo/converters/geometry",
   "+mojo/converters/input_events",
+  "+mojo/converters/network",
   "+mojo/converters/surfaces",
   "+mojo/gles2",
   "+mojo/gpu",

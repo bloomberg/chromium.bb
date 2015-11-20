@@ -23,9 +23,7 @@ TestTimeServiceImpl::~TestTimeServiceImpl() {
 void TestTimeServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:test_request_tracker_app");
-  app_impl_->ConnectToService(request.Pass(), &tracker);
+  app_impl_->ConnectToService("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(new TrackedService(tracker.Pass(), Name_, callback));
 }
 

@@ -57,9 +57,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mojo::URLRequestPtr request = mojo::URLRequest::New();
-    request->url = "mojo:media";
-    connection_ = application_impl()->ConnectToApplication(request.Pass());
+    connection_ = application_impl()->ConnectToApplication("mojo:media");
     connection_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 

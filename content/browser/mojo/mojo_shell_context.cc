@@ -272,8 +272,9 @@ void MojoShellContext::ConnectToApplication(
     mojo::ServiceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::Shell::ConnectToApplicationCallback& callback) {
-  proxy_.Get()->ConnectToApplication(url, requestor_url, request.Pass(),
-                                     exposed_services.Pass(), filter, callback);
+  proxy_.Get()->ConnectToApplication(url, requestor_url,
+                                     request.Pass(), exposed_services.Pass(),
+                                     filter, callback);
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(

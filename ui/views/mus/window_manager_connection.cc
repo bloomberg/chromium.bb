@@ -121,8 +121,7 @@ mus::Window* WindowManagerConnection::NewWindow(
 
 WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
     : app_(app) {
-  app->ConnectToService(mojo::URLRequest::From(std::string("mojo:mus")),
-                        &window_manager_);
+  app->ConnectToService("mojo:mus", &window_manager_);
 
   ui_init_.reset(new ui::mojo::UIInit(
       GetDisplaysFromWindowManager(&window_manager_)));

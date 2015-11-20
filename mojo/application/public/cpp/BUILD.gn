@@ -48,6 +48,7 @@ source_set("sources") {
     "//base:i18n",
     "//mojo/application/public/interfaces",
     "//mojo/common",
+    "//mojo/converters/network",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",

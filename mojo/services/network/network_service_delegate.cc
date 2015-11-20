@@ -93,9 +93,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   // to OpenFileSystem, the entire mojo system hangs to the point where writes
   // to stderr that previously would have printed to our console aren't. The
   // apptests are also fairly resistant to being run under gdb on android.
-  URLRequestPtr request(URLRequest::New());
-  request->url = String::From("mojo:filesystem");
-  app_->ConnectToService(request.Pass(), &files_);
+  app_->ConnectToService("mojo:filesystem", &files_);
 
   filesystem::FileSystemClientPtr client;
   binding_.Bind(GetProxy(&client));

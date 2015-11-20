@@ -51,9 +51,7 @@ void TracingImpl::Initialize(ApplicationImpl* app) {
   // up to something like CoreServices to name its own child threads.
   base::PlatformThread::SetName(app->url());
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:tracing");
-  connection_ = app->ConnectToApplication(request.Pass());
+  connection_ = app->ConnectToApplication("mojo:tracing");
   connection_->AddService(this);
 
 #ifdef NDEBUG

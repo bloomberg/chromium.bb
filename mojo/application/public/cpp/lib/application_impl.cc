@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
+#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/environment/logging.h"
 
@@ -24,6 +25,12 @@ void DefaultTerminationClosure() {
 }
 
 }  // namespace
+
+ApplicationImpl::ConnectParams::ConnectParams(const std::string& url)
+  : request_(URLRequest::From(url)) {}
+ApplicationImpl::ConnectParams::ConnectParams(URLRequestPtr request)
+    : request_(request.Pass()) {}
+ApplicationImpl::ConnectParams::~ConnectParams() {}
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
@@ -47,22 +54,16 @@ ApplicationImpl::~ApplicationImpl() {
 
 scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
     const std::string& url) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = url;
-  return ConnectToApplication(request.Pass());
-}
-
-scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
-    URLRequestPtr request) {
-  return ConnectToApplicationWithCapabilityFilter(request.Pass(), nullptr);
+  ConnectParams params(url);
+  return ConnectToApplication(&params);
 }
 
 scoped_ptr<ApplicationConnection>
-    ApplicationImpl::ConnectToApplicationWithCapabilityFilter(
-        URLRequestPtr request,
-        CapabilityFilterPtr filter) {
+    ApplicationImpl::ConnectToApplication(ConnectParams* params) {
   if (!shell_)
     return nullptr;
+  DCHECK(params);
+  URLRequestPtr request = params->TakeRequest();
   ServiceProviderPtr local_services;
   InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
   ServiceProviderPtr remote_services;
@@ -79,7 +80,8 @@ scoped_ptr<ApplicationConnection>
       application_url, application_url, remote_services.Pass(),
       local_request.Pass(), allowed));
   shell_->ConnectToApplication(request.Pass(), remote_services_proxy.Pass(),
-                               local_services.Pass(), filter.Pass(),
+                               local_services.Pass(),
+                               params->TakeFilter().Pass(),
                                registry->GetConnectToApplicationCallback());
   if (!delegate_->ConfigureOutgoingConnection(registry.get()))
     return nullptr;

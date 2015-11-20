@@ -51,9 +51,7 @@ void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:mus";
-  app_->ConnectToService(request.Pass(), &host_factory_);
+  app_->ConnectToService("mojo:mus", &host_factory_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Create a Browser for each valid URL in the command line.

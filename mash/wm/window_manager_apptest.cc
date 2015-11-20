@@ -19,9 +19,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   void ConnectToWindowManager(mus::mojom::WindowManagerPtr* window_manager) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = "mojo:example_wm";
-    application_impl()->ConnectToService(request.Pass(), window_manager);
+    application_impl()->ConnectToService("mojo:example_wm", window_manager);
   }
 
   mus::Window* OpenWindow(mus::mojom::WindowManager* window_manager) {

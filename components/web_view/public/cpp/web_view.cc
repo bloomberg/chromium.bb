@@ -21,16 +21,13 @@ WebView::WebView(mojom::WebViewClient* client) : binding_(client) {}
 WebView::~WebView() {}
 
 void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:web_view";
-
   mojom::WebViewClientPtr client;
   mojo::InterfaceRequest<mojom::WebViewClient> client_request =
       GetProxy(&client);
   binding_.Bind(client_request.Pass());
 
   mojom::WebViewFactoryPtr factory;
-  app->ConnectToService(request.Pass(), &factory);
+  app->ConnectToService("mojo:web_view", &factory);
   factory->CreateWebView(client.Pass(), GetProxy(&web_view_));
 
   mus::mojom::WindowTreeClientPtr window_tree_client;

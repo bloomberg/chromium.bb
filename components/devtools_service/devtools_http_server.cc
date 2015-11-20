@@ -335,9 +335,8 @@ DevToolsHttpServer::DevToolsHttpServer(DevToolsService* service,
   VLOG(1) << "Remote debugging HTTP server is started on port "
           << remote_debugging_port << ".";
   mojo::NetworkServicePtr network_service;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:network_service";
-  service_->application()->ConnectToService(request.Pass(), &network_service);
+  service_->application()->ConnectToService("mojo:network_service",
+                                            &network_service);
 
   mojo::NetAddressPtr local_address(mojo::NetAddress::New());
   local_address->family = mojo::NET_ADDRESS_FAMILY_IPV4;

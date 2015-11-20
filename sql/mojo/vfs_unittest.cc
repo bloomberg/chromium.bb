@@ -50,9 +50,7 @@ class VFSTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
 
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:filesystem");
-    application_impl()->ConnectToService(request.Pass(), &files_);
+    application_impl()->ConnectToService("mojo:filesystem", &files_);
 
     filesystem::FileSystemClientPtr client;
     binding_.Bind(GetProxy(&client));

@@ -43,8 +43,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   void Initialize(mojo::ApplicationImpl* app) override {
     app_ = app;
     mojo::shell::mojom::ApplicationManagerPtr application_manager;
-    app_->ConnectToService(mojo::URLRequest::From(std::string("mojo:shell")),
-                           &application_manager);
+    app_->ConnectToService("mojo:shell", &application_manager);
 
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));

@@ -76,10 +76,8 @@ BlinkPlatformImpl::BlinkPlatformImpl(
       main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()) {
   if (app) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:network_service");
     scoped_ptr<mojo::ApplicationConnection> connection =
-        app->ConnectToApplication(request.Pass());
+        app->ConnectToApplication("mojo:network_service");
     connection->ConnectToService(&web_socket_factory_);
     connection->ConnectToService(&url_loader_factory_);
 
@@ -88,9 +86,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
     mojo::ClipboardPtr clipboard;
-    mojo::URLRequestPtr request2(mojo::URLRequest::New());
-    request2->url = mojo::String::From("mojo:clipboard");
-    app->ConnectToService(request2.Pass(), &clipboard);
+    app->ConnectToService("mojo:clipboard", &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
 }

@@ -367,6 +367,7 @@ mojo_native_application("apptests") {
     "//components/web_view/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/converters/network",
     "//mojo/public/c/system:for_shared_library",
     "//net:test_support",
     "//testing/gtest",

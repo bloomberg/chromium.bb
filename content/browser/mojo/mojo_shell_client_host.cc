@@ -72,8 +72,7 @@ void RegisterChildWithExternalShell(int child_process_id,
       base::ThreadTaskRunnerHandle::Get()));
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
   MojoShellConnection::Get()->GetApplication()->ConnectToService(
-      mojo::URLRequest::From(std::string("mojo:shell")),
-      &application_manager);
+      "mojo:shell", &application_manager);
   // The content of the URL/qualifier we pass is actually meaningless, it's only
   // important that they're unique per process.
   // TODO(beng): We need to specify a restrictive CapabilityFilter here that

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
@@ -57,6 +58,25 @@ namespace mojo {
 //
 class ApplicationImpl : public Application {
  public:
+  class ConnectParams {
+   public:
+    explicit ConnectParams(const std::string& url);
+    explicit ConnectParams(URLRequestPtr request);
+    ~ConnectParams();
+
+    URLRequestPtr TakeRequest() { return request_.Pass(); }
+    CapabilityFilterPtr TakeFilter() { return filter_.Pass(); }
+    void set_filter(CapabilityFilterPtr filter) {
+      filter_ = filter.Pass();
+    }
+
+   private:
+    URLRequestPtr request_;
+    CapabilityFilterPtr filter_;
+
+    DISALLOW_COPY_AND_ASSIGN(ConnectParams);
+  };
+
   class TestApi {
    public:
     explicit TestApi(ApplicationImpl* application)
@@ -97,21 +117,21 @@ class ApplicationImpl : public Application {
   // or nullptr otherwise. Caller takes ownership.
   scoped_ptr<ApplicationConnection> ConnectToApplication(
       const std::string& url);
-  scoped_ptr<ApplicationConnection> ConnectToApplication(URLRequestPtr request);
-  scoped_ptr<ApplicationConnection> ConnectToApplicationWithCapabilityFilter(
-      URLRequestPtr request,
-      CapabilityFilterPtr filter);
+  scoped_ptr<ApplicationConnection> ConnectToApplication(ConnectParams* params);
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
-  void ConnectToService(mojo::URLRequestPtr request,
-                        InterfacePtr<Interface>* ptr) {
-    scoped_ptr<ApplicationConnection> connection =
-        ConnectToApplication(request.Pass());
+  void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
+    scoped_ptr<ApplicationConnection> connection = ConnectToApplication(params);
     if (!connection.get())
       return;
     connection->ConnectToService(ptr);
+  }
+  template <typename Interface>
+  void ConnectToService(const std::string& url, InterfacePtr<Interface>* ptr) {
+    ConnectParams params(url);
+    return ConnectToService(&params, ptr);
   }
 
   // Block the calling thread until the Initialize() method is called by the

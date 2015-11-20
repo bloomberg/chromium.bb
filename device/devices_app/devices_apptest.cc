@@ -21,9 +21,7 @@ class DevicesAppTest : public mojo::test::ApplicationTestBase {
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    mojo::URLRequestPtr request = mojo::URLRequest::New();
-    request->url = "mojo:devices";
-    application_impl()->ConnectToService(request.Pass(), &usb_device_manager_);
+    application_impl()->ConnectToService("mojo:devices", &usb_device_manager_);
   }
 
   usb::DeviceManager* usb_device_manager() { return usb_device_manager_.get(); }

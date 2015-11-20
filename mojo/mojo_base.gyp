@@ -247,6 +247,7 @@
       'dependencies': [
         'mojo_application_bindings',
         'mojo_message_pump_lib',
+        'mojo_services.gyp:network_type_converters',
       ],
     },
     {

@@ -16,9 +16,7 @@ class BrowserTest : public mojo::test::ApplicationTestBase {
   // mojo::test::ApplicationTestBase:
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:desktop_ui");
-    application_impl()->ConnectToService(request.Pass(), &launch_handler_);
+    application_impl()->ConnectToService("mojo:desktop_ui", &launch_handler_);
     ASSERT_TRUE(launch_handler_.is_bound());
   }
 

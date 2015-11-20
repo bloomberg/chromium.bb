@@ -246,9 +246,7 @@ class TestAImpl : public TestA {
             TesterContext* test_context,
             InterfaceRequest<TestA> request)
       : test_context_(test_context), binding_(this, request.Pass()) {
-    mojo::URLRequestPtr request2(mojo::URLRequest::New());
-    request2->url = mojo::String::From(kTestBURLString);
-    connection_ = app_impl->ConnectToApplication(request2.Pass());
+    connection_ = app_impl->ConnectToApplication(kTestBURLString);
     connection_->ConnectToService(&b_);
   }
 

@@ -75,12 +75,8 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
   bool result = false;
   base::RunLoop run_loop;
   {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(url);
-    scoped_ptr<ApplicationConnection> connection =
-        app->ConnectToApplication(request.Pass());
     mojom::WindowTreeClientPtr client;
-    connection->ConnectToService(&client);
+    app->ConnectToService(url.get(), &client);
     ws->Embed(root_id, client.Pass(), mojom::WindowTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
@@ -540,11 +536,9 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
     client_factory_.reset(new WindowTreeClientFactory(application_impl()));
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:mus");
 
     mojom::WindowTreeHostFactoryPtr factory;
-    application_impl()->ConnectToService(request.Pass(), &factory);
+    application_impl()->ConnectToService("mojo:mus", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     ws_client1_.reset(new TestWindowTreeClientImpl(application_impl()));
