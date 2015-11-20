@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
@@ -592,7 +593,8 @@ void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 const std::string& client_name,
                                                 snd_seq_client_type_t type) {
   ClientExit(client_id);
-  clients_.insert(client_id, make_scoped_ptr(new Client(client_name, type)));
+  clients_.insert(std::make_pair(
+      client_id, make_scoped_ptr(new Client(client_name, type))));
   if (IsCardClient(type, client_id))
     ++card_client_count_;
 }
@@ -645,7 +647,7 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
   int card_midi_device = -1;
   for (const auto& client_pair : clients_) {
     int client_id = client_pair.first;
-    const auto& client = client_pair.second;
+    const auto& client = client_pair.second.get();
 
     // Get client metadata.
     const std::string client_name = client->name();
@@ -727,7 +729,7 @@ MidiManagerAlsa::AlsaSeqState::Client::~Client() = default;
 
 void MidiManagerAlsa::AlsaSeqState::Client::AddPort(int addr,
                                                     scoped_ptr<Port> port) {
-  ports_.set(addr, port.Pass());
+  ports_[addr] = std::move(port);
 }
 
 void MidiManagerAlsa::AlsaSeqState::Client::RemovePort(int addr) {
@@ -1119,7 +1121,7 @@ void MidiManagerAlsa::AddCard(udev_device* dev) {
   if (midi_count > 0) {
     scoped_ptr<AlsaCard> card(
         new AlsaCard(dev, name, longname, driver, midi_count));
-    alsa_cards_.insert(number, card.Pass());
+    alsa_cards_.insert(std::make_pair(number, std::move(card)));
     alsa_card_midi_count_ += midi_count;
   }
 }

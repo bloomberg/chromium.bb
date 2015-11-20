@@ -6,10 +6,10 @@
 #define MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 
 #include <alsa/asoundlib.h>
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -42,7 +42,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ToMidiPortState);
 
   class AlsaCard;
-  typedef base::ScopedPtrMap<int, scoped_ptr<AlsaCard>> AlsaCardMap;
+  using AlsaCardMap = std::map<int, scoped_ptr<AlsaCard>>;
 
   class MidiPort {
    public:
@@ -269,7 +269,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
     class Client {
      public:
-      typedef base::ScopedPtrMap<int, scoped_ptr<Port>> PortMap;
+      using PortMap = std::map<int, scoped_ptr<Port>>;
 
       Client(const std::string& name, snd_seq_client_type_t type);
       ~Client();
@@ -289,9 +289,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       DISALLOW_COPY_AND_ASSIGN(Client);
     };
 
-    typedef base::ScopedPtrMap<int, scoped_ptr<Client>> ClientMap;
-
-    ClientMap clients_;
+    std::map<int, scoped_ptr<Client>> clients_;
 
     // This is the current number of clients we know about that have
     // cards. When this number matches alsa_card_midi_count_, we know

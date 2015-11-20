@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification.h"
@@ -93,11 +94,11 @@ void PopupTimersController::StartTimer(const std::string& id,
   scoped_ptr<PopupTimer> timer(new PopupTimer(id, timeout, AsWeakPtr()));
 
   timer->Start();
-  popup_timers_.insert(id, timer.Pass());
+  popup_timers_.insert(std::make_pair(id, std::move(timer)));
 }
 
 void PopupTimersController::StartAll() {
-  for (auto& iter : popup_timers_)
+  for (const auto& iter : popup_timers_)
     iter.second->Start();
 }
 
@@ -115,7 +116,7 @@ void PopupTimersController::PauseTimer(const std::string& id) {
 }
 
 void PopupTimersController::PauseAll() {
-  for (auto& iter : popup_timers_)
+  for (const auto& iter : popup_timers_)
     iter.second->Pause();
 }
 

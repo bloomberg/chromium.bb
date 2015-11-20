@@ -9,7 +9,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"
@@ -30,7 +29,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   // message_center::FakeMessageCenter overrides:
   void AddNotification(scoped_ptr<Notification> notification) override {
     add_count_++;
-    notifications_.insert(notification->id(), notification.Pass());
+    notifications_.insert(
+        std::make_pair(notification->id(), std::move(notification)));
   }
   void RemoveNotification(const std::string& id, bool by_user) override {
     Notification* notification = FindVisibleNotificationById(id);
@@ -42,13 +42,13 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
   Notification* FindVisibleNotificationById(const std::string& id) override {
     auto it = notifications_.find(id);
-    return it == notifications_.end() ? NULL : it->second;
+    return it == notifications_.end() ? NULL : it->second.get();
   }
 
  private:
   int add_count_;
   int remove_count_;
-  base::ScopedPtrMap<std::string, scoped_ptr<Notification>> notifications_;
+  std::map<std::string, scoped_ptr<Notification>> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };

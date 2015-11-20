@@ -5,10 +5,10 @@
 #ifndef UI_MESSAGE_CENTER_POPUP_TIMER_H_
 #define UI_MESSAGE_CENTER_POPUP_TIMER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -118,8 +118,7 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   MessageCenter* message_center_;
 
   // The PopupTimerCollection contains all the managed timers by their ID.
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<PopupTimer>>
-      PopupTimerCollection;
+  using PopupTimerCollection = std::map<std::string, scoped_ptr<PopupTimer>>;
   PopupTimerCollection popup_timers_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTimersController);

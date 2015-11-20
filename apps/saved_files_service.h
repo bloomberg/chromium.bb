@@ -5,11 +5,11 @@
 #ifndef APPS_SAVED_FILES_SERVICE_H_
 #define APPS_SAVED_FILES_SERVICE_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -127,8 +127,7 @@ class SavedFilesService : public KeyedService,
   static void SetLruSizeForTest(int size);
   static void ClearLruSizeForTest();
 
-  base::ScopedPtrMap<std::string, scoped_ptr<SavedFiles>>
-      extension_id_to_saved_files_;
+  std::map<std::string, scoped_ptr<SavedFiles>> extension_id_to_saved_files_;
   content::NotificationRegistrar registrar_;
   Profile* profile_;
 

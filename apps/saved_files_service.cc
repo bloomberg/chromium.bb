@@ -275,10 +275,9 @@ void SavedFilesService::ClearQueue(const extensions::Extension* extension) {
 
 SavedFilesService::SavedFiles* SavedFilesService::Get(
     const std::string& extension_id) const {
-  base::ScopedPtrMap<std::string, scoped_ptr<SavedFiles>>::const_iterator it =
-      extension_id_to_saved_files_.find(extension_id);
+  auto it = extension_id_to_saved_files_.find(extension_id);
   if (it != extension_id_to_saved_files_.end())
-    return it->second;
+    return it->second.get();
 
   return NULL;
 }
@@ -292,7 +291,8 @@ SavedFilesService::SavedFiles* SavedFilesService::GetOrInsert(
   scoped_ptr<SavedFiles> scoped_saved_files(
       new SavedFiles(profile_, extension_id));
   saved_files = scoped_saved_files.get();
-  extension_id_to_saved_files_.insert(extension_id, scoped_saved_files.Pass());
+  extension_id_to_saved_files_.insert(
+      std::make_pair(extension_id, std::move(scoped_saved_files)));
   return saved_files;
 }
 
