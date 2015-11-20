@@ -216,13 +216,11 @@ void DevToolsAgent::OnDispatchOnInspectorBackend(const std::string& message) {
     web_agent->dispatchOnInspectorBackend(WebString::fromUTF8(message));
 }
 
-void DevToolsAgent::OnInspectElement(
-    const std::string& host_id, int x, int y) {
+void DevToolsAgent::OnInspectElement(int x, int y) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->attach(WebString::fromUTF8(host_id));
+    DCHECK(is_attached_);
     web_agent->inspectElementAt(WebPoint(x, y));
-    is_attached_ = true;
   }
 }
 

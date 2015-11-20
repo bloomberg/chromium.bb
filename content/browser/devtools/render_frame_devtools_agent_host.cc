@@ -187,8 +187,9 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
     int x, int y) {
+  DCHECK(attached_);
   host_->Send(new DevToolsAgentMsg_InspectElement(
-      host_->GetRoutingID(), agent_->GetId(), x, y));
+      host_->GetRoutingID(), x, y));
 }
 
 void

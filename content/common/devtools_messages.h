@@ -94,8 +94,7 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
                     std::string /* message */)
 
 // Inspect element with the given coordinates.
-IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_InspectElement,
-                    std::string /* host_id */,
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_InspectElement,
                     int /* x */,
                     int /* y */)
 

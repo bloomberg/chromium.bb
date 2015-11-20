@@ -520,7 +520,6 @@ void DevToolsWindow::InspectElement(
     int y) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_frame_host));
-  agent->InspectElement(x, y);
   bool should_measure_time = FindDevToolsWindow(agent.get()) == NULL;
   base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
@@ -531,6 +530,8 @@ void DevToolsWindow::InspectElement(
     OpenDevToolsWindow(Profile::FromBrowserContext(agent->GetBrowserContext()),
                        agent);
   }
+
+  agent->InspectElement(x, y);
 
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   if (should_measure_time && window)

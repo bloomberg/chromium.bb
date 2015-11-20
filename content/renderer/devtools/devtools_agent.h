@@ -71,7 +71,7 @@ class CONTENT_EXPORT DevToolsAgent
                   const std::string& agent_state);
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
-  void OnInspectElement(const std::string& host_id, int x, int y);
+  void OnInspectElement(int x, int y);
   void ContinueProgram();
   void OnSetupDevToolsClient(const std::string& compatibility_script);
 
