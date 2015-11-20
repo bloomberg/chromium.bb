@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/net/service_providers_win.h"
@@ -297,6 +298,11 @@ void CollectRegistryData(
   }
 }
 
+void CollectDomainEnrollmentData(
+    ClientIncidentReport_EnvironmentData_OS* os_data) {
+  os_data->set_is_enrolled_to_domain(base::win::IsEnrolledToDomain());
+}
+
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
@@ -313,5 +319,6 @@ void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
     CollectRegistryData(kRegKeysToCollect, arraysize(kRegKeysToCollect),
                         os_data->mutable_registry_key());
   }
+  CollectDomainEnrollmentData(os_data);
 }
 }  // namespace safe_browsing

@@ -16,6 +16,7 @@ class RepeatedPtrField;
 
 namespace safe_browsing {
 
+class ClientIncidentReport_EnvironmentData_OS;
 class ClientIncidentReport_EnvironmentData_OS_RegistryKey;
 class ClientIncidentReport_EnvironmentData_Process;
 
@@ -54,6 +55,11 @@ void CollectRegistryData(
     size_t num_keys_to_collect,
     google::protobuf::RepeatedPtrField<
         ClientIncidentReport_EnvironmentData_OS_RegistryKey>* key_data);
+
+// Populates |os_data| with information about the machine's domain enrollment
+// status.
+void CollectDomainEnrollmentData(
+    ClientIncidentReport_EnvironmentData_OS* os_data);
 
 }  // namespace safe_browsing
 

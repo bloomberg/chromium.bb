@@ -520,6 +520,8 @@ message ClientIncidentReport {
       }
 
       repeated RegistryKey registry_key = 3;
+
+      optional bool is_enrolled_to_domain = 4;
     }
     optional OS os = 1;
     message Machine {

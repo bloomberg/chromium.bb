@@ -305,4 +305,13 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   EXPECT_EQ(REG_SZ, subkey_pb.value(0).type());
 }
 
+TEST(SafeBrowsingEnvironmentDataCollectionWinTest,
+     CollectDomainEnrollmentData) {
+  // The test may or may not be running on a domain-enrolled machine, so all we
+  // can check is that some value is filled in.
+  ClientIncidentReport_EnvironmentData_OS os_data;
+  CollectDomainEnrollmentData(&os_data);
+  EXPECT_TRUE(os_data.has_is_enrolled_to_domain());
+}
+
 }  // namespace safe_browsing
