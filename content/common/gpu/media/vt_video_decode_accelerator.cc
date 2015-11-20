@@ -65,12 +65,6 @@ static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
 // reorder queue.)
 static const int kMaxReorderQueueSize = 16;
 
-// When set to false, always create a new decoder instead of reusing the
-// existing configuration when the configuration changes. This works around a
-// bug in VideoToolbox that results in corruption before Mac OS X 10.10.3. The
-// value is set in InitializeVideoToolbox().
-static bool g_enable_compatible_configuration_reuse = true;
-
 // Build an |image_config| dictionary for VideoToolbox initialization.
 static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
@@ -188,7 +182,6 @@ static bool InitializeVideoToolboxInternal() {
     // CoreVideo is also required, but the loader stops after the first path is
     // loaded. Instead we rely on the transitive dependency from VideoToolbox to
     // CoreVideo.
-    // TODO(sandersd): Fallback to PrivateFrameworks to support OS X < 10.8.
     StubPathMap paths;
     paths[kModuleVt].push_back(FILE_PATH_LITERAL(
         "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
@@ -224,12 +217,6 @@ static bool InitializeVideoToolboxInternal() {
                  << "Hardware accelerated video decoding will be disabled.";
     return false;
   }
-
-  // Set |g_enable_compatible_configuration_reuse| to false on
-  // Mac OS X < 10.10.3.
-  base::Version os_x_version(base::SysInfo::OperatingSystemVersion());
-  if (os_x_version.IsOlderThan("10.10.3"))
-    g_enable_compatible_configuration_reuse = false;
 
   return true;
 }
@@ -270,7 +257,10 @@ VTVideoDecodeAccelerator::Task::~Task() {
 }
 
 VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
-    : bitstream_id(bitstream_id), pic_order_cnt(0), reorder_window(0) {
+    : bitstream_id(bitstream_id),
+      pic_order_cnt(0),
+      is_idr(false),
+      reorder_window(0) {
 }
 
 VTVideoDecodeAccelerator::Frame::~Frame() {
@@ -386,7 +376,6 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   nalu_data_sizes.push_back(last_pps_.size());
 
   // Construct a new format description from the parameter sets.
-  // TODO(sandersd): Replace this with custom code to support OS X < 10.9.
   format_.reset();
   OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
       kCFAllocatorDefault,
@@ -402,15 +391,12 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   }
 
   // Store the new configuration data.
+  // TODO(sandersd): Despite the documentation, this seems to return the visible
+  // size. However, the output always appears to be top-left aligned, so it
+  // makes no difference. Re-verify this and update the variable name.
   CMVideoDimensions coded_dimensions =
       CMVideoFormatDescriptionGetDimensions(format_);
   coded_size_.SetSize(coded_dimensions.width, coded_dimensions.height);
-
-  // If the session is compatible, there's nothing else to do.
-  if (g_enable_compatible_configuration_reuse && session_ &&
-      VTDecompressionSessionCanAcceptFormatDescription(session_, format_)) {
-    return true;
-  }
 
   // Prepare VideoToolbox configuration dictionaries.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
@@ -558,12 +544,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
       case media::H264NALU::kSliceDataB:
       case media::H264NALU::kSliceDataC:
       case media::H264NALU::kNonIDRSlice:
-        // TODO(sandersd): Check that there has been an IDR slice since the
-        // last reset.
       case media::H264NALU::kIDRSlice:
         // Compute the |pic_order_cnt| for the picture from the first slice.
-        // TODO(sandersd): Make sure that any further slices are part of the
-        // same picture or a redundant coded picture.
         if (!has_slice) {
           media::H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
@@ -603,6 +585,9 @@ void VTVideoDecodeAccelerator::DecodeTask(
             return;
           }
 
+          if (nalu.nal_unit_type == media::H264NALU::kIDRSlice)
+            frame->is_idr = true;
+
           if (sps->vui_parameters_present_flag &&
               sps->bitstream_restriction_flag) {
             frame->reorder_window = std::min(sps->max_num_reorder_frames,
@@ -639,7 +624,10 @@ void VTVideoDecodeAccelerator::DecodeTask(
       NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
       return;
     }
-    if (!ConfigureDecoder())
+
+    // If it's not an IDR frame, we can't reconfigure the decoder anyway. We
+    // assume that any config change not on an IDR must be compatible.
+    if (frame->is_idr && !ConfigureDecoder())
       return;
   }
 
@@ -897,9 +885,8 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
   const Task& task = task_queue_.front();
   switch (task.type) {
     case TASK_FRAME:
-      // TODO(sandersd): Signal IDR explicitly (not using pic_order_cnt == 0).
       if (reorder_queue_.size() < kMaxReorderQueueSize &&
-          (task.frame->pic_order_cnt != 0 || reorder_queue_.empty())) {
+          (!task.frame->is_idr || reorder_queue_.empty())) {
         assigned_bitstream_ids_.erase(task.frame->bitstream_id);
         client_->NotifyEndOfBitstreamBuffer(task.frame->bitstream_id);
         reorder_queue_.push(task.frame);
@@ -953,7 +940,7 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
   // the next frame.
   bool flushing = !task_queue_.empty() &&
                   (task_queue_.front().type != TASK_FRAME ||
-                   task_queue_.front().frame->pic_order_cnt == 0);
+                   task_queue_.front().frame->is_idr);
 
   size_t reorder_window = std::max(0, reorder_queue_.top()->reorder_window);
   if (flushing || reorder_queue_.size() > reorder_window) {
@@ -1122,8 +1109,8 @@ void VTVideoDecodeAccelerator::Destroy() {
 
   // For a graceful shutdown, return assigned buffers and flush before
   // destructing |this|.
-  // TODO(sandersd): Make sure the decoder won't try to read the buffers again
-  // before discarding them.
+  // TODO(sandersd): Prevent the decoder from reading buffers before discarding
+  // them.
   for (int32_t bitstream_id : assigned_bitstream_ids_)
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);
   assigned_bitstream_ids_.clear();

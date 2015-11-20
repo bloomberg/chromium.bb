@@ -96,7 +96,10 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
     // Relative presentation order of this frame (see AVC spec).
     int32_t pic_order_cnt;
 
-    // Nnumber of frames after this one in decode order that can appear before
+    // Whether this frame is an IDR.
+    bool is_idr;
+
+    // Number of frames after this one in decode order that can appear before
     // before it in presentation order.
     int32_t reorder_window;
 
