@@ -162,8 +162,10 @@
 
           success = Should("Curve value at time " + startTime,
             data[timeToSampleFrame(startTime, context.sampleRate)]).beEqualTo(c[0]) && success;
+          // Due to round-off, the value at the midpoint is not exactly zero on arm64.  See
+          // crbug.com/558563.  The current value is experimentally determined.
           success = Should("Curve value at time " + midPoint,
-            data[timeToSampleFrame(midPoint, context.sampleRate)]).beEqualTo(c[1]) && success;
+            data[timeToSampleFrame(midPoint, context.sampleRate)]).beCloseTo(0, Math.pow(2, -51)) && success;
           success = Should("Curve value at time " + endTime,
             data[timeToSampleFrame(endTime, context.sampleRate)]).beEqualTo(c[2]) && success;
           if (success)

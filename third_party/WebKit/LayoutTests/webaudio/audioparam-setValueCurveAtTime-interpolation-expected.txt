@@ -60,7 +60,7 @@ PASS Max difference is less than or equal to 5.9605e-8.
 PASS Test: curve length = 1000; duration frames = 12800.
 
 PASS Curve value at time 0.7 is equal to -1.
-PASS Curve value at time 0.7999999999999999 is equal to 0.
+PASS Curve value at time 0.7999999999999999 is 0 within an absolute error of 4.440892098500626e-16.
 PASS Curve value at time 0.8999999999999999 is equal to 1.
 PASS Test: crbug.com/44471
 

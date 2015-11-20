@@ -416,7 +416,7 @@ var Should = (function () {
         this.desc = desc;
         this.target = target;
         // |_testPassed| and |_testFailed| set this appropriately.
-        this.success = false;
+        this._success = false;
 
         // If the number of errors is greater than this, the rest of error
         // messages are suppressed. the value is fairly arbitrary, but shouldn't
@@ -466,7 +466,7 @@ var Should = (function () {
         if (this.target === value)
             this._testPassed('is equal to ' + value);
         else
-            this._testFailed('was ' + value + ' instead of ' + this.target);
+            this._testFailed('was ' + this.target + ' instead of ' + value);
         return this._success;
     };
 
@@ -531,27 +531,44 @@ var Should = (function () {
     // should not be zero, but no check is made for that.  The |target| value is printed to
     // precision |precision|, with |precision| defaulting to 7.
     //
+    // If |value| is 0, however, |threshold| is treated as an absolute threshold.
+    //
     // Example:
     // Should("One", 1.001).beCloseTo(1, .1);
     // Should("One", 2).beCloseTo(1, .1);
     // Result:
     // "PASS One is 1 within a relative error of 0.1."
     // "FAIL One is not 1 within a relative error of 0.1: 2"
-    ShouldModel.prototype.beCloseTo = function (value, relativeErrorThreshold, precision) {
+    ShouldModel.prototype.beCloseTo = function (value, errorThreshold, precision) {
         var type = typeof value;
         this._assert(type === 'number', 'value should be number for');
 
-        var relativeError = Math.abs(this.target - value) / Math.abs(value);
-        if (relativeError <= relativeErrorThreshold) {
-            this._testPassed("is " + value.toPrecision(precision) +
-                " within a relative error of " + relativeErrorThreshold);
+        if (value) {
+            var relativeError = Math.abs(this.target - value) / Math.abs(value);
+            if (relativeError <= errorThreshold) {
+                this._testPassed("is " + value.toPrecision(precision) +
+                    " within a relative error of " + errorThreshold);
+            } else {
+                // Include actual relative error so the failed test case can be updated with the actual
+                // relative error, if appropriate.
+                this._testFailed("is not " + value.toPrecision(precision) +
+                    " within a relative error of " + errorThreshold +
+                    ": " + this.target + " with relative error " + relativeError
+                );
+            }
         } else {
-            // Include actual relative error so the failed test case can be updated with the actual
-            // relative error, if appropriate.
-            this._testFailed("is not " + value.toPrecision(precision) +
-                " within a relative error of " + relativeErrorThreshold +
-                ": " + this.target + " with relative error " + relativeError
-            );
+            var absoluteError = Math.abs(this.target - value);
+            if (absoluteError <= errorThreshold) {
+                this._testPassed("is " + value.toPrecision(precision) +
+                    " within an absolute error of " + errorThreshold);
+            } else {
+                // Include actual absolute error so the failed test case can be updated with the
+                // actual error, if appropriate.
+                this._testFailed("is not " + value.toPrecision(precision) +
+                    " within an absolute error of " + errorThreshold +
+                    ": " + this.target + " with absolute error " + absoluteError
+                );
+            }
         }
         return this._success;
     }
