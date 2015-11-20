@@ -112,6 +112,9 @@ const char* kOriginalUrl = "original-url";
 // "kUrlsSwitch".
 const char* kOriginalUrls = "original-urls";
 
+// The pagination algorithm to use, one of "next", "pagenum".
+const char* kPaginationAlgo = "pagination-algo";
+
 // Maximum number of concurrent started extractor requests.
 const int kMaxExtractorTasks = 8;
 
@@ -148,6 +151,16 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
           &debug_level)) {
     options.set_debug_level(debug_level);
   }
+  // Options for pagination algorithm:
+  // - "next": detect anchors with "next" text
+  // - "pagenum": detect anchors with numeric page numbers
+  // Default is "next".
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kPaginationAlgo)) {
+      options.set_pagination_algo(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              kPaginationAlgo));
+  }
+
   scoped_ptr<DistillerFactory> distiller_factory(
       new TestDistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
                                    options,

@@ -76,6 +76,11 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     options.set_debug_level(logging::GetVlogLevelHelper(
         FROM_HERE.file_name(), ::strlen(FROM_HERE.file_name())));
   }
+  // Options for pagination algorithm:
+  // - "next": detect anchors with "next" text
+  // - "pagenum": detect anchors with numeric page numbers
+  // Default is "next".
+  options.set_pagination_algo("next");
   scoped_ptr<DistillerFactory> distiller_factory(
       new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
   scoped_ptr<DistilledPagePrefs> distilled_page_prefs(
