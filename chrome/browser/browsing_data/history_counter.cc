@@ -26,7 +26,8 @@ HistoryCounter::HistoryCounter() : pref_name_(prefs::kDeleteBrowsingHistory),
                                    web_counting_finished_(false),
                                    testing_web_history_service_(nullptr),
                                    sync_service_(nullptr),
-                                   history_sync_enabled_(false) {
+                                   history_sync_enabled_(false),
+                                   weak_ptr_factory_(this) {
 }
 
 HistoryCounter::~HistoryCounter() {
@@ -72,7 +73,7 @@ void HistoryCounter::Count() {
       GetPeriodStart(),
       base::Time::Max(),
       base::Bind(&HistoryCounter::OnGetLocalHistoryCount,
-                 base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
       &cancelable_task_tracker_);
 
   // If the history sync is enabled, test if there is at least one synced item.
@@ -102,7 +103,7 @@ void HistoryCounter::Count() {
       base::string16(),
       options,
       base::Bind(&HistoryCounter::OnGetWebHistoryCount,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // TODO(msramek): Include web history count when there is an API for it.
 }

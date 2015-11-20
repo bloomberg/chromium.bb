@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 
 class CacheCounter: public BrowsingDataCounter {
@@ -21,6 +22,8 @@ class CacheCounter: public BrowsingDataCounter {
  private:
   const std::string pref_name_;
   bool pending_;
+
+  base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;
 
   void Count() override;
   void OnCacheSizeCalculated(int64 bytes);

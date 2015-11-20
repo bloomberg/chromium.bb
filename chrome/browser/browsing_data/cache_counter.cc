@@ -8,7 +8,8 @@
 #include "net/base/net_errors.h"
 
 CacheCounter::CacheCounter() : pref_name_(prefs::kDeleteCache),
-                               pending_(false) {
+                               pending_(false),
+                               weak_ptr_factory_(this) {
 }
 
 CacheCounter::~CacheCounter() {
@@ -29,7 +30,7 @@ void CacheCounter::Count() {
       base::Time(),
       base::Time::Max())->Count(
           base::Bind(&CacheCounter::OnCacheSizeCalculated,
-          base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
   pending_ = true;
 }
 

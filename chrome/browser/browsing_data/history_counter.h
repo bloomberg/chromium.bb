@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
@@ -62,6 +63,8 @@ class HistoryCounter: public BrowsingDataCounter,
 
   ProfileSyncService* sync_service_;
   bool history_sync_enabled_;
+
+  base::WeakPtrFactory<HistoryCounter> weak_ptr_factory_;
 
   void Count() override;
 
