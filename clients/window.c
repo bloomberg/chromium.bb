@@ -146,7 +146,7 @@ struct window_output {
 struct toysurface {
 	/*
 	 * Prepare the surface for drawing. Makes sure there is a surface
-	 * of the right size available for rendering, and returns it.
+	 * of the right size available for rendering, and return it.
 	 * dx,dy are the x,y of wl_surface.attach.
 	 * width,height are the new buffer size.
 	 * If flags has SURFACE_HINT_RESIZE set, the user is
@@ -168,7 +168,7 @@ struct toysurface {
 
 	/*
 	 * Make the toysurface current with the given EGL context.
-	 * Returns 0 on success, and negative of failure.
+	 * Returns 0 on success, and negative on failure.
 	 */
 	int (*acquire)(struct toysurface *base, EGLContext ctx);
 
@@ -1998,7 +1998,7 @@ get_text_extents(struct display *display, struct tooltip *tooltip)
 	cairo_t *cr;
 	cairo_text_extents_t extents;
 
-	/* Use the dummy_surface because tooltip's surface was not
+	/* Use the dummy_surface because the tooltip's surface was not
 	 * created yet, and parent does not have a valid surface
 	 * outside repaint, either.
 	 */
@@ -4226,7 +4226,7 @@ surface_redraw(struct surface *surface)
 
 	if (surface->widget->use_cairo &&
 	    !widget_get_cairo_surface(surface->widget)) {
-		DBG_OBJ(surface->surface, "cancelled due buffer failure\n");
+		DBG_OBJ(surface->surface, "cancelled due to buffer failure\n");
 		return -1;
 	}
 
