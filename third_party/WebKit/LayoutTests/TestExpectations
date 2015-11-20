@@ -59,6 +59,16 @@ crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to
 crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout Pass ]
 crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout Pass ]
 
+# Skia roll
+crbug.com/559240 fast/backgrounds/size/contain-and-cover-zoomed.html [ NeedsRebaseline ]
+crbug.com/559240 fast/css/transformed-mask.html [ NeedsRebaseline ]
+crbug.com/559240 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
+crbug.com/559240 svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
+crbug.com/559240 svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
+crbug.com/559240 svg/repaint/repaint-paintorder.svg [ NeedsRebaseline ]
+crbug.com/559240 svg/text/text-selection-align-05-b.svg [ NeedsRebaseline ]
+crbug.com/559240 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ NeedsRebaseline ]
+
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ Failure ]
