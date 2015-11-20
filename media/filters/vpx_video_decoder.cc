@@ -545,9 +545,9 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
 void VpxVideoDecoder::CopyVpxImageToVideoFrame(
     const struct vpx_image* vpx_image,
     scoped_refptr<VideoFrame>* video_frame) {
-  CHECK(vpx_image);
-  CHECK(vpx_image->fmt == VPX_IMG_FMT_I420 ||
-        vpx_image->fmt == VPX_IMG_FMT_I444);
+  DCHECK(vpx_image);
+  DCHECK(vpx_image->fmt == VPX_IMG_FMT_I420 ||
+         vpx_image->fmt == VPX_IMG_FMT_I444);
 
   VideoPixelFormat codec_format = PIXEL_FORMAT_YV12;
   if (vpx_image->fmt == VPX_IMG_FMT_I444)

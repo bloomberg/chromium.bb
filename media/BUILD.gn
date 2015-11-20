@@ -550,8 +550,8 @@ component("media") {
   }
 
   public_deps = [
-    "//media/base",
     "//media/audio",
+    "//media/base",
     "//third_party/opus",
   ]
 
@@ -673,16 +673,17 @@ test("media_unittests") {
     ":test_support",
     "//base/allocator",
     "//base/test:test_support",
-    "//gpu/command_buffer/common",
     "//gpu:test_support",
-    "//media/audio:unittests",
+    "//gpu/command_buffer/common",
     "//media/audio:test_support",
-    "//media/base:unittests",
+    "//media/audio:unittests",
     "//media/base:test_support",
+    "//media/base:unittests",
     "//media/test:pipeline_integration_tests",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libyuv",
     "//third_party/widevine/cdm:version_h",
     "//ui/gfx:test_support",
     "//url",
@@ -897,8 +898,8 @@ if (media_use_ffmpeg) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/ffmpeg",
-      "//ui/gfx/geometry",
       "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
     ]
   }
 }

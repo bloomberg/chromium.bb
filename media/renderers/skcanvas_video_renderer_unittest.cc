@@ -10,6 +10,7 @@
 #include "media/base/video_util.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -189,9 +190,13 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
       107, 107, 107, 107, 21,  21,  21,  21,  107, 107, 107, 107,
   };
 
-  media::CopyYPlane(cropped_y_plane, 16, 16, cropped_frame().get());
-  media::CopyUPlane(cropped_u_plane, 8, 8, cropped_frame().get());
-  media::CopyVPlane(cropped_v_plane, 8, 8, cropped_frame().get());
+  libyuv::I420Copy(cropped_y_plane, 16, cropped_u_plane, 8, cropped_v_plane, 8,
+                   cropped_frame()->data(VideoFrame::kYPlane),
+                   cropped_frame()->stride(VideoFrame::kYPlane),
+                   cropped_frame()->data(VideoFrame::kUPlane),
+                   cropped_frame()->stride(VideoFrame::kUPlane),
+                   cropped_frame()->data(VideoFrame::kVPlane),
+                   cropped_frame()->stride(VideoFrame::kVPlane), 16, 16);
 }
 
 SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
