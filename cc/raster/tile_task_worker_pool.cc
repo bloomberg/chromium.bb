@@ -225,13 +225,8 @@ void TileTaskWorkerPool::PlaybackToMemory(
     SkImageInfo dst_info =
         SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
                           info.alphaType(), info.profileType());
-    // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-    // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
-    // is fixed.
-    const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
-    DCHECK_EQ(0u, dst_row_bytes % 4);
-    bool success = canvas->readPixels(dst_info, memory, dst_row_bytes, 0, 0);
-    DCHECK_EQ(true, success);
+    bool rv = canvas->readPixels(dst_info, memory, stride, 0, 0);
+    DCHECK(rv);
   }
 }
 
