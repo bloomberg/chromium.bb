@@ -30019,6 +30019,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OAuth2Login.SeedState" enum="OAuth2LoginSeedState">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Only applicable on M47 on Android. Measure the frequency of a suppressed
+    error state when the account is not seeded.
+  </summary>
+</histogram>
+
 <histogram name="OAuth2Login.SessionRestore" enum="GaiaSessionRestoreOutcome">
   <owner>zelidrag@chromium.org</owner>
   <summary>Outcome of Chrome OS GAIA cookie session restore process.</summary>
@@ -69280,6 +69288,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Didn't remove URL, too few suggestions in MV"/>
   <int value="2" label="Too few URLs, didn't flip tiles 1 and 8"/>
   <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
+</enum>
+
+<enum name="OAuth2LoginSeedState" type="int">
+  <int value="0" label="Account was seeded before FireRefreshTokenRevoked"/>
+  <int value="1" label="Account was seeded before FireRefreshTokenAvailable"/>
+  <int value="2" label="Account was not seeded before FireRefreshTokenRevoked"/>
+  <int value="3"
+      label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
 <enum name="OfflinePagesClearAllStatus" type="int">
