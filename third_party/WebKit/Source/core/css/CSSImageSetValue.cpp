@@ -123,7 +123,7 @@ StyleFetchedImageSet* CSSImageSetValue::cacheImageSet(Document* document, float 
             request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
 
         if (ResourcePtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher())) {
-            m_cachedImageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
+            m_cachedImageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this, request.url());
             m_cachedScaleFactor = deviceScaleFactor;
             m_isCachePending = false;
         }

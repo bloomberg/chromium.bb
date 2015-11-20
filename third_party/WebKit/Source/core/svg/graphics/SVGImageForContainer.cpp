@@ -38,13 +38,13 @@ IntSize SVGImageForContainer::size() const
 void SVGImageForContainer::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect,
     const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect, srcRect);
+    m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect, srcRect, m_url);
 }
 
 void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode op, const FloatRect& dstRect, const IntSize& repeatSpacing)
 {
-    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, op, dstRect, repeatSpacing);
+    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, op, dstRect, repeatSpacing, m_url);
 }
 
 PassRefPtr<SkImage> SVGImageForContainer::imageForCurrentFrame()

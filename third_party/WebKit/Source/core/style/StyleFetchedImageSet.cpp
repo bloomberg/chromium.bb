@@ -33,10 +33,11 @@
 
 namespace blink {
 
-StyleFetchedImageSet::StyleFetchedImageSet(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
+StyleFetchedImageSet::StyleFetchedImageSet(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
     : m_bestFitImage(image)
     , m_imageScaleFactor(imageScaleFactor)
     , m_imageSetValue(value)
+    , m_url(url)
 {
     m_isImageResourceSet = true;
     m_bestFitImage->addClient(this);
@@ -124,7 +125,7 @@ PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject*, const IntSize
 {
     RefPtr<Image> image = m_bestFitImage->image();
     if (image && image->isSVGImage())
-        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom);
+        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom, m_url);
     return image;
 }
 

@@ -37,11 +37,11 @@ namespace blink {
 class SVGImageForContainer final : public Image {
     USING_FAST_MALLOC(SVGImageForContainer);
 public:
-    static PassRefPtr<SVGImageForContainer> create(SVGImage* image, const IntSize& containerSize, float zoom)
+    static PassRefPtr<SVGImageForContainer> create(SVGImage* image, const IntSize& containerSize, float zoom, const KURL& url)
     {
         FloatSize containerSizeWithoutZoom(containerSize);
         containerSizeWithoutZoom.scale(1 / zoom);
-        return adoptRef(new SVGImageForContainer(image, containerSizeWithoutZoom, zoom));
+        return adoptRef(new SVGImageForContainer(image, containerSizeWithoutZoom, zoom, url));
     }
 
     IntSize size() const override;
@@ -64,10 +64,11 @@ public:
     PassRefPtr<SkImage> imageForCurrentFrame() override;
 
 private:
-    SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom)
+    SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom, const KURL& url)
         : m_image(image)
         , m_containerSize(containerSize)
         , m_zoom(zoom)
+        , m_url(url)
     {
     }
 
@@ -76,6 +77,7 @@ private:
     SVGImage* m_image;
     const FloatSize m_containerSize;
     const float m_zoom;
+    const KURL m_url;
 };
 }
 

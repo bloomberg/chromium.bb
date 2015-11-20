@@ -56,7 +56,6 @@ public:
     bool isSVGImage() const override { return true; }
     bool isTextureBacked() override { return false; }
     IntSize size() const override { return m_intrinsicSize; }
-    void setURL(const KURL& url) { m_url = url; }
 
     bool currentFrameHasSingleSecurityOrigin() const override;
 
@@ -106,14 +105,15 @@ private:
 
     SVGImage(ImageObserver*);
     void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode) override;
-    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&);
+    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&, const KURL&);
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
-        SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing);
+        SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing, const KURL&);
+    void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
+        ImageClampingMode, const KURL&);
 
     OwnPtrWillBePersistent<SVGImageChromeClient> m_chromeClient;
     OwnPtrWillBePersistent<Page> m_page;
     IntSize m_intrinsicSize;
-    KURL m_url;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

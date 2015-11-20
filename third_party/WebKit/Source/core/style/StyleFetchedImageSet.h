@@ -41,9 +41,9 @@ class CSSImageSetValue;
 class StyleFetchedImageSet final : public StyleImage, private ImageResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImageSet);
 public:
-    static PassRefPtrWillBeRawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
+    static PassRefPtrWillBeRawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
     {
-        return adoptRefWillBeNoop(new StyleFetchedImageSet(image, imageScaleFactor, value));
+        return adoptRefWillBeNoop(new StyleFetchedImageSet(image, imageScaleFactor, value, url));
     }
     ~StyleFetchedImageSet() override;
 
@@ -77,7 +77,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*);
+    StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*, const KURL&);
 
     String debugName() const override { return "StyleFetchedImageSet"; }
 
@@ -85,6 +85,7 @@ private:
     float m_imageScaleFactor;
 
     RawPtrWillBeMember<CSSImageSetValue> m_imageSetValue; // Not retained; it owns us.
+    const KURL m_url;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, isImageResourceSet());

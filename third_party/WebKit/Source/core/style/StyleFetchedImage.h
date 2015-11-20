@@ -36,9 +36,9 @@ class ImageResource;
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImage);
 public:
-    static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document)
+    static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document, const KURL& url)
     {
-        return adoptRefWillBeNoop(new StyleFetchedImage(image, document));
+        return adoptRefWillBeNoop(new StyleFetchedImage(image, document, url));
     }
     ~StyleFetchedImage() override;
 
@@ -66,10 +66,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    StyleFetchedImage(ImageResource*, Document*);
+    StyleFetchedImage(ImageResource*, Document*, const KURL&);
 
     ResourcePtr<ImageResource> m_image;
     RawPtrWillBeMember<Document> m_document;
+    const KURL m_url;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());

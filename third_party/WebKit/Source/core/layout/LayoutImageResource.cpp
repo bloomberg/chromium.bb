@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/layout/LayoutImageResource.h"
 
-#include "core/html/HTMLImageElement.h"
+#include "core/dom/Element.h"
 #include "core/layout/LayoutImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
@@ -104,14 +104,14 @@ PassRefPtr<Image> LayoutImageResource::image(const IntSize& containerSize, float
 {
     RefPtr<Image> image = m_cachedImage ? m_cachedImage->image() : Image::nullImage();
     if (image->isSVGImage()) {
+        KURL url;
         SVGImage* svgImage = toSVGImage(image.get());
         Node* node = m_layoutObject->node();
-        if (node && isHTMLImageElement(node)) {
-            const AtomicString& urlString = toHTMLImageElement(node)->imageSourceURL();
-            KURL url = node->document().completeURL(urlString);
-            svgImage->setURL(url);
+        if (node && node->isElementNode()) {
+            const AtomicString& urlString = toElement(node)->imageSourceURL();
+            url = node->document().completeURL(urlString);
         }
-        return SVGImageForContainer::create(svgImage, containerSize, zoom);
+        return SVGImageForContainer::create(svgImage, containerSize, zoom, url);
     }
     return image;
 }

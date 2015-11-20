@@ -32,9 +32,10 @@
 
 namespace blink {
 
-StyleFetchedImage::StyleFetchedImage(ImageResource* image, Document* document)
+StyleFetchedImage::StyleFetchedImage(ImageResource* image, Document* document, const KURL& url)
     : m_image(image)
     , m_document(document)
+    , m_url(url)
 {
     m_isImageResource = true;
     m_image->addClient(this);
@@ -127,7 +128,7 @@ PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject*, const IntSize& c
 {
     RefPtr<Image> image = m_image->image();
     if (image->isSVGImage())
-        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom);
+        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom, m_url);
     return image;
 }
 

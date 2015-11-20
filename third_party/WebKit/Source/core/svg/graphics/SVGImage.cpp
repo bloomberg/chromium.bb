@@ -194,7 +194,7 @@ IntSize SVGImage::containerSize() const
 }
 
 void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
-    const FloatRect& srcRect)
+    const FloatRect& srcRect, const KURL& url)
 {
     if (!m_page)
         return;
@@ -213,7 +213,7 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    draw(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation, ClampImageToSourceRect);
+    drawInternal(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation, ClampImageToSourceRect, url);
 }
 
 PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
@@ -223,7 +223,7 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(width(), height());
-    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect());
+    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect(), KURL());
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
 
     return adoptRef(
@@ -233,7 +233,7 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
     float zoom, const FloatRect& srcRect, const FloatSize& tileScale, const FloatPoint& phase,
     SkXfermode::Mode compositeOp, const FloatRect& dstRect,
-    const IntSize& repeatSpacing)
+    const IntSize& repeatSpacing, const KURL& url)
 {
     // Tile adjusted for scaling/stretch.
     FloatRect tile(srcRect);
@@ -250,7 +250,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         if (tile != spacedTile)
             patternPicture.context().clip(tile);
         SkPaint paint;
-        drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect);
+        drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect, url);
     }
     RefPtr<const SkPicture> tilePicture = patternPicture.endRecording();
 
@@ -281,17 +281,24 @@ static bool drawNeedsLayer(const SkPaint& paint)
     return false;
 }
 
-void SVGImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
+void SVGImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect,
+    RespectImageOrientationEnum shouldRespectImageOrientation, ImageClampingMode clampMode)
 {
     if (!m_page)
         return;
 
+    drawInternal(canvas, paint, dstRect, srcRect, shouldRespectImageOrientation, clampMode, KURL());
+}
+
+void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect,
+    RespectImageOrientationEnum, ImageClampingMode, const KURL& url)
+{
     FrameView* view = frameView();
     view->resize(containerSize());
 
     // Always call processUrlFragment, even if the url is empty, because
     // there may have been a previous url/fragment that needs to be reset.
-    view->processUrlFragment(m_url);
+    view->processUrlFragment(url);
 
     SkPictureBuilder imagePicture(dstRect);
     {
