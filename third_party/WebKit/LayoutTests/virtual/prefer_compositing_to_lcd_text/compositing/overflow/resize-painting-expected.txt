@@ -12,14 +12,9 @@
           "drawsContent": true,
           "children": [
             {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "position": [85, 85],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
+              "position": [85, 85],
+              "bounds": [15, 15],
+              "drawsContent": true
             }
           ]
         }

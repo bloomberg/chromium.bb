@@ -127,7 +127,6 @@ public:
         ClipLayerOverflowControls,
         ClipNodeImage,
         ClipPopupListBoxFrame,
-        ClipScrollbarsToBoxBounds,
         ClipSelectionImage,
         PageWidgetDelegateClip,
         ClipPrintedPage,

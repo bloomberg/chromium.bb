@@ -55,7 +55,6 @@
           "bounds": [1200, 1000],
           "children": [
             {
-              "bounds": [1200, 1000],
               "children": [
                 {
                   "position": [1193, 0],

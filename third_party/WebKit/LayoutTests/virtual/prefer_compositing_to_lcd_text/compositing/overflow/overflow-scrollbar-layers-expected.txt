@@ -26,7 +26,6 @@
               ]
             },
             {
-              "bounds": [100, 100],
               "children": [
                 {
                   "position": [85, 0],
@@ -56,7 +55,6 @@
               ]
             },
             {
-              "bounds": [100, 100],
               "children": [
                 {
                   "position": [0, 85],
@@ -86,7 +84,6 @@
               ]
             },
             {
-              "bounds": [100, 100],
               "children": [
                 {
                   "position": [0, 85],
@@ -119,7 +116,6 @@
               ]
             },
             {
-              "bounds": [100, 100],
               "children": [
                 {
                   "position": [85, 85],

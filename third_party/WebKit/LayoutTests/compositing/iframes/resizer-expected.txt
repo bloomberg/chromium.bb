@@ -51,14 +51,9 @@
               ]
             },
             {
-              "bounds": [304, 154],
-              "children": [
-                {
-                  "position": [287, 137],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
+              "position": [287, 137],
+              "bounds": [15, 15],
+              "drawsContent": true
             }
           ]
         }

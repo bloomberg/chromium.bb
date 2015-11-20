@@ -132,7 +132,7 @@ public:
 
     static PaintLayerCompositor* frameContentsCompositor(LayoutPart*);
     // Return true if the layers changed.
-    static bool attachFrameContentLayersToIframeLayer(LayoutPart*);
+    static bool parentFrameContentLayers(LayoutPart*);
 
     // Update the geometry of the layers used for clipping and scrolling in frames.
     void frameViewDidChangeLocation(const IntPoint& contentsOffset);
