@@ -39,6 +39,12 @@
 #endif
 
 using content::BrowserThread;
+using content::NotificationDatabaseData;
+using content::PlatformNotificationContext;
+using content::PlatformNotificationData;
+using content::PushMessagingService;
+using content::ServiceWorkerContext;
+using content::WebContents;
 
 namespace {
 
@@ -53,27 +59,29 @@ content::StoragePartition* GetStoragePartition(Profile* profile,
   return content::BrowserContext::GetStoragePartitionForSite(profile, origin);
 }
 
-content::NotificationDatabaseData CreateDatabaseData(
+NotificationDatabaseData CreateDatabaseData(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const std::string& languages) {
-  content::PlatformNotificationData notification_data;
+  PlatformNotificationData notification_data;
   notification_data.title =
       url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin, languages);
   notification_data.direction =
-      content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   notification_data.body =
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag = kPushMessagingForcedNotificationTag;
   notification_data.icon = GURL();
   notification_data.silent = true;
 
-  content::NotificationDatabaseData database_data;
+  NotificationDatabaseData database_data;
   database_data.origin = origin;
   database_data.service_worker_registration_id = service_worker_registration_id;
   database_data.notification_data = notification_data;
   return database_data;
 }
+
+void IgnoreResult(bool unused) {}
 
 }  // namespace
 
@@ -90,12 +98,12 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     const base::Closure& message_handled_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Relax this heuristic slightly.
-  scoped_refptr<content::PlatformNotificationContext> notification_context =
+  scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &content::PlatformNotificationContext::
+          &PlatformNotificationContext::
               ReadAllNotificationDataForServiceWorkerRegistration,
           notification_context, origin, service_worker_registration_id,
           base::Bind(&PushMessagingNotificationManager::
@@ -111,7 +119,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabaseIOProxy(
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
     bool success,
-    const std::vector<content::NotificationDatabaseData>& data) {
+    const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -126,7 +134,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
     bool success,
-    const std::vector<content::NotificationDatabaseData>& data) {
+    const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Hiding an existing notification should also count as a useful
   // user-visible action done in response to a push message - but make sure that
@@ -140,12 +148,11 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
 #if defined(OS_ANDROID)
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     Profile* profile = (*it)->GetProfile();
-    content::WebContents* active_web_contents =
-        (*it)->GetActiveWebContents();
+    WebContents* active_web_contents = (*it)->GetActiveWebContents();
 #else
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Profile* profile = it->profile();
-    content::WebContents* active_web_contents =
+    WebContents* active_web_contents =
         it->tab_strip_model()->GetActiveWebContents();
 #endif
     if (!active_web_contents || !active_web_contents->GetMainFrame())
@@ -204,10 +211,10 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // Don't track push messages that didn't show a notification but were exempt
   // from needing to do so.
   if (notification_shown || notification_needed) {
-    content::ServiceWorkerContext* service_worker_context =
+    ServiceWorkerContext* service_worker_context =
         GetStoragePartition(profile_, origin)->GetServiceWorkerContext();
 
-    content::PushMessagingService::GetNotificationsShownByLastFewPushes(
+    PushMessagingService::GetNotificationsShownByLastFewPushes(
         service_worker_context, service_worker_registration_id,
         base::Bind(&PushMessagingNotificationManager::
                        DidGetNotificationsShownAndNeeded,
@@ -221,9 +228,6 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   }
 }
 
-static void IgnoreResult(bool unused) {
-}
-
 void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
     const GURL& origin,
     int64_t service_worker_registration_id,
@@ -234,7 +238,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
     bool success,
     bool not_found) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::ServiceWorkerContext* service_worker_context =
+  ServiceWorkerContext* service_worker_context =
       GetStoragePartition(profile_, origin)->GetServiceWorkerContext();
 
   // We remember whether the last (up to) 10 pushes showed notifications.
@@ -252,7 +256,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   missed_notifications[0] = needed_but_not_shown;
   std::string updated_data(missed_notifications.
       to_string<char, std::string::traits_type, std::string::allocator_type>());
-  content::PushMessagingService::SetNotificationsShownByLastFewPushes(
+  PushMessagingService::SetNotificationsShownByLastFewPushes(
       service_worker_context, service_worker_registration_id, origin,
       updated_data,
       base::Bind(&IgnoreResult));  // This is a heuristic; ignore failure.
@@ -282,14 +286,14 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   // The site failed to show a notification when one was needed, and they have
   // already failed once in the previous 10 push messages, so we will show a
   // generic notification. See https://crbug.com/437277.
-  content::NotificationDatabaseData database_data = CreateDatabaseData(
+  NotificationDatabaseData database_data = CreateDatabaseData(
       origin, service_worker_registration_id,
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  scoped_refptr<content::PlatformNotificationContext> notification_context =
+  scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&content::PlatformNotificationContext::WriteNotificationData,
+      base::Bind(&PlatformNotificationContext::WriteNotificationData,
                  notification_context, origin, database_data,
                  base::Bind(&PushMessagingNotificationManager::
                                 DidWriteNotificationDataIOProxy,
@@ -302,7 +306,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
 void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
     const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
     const GURL& origin,
-    const content::PlatformNotificationData& notification_data,
+    const PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
     int64_t persistent_notification_id) {
@@ -316,7 +320,7 @@ void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
     const GURL& origin,
-    const content::PlatformNotificationData& notification_data,
+    const PlatformNotificationData& notification_data,
     const base::Closure& message_handled_closure,
     bool success,
     int64_t persistent_notification_id) {
