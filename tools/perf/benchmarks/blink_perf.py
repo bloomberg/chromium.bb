@@ -232,8 +232,7 @@ class BlinkPerfEvents(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('win8',  # http://crbug.com/462350
-                    'android') #http://crbug.com/551950
+@benchmark.Disabled('win8')  # http://crbug.com/462350
 class BlinkPerfLayout(perf_benchmark.PerfBenchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
@@ -245,6 +244,10 @@ class BlinkPerfLayout(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Layout')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/551950
 
 
 @benchmark.Enabled('content-shell')
@@ -325,8 +328,7 @@ class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
 
 # Disabled on Windows and ChromeOS due to https://crbug.com/521887
 # Disabled on reference builds due to https://crbug.com/530374
-# Disabled on Android due to http://crbug.com/551950
-@benchmark.Disabled('win', 'chromeos', 'reference', 'android')
+@benchmark.Disabled('win', 'chromeos', 'reference')
 class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
   tag = 'pywebsocket'
   test = _BlinkPerfPywebsocketMeasurement
@@ -339,3 +341,7 @@ class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Pywebsocket')
     return CreateStorySetFromPath(path, SKIPPED_FILE,
         shared_page_state_class=_SharedPywebsocketPageState)
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/551950
