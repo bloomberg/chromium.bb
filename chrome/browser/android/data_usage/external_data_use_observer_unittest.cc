@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +24,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace {
+
+std::vector<const data_usage::DataUse*> ToConstDataUseVector(
+    std::vector<scoped_ptr<data_usage::DataUse>>& data_use_vector) {
+  std::vector<const data_usage::DataUse*> const_vector;
+  const_vector.reserve(data_use_vector.size());
+  for (auto& data_use : data_use_vector)
+    const_vector.push_back(data_use.get());
+  return const_vector;
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -343,7 +355,7 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
   const int bytes_downloaded = 1000;
   const int bytes_uploaded = 100;
 
-  ScopedVector<data_usage::DataUse> data_use_vector;
+  std::vector<scoped_ptr<data_usage::DataUse>> data_use_vector;
   // Push more entries than the buffer size. Buffer size should not be exceeded.
   for (size_t i = 0; i < max_buffer_size * 5; ++i) {
     scoped_ptr<data_usage::DataUse> data_use(new data_usage::DataUse(
@@ -353,10 +365,8 @@ TEST_F(ExternalDataUseObserverTest, BufferSize) {
     data_use_vector.push_back(data_use.Pass());
   }
 
-  std::vector<const data_usage::DataUse*> const_sequence(
-      data_use_vector.begin(), data_use_vector.end());
-
-  external_data_use_observer()->OnDataUse(const_sequence);
+  external_data_use_observer()->OnDataUse(
+      ToConstDataUseVector(data_use_vector));
   EXPECT_LE(0, external_data_use_observer()->total_bytes_buffered_);
 
   // One report will be consumed. Verify that total buffered bytes is computed
@@ -386,7 +396,7 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
 
   const size_t num_iterations = ExternalDataUseObserver::kMaxBufferSize * 5;
 
-  ScopedVector<data_usage::DataUse> data_use_vector;
+  std::vector<scoped_ptr<data_usage::DataUse>> data_use_vector;
   for (size_t i = 0; i < num_iterations; ++i) {
     scoped_ptr<data_usage::DataUse> data_use_foo(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
@@ -407,10 +417,8 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
     data_use_vector.push_back(data_use_baz.Pass());
   }
 
-  std::vector<const data_usage::DataUse*> const_sequence(
-      data_use_vector.begin(), data_use_vector.end());
-
-  external_data_use_observer()->OnDataUse(const_sequence);
+  external_data_use_observer()->OnDataUse(
+      ToConstDataUseVector(data_use_vector));
 
   EXPECT_EQ(2U, external_data_use_observer()->buffered_data_reports_.size());
   EXPECT_EQ(static_cast<int64_t>(num_iterations * 1),
@@ -454,7 +462,7 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
 
   const size_t num_iterations = ExternalDataUseObserver::kMaxBufferSize * 5;
 
-  ScopedVector<data_usage::DataUse> data_use_vector;
+  std::vector<scoped_ptr<data_usage::DataUse>> data_use_vector;
   for (size_t i = 0; i < num_iterations; ++i) {
     scoped_ptr<data_usage::DataUse> data_use_foo(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
@@ -462,15 +470,12 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
     data_use_vector.push_back(data_use_foo.Pass());
   }
 
-  std::vector<const data_usage::DataUse*> const_sequence(
-      data_use_vector.begin(), data_use_vector.end());
-
   int64_t start_timestamp = 0;
   int64_t end_timestamp = 1;
-  for (auto it : const_sequence) {
-    const data_usage::DataUse* data_usage(it);
+  for (const auto& data_usage : data_use_vector) {
     external_data_use_observer()->BufferDataUseReport(
-        data_usage, "foo_label", base::Time::FromDoubleT(start_timestamp++),
+        data_usage.get(), "foo_label",
+        base::Time::FromDoubleT(start_timestamp++),
         base::Time::FromDoubleT(end_timestamp++));
   }
   EXPECT_EQ(1U, external_data_use_observer()->buffered_data_reports_.size());
@@ -656,17 +661,15 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
       external_data_use_observer()->data_use_report_min_bytes_ / 1024;
 
   for (size_t i = 0; i < num_iterations; ++i) {
-    ScopedVector<data_usage::DataUse> data_use_vector;
+    std::vector<scoped_ptr<data_usage::DataUse>> data_use_vector;
 
     scoped_ptr<data_usage::DataUse> data_use_foo(new data_usage::DataUse(
         GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
         net::NetworkChangeNotifier::CONNECTION_UNKNOWN, "mccmnc_foo", 1024, 0));
     data_use_vector.push_back(data_use_foo.Pass());
 
-    std::vector<const data_usage::DataUse*> const_sequence(
-        data_use_vector.begin(), data_use_vector.end());
-
-    external_data_use_observer()->OnDataUse(const_sequence);
+    external_data_use_observer()->OnDataUse(
+        ToConstDataUseVector(data_use_vector));
     if (i != num_iterations - 1) {
       // Total buffered bytes is less than the minimum threshold. Data use
       // report should not be send.

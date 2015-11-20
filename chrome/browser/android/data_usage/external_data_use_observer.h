@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -285,7 +284,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   bool submit_data_report_pending_;
 
   // Contains matching rules.
-  ScopedVector<MatchingRule> matching_rules_;
+  std::vector<scoped_ptr<MatchingRule>> matching_rules_;
 
   // Buffered data reports that need to be submitted to the Java data use
   // observer.
