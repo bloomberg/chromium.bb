@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.firstrun;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -183,6 +184,23 @@ public class AccountFirstRunView extends FrameLayout
         mArrayAdapter.setDropDownViewResource(R.layout.fre_spinner_dropdown);
         mSpinner.setAdapter(mArrayAdapter);
         mSpinner.setOnItemSelectedListener(new SpinnerOnItemSelectedListener());
+
+        // Only set the spinner's content description right before the accessibility action is going
+        // to be performed. Otherwise, the the content description is read when the
+        // AccountFirstRunView is created because setting the spinner's adapter causes a
+        // TYPE_VIEW_SELECTED event. ViewPager loads the next and previous pages according to
+        // it's off-screen page limit, which is one by default, so without this the content
+        // description ends up being read when the card before this one shown.
+        mSpinner.setAccessibilityDelegate(new AccessibilityDelegate() {
+            @Override
+            public boolean performAccessibilityAction(View host, int action, Bundle args) {
+                if (mSpinner.getContentDescription() == null) {
+                    mSpinner.setContentDescription(getResources().getString(
+                            R.string.accessibility_fre_account_spinner));
+                }
+                return super.performAccessibilityAction(host, action, args);
+            }
+        });
     }
 
     @Override

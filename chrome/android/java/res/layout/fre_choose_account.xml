@@ -64,7 +64,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/fre_margin"
                         android:padding="0dp"
-                        android:contentDescription="@string/accessibility_fre_account_spinner"
                         android:textColor="@color/fre_text_color" />
 
                     <TextView
