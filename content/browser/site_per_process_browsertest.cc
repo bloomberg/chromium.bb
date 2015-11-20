@@ -3858,7 +3858,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
 // by one, checking the value of document.hasFocus() in all frames.  For any
 // given focused frame, document.hasFocus() should return true for that frame
 // and all its ancestor frames.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentHasFocus) {
+// Disabled due to flakes; see https://crbug.com/559273.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_DocumentHasFocus) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
