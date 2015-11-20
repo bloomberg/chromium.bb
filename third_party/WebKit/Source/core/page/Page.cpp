@@ -274,13 +274,6 @@ PluginData* Page::pluginData() const
     return m_pluginData.get();
 }
 
-static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
-{
-    return forward
-        ? curr->tree().traverseNextWithWrap(wrapFlag)
-        : curr->tree().traversePreviousWithWrap(wrapFlag);
-}
-
 void Page::unmarkAllTextMatches()
 {
     if (!mainFrame())
@@ -290,7 +283,7 @@ void Page::unmarkAllTextMatches()
     do {
         if (frame->isLocalFrame())
             toLocalFrame(frame)->document()->markers().removeMarkers(DocumentMarker::TextMatch);
-        frame = incrementFrame(frame, true, false);
+        frame = frame->tree().traverseNextWithWrap(false);
     } while (frame);
 }
 
