@@ -73,11 +73,11 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
 
-  // TODO(rajendrant): implementation to use package.
   switch (transition) {
     case TRANSITION_OMNIBOX_SEARCH:
     case TRANSITION_FROM_EXTERNAL_APP: {
       // Enter events.
+      bool start_tracking = false;
       std::string label;
       TabEntryMap::const_iterator tab_entry_iterator =
           active_tabs_.find(tab_id);
@@ -85,13 +85,21 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
           tab_entry_iterator->second.IsTrackingDataUse()) {
         break;
       }
-      if (data_use_observer_->Matches(url, &label)) {
-        // TODO(rajendrant): Need to handle scenarios where these labels change
-        // in the middle of a tab session. Should |data_use_observer_| notify us
-        // about a cleanup. What happens to currently active tab sessions.
-        DCHECK(!label.empty());
-        StartTrackingDataUse(tab_id, label);
+      if (transition == TRANSITION_FROM_EXTERNAL_APP) {
+        // Package name should match, for transitions from external app.
+        if (!package.empty() &&
+            data_use_observer_->MatchesAppPackageName(package, &label)) {
+          DCHECK(!label.empty());
+          start_tracking = true;
+        }
       }
+      if (!start_tracking && !url.is_empty() &&
+          data_use_observer_->Matches(url, &label)) {
+        DCHECK(!label.empty());
+        start_tracking = true;
+      }
+      if (start_tracking)
+        StartTrackingDataUse(tab_id, label);
       break;
     }
 

@@ -101,6 +101,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   }
 
  private:
+  friend class DataUseTabModelTest;
   friend class ExternalDataUseObserverTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);

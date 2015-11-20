@@ -15,6 +15,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
+#include "components/data_usage/core/data_use.h"
+#include "components/data_usage/core/data_use_aggregator.h"
+#include "components/data_usage/core/data_use_amortizer.h"
+#include "components/data_usage/core/data_use_annotator.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,13 +77,18 @@ class DataUseTabModelTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    // TODO(rajendrant): Create a mock class for ExternalDataUseObserver to
-    // spoof the Matches call and test the OnNavigationEvent.
-    data_use_tab_model_.reset(
-        new DataUseTabModelNowTest(nullptr, task_runner_.get()));
-  }
+    data_use_aggregator_.reset(new data_usage::DataUseAggregator(
+        scoped_ptr<data_usage::DataUseAnnotator>(),
+        scoped_ptr<data_usage::DataUseAmortizer>()));
+    data_use_observer_.reset(new ExternalDataUseObserver(
+        data_use_aggregator_.get(), message_loop_.task_runner().get(),
+        message_loop_.task_runner().get()));
+    data_use_tab_model_ = new DataUseTabModelNowTest(
+        data_use_observer_.get(), message_loop_.task_runner().get());
 
-  base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
+    // |data_use_tab_model_| will be owned by |data_use_observer_|.
+    data_use_observer_->data_use_tab_model_.reset(data_use_tab_model_);
+  }
 
   // Returns true if tab entry for |tab_id| exists in |active_tabs_|.
   bool IsTabEntryExists(int32_t tab_id) const {
@@ -151,8 +160,20 @@ class DataUseTabModelTest : public testing::Test {
     data_use_tab_model_->EndTrackingDataUse(tab_id);
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<DataUseTabModelNowTest> data_use_tab_model_;
+  void RegisterURLRegexesInDataUseObserver(
+      const std::vector<std::string>& app_package_names,
+      const std::vector<std::string>& domain_regexes,
+      const std::vector<std::string>& labels) {
+    data_use_observer_->RegisterURLRegexes(app_package_names, domain_regexes,
+                                           labels);
+  }
+
+  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
+  scoped_ptr<ExternalDataUseObserver> data_use_observer_;
+
+  // Pointer to the tab model within and owned by ExternalDataUseObserver.
+  DataUseTabModelNowTest* data_use_tab_model_;
+
   base::MessageLoop message_loop_;
 };
 
@@ -463,6 +484,163 @@ TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
   histogram_tester.ExpectBucketCount(
       kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram,
       base::TimeDelta::FromMinutes(10).InMilliseconds(), 1);
+}
+
+// Tests that Enter navigation events start tracking the tab entry.
+TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+
+  // Matching rule with app package name.
+  app_package_names.push_back("com.google.package.foo");
+  domain_regexes.push_back(std::string());
+  labels.push_back(kTestLabel1);
+
+  // Matching rule with regex.
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back("http://foo.com/");
+  labels.push_back(kTestLabel2);
+
+  RegisterURLRegexesInDataUseObserver(app_package_names, domain_regexes,
+                                      labels);
+
+  ExpectTabEntrySize(TabEntrySize::ZERO);
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP, GURL(),
+      "com.google.package.foo");
+  ExpectTabEntrySize(TabEntrySize::ONE);
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  ExpectDataUseLabel(kTabID1, kTestLabel1);
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+      GURL("http://foo.com"), std::string());
+  ExpectTabEntrySize(TabEntrySize::TWO);
+  EXPECT_TRUE(IsTrackingDataUse(kTabID2));
+  ExpectDataUseLabel(kTabID2, kTestLabel2);
+}
+
+// Tests that a navigation event with empty url and empty package name does not
+// start tracking.
+TEST_F(DataUseTabModelTest, EmptyNavigationEvent) {
+  ExpectTabEntrySize(TabEntrySize::ZERO);
+
+  RegisterURLRegexesInDataUseObserver(
+      std::vector<std::string>(1, std::string()),
+      std::vector<std::string>(1, "http://foo.com/"),
+      std::vector<std::string>(1, kTestLabel1));
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP, GURL(),
+      std::string());
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(),
+      std::string());
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+  ExpectTabEntrySize(TabEntrySize::ZERO);
+}
+
+// Tests that Exit navigation event ends the tracking.
+TEST_F(DataUseTabModelTest, NavigationEnterAndExitEvent) {
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back("http://foo.com/");
+  labels.push_back(kTestLabel2);
+
+  RegisterURLRegexesInDataUseObserver(app_package_names, domain_regexes,
+                                      labels);
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+      GURL("http://foo.com/"), std::string());
+  ExpectTabEntrySize(TabEntrySize::ONE);
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FROM_NAVSUGGEST, GURL(),
+      std::string());
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+}
+
+// Tests that any of the Enter transition events start the tracking.
+TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
+  const struct {
+    DataUseTabModel::TransitionType transition;
+    std::string url;
+    std::string package;
+    std::string expect_label;
+  } all_enter_transition_tests[] = {
+      {DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP, std::string(),
+       "com.google.package.foo", kTestLabel1},
+      {DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP, "http://foo.com",
+       "com.google.package.nomatch", kTestLabel2},
+      {DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, "http://foo.com",
+       std::string(), kTestLabel2},
+  };
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+  int32_t tab_id = 1;
+
+  app_package_names.push_back("com.google.package.foo");
+  domain_regexes.push_back(std::string());
+  labels.push_back(kTestLabel1);
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back("http://foo.com/");
+  labels.push_back(kTestLabel2);
+
+  RegisterURLRegexesInDataUseObserver(app_package_names, domain_regexes,
+                                      labels);
+
+  for (auto test : all_enter_transition_tests) {
+    EXPECT_FALSE(IsTrackingDataUse(tab_id));
+    ExpectEmptyDataUseLabel(tab_id);
+
+    // Tracking should start.
+    data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
+                                           GURL(test.url), test.package);
+
+    EXPECT_TRUE(IsTrackingDataUse(tab_id));
+    ExpectDataUseLabel(tab_id, test.expect_label);
+    ExpectTabEntrySize(tab_id);
+    ++tab_id;
+  }
+}
+
+// Tests that any of the Exit transition events end the tracking.
+TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
+  DataUseTabModel::TransitionType all_exit_transitions[] = {
+      DataUseTabModel::TRANSITION_TO_EXTERNAL_APP,
+      DataUseTabModel::TRANSITION_FROM_NAVSUGGEST,
+      DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION,
+      DataUseTabModel::TRANSITION_BOOKMARK,
+      DataUseTabModel::TRANSITION_HISTORY_ITEM};
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+  int32_t tab_id = 1;
+
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back("http://foo.com/");
+  labels.push_back(kTestLabel1);
+
+  RegisterURLRegexesInDataUseObserver(app_package_names, domain_regexes,
+                                      labels);
+
+  for (auto exit_transition : all_exit_transitions) {
+    EXPECT_FALSE(IsTrackingDataUse(tab_id));
+    data_use_tab_model_->OnNavigationEvent(
+        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+        GURL("http://foo.com"), std::string());
+    EXPECT_TRUE(IsTrackingDataUse(tab_id));
+
+    // Tracking should end.
+    data_use_tab_model_->OnNavigationEvent(tab_id, exit_transition, GURL(),
+                                           std::string());
+
+    EXPECT_FALSE(IsTrackingDataUse(tab_id));
+    ExpectTabEntrySize(tab_id);
+    ++tab_id;
+  }
 }
 
 }  // namespace android

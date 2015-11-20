@@ -351,7 +351,7 @@ void ExternalDataUseObserver::RegisterURLRegexes(
 
   for (size_t i = 0; i < domain_path_regex.size(); ++i) {
     const std::string& url_regex = domain_path_regex[i];
-    if (url_regex.empty())
+    if (url_regex.empty() && app_package_name[i].empty())
       continue;
     scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
     if (!pattern->ok())
