@@ -25,6 +25,7 @@ class TraceItem {
     TRACE_FILE_WRITE,
     TRACE_SCRIPT_EXECUTE,
     TRACE_DEFINE_TARGET,
+    TRACE_ON_RESOLVED,
     TRACE_CHECK_HEADER,  // One file.
     TRACE_CHECK_HEADERS,  // All files.
   };

@@ -202,6 +202,7 @@ std::string SummarizeTraces() {
       case TraceItem::TRACE_FILE_LOAD:
       case TraceItem::TRACE_FILE_WRITE:
       case TraceItem::TRACE_DEFINE_TARGET:
+      case TraceItem::TRACE_ON_RESOLVED:
         break;  // Ignore these for the summary.
     }
   }
@@ -280,6 +281,9 @@ void SaveTraces(const base::FilePath& file_name) {
         break;
       case TraceItem::TRACE_DEFINE_TARGET:
         out << "\"define\"";
+        break;
+      case TraceItem::TRACE_ON_RESOLVED:
+        out << "\"onresolved\"";
         break;
       case TraceItem::TRACE_CHECK_HEADER:
         out << "\"hdr\"";

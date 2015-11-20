@@ -12,6 +12,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/substitution_writer.h"
+#include "tools/gn/trace.h"
 
 namespace {
 
@@ -155,6 +156,9 @@ const Target* Target::AsTarget() const {
 bool Target::OnResolved(Err* err) {
   DCHECK(output_type_ != UNKNOWN);
   DCHECK(toolchain_) << "Toolchain should have been set before resolving.";
+
+  ScopedTrace trace(TraceItem::TRACE_ON_RESOLVED, label());
+  trace.SetToolchain(settings()->toolchain_label());
 
   // Copy our own dependent configs to the list of configs applying to us.
   configs_.Append(all_dependent_configs_.begin(), all_dependent_configs_.end());

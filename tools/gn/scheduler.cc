@@ -4,25 +4,59 @@
 
 #include "tools/gn/scheduler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/switches.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 Scheduler* g_scheduler = nullptr;
 
 namespace {
+
+#if defined(OS_WIN)
+int GetCPUCount() {
+  SYSTEM_INFO sysinfo;
+  ::GetSystemInfo(&sysinfo);
+  return sysinfo.dwNumberOfProcessors;
+}
+#else
+int GetCPUCount() {
+  return static_cast<int>(sysconf(_SC_NPROCESSORS_ONLN));
+}
+#endif
 
 int GetThreadCount() {
   std::string thread_count =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kThreads);
 
+  // See if an override was specified on the command line.
   int result;
-  if (thread_count.empty() || !base::StringToInt(thread_count, &result))
-    return 32;
-  return result;
+  if (!thread_count.empty() && base::StringToInt(thread_count, &result))
+    return result;
+
+  // Base the default number of worker threads on number of cores in the
+  // system. When building large projects, the speed can be limited by how fast
+  // the main thread can dispatch work and connect the dependency graph. If
+  // there are too many worker threads, the main thread can be starved and it
+  // will run slower overall.
+  //
+  // One less worker thread than the number of physical CPUs seems to be a
+  // good value, both theoretically and experimentally. But always use at
+  // least three workers to prevent us from being too sensitive to I/O latency
+  // on low-end systems.
+  int num_cores = GetCPUCount() / 2;  // Almost all CPUs now are hyperthreaded.
+  return std::max(num_cores - 1, 3);
 }
 
 }  // namespace
