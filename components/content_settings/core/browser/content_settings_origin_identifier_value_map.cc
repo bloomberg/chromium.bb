@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
 
+#include <tuple>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,9 +63,8 @@ OriginIdentifierValueMap::EntryMapKey::EntryMapKey(
 
 bool OriginIdentifierValueMap::EntryMapKey::operator<(
     const OriginIdentifierValueMap::EntryMapKey& other) const {
-  if (content_type != other.content_type)
-    return content_type < other.content_type;
-  return (resource_identifier < other.resource_identifier);
+  return std::tie(content_type, resource_identifier) <
+    std::tie(other.content_type, other.resource_identifier);
 }
 
 OriginIdentifierValueMap::PatternPair::PatternPair(
@@ -78,11 +79,8 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
   // Note that this operator is the other way around than
   // |ContentSettingsPattern::operator<|. It sorts patterns with higher
   // precedence first.
-  if (primary_pattern > other.primary_pattern)
-    return true;
-  else if (other.primary_pattern > primary_pattern)
-    return false;
-  return (secondary_pattern > other.secondary_pattern);
+  return std::tie(primary_pattern, secondary_pattern) >
+         std::tie(other.primary_pattern, other.secondary_pattern);
 }
 
 RuleIterator* OriginIdentifierValueMap::GetRuleIterator(

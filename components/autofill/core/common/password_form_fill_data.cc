@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
+#include <tuple>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
 
@@ -15,11 +17,8 @@ UsernamesCollectionKey::~UsernamesCollectionKey() {}
 
 bool UsernamesCollectionKey::operator<(
     const UsernamesCollectionKey& other) const {
-  if (username != other.username)
-    return username < other.username;
-  if (password != other.password)
-    return password < other.password;
-  return realm < other.realm;
+  return std::tie(username, password, realm) <
+         std::tie(other.username, other.password, other.realm);
 }
 
 PasswordFormFillData::PasswordFormFillData()

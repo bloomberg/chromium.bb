@@ -4,6 +4,8 @@
 
 #include "components/guest_view/browser/guest_view_manager.h"
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -476,10 +478,8 @@ GuestViewManager::ElementInstanceKey::ElementInstanceKey(
 
 bool GuestViewManager::ElementInstanceKey::operator<(
     const GuestViewManager::ElementInstanceKey& other) const {
-  if (embedder_process_id != other.embedder_process_id)
-    return embedder_process_id < other.embedder_process_id;
-
-  return element_instance_id < other.element_instance_id;
+  return std::tie(embedder_process_id, element_instance_id) <
+         std::tie(other.embedder_process_id, other.element_instance_id);
 }
 
 bool GuestViewManager::ElementInstanceKey::operator==(
