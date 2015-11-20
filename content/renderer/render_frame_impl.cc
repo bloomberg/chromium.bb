@@ -13,6 +13,7 @@
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/i18n/char_iterator.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -41,6 +42,8 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
+#include "content/common/mojo/service_registry_for_route.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/common/savable_subframe.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -54,6 +57,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
@@ -774,6 +778,17 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
 
+  // ChildThreadImpl may be null in some tests, in which case we roll our own
+  // ServiceRegistry.
+  if (ChildThreadImpl::current()) {
+    service_registry_ = ChildThreadImpl::current()->service_registry()
+        ->CreateServiceRegistryForRoute(routing_id_);
+  } else {
+    service_registry_.reset(new ServiceRegistryImpl);
+  }
+  service_registry_weak_factory_.reset(
+      new base::WeakPtrFactory<ServiceRegistry>(service_registry_.get()));
+
   RenderThread::Get()->AddRoute(routing_id_, this);
 
   render_view_->RegisterRenderFrame(this);
@@ -1219,13 +1234,6 @@ void RenderFrameImpl::NavigateToSwappedOutURL() {
   GURL swappedOutURL(kSwappedOutURL);
   WebURLRequest request(swappedOutURL);
   frame_->loadRequest(request);
-}
-
-void RenderFrameImpl::BindServiceRegistry(
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
-  service_registry_.Bind(services.Pass());
-  service_registry_.BindRemoteServiceProvider(exposed_services.Pass());
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -2016,7 +2024,7 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
 }
 
 ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
-  return &service_registry_;
+  return service_registry_.get();
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -2084,7 +2092,8 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
   registry->AddBuiltinModule(
       isolate,
       ServiceRegistryJsWrapper::kModuleName,
-      ServiceRegistryJsWrapper::Create(isolate, &service_registry_).ToV8());
+      ServiceRegistryJsWrapper::Create(
+          isolate, service_registry_weak_factory_->GetWeakPtr()).ToV8());
 }
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
@@ -5325,7 +5334,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
 }
 
 void RenderFrameImpl::RegisterMojoServices() {
-  // Only main frame have ImageDownloader service.
+  // Only main frames have an ImageDownloader service.
   if (!frame_->parent()) {
     GetServiceRegistry()->AddService<image_downloader::ImageDownloader>(
         base::Bind(&ImageDownloaderImpl::CreateMojoService,

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -25,7 +26,7 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
   ~ServiceRegistryJsWrapper() override;
   static gin::Handle<ServiceRegistryJsWrapper> Create(
       v8::Isolate* isolate,
-      ServiceRegistry* service_registry);
+      base::WeakPtr<ServiceRegistry> service_registry);
 
   // gin::Wrappable<ServiceRegistryJsWrapper> overrides.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

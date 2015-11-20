@@ -4,6 +4,8 @@
 
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 
+#include <utility>
+
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/mojo/src/mojo/edk/js/handle.h"
@@ -21,11 +23,9 @@ ServiceRegistryJsWrapper::~ServiceRegistryJsWrapper() {
 // static
 gin::Handle<ServiceRegistryJsWrapper> ServiceRegistryJsWrapper::Create(
     v8::Isolate* isolate,
-    ServiceRegistry* service_registry) {
+    base::WeakPtr<ServiceRegistry> service_registry) {
   return gin::CreateHandle(
-      isolate,
-      new ServiceRegistryJsWrapper(
-          static_cast<ServiceRegistryImpl*>(service_registry)->GetWeakPtr()));
+      isolate, new ServiceRegistryJsWrapper(service_registry));
 }
 
 gin::ObjectTemplateBuilder ServiceRegistryJsWrapper::GetObjectTemplateBuilder(
@@ -39,8 +39,7 @@ mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
     const std::string& service_name) {
   mojo::MessagePipe pipe;
   if (service_registry_)
-    service_registry_->ConnectToRemoteService(service_name,
-                                              pipe.handle0.Pass());
+    service_registry_->Connect(service_name, std::move(pipe.handle0));
   return pipe.handle1.release();
 }
 

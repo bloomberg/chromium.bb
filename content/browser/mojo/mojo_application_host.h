@@ -40,7 +40,7 @@ class CONTENT_EXPORT MojoApplicationHost {
 
   void WillDestroySoon();
 
-  ServiceRegistry* service_registry() { return &service_registry_; }
+  ServiceRegistryImpl* service_registry() { return &service_registry_; }
 
 #if defined(OS_ANDROID)
   ServiceRegistryAndroid* service_registry_android() {

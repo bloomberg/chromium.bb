@@ -31,7 +31,7 @@ class MojoApplication {
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  ServiceRegistry* service_registry() { return &service_registry_; }
+  ServiceRegistryImpl* service_registry() { return &service_registry_; }
 
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);

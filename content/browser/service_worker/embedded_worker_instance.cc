@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "content/common/routed_service_provider.mojom.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -77,8 +78,8 @@ void RegisterToWorkerDevToolsManagerOnUI(
 void SetupMojoOnUIThread(
     int process_id,
     int thread_id,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::InterfacePtrInfo<mojo::ServiceProvider> exposed_services) {
+    mojo::InterfaceRequest<RoutedServiceProvider> services,
+    mojo::InterfacePtrInfo<RoutedServiceProvider> exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| or its ServiceRegistry may be NULL in unit tests.
   if (!rph || !rph->GetServiceRegistry())
@@ -386,10 +387,10 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
-  mojo::ServiceProviderPtr exposed_services;
+  RoutedServiceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
-  mojo::ServiceProviderPtr services;
-  mojo::InterfaceRequest<mojo::ServiceProvider> services_request =
+  RoutedServiceProviderPtr services;
+  mojo::InterfaceRequest<RoutedServiceProvider> services_request =
       GetProxy(&services);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

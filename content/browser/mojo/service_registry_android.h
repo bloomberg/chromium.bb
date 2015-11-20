@@ -13,16 +13,16 @@
 
 namespace content {
 
-class ServiceRegistryImpl;
+class ServiceRegistry;
 
-// Android wrapper over ServiceRegistryImpl, allowing the browser services in
+// Android wrapper over a ServiceRegistry, allowing the browser services in
 // Java to register with ServiceRegistry.java (and abstracting away the JNI
 // calls).
 class CONTENT_EXPORT ServiceRegistryAndroid {
  public:
   static bool Register(JNIEnv* env);
 
-  explicit ServiceRegistryAndroid(ServiceRegistryImpl* service_registry);
+  explicit ServiceRegistryAndroid(ServiceRegistry* service_registry);
   virtual ~ServiceRegistryAndroid();
 
   // Methods called from Java.
@@ -40,7 +40,7 @@ class CONTENT_EXPORT ServiceRegistryAndroid {
   const base::android::ScopedJavaGlobalRef<jobject>& GetObj() { return obj_; }
 
  private:
-  ServiceRegistryImpl* service_registry_;
+  ServiceRegistry* service_registry_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRegistryAndroid);
