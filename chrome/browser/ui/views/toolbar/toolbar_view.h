@@ -152,10 +152,6 @@ class ToolbarView : public views::AccessiblePaneView,
     // The apparent horizontal space between most items, and the vertical
     // padding above and below them.
     kStandardSpacing = 3,
-
-    // The top of the toolbar has an edge we have to skip over in addition to
-    // the standard spacing.
-    kVertSpacing = 5,
   };
 
  protected:
