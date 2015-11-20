@@ -23,9 +23,8 @@ using PresentationSessionStartedCallback =
     base::Callback<void(const PresentationSessionInfo&)>;
 using PresentationSessionErrorCallback =
     base::Callback<void(const PresentationError&)>;
-using SessionStateChangedCallback =
-    base::Callback<void(const PresentationSessionInfo&,
-                        PresentationConnectionState)>;
+using PresentationConnectionStateChangedCallback =
+    base::Callback<void(PresentationConnectionState)>;
 
 // Param #0: a vector of messages that are received.
 // Param #1: tells the callback handler that it may reuse strings or buffers
@@ -168,14 +167,17 @@ class CONTENT_EXPORT PresentationServiceDelegate {
                            scoped_ptr<PresentationSessionMessage> message,
                            const SendMessageCallback& send_message_cb) = 0;
 
-  // Continuously listen for presentation session state changes for a frame.
+  // Continuously listen for state changes for a PresentationConnection in a
+  // frame.
   // |render_process_id|, |render_frame_id|: ID of frame.
-  // |state_changed_cb|: Invoked with the session and its new state whenever
-  // there is a state change.
-  virtual void ListenForSessionStateChange(
+  // |connection|: PresentationConnection to listen for state changes.
+  // |state_changed_cb|: Invoked with the PresentationConnection and its new
+  // state whenever there is a state change.
+  virtual void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,
-      const SessionStateChangedCallback& state_changed_cb) = 0;
+      const PresentationSessionInfo& connection,
+      const PresentationConnectionStateChangedCallback& state_changed_cb) = 0;
 };
 
 }  // namespace content

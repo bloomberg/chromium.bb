@@ -293,39 +293,53 @@ int PresentationServiceImpl::RegisterJoinSessionCallback(
   return request_id;
 }
 
+void PresentationServiceImpl::ListenForConnectionStateChange(
+    const PresentationSessionInfo& connection) {
+  if (delegate_) {
+    delegate_->ListenForConnectionStateChange(
+        render_process_id_, render_frame_id_, connection,
+        base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
+                   weak_factory_.GetWeakPtr(), connection));
+  }
+}
+
 void PresentationServiceImpl::OnStartSessionSucceeded(
     int request_session_id,
     const PresentationSessionInfo& session_info) {
-  if (request_session_id == start_session_request_id_) {
-    CHECK(pending_start_session_cb_.get());
-    pending_start_session_cb_->Run(
-        presentation::PresentationSessionInfo::From(session_info),
-        presentation::PresentationErrorPtr());
-    pending_start_session_cb_.reset();
-    start_session_request_id_ = kInvalidRequestSessionId;
-  }
+  if (request_session_id != start_session_request_id_)
+    return;
+
+  CHECK(pending_start_session_cb_.get());
+  pending_start_session_cb_->Run(
+      presentation::PresentationSessionInfo::From(session_info),
+      presentation::PresentationErrorPtr());
+  ListenForConnectionStateChange(session_info);
+  pending_start_session_cb_.reset();
+  start_session_request_id_ = kInvalidRequestSessionId;
 }
 
 void PresentationServiceImpl::OnStartSessionError(
     int request_session_id,
     const PresentationError& error) {
-  if (request_session_id == start_session_request_id_) {
-    CHECK(pending_start_session_cb_.get());
-    pending_start_session_cb_->Run(
-        presentation::PresentationSessionInfoPtr(),
-        presentation::PresentationError::From(error));
-    pending_start_session_cb_.reset();
-    start_session_request_id_ = kInvalidRequestSessionId;
-  }
+  if (request_session_id != start_session_request_id_)
+    return;
+
+  CHECK(pending_start_session_cb_.get());
+  pending_start_session_cb_->Run(presentation::PresentationSessionInfoPtr(),
+                                 presentation::PresentationError::From(error));
+  pending_start_session_cb_.reset();
+  start_session_request_id_ = kInvalidRequestSessionId;
 }
 
 void PresentationServiceImpl::OnJoinSessionSucceeded(
     int request_session_id,
     const PresentationSessionInfo& session_info) {
-  RunAndEraseJoinSessionMojoCallback(
-      request_session_id,
-      presentation::PresentationSessionInfo::From(session_info),
-      presentation::PresentationErrorPtr());
+  if (RunAndEraseJoinSessionMojoCallback(
+          request_session_id,
+          presentation::PresentationSessionInfo::From(session_info),
+          presentation::PresentationErrorPtr())) {
+    ListenForConnectionStateChange(session_info);
+  }
 }
 
 void PresentationServiceImpl::OnJoinSessionError(
@@ -337,17 +351,18 @@ void PresentationServiceImpl::OnJoinSessionError(
       presentation::PresentationError::From(error));
 }
 
-void PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
+bool PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
     int request_session_id,
     presentation::PresentationSessionInfoPtr session,
     presentation::PresentationErrorPtr error) {
   auto it = pending_join_session_cbs_.find(request_session_id);
   if (it == pending_join_session_cbs_.end())
-    return;
+    return false;
 
   DCHECK(it->second.get());
   it->second->Run(session.Pass(), error.Pass());
   pending_join_session_cbs_.erase(it);
+  return true;
 }
 
 void PresentationServiceImpl::SetDefaultPresentationURL(
@@ -407,23 +422,13 @@ void PresentationServiceImpl::CloseSession(
                             presentation_id);
 }
 
-void PresentationServiceImpl::ListenForSessionStateChange() {
-  if (!delegate_)
-    return;
-
-  delegate_->ListenForSessionStateChange(
-      render_process_id_, render_frame_id_,
-      base::Bind(&PresentationServiceImpl::OnSessionStateChanged,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void PresentationServiceImpl::OnSessionStateChanged(
-    const PresentationSessionInfo& session_info,
-    PresentationConnectionState session_state) {
+void PresentationServiceImpl::OnConnectionStateChanged(
+    const PresentationSessionInfo& connection,
+    PresentationConnectionState state) {
   DCHECK(client_.get());
-  client_->OnSessionStateChanged(
-      presentation::PresentationSessionInfo::From(session_info),
-      PresentationConnectionStateToMojo(session_state));
+  client_->OnConnectionStateChanged(
+      presentation::PresentationSessionInfo::From(connection),
+      PresentationConnectionStateToMojo(state));
 }
 
 bool PresentationServiceImpl::FrameMatches(
@@ -534,10 +539,11 @@ void PresentationServiceImpl::OnDelegateDestroyed() {
 }
 
 void PresentationServiceImpl::OnDefaultPresentationStarted(
-    const PresentationSessionInfo& session_info) {
+    const PresentationSessionInfo& connection) {
   DCHECK(client_.get());
   client_->OnDefaultSessionStarted(
-      presentation::PresentationSessionInfo::From(session_info));
+      presentation::PresentationSessionInfo::From(connection));
+  ListenForConnectionStateChange(connection);
 }
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl

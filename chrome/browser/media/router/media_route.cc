@@ -31,34 +31,4 @@ bool MediaRoute::Equals(const MediaRoute& other) const {
   return media_route_id_ == other.media_route_id_;
 }
 
-MediaRouteIdToPresentationSessionMapping::
-    MediaRouteIdToPresentationSessionMapping() {
-}
-
-MediaRouteIdToPresentationSessionMapping::
-    ~MediaRouteIdToPresentationSessionMapping() {
-}
-
-void MediaRouteIdToPresentationSessionMapping::Add(
-    const MediaRoute::Id& route_id,
-    const content::PresentationSessionInfo& session_info) {
-  route_id_to_presentation_.insert(std::make_pair(route_id, session_info));
-}
-
-void MediaRouteIdToPresentationSessionMapping::Remove(
-    const MediaRoute::Id& route_id) {
-  route_id_to_presentation_.erase(route_id);
-}
-
-void MediaRouteIdToPresentationSessionMapping::Clear() {
-  route_id_to_presentation_.clear();
-}
-
-const content::PresentationSessionInfo*
-MediaRouteIdToPresentationSessionMapping::Get(
-    const MediaRoute::Id& route_id) const {
-  auto it = route_id_to_presentation_.find(route_id);
-  return it == route_id_to_presentation_.end() ? nullptr : &it->second;
-}
-
 }  // namespace media_router

@@ -312,16 +312,6 @@ void MediaRouterAndroid::UnregisterLocalMediaRoutesObserver(
   NOTIMPLEMENTED();
 }
 
-void MediaRouterAndroid::RegisterPresentationConnectionStateObserver(
-    PresentationConnectionStateObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterAndroid::UnregisterPresentationConnectionStateObserver(
-    PresentationConnectionStateObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterAndroid::OnSinksReceived(
     JNIEnv* env,
     jobject obj,

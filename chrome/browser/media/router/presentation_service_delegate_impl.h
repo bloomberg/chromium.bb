@@ -120,10 +120,12 @@ class PresentationServiceDelegateImpl
                    const content::PresentationSessionInfo& session,
                    scoped_ptr<content::PresentationSessionMessage> message,
                    const SendMessageCallback& send_message_cb) override;
-  void ListenForSessionStateChange(
+  void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,
-      const content::SessionStateChangedCallback& state_changed_cb) override;
+      const content::PresentationSessionInfo& connection,
+      const content::PresentationConnectionStateChangedCallback&
+          state_changed_cb) override;
 
   // Callback invoked when a default PresentationRequest is started from a
   // browser-initiated dialog.

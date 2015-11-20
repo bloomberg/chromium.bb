@@ -126,11 +126,12 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
     SendMessageRawPtr(render_process_id, render_frame_id, session,
                       message_request.release(), send_message_cb);
   }
-  MOCK_METHOD3(
-      ListenForSessionStateChange,
-      void(int render_process_id,
-           int render_frame_id,
-           const content::SessionStateChangedCallback& state_changed_cb));
+  MOCK_METHOD4(ListenForConnectionStateChange,
+               void(int render_process_id,
+                    int render_frame_id,
+                    const content::PresentationSessionInfo& connection,
+                    const content::PresentationConnectionStateChangedCallback&
+                        state_changed_cb));
 
   void set_screen_availability_listening_supported(bool value) {
     screen_availability_listening_supported_ = value;
@@ -145,13 +146,13 @@ class MockPresentationServiceClient :
  public:
   MOCK_METHOD2(OnScreenAvailabilityUpdated,
       void(const mojo::String& url, bool available));
-  void OnSessionStateChanged(
-      presentation::PresentationSessionInfoPtr session_info,
+  void OnConnectionStateChanged(
+      presentation::PresentationSessionInfoPtr connection,
       presentation::PresentationConnectionState new_state) override {
-    OnSessionStateChanged(*session_info, new_state);
+    OnConnectionStateChanged(*connection, new_state);
   }
-  MOCK_METHOD2(OnSessionStateChanged,
-               void(const presentation::PresentationSessionInfo& session_info,
+  MOCK_METHOD2(OnConnectionStateChanged,
+               void(const presentation::PresentationSessionInfo& connection,
                     presentation::PresentationConnectionState new_state));
 
   MOCK_METHOD1(OnScreenAvailabilityNotSupported, void(const mojo::String& url));
@@ -452,6 +453,28 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   run_loop.Run();
 }
 
+TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
+  content::PresentationSessionInfo connection(kPresentationUrl,
+                                              kPresentationId);
+  content::PresentationConnectionStateChangedCallback state_changed_cb;
+  EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
+      .WillOnce(SaveArg<3>(&state_changed_cb));
+  service_impl_->ListenForConnectionStateChange(connection);
+
+  // Trigger state change. It should be propagated back up to |mock_client_|.
+  presentation::PresentationSessionInfo presentation_connection;
+  presentation_connection.url = kPresentationUrl;
+  presentation_connection.id = kPresentationId;
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_client_,
+              OnConnectionStateChanged(
+                  Equals(presentation_connection),
+                  presentation::PRESENTATION_CONNECTION_STATE_CLOSED))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  state_changed_cb.Run(content::PRESENTATION_CONNECTION_STATE_CLOSED);
+  run_loop.Run();
+}
+
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {
   EXPECT_CALL(mock_delegate_,
               SetDefaultPresentationUrl(_, _, Eq(kPresentationUrl), _))
@@ -479,6 +502,9 @@ TEST_F(PresentationServiceImplTest, StartSessionSuccess) {
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             SaveArg<3>(&success_cb)));
   run_loop.Run();
+
+  EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
+      .Times(1);
   success_cb.Run(PresentationSessionInfo(kPresentationUrl, kPresentationId));
   SaveQuitClosureAndRunLoop();
 }
@@ -515,6 +541,9 @@ TEST_F(PresentationServiceImplTest, JoinSessionSuccess) {
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             SaveArg<4>(&success_cb)));
   run_loop.Run();
+
+  EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
+      .Times(1);
   success_cb.Run(PresentationSessionInfo(kPresentationUrl, kPresentationId));
   SaveQuitClosureAndRunLoop();
 }
@@ -567,8 +596,11 @@ TEST_F(PresentationServiceImplTest, ListenForSessionMessagesWithEmptyMsg) {
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
   std::string presentation_url1("http://fooUrl");
   std::string presentation_url2("http://barUrl");
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, Eq(presentation_url1), _, _))
+      .Times(1);
   service_ptr_->StartSession(presentation_url1,
                              base::Bind(&DoNothing));
+
   // This request should fail immediately, since there is already a StartSession
   // in progress.
   service_ptr_->StartSession(
@@ -756,26 +788,6 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
             &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
             base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, ListenForSessionStateChange) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock_delegate_, ListenForSessionStateChange(_, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  service_ptr_->ListenForSessionStateChange();
-  run_loop.Run();
-
-  presentation::PresentationSessionInfo session_info;
-  session_info.url = kPresentationUrl;
-  session_info.id = kPresentationId;
-
-  EXPECT_CALL(mock_client_,
-              OnSessionStateChanged(
-                  Equals(session_info),
-                  presentation::PRESENTATION_CONNECTION_STATE_CONNECTED));
-  service_impl_->OnSessionStateChanged(
-      content::PresentationSessionInfo(kPresentationUrl, kPresentationId),
-      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 }
 
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {

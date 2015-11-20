@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/presentation_session_message.h"
 
 namespace content {
@@ -47,6 +49,12 @@ using MediaRouteResponseCallback =
     base::Callback<void(const MediaRoute* route,
                         const std::string& presentation_id,
                         const std::string& error)>;
+
+// Subscription object returned by calling
+// |AddPresentationConnectionStateChangedCallback|. See the method comments for
+// details.
+using PresentationConnectionStateSubscription = base::CallbackList<void(
+    content::PresentationConnectionState)>::Subscription;
 
 // An interface for handling resources related to media routing.
 // Responsible for registering observers for receiving sink availability
@@ -122,6 +130,15 @@ class MediaRouter : public KeyedService {
   // route.
   virtual bool HasLocalDisplayRoute() const = 0;
 
+  // Adds |callback| to listen for state changes for presentation connected to
+  // |route_id|. The returned Subscription object is owned by the caller.
+  // |callback| will be invoked whenever there are state changes, until the
+  // caller destroys the Subscription object.
+  virtual scoped_ptr<PresentationConnectionStateSubscription>
+  AddPresentationConnectionStateChangedCallback(
+      const MediaRoute::Id& route_id,
+      const content::PresentationConnectionStateChangedCallback& callback) = 0;
+
  private:
   friend class IssuesObserver;
   friend class LocalMediaRoutesObserver;
@@ -192,15 +209,6 @@ class MediaRouter : public KeyedService {
   // Removes the LocalMediaRoutesObserver |observer|.
   virtual void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) = 0;
-
-  // Registers/unregisters a PresentationConnectionStateObserver to receive
-  // updates on state changes for a PresentationConnection. MediaRouter does
-  // not own |observer|. When |observer| is about to be destroyed, it must be
-  // unregistered from MediaRouter.
-  virtual void RegisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) = 0;
-  virtual void UnregisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) = 0;
 };
 
 }  // namespace media_router

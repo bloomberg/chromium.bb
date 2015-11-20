@@ -45,6 +45,14 @@ class MockDefaultPresentationRequestObserver
   MOCK_METHOD0(OnDefaultPresentationRemoved, void());
 };
 
+class MockCreatePresentationConnnectionCallbacks {
+ public:
+  MOCK_METHOD1(OnCreateConnectionSuccess,
+               void(const content::PresentationSessionInfo& connection));
+  MOCK_METHOD1(OnCreateConnectionError,
+               void(const content::PresentationError& error));
+};
+
 class PresentationServiceDelegateImplTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -125,7 +133,7 @@ TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
 }
 
 // TODO(imcheng): Add a test to set default presentation URL in a different
-// RenderFrameHost and verify that it works.
+// RenderFrameHost and verify that it is ignored.
 TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   EXPECT_FALSE(delegate_impl_->HasDefaultPresentationRequest());
 
@@ -256,6 +264,50 @@ TEST_F(PresentationServiceDelegateImplTest,
   EXPECT_CALL(observer, OnDefaultPresentationRemoved()).Times(1);
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
                                             callback);
+}
+
+TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
+  GURL frame_url("http://www.google.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(frame_url);
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int routing_id = main_frame->GetRoutingID();
+
+  // Set up a PresentationConnection so we can listen to it.
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  EXPECT_CALL(router_, JoinRoute(_, _, _, _, _))
+      .WillOnce(SaveArg<4>(&route_response_callbacks));
+
+  const std::string kPresentationUrl("http://url1.fakeUrl");
+  const std::string kPresentationId("pid");
+  MockCreatePresentationConnnectionCallbacks mock_create_connection_callbacks;
+  delegate_impl_->JoinSession(
+      render_process_id, routing_id, kPresentationUrl, kPresentationId,
+      base::Bind(&MockCreatePresentationConnnectionCallbacks::
+                     OnCreateConnectionSuccess,
+                 base::Unretained(&mock_create_connection_callbacks)),
+      base::Bind(
+          &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
+          base::Unretained(&mock_create_connection_callbacks)));
+
+  EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
+      .Times(1);
+  MediaRoute route("routeId", MediaSourceForPresentationUrl(kPresentationUrl),
+                   "mediaSinkId", "description", true, "", true);
+  for (const auto& route_response_callback : route_response_callbacks)
+    route_response_callback.Run(&route, kPresentationId, "");
+
+  MockPresentationConnectionStateChangedCallback mock_callback;
+  content::PresentationConnectionStateChangedCallback callback =
+      base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
+                 base::Unretained(&mock_callback));
+  content::PresentationSessionInfo connection(kPresentationUrl,
+                                              kPresentationId);
+  EXPECT_CALL(router_, OnAddPresentationConnectionStateChangedCallbackInvoked(
+                           Equals(callback)));
+  delegate_impl_->ListenForConnectionStateChange(render_process_id, routing_id,
+                                                 connection, callback);
 }
 
 TEST_F(PresentationServiceDelegateImplTest, Reset) {

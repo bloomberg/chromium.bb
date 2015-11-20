@@ -741,25 +741,49 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
   ProcessEventLoop();
 }
 
-TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateObserver) {
+TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   using PresentationConnectionState =
       interfaces::MediaRouter::PresentationConnectionState;
 
   MediaRoute::Id route_id("route-id");
-  MockPresentationConnectionStateObserver observer(router(), route_id);
+  const std::string kPresentationUrl("http://foo.fakeUrl");
+  const std::string kPresentationId("pid");
+  content::PresentationSessionInfo connection(kPresentationUrl,
+                                              kPresentationId);
+  MockPresentationConnectionStateChangedCallback callback;
+  scoped_ptr<PresentationConnectionStateSubscription> subscription =
+      router()->AddPresentationConnectionStateChangedCallback(
+          route_id,
+          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
+                     base::Unretained(&callback)));
 
-  EXPECT_CALL(observer,
-              OnStateChanged(content::PRESENTATION_CONNECTION_STATE_CLOSED));
+  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
+      .Times(1);
   media_router_proxy_->OnPresentationConnectionStateChanged(
       route_id,
       PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
   ProcessEventLoop();
 
-  EXPECT_CALL(observer, OnStateChanged(
-                            content::PRESENTATION_CONNECTION_STATE_TERMINATED));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
+
+  // Right now we don't keep track of previous state so the callback will be
+  // invoked with the same state again.
+  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
+      .Times(1);
   media_router_proxy_->OnPresentationConnectionStateChanged(
       route_id,
-      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_TERMINATED);
+      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
+  ProcessEventLoop();
+
+  // Callback has been removed, so we don't expect it to be called anymore.
+  subscription.reset();
+  EXPECT_TRUE(router()->presentation_connection_state_callbacks_.empty());
+
+  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
+      .Times(0);
+  media_router_proxy_->OnPresentationConnectionStateChanged(
+      route_id,
+      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
   ProcessEventLoop();
 }
 

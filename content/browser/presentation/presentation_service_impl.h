@@ -89,15 +89,13 @@ class CONTENT_EXPORT PresentationServiceImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            MaxPendingJoinSessionRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ListenForSessionStateChange);
+                           ListenForConnectionStateChange);
+
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
   using PresentationSessionMojoCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
-  using SessionStateCallback =
-      mojo::Callback<void(presentation::PresentationSessionInfoPtr,
-                          presentation::PresentationConnectionState)>;
   using SessionMessagesCallback =
       mojo::Callback<void(mojo::Array<presentation::SessionMessagePtr>)>;
   using SendMessageMojoCallback = mojo::Callback<void(bool)>;
@@ -168,7 +166,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   void CloseSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
-  void ListenForSessionStateChange() override;
   void ListenForSessionMessages(
       presentation::PresentationSessionInfoPtr session) override;
 
@@ -194,7 +191,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // |request_session_id|.
   // If it exists, invoke it with |session| and |error|, then erase it from
   // |pending_join_session_cbs_|.
-  void RunAndEraseJoinSessionMojoCallback(
+  // Returns true if the callback was found.
+  bool RunAndEraseJoinSessionMojoCallback(
       int request_session_id,
       presentation::PresentationSessionInfoPtr session,
       presentation::PresentationErrorPtr error);
@@ -220,6 +218,11 @@ class CONTENT_EXPORT PresentationServiceImpl
       const PresentationError& error);
   void OnSendMessageCallback(bool sent);
 
+  // Calls to |delegate_| to start listening for state changes for |connection|.
+  // State changes will be returned via |OnConnectionStateChanged|.
+  void ListenForConnectionStateChange(
+      const PresentationSessionInfo& connection);
+
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
   void OnSessionMessages(
@@ -233,9 +236,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   int RegisterJoinSessionCallback(const NewSessionMojoCallback& callback);
 
   // Invoked by the embedder's PresentationServiceDelegate when a
-  // presentation session's state has changed.
-  void OnSessionStateChanged(const PresentationSessionInfo& session_info,
-                             PresentationConnectionState session_state);
+  // PresentationConnection's state has changed.
+  void OnConnectionStateChanged(const PresentationSessionInfo& connection,
+                                PresentationConnectionState state);
 
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;

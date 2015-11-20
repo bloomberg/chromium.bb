@@ -12,7 +12,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_base.h"
 
 namespace content {
 class BrowserContext;
@@ -21,7 +21,7 @@ class BrowserContext;
 namespace media_router {
 
 // A stub implementation of MediaRouter interface on Android.
-class MediaRouterAndroid : public MediaRouter {
+class MediaRouterAndroid : public MediaRouterBase {
  public:
   ~MediaRouterAndroid() override;
 
@@ -107,10 +107,6 @@ class MediaRouterAndroid : public MediaRouter {
       LocalMediaRoutesObserver* observer) override;
   void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) override;
-  void RegisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) override;
-  void UnregisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
 

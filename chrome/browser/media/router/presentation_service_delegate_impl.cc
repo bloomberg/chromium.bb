@@ -20,7 +20,6 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
-#include "chrome/browser/media/router/presentation_session_state_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_session.h"
@@ -75,8 +74,10 @@ class PresentationFrame {
   bool HasScreenAvailabilityListenerForTest(
       const MediaSource::Id& source_id) const;
   std::string GetDefaultPresentationId() const;
-  void ListenForSessionStateChange(
-      const content::SessionStateChangedCallback& state_changed_cb);
+  void ListenForConnectionStateChange(
+      const content::PresentationSessionInfo& connection,
+      const content::PresentationConnectionStateChangedCallback&
+          state_changed_cb);
   void ListenForSessionMessages(
       const content::PresentationSessionInfo& session,
       const content::PresentationSessionMessageCallback& message_cb);
@@ -85,7 +86,6 @@ class PresentationFrame {
 
   const MediaRoute::Id GetRouteId(const std::string& presentation_id) const;
   const std::vector<MediaRoute::Id> GetRouteIds() const;
-  void OnPresentationSessionClosed(const std::string& presentation_id);
 
   void OnPresentationSessionStarted(
       const content::PresentationSessionInfo& session,
@@ -99,11 +99,12 @@ class PresentationFrame {
  private:
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener) const;
-  MediaRouteIdToPresentationSessionMapping route_id_to_presentation_;
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
   scoped_ptr<PresentationMediaSinksObserver> sinks_observer_;
-  scoped_ptr<PresentationSessionStateObserver> session_state_observer_;
+  base::ScopedPtrHashMap<MediaRoute::Id,
+                         scoped_ptr<PresentationConnectionStateSubscription>>
+      connection_state_subscriptions_;
   ScopedVector<PresentationSessionMessagesObserver> session_messages_observers_;
 
   // References to the owning WebContents, and the corresponding MediaRouter.
@@ -134,19 +135,6 @@ void PresentationFrame::OnPresentationSessionStarted(
     const content::PresentationSessionInfo& session,
     const MediaRoute::Id& route_id) {
   presentation_id_to_route_id_[session.presentation_id] = route_id;
-  route_id_to_presentation_.Add(route_id, session);
-  if (session_state_observer_)
-    session_state_observer_->OnPresentationSessionConnected(route_id);
-}
-
-void PresentationFrame::OnPresentationSessionClosed(
-    const std::string& presentation_id) {
-  auto it = presentation_id_to_route_id_.find(presentation_id);
-  if (it != presentation_id_to_route_id_.end()) {
-    route_id_to_presentation_.Remove(it->second);
-    presentation_id_to_route_id_.erase(it);
-  }
-  // TODO(imcheng): Notify |session_state_observer_|?
 }
 
 const MediaRoute::Id PresentationFrame::GetRouteId(
@@ -195,24 +183,37 @@ bool PresentationFrame::HasScreenAvailabilityListenerForTest(
 }
 
 void PresentationFrame::Reset() {
-  route_id_to_presentation_.Clear();
-
   for (const auto& pid_route_id : presentation_id_to_route_id_)
     router_->OnPresentationSessionDetached(pid_route_id.second);
 
   presentation_id_to_route_id_.clear();
   sinks_observer_.reset();
-  if (session_state_observer_)
-    session_state_observer_->Reset();
-
+  connection_state_subscriptions_.clear();
   session_messages_observers_.clear();
 }
 
-void PresentationFrame::ListenForSessionStateChange(
-    const content::SessionStateChangedCallback& state_changed_cb) {
-  CHECK(!session_state_observer_.get());
-  session_state_observer_.reset(new PresentationSessionStateObserver(
-      state_changed_cb, &route_id_to_presentation_, router_));
+void PresentationFrame::ListenForConnectionStateChange(
+    const content::PresentationSessionInfo& connection,
+    const content::PresentationConnectionStateChangedCallback&
+        state_changed_cb) {
+  auto it = presentation_id_to_route_id_.find(connection.presentation_id);
+  if (it == presentation_id_to_route_id_.end()) {
+    DLOG(ERROR) << __FUNCTION__ << "route id not found for presentation: "
+                << connection.presentation_id;
+    return;
+  }
+
+  const MediaRoute::Id& route_id = it->second;
+  if (connection_state_subscriptions_.contains(route_id)) {
+    DLOG(ERROR) << __FUNCTION__ << "Already listening connection state change "
+                                   "for route: "
+                << route_id;
+    return;
+  }
+
+  connection_state_subscriptions_.add(
+      route_id, router_->AddPresentationConnectionStateChangedCallback(
+                    it->second, state_changed_cb));
 }
 
 void PresentationFrame::ListenForSessionMessages(
@@ -252,9 +253,11 @@ class PresentationFrameManager {
   bool RemoveScreenAvailabilityListener(
       const RenderFrameHostId& render_frame_host_id,
       content::PresentationScreenAvailabilityListener* listener);
-  void ListenForSessionStateChange(
+  void ListenForConnectionStateChange(
       const RenderFrameHostId& render_frame_host_id,
-      const content::SessionStateChangedCallback& state_changed_cb);
+      const content::PresentationSessionInfo& connection,
+      const content::PresentationConnectionStateChangedCallback&
+          state_changed_cb);
   void ListenForSessionMessages(
       const RenderFrameHostId& render_frame_host_id,
       const content::PresentationSessionInfo& session,
@@ -291,9 +294,6 @@ class PresentationFrameManager {
       const content::PresentationSessionInfo& session,
       const MediaRoute::Id& route_id);
 
-  void OnPresentationSessionClosed(
-      const RenderFrameHostId& render_frame_host_id,
-      const std::string& presentation_id);
   const MediaRoute::Id GetRouteId(const RenderFrameHostId& render_frame_host_id,
                                   const std::string& presentation_id) const;
   const std::vector<MediaRoute::Id> GetRouteIds(
@@ -359,9 +359,8 @@ void PresentationFrameManager::OnPresentationSessionStarted(
     const RenderFrameHostId& render_frame_host_id,
     const content::PresentationSessionInfo& session,
     const MediaRoute::Id& route_id) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
-  if (presentation_frame)
-    presentation_frame->OnPresentationSessionStarted(session, route_id);
+  auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
+  presentation_frame->OnPresentationSessionStarted(session, route_id);
 }
 
 void PresentationFrameManager::OnDefaultPresentationSessionStarted(
@@ -377,14 +376,6 @@ void PresentationFrameManager::OnDefaultPresentationSessionStarted(
       default_presentation_request_->Equals(request)) {
     default_presentation_started_callback_.Run(session);
   }
-}
-
-void PresentationFrameManager::OnPresentationSessionClosed(
-    const RenderFrameHostId& render_frame_host_id,
-    const std::string& presentation_id) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
-  if (presentation_frame)
-    presentation_frame->OnPresentationSessionClosed(presentation_id);
 }
 
 const MediaRoute::Id PresentationFrameManager::GetRouteId(
@@ -427,12 +418,16 @@ bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(
          presentation_frame->HasScreenAvailabilityListenerForTest(source_id);
 }
 
-void PresentationFrameManager::ListenForSessionStateChange(
+void PresentationFrameManager::ListenForConnectionStateChange(
     const RenderFrameHostId& render_frame_host_id,
-    const content::SessionStateChangedCallback& state_changed_cb) {
-  PresentationFrame* presentation_frame =
-      GetOrAddPresentationFrame(render_frame_host_id);
-  presentation_frame->ListenForSessionStateChange(state_changed_cb);
+    const content::PresentationSessionInfo& connection,
+    const content::PresentationConnectionStateChangedCallback&
+        state_changed_cb) {
+  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  if (presentation_frame) {
+    presentation_frame->ListenForConnectionStateChange(connection,
+                                                       state_changed_cb);
+  }
 }
 
 void PresentationFrameManager::ListenForSessionMessages(
@@ -766,12 +761,15 @@ void PresentationServiceDelegateImpl::SendMessage(
   }
 }
 
-void PresentationServiceDelegateImpl::ListenForSessionStateChange(
+void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
     int render_process_id,
     int render_frame_id,
-    const content::SessionStateChangedCallback& state_changed_cb) {
-  frame_manager_->ListenForSessionStateChange(
-      RenderFrameHostId(render_process_id, render_frame_id), state_changed_cb);
+    const content::PresentationSessionInfo& connection,
+    const content::PresentationConnectionStateChangedCallback&
+        state_changed_cb) {
+  frame_manager_->ListenForConnectionStateChange(
+      RenderFrameHostId(render_process_id, render_frame_id), connection,
+      state_changed_cb);
 }
 
 void PresentationServiceDelegateImpl::OnRouteResponse(

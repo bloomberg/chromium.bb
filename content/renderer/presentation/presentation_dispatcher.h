@@ -94,9 +94,9 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnScreenAvailabilityNotSupported(const mojo::String& url) override;
   void OnScreenAvailabilityUpdated(const mojo::String& url,
                                    bool available) override;
-  void OnSessionStateChanged(
-      presentation::PresentationSessionInfoPtr session_info,
-      presentation::PresentationConnectionState new_state) override;
+  void OnConnectionStateChanged(
+      presentation::PresentationSessionInfoPtr connection,
+      presentation::PresentationConnectionState state) override;
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override;

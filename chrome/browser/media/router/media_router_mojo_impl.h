@@ -15,16 +15,14 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issue_manager.h"
-#include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
+#include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -40,7 +38,7 @@ namespace media_router {
 
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
-class MediaRouterMojoImpl : public MediaRouter,
+class MediaRouterMojoImpl : public MediaRouterBase,
                             public interfaces::MediaRouter {
  public:
   ~MediaRouterMojoImpl() override;
@@ -200,10 +198,6 @@ class MediaRouterMojoImpl : public MediaRouter,
       LocalMediaRoutesObserver* observer) override;
   void UnregisterLocalMediaRoutesObserver(
       LocalMediaRoutesObserver* observer) override;
-  void RegisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) override;
-  void UnregisterPresentationConnectionStateObserver(
-      PresentationConnectionStateObserver* observer) override;
 
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
@@ -307,12 +301,6 @@ class MediaRouterMojoImpl : public MediaRouter,
   // route have been removed.
   std::set<MediaRoute::Id> route_ids_listening_for_messages_;
 
-  using PresentationConnectionStateObserverList =
-      base::ObserverList<PresentationConnectionStateObserver>;
-  base::ScopedPtrHashMap<MediaRoute::Id,
-                         scoped_ptr<PresentationConnectionStateObserverList>>
-      presentation_connection_state_observers_;
-
   IssueManager issue_manager_;
 
   // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
@@ -350,8 +338,6 @@ class MediaRouterMojoImpl : public MediaRouter,
   interfaces::MediaRouter::SinkAvailability availability_;
 
   int wakeup_attempt_count_;
-
-  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
 

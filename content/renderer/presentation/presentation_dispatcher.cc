@@ -363,16 +363,16 @@ void PresentationDispatcher::OnSessionCreated(
   presentation_service_->ListenForSessionMessages(session_info.Pass());
 }
 
-void PresentationDispatcher::OnSessionStateChanged(
-    presentation::PresentationSessionInfoPtr session_info,
-    presentation::PresentationConnectionState session_state) {
+void PresentationDispatcher::OnConnectionStateChanged(
+    presentation::PresentationSessionInfoPtr connection,
+    presentation::PresentationConnectionState state) {
   if (!controller_)
     return;
 
-  DCHECK(!session_info.is_null());
+  DCHECK(!connection.is_null());
   controller_->didChangeSessionState(
-      new PresentationConnectionClient(session_info.Pass()),
-      GetWebPresentationConnectionStateFromMojo(session_state));
+      new PresentationConnectionClient(connection.Pass()),
+      GetWebPresentationConnectionStateFromMojo(state));
 }
 
 void PresentationDispatcher::OnSessionMessagesReceived(
@@ -420,8 +420,6 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   presentation::PresentationServiceClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
   presentation_service_->SetClient(client_ptr.Pass());
-
-  presentation_service_->ListenForSessionStateChange();
 }
 
 void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {

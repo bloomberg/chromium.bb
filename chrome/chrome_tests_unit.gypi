@@ -1446,7 +1446,6 @@
       'browser/media/router/presentation_media_sinks_observer_unittest.cc',
       'browser/media/router/presentation_request_unittest.cc',
       'browser/media/router/presentation_service_delegate_impl_unittest.cc',
-      'browser/media/router/presentation_session_state_observer_unittest.cc',
     ],
     'chrome_unit_tests_media_router_non_android_sources': [
       'browser/media/router/media_router_mojo_impl_unittest.cc',

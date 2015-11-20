@@ -83,28 +83,6 @@ class MediaRoute {
   bool for_display_;
 };
 
-class MediaRouteIdToPresentationSessionMapping {
- public:
-  MediaRouteIdToPresentationSessionMapping();
-  ~MediaRouteIdToPresentationSessionMapping();
-
-  void Add(const MediaRoute::Id& route_id,
-           const content::PresentationSessionInfo& session_info);
-  void Remove(const MediaRoute::Id& route_id);
-  void Clear();
-
-  // Gets the PresentationSessionInfo corresponding to |route_id| or nullptr
-  // if it does not exist. Caller should not hold on to the returned pointer.
-  const content::PresentationSessionInfo* Get(
-      const MediaRoute::Id& route_id) const;
-
- private:
-  base::SmallMap<std::map<MediaRoute::Id, content::PresentationSessionInfo>>
-      route_id_to_presentation_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaRouteIdToPresentationSessionMapping);
-};
-
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTE_H_

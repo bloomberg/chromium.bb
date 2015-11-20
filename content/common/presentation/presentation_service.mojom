@@ -90,12 +90,6 @@ interface PresentationService {
   // Called when closeSession() is called by the frame.
   CloseSession(string presentation_url, string presentation_id);
 
-  // Starts listening for state changes for sessions created on this frame.
-  // When state change occurs, PresentationServiceClient::OnSessionStateChanged
-  // will be invoked with the session and its new state.
-  // This is called after a presentation session is created.
-  ListenForSessionStateChange();
-
   // Starts listening for messages for session with |sessionInfo|.
   // Messages will be received in
   // PresentationServiceClient::OnSessionMessagesReceived.
@@ -116,9 +110,10 @@ interface PresentationServiceClient {
   // the current known state. It will then be called to notify of state updates.
   OnScreenAvailabilityUpdated(string url, bool available);
 
-  // See PresentationService::ListenForSessionStateChange.
-  OnSessionStateChanged(PresentationSessionInfo sessionInfo,
-                        PresentationConnectionState newState);
+  // Called when the state of PresentationConnection |connection| started on
+  // this frame has changed to |newState|.
+  OnConnectionStateChanged(PresentationSessionInfo connection,
+                           PresentationConnectionState newState);
 
   // See PresentationService::ListenForSessionMessages.
   OnSessionMessagesReceived(PresentationSessionInfo sessionInfo,

@@ -13,7 +13,6 @@
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/browser/media/router/presentation_connection_state_observer.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -145,17 +144,6 @@ class MockMediaRoutesObserver : public MediaRoutesObserver {
   MOCK_METHOD1(OnRoutesUpdated, void(const std::vector<MediaRoute>& sinks));
 };
 
-class MockPresentationConnectionStateObserver
-    : public PresentationConnectionStateObserver {
- public:
-  MockPresentationConnectionStateObserver(MediaRouter* router,
-                                          const MediaRoute::Id& route_id);
-  ~MockPresentationConnectionStateObserver() override;
-
-  MOCK_METHOD1(OnStateChanged,
-               void(content::PresentationConnectionState state));
-};
-
 class MockEventPageTracker : public extensions::EventPageTracker {
  public:
   MockEventPageTracker();
@@ -165,6 +153,13 @@ class MockEventPageTracker : public extensions::EventPageTracker {
   MOCK_METHOD2(WakeEventPage,
                bool(const std::string& extension_id,
                     const base::Callback<void(bool)>& callback));
+};
+
+class MockPresentationConnectionStateChangedCallback {
+ public:
+  MockPresentationConnectionStateChangedCallback();
+  ~MockPresentationConnectionStateChangedCallback();
+  MOCK_METHOD1(Run, void(content::PresentationConnectionState));
 };
 
 }  // namespace media_router
