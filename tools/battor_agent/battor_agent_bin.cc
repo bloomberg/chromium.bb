@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "device/serial/serial.mojom.h"
 #include "tools/battor_agent/battor_agent.h"
+#include "tools/battor_agent/battor_error.h"
 
 using std::cerr;
 using std::cout;
@@ -50,8 +51,8 @@ string GetArg(int argnum, int argc, char* argv[]) {
 
 // Checks if an error occurred and, if it did, prints the error and exits
 // with an error code.
-void CheckError(battor::BattOrAgent::BattOrError error) {
-  if (error != battor::BattOrAgent::BATTOR_ERROR_NONE) {
+void CheckError(battor::BattOrError error) {
+  if (error != battor::BATTOR_ERROR_NONE) {
     cerr << "Error when communicating with the BattOr: " << error << endl;
     exit(1);
   }

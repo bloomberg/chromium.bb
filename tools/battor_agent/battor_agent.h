@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "tools/battor_agent/battor_connection.h"
+#include "tools/battor_agent/battor_error.h"
 
 namespace battor {
 
@@ -31,12 +32,6 @@ namespace battor {
 // This class is NOT thread safe.
 class BattOrAgent {
  public:
-  enum BattOrError {
-    BATTOR_ERROR_NONE,
-    BATTOR_ERROR_CONNECTION_FAILED,
-    BATTOR_ERROR_TIMEOUT,
-  };
-
   explicit BattOrAgent(const std::string& path);
   virtual ~BattOrAgent();
 

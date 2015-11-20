@@ -9,7 +9,7 @@ namespace battor {
 BattOrAgent::BattOrAgent(const std::string& path) : path_(path) {}
 BattOrAgent::~BattOrAgent() {}
 
-BattOrAgent::BattOrError BattOrAgent::StartTracing() {
+BattOrError BattOrAgent::StartTracing() {
   BattOrError error = ConnectIfNeeded();
   if (error != BATTOR_ERROR_NONE)
     return error;
@@ -18,7 +18,7 @@ BattOrAgent::BattOrError BattOrAgent::StartTracing() {
   return BATTOR_ERROR_NONE;
 }
 
-BattOrAgent::BattOrError BattOrAgent::StopTracing(std::string* trace_output) {
+BattOrError BattOrAgent::StopTracing(std::string* trace_output) {
   BattOrError error = ConnectIfNeeded();
   if (error != BATTOR_ERROR_NONE)
     return error;
@@ -30,8 +30,7 @@ BattOrAgent::BattOrError BattOrAgent::StopTracing(std::string* trace_output) {
   return BATTOR_ERROR_NONE;
 }
 
-BattOrAgent::BattOrError BattOrAgent::RecordClockSyncMarker(
-    const std::string& marker) {
+BattOrError BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
   BattOrError error = ConnectIfNeeded();
   if (error != BATTOR_ERROR_NONE)
     return error;
@@ -40,7 +39,7 @@ BattOrAgent::BattOrError BattOrAgent::RecordClockSyncMarker(
   return BATTOR_ERROR_NONE;
 }
 
-BattOrAgent::BattOrError BattOrAgent::IssueClockSyncMarker() {
+BattOrError BattOrAgent::IssueClockSyncMarker() {
   BattOrError error = ConnectIfNeeded();
   if (error != BATTOR_ERROR_NONE)
     return error;
@@ -53,7 +52,7 @@ void BattOrAgent::ResetConnection() {
   connection_ = nullptr;
 }
 
-BattOrAgent::BattOrError BattOrAgent::ConnectIfNeeded() {
+BattOrError BattOrAgent::ConnectIfNeeded() {
   if (connection_)
     return BATTOR_ERROR_NONE;
 

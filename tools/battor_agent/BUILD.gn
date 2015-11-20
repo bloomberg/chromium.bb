@@ -20,6 +20,7 @@ static_library("battor_agent_lib") {
     "battor_agent.h",
     "battor_connection.cc",
     "battor_connection.h",
+    "battor_error.h",
   ]
   deps = [
     "//base",

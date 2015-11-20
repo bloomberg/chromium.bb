@@ -31,6 +31,7 @@
         'battor_agent.h',
         'battor_connection.cc',
         'battor_connection.h',
+        'battor_error.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
