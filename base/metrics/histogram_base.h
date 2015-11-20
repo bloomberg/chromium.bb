@@ -105,7 +105,7 @@ class BASE_EXPORT HistogramBase {
   void CheckName(const StringPiece& name) const;
 
   // Operations with Flags enum.
-  int32_t flags() const { return flags_; }
+  int32_t flags() const { return subtle::NoBarrier_Load(&flags_); }
   void SetFlags(int32_t flags);
   void ClearFlags(int32_t flags);
 
@@ -189,7 +189,7 @@ class BASE_EXPORT HistogramBase {
 
  private:
   const std::string histogram_name_;
-  int32_t flags_;
+  AtomicCount flags_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramBase);
 };

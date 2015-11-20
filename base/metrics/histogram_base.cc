@@ -72,11 +72,13 @@ void HistogramBase::CheckName(const StringPiece& name) const {
 }
 
 void HistogramBase::SetFlags(int32 flags) {
-  flags_ |= flags;
+  HistogramBase::Count old_flags = subtle::NoBarrier_Load(&flags_);
+  subtle::NoBarrier_Store(&flags_, old_flags | flags);
 }
 
 void HistogramBase::ClearFlags(int32 flags) {
-  flags_ &= ~flags;
+  HistogramBase::Count old_flags = subtle::NoBarrier_Load(&flags_);
+  subtle::NoBarrier_Store(&flags_, old_flags & ~flags);
 }
 
 void HistogramBase::AddTime(const TimeDelta& time) {
@@ -119,7 +121,7 @@ void HistogramBase::WriteJSON(std::string* output) const {
 }
 
 void HistogramBase::FindAndRunCallback(HistogramBase::Sample sample) const {
-  if ((flags_ & kCallbackExists) == 0)
+  if ((flags() & kCallbackExists) == 0)
     return;
 
   StatisticsRecorder::OnSampleCallback cb =
