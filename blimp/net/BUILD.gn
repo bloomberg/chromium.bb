@@ -52,6 +52,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "blimp_connection_unittest.cc",
     "blimp_message_demultiplexer_unittest.cc",
     "blimp_message_multiplexer_unittest.cc",
     "blimp_message_pump_unittest.cc",

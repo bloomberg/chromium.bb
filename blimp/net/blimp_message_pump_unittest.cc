@@ -27,11 +27,6 @@ using testing::SaveArg;
 namespace blimp {
 namespace {
 
-class MockConnectionErrorObserver : public ConnectionErrorObserver {
- public:
-  MOCK_METHOD1(OnConnectionError, void(int error));
-};
-
 class BlimpMessagePumpTest : public testing::Test {
  public:
   BlimpMessagePumpTest()
@@ -49,8 +44,8 @@ class BlimpMessagePumpTest : public testing::Test {
   scoped_ptr<BlimpMessage> message2_;
 
   testing::StrictMock<MockPacketReader> reader_;
-  MockConnectionErrorObserver error_observer_;
-  MockBlimpMessageProcessor receiver_;
+  testing::StrictMock<MockConnectionErrorObserver> error_observer_;
+  testing::StrictMock<MockBlimpMessageProcessor> receiver_;
   scoped_ptr<BlimpMessagePump> message_pump_;
 };
 

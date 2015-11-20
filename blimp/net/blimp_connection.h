@@ -35,12 +35,13 @@ class BLIMP_NET_EXPORT BlimpConnection {
   void SetIncomingMessageProcessor(BlimpMessageProcessor* processor);
 
   // Gets a processor for BrowserSession->BlimpConnection message routing.
-  scoped_ptr<BlimpMessageProcessor> take_outgoing_message_processor() const;
+  BlimpMessageProcessor* GetOutgoingMessageProcessor() const;
 
  private:
   scoped_ptr<PacketReader> reader_;
   scoped_ptr<BlimpMessagePump> message_pump_;
   scoped_ptr<PacketWriter> writer_;
+  scoped_ptr<BlimpMessageProcessor> outgoing_msg_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
 };

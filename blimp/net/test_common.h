@@ -7,8 +7,11 @@
 
 #include <string>
 
+#include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "blimp/net/connection_error_observer.h"
 #include "blimp/net/packet_reader.h"
+#include "blimp/net/packet_writer.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -31,9 +34,23 @@ MATCHER_P(BufferEquals, expected, "") {
 // Checks if two proto messages are the same.
 // TODO(kmarshall): promote to a shared testing library.
 MATCHER_P(EqualsProto, message, "") {
-  std::string expected_serialized, actual_serialized;
+  std::string expected_serialized;
+  std::string actual_serialized;
   message.SerializeToString(&expected_serialized);
   arg.SerializeToString(&actual_serialized);
+  return expected_serialized == actual_serialized;
+}
+
+// Checks if the contents of a buffer are an exact match with BlimpMessage.
+// arg (type: net::DrainableIOBuffer*) The buffer to check.
+// message (type: BlimpMessage) The message to compare with |arg|.
+MATCHER_P(BufferEqualsProto, message, "") {
+  BlimpMessage actual_message;
+  actual_message.ParseFromArray(arg->data(), arg->BytesRemaining());
+  std::string expected_serialized;
+  std::string actual_serialized;
+  message.SerializeToString(&expected_serialized);
+  actual_message.SerializeToString(&actual_serialized);
   return expected_serialized == actual_serialized;
 }
 
@@ -95,11 +112,29 @@ class MockStreamSocket : public net::StreamSocket {
 class MockPacketReader : public PacketReader {
  public:
   MockPacketReader();
-  virtual ~MockPacketReader();
+  ~MockPacketReader() override;
 
   MOCK_METHOD2(ReadPacket,
                int(const scoped_refptr<net::GrowableIOBuffer>&,
                    const net::CompletionCallback&));
+};
+
+class MockPacketWriter : public PacketWriter {
+ public:
+  MockPacketWriter();
+  ~MockPacketWriter() override;
+
+  MOCK_METHOD2(WritePacket,
+               int(scoped_refptr<net::DrainableIOBuffer>,
+                   const net::CompletionCallback&));
+};
+
+class MockConnectionErrorObserver : public ConnectionErrorObserver {
+ public:
+  MockConnectionErrorObserver();
+  ~MockConnectionErrorObserver() override;
+
+  MOCK_METHOD1(OnConnectionError, void(int error));
 };
 
 class MockBlimpMessageProcessor : public BlimpMessageProcessor {

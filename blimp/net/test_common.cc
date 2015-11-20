@@ -21,6 +21,14 @@ MockPacketReader::MockPacketReader() {}
 
 MockPacketReader::~MockPacketReader() {}
 
+MockPacketWriter::MockPacketWriter() {}
+
+MockPacketWriter::~MockPacketWriter() {}
+
+MockConnectionErrorObserver::MockConnectionErrorObserver() {}
+
+MockConnectionErrorObserver::~MockConnectionErrorObserver() {}
+
 MockBlimpMessageProcessor::MockBlimpMessageProcessor() {}
 
 MockBlimpMessageProcessor::~MockBlimpMessageProcessor() {}
