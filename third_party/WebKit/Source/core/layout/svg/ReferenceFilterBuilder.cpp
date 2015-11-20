@@ -31,6 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/layout/LayoutBox.h"
+#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -100,8 +101,10 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
     SVGFilterElement& filterElement = toSVGFilterElement(*filter);
 
     FloatRect referenceBox;
-    if (element->inDocument() && element->layoutObject() && element->layoutObject()->isBoxModelObject())
-        referenceBox = toLayoutBoxModelObject(element->layoutObject())->borderBoundingBox();
+    if (element->inDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
+        FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
+        referenceBox = FloatRect(FloatPoint(), size);
+    }
     referenceBox.scale(1.0f / zoom);
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
     bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;

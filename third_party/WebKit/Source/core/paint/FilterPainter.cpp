@@ -27,13 +27,16 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext* context, const 
     , m_context(context)
     , m_layoutObject(layer.layoutObject())
 {
-    if (!layer.filterEffectBuilder() || !layer.paintsWithFilters())
+    if (!layer.paintsWithFilters())
+        return;
+
+    RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.lastFilterEffect();
+    if (!lastEffect)
         return;
 
     ASSERT(layer.filterInfo());
 
     SkiaImageFilterBuilder builder;
-    RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.filterEffectBuilder()->lastEffect();
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
     if (!imageFilter)

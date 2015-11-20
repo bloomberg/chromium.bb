@@ -438,8 +438,6 @@ public:
     }
 
     bool hasFilterOutsets() const { return hasFilter() && filter().hasOutsets(); }
-    FilterOutsets filterOutsets() const { return hasFilter() ? filter().outsets() : FilterOutsets(); }
-
     Order rtlOrdering() const { return static_cast<Order>(inherited_flags.m_rtlOrdering); }
     void setRTLOrdering(Order o) { inherited_flags.m_rtlOrdering = o; }
 

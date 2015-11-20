@@ -418,15 +418,12 @@ public:
     bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
-    FilterOperations computeFilterOperations(const ComputedStyle&);
-    FilterOperations computeBackdropFilterOperations(const ComputedStyle&);
+    FilterOperations computeFilterOperations(const ComputedStyle&) const;
+    FilterOperations computeBackdropFilterOperations(const ComputedStyle&) const;
     bool paintsWithFilters() const;
     bool paintsWithBackdropFilters() const;
-    FilterEffectBuilder* filterEffectBuilder() const
-    {
-        PaintLayerFilterInfo* filterInfo = this->filterInfo();
-        return filterInfo ? filterInfo->builder() : 0;
-    }
+    FilterEffect* lastFilterEffect() const;
+    FilterOutsets filterOutsets() const;
 
     PaintLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? PaintLayerFilterInfo::filterInfoForLayer(this) : 0; }
     PaintLayerFilterInfo* ensureFilterInfo() { return PaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(this); }
@@ -672,6 +669,7 @@ private:
     void updateStackingNode();
 
     void updateReflectionInfo(const ComputedStyle*);
+    FilterEffectBuilder* updateFilterEffectBuilder() const;
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
     // but for now, we are always allocating it for LayoutBox as it's safer. crbug.com/467721.

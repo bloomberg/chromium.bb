@@ -1061,7 +1061,7 @@ LayoutRect PaintLayer::transparencyClipBox(const PaintLayer* layer, const PaintL
         // paints unfragmented.
         LayoutRect clipRect = layer->physicalBoundingBox(layer);
         expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
-        clipRect.expand(layer->layoutObject()->style()->filterOutsets());
+        clipRect.expand(layer->filterOutsets());
         LayoutRect result = transform.mapRect(clipRect);
         if (!paginationLayer)
             return result;
@@ -1080,7 +1080,7 @@ LayoutRect PaintLayer::transparencyClipBox(const PaintLayer* layer, const PaintL
 
     LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
-    clipRect.expand(layer->layoutObject()->style()->filterOutsets());
+    clipRect.expand(layer->filterOutsets());
     clipRect.move(subPixelAccumulation);
     return clipRect;
 }
@@ -2195,7 +2195,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
         // FIXME: We can optimize the size of the composited layers, by not enlarging
         // filtered areas with the outsets if we know that the filter is going to render in hardware.
         // https://bugs.webkit.org/show_bug.cgi?id=81239
-        result.expand(m_layoutObject->style()->filterOutsets());
+        result.expand(filterOutsets());
     }
 
     if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))
@@ -2573,12 +2573,12 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
 
 } // unnamed namespace
 
-FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
+FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style) const
 {
     return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingElement());
 }
 
-FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style)
+FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style) const
 {
     return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingElement());
 }
@@ -2596,6 +2596,48 @@ void PaintLayer::updateOrRemoveFilterClients()
         filterInfo()->removeReferenceFilterClients();
 }
 
+FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
+{
+    // TODO(chrishtr): ensure (and assert) that compositing is clean here.
+
+    if (!paintsWithFilters())
+        return nullptr;
+
+    PaintLayerFilterInfo* filterInfo = this->filterInfo();
+
+    // Should have been added by updateOrRemoveFilterEffectBuilder().
+    ASSERT(filterInfo);
+
+    if (filterInfo->builder())
+        return filterInfo->builder();
+
+    filterInfo->setBuilder(FilterEffectBuilder::create());
+
+    float zoom = layoutObject()->style() ? layoutObject()->style()->effectiveZoom() : 1.0f;
+    if (!filterInfo->builder()->build(toElement(enclosingElement()), computeFilterOperations(layoutObject()->styleRef()), zoom))
+        filterInfo->setBuilder(nullptr);
+
+    return filterInfo->builder();
+}
+
+FilterEffect* PaintLayer::lastFilterEffect() const
+{
+    FilterEffectBuilder* builder = updateFilterEffectBuilder();
+    if (!builder)
+        return nullptr;
+    return builder->lastEffect().get();
+}
+
+FilterOutsets PaintLayer::filterOutsets() const
+{
+    if (!layoutObject()->hasFilter())
+        return FilterOutsets();
+
+    // Ensure the filter-chain is refreshed wrt reference filters.
+    updateFilterEffectBuilder();
+    return layoutObject()->style()->filter().outsets();
+}
+
 void PaintLayer::updateOrRemoveFilterEffectBuilder()
 {
     // FilterEffectBuilder is only used to render the filters in software mode,
@@ -2610,15 +2652,7 @@ void PaintLayer::updateOrRemoveFilterEffectBuilder()
         return;
     }
 
-    PaintLayerFilterInfo* filterInfo = ensureFilterInfo();
-    if (!filterInfo->builder())
-        filterInfo->setBuilder(FilterEffectBuilder::create());
-
-    // If the filter fails to build, remove it from the layer. It will still attempt to
-    // go through regular processing (e.g. compositing), but never apply anything.
-    float zoom = layoutObject()->style() ? layoutObject()->style()->effectiveZoom() : 1.0f;
-    if (!filterInfo->builder()->build(toElement(enclosingElement()), computeFilterOperations(layoutObject()->styleRef()), zoom))
-        filterInfo->setBuilder(nullptr);
+    ensureFilterInfo()->setBuilder(nullptr);
 }
 
 void PaintLayer::filterNeedsPaintInvalidation()

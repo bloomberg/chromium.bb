@@ -1949,8 +1949,8 @@ void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& p
     if (hasReflection())
         paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));
 
-    if (style()->hasFilter())
-        paintInvalidationRect.expand(style()->filterOutsets());
+    if (layer() && layer()->hasFilter())
+        paintInvalidationRect.expand(layer()->filterOutsets());
 }
 
 void LayoutBox::invalidatePaintForOverhangingFloats(bool)
