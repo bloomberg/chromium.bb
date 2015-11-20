@@ -82,7 +82,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 #endif
 
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
-  video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
+  video_decoders.push_back(new FFmpegVideoDecoder());
 #endif
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(

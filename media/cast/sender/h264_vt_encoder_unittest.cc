@@ -132,8 +132,7 @@ class EndToEndFrameChecker
     : public base::RefCountedThreadSafe<EndToEndFrameChecker> {
  public:
   explicit EndToEndFrameChecker(const VideoDecoderConfig& config)
-      : decoder_(base::MessageLoop::current()->task_runner()),
-        count_frames_checked_(0) {
+      : decoder_(), count_frames_checked_(0) {
     bool decoder_init_result;
     decoder_.Initialize(
         config, false, media::SetCdmReadyCB(),
