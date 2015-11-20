@@ -16,6 +16,7 @@
 #include "components/exo/display.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -364,6 +365,94 @@ void bind_shm(wl_client* client, void* data, uint32_t version, uint32_t id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// wl_subsurface_interface:
+
+void subsurface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void subsurface_set_position(wl_client* client,
+                             wl_resource* resource,
+                             int32_t x,
+                             int32_t y) {
+  GetUserDataAs<SubSurface>(resource)->SetPosition(gfx::Point(x, y));
+}
+
+void subsurface_place_above(wl_client* client,
+                            wl_resource* resource,
+                            wl_resource* reference_resource) {
+  GetUserDataAs<SubSurface>(resource)
+      ->PlaceAbove(GetUserDataAs<Surface>(reference_resource));
+}
+
+void subsurface_place_below(wl_client* client,
+                            wl_resource* resource,
+                            wl_resource* sibling_resource) {
+  GetUserDataAs<SubSurface>(resource)
+      ->PlaceBelow(GetUserDataAs<Surface>(sibling_resource));
+}
+
+void subsurface_set_sync(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<SubSurface>(resource)->SetCommitBehavior(true);
+}
+
+void subsurface_set_desync(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<SubSurface>(resource)->SetCommitBehavior(false);
+}
+
+const struct wl_subsurface_interface subsurface_implementation = {
+    subsurface_destroy,     subsurface_set_position, subsurface_place_above,
+    subsurface_place_below, subsurface_set_sync,     subsurface_set_desync};
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_subcompositor_interface:
+
+void subcompositor_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void subcompositor_get_subsurface(wl_client* client,
+                                  wl_resource* resource,
+                                  uint32_t id,
+                                  wl_resource* surface,
+                                  wl_resource* parent) {
+  scoped_ptr<SubSurface> subsurface =
+      GetUserDataAs<Display>(resource)->CreateSubSurface(
+          GetUserDataAs<Surface>(surface), GetUserDataAs<Surface>(parent));
+  if (!subsurface) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  wl_resource* subsurface_resource =
+      wl_resource_create(client, &wl_subsurface_interface, 1, id);
+  if (!subsurface_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  SetImplementation(subsurface_resource, &subsurface_implementation,
+                    subsurface.Pass());
+}
+
+const struct wl_subcompositor_interface subcompositor_implementation = {
+    subcompositor_destroy, subcompositor_get_subsurface};
+
+void bind_subcompositor(wl_client* client,
+                        void* data,
+                        uint32_t version,
+                        uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &wl_subcompositor_interface, 1, id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  wl_resource_set_implementation(resource, &subcompositor_implementation, data,
+                                 nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // wl_shell_surface_interface:
 
 void shell_surface_pong(wl_client* client,
@@ -495,6 +584,8 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    compositor_version, display_, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
+  wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
+                   bind_subcompositor);
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
 }

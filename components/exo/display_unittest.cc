@@ -6,6 +6,7 @@
 #include "components/exo/display.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,17 +51,84 @@ TEST_F(DisplayTest, CreateShellSurface) {
 
   // Create two surfaces.
   scoped_ptr<Surface> surface1 = display->CreateSurface();
-  EXPECT_TRUE(surface1);
+  ASSERT_TRUE(surface1);
   scoped_ptr<Surface> surface2 = display->CreateSurface();
-  EXPECT_TRUE(surface2);
+  ASSERT_TRUE(surface2);
 
   // Create a shell surface for surface1.
   scoped_ptr<ShellSurface> shell_surface1 =
       display->CreateShellSurface(surface1.get());
+  EXPECT_TRUE(shell_surface1);
 
   // Create a shell surface for surface2.
   scoped_ptr<ShellSurface> shell_surface2 =
       display->CreateShellSurface(surface2.get());
+  EXPECT_TRUE(shell_surface2);
+}
+
+TEST_F(DisplayTest, CreateSubSurface) {
+  scoped_ptr<Display> display(new Display);
+
+  // Create child, parent and toplevel surfaces.
+  scoped_ptr<Surface> child = display->CreateSurface();
+  ASSERT_TRUE(child);
+  scoped_ptr<Surface> parent = display->CreateSurface();
+  ASSERT_TRUE(parent);
+  scoped_ptr<Surface> toplevel = display->CreateSurface();
+  ASSERT_TRUE(toplevel);
+
+  // Attempting to create a sub surface for child with child as its parent
+  // should fail.
+  EXPECT_FALSE(display->CreateSubSurface(child.get(), child.get()));
+
+  // Create a sub surface for child.
+  scoped_ptr<SubSurface> child_sub_surface =
+      display->CreateSubSurface(child.get(), toplevel.get());
+  EXPECT_TRUE(child_sub_surface);
+
+  // Attempting to create another sub surface when already assigned the role of
+  // sub surface should fail.
+  EXPECT_FALSE(display->CreateSubSurface(child.get(), parent.get()));
+
+  // Deleting the sub surface should allow a new sub surface to be created.
+  child_sub_surface.reset();
+  child_sub_surface = display->CreateSubSurface(child.get(), parent.get());
+  EXPECT_TRUE(child_sub_surface);
+
+  scoped_ptr<Surface> sibling = display->CreateSurface();
+  ASSERT_TRUE(sibling);
+
+  // Create a sub surface for sibiling.
+  scoped_ptr<SubSurface> sibling_sub_surface =
+      display->CreateSubSurface(sibling.get(), parent.get());
+  EXPECT_TRUE(sibling_sub_surface);
+
+  // Create a shell surface for toplevel surface.
+  scoped_ptr<ShellSurface> shell_surface =
+      display->CreateShellSurface(toplevel.get());
+  EXPECT_TRUE(shell_surface);
+
+  // Attempting to create a sub surface when already assigned the role of
+  // shell surface should fail.
+  EXPECT_FALSE(display->CreateSubSurface(toplevel.get(), parent.get()));
+
+  scoped_ptr<Surface> grandchild = display->CreateSurface();
+  ASSERT_TRUE(grandchild);
+  // Create a sub surface for grandchild.
+  scoped_ptr<SubSurface> grandchild_sub_surface =
+      display->CreateSubSurface(grandchild.get(), child.get());
+  EXPECT_TRUE(grandchild_sub_surface);
+
+  // Attempting to create a sub surface for parent with child as its parent
+  // should fail.
+  EXPECT_FALSE(display->CreateSubSurface(parent.get(), child.get()));
+
+  // Attempting to create a sub surface for parent with grandchild as its parent
+  // should fail.
+  EXPECT_FALSE(display->CreateSubSurface(parent.get(), grandchild.get()));
+
+  // Create a sub surface for parent.
+  EXPECT_TRUE(display->CreateSubSurface(parent.get(), toplevel.get()));
 }
 
 }  // namespace

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"
+#include "components/exo/surface_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace base {
@@ -25,7 +26,9 @@ class Surface;
 // This class provides functions for treating a surfaces like toplevel,
 // fullscreen or popup widgets, move, resize or maximize them, associate
 // metadata like title and class, etc.
-class ShellSurface : public SurfaceDelegate, public views::WidgetDelegate {
+class ShellSurface : public SurfaceDelegate,
+                     public SurfaceObserver,
+                     public views::WidgetDelegate {
  public:
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
@@ -46,8 +49,11 @@ class ShellSurface : public SurfaceDelegate, public views::WidgetDelegate {
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   // Overridden from SurfaceDelegate:
-  void OnSurfaceDestroying() override;
   void OnSurfaceCommit() override;
+  bool IsSurfaceSynchronized() const override;
+
+  // Overridden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override;
 
   // Overridden from views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;

@@ -52,11 +52,14 @@ class CustomFrameView : public views::NonClientFrameView {
 ShellSurface::ShellSurface(Surface* surface)
     : surface_(surface), show_state_(ui::SHOW_STATE_END) {
   surface_->SetSurfaceDelegate(this);
+  surface_->AddSurfaceObserver(this);
 }
 
 ShellSurface::~ShellSurface() {
-  if (surface_)
+  if (surface_) {
     surface_->SetSurfaceDelegate(nullptr);
+    surface_->RemoveSurfaceObserver(this);
+  }
   if (widget_)
     widget_->CloseNow();
 }
@@ -106,13 +109,11 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
-void ShellSurface::OnSurfaceDestroying() {
-  surface_ = nullptr;
-}
-
 void ShellSurface::OnSurfaceCommit() {
-  if (widget_ || show_state_ == ui::SHOW_STATE_END)
+  if (widget_ || show_state_ == ui::SHOW_STATE_END) {
+    surface_->CommitSurfaceHierarchy();
     return;
+  }
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW;
@@ -131,7 +132,25 @@ void ShellSurface::OnSurfaceCommit() {
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeView()->SetName("ShellSurface");
+
+  surface_->CommitSurfaceHierarchy();
+  surface_->SetVisible(true);
+  surface_->SetEnabled(true);
+
   widget_->Show();
+}
+
+bool ShellSurface::IsSurfaceSynchronized() const {
+  // A shell surface is always desynchronized.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SurfaceObserver overrides:
+
+void ShellSurface::OnSurfaceDestroying(Surface* surface) {
+  surface->RemoveSurfaceObserver(this);
+  surface_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

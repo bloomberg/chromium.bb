@@ -12,6 +12,7 @@
 namespace exo {
 class SharedMemory;
 class ShellSurface;
+class SubSurface;
 class Surface;
 
 // The core display class. This class provides functions for creating surfaces
@@ -33,6 +34,10 @@ class Display {
 
   // Creates a shell surface for an existing surface.
   scoped_ptr<ShellSurface> CreateShellSurface(Surface* surface);
+
+  // Creates a sub-surface for an existing surface. The sub-surface will be
+  // a child of |parent|.
+  scoped_ptr<SubSurface> CreateSubSurface(Surface* surface, Surface* parent);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);

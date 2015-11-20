@@ -14,9 +14,12 @@ source_set("exo") {
     "shared_memory.h",
     "shell_surface.cc",
     "shell_surface.h",
+    "sub_surface.cc",
+    "sub_surface.h",
     "surface.cc",
     "surface.h",
     "surface_delegate.h",
+    "surface_observer.h",
   ]
 
   deps = [
@@ -60,17 +63,18 @@ source_set("unit_tests") {
     "display_unittest.cc",
     "shared_memory_unittest.cc",
     "shell_surface_unittest.cc",
+    "sub_surface_unittest.cc",
     "surface_unittest.cc",
   ]
 
   deps = [
+    ":exo",
+    ":test_support",
     "//components/user_manager",
     "//skia",
     "//testing/gtest",
     "//ui/keyboard",
     "//ui/message_center",
-    ":exo",
-    ":test_support",
   ]
 }
 
@@ -79,8 +83,8 @@ test("exo_unittests") {
     "test/run_all_unittests.cc",
   ]
   deps = [
-    "//ash:test_support",
     ":unit_tests",
+    "//ash:test_support",
   ]
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]

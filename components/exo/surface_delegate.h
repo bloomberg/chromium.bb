@@ -10,12 +10,12 @@ namespace exo {
 // Handles events on surfaces in context-specific ways.
 class SurfaceDelegate {
  public:
-  // Called when the surface is destroyed. The delegate can use this
-  // opportunity to delete itself if necessary.
-  virtual void OnSurfaceDestroying() = 0;
-
   // Called when surface was requested to commit all double-buffered state.
   virtual void OnSurfaceCommit() = 0;
+
+  // Returns true if surface is in synchronized mode. ie. commit of
+  // double-buffered state should be synchronized with parent surface.
+  virtual bool IsSurfaceSynchronized() const = 0;
 
  protected:
   virtual ~SurfaceDelegate() {}

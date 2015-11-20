@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 
 namespace exo {
@@ -40,7 +41,30 @@ scoped_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
   TRACE_EVENT1("exo", "Display::CreateShellSurface", "surface",
                surface->AsTracedValue());
 
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
   return make_scoped_ptr(new ShellSurface(surface));
+}
+
+scoped_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
+                                                 Surface* parent) {
+  TRACE_EVENT2("exo", "Display::CreateSubSurface", "surface",
+               surface->AsTracedValue(), "parent", parent->AsTracedValue());
+
+  if (surface->Contains(parent)) {
+    DLOG(ERROR) << "Parent is contained within surface's hierarchy";
+    return nullptr;
+  }
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return make_scoped_ptr(new SubSurface(surface, parent));
 }
 
 }  // namespace exo
