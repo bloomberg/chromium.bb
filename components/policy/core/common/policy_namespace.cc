@@ -4,8 +4,6 @@
 
 #include "components/policy/core/common/policy_namespace.h"
 
-#include <tuple>
-
 namespace policy {
 
 PolicyNamespace::PolicyNamespace() {}
@@ -28,8 +26,8 @@ PolicyNamespace& PolicyNamespace::operator=(const PolicyNamespace& other) {
 }
 
 bool PolicyNamespace::operator<(const PolicyNamespace& other) const {
-  return std::tie(domain, component_id) <
-         std::tie(other.domain, other.component_id);
+  return domain < other.domain ||
+         (domain == other.domain && component_id < other.component_id);
 }
 
 bool PolicyNamespace::operator==(const PolicyNamespace& other) const {
