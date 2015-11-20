@@ -208,8 +208,9 @@ Utils.resetTitleChange = function() {
   document.title = '';
 };
 
-Utils.sendRequest = function(requestType, responseType, message, serverURL,
-                             onSuccessCallbackFn, forceInvalidResponse) {
+Utils.sendRequest = function(
+    requestType, responseType, message, serverURL, onResponseCallbackFn,
+    forceInvalidResponse) {
   var requestAttemptCount = 0;
   var REQUEST_RETRY_DELAY_MS = 3000;
   var REQUEST_TIMEOUT_MS = 1000;
@@ -229,8 +230,11 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
     };
     xmlhttp.onload = function(e) {
       if (this.status == 200) {
-        if (onSuccessCallbackFn)
-          onSuccessCallbackFn(this.response);
+        onResponseCallbackFn(this.response);
+      } else if (this.status == 404 && serverURL == DEFAULT_LICENSE_SERVER) {
+        // If using the default license server, no page available means there
+        // is no license server configured.
+        onResponseCallbackFn(Utils.convertToUint8Array("No license."));
       } else {
         Utils.timeLog('Bad response status: ' + this.status);
         Utils.timeLog('Bad response: ' + this.response);
@@ -251,7 +255,7 @@ Utils.sendRequest = function(requestType, responseType, message, serverURL,
 
   if (forceInvalidResponse) {
     Utils.timeLog('Not sending request - forcing an invalid response.');
-    return onSuccessCallbackFn([0xAA]);
+    return onResponseCallbackFn(Utils.convertToUint8Array("Invalid response."));
   }
   sendRequestAttempt();
 };
