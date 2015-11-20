@@ -359,15 +359,10 @@ bool WebGLTexture::canGenerateMipmaps()
 
     if (m_baseLevel >= m_info[0].size())
         return false;
-    const LevelInfo& base = m_info[0][m_baseLevel];
-    for (size_t ii = 0; ii < m_info.size(); ++ii) {
-        const LevelInfo& info = m_info[ii][m_baseLevel];
-        if (!info.valid
-            || info.width != base.width || info.height != base.height || info.depth != base.depth
-            || info.internalFormat != base.internalFormat || info.type != base.type
-            || (m_info.size() > 1 && !m_isCubeComplete))
-            return false;
-    }
+
+    if (m_info.size() > 1 && !m_isCubeComplete)
+        return false;
+
     return true;
 }
 
@@ -413,7 +408,7 @@ void WebGLTexture::update()
         if (m_baseLevel + levelCount > 0)
             maxLevel = m_baseLevel + levelCount - 1;
         maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, maxLevel) : maxLevel;
-        for (size_t ii = 0; ii < m_info.size() && m_isComplete; ++ii) {
+        for (size_t ii = 0; ii < m_info.size(); ++ii) {
             const LevelInfo& info0 = m_info[ii][m_baseLevel];
             if (!info0.valid
                 || info0.width != base.width || info0.height != base.height || info0.depth != base.depth
@@ -424,6 +419,9 @@ void WebGLTexture::update()
                 m_isComplete = false;
                 break;
             }
+
+            if (!m_isComplete)
+                continue;
             GLsizei width = info0.width;
             GLsizei height = info0.height;
             GLsizei depth = info0.depth;
