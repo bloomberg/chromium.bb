@@ -223,7 +223,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
 
   'src/third_party/libyuv':
-    Var('chromium_git') + '/libyuv/libyuv.git' + '@' + '1019e4537fc1bfc6ee505cd1c628b645c7e966b7', # from version 1537
+    Var('chromium_git') + '/libyuv/libyuv.git' + '@' + '526558b2d86ecfa6408953ea53da107f15211197', # from version 1544
 
   'src/third_party/smhasher/src':
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
