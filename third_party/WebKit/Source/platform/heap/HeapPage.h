@@ -185,7 +185,7 @@ public:
         ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
         ASSERT(size < nonLargeObjectPageSizeMax);
         ASSERT(!(size & allocationMask));
-        m_encoded = (gcInfoIndex << headerGCInfoIndexShift) | size | (gcInfoIndex == gcInfoIndexForFreeListHeader ? headerFreedBitMask : 0);
+        m_encoded = static_cast<uint32_t>((gcInfoIndex << headerGCInfoIndexShift) | size | (gcInfoIndex == gcInfoIndexForFreeListHeader ? headerFreedBitMask : 0));
     }
 
     NO_SANITIZE_ADDRESS
@@ -199,7 +199,11 @@ public:
     NO_SANITIZE_ADDRESS
     size_t gcInfoIndex() const { return (m_encoded & headerGCInfoIndexMask) >> headerGCInfoIndexShift; }
     NO_SANITIZE_ADDRESS
-    void setSize(size_t size) { m_encoded = size | (m_encoded & ~headerSizeMask); }
+    void setSize(size_t size)
+    {
+        ASSERT(size < nonLargeObjectPageSizeMax);
+        m_encoded = static_cast<uint32_t>(size) | (m_encoded & ~headerSizeMask);
+    }
     bool isMarked() const;
     void mark();
     void unmark();
