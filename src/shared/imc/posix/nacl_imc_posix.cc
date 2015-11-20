@@ -34,6 +34,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
 
 /*
@@ -227,13 +228,13 @@ void* NaClMap(struct NaClDescEffector* effp,
   int adjusted = 0;
   UNREFERENCED_PARAMETER(effp);
 
-  if (flags & NACL_MAP_SHARED) {
+  if (flags & NACL_ABI_MAP_SHARED) {
     adjusted |= MAP_SHARED;
   }
-  if (flags & NACL_MAP_PRIVATE) {
+  if (flags & NACL_ABI_MAP_PRIVATE) {
     adjusted |= MAP_PRIVATE;
   }
-  if (flags & NACL_MAP_FIXED) {
+  if (flags & NACL_ABI_MAP_FIXED) {
     adjusted |= MAP_FIXED;
   }
   return mmap(start, length, kPosixProt[prot & 7], adjusted, memory, offset);

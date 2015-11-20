@@ -273,29 +273,16 @@ void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func);
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable);
 
-/* NaClMap() prot bits */
-#define NACL_PROT_READ    0x1   /* Mapped area can be read */
-#define NACL_PROT_WRITE   0x2   /* Mapped area can be written */
-#define NACL_PROT_EXEC    0x4   /* Mapped area can be executed */
-
-/* NaClMap() flags */
-#define NACL_MAP_SHARED   0x1   /* Create a sharable mapping with other */
-                                /* processes */
-#define NACL_MAP_PRIVATE  0x2   /* Create a private copy-on-write mapping */
-#define NACL_MAP_FIXED    0x4   /* Try to create a mapping at the specified */
-                                /* address */
-
-#define NACL_MAP_FAILED   ((void*) -1)
-
 /*
  * Maps the specified memory object in the process address space.
  *
- * NaClMap() returns a pointer to the mapped area, or NACL_MAP_FAILED upon
+ * NaClMap() returns a pointer to the mapped area, or NACL_ABI_MAP_FAILED upon
  * error.
- * For prot, the bitwise OR of the NACL_PROT_* bits must be specified.
- * For flags, either NACL_MAP_SHARED or NACL_MAP_PRIVATE must be specified.
- * If NACL_MAP_FIXED is also set, NaClMap() tries to map the memory object at
- * the address specified by start.
+ * For prot, the bitwise OR of the NACL_ABI_PROT_* bits must be specified.
+ * For flags, either NACL_ABI_MAP_SHARED or NACL_ABI_MAP_PRIVATE must
+ * be specified.
+ * If NACL_ABI_MAP_FIXED is also set, NaClMap() tries to map the
+ * memory object at the address specified by start.
  */
 void* NaClMap(struct NaClDescEffector* effp,
               void* start, size_t length, int prot, int flags,

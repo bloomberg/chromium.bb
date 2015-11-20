@@ -91,7 +91,8 @@ static void *NaClMachMap(void *start, size_t length, int prot,
    * On 32-bit architectures, this forces a down-cast.
    */
   uintptr_t address_downcasted = (uintptr_t) address;
-  return kr == KERN_SUCCESS ? (void *) address_downcasted  : NACL_MAP_FAILED;
+  return kr == KERN_SUCCESS ? (void *) address_downcasted
+                            : NACL_ABI_MAP_FAILED;
 }
 
 static void NaClMachClose(mach_port_t handle) {
@@ -229,13 +230,13 @@ static uintptr_t NaClDescImcShmMachMap(struct NaClDesc *vself,
   }
 
   result = NaClMachMap((void *) start_addr, len, prot, self->h, offset);
-  if (NACL_MAP_FAILED == result) {
+  if (NACL_ABI_MAP_FAILED == result) {
     return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
   }
   if (result != (void *) start_addr) {
     NaClLog(
         LOG_FATAL,
-        ("NaClDescImcShmMachMap: NACL_MAP_FIXED but got %p instead of %p\n"),
+        "NaClDescImcShmMachMap: NACL_ABI_MAP_FIXED but got %p instead of %p\n",
         result, start_addr);
   }
   return (uintptr_t) start_addr;

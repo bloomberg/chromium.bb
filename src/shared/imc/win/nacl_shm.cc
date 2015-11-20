@@ -81,21 +81,21 @@ void* NaClMap(struct NaClDescEffector* effp,
      */
     NaClLog(LOG_INFO, "NaClMap: PROT_NONE not supported\n");
     SetLastError(ERROR_INVALID_PARAMETER);
-    return NACL_MAP_FAILED;
+    return NACL_ABI_MAP_FAILED;
   }
 
-  if (!(flags & (NACL_MAP_SHARED | NACL_MAP_PRIVATE))) {
+  if (!(flags & (NACL_ABI_MAP_SHARED | NACL_ABI_MAP_PRIVATE))) {
     SetLastError(ERROR_INVALID_PARAMETER);
-    return NACL_MAP_FAILED;
+    return NACL_ABI_MAP_FAILED;
   }
 
   /* Convert prot to the desired access type for MapViewOfFileEx(). */
   desired_access = prot_to_access[prot & 0x7];
-  if (flags & NACL_MAP_PRIVATE) {
+  if (flags & NACL_ABI_MAP_PRIVATE) {
     desired_access = FILE_MAP_COPY;
   }
 
-  CHECK((flags & NACL_MAP_FIXED) != 0);
+  CHECK((flags & NACL_ABI_MAP_FIXED) != 0);
   for (chunk_offset = 0;
        chunk_offset < length;
        chunk_offset += NACL_MAP_PAGESIZE) {
