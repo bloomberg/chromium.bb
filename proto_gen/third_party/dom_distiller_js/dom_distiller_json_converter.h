@@ -746,6 +746,13 @@ namespace dom_distiller {
             }
             message->set_original_url(field_value);
           }
+          if (dict->HasKey("4")) {
+            std::string field_value;
+            if (!dict->GetString("4", &field_value)) {
+              goto error;
+            }
+            message->set_pagination_algo(field_value);
+          }
           return true;
 
         error:
@@ -762,6 +769,9 @@ namespace dom_distiller {
           }
           if (message.has_original_url()) {
             dict->SetString("3", message.original_url());
+          }
+          if (message.has_pagination_algo()) {
+            dict->SetString("4", message.pagination_algo());
           }
           return dict.Pass();
         }
