@@ -343,7 +343,11 @@ void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const
 
 bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
-    ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, forPreload, originRestriction);
+    // As of CSP2, for requests that are the results of redirects, the match
+    // algorithm should ignore the path component of the URL.
+    ContentSecurityPolicy::RedirectStatus redirectStatus = resourceRequest.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect;
+
+    ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, forPreload, originRestriction, redirectStatus);
     if (reason != ResourceRequestBlockedReasonNone) {
         if (!forPreload)
             InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo, reason);
@@ -352,7 +356,17 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     return true;
 }
 
-ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
+bool FrameFetchContext::allowResponse(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options) const
+{
+    ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, false, FetchRequest::UseDefaultOriginRestrictionForType, ContentSecurityPolicy::DidRedirect);
+    if (reason != ResourceRequestBlockedReasonNone) {
+        InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo, reason);
+        return false;
+    }
+    return true;
+}
+
+ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
     InstrumentingAgents* agents = InspectorInstrumentation::instrumentingAgentsFor(frame());
     if (agents && agents->inspectorResourceAgent()) {
@@ -410,10 +424,6 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     // Don't send CSP messages for preloads, we might never actually display those items.
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
-
-    // As of CSP2, for requests that are the results of redirects, the match
-    // algorithm should ignore the path component of the URL.
-    ContentSecurityPolicy::RedirectStatus redirectStatus = resourceRequest.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect;
 
     // m_document can be null, but not in any of the cases where csp is actually used below.
     // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
