@@ -1609,7 +1609,7 @@
             ],
           },
           'includes': [ '../build/host_jar.gypi' ],
-         },
+        },
       ],
       'conditions': [
         ['test_isolation_mode != "noop"',

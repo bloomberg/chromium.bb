@@ -15,6 +15,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
 using base::android::ScopedJavaLocalRef;
 
@@ -26,6 +27,13 @@ std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
   std::vector<uint8> array_data;
   base::android::JavaByteArrayToByteVector(env, byte_array, &array_data);
   return std::string(array_data.begin(), array_data.end());
+}
+
+ScopedJavaLocalRef<jbyteArray> StringToJavaByteArray(
+    JNIEnv* env,
+    const std::string& str_data) {
+  std::vector<uint8> array_data(str_data.begin(), str_data.end());
+  return base::android::ToJavaByteArray(env, array_data);
 }
 
 }  // namespace
@@ -74,6 +82,20 @@ void MarkVariationsSeedAsStored() {
   JNIEnv* env = AttachCurrentThread();
   Java_VariationsSeedBridge_markVariationsSeedAsStored(env,
                                                        GetApplicationContext());
+}
+
+void SetJavaFirstRunPrefsForTesting(const std::string& seed_data,
+                                    const std::string& seed_signature,
+                                    const std::string& seed_country,
+                                    const std::string& response_date,
+                                    bool is_gzip_compressed) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_VariationsSeedBridge_setVariationsFirstRunSeed(
+      env, GetApplicationContext(), StringToJavaByteArray(env, seed_data).obj(),
+      ConvertUTF8ToJavaString(env, seed_signature).obj(),
+      ConvertUTF8ToJavaString(env, seed_country).obj(),
+      ConvertUTF8ToJavaString(env, response_date).obj(),
+      static_cast<jboolean>(is_gzip_compressed));
 }
 
 }  // namespace android

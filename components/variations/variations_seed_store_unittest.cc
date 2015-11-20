@@ -12,6 +12,10 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "components/variations/android/variations_seed_bridge.h"
+#endif  // OS_ANDROID
+
 namespace variations {
 
 namespace {
@@ -377,5 +381,40 @@ TEST(VariationsSeedStoreTest, ApplyDeltaPatch) {
                                                    &output));
   EXPECT_EQ(after_seed_data, output);
 }
+
+#if defined(OS_ANDROID)
+TEST(VariationsSeedStoreTest, ImportFirstRunJavaSeed) {
+  const std::string test_seed_data = "raw_seed_data_test";
+  const std::string test_seed_signature = "seed_signature_test";
+  const std::string test_seed_country = "seed_country_code_test";
+  const std::string test_response_date = "seed_response_date_test";
+  const bool test_is_gzip_compressed = true;
+  android::SetJavaFirstRunPrefsForTesting(test_seed_data, test_seed_signature,
+                                          test_seed_country, test_response_date,
+                                          test_is_gzip_compressed);
+
+  std::string seed_data;
+  std::string seed_signature;
+  std::string seed_country;
+  std::string response_date;
+  bool is_gzip_compressed;
+  android::GetVariationsFirstRunSeed(&seed_data, &seed_signature, &seed_country,
+                                     &response_date, &is_gzip_compressed);
+  EXPECT_EQ(test_seed_data, seed_data);
+  EXPECT_EQ(test_seed_signature, seed_signature);
+  EXPECT_EQ(test_seed_country, seed_country);
+  EXPECT_EQ(test_response_date, response_date);
+  EXPECT_EQ(test_is_gzip_compressed, is_gzip_compressed);
+
+  android::ClearJavaFirstRunPrefs();
+  android::GetVariationsFirstRunSeed(&seed_data, &seed_signature, &seed_country,
+                                     &response_date, &is_gzip_compressed);
+  EXPECT_EQ("", seed_data);
+  EXPECT_EQ("", seed_signature);
+  EXPECT_EQ("", seed_country);
+  EXPECT_EQ("", response_date);
+  EXPECT_FALSE(is_gzip_compressed);
+}
+#endif  // OS_ANDROID
 
 }  // namespace variations

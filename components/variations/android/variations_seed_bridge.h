@@ -28,6 +28,15 @@ void ClearJavaFirstRunPrefs();
 // the Java side.
 void MarkVariationsSeedAsStored();
 
+// Sets test data on the Java side. The data is pulled during the unit tests to
+// C++ side and is being checked for consistency.
+// This method is used for unit testing purposes only.
+void SetJavaFirstRunPrefsForTesting(const std::string& seed_data,
+                                    const std::string& seed_signature,
+                                    const std::string& seed_country,
+                                    const std::string& response_date,
+                                    bool is_gzip_compressed);
+
 }  // namespace android
 }  // namespace variations
 

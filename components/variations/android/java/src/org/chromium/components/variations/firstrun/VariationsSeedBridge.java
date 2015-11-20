@@ -16,26 +16,28 @@ import org.chromium.base.annotations.CalledByNative;
  * in SharedPreferences and to get the seed from there. To store raw seed data class serializes
  * byte[] to Base64 encoded string and decodes this string before passing to C++ side.
  */
-public final class VariationsSeedBridge {
-    private static final String VARIATIONS_FIRST_RUN_SEED_BASE64 = "variations_seed_base64";
-    private static final String VARIATIONS_FIRST_RUN_SEED_SIGNATURE = "variations_seed_signature";
-    private static final String VARIATIONS_FIRST_RUN_SEED_COUNTRY = "variations_seed_country";
-    private static final String VARIATIONS_FIRST_RUN_SEED_DATE = "variations_seed_date";
-    private static final String VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED =
+public class VariationsSeedBridge {
+    protected static final String VARIATIONS_FIRST_RUN_SEED_BASE64 = "variations_seed_base64";
+    protected static final String VARIATIONS_FIRST_RUN_SEED_SIGNATURE = "variations_seed_signature";
+    protected static final String VARIATIONS_FIRST_RUN_SEED_COUNTRY = "variations_seed_country";
+    protected static final String VARIATIONS_FIRST_RUN_SEED_DATE = "variations_seed_date";
+    protected static final String VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED =
             "variations_seed_is_gzip_compressed";
 
     // This pref is used to store information about successful seed storing on the C++ side, in
     // order to not fetch the seed again.
-    private static final String VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED =
+    protected static final String VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED =
             "variations_seed_native_stored";
 
-    private static String getVariationsFirstRunSeedPref(Context context, String prefName) {
+    protected static String getVariationsFirstRunSeedPref(Context context, String prefName) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(prefName, "");
     }
 
     /**
      * Stores variations seed data (raw data, seed signature and country code) in SharedPreferences.
+     * CalledByNative attribute is used by unit tests code to set test data.
      */
+    @CalledByNative
     public static void setVariationsFirstRunSeed(Context context, byte[] rawSeed, String signature,
             String country, String date, boolean isGzipCompressed) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -56,6 +58,8 @@ public final class VariationsSeedBridge {
                 .remove(VARIATIONS_FIRST_RUN_SEED_BASE64)
                 .remove(VARIATIONS_FIRST_RUN_SEED_SIGNATURE)
                 .remove(VARIATIONS_FIRST_RUN_SEED_COUNTRY)
+                .remove(VARIATIONS_FIRST_RUN_SEED_DATE)
+                .remove(VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED)
                 .apply();
     }
 
