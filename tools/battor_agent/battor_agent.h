@@ -4,10 +4,8 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "device/serial/serial_io_handler.h"
+#include "tools/battor_agent/battor_connection.h"
 
 namespace battor {
 
@@ -68,8 +66,8 @@ class BattOrAgent {
   // The path of the BattOr (e.g. "/dev/tty.battor_serial").
   std::string path_;
 
-  // IO handler capable of reading from and writing to the serial connection.
-  scoped_refptr<device::SerialIoHandler> io_handler_;
+  // Serial connection the BattOr.
+  scoped_ptr<BattOrConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BattOrAgent);
 };

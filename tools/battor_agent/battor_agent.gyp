@@ -29,6 +29,8 @@
       'sources': [
         'battor_agent.cc',
         'battor_agent.h',
+        'battor_connection.cc',
+        'battor_connection.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',

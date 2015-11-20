@@ -18,6 +18,8 @@ static_library("battor_agent_lib") {
   sources = [
     "battor_agent.cc",
     "battor_agent.h",
+    "battor_connection.cc",
+    "battor_connection.h",
   ]
   deps = [
     "//base",
