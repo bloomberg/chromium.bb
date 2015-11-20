@@ -8,8 +8,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -37,19 +41,44 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
                           "mock video source name",
                           false /* remote */, true /* readonly */);
   MockMediaStreamVideoSource* native_source =
-      new MockMediaStreamVideoSource(false);
+      new MockMediaStreamVideoSource(false /* manual get supported formats */);
   blink_source.setExtraData(native_source);
   blink::WebMediaStreamTrack blink_track;
   blink_track.initialize(base::UTF8ToUTF16(track_id), blink_source);
   blink::WebMediaConstraints constraints;
   constraints.initialize();
 
-  MediaStreamVideoTrack* native_track =
-      new MediaStreamVideoTrack(native_source,
-                                constraints,
-                                MediaStreamVideoSource::ConstraintsCallback(),
-                                true);
+  MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
+      native_source, constraints, MediaStreamVideoSource::ConstraintsCallback(),
+      true /* enabled */);
   blink_track.setExtraData(native_track);
+  test_stream_.addTrack(blink_track);
+}
+
+void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
+  blink::WebMediaStreamSource audio_source;
+  audio_source.initialize(
+      "mock audio source id", blink::WebMediaStreamSource::TypeAudio,
+      "mock audio source name", false /* remote */, true /* readonly */);
+  audio_source.setExtraData(new MediaStreamAudioSource());
+  blink::WebMediaStreamTrack blink_track;
+  blink_track.initialize(audio_source);
+  const StreamDeviceInfo device_info(
+      MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device", "mock_audio_device_id");
+  const MockMediaConstraintFactory constraint_factory;
+  const blink::WebMediaConstraints constraints =
+      constraint_factory.CreateWebMediaConstraints();
+  const scoped_refptr<WebRtcAudioCapturer> capturer(
+      WebRtcAudioCapturer::CreateCapturer(-1, /* render frame id */
+                                          device_info, constraints,
+                                          nullptr, /* audio device */
+                                          nullptr /* audio source */));
+  const scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(track_id,
+                                           nullptr /* track source */));
+  scoped_ptr<WebRtcLocalAudioTrack> native_track(new WebRtcLocalAudioTrack(
+      adapter.get(), capturer, nullptr /* webaudio source */));
+  blink_track.setExtraData(native_track.release());
   test_stream_.addTrack(blink_track);
 }
 
