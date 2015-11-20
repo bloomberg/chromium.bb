@@ -34,6 +34,7 @@
 #include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
+#include "public/platform/WebScrollOffsetAnimationCurve.h"
 
 namespace blink {
 
@@ -41,7 +42,7 @@ class ScrollAnimatorTest;
 
 class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 public:
-    explicit ScrollAnimator(ScrollableArea*);
+    explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
 
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
@@ -51,102 +52,12 @@ public:
     void serviceScrollAnimations() override;
     bool hasRunningAnimation() const override;
 
-    void updateAfterLayout() override;
-    void willEndLiveResize() override;
-    void didAddVerticalScrollbar(Scrollbar*) override;
-    void didAddHorizontalScrollbar(Scrollbar*) override;
-
-    enum Curve {
-        Linear,
-        Quadratic,
-        Cubic,
-        Quartic,
-        Bounce
-    };
-
-    struct PLATFORM_EXPORT Parameters {
-        Parameters();
-        Parameters(bool isEnabled, double animationTime, double repeatMinimumSustainTime, Curve attackCurve, double attackTime, Curve releaseCurve, double releaseTime, Curve coastTimeCurve, double maximumCoastTime);
-
-        // Note that the times can be overspecified such that releaseTime or releaseTime and attackTime are greater
-        // than animationTime. animationTime takes priority over releaseTime, capping it. attackTime is capped at
-        // whatever time remains, or zero if none.
-        bool m_isEnabled;
-        double m_animationTime;
-        double m_repeatMinimumSustainTime;
-
-        Curve m_attackCurve;
-        double m_attackTime;
-
-        Curve m_releaseCurve;
-        double m_releaseTime;
-
-        Curve m_coastTimeCurve;
-        double m_maximumCoastTime;
-    };
-
 protected:
-    virtual void animationWillStart() { }
-    virtual void animationDidFinish() { }
-
-    Parameters parametersForScrollGranularity(ScrollGranularity) const;
-
-    friend class ScrollAnimatorTest;
-
-    struct PLATFORM_EXPORT PerAxisData {
-        PerAxisData(float* currentPos, int visibleLength);
-        void reset();
-        bool updateDataFromParameters(float step, float delta, float minScrollPos, float maxScrollPos, double currentTime, Parameters*);
-        bool animateScroll(double currentTime);
-        void updateVisibleLength(int visibleLength);
-
-        static double curveAt(Curve, double t);
-        static double attackCurve(Curve, double deltaT, double curveT, double startPos, double attackPos);
-        static double releaseCurve(Curve, double deltaT, double curveT, double releasePos, double desiredPos);
-        static double coastCurve(Curve, double factor);
-
-        static double curveIntegralAt(Curve, double t);
-        static double attackArea(Curve, double startT, double endT);
-        static double releaseArea(Curve, double startT, double endT);
-
-        double newScrollAnimationPosition(double deltaTime);
-
-        float* m_currentPosition;
-        double m_currentVelocity;
-
-        double m_desiredPosition;
-        double m_desiredVelocity;
-
-        double m_startPosition;
-        double m_startTime;
-        double m_startVelocity;
-
-        double m_animationTime;
-        double m_lastAnimationTime;
-
-        double m_attackPosition;
-        double m_attackTime;
-        Curve m_attackCurve;
-
-        double m_releasePosition;
-        double m_releaseTime;
-        Curve m_releaseCurve;
-
-        int m_visibleLength;
-    };
-
-    void startNextTimer();
     void animationTimerFired();
 
-    void stopAnimationTimerIfNeeded();
-    bool animationTimerActive();
-    void updateVisibleLengths();
-
-    PerAxisData m_horizontalData;
-    PerAxisData m_verticalData;
-
+    OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
     double m_startTime;
-    bool m_animationActive;
+    WTF::TimeFunction m_timeFunction;
 };
 
 } // namespace blink

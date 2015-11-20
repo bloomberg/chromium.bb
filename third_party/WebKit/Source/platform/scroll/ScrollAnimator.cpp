@@ -33,15 +33,13 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
 #include <algorithm>
 
 namespace blink {
-
-const double kFrameRate = 60;
-const double kTickTime = 1 / kFrameRate;
-const double kMinimumTimerInterval = .001;
 
 PassOwnPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
@@ -50,345 +48,15 @@ PassOwnPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scroll
     return adoptPtr(new ScrollAnimatorBase(scrollableArea));
 }
 
-ScrollAnimator::Parameters::Parameters()
-    : m_isEnabled(false)
-{
-}
-
-ScrollAnimator::Parameters::Parameters(bool isEnabled, double animationTime, double repeatMinimumSustainTime, Curve attackCurve, double attackTime, Curve releaseCurve, double releaseTime, Curve coastTimeCurve, double maximumCoastTime)
-    : m_isEnabled(isEnabled)
-    , m_animationTime(animationTime)
-    , m_repeatMinimumSustainTime(repeatMinimumSustainTime)
-    , m_attackCurve(attackCurve)
-    , m_attackTime(attackTime)
-    , m_releaseCurve(releaseCurve)
-    , m_releaseTime(releaseTime)
-    , m_coastTimeCurve(coastTimeCurve)
-    , m_maximumCoastTime(maximumCoastTime)
-{
-}
-
-double ScrollAnimator::PerAxisData::curveAt(Curve curve, double t)
-{
-    switch (curve) {
-    case Linear:
-        return t;
-    case Quadratic:
-        return t * t;
-    case Cubic:
-        return t * t * t;
-    case Quartic:
-        return t * t * t * t;
-    case Bounce:
-        // Time base is chosen to keep the bounce points simpler:
-        // 1 (half bounce coming in) + 1 + .5 + .25
-        const double kTimeBase = 2.75;
-        const double kTimeBaseSquared = kTimeBase * kTimeBase;
-        if (t < 1 / kTimeBase)
-            return kTimeBaseSquared * t * t;
-        if (t < 2 / kTimeBase) {
-            // Invert a [-.5,.5] quadratic parabola, center it in [1,2].
-            double t1 = t - 1.5 / kTimeBase;
-            const double kParabolaAtEdge = 1 - .5 * .5;
-            return kTimeBaseSquared * t1 * t1 + kParabolaAtEdge;
-        }
-        if (t < 2.5 / kTimeBase) {
-            // Invert a [-.25,.25] quadratic parabola, center it in [2,2.5].
-            double t2 = t - 2.25 / kTimeBase;
-            const double kParabolaAtEdge = 1 - .25 * .25;
-            return kTimeBaseSquared * t2 * t2 + kParabolaAtEdge;
-        }
-            // Invert a [-.125,.125] quadratic parabola, center it in [2.5,2.75].
-        const double kParabolaAtEdge = 1 - .125 * .125;
-        t -= 2.625 / kTimeBase;
-        return kTimeBaseSquared * t * t + kParabolaAtEdge;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-double ScrollAnimator::PerAxisData::attackCurve(Curve curve, double deltaTime, double curveT, double startPosition, double attackPosition)
-{
-    double t = deltaTime / curveT;
-    double positionFactor = curveAt(curve, t);
-    return startPosition + positionFactor * (attackPosition - startPosition);
-}
-
-double ScrollAnimator::PerAxisData::releaseCurve(Curve curve, double deltaTime, double curveT, double releasePosition, double desiredPosition)
-{
-    double t = deltaTime / curveT;
-    double positionFactor = 1 - curveAt(curve, 1 - t);
-    return releasePosition + (positionFactor * (desiredPosition - releasePosition));
-}
-
-double ScrollAnimator::PerAxisData::coastCurve(Curve curve, double factor)
-{
-    return 1 - curveAt(curve, 1 - factor);
-}
-
-double ScrollAnimator::PerAxisData::curveIntegralAt(Curve curve, double t)
-{
-    switch (curve) {
-    case Linear:
-        return t * t / 2;
-    case Quadratic:
-        return t * t * t / 3;
-    case Cubic:
-        return t * t * t * t / 4;
-    case Quartic:
-        return t * t * t * t * t / 5;
-    case Bounce:
-        const double kTimeBase = 2.75;
-        const double kTimeBaseSquared = kTimeBase * kTimeBase;
-        const double kTimeBaseSquaredOverThree = kTimeBaseSquared / 3;
-        double area;
-        double t1 = std::min(t, 1 / kTimeBase);
-        area = kTimeBaseSquaredOverThree * t1 * t1 * t1;
-        if (t < 1 / kTimeBase)
-            return area;
-
-        t1 = std::min(t - 1 / kTimeBase, 1 / kTimeBase);
-        // The integral of kTimeBaseSquared * (t1 - .5 / kTimeBase) * (t1 - .5 / kTimeBase) + kParabolaAtEdge
-        const double kSecondInnerOffset = kTimeBaseSquared * .5 / kTimeBase;
-        double bounceArea = t1 * (t1 * (kTimeBaseSquaredOverThree * t1 - kSecondInnerOffset) + 1);
-        area += bounceArea;
-        if (t < 2 / kTimeBase)
-            return area;
-
-        t1 = std::min(t - 2 / kTimeBase, 0.5 / kTimeBase);
-        // The integral of kTimeBaseSquared * (t1 - .25 / kTimeBase) * (t1 - .25 / kTimeBase) + kParabolaAtEdge
-        const double kThirdInnerOffset = kTimeBaseSquared * .25 / kTimeBase;
-        bounceArea =  t1 * (t1 * (kTimeBaseSquaredOverThree * t1 - kThirdInnerOffset) + 1);
-        area += bounceArea;
-        if (t < 2.5 / kTimeBase)
-            return area;
-
-        t1 = t - 2.5 / kTimeBase;
-        // The integral of kTimeBaseSquared * (t1 - .125 / kTimeBase) * (t1 - .125 / kTimeBase) + kParabolaAtEdge
-        const double kFourthInnerOffset = kTimeBaseSquared * .125 / kTimeBase;
-        bounceArea = t1 * (t1 * (kTimeBaseSquaredOverThree * t1 - kFourthInnerOffset) + 1);
-        area += bounceArea;
-        return area;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-double ScrollAnimator::PerAxisData::attackArea(Curve curve, double startT, double endT)
-{
-    double startValue = curveIntegralAt(curve, startT);
-    double endValue = curveIntegralAt(curve, endT);
-    return endValue - startValue;
-}
-
-double ScrollAnimator::PerAxisData::releaseArea(Curve curve, double startT, double endT)
-{
-    double startValue = curveIntegralAt(curve, 1 - endT);
-    double endValue = curveIntegralAt(curve, 1 - startT);
-    return endValue - startValue;
-}
-
-ScrollAnimator::PerAxisData::PerAxisData(float* currentPosition, int visibleLength)
-    : m_currentPosition(currentPosition)
-    , m_visibleLength(visibleLength)
-{
-    reset();
-}
-
-void ScrollAnimator::PerAxisData::reset()
-{
-    m_currentVelocity = 0;
-
-    m_desiredPosition = 0;
-    m_desiredVelocity = 0;
-
-    m_startPosition = 0;
-    m_startTime = 0;
-    m_startVelocity = 0;
-
-    m_animationTime = 0;
-    m_lastAnimationTime = 0;
-
-    m_attackPosition = 0;
-    m_attackTime = 0;
-    m_attackCurve = Quadratic;
-
-    m_releasePosition = 0;
-    m_releaseTime = 0;
-    m_releaseCurve = Quadratic;
-}
-
-
-bool ScrollAnimator::PerAxisData::updateDataFromParameters(float step, float delta, float minScrollPos, float maxScrollPos, double currentTime, Parameters* parameters)
-{
-    float pixelDelta = step * delta;
-    if (!m_startTime || !pixelDelta || (pixelDelta < 0) != (m_desiredPosition - *m_currentPosition < 0)) {
-        m_desiredPosition = *m_currentPosition;
-        m_startTime = 0;
-    }
-
-    float newPos = m_desiredPosition + pixelDelta;
-    float clampedPos = std::max(std::min(newPos, maxScrollPos), minScrollPos);
-
-    if (clampedPos == m_desiredPosition)
-        return false;
-
-    m_desiredPosition = clampedPos;
-
-    if (!m_startTime) {
-        m_attackTime = parameters->m_attackTime;
-        m_attackCurve = parameters->m_attackCurve;
-    }
-    m_animationTime = parameters->m_animationTime;
-    m_releaseTime = parameters->m_releaseTime;
-    m_releaseCurve = parameters->m_releaseCurve;
-
-    // Prioritize our way out of over constraint.
-    if (m_attackTime + m_releaseTime > m_animationTime) {
-        if (m_releaseTime > m_animationTime)
-            m_releaseTime = m_animationTime;
-        m_attackTime = m_animationTime - m_releaseTime;
-    }
-
-    if (!m_startTime) {
-        // FIXME: This should be the time from the event that got us here.
-        m_startTime = currentTime - kTickTime / 2;
-        m_startPosition = *m_currentPosition;
-        m_lastAnimationTime = m_startTime;
-    }
-    m_startVelocity = m_currentVelocity;
-
-    double remainingDelta = m_desiredPosition - *m_currentPosition;
-
-    double attackAreaLeft = 0;
-
-    double deltaTime = m_lastAnimationTime - m_startTime;
-    double attackTimeLeft = std::max(0., m_attackTime - deltaTime);
-    double timeLeft = m_animationTime - deltaTime;
-    double minTimeLeft = m_releaseTime + std::min(parameters->m_repeatMinimumSustainTime, m_animationTime - m_releaseTime - attackTimeLeft);
-    if (timeLeft < minTimeLeft) {
-        m_animationTime = deltaTime + minTimeLeft;
-        timeLeft = minTimeLeft;
-    }
-
-    if (parameters->m_maximumCoastTime > (parameters->m_repeatMinimumSustainTime + parameters->m_releaseTime)) {
-        double targetMaxCoastVelocity = m_visibleLength * .25 * kFrameRate;
-        // This needs to be as minimal as possible while not being intrusive to page up/down.
-        double minCoastDelta = m_visibleLength;
-
-        if (fabs(remainingDelta) > minCoastDelta) {
-            double maxCoastDelta = parameters->m_maximumCoastTime * targetMaxCoastVelocity;
-            double coastFactor = std::min(1., (fabs(remainingDelta) - minCoastDelta) / (maxCoastDelta - minCoastDelta));
-
-            // We could play with the curve here - linear seems a little soft. Initial testing makes me want to feed into the sustain time more aggressively.
-            double coastMinTimeLeft = std::min(parameters->m_maximumCoastTime, minTimeLeft + coastCurve(parameters->m_coastTimeCurve, coastFactor) * (parameters->m_maximumCoastTime - minTimeLeft));
-
-            double additionalTime = std::max(0., coastMinTimeLeft - minTimeLeft);
-            if (additionalTime) {
-                double additionalReleaseTime = std::min(additionalTime, parameters->m_releaseTime / (parameters->m_releaseTime + parameters->m_repeatMinimumSustainTime) * additionalTime);
-                m_releaseTime = parameters->m_releaseTime + additionalReleaseTime;
-                m_animationTime = deltaTime + coastMinTimeLeft;
-                timeLeft = coastMinTimeLeft;
-            }
-        }
-    }
-
-    double releaseTimeLeft = std::min(timeLeft, m_releaseTime);
-    double sustainTimeLeft = std::max(0., timeLeft - releaseTimeLeft - attackTimeLeft);
-
-    if (attackTimeLeft) {
-        double attackSpot = deltaTime / m_attackTime;
-        attackAreaLeft = attackArea(m_attackCurve, attackSpot, 1) * m_attackTime;
-    }
-
-    double releaseSpot = (m_releaseTime - releaseTimeLeft) / m_releaseTime;
-    double releaseAreaLeft  = releaseArea(m_releaseCurve, releaseSpot, 1) * m_releaseTime;
-
-    m_desiredVelocity = remainingDelta / (attackAreaLeft + sustainTimeLeft + releaseAreaLeft);
-    m_releasePosition = m_desiredPosition - m_desiredVelocity * releaseAreaLeft;
-    if (attackAreaLeft)
-        m_attackPosition = m_startPosition + m_desiredVelocity * attackAreaLeft;
-    else
-        m_attackPosition = m_releasePosition - (m_animationTime - m_releaseTime - m_attackTime) * m_desiredVelocity;
-
-    if (sustainTimeLeft) {
-        double roundOff = m_releasePosition - ((attackAreaLeft ? m_attackPosition : *m_currentPosition) + m_desiredVelocity * sustainTimeLeft);
-        m_desiredVelocity += roundOff / sustainTimeLeft;
-    }
-
-    return true;
-}
-
-inline double ScrollAnimator::PerAxisData::newScrollAnimationPosition(double deltaTime)
-{
-    if (deltaTime < m_attackTime)
-        return attackCurve(m_attackCurve, deltaTime, m_attackTime, m_startPosition, m_attackPosition);
-    if (deltaTime < (m_animationTime - m_releaseTime))
-        return m_attackPosition + (deltaTime - m_attackTime) * m_desiredVelocity;
-    // release is based on targeting the exact final position.
-    double releaseDeltaT = deltaTime - (m_animationTime - m_releaseTime);
-    return releaseCurve(m_releaseCurve, releaseDeltaT, m_releaseTime, m_releasePosition, m_desiredPosition);
-}
-
-// FIXME: Add in jank detection trace events into this function.
-bool ScrollAnimator::PerAxisData::animateScroll(double currentTime)
-{
-    double lastScrollInterval = currentTime - m_lastAnimationTime;
-    if (lastScrollInterval < kMinimumTimerInterval)
-        return true;
-
-    m_lastAnimationTime = currentTime;
-
-    double deltaTime = currentTime - m_startTime;
-
-    if (deltaTime > m_animationTime) {
-        *m_currentPosition = m_desiredPosition;
-        reset();
-        return false;
-    }
-    double newPosition = newScrollAnimationPosition(deltaTime);
-    // Normalize velocity to a per second amount. Could be used to check for jank.
-    if (lastScrollInterval > 0)
-        m_currentVelocity = (newPosition - *m_currentPosition) / lastScrollInterval;
-    *m_currentPosition = newPosition;
-
-    return true;
-}
-
-void ScrollAnimator::PerAxisData::updateVisibleLength(int visibleLength)
-{
-    m_visibleLength = visibleLength;
-}
-
-ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea)
+ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timeFunction)
     : ScrollAnimatorBase(scrollableArea)
-    , m_horizontalData(&m_currentPosX, scrollableArea->visibleWidth())
-    , m_verticalData(&m_currentPosY, scrollableArea->visibleHeight())
-    , m_startTime(0)
-    , m_animationActive(false)
+    , m_timeFunction(timeFunction)
 {
 }
 
 ScrollAnimator::~ScrollAnimator()
 {
-    stopAnimationTimerIfNeeded();
-}
-
-ScrollAnimator::Parameters ScrollAnimator::parametersForScrollGranularity(ScrollGranularity granularity) const
-{
-    switch (granularity) {
-    case ScrollByDocument:
-        return Parameters(true, 20 * kTickTime, 10 * kTickTime, Cubic, 10 * kTickTime, Cubic, 10 * kTickTime, Linear, 1);
-    case ScrollByLine:
-        return Parameters(true, 10 * kTickTime, 7 * kTickTime, Cubic, 3 * kTickTime, Cubic, 3 * kTickTime, Linear, 1);
-    case ScrollByPage:
-        return Parameters(true, 15 * kTickTime, 10 * kTickTime, Cubic, 5 * kTickTime, Cubic, 5 * kTickTime, Linear, 1);
-    case ScrollByPixel:
-        return Parameters(true, 11 * kTickTime, 2 * kTickTime, Cubic, 3 * kTickTime, Cubic, 3 * kTickTime, Quadratic, 1.25);
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    return Parameters();
+    cancelAnimations();
 }
 
 ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
@@ -398,38 +66,40 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
 
     TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
-    // FIXME: get the type passed in. MouseWheel could also be by line, but should still have different
-    // animation parameters than the keyboard.
-    Parameters parameters;
-    switch (granularity) {
-    case ScrollByDocument:
-    case ScrollByLine:
-    case ScrollByPage:
-    case ScrollByPixel:
-        parameters = parametersForScrollGranularity(granularity);
-        break;
-    case ScrollByPrecisePixel:
-        return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
-    }
-
-    // If the individual input setting is disabled, bail.
-    if (!parameters.m_isEnabled)
+    if (granularity == ScrollByPrecisePixel)
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
 
-    // This is an animatable scroll. Set the animation in motion using the appropriate parameters.
-    float minScrollPos = static_cast<float>(m_scrollableArea->minimumScrollPosition(orientation));
-    float maxScrollPos = static_cast<float>(m_scrollableArea->maximumScrollPosition(orientation));
+    float pixelDelta = step * delta;
+    FloatPoint desiredDelta = (orientation == VerticalScrollbar ? FloatPoint(0, pixelDelta) : FloatPoint(pixelDelta, 0));
 
-    PerAxisData& data = (orientation == VerticalScrollbar) ? m_verticalData : m_horizontalData;
-    bool needToScroll = data.updateDataFromParameters(step, delta, minScrollPos, maxScrollPos, WTF::monotonicallyIncreasingTime(), &parameters);
-    float unusedDelta = needToScroll ? delta - (data.m_desiredPosition - *data.m_currentPosition) : delta;
-    if (needToScroll && !animationTimerActive()) {
-        m_startTime = data.m_startTime;
-        animationWillStart();
-        animationTimerFired();
-        scrollableArea()->registerForAnimation();
+    FloatPoint targetPos = m_animationCurve ? FloatPoint(m_animationCurve->targetValue()) : currentPosition();
+    targetPos.moveBy(desiredDelta);
+    targetPos = FloatPoint(m_scrollableArea->clampScrollPosition(targetPos));
+
+    if (m_animationCurve) {
+        if (!(targetPos - m_animationCurve->targetValue()).isZero())
+            m_animationCurve->updateTarget(m_timeFunction() - m_startTime, targetPos);
+        return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
     }
-    return ScrollResultOneDimensional(needToScroll, unusedDelta);
+
+    if ((targetPos - currentPosition()).isZero()) {
+        // Report unused delta only if there is no animation and we are not
+        // starting one. This ensures we latch for the duration of the
+        // animation rather than animating multiple scrollers at the same time.
+        return ScrollResultOneDimensional(/* didScroll */ false, pixelDelta);
+    }
+
+    m_animationCurve = adoptPtr(Platform::current()->compositorSupport()->createScrollOffsetAnimationCurve(
+        targetPos,
+        WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
+        WebScrollOffsetAnimationCurve::ScrollDurationConstant));
+
+    m_animationCurve->setInitialValue(currentPosition());
+    m_startTime = m_timeFunction();
+
+    scrollableArea()->registerForAnimation();
+    animationTimerFired();
+    return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
 }
 
 void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
@@ -437,98 +107,47 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
     m_currentPosX = offset.x();
     m_currentPosY = offset.y();
 
-    // Must be called after setting the position since canceling the animation resets
-    // the desired position to the current.
     cancelAnimations();
     notifyPositionChanged();
 }
 
 void ScrollAnimator::cancelAnimations()
 {
-    m_animationActive = false;
-
-    m_horizontalData.reset();
-    m_verticalData.reset();
-    m_horizontalData.m_desiredPosition = m_currentPosX;
-    m_verticalData.m_desiredPosition = m_currentPosY;
+    if (m_animationCurve)
+        m_animationCurve.clear();
 }
 
 void ScrollAnimator::serviceScrollAnimations()
 {
-    if (m_animationActive)
+    if (hasRunningAnimation())
         animationTimerFired();
 }
 
 bool ScrollAnimator::hasRunningAnimation() const
 {
-    return m_animationActive;
-}
-
-void ScrollAnimator::updateAfterLayout()
-{
-    updateVisibleLengths();
-}
-
-void ScrollAnimator::willEndLiveResize()
-{
-    updateVisibleLengths();
-}
-
-void ScrollAnimator::didAddVerticalScrollbar(Scrollbar*)
-{
-    updateVisibleLengths();
-}
-
-void ScrollAnimator::didAddHorizontalScrollbar(Scrollbar*)
-{
-    updateVisibleLengths();
-}
-
-void ScrollAnimator::updateVisibleLengths()
-{
-    m_horizontalData.updateVisibleLength(scrollableArea()->visibleWidth());
-    m_verticalData.updateVisibleLength(scrollableArea()->visibleHeight());
+    return m_animationCurve;
 }
 
 void ScrollAnimator::animationTimerFired()
 {
     TRACE_EVENT0("blink", "ScrollAnimator::animationTimerFired");
+    double elapsedTime = m_timeFunction() - m_startTime;
 
-    double currentTime = WTF::monotonicallyIncreasingTime();
+    bool isFinished = (elapsedTime > m_animationCurve->duration());
+    FloatPoint offset = isFinished ? m_animationCurve->targetValue() : m_animationCurve->getValue(elapsedTime);
 
-    bool continueAnimation = false;
-    if (m_horizontalData.m_startTime && m_horizontalData.animateScroll(currentTime))
-        continueAnimation = true;
-    if (m_verticalData.m_startTime && m_verticalData.animateScroll(currentTime))
-        continueAnimation = true;
+    offset = FloatPoint(m_scrollableArea->clampScrollPosition(offset));
 
-    if (continueAnimation)
-        startNextTimer();
+    m_currentPosX = offset.x();
+    m_currentPosY = offset.y();
+
+    if (isFinished)
+        m_animationCurve.clear();
     else
-        m_animationActive = false;
+        scrollableArea()->scheduleAnimation();
 
     TRACE_EVENT0("blink", "ScrollAnimator::notifyPositionChanged");
     notifyPositionChanged();
-
-    if (!continueAnimation)
-        animationDidFinish();
-}
-
-void ScrollAnimator::startNextTimer()
-{
-    if (scrollableArea()->scheduleAnimation())
-        m_animationActive = true;
-}
-
-bool ScrollAnimator::animationTimerActive()
-{
-    return m_animationActive;
-}
-
-void ScrollAnimator::stopAnimationTimerIfNeeded()
-{
-    if (animationTimerActive())
-        m_animationActive = false;
 }
 
 } // namespace blink
