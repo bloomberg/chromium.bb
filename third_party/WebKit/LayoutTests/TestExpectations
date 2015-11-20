@@ -35,8 +35,6 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
-crbug.com/546730 virtual/syncpaint/paint/invalidation/composited-table-cell-container-background.html [ Failure ]
-
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
@@ -1295,11 +1293,10 @@ crbug.com/521730 [ Win10 ] svg/text/bidi-tspans.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-fonts-01-t.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 
-crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/newly-composited-on-scroll.html [ Failure ]
-# TODO(radu): receover these tests after the rebaseline for crbug.com/532910
-# crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ Failure ]
-crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/fast/repaint/repaint-during-scroll.html [ Failure ]
-crbug.com/550285 [ XP ] virtual/syncpaint/fast/repaint/float-overflow-right.html [ Failure ]
+crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/newly-composited-on-scroll.html [ NeedsRebaseline ]
+crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ NeedsRebaseline ]
+crbug.com/550285 [ Mac10.6 ] virtual/syncpaint/fast/repaint/repaint-during-scroll.html [ NeedsRebaseline ]
+crbug.com/550285 [ XP ] virtual/syncpaint/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
@@ -1336,7 +1333,6 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
-crbug.com/535478 [ XP ] virtual/syncpaint/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
@@ -1351,8 +1347,6 @@ crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ F
 crbug.com/545551 [ Win Mac ] svg/custom/repaint-shadow.svg [ Failure Pass ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
-
-crbug.com/548416 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/background-attachment-fixed-scrolled.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 
