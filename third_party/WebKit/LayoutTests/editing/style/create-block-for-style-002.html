@@ -1,47 +1,22 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
-    margin-bottom: 24px;
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    moveSelectionForwardByLineCommand();
-    justifyCenterCommand();
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable>
-
-<div class="explanation">
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<p>
 Should see "bar" centered in its own red box, with a left-aligned "foo" line above and a left-aligned "baz" line below.
-</div>
-
-<div id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">
-foo<br>bar<br>baz
-</div>
-</div>
-
+</p>
+<div id="sample" contenteditable>foo<br>bar<br>baz</div>
+<div id="log"></div>
 <script>
-runEditingTest();
-</script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
 
-</body>
-</html>
+    selection.collapse(sample, 2);
+    document.execCommand('justifyCenter');
+
+    assert_equals(sample.innerHTML, 'foo<br><div style="text-align: center;">bar</div>baz', 'innerHTML');
+    assert_true(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, sample.childNodes[2].firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+});
+</script>
