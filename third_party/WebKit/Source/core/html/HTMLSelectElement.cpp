@@ -787,8 +787,10 @@ void HTMLSelectElement::setRecalcListItems()
     // is in the document or not.
 
     m_shouldRecalcListItems = true;
-    // Manual selection anchor is reset when manipulating the select programmatically.
+    // Manual selection anchor is reset when manipulating the select
+    // programmatically.
     m_activeSelectionAnchorIndex = -1;
+    m_activeSelectionEndIndex = -1;
     setOptionsChangedOnLayoutObject();
     if (!inDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
@@ -927,6 +929,11 @@ void HTMLSelectElement::scrollToIndex(int listIndex)
     int listSize = static_cast<int>(items.size());
     if (listIndex >= listSize)
         return;
+    // TODO(tkent): The following isHTMLOptionElement check should be
+    // unnecessary. The specified listIndex must point an HTMLOptionElement, but
+    // our code about activeSelection{Anchor,End}Index is not reliable.
+    if (!isHTMLOptionElement(*items[listIndex]))
+        return;
     bool hasPendingTask = m_optionToScrollTo;
     // We'd like to keep an HTMLOptionElement reference rather than |listIndex|
     // because the task should work even if unselected option is inserted before
@@ -975,14 +982,7 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         m_lastOnChangeOption.clear();
     if (m_optionToScrollTo == &option)
         m_optionToScrollTo.clear();
-    if (m_activeSelectionAnchorIndex < 0 && m_activeSelectionEndIndex < 0)
-        return;
-    int listIndex = optionToListIndex(option.index());
-    if (listIndex <= m_activeSelectionAnchorIndex)
-        m_activeSelectionAnchorIndex--;
-    if (listIndex <= m_activeSelectionEndIndex)
-        m_activeSelectionEndIndex--;
-    if (listIndex == selectedIndex())
+    if (option.selected())
         setAutofilled(false);
 }
 
@@ -1780,8 +1780,11 @@ void HTMLSelectElement::finishParsingChildren()
 {
     HTMLFormControlElementWithState::finishParsingChildren();
     updateListItemSelectedStates();
-    if (!usesMenuList())
-        scrollToSelection();
+    if (usesMenuList())
+        return;
+    scrollToIndex(optionToListIndex(selectedIndex()));
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+        cache->listboxActiveIndexChanged(this);
 }
 
 bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
