@@ -1,17 +1,28 @@
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<p>This tests smart paste of a fragment that ends in a select element.  There should be spaces added before and after the inserted content.</p>
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<p>This tests smart paste of a fragment that ends in a select element.
+There should be spaces added before and after the inserted content.</p>
 <div contenteditable="true" id="copy"><select><option>1</option><option>2</option><option>3</option></select></div>
-<div contenteditable="true" id="paste">xx</div>
-
+<div contenteditable="true" id="sample">xx</div>
+<div id="log"></div>
 <script>
-var copy = document.getElementById("copy");
-doubleClick(copy.offsetLeft, copy.offsetTop);
-document.execCommand("Copy");
+test(function() {
+    if (window.internals)
+        internals.settings.setEditingBehavior('win');
 
-var paste = document.getElementById("paste");
-var sel = window.getSelection();
-sel.collapse(paste, 0);
-sel.modify("move", "forward", "character");
-document.execCommand("Paste");
+    var selection = window.getSelection();
+    var sample= document.getElementById('sample');
+
+    selection.selectAllChildren(document.getElementById('copy'));
+    document.execCommand('copy');
+
+    selection.collapse(sample.firstChild, 1);
+    document.execCommand('paste');
+
+    assert_equals(sample.innerHTML, 'x<select><option>1</option><option>2</option><option>3</option></select>x', 'innerHHTML');
+    assert_true(selection.isCollapsed);
+    assert_equals(selection.anchorNode, sample);
+    assert_equals(selection.anchorOffset, 2);
+});
 </script>

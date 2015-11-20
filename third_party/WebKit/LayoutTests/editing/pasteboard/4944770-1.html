@@ -1,17 +1,30 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <p>This tests smart paste of a fragment that ends in a select element.  There should be no spaces added because the paste is performed in an empty paragraph.</p>
 <div contenteditable="true" id="copy">foo<select><option>1</option><option>2</option><option>3</option></select></div>
-<div contenteditable="true" id="paste"></div>
-
+<div contenteditable="true" id="sample"></div>
+<div id="log"></div>
 <script>
-var copy = document.getElementById("copy");
-var paste = document.getElementById("paste");
-var sel = window.getSelection();
+test(function() {
+    if (window.internals)
+        internals.settings.setEditingBehavior('win');
 
-sel.collapse(copy, 0);
-sel.modify("extend", "forward", "word");
-sel.modify("extend", "forward", "word");
-document.execCommand("Copy");
+    var copy = document.getElementById('copy');
+    var paste = document.getElementById('sample');
+    var selection = window.getSelection();
 
-sel.collapse(paste, 0);
-document.execCommand("Paste");
+    selection.collapse(copy, 0);
+    selection.modify('extend', 'forward', 'word');
+    selection.modify('extend', 'forward', 'word');
+    document.execCommand('copy');
+
+    selection.collapse(paste, 0);
+    document.execCommand('paste');
+
+    assert_equals(sample.innerHTML, 'foo<select><option>1</option><option>2</option><option>3</option></select>');
+    assert_true(selection.isCollapsed);
+    assert_equals(selection.anchorNode, sample);
+    assert_equals(selection.anchorOffset, 2);
+});
 </script>

@@ -1,43 +1,6 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    font-size: 24px; 
-}
-.explanation { 
-    border: 2px solid blue; 
-    padding: 12px; 
-    font-size: 24px; 
-    margin-bottom: 24px;
-}
-.scenario { margin-bottom: 16px;}
-.scenario:first-line { font-weight: bold; margin-bottom: 16px;}
-.expected-results:first-line { font-weight: bold }
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    var target = document.getElementById('test');
-    var x = target.offsetLeft;
-    var y = target.offsetTop + target.offsetHeight / 2;
-    doubleClick(x, y);
-    cutCommand();
-    typeCharacterCommand('.');
-    typeCharacterCommand('.');
-    moveSelectionBackwardByCharacterCommand();
-    pasteCommand();
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <div class="explanation">
 <div class="scenario">
 Tests: 
@@ -53,15 +16,35 @@ A space should be added before, but not after the pasted word. It should look li
 </div>
 </div>
 
-<div contenteditable id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-<div id="test" class="editing">
-test
-</div>
-</div>
-
+<div contenteditable id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;"><div id="sample">test</div></div>
+<div id="log"></div>
 <script>
-runEditingTest();
-</script>
+test(function() {
+    if (!window.internals && !window.eventSender)
+        return;
 
-</body>
-</html>
+    internals.settings.setEditingBehavior('win');
+
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
+
+    var x = sample.offsetLeft;
+    var y = sample.offsetTop + sample.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+
+    document.execCommand('cut');
+    document.execCommand('insertText', false, '.');
+    document.execCommand('insertText', false, '.');
+    selection.modify('move', 'backward', 'character');
+    document.execCommand('paste');
+
+    assert_equals(sample.innerHTML, '. test.');
+    assert_true(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 6, 'anchorOffset');
+});
+</script>
