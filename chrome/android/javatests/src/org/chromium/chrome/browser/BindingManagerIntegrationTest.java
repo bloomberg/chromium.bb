@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -29,6 +30,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.Callable;
 
@@ -414,6 +416,15 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
     }
 
+    private int getRenderProcessId(final Tab tab) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return tab.getContentViewCore().getCurrentRenderProcessId();
+            }
+        });
+    }
+
     /**
      * Ensures correctness of the visibilityDetermined() calls, that would be generally preceded by
      * setInForeground(), but it can't be guaranteed because they are triggered from different
@@ -433,22 +444,16 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                                         TabLaunchType.FROM_KEYBOARD, null);
                     }});
         ChromeTabUtils.waitForTabPageLoaded(fgTab, TestHttpServerClient.getUrl(FILE_PATH));
-        int initialNavigationPid = fgTab.getContentViewCore().getCurrentRenderProcessId();
+        int initialNavigationPid = getRenderProcessId(fgTab);
         // Ensure the following calls happened:
         //  - FG - setInForeground(true) - when the tab is created in the foreground
         //  - DETERMINED - visibilityDetermined() - after the initial navigation is committed
         assertEquals("FG;DETERMINED;", mBindingManager.getVisibilityCalls(initialNavigationPid));
 
         // Navigate to about:version which requires a different renderer.
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                fgTab.loadUrl(new LoadUrlParams(ABOUT_VERSION_PATH));
-            }
-        });
-        ChromeTabUtils.waitForTabPageLoaded(fgTab, ABOUT_VERSION_PATH);
-        int secondNavigationPid = fgTab.getContentViewCore().getCurrentRenderProcessId();
-        assertTrue(secondNavigationPid != initialNavigationPid);
+        loadUrlInTab(ABOUT_VERSION_PATH, PageTransition.LINK, fgTab);
+        int secondNavigationPid = getRenderProcessId(fgTab);
+        MoreAsserts.assertNotEqual(secondNavigationPid, initialNavigationPid);
         // Ensure the following calls happened:
         //  - BG - setInForeground(false) - when the renderer is created for uncommited frame
         //  - FG - setInForeground(true) - when the frame is swapped in on commit
@@ -458,7 +463,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         mBindingManager.assertIsInForeground(secondNavigationPid);
         String visibilityCalls = mBindingManager.getVisibilityCalls(secondNavigationPid);
         assertTrue(visibilityCalls, "BG;FG;DETERMINED;".equals(visibilityCalls)
-                        || "BG;DETERMINED;FG;".equals(visibilityCalls));
+                || "BG;DETERMINED;FG;".equals(visibilityCalls));
 
         // Open a tab in the background and load it.
         final Tab bgTab = ThreadUtils.runOnUiThreadBlockingNoException(
@@ -476,7 +481,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                         return tab;
                     }});
         ChromeTabUtils.waitForTabPageLoaded(bgTab, TestHttpServerClient.getUrl(FILE_PATH));
-        int bgNavigationPid = bgTab.getContentViewCore().getCurrentRenderProcessId();
+        int bgNavigationPid = getRenderProcessId(bgTab);
         // Ensure the following calls happened:
         //  - BG - setInForeground(false) - when tab is created in the background
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
