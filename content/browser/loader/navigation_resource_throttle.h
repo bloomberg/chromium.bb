@@ -28,6 +28,7 @@ class NavigationResourceThrottle : public ResourceThrottle {
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
+  void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
 
  private:

@@ -159,6 +159,13 @@ bool NavigationHandleImpl::IsSamePage() {
   return is_same_page_;
 }
 
+const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
+  DCHECK(state_ >= WILL_REDIRECT_REQUEST)
+      << "This accessor should only be called when the request encountered a "
+         "redirect or received a response";
+   return response_headers_.get();
+}
+
 bool NavigationHandleImpl::HasCommitted() {
   return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }
@@ -220,6 +227,7 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillRedirectRequest(new_url, new_method_is_post, new_referrer_url,
                       new_is_external_protocol,
+                      scoped_refptr<net::HttpResponseHeaders>(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -269,6 +277,7 @@ void NavigationHandleImpl::WillRedirectRequest(
     bool new_method_is_post,
     const GURL& new_referrer_url,
     bool new_is_external_protocol,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
     const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
   url_ = new_url;
@@ -276,6 +285,7 @@ void NavigationHandleImpl::WillRedirectRequest(
   sanitized_referrer_.url = new_referrer_url;
   sanitized_referrer_ = Referrer::SanitizeForRequest(url_, sanitized_referrer_);
   is_external_protocol_ = new_is_external_protocol;
+  response_headers_ = response_headers;
 
   state_ = WILL_REDIRECT_REQUEST;
   complete_callback_ = callback;
@@ -294,11 +304,19 @@ void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(
-    RenderFrameHostImpl* render_frame_host) {
-  CHECK(!render_frame_host_);
+    RenderFrameHostImpl* render_frame_host,
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
+  DCHECK(!render_frame_host_);
   render_frame_host_ = render_frame_host;
+  response_headers_ = response_headers;
   state_ = READY_TO_COMMIT;
-  GetDelegate()->ReadyToCommitNavigation(this);
+
+  // Only notify the WebContentsObservers when PlzNavigate is enabled, as
+  // |render_frame_host_| may be wrong in the case of transfer navigations.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    GetDelegate()->ReadyToCommitNavigation(this);
+  }
 }
 
 void NavigationHandleImpl::DidCommitNavigation(

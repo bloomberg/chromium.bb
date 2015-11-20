@@ -151,6 +151,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
       // DidStartProvisionalLoad should not correspond to a new navigation.
       DCHECK_EQ(url, render_frame_host->navigation_handle()->GetURL());
       render_frame_host->navigation_handle()->set_is_transferring(false);
+      render_frame_host->navigation_handle()->set_render_frame_host(
+          render_frame_host);
       return;
     }
 
@@ -749,6 +751,8 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
       render_frame_host, navigation_request->common_params().url);
 
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
+  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
+      render_frame_host, response ? response->head.headers : nullptr);
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
@@ -779,6 +783,8 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
       render_frame_host, navigation_request->common_params().url);
 
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
+  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
+      render_frame_host, scoped_refptr<net::HttpResponseHeaders>());
   render_frame_host->FailedNavigation(navigation_request->common_params(),
                                       navigation_request->request_params(),
                                       has_stale_copy_in_cache, error_code);

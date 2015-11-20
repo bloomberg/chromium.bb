@@ -100,6 +100,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigatorDelegate* GetDelegate() const;
 
+  // Returns the response headers for the request. This can only be accessed
+  // after a redirect was encountered or after the the navigation is ready to
+  // commit. It should not be modified, as modifications will not be reflected
+  // in the network stack.
+  const net::HttpResponseHeaders* GetResponseHeaders();
+
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
   }
@@ -111,6 +117,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool is_transferring() const { return is_transferring_; }
   void set_is_transferring(bool is_transferring) {
     is_transferring_ = is_transferring;
+  }
+
+  // Updates the RenderFrameHost that is about to commit the navigation. This
+  // is used during transfer navigations.
+  void set_render_frame_host(RenderFrameHostImpl* render_frame_host) {
+    render_frame_host_ = render_frame_host;
   }
 
   // PlzNavigate
@@ -134,11 +146,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This
   // will allow the caller to cancel the navigation or let it proceed.
-  void WillRedirectRequest(const GURL& new_url,
-                           bool new_method_is_post,
-                           const GURL& new_referrer_url,
-                           bool new_is_external_protocol,
-                           const ThrottleChecksFinishedCallback& callback);
+  void WillRedirectRequest(
+      const GURL& new_url,
+      bool new_method_is_post,
+      const GURL& new_referrer_url,
+      bool new_is_external_protocol,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const ThrottleChecksFinishedCallback& callback);
 
   // Called when the navigation was redirected. This will update the |url_| and
   // inform the delegate.
@@ -147,7 +161,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the navigation is ready to be committed in
   // |render_frame_host|. This will update the |state_| and inform the
   // delegate.
-  void ReadyToCommitNavigation(RenderFrameHostImpl* render_frame_host);
+  void ReadyToCommitNavigation(
+      RenderFrameHostImpl* render_frame_host,
+      scoped_refptr<net::HttpResponseHeaders> response_headers);
 
   // Called when the navigation was committed in |render_frame_host|. This will
   // update the |state_|.
@@ -194,6 +210,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   bool is_same_page_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
   // The state the navigation is in.
   State state_;

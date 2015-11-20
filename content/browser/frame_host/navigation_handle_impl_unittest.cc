@@ -103,7 +103,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
     test_handle_->WillRedirectRequest(
-        GURL(), false, GURL(), false,
+        GURL(), false, GURL(), false, scoped_refptr<net::HttpResponseHeaders>(),
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

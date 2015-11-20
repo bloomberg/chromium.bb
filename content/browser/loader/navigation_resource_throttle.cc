@@ -59,13 +59,15 @@ void CheckWillStartRequestOnUIThread(UIChecksPerformedCallback callback,
       is_external_protocol, base::Bind(&SendCheckResultToIOThread, callback));
 }
 
-void CheckWillRedirectRequestOnUIThread(UIChecksPerformedCallback callback,
-                                        int render_process_id,
-                                        int render_frame_host_id,
-                                        const GURL& new_url,
-                                        bool new_method_is_post,
-                                        const GURL& new_referrer_url,
-                                        bool new_is_external_protocol) {
+void CheckWillRedirectRequestOnUIThread(
+    UIChecksPerformedCallback callback,
+    int render_process_id,
+    int render_frame_host_id,
+    const GURL& new_url,
+    bool new_method_is_post,
+    const GURL& new_referrer_url,
+    bool new_is_external_protocol,
+    scoped_refptr<net::HttpResponseHeaders> headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
@@ -86,8 +88,26 @@ void CheckWillRedirectRequestOnUIThread(UIChecksPerformedCallback callback,
       ->FilterURL(false, &new_validated_url);
   navigation_handle->WillRedirectRequest(
       new_validated_url, new_method_is_post, new_referrer_url,
-      new_is_external_protocol,
+      new_is_external_protocol, headers,
       base::Bind(&SendCheckResultToIOThread, callback));
+}
+
+void WillProcessResponseOnUIThread(
+    int render_process_id,
+    int render_frame_host_id,
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
+  if (!render_frame_host)
+    return;
+
+  NavigationHandleImpl* navigation_handle =
+      render_frame_host->navigation_handle();
+  if (!navigation_handle)
+    return;
+
+  navigation_handle->ReadyToCommitNavigation(render_frame_host, headers);
 }
 
 }  // namespace
@@ -98,6 +118,7 @@ NavigationResourceThrottle::NavigationResourceThrottle(net::URLRequest* request)
 NavigationResourceThrottle::~NavigationResourceThrottle() {}
 
 void NavigationResourceThrottle::WillStartRequest(bool* defer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (!info)
     return;
@@ -128,6 +149,7 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
 void NavigationResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (!info)
     return;
@@ -144,13 +166,48 @@ void NavigationResourceThrottle::WillRedirectRequest(
   UIChecksPerformedCallback callback =
       base::Bind(&NavigationResourceThrottle::OnUIChecksPerformed,
                  weak_ptr_factory_.GetWeakPtr());
+
+  // Send the redirect info to the NavigationHandle on the UI thread.
+  // Note: to avoid threading issues, a copy of the HttpResponseHeaders is sent
+  // in lieu of the original.
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  if (request_->response_headers()) {
+    response_headers = new net::HttpResponseHeaders(
+        request_->response_headers()->raw_headers());
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CheckWillRedirectRequestOnUIThread, callback,
                  render_process_id, render_frame_id, redirect_info.new_url,
                  redirect_info.new_method == "POST",
-                 GURL(redirect_info.new_referrer), new_is_external_protocol));
+                 GURL(redirect_info.new_referrer), new_is_external_protocol,
+                 response_headers));
   *defer = true;
+}
+
+void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!info)
+    return;
+
+  int render_process_id, render_frame_id;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
+    return;
+
+  // Send a copy of the response headers to the NavigationHandle on the UI
+  // thread.
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  if (request_->response_headers()) {
+    response_headers = new net::HttpResponseHeaders(
+        request_->response_headers()->raw_headers());
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WillProcessResponseOnUIThread, render_process_id,
+                 render_frame_id, response_headers));
 }
 
 const char* NavigationResourceThrottle::GetNameForLogging() const {

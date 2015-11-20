@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
@@ -224,8 +225,6 @@ void NavigationRequest::CreateNavigationHandle() {
 void NavigationRequest::TransferNavigationHandleOwnership(
     RenderFrameHostImpl* render_frame_host) {
   render_frame_host->SetNavigationHandle(navigation_handle_.Pass());
-  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
-      render_frame_host);
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -243,7 +242,7 @@ void NavigationRequest::OnRequestRedirected(
   // TODO(clamy): pass the real value for |is_external_protocol| if needed.
   navigation_handle_->WillRedirectRequest(
       common_params_.url, begin_params_.method == "POST",
-      common_params_.referrer.url, false,
+      common_params_.referrer.url, false, response->head.headers,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }
