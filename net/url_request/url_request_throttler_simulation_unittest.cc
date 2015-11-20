@@ -18,7 +18,6 @@
 
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "net/base/request_priority.h"
@@ -489,7 +488,7 @@ void SimulateAttack(Server* server,
   const size_t kNumClients = 50;
   DiscreteTimeSimulation simulation;
   URLRequestThrottlerManager manager;
-  ScopedVector<Requester> requesters;
+  std::vector<scoped_ptr<Requester>> requesters;
   for (size_t i = 0; i < kNumAttackers; ++i) {
     // Use a tiny time_between_requests so the attackers will ping the
     // server at every tick of the simulation.
@@ -498,13 +497,12 @@ void SimulateAttack(Server* server,
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
-      Requester* attacker = new Requester(throttler_entry.get(),
-                                        TimeDelta::FromMilliseconds(1),
-                                        server,
-                                        attacker_results);
+    scoped_ptr<Requester> attacker(new Requester(throttler_entry.get(),
+                                                 TimeDelta::FromMilliseconds(1),
+                                                 server, attacker_results));
     attacker->SetStartupJitter(TimeDelta::FromSeconds(120));
-    requesters.push_back(attacker);
-    simulation.AddActor(attacker);
+    simulation.AddActor(attacker.get());
+    requesters.push_back(std::move(attacker));
   }
   for (size_t i = 0; i < kNumClients; ++i) {
     // Normal clients only make requests every 2 minutes, plus/minus 1 minute.
@@ -513,14 +511,13 @@ void SimulateAttack(Server* server,
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
-    Requester* client = new Requester(throttler_entry.get(),
-                                      TimeDelta::FromMinutes(2),
-                                      server,
-                                      client_results);
+    scoped_ptr<Requester> client(new Requester(throttler_entry.get(),
+                                               TimeDelta::FromMinutes(2),
+                                               server, client_results));
     client->SetStartupJitter(TimeDelta::FromSeconds(120));
     client->SetRequestJitter(TimeDelta::FromMinutes(1));
-    requesters.push_back(client);
-    simulation.AddActor(client);
+    simulation.AddActor(client.get());
+    requesters.push_back(std::move(client));
   }
   simulation.AddActor(server);
 
