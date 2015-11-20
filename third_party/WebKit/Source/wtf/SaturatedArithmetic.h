@@ -86,7 +86,8 @@ inline int getMinSaturatedSetResultForTesting(int FractionalShift)
     return std::numeric_limits<int>::min();
 }
 
-ALWAYS_INLINE int saturatedSet(int value, int FractionalShift)
+template <int FractionalShift>
+ALWAYS_INLINE int saturatedSet(int value)
 {
     const int intMaxForLayoutUnit =
         std::numeric_limits<int>::max() >> FractionalShift;
@@ -104,7 +105,8 @@ ALWAYS_INLINE int saturatedSet(int value, int FractionalShift)
 }
 
 
-ALWAYS_INLINE int saturatedSet(unsigned value, int FractionalShift)
+template <int FractionalShift>
+ALWAYS_INLINE int saturatedSet(unsigned value)
 {
     const unsigned intMaxForLayoutUnit =
         std::numeric_limits<int>::max() >> FractionalShift;

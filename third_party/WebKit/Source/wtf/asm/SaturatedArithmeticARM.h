@@ -46,11 +46,12 @@ inline int getMinSaturatedSetResultForTesting(int FractionalShift)
     return std::numeric_limits<int>::min();
 }
 
-ALWAYS_INLINE int saturatedSet(int value, int FractionalShift)
+template <int FractionalShift>
+ALWAYS_INLINE int saturatedSet(int value)
 {
     // Figure out how many bits are left for storing the integer part of
     // the fixed point number, and saturate our input to that
-    const int saturate = 32 - FractionalShift;
+    enum { Saturate = 32 - FractionalShift };
 
     int result;
 
@@ -66,21 +67,22 @@ ALWAYS_INLINE int saturatedSet(int value, int FractionalShift)
         "lsl  %[output],%[shift]"
         :   [output]    "=r"  (result)
         :   [value]     "r"   (value),
-            [saturate]  "n"   (saturate),
+            [saturate]  "n"   (Saturate),
             [shift]     "n"   (FractionalShift));
 
     return result;
 }
 
 
-ALWAYS_INLINE int saturatedSet(unsigned value, int FractionalShift)
+template <int FractionalShift>
+ALWAYS_INLINE int saturatedSet(unsigned value)
 {
     // Here we are being passed an unsigned value to saturate,
     // even though the result is returned as a signed integer. The ARM
     // instruction for unsigned saturation therefore needs to be given one
     // less bit (i.e. the sign bit) for the saturation to work correctly; hence
     // the '31' below.
-    const int saturate = 31 - FractionalShift;
+    enum { Saturate = 31 - FractionalShift };
 
     // The following ARM code will Saturate the passed value to the number of
     // bits used for the whole part of the fixed point representation, then
@@ -96,7 +98,7 @@ ALWAYS_INLINE int saturatedSet(unsigned value, int FractionalShift)
         "lsl  %[output],%[shift]"
         :   [output]    "=r"  (result)
         :   [value]     "r"   (value),
-            [saturate]  "n"   (saturate),
+            [saturate]  "n"   (Saturate),
             [shift]     "n"   (FractionalShift));
 
     return result;

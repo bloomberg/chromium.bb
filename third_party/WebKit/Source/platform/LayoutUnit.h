@@ -219,12 +219,12 @@ private:
 
     ALWAYS_INLINE void setValue(int value)
     {
-        m_value = saturatedSet(value, kLayoutUnitFractionalBits);
+        m_value = saturatedSet<kLayoutUnitFractionalBits>(value);
     }
 
     inline void setValue(unsigned value)
     {
-        m_value = saturatedSet(value, kLayoutUnitFractionalBits);
+        m_value = saturatedSet<kLayoutUnitFractionalBits>(value);
     }
 
     int m_value;
