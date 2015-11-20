@@ -68,7 +68,7 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
 
 
 CommandBufferProxyImpl* ContextProviderCommandBuffer::GetCommandBufferProxy() {
-  return WebContext3D()->GetCommandBufferProxy();
+  return WebContext3DNoChecks()->GetCommandBufferProxy();
 }
 
 WebGraphicsContext3DCommandBufferImpl*
@@ -119,11 +119,11 @@ void ContextProviderCommandBuffer::DetachFromThread() {
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
 
-  return WebContext3DNoChecks()->GetImplementation();
+  return WebContext3D()->GetImplementation();
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
-  return WebContext3D()->GetContextSupport();
+  return WebContext3DNoChecks()->GetContextSupport();
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
