@@ -973,8 +973,8 @@ InspectorTest.dumpAnimationTimeline = function(timeline)
         for (nodeRow of nodeUI._rows) {
             for (var ui of nodeRow.animations) {
                 InspectorTest.addResult(ui.animation().type());
-                InspectorTest.addResult(ui._nameElement.outerHTML);
-                InspectorTest.addResult(ui._svg.outerHTML);
+                InspectorTest.addResult(ui._nameElement.innerHTML);
+                InspectorTest.addResult(ui._svg.innerHTML);
             }
         }
     }
