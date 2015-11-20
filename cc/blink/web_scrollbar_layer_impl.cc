@@ -35,9 +35,8 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
           scoped_ptr<cc::Scrollbar>(
               new ScrollbarImpl(make_scoped_ptr(scrollbar),
                                 painter,
-                                make_scoped_ptr(geometry))).Pass(),
-          0))) {
-}
+                                make_scoped_ptr(geometry))),
+          0))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbar::Orientation orientation,

@@ -29,7 +29,7 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
   scoped_ptr<SingleReleaseCallback> cb =
-      deleter->GetReleaseCallback(context_provider, texture_id).Pass();
+      deleter->GetReleaseCallback(context_provider, texture_id);
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 

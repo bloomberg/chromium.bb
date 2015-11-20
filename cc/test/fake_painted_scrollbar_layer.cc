@@ -25,7 +25,7 @@ FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
     FakeScrollbar* fake_scrollbar,
     int scrolling_layer_id)
     : PaintedScrollbarLayer(settings,
-                            scoped_ptr<Scrollbar>(fake_scrollbar).Pass(),
+                            scoped_ptr<Scrollbar>(fake_scrollbar),
                             scrolling_layer_id),
       update_count_(0),
       push_properties_count_(0),

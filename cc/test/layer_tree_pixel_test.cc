@@ -92,14 +92,14 @@ scoped_ptr<CopyOutputRequest> LayerTreePixelTest::CreateCopyOutputRequest() {
 
 void LayerTreePixelTest::ReadbackResult(scoped_ptr<CopyOutputResult> result) {
   ASSERT_TRUE(result->HasBitmap());
-  result_bitmap_ = result->TakeBitmap().Pass();
+  result_bitmap_ = result->TakeBitmap();
   EndTest();
 }
 
 void LayerTreePixelTest::BeginTest() {
   Layer* target = readback_target_ ? readback_target_
                                    : layer_tree_host()->root_layer();
-  target->RequestCopyOfOutput(CreateCopyOutputRequest().Pass());
+  target->RequestCopyOfOutput(CreateCopyOutputRequest());
   PostSetNeedsCommitToMainThread();
 }
 

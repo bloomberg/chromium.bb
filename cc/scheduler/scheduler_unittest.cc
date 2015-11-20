@@ -779,7 +779,7 @@ TEST_F(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
   client->SetRequestRedrawsInsideDraw(true);
 
   scheduler_->SetNeedsRedraw();
@@ -815,7 +815,7 @@ TEST_F(SchedulerTest, RequestRedrawInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   client->SetRequestRedrawsInsideDraw(true);
   client->SetDrawWillHappen(false);
@@ -891,7 +891,7 @@ TEST_F(SchedulerTest, RequestCommitInsideDraw) {
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
 
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   EXPECT_FALSE(client->needs_begin_frames());
   scheduler_->SetNeedsRedraw();
@@ -933,7 +933,7 @@ TEST_F(SchedulerTest, RequestCommitInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   client->SetDrawWillHappen(false);
 
@@ -976,7 +976,7 @@ TEST_F(SchedulerTest, NoSwapWhenDrawFails) {
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_TRUE(scheduler_->RedrawPending());
@@ -1014,7 +1014,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   // Request both draw and prepare tiles. PrepareTiles shouldn't
   // be trigged until BeginImplFrame.
@@ -1268,7 +1268,7 @@ TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SCOPED(AdvanceFrame());
@@ -1283,7 +1283,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -1323,7 +1323,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(make_scoped_ptr(client), true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();

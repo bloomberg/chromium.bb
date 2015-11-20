@@ -526,7 +526,7 @@ void TestWebGraphicsContext3D::bindBuffer(GLenum target,
   base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>>& buffers =
       namespace_->buffers;
   if (buffers.count(bound_buffer_) == 0)
-    buffers.set(bound_buffer_, make_scoped_ptr(new Buffer).Pass());
+    buffers.set(bound_buffer_, make_scoped_ptr(new Buffer));
 
   buffers.get(bound_buffer_)->target = target;
 }

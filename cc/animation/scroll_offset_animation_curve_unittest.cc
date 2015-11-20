@@ -15,9 +15,8 @@ namespace {
 TEST(ScrollOffsetAnimationCurveTest, Duration) {
   gfx::ScrollOffset target_value(100.f, 200.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value,
-          EaseInOutTimingFunction::Create().Pass()));
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
 
   curve->SetInitialValue(target_value);
   EXPECT_DOUBLE_EQ(0.0, curve->Duration().InSecondsF());
@@ -59,9 +58,8 @@ TEST(ScrollOffsetAnimationCurveTest, GetValue) {
   gfx::ScrollOffset initial_value(2.f, 40.f);
   gfx::ScrollOffset target_value(10.f, 20.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value,
-          EaseInOutTimingFunction::Create().Pass()));
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
   curve->SetInitialValue(initial_value);
 
   base::TimeDelta duration = curve->Duration();
@@ -93,13 +91,12 @@ TEST(ScrollOffsetAnimationCurveTest, Clone) {
   gfx::ScrollOffset initial_value(2.f, 40.f);
   gfx::ScrollOffset target_value(10.f, 20.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value,
-          EaseInOutTimingFunction::Create().Pass()));
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
   curve->SetInitialValue(initial_value);
   base::TimeDelta duration = curve->Duration();
 
-  scoped_ptr<AnimationCurve> clone(curve->Clone().Pass());
+  scoped_ptr<AnimationCurve> clone(curve->Clone());
 
   EXPECT_EQ(AnimationCurve::SCROLL_OFFSET, clone->Type());
   EXPECT_EQ(duration, clone->Duration());
@@ -131,8 +128,8 @@ TEST(ScrollOffsetAnimationCurveTest, UpdateTarget) {
   gfx::ScrollOffset initial_value(0.f, 0.f);
   gfx::ScrollOffset target_value(0.f, 3600.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, EaseInOutTimingFunction::Create().Pass()));
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
   curve->SetInitialValue(initial_value);
   EXPECT_EQ(1.0, curve->Duration().InSecondsF());
   EXPECT_EQ(1800.0, curve->GetValue(base::TimeDelta::FromSecondsD(0.5)).y());
@@ -158,8 +155,8 @@ TEST(ScrollOffsetAnimationCurveTest, UpdateTargetWithLargeVelocity) {
   gfx::ScrollOffset initial_value(0.f, 0.f);
   gfx::ScrollOffset target_value(0.f, 900.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, EaseInOutTimingFunction::Create().Pass()));
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
   curve->SetInitialValue(initial_value);
   EXPECT_EQ(0.5, curve->Duration().InSecondsF());
 
@@ -182,7 +179,7 @@ TEST(ScrollOffsetAnimationCurveTest, UpdateTargetConstantDuration) {
   gfx::ScrollOffset target_value(0.f, 3600.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
-          target_value, EaseInOutTimingFunction::Create().Pass(),
+          target_value, EaseInOutTimingFunction::Create(),
           ScrollOffsetAnimationCurve::DurationBehavior::CONSTANT));
   curve->SetInitialValue(initial_value);
   EXPECT_EQ(0.2, curve->Duration().InSecondsF());

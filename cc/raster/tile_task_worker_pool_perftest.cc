@@ -381,7 +381,7 @@ class TileTaskWorkerPoolPerfTest
 
  private:
   void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
+    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), nullptr, &gpu_memory_buffer_manager_);
@@ -454,7 +454,7 @@ class TileTaskWorkerPoolCommonPerfTest : public TileTaskWorkerPoolPerfTestBase,
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
+    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ =
         FakeResourceProvider::Create(output_surface_.get(), nullptr);

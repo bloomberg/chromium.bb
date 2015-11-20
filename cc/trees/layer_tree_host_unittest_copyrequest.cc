@@ -105,7 +105,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
   void CopyOutputCallback(size_t id, scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
-    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap().Pass();
+    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
     EXPECT_EQ(result->size().ToString(),
               gfx::Size(bitmap->width(), bitmap->height()).ToString());
     callbacks_[id] = result->size();

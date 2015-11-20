@@ -2406,7 +2406,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   // Add a transform animation with a start delay to |grand_child|.
   scoped_ptr<Animation> animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(), 0, 1,
+      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
       Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -7347,7 +7347,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   EXPECT_EQ(expected, actual);
 
   // Add a mask layer to child.
-  child_raw->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 6).Pass());
+  child_raw->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 6));
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
@@ -7504,8 +7504,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 1),
                                true, false, false);
 
-  child1_layer->SetMaskLayer(
-      LayerImpl::Create(host_impl.active_tree(), 4).Pass());
+  child1_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4));
   child1_layer->SetDrawsContent(true);
 
   scoped_ptr<LayerImpl> replica_layer =
@@ -8414,7 +8413,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // a singular transform, the subtree should still get processed.
   int animation_id = 0;
   scoped_ptr<Animation> animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)).Pass(),
+      scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
       animation_id, 1, Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
@@ -8441,7 +8440,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Add an opacity animation with a start delay.
   animation_id = 1;
   animation = Animation::Create(
-      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       animation_id, 1, Animation::OPACITY);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));

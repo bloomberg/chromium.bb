@@ -90,7 +90,7 @@ class LayerTreeHostReadbackPixelTest
     if (insert_copy_request_after_frame_count_ == 0) {
       Layer* const target =
           readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
-      target->RequestCopyOfOutput(CreateCopyOutputRequest().Pass());
+      target->RequestCopyOfOutput(CreateCopyOutputRequest());
     }
     PostSetNeedsCommitToMainThread();
   }
@@ -100,14 +100,14 @@ class LayerTreeHostReadbackPixelTest
         layer_tree_host()->source_frame_number()) {
       Layer* const target =
           readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
-      target->RequestCopyOfOutput(CreateCopyOutputRequest().Pass());
+      target->RequestCopyOfOutput(CreateCopyOutputRequest());
     }
   }
 
   void ReadbackResultAsBitmap(scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
-    result_bitmap_ = result->TakeBitmap().Pass();
+    result_bitmap_ = result->TakeBitmap();
     EndTest();
   }
 

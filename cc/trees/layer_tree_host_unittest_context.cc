@@ -1039,9 +1039,9 @@ class LayerTreeHostContextTestDontUseLostResources
     layer_tree_host()->SetDebugState(debug_state);
 
     scoped_refptr<PaintedScrollbarLayer> scrollbar =
-        PaintedScrollbarLayer::Create(
-            layer_settings_, scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(),
-            layer->id());
+        PaintedScrollbarLayer::Create(layer_settings_,
+                                      scoped_ptr<Scrollbar>(new FakeScrollbar),
+                                      layer->id());
     scrollbar->SetBounds(gfx::Size(10, 10));
     scrollbar->SetIsDrawable(true);
     root->AddChild(scrollbar);

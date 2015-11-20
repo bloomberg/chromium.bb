@@ -47,7 +47,7 @@ CopyOutputRequest::CopyOutputRequest(
 
 CopyOutputRequest::~CopyOutputRequest() {
   if (!result_callback_.is_null())
-    SendResult(CopyOutputResult::CreateEmptyResult().Pass());
+    SendResult(CopyOutputResult::CreateEmptyResult());
 }
 
 void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
@@ -57,11 +57,11 @@ void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
 }
 
 void CopyOutputRequest::SendEmptyResult() {
-  SendResult(CopyOutputResult::CreateEmptyResult().Pass());
+  SendResult(CopyOutputResult::CreateEmptyResult());
 }
 
 void CopyOutputRequest::SendBitmapResult(scoped_ptr<SkBitmap> bitmap) {
-  SendResult(CopyOutputResult::CreateBitmapResult(std::move(bitmap)).Pass());
+  SendResult(CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
 }
 
 void CopyOutputRequest::SendTextureResult(

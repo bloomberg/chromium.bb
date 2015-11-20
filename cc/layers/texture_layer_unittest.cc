@@ -368,7 +368,7 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
   void CreateMainRef() {
     main_ref_ = TestMailboxHolder::Create(
         test_data_.mailbox1_,
-        SingleReleaseCallback::Create(test_data_.release_mailbox1_)).Pass();
+        SingleReleaseCallback::Create(test_data_.release_mailbox1_));
   }
 
   void ReleaseMainRef() { main_ref_ = nullptr; }

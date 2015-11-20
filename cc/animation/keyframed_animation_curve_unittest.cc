@@ -732,7 +732,7 @@ TEST(KeyframedAnimationCurveTest, CurveTiming) {
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.f), 1.f, nullptr));
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.75f, 0.f, 0.25f, 1.f).Pass());
+      CubicBezierTimingFunction::Create(0.75f, 0.f, 0.25f, 1.f));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(-1.f)));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.f)));
   EXPECT_NEAR(0.05f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)),
@@ -751,12 +751,12 @@ TEST(KeyframedAnimationCurveTest, CurveAndKeyframeTiming) {
       KeyframedFloatAnimationCurve::Create());
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta(), 0.f,
-      CubicBezierTimingFunction::Create(0.35f, 0.f, 0.65f, 1.f).Pass()));
+      CubicBezierTimingFunction::Create(0.35f, 0.f, 0.65f, 1.f)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.f), 1.f, nullptr));
   // Curve timing function producing outputs outside of range [0,1].
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(-1.f)));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.f)));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(
@@ -782,7 +782,7 @@ TEST(KeyframedAnimationCurveTest, LinearTimingInputsOutsideZeroOneRange) {
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
   // Curve timing function producing timing outputs outside of range [0,1].
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
 
   EXPECT_NEAR(-0.076f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)),
               0.001f);
@@ -799,12 +799,12 @@ TEST(KeyframedAnimationCurveTest, CurveTimingInputsOutsideZeroOneRange) {
   // Keyframe timing function with 0.5 gradients at each end.
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta(), 0.f,
-      CubicBezierTimingFunction::Create(0.5f, 0.25f, 0.5f, 0.75f).Pass()));
+      CubicBezierTimingFunction::Create(0.5f, 0.25f, 0.5f, 0.75f)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.f), 1.f, nullptr));
   // Curve timing function producing timing outputs outside of range [0,1].
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
 
   EXPECT_NEAR(-0.02f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)),
               0.002f);  // c(.25)=-.04, -.04*0.5=-0.02
@@ -828,7 +828,7 @@ TEST(KeyframedAnimationCurveTest, StepsTimingInputsOutsideZeroOneRange) {
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
   // Curve timing function producing timing outputs outside of range [0,1].
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
 
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.25f)));
   EXPECT_FLOAT_EQ(2.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
@@ -849,7 +849,7 @@ TEST(KeyframedAnimationCurveTest, CurveTimingMultipleKeyframes) {
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(4.f), 9.f, nullptr));
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, 0.f, 0.5f, 1.f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, 0.f, 0.5f, 1.f));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(-1.f)));
   EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.f)));
   EXPECT_NEAR(0.42f, curve->GetValue(base::TimeDelta::FromSecondsD(1.f)),
@@ -879,7 +879,7 @@ TEST(KeyframedAnimationCurveTest, CurveTimingOvershootMultipeKeyframes) {
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(4.0), 9.f, nullptr));
   // Curve timing function producing outputs outside of range [0,1].
   curve->SetTimingFunction(
-      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f).Pass());
+      CubicBezierTimingFunction::Create(0.5f, -0.5f, 0.5f, 1.5f));
   EXPECT_LE(curve->GetValue(base::TimeDelta::FromSecondsD(1.f)),
             0.f);  // c(.25) < 0
   EXPECT_GE(curve->GetValue(base::TimeDelta::FromSecondsD(3.f)),

@@ -338,7 +338,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
  protected:
   GLRendererWithDefaultHarnessTest() {
     output_surface_ =
-        FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()).Pass();
+        FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create());
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
@@ -369,7 +369,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
 class GLRendererShaderTest : public GLRendererTest {
  protected:
   GLRendererShaderTest() {
-    output_surface_ = FakeOutputSurface::Create3d().Pass();
+    output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
@@ -1426,7 +1426,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   // has finished.
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create().Pass()));
+      FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(

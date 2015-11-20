@@ -98,7 +98,7 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
 void PixelTest::ReadbackResult(base::Closure quit_run_loop,
                                scoped_ptr<CopyOutputResult> result) {
   ASSERT_TRUE(result->HasBitmap());
-  result_bitmap_ = result->TakeBitmap().Pass();
+  result_bitmap_ = result->TakeBitmap();
   quit_run_loop.Run();
 }
 

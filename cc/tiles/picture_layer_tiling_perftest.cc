@@ -33,7 +33,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval),
         context_provider_(TestContextProvider::Create()) {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
+    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());

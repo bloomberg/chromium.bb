@@ -9,22 +9,18 @@
 
 namespace cc {
 
-// Removes the front element from the container and returns it. Note that this
-// currently only works with types that implement Pass().
-// TODO(vmpstr): Use std::move instead of Pass when allowed.
+// Removes the front element from the container and returns it.
 template <typename Container>
 typename Container::value_type PopFront(Container* container) {
-  typename Container::value_type element = container->front().Pass();
+  typename Container::value_type element = std::move(container->front());
   container->pop_front();
   return element;
 }
 
-// Removes the back element from the container and returns it. Note that this
-// currently only works with types that implement Pass().
-// TODO(vmpstr): Use std::move instead of Pass when allowed.
+// Removes the back element from the container and returns it.
 template <typename Container>
 typename Container::value_type PopBack(Container* container) {
-  typename Container::value_type element = container->back().Pass();
+  typename Container::value_type element = std::move(container->back());
   container->pop_back();
   return element;
 }

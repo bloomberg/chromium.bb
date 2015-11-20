@@ -68,14 +68,14 @@ void WebFloatAnimationCurveImpl::setCubicBezierTimingFunction(double x1,
                                                               double x2,
                                                               double y2) {
   curve_->SetTimingFunction(
-      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2).Pass());
+      cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
 }
 
 void WebFloatAnimationCurveImpl::setStepsTimingFunction(
     int number_of_steps,
     float steps_start_offset) {
-  curve_->SetTimingFunction(cc::StepsTimingFunction::Create(
-                                number_of_steps, steps_start_offset).Pass());
+  curve_->SetTimingFunction(
+      cc::StepsTimingFunction::Create(number_of_steps, steps_start_offset));
 }
 
 float WebFloatAnimationCurveImpl::getValue(double time) const {
