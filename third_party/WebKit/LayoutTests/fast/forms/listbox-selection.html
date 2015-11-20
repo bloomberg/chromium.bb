@@ -4,7 +4,15 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
-<div id="parent"></div>
+<div id="parent">
+<select id="sl16" multiple size=5>
+<option>a</option>
+<option>b</option>
+<option>c</option>
+<option>d</option>
+<option>e</option>
+</select>
+</div>
 <p id="description"></p>
 <div id="console"></div>
 <script>
@@ -146,6 +154,11 @@ shouldBeEqualToString('selectionPattern("sl15")', "01000");
 shouldBeEqualToString('mouseMoveToOption("sl15", 3); selectionPattern("sl15")', "01110");
 shouldBeEqualToString('mouseMoveToOption("sl15", 2); selectionPattern("sl15")', "01100");
 eventSender.mouseUp(0);
+
+debug("16) Active-selection after type-ahead");
+shouldBeEqualToString("mouseClickOnSelect('sl16', 1); selectionPattern('sl16')", "01000");
+shouldBeEqualToString("keyDownOnSelect('sl16', 'e'); selectionPattern('sl16')", "00001");
+shouldBeEqualToString("keyDownOnSelect('sl16', 'upArrow', 'rangeSelectionKey'); selectionPattern('sl16')", "00011");
 
 document.getElementById("parent").remove();
 </script>

@@ -1006,17 +1006,22 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         // listIndex must point an HTMLOptionElement if listIndex is not -1
         // because optionToListIndex() returned it.
         element = toHTMLOptionElement(items[listIndex]);
-        // setActiveSelectionAnchorIndex is O(N).
-        if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
-            setActiveSelectionAnchorIndex(listIndex);
-        if (m_activeSelectionEndIndex < 0 || shouldDeselect)
-            setActiveSelectionEndIndex(listIndex);
         element->setSelectedState(true);
     }
 
     // deselectItemsWithoutValidation() is O(N).
     if (shouldDeselect)
         deselectItemsWithoutValidation(element);
+
+    // We should update active selection after finishing OPTION state change
+    // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
+    if (listIndex >= 0) {
+        // setActiveSelectionAnchorIndex is O(N).
+        if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
+            setActiveSelectionAnchorIndex(listIndex);
+        if (m_activeSelectionEndIndex < 0 || shouldDeselect)
+            setActiveSelectionEndIndex(listIndex);
+    }
 
     // For the menu list case, this is what makes the selected element appear.
     if (LayoutObject* layoutObject = this->layoutObject())
