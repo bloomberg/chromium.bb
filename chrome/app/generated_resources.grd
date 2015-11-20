@@ -15377,10 +15377,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
 
       <!-- Disable Auto-Hiding Toolbar Flags -->
       <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_NAME" desc="Name of the flag to disable auto-hiding the toolbar.">
-        Disable auto-hiding the toolbar
+        Disable auto-hiding the toolbar on large tablets
       </message>
       <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_DESCRIPTION" desc="Description of the flag to disable auto-hiding the toolbar.">
-        When enabled, the toolbar will never be hidden due to scrolling. It will still be hidden if page contents go fullscreen.
+        When enabled, the toolbar will never be hidden due to scrolling on devices with a minimum screen dp >= 800. It will still be hidden if page contents go fullscreen.
       </message>
     </if>
 
