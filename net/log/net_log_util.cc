@@ -514,7 +514,6 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
   std::sort(requests.begin(), requests.end(), RequestCreatedBefore);
 
   // Create fake events.
-  ScopedVector<NetLog::Entry> entries;
   for (const auto& request : requests) {
     NetLog::ParametersCallback callback =
         base::Bind(&GetRequestStateAsValue, base::Unretained(request));
