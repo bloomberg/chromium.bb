@@ -5,19 +5,25 @@
 #include "cc/proto/gfx_conversions.h"
 
 #include "cc/proto/point.pb.h"
+#include "cc/proto/point3f.pb.h"
 #include "cc/proto/pointf.pb.h"
 #include "cc/proto/rect.pb.h"
 #include "cc/proto/rectf.pb.h"
+#include "cc/proto/scroll_offset.pb.h"
 #include "cc/proto/size.pb.h"
 #include "cc/proto/sizef.pb.h"
 #include "cc/proto/transform.pb.h"
+#include "cc/proto/vector2df.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -85,6 +91,20 @@ TEST(GfxProtoConversionsTest, SerializeDeserializePointF) {
 
   // Test ProtoToPointF
   EXPECT_EQ(point, ProtoToPointF(proto));
+}
+
+TEST(GfxProtoConversionsTest, SerializeDeserializePoint3F) {
+  const gfx::Point3F point(5.1f, 10.2f, 13.4f);
+
+  // Test PointFToProto
+  proto::Point3F proto;
+  Point3FToProto(point, &proto);
+  EXPECT_EQ(point.x(), proto.x());
+  EXPECT_EQ(point.y(), proto.y());
+  EXPECT_EQ(point.z(), proto.z());
+
+  // Test ProtoToPoint3F
+  EXPECT_EQ(point, ProtoToPoint3F(proto));
 }
 
 TEST(GfxProtoConversionsTest, SerializeDeserializeSize) {
@@ -171,6 +191,32 @@ TEST(GfxProtoConversionsTest, SerializeDeserializeTransform) {
 
   // Test ProtoToTransform
   EXPECT_EQ(transform, ProtoToTransform(proto));
+}
+
+TEST(GfxProtoConversionsTest, SerializeDeserializeVector2dF) {
+  const gfx::Vector2dF vector(5.1f, 10.2f);
+
+  // Test Vector2dFToProto
+  proto::Vector2dF proto;
+  Vector2dFToProto(vector, &proto);
+  EXPECT_EQ(vector.x(), proto.x());
+  EXPECT_EQ(vector.y(), proto.y());
+
+  // Test ProtoToVector2dF
+  EXPECT_EQ(vector, ProtoToVector2dF(proto));
+}
+
+TEST(GfxProtoConversionsTest, SerializeDeserializeScrollOffset) {
+  const gfx::ScrollOffset scroll_offset(5.1f, 10.2f);
+
+  // Test ScrollOffsetToProto
+  proto::ScrollOffset proto;
+  ScrollOffsetToProto(scroll_offset, &proto);
+  EXPECT_EQ(scroll_offset.x(), proto.x());
+  EXPECT_EQ(scroll_offset.y(), proto.y());
+
+  // Test ProtoToScrollOffset
+  EXPECT_EQ(scroll_offset, ProtoToScrollOffset(proto));
 }
 
 }  // namespace

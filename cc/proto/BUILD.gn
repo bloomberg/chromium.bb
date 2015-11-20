@@ -32,16 +32,20 @@ proto_library("proto_internal") {
     "compositor_message.proto",
     "display_item.proto",
     "layer.proto",
+    "layer_position_constraint.proto",
     "point.proto",
+    "point3f.proto",
     "pointf.proto",
     "rect.proto",
     "rectf.proto",
+    "scroll_offset.proto",
     "size.proto",
     "sizef.proto",
     "skregion.proto",
     "skrrect.proto",
     "skxfermode.proto",
     "transform.proto",
+    "vector2df.proto",
   ]
 
   deps = [

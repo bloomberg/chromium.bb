@@ -9,30 +9,39 @@
 
 namespace gfx {
 class Point;
+class Point3F;
 class PointF;
 class Rect;
 class RectF;
+class ScrollOffset;
 class Size;
 class SizeF;
 class Transform;
-}
+class Vector2dF;
+}  // namespace gfx
 
 namespace cc {
 
 namespace proto {
 class Point;
+class Point3F;
 class PointF;
 class Rect;
 class RectF;
+class ScrollOffset;
 class Size;
 class SizeF;
 class Transform;
-}
+class Vector2dF;
+}  // namespace proto
 
 // TODO(dtrainor): Move these to a class and make them static
 // (crbug.com/548432).
 CC_EXPORT void PointToProto(const gfx::Point& point, proto::Point* proto);
 CC_EXPORT gfx::Point ProtoToPoint(const proto::Point& proto);
+
+CC_EXPORT void Point3FToProto(const gfx::Point3F& point, proto::Point3F* proto);
+CC_EXPORT gfx::Point3F ProtoToPoint3F(const proto::Point3F& proto);
 
 CC_EXPORT void PointFToProto(const gfx::PointF& point, proto::PointF* proto);
 CC_EXPORT gfx::PointF ProtoToPointF(const proto::PointF& proto);
@@ -52,6 +61,15 @@ CC_EXPORT gfx::SizeF ProtoToSizeF(const proto::SizeF& proto);
 CC_EXPORT void TransformToProto(const gfx::Transform& transform,
                                 proto::Transform* proto);
 CC_EXPORT gfx::Transform ProtoToTransform(const proto::Transform& proto);
+
+CC_EXPORT void Vector2dFToProto(const gfx::Vector2dF& vector,
+                                proto::Vector2dF* proto);
+CC_EXPORT gfx::Vector2dF ProtoToVector2dF(const proto::Vector2dF& proto);
+
+CC_EXPORT void ScrollOffsetToProto(const gfx::ScrollOffset& scroll_offset,
+                                   proto::ScrollOffset* proto);
+CC_EXPORT gfx::ScrollOffset ProtoToScrollOffset(
+    const proto::ScrollOffset& proto);
 
 }  // namespace cc
 

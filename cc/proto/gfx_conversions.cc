@@ -5,16 +5,21 @@
 #include "cc/proto/gfx_conversions.h"
 
 #include "cc/proto/point.pb.h"
+#include "cc/proto/point3f.pb.h"
 #include "cc/proto/pointf.pb.h"
 #include "cc/proto/rect.pb.h"
 #include "cc/proto/rectf.pb.h"
+#include "cc/proto/scroll_offset.pb.h"
 #include "cc/proto/size.pb.h"
 #include "cc/proto/sizef.pb.h"
 #include "cc/proto/transform.pb.h"
+#include "cc/proto/vector2df.pb.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
@@ -37,6 +42,16 @@ void PointFToProto(const gfx::PointF& point, proto::PointF* proto) {
 
 gfx::PointF ProtoToPointF(const proto::PointF& proto) {
   return gfx::PointF(proto.x(), proto.y());
+}
+
+void Point3FToProto(const gfx::Point3F& point, proto::Point3F* proto) {
+  proto->set_x(point.x());
+  proto->set_y(point.y());
+  proto->set_z(point.z());
+}
+
+gfx::Point3F ProtoToPoint3F(const proto::Point3F& proto) {
+  return gfx::Point3F(proto.x(), proto.y(), proto.z());
 }
 
 void RectToProto(const gfx::Rect& rect, proto::Rect* proto) {
@@ -91,7 +106,9 @@ void TransformToProto(const gfx::Transform& transform,
 }
 
 gfx::Transform ProtoToTransform(const proto::Transform& proto) {
-  gfx::Transform transform;
+  if (proto.matrix_size() == 0)
+    return gfx::Transform();
+  gfx::Transform transform(gfx::Transform::kSkipInitialization);
   DCHECK_EQ(16, proto.matrix_size());
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -99,6 +116,25 @@ gfx::Transform ProtoToTransform(const proto::Transform& proto) {
     }
   }
   return transform;
+}
+
+void Vector2dFToProto(const gfx::Vector2dF& vector, proto::Vector2dF* proto) {
+  proto->set_x(vector.x());
+  proto->set_y(vector.y());
+}
+
+gfx::Vector2dF ProtoToVector2dF(const proto::Vector2dF& proto) {
+  return gfx::Vector2dF(proto.x(), proto.y());
+}
+
+void ScrollOffsetToProto(const gfx::ScrollOffset& scroll_offset,
+                         proto::ScrollOffset* proto) {
+  proto->set_x(scroll_offset.x());
+  proto->set_y(scroll_offset.y());
+}
+
+gfx::ScrollOffset ProtoToScrollOffset(const proto::ScrollOffset& proto) {
+  return gfx::ScrollOffset(proto.x(), proto.y());
 }
 
 }  // namespace cc
