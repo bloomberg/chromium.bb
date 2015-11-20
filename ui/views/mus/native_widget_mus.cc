@@ -179,7 +179,6 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       surface_type_(surface_type),
       show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      context_factory_(new SurfaceContextFactory(shell, window, surface_type)),
       content_(new aura::Window(this)),
       close_widget_factory_(this) {}
 
@@ -263,8 +262,13 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   // For Chrome, we need the GpuProcessTransportFactory so that renderer and
   // browser pixels are composited into a single backing
   // SoftwareOutputDeviceMus.
-  if (!default_context_factory)
+  if (!default_context_factory) {
+    if (!context_factory_) {
+      context_factory_.reset(new SurfaceContextFactory(shell_, window_,
+                                                       surface_type_));
+    }
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  }
   window_tree_host_.reset(
       new WindowTreeHostMus(shell_, this, window_, surface_type_));
   window_tree_host_->InitHost();
