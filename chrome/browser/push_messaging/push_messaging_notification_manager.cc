@@ -49,8 +49,7 @@ using content::WebContents;
 namespace {
 
 void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus",
-                            status,
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status,
                             content::PUSH_USER_VISIBLE_STATUS_LAST + 1);
 }
 
@@ -87,8 +86,7 @@ void IgnoreResult(bool unused) {}
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
     Profile* profile)
-    : profile_(profile),
-      weak_factory_(this) {}
+    : profile_(profile), weak_factory_(this) {}
 
 PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
 
@@ -100,6 +98,7 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
   // TODO(johnme): Relax this heuristic slightly.
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -144,7 +143,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   bool notification_shown = notification_count > 0;
 
   bool notification_needed = true;
+
   // Sites with a currently visible tab don't need to show notifications.
+
 #if defined(OS_ANDROID)
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     Profile* profile = (*it)->GetProfile();
@@ -164,11 +165,11 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
 
     // Ignore minimized windows etc.
     switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-     case blink::WebPageVisibilityStateHidden:
-     case blink::WebPageVisibilityStatePrerender:
-      continue;
-     case blink::WebPageVisibilityStateVisible:
-      break;
+      case blink::WebPageVisibilityStateHidden:
+      case blink::WebPageVisibilityStatePrerender:
+        continue;
+      case blink::WebPageVisibilityStateVisible:
+        break;
     }
 
     // Use the visible URL since that's the one the user is aware of (and it
@@ -264,21 +265,20 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   if (notification_shown) {
     RecordUserVisibleStatus(
         notification_needed
-        ? content::PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN
-        : content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN);
+            ? content::PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN
+            : content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN);
     message_handled_closure.Run();
     return;
   }
   DCHECK(needed_but_not_shown);
   if (missed_notifications.count() <= 1) {  // Apply grace.
     RecordUserVisibleStatus(
-      content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
+        content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
     message_handled_closure.Run();
     return;
   }
   RecordUserVisibleStatus(
-      content::
-          PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
+      content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),
       "PushMessaging.GenericNotificationShown.Origin", origin);
@@ -330,8 +330,10 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
     message_handled_closure.Run();
     return;
   }
+
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
       profile_, persistent_notification_id, origin, SkBitmap() /* icon */,
       notification_data);
+
   message_handled_closure.Run();
 }

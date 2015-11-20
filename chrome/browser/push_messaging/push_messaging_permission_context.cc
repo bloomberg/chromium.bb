@@ -22,11 +22,9 @@ const ContentSettingsType kPushSettingType =
 PushMessagingPermissionContext::PushMessagingPermissionContext(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING),
       profile_(profile),
-      weak_factory_ui_thread_(this) {
-}
+      weak_factory_ui_thread_(this) {}
 
-PushMessagingPermissionContext::~PushMessagingPermissionContext() {
-}
+PushMessagingPermissionContext::~PushMessagingPermissionContext() {}
 
 ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,

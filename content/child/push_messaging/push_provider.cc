@@ -28,7 +28,8 @@ int CurrentWorkerId() {
 int64_t GetServiceWorkerRegistrationId(
     blink::WebServiceWorkerRegistration* service_worker_registration) {
   return static_cast<WebServiceWorkerRegistrationImpl*>(
-      service_worker_registration)->registration_id();
+             service_worker_registration)
+      ->registration_id();
 }
 
 }  // namespace
@@ -129,8 +130,7 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
                         OnSubscribeFromWorkerError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeSuccess,
                         OnUnsubscribeSuccess);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeError,
-                        OnUnsubscribeError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeError, OnUnsubscribeError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetSubscriptionSuccess,
                         OnGetSubscriptionSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetSubscriptionError,
@@ -191,10 +191,9 @@ void PushProvider::OnUnsubscribeSuccess(int request_id, bool did_unsubscribe) {
   unsubscribe_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnUnsubscribeError(
-    int request_id,
-    blink::WebPushError::ErrorType error_type,
-    const std::string& error_message) {
+void PushProvider::OnUnsubscribeError(int request_id,
+                                      blink::WebPushError::ErrorType error_type,
+                                      const std::string& error_message) {
   blink::WebPushUnsubscribeCallbacks* callbacks =
       unsubscribe_callbacks_.Lookup(request_id);
   if (!callbacks)
@@ -222,9 +221,8 @@ void PushProvider::OnGetSubscriptionSuccess(
   subscription_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnGetSubscriptionError(
-    int request_id,
-    PushGetRegistrationStatus status) {
+void PushProvider::OnGetSubscriptionError(int request_id,
+                                          PushGetRegistrationStatus status) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
@@ -264,8 +262,8 @@ void PushProvider::OnGetPermissionStatusError(
         "supported.";
   }
 
-  callbacks->onError(blink::WebPushError(
-      error, blink::WebString::fromUTF8(error_message)));
+  callbacks->onError(
+      blink::WebPushError(error, blink::WebString::fromUTF8(error_message)));
 
   permission_status_callbacks_.Remove(request_id);
 }

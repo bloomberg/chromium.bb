@@ -11,8 +11,7 @@
 
 // static
 PushMessagingPermissionContext*
-PushMessagingPermissionContextFactory::GetForProfile(
-    Profile* profile) {
+PushMessagingPermissionContextFactory::GetForProfile(Profile* profile) {
   return static_cast<PushMessagingPermissionContext*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -26,12 +25,10 @@ PushMessagingPermissionContextFactory::GetInstance() {
 PushMessagingPermissionContextFactory::PushMessagingPermissionContextFactory()
     : PermissionContextFactoryBase(
           "GCMPermissionContext",
-          BrowserContextDependencyManager::GetInstance()) {
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
-PushMessagingPermissionContextFactory
-::~PushMessagingPermissionContextFactory() {
-}
+PushMessagingPermissionContextFactory::
+    ~PushMessagingPermissionContextFactory() {}
 
 KeyedService* PushMessagingPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {

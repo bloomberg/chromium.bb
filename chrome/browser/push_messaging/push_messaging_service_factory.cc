@@ -38,8 +38,7 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
-PushMessagingServiceFactory::~PushMessagingServiceFactory() {
-}
+PushMessagingServiceFactory::~PushMessagingServiceFactory() {}
 
 void PushMessagingServiceFactory::RestoreFactoryForTests(
     content::BrowserContext* context) {

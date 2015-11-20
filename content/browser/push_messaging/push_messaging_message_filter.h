@@ -62,9 +62,8 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                           ServiceWorkerStatusCode service_worker_status);
 
   // sender_id is ignored if data.FromDocument() is false.
-  void CheckForExistingRegistration(
-      const RegisterData& data,
-      const std::string& sender_id);
+  void CheckForExistingRegistration(const RegisterData& data,
+                                    const std::string& sender_id);
 
   // sender_id is ignored if data.FromDocument() is false.
   void DidCheckForExistingRegistration(

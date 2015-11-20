@@ -28,7 +28,8 @@ class PushMessagingAppIdentifierTest : public testing::Test {
     // To bypass DCHECK in PushMessagingAppIdentifier::Generate, we just use it
     // to generate app_id, and then use private constructor.
     std::string app_id = PushMessagingAppIdentifier::Generate(
-        GURL("https://www.example.com/"), 1).app_id();
+                             GURL("https://www.example.com/"), 1)
+                             .app_id();
     return PushMessagingAppIdentifier(app_id, origin,
                                       service_worker_registration_id);
   }
@@ -70,25 +71,31 @@ TEST_F(PushMessagingAppIdentifierTest, ConstructorValidity) {
 }
 
 TEST_F(PushMessagingAppIdentifierTest, UniqueGuids) {
-  EXPECT_NE(PushMessagingAppIdentifier::Generate(
-                GURL("https://www.example.com/"), 1).app_id(),
-            PushMessagingAppIdentifier::Generate(
-                GURL("https://www.example.com/"), 1).app_id());
+  EXPECT_NE(
+      PushMessagingAppIdentifier::Generate(GURL("https://www.example.com/"), 1)
+          .app_id(),
+      PushMessagingAppIdentifier::Generate(GURL("https://www.example.com/"), 1)
+          .app_id());
 }
 
 TEST_F(PushMessagingAppIdentifierTest, FindInvalidAppId) {
   // These calls to FindByAppId should not DCHECK.
   EXPECT_TRUE(PushMessagingAppIdentifier::FindByAppId(profile(), "").is_null());
   EXPECT_TRUE(PushMessagingAppIdentifier::FindByAppId(
-      profile(), "amhfneadkjmnlefnpidcijoldiibcdnd").is_null());
+                  profile(), "amhfneadkjmnlefnpidcijoldiibcdnd")
+                  .is_null());
 }
 
 TEST_F(PushMessagingAppIdentifierTest, PersistAndFind) {
-  ASSERT_TRUE(PushMessagingAppIdentifier::FindByAppId(
-      profile(), original_.app_id()).is_null());
-  ASSERT_TRUE(PushMessagingAppIdentifier::FindByServiceWorker(
-      profile(), original_.origin(), original_.service_worker_registration_id())
+  ASSERT_TRUE(
+      PushMessagingAppIdentifier::FindByAppId(profile(), original_.app_id())
           .is_null());
+
+  const auto identifier = PushMessagingAppIdentifier::FindByServiceWorker(
+      profile(), original_.origin(),
+      original_.service_worker_registration_id());
+
+  ASSERT_TRUE(identifier.is_null());
 
   // Test basic PersistToPrefs round trips.
   original_.PersistToPrefs(profile());
@@ -100,8 +107,9 @@ TEST_F(PushMessagingAppIdentifierTest, PersistAndFind) {
   }
   {
     PushMessagingAppIdentifier found_by_origin_and_swr_id =
-        PushMessagingAppIdentifier::FindByServiceWorker(profile(),
-            original_.origin(), original_.service_worker_registration_id());
+        PushMessagingAppIdentifier::FindByServiceWorker(
+            profile(), original_.origin(),
+            original_.service_worker_registration_id());
     EXPECT_FALSE(found_by_origin_and_swr_id.is_null());
     ExpectAppIdentifiersEqual(original_, found_by_origin_and_swr_id);
   }
@@ -109,11 +117,14 @@ TEST_F(PushMessagingAppIdentifierTest, PersistAndFind) {
 
 TEST_F(PushMessagingAppIdentifierTest, FindLegacy) {
   const std::string legacy_app_id("wp:9CC55CCE-B8F9-4092-A364-3B0F73A3AB5F");
-  ASSERT_TRUE(PushMessagingAppIdentifier::FindByAppId(profile(),
-                                                      legacy_app_id).is_null());
-  ASSERT_TRUE(PushMessagingAppIdentifier::FindByServiceWorker(
-      profile(), original_.origin(), original_.service_worker_registration_id())
-          .is_null());
+  ASSERT_TRUE(PushMessagingAppIdentifier::FindByAppId(profile(), legacy_app_id)
+                  .is_null());
+
+  const auto identifier = PushMessagingAppIdentifier::FindByServiceWorker(
+      profile(), original_.origin(),
+      original_.service_worker_registration_id());
+
+  ASSERT_TRUE(identifier.is_null());
 
   // Create a legacy preferences entry (the test happens to use PersistToPrefs
   // since that currently works, but it's ok to change the behavior of
@@ -130,8 +141,9 @@ TEST_F(PushMessagingAppIdentifierTest, FindLegacy) {
   }
   {
     PushMessagingAppIdentifier found_by_origin_and_swr_id =
-        PushMessagingAppIdentifier::FindByServiceWorker(profile(),
-            original_.origin(), original_.service_worker_registration_id());
+        PushMessagingAppIdentifier::FindByServiceWorker(
+            profile(), original_.origin(),
+            original_.service_worker_registration_id());
     EXPECT_FALSE(found_by_origin_and_swr_id.is_null());
     ExpectAppIdentifiersEqual(original_, found_by_origin_and_swr_id);
   }
@@ -160,8 +172,9 @@ TEST_F(PushMessagingAppIdentifierTest, PersistOverwritesSameOriginAndSW) {
   }
   {
     PushMessagingAppIdentifier found_by_original_origin_and_swr_id =
-        PushMessagingAppIdentifier::FindByServiceWorker(profile(),
-            original_.origin(), original_.service_worker_registration_id());
+        PushMessagingAppIdentifier::FindByServiceWorker(
+            profile(), original_.origin(),
+            original_.service_worker_registration_id());
     EXPECT_FALSE(found_by_original_origin_and_swr_id.is_null());
     ExpectAppIdentifiersEqual(same_origin_and_sw_,
                               found_by_original_origin_and_swr_id);
@@ -184,8 +197,9 @@ TEST_F(PushMessagingAppIdentifierTest, PersistDoesNotOverwriteDifferent) {
   }
   {
     PushMessagingAppIdentifier found_by_original_origin_and_swr_id =
-        PushMessagingAppIdentifier::FindByServiceWorker(profile(),
-            original_.origin(), original_.service_worker_registration_id());
+        PushMessagingAppIdentifier::FindByServiceWorker(
+            profile(), original_.origin(),
+            original_.service_worker_registration_id());
     EXPECT_FALSE(found_by_original_origin_and_swr_id.is_null());
     ExpectAppIdentifiersEqual(original_, found_by_original_origin_and_swr_id);
   }
@@ -205,8 +219,9 @@ TEST_F(PushMessagingAppIdentifierTest, DeleteFromPrefs) {
   }
   {
     PushMessagingAppIdentifier found_by_original_origin_and_swr_id =
-        PushMessagingAppIdentifier::FindByServiceWorker(profile(),
-            original_.origin(), original_.service_worker_registration_id());
+        PushMessagingAppIdentifier::FindByServiceWorker(
+            profile(), original_.origin(),
+            original_.service_worker_registration_id());
     EXPECT_TRUE(found_by_original_origin_and_swr_id.is_null());
   }
 }

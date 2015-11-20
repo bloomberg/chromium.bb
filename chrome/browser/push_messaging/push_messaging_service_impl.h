@@ -83,8 +83,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void GetPublicEncryptionKey(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const content::PushMessagingService::PublicKeyCallback&
-          callback) override;
+      const content::PushMessagingService::PublicKeyCallback& callback)
+      override;
   void Unsubscribe(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
@@ -95,7 +95,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const GURL& embedding_origin,
       bool user_visible) override;
   bool SupportNonVisibleMessages() override;
-
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -162,10 +161,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // GetPublicEncryptionKey method ---------------------------------------------
 
-  void DidGetPublicKey(
-      const PushMessagingService::PublicKeyCallback& callback,
-      const std::string& public_key) const;
-
+  void DidGetPublicKey(const PushMessagingService::PublicKeyCallback& callback,
+                       const std::string& public_key) const;
 
   // Unsubscribe methods -------------------------------------------------------
 

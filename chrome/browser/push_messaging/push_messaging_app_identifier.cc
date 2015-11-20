@@ -25,21 +25,21 @@ namespace {
 // sizeof is strlen + 1 since it's null-terminated.
 const size_t kPrefixLength = sizeof(kPushMessagingAppIdentifierPrefix) - 1;
 
-const char kSeparator = '#';  // Ok as only the origin of the url is used.
+const char kSeparator = '#';    // Ok as only the origin of the url is used.
 const size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
 
 std::string MakePrefValue(const GURL& origin,
                           int64_t service_worker_registration_id) {
-  return origin.spec() + kSeparator
-                       + base::Int64ToString(service_worker_registration_id);
+  return origin.spec() + kSeparator +
+         base::Int64ToString(service_worker_registration_id);
 }
 
-bool GetOriginAndSWRFromPrefValue(
-    const std::string& pref_value, GURL* origin,
-    int64_t* service_worker_registration_id) {
-  std::vector<std::string> parts = base::SplitString(
-      pref_value, std::string(1, kSeparator),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+bool GetOriginAndSWRFromPrefValue(const std::string& pref_value,
+                                  GURL* origin,
+                                  int64_t* service_worker_registration_id) {
+  std::vector<std::string> parts =
+      base::SplitString(pref_value, std::string(1, kSeparator),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2)
     return false;
 
@@ -64,12 +64,12 @@ void PushMessagingAppIdentifier::RegisterProfilePrefs(
 
 // static
 PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
-    const GURL& origin, int64_t service_worker_registration_id)
-{
+    const GURL& origin,
+    int64_t service_worker_registration_id) {
   std::string guid = base::GenerateGUID();
   CHECK(!guid.empty());
-  std::string app_id = kPushMessagingAppIdentifierPrefix + origin.spec()
-                     + kSeparator + guid;
+  std::string app_id =
+      kPushMessagingAppIdentifierPrefix + origin.spec() + kSeparator + guid;
 
   PushMessagingAppIdentifier app_identifier(app_id, origin,
                                             service_worker_registration_id);
@@ -115,9 +115,9 @@ PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByAppId(
 
 // static
 PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByServiceWorker(
-    Profile* profile, const GURL& origin,
-    int64_t service_worker_registration_id)
-{
+    Profile* profile,
+    const GURL& origin,
+    int64_t service_worker_registration_id) {
   const base::StringValue pref_value =
       base::StringValue(MakePrefValue(origin, service_worker_registration_id));
 
@@ -149,13 +149,12 @@ std::vector<PushMessagingAppIdentifier> PushMessagingAppIdentifier::GetAll(
 // static
 size_t PushMessagingAppIdentifier::GetCount(Profile* profile) {
   return profile->GetPrefs()
-                ->GetDictionary(prefs::kPushMessagingAppIdentifierMap)->size();
+      ->GetDictionary(prefs::kPushMessagingAppIdentifierMap)
+      ->size();
 }
 
 PushMessagingAppIdentifier::PushMessagingAppIdentifier()
-    : origin_(GURL::EmptyGURL()),
-      service_worker_registration_id_(-1) {
-}
+    : origin_(GURL::EmptyGURL()), service_worker_registration_id_(-1) {}
 
 PushMessagingAppIdentifier::PushMessagingAppIdentifier(
     const std::string& app_id,
@@ -163,11 +162,9 @@ PushMessagingAppIdentifier::PushMessagingAppIdentifier(
     int64_t service_worker_registration_id)
     : app_id_(app_id),
       origin_(origin),
-      service_worker_registration_id_(service_worker_registration_id) {
-}
+      service_worker_registration_id_(service_worker_registration_id) {}
 
-PushMessagingAppIdentifier::~PushMessagingAppIdentifier() {
-}
+PushMessagingAppIdentifier::~PushMessagingAppIdentifier() {}
 
 void PushMessagingAppIdentifier::PersistToPrefs(Profile* profile) const {
   DCheckValid();
@@ -178,8 +175,8 @@ void PushMessagingAppIdentifier::PersistToPrefs(Profile* profile) const {
 
   // Delete any stale entry with the same origin and Service Worker
   // registration id (hence we ensure there is a 1:1 not 1:many mapping).
-  PushMessagingAppIdentifier old = FindByServiceWorker(
-      profile, origin_, service_worker_registration_id_);
+  PushMessagingAppIdentifier old =
+      FindByServiceWorker(profile, origin_, service_worker_registration_id_);
   if (!old.is_null())
     map->RemoveWithoutPathExpansion(old.app_id_, nullptr /* out_value */);
 
@@ -210,7 +207,8 @@ void PushMessagingAppIdentifier::DCheckValid() const {
     const size_t suffix_length = 1 /* kSeparator */ + kGuidLength;
     DCHECK(app_id_.size() > kPrefixLength + suffix_length);
     DCHECK_EQ(origin_, GURL(app_id_.substr(
-        kPrefixLength, app_id_.size() - kPrefixLength - suffix_length)));
+                           kPrefixLength,
+                           app_id_.size() - kPrefixLength - suffix_length)));
     DCHECK_EQ(std::string(1, kSeparator),
               app_id_.substr(app_id_.size() - suffix_length, 1));
   }

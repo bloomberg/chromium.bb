@@ -58,8 +58,7 @@ const char kSilentPushUnsupportedMessage[] =
     "https://goo.gl/yqv4Q4 for more details.";
 
 void RecordDeliveryStatus(content::PushDeliveryStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus",
-                            status,
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status,
                             content::PUSH_DELIVERY_STATUS_LAST + 1);
 }
 
@@ -78,8 +77,8 @@ blink::WebPushPermissionStatus ToPushPermission(
   }
 }
 
-void UnregisterCallbackToClosure(
-    const base::Closure& closure, content::PushUnregistrationStatus status) {
+void UnregisterCallbackToClosure(const base::Closure& closure,
+                                 content::PushUnregistrationStatus status) {
   closure.Run();
 }
 
@@ -212,21 +211,18 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
 
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),
-      "PushMessaging.MessageReceived.Origin",
-      app_identifier.origin());
+      "PushMessaging.MessageReceived.Origin", app_identifier.origin());
 
   std::string data;
   if (AreMessagePayloadsEnabled() && message.decrypted)
     data = message.raw_data;
 
   content::BrowserContext::DeliverPushMessage(
-      profile_,
-      app_identifier.origin(),
-      app_identifier.service_worker_registration_id(),
-      data,
+      profile_, app_identifier.origin(),
+      app_identifier.service_worker_registration_id(), data,
       base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
-                 weak_factory_.GetWeakPtr(),
-                 app_identifier.app_id(), app_identifier.origin(),
+                 weak_factory_.GetWeakPtr(), app_identifier.app_id(),
+                 app_identifier.origin(),
                  app_identifier.service_worker_registration_id(), message,
                  message_handled_closure));
 }
@@ -287,7 +283,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 }
 
 void PushMessagingServiceImpl::SetMessageCallbackForTesting(
-      const base::Closure& callback) {
+    const base::Closure& callback) {
   message_callback_for_testing_ = callback;
 }
 
@@ -346,8 +342,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   if (!user_visible) {
     web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        kSilentPushUnsupportedMessage);
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, kSilentPushUnsupportedMessage);
 
     SubscribeEndWithError(callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
@@ -382,9 +377,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
 
   GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
-      PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
-                                                    embedding_origin,
-                                                    user_visible);
+      PushMessagingServiceImpl::GetPermissionStatus(
+          requesting_origin, embedding_origin, user_visible);
   if (permission_status != blink::WebPushPermissionStatusGranted) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
@@ -446,9 +440,8 @@ void PushMessagingServiceImpl::DidSubscribe(
     case gcm::GCMClient::SUCCESS:
       // Do not get a certificate if message payloads have not been enabled.
       if (!AreMessagePayloadsEnabled()) {
-        DidSubscribeWithPublicKey(
-            app_identifier, callback, subscription_id,
-            std::string() /* public_key */);
+        DidSubscribeWithPublicKey(app_identifier, callback, subscription_id,
+                                  std::string() /* public_key */);
         return;
       }
 
@@ -457,10 +450,9 @@ void PushMessagingServiceImpl::DidSubscribe(
       // order to send payloads to the user.
       GetGCMDriver()->GetPublicKey(
           app_identifier.app_id(),
-          base::Bind(
-              &PushMessagingServiceImpl::DidSubscribeWithPublicKey,
-              weak_factory_.GetWeakPtr(), app_identifier, callback,
-              subscription_id));
+          base::Bind(&PushMessagingServiceImpl::DidSubscribeWithPublicKey,
+                     weak_factory_.GetWeakPtr(), app_identifier, callback,
+                     subscription_id));
 
       return;
     case gcm::GCMClient::INVALID_PARAMETER:
@@ -721,7 +713,7 @@ void PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked(
 }
 
 void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
-      const base::Closure& callback) {
+    const base::Closure& callback) {
   content_setting_changed_callback_for_testing_ = callback;
 }
 

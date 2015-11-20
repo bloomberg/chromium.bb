@@ -22,8 +22,7 @@
 namespace content {
 
 PushMessagingDispatcher::PushMessagingDispatcher(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
-}
+    : RenderFrameObserver(render_frame) {}
 
 PushMessagingDispatcher::~PushMessagingDispatcher() {}
 
@@ -47,11 +46,9 @@ void PushMessagingDispatcher::subscribe(
   DCHECK(callbacks);
   RenderFrameImpl::FromRoutingID(routing_id())
       ->manifest_manager()
-      ->GetManifest(base::Bind(&PushMessagingDispatcher::DoSubscribe,
-                               base::Unretained(this),
-                               service_worker_registration,
-                               options,
-                               callbacks));
+      ->GetManifest(base::Bind(
+          &PushMessagingDispatcher::DoSubscribe, base::Unretained(this),
+          service_worker_registration, options, callbacks));
 }
 
 void PushMessagingDispatcher::DoSubscribe(
@@ -62,7 +59,8 @@ void PushMessagingDispatcher::DoSubscribe(
   int request_id = subscription_callbacks_.Add(callbacks);
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
-          service_worker_registration)->registration_id();
+          service_worker_registration)
+          ->registration_id();
 
   std::string sender_id =
       manifest.gcm_sender_id.is_null()
