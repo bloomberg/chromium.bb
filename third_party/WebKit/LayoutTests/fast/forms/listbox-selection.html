@@ -4,20 +4,28 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
+<div id="parent"></div>
 <p id="description"></p>
 <div id="console"></div>
 <script>
 description('&lt;select&gt; selection test for mouse events and keyevents.');
 
-function mouseDownOnSelect(selId, index, modifier) {
+function mouseMoveToOption(selId, index) {
+    if (!window.eventSender) {
+        console.log("Needs eventSender.");
+        return;
+    }
     var sl = document.getElementById(selId);
     var itemHeight = Math.floor(sl.offsetHeight / sl.size);
     var border = 1;
     var y = border + index * itemHeight;
+    eventSender.mouseMoveTo(sl.offsetLeft + border, sl.offsetTop + y - window.pageYOffset);
+}
 
-    sl.focus();
+function mouseClickOnSelect(selId, index, modifier) {
+    document.getElementById(selId).focus();
     if (window.eventSender) {
-        eventSender.mouseMoveTo(sl.offsetLeft + border, sl.offsetTop + y - window.pageYOffset);
+        mouseMoveToOption(selId, index);
         eventSender.mouseDown(0, [modifier]);
         eventSender.mouseUp(0, [modifier]);
     }
@@ -55,10 +63,6 @@ function selectionPattern(selId) {
     return result;
 }
 
-var parent = document.createElement('div');
-parent.id = "parent";
-document.body.appendChild(parent);
-
 createSelect("sl1", 5, false, -1);
 createSelect("sl2", 5, false, 1);
 createSelect("sl3", 5, false, -1);
@@ -74,13 +78,14 @@ createSelect("sl11", 5, true, 1);
 createSelect("sl12", 5, true, 2);
 createSelect("sl13", 5, true, 0);
 createSelect("sl14", 5, true, 1);
+createSelect("sl15", 5, true, 0);
 
 debug("1) Select one item with mouse (no previous selection)");
-mouseDownOnSelect("sl1", 0);
+mouseClickOnSelect("sl1", 0);
 shouldBe('selectionPattern("sl1")', '"10000"');
 
 debug("2) Select one item with mouse (with previous selection)");
-mouseDownOnSelect("sl2", 0);
+mouseClickOnSelect("sl2", 0);
 shouldBe('selectionPattern("sl2")', '"10000"');
 
 debug("3) Select one item with the keyboard (no previous selection)");
@@ -92,11 +97,11 @@ keyDownOnSelect("sl4", "downArrow");
 shouldBe('selectionPattern("sl4")', '"00100"');
 
 debug("5) Attempt to select an item cmd-clicking");
-mouseDownOnSelect("sl5", 1, "addSelectionKey");
+mouseClickOnSelect("sl5", 1, "addSelectionKey");
 shouldBe('selectionPattern("sl5")', '"01000"');
 
 debug("6) Attempt to select a range shift-clicking");
-mouseDownOnSelect("sl6", 1, "rangeSelectionKey");
+mouseClickOnSelect("sl6", 1, "rangeSelectionKey");
 shouldBe('selectionPattern("sl6")', '"01000"');
 
 debug("7) Attempt to select a range with the keyboard");
@@ -106,11 +111,11 @@ shouldBe('selectionPattern("sl7")', '"00100"');
 // Multiple selection tests
 
 debug("8) Select one item with mouse (no previous selection)");
-mouseDownOnSelect("sl8", 0);
+mouseClickOnSelect("sl8", 0);
 shouldBe('selectionPattern("sl8")', '"10000"');
 
 debug("9) Select one item with mouse (with previous selection)");
-mouseDownOnSelect("sl9", 0);
+mouseClickOnSelect("sl9", 0);
 shouldBe('selectionPattern("sl9")', '"10000"');
 
 debug("10) Select one item with the keyboard (no previous selection)");
@@ -122,16 +127,27 @@ keyDownOnSelect("sl11", "downArrow");
 shouldBe('selectionPattern("sl11")', '"00100"');
 
 debug("12) Select an item cmd-clicking");
-mouseDownOnSelect("sl12", 1, "addSelectionKey");
+mouseClickOnSelect("sl12", 1, "addSelectionKey");
 shouldBe('selectionPattern("sl12")', '"01100"');
 
 debug("13) Select a range shift-clicking");
-mouseDownOnSelect("sl13", 3, "rangeSelectionKey");
+mouseClickOnSelect("sl13", 3, "rangeSelectionKey");
 shouldBe('selectionPattern("sl13")', '"11110"');
 
 debug("14) Select a range with the keyboard");
 keyDownOnSelect("sl14", "downArrow", "rangeSelectionKey");
 shouldBe('selectionPattern("sl14")', '"01100"');
+
+debug("15) Drag upside-down");
+mouseMoveToOption("sl15", 1);
+eventSender.dragMode = false; // Avoid event delay in eventSender.
+eventSender.mouseDown(0);
+shouldBeEqualToString('selectionPattern("sl15")', "01000");
+shouldBeEqualToString('mouseMoveToOption("sl15", 3); selectionPattern("sl15")', "01110");
+shouldBeEqualToString('mouseMoveToOption("sl15", 2); selectionPattern("sl15")', "01100");
+eventSender.mouseUp(0);
+
+document.getElementById("parent").remove();
 </script>
 </body>
 </html>

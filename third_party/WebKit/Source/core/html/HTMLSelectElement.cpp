@@ -649,8 +649,15 @@ void HTMLSelectElement::setActiveSelectionAnchorIndex(int index)
 
     // Cache the selection state so we can restore the old selection as the new
     // selection pivots around this anchor index.
+    // Example:
+    // 1. Press the mouse button on the second OPTION
+    //   m_activeSelectionAnchorIndex = 1
+    // 2. Drag the mouse pointer onto the fifth OPTION
+    //   m_activeSelectionEndIndex = 4, options at 1-4 indices are selected.
+    // 3. Drag the mouse pointer onto the fourth OPTION
+    //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
+    //   updateListBoxSelection needs to clear selection of the fifth OPTION.
     m_cachedStateForActiveSelection.clear();
-
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];

@@ -31,6 +31,10 @@ PASS selectionPattern("sl12") is "01100"
 PASS selectionPattern("sl13") is "11110"
 14) Select a range with the keyboard
 PASS selectionPattern("sl14") is "01100"
+15) Drag upside-down
+PASS selectionPattern("sl15") is "01000"
+PASS mouseMoveToOption("sl15", 3); selectionPattern("sl15") is "01110"
+PASS mouseMoveToOption("sl15", 2); selectionPattern("sl15") is "01100"
 PASS successfullyParsed is true
 
 TEST COMPLETE
