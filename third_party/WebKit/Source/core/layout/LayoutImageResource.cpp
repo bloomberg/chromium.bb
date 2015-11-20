@@ -94,7 +94,7 @@ LayoutSize LayoutImageResource::imageSize(float multiplier) const
 {
     if (!m_cachedImage)
         return LayoutSize();
-    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier, ImageResource::IntrinsicSize);
+    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier);
     if (m_layoutObject && m_layoutObject->isLayoutImage() && size.width() && size.height())
         size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
     return size;
