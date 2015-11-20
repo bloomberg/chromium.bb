@@ -53,6 +53,15 @@
 
 namespace blink {
 
+namespace {
+
+bool isManualRedirectFetchRequest(const ResourceRequest& request)
+{
+    return request.fetchRedirectMode() == WebURLRequest::FetchRedirectModeManual && request.requestContext() == WebURLRequest::RequestContextFetch;
+}
+
+} // namespace
+
 ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     ResourceLoader* loader = new ResourceLoader(fetcher, resource, options);
@@ -270,7 +279,7 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
     newRequest.setFollowedRedirect(true);
-    if (!m_fetcher->canAccessRedirect(m_resource, newRequest, redirectResponse, m_options)) {
+    if (!isManualRedirectFetchRequest(m_resource->resourceRequest()) && !m_fetcher->canAccessRedirect(m_resource, newRequest, redirectResponse, m_options)) {
         cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
         return;
     }
