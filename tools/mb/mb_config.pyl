@@ -24,8 +24,8 @@
     'cast_gyp_release_bot': ['cast', 'gyp', 'release_bot'],
     'cast_gyp_release_trybot': ['cast', 'gyp', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
-    'chromeos_gn_release_bot': ['chromeos', 'gn', 'release_bot'],
-    'chromeos_gn_release_trybot': ['chromeos', 'gn', 'release_trybot'],
+    'chromeos_ozone_gn_release_bot': ['chromeos', 'ozone', 'gn', 'release_bot'],
+    'chromeos_ozone_gn_release_trybot': ['chromeos', 'ozone', 'gn', 'release_trybot'],
     'dev_gn_debug': ['gn', 'debug', 'shared', 'full_symbols'],
     'dev_gn_release': ['gn', 'release', 'shared'],
     'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
@@ -292,6 +292,11 @@
       'gyp_defines': 'branding=Chrome buildtype=Official',
     },
 
+    'ozone': {
+      'gn_args': 'use_ozone=true',
+      'gyp_defines': 'use_ozone=1',
+    },
+
     'proprietary_codecs': {
       'gn_args': 'proprietary_codecs=true',
       'gyp_defines': 'proprietary_codecs=1',
@@ -377,7 +382,7 @@
       'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
     },
     'chromium.chromiumos': {
-      'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
+      'Linux ChromiumOS GN': 'chromeos_ozone_gn_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
     },
     'chromium.linux': {
@@ -489,7 +494,7 @@
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
-      'linux_chromium_gn_chromeos_rel': 'chromeos_gn_release_trybot',
+      'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',

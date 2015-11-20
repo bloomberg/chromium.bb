@@ -70,11 +70,11 @@ source_set("proximity_auth") {
   ]
 
   deps = [
-    "cryptauth/proto",
-    "logging",
     "//base",
     "//device/bluetooth",
     "//net",
+    "cryptauth/proto",
+    "logging",
   ]
 }
 
@@ -95,9 +95,9 @@ source_set("test_support") {
   ]
 
   deps = [
-    "cryptauth:test_support",
     "//base",
     "//testing/gmock",
+    "cryptauth:test_support",
   ]
 }
 
@@ -128,24 +128,26 @@ source_set("unit_tests") {
   deps = [
     ":proximity_auth",
     ":test_support",
-    "ble:unit_tests",
-    "cryptauth:test_support",
-    "cryptauth:unit_tests",
-    "logging:unit_tests",
     "//base/test:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
+    "ble:unit_tests",
+    "cryptauth:test_support",
+    "cryptauth:unit_tests",
+    "logging:unit_tests",
   ]
 }
 
 # Note: This is a convenience target for ease of rapid iteration during
 # development. It is not executed on any try or build bots.
-test("proximity_auth_unittests") {
-  sources = [
-    "run_all_unittests.cc",
-  ]
-  deps = [
-    ":unit_tests",
-  ]
+if (!is_chromeos) {
+  test("proximity_auth_unittests") {
+    sources = [
+      "run_all_unittests.cc",
+    ]
+    deps = [
+      ":unit_tests",
+    ]
+  }
 }

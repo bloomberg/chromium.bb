@@ -302,8 +302,8 @@ source_set("test_support") {
   configs += [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
-    "//testing/gtest",
     ":gl",
+    "//testing/gtest",
   ]
 
   if (use_x11) {
@@ -365,6 +365,10 @@ test("gl_unittests") {
   data_deps = [
     "//third_party/mesa:osmesa",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 if (is_android) {

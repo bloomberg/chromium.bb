@@ -12,20 +12,30 @@ import("//mojo/public/mojo_application.gni")
 mojo_native_application("core_services") {
   deps = [
     ":sources",
-    "//third_party/angle:libEGL",
-    "//third_party/angle:libGLESv2",
   ]
   if (is_win) {
-    copy("copy_files") {
-      sources = [
-        "$root_shlib_dir/libEGL.dll",
-        "$root_shlib_dir/libGLESv2.dll",
-      ]
-      outputs = [
-        "$root_out_dir/core_services/{{source_file_part}}",
-      ]
-    }
-    deps += [ ":copy_files" ]
+    deps += [
+      ":copy_files",
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+    ]
+  }
+}
+
+if (is_win) {
+  copy("copy_files") {
+    sources = [
+      "$root_shlib_dir/libEGL.dll",
+      "$root_shlib_dir/libGLESv2.dll",
+    ]
+    outputs = [
+      "$root_out_dir/core_services/{{source_file_part}}",
+    ]
+
+    deps = [
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+    ]
   }
 }
 

@@ -101,8 +101,8 @@ source_set("automation_client_lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
-    "//third_party/zlib:zip",
     "//third_party/zlib:minizip",
+    "//third_party/zlib:zip",
     "//ui/accessibility:ax_gen",
     "//ui/base",
     "//ui/gfx",
@@ -165,6 +165,7 @@ source_set("lib") {
     "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

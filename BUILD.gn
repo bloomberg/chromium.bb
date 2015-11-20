@@ -147,8 +147,8 @@ group("both_gn_and_gyp") {
       "//third_party/codesighs",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/gn",
-      "//tools/gn:gn_unittests",
       "//tools/gn:generate_test_gn_data",
+      "//tools/gn:gn_unittests",
       "//tools/perf/clear_system_cache",
       "//ui/accessibility:accessibility_unittests",
       "//ui/app_list:app_list_unittests",
@@ -183,16 +183,15 @@ group("both_gn_and_gyp") {
       #"//mojo/edk/test:mojo_public_environment_unittests",
       #"//mojo/edk/test:mojo_public_system_unittests",
       #"//mojo/edk/test:mojo_public_utility_unittests",
+      "//third_party/WebKit/Source/platform:heap_unittests",
+      "//third_party/WebKit/Source/platform:platform_unittests",
+      "//third_party/WebKit/Source/web:webkit_unit_tests",
+      "//third_party/WebKit/Source/wtf:wtf_unittests",
       "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
-
-      "//third_party/WebKit/Source/platform:heap_unittests",
-      "//third_party/WebKit/Source/platform:platform_unittests",
-      "//third_party/WebKit/Source/web:webkit_unit_tests",
-      "//third_party/WebKit/Source/wtf:wtf_unittests",
       "//third_party/smhasher:pmurhash",
       "//tools/battor_agent",
       "//tools/imagediff($host_toolchain)",
@@ -204,16 +203,16 @@ group("both_gn_and_gyp") {
     ]
   } else {
     deps += [
+      "//ios/chrome:ios_chrome_unittests",
       "//ios/chrome/app",
       "//ios/chrome/browser",
       "//ios/chrome/common",
-      "//ios/chrome:ios_chrome_unittests",
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/chrome/browser",
       "//ios/public/provider/web",
       "//ios/testing:ocmock_support_unittest",
-      "//ios/web/shell:ios_web_shell",
       "//ios/web:ios_web_unittests",
+      "//ios/web/shell:ios_web_shell",
     ]
   }
 
@@ -264,8 +263,8 @@ group("both_gn_and_gyp") {
 
   if (is_android) {
     deps += [
-      "//base/android/linker:chromium_android_linker",
       "//base:base_junit_tests",
+      "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
       "//components/invalidation/impl:components_invalidation_impl_junit_tests",
@@ -292,10 +291,10 @@ group("both_gn_and_gyp") {
 
       # TODO(GYP): Are these needed, or will they be pulled in automatically?
       "//third_party/android_tools:android_gcm_java",
-      "//third_party/android_tools:uiautomator_java",
       "//third_party/android_tools:android_support_v13_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/android_tools:android_support_v7_mediarouter_java",
+      "//third_party/android_tools:uiautomator_java",
       "//third_party/mesa",
       "//third_party/mockito:mockito_java",
       "//third_party/openmax_dl/dl",
@@ -393,8 +392,8 @@ group("both_gn_and_gyp") {
     # TODO(GYP): Figure out which of these should (and can) build
     # for android/chromeos/mac/ios.
     deps += [
-      "//base:check_example",
       "//base:build_utf8_validator_tables",
+      "//base:check_example",
       "//cc:cc_perftests",
       "//cc/blink:cc_blink_unittests",
       "//chrome/test:load_library_perf_tests",
@@ -403,8 +402,8 @@ group("both_gn_and_gyp") {
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/test/chromedriver:chromedriver_tests",
       "//components:components_perftests",
-      "//content/test:content_gl_tests",
       "//content/test:content_gl_benchmark",
+      "//content/test:content_gl_tests",
       "//courgette:courgette",
       "//courgette:courgette_fuzz",
       "//courgette:courgette_minimal_tool",
@@ -413,8 +412,8 @@ group("both_gn_and_gyp") {
       "//gin:gin_shell",
       "//gin:gin_unittests",
       "//google_apis/gcm:mcs_probe",
-      "//gpu:gpu_perftests",
       "//gpu:gl_tests",
+      "//gpu:gpu_perftests",
       "//ipc:ipc_perftests",
       "//media:media_perftests",
       "//media/cast:generate_barcode_video",
@@ -457,8 +456,8 @@ group("both_gn_and_gyp") {
       if (is_linux) {
         # TODO(dpranke): Figure out what platforms should actually have this.
         deps += [
-          "//components/nacl:nacl_helper",
           "//components/nacl:helper_nonsfi",
+          "//components/nacl:nacl_helper",
         ]
       }
     }
@@ -496,7 +495,6 @@ group("both_gn_and_gyp") {
 
       # TODO(GYP): Remove this when the gles2 tests work
       "//gpu/command_buffer/client:gles2_implementation_no_check",
-
       "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
       "//media/cast:cast_benchmarks",
       "//media/cast:tap_proxy",
@@ -509,14 +507,13 @@ group("both_gn_and_gyp") {
 
       # TODO(use-new-edk):
       #"//mojo/edk/test:mojo_public_system_perftests",
+      "//third_party/codesighs:nm2tsv",
       "//third_party/mojo/src/mojo/edk/test:mojo_public_system_perftests",
+      "//third_party/sqlite:sqlite_shell",
       "//ui/keyboard:keyboard_unittests",
       "//ui/message_center:message_center_unittests",
       "//ui/snapshot:snapshot_unittests",
       "//ui/views/examples:views_examples_with_content_exe",
-
-      "//third_party/codesighs:nm2tsv",
-      "//third_party/sqlite:sqlite_shell",
     ]
 
     deps += [
@@ -561,8 +558,8 @@ group("both_gn_and_gyp") {
       "//chrome/installer/setup:setup_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
-      "//cloud_print/service/win:cloud_print_service",
       "//cloud_print:cloud_print_unittests",
+      "//cloud_print/service/win:cloud_print_service",
       "//components/crash/content/tools:crash_service",
       "//components/wifi:wifi_test",
       "//net:quic_client",
@@ -601,7 +598,7 @@ group("gn_only") {
     deps += [ "//mandoline:all" ]
   }
 
-  if (!is_android && !is_ios) {
+  if (!is_android && !is_ios && !is_chromeos) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
 
@@ -635,42 +632,42 @@ group("gn_only") {
       "//third_party/cld_2:cld_2_dynamic_data_tool",
       "//third_party/leveldatabase:leveldb_arena_test",
       "//third_party/leveldatabase:leveldb_bloom_test",
-      "//third_party/leveldatabase:leveldb_db_test",
-      "//third_party/leveldatabase:leveldb_crc32c_test",
       "//third_party/leveldatabase:leveldb_cache_test",
-      "//third_party/leveldatabase:leveldb_env_test",
-      "//third_party/leveldatabase:leveldb_write_batch_test",
-      "//third_party/leveldatabase:leveldb_filter_block_test",
-      "//third_party/leveldatabase:leveldb_version_edit_test",
-      "//third_party/leveldatabase:leveldb_db_bench",
-      "//third_party/leveldatabase:leveldb_log_test",
       "//third_party/leveldatabase:leveldb_corruption_test",
-      "//third_party/leveldatabase:leveldb_table_test",
-      "//third_party/leveldatabase:leveldb_skiplist_test",
-      "//third_party/leveldatabase:leveldb_filename_test",
+      "//third_party/leveldatabase:leveldb_crc32c_test",
+      "//third_party/leveldatabase:leveldb_db_bench",
+      "//third_party/leveldatabase:leveldb_db_test",
       "//third_party/leveldatabase:leveldb_dbformat_test",
-      "//third_party/pdfium/third_party:fx_freetype",
+      "//third_party/leveldatabase:leveldb_env_test",
+      "//third_party/leveldatabase:leveldb_filename_test",
+      "//third_party/leveldatabase:leveldb_filter_block_test",
+      "//third_party/leveldatabase:leveldb_log_test",
+      "//third_party/leveldatabase:leveldb_skiplist_test",
+      "//third_party/leveldatabase:leveldb_table_test",
+      "//third_party/leveldatabase:leveldb_version_edit_test",
+      "//third_party/leveldatabase:leveldb_write_batch_test",
       "//third_party/libjpeg_turbo:simd",
+      "//third_party/libsrtp:rdbx_driver",
       "//third_party/libsrtp:replay_driver",
       "//third_party/libsrtp:roc_driver",
       "//third_party/libsrtp:rtpw",
-      "//third_party/libsrtp:rdbx_driver",
       "//third_party/libsrtp:srtp_driver",
       "//third_party/libsrtp:srtp_driver",
-      "//third_party/libsrtp:srtp_test_kernel_driver",
+      "//third_party/libsrtp:srtp_test_aes_calc",
       "//third_party/libsrtp:srtp_test_cipher_driver",
       "//third_party/libsrtp:srtp_test_datatypes_driver",
-      "//third_party/libsrtp:srtp_test_aes_calc",
       "//third_party/libsrtp:srtp_test_env",
+      "//third_party/libsrtp:srtp_test_kernel_driver",
       "//third_party/libsrtp:srtp_test_rand_gen",
       "//third_party/libsrtp:srtp_test_sha1_driver",
       "//third_party/libsrtp:srtp_test_stat_driver",
       "//third_party/opus:opus_compare",
       "//third_party/opus:opus_demo",
+      "//third_party/opus:test_opus_api",
       "//third_party/opus:test_opus_decode",
       "//third_party/opus:test_opus_encode",
-      "//third_party/opus:test_opus_api",
       "//third_party/opus:test_opus_padding",
+      "//third_party/pdfium/third_party:fx_freetype",
       "//third_party/webrtc/system_wrappers:field_trial_default",
       "//third_party/webrtc/system_wrappers:metrics_default",
       "//ui/display/types",
@@ -680,8 +677,8 @@ group("gn_only") {
 
     if (target_cpu == "x86" || target_cpu == "x64") {
       deps += [
-        "//third_party/libjpeg_turbo:simd_asm",
         "//native_client/src/trusted/platform_qualify:vcpuid",
+        "//third_party/libjpeg_turbo:simd_asm",
       ]
     }
     if (enable_nacl) {
@@ -719,8 +716,8 @@ group("gn_mojo_targets") {
     # and figure out how cross-platform they are
     deps = [
       "//ipc/mojo:ipc_mojo_perftests",
-      "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
+      "//media/mojo/services:cdm_service",
       "//mojo:tests",
 
       # TODO(use-new-edk):
@@ -743,8 +740,8 @@ group("gn_visibility") {
 
   if (!is_ios) {
     deps += [
-      "//v8:v8_snapshot",
       "//v8:postmortem-metadata",
+      "//v8:v8_snapshot",
     ]
   }
 }
