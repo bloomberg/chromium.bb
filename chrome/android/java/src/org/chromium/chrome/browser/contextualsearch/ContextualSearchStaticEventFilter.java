@@ -77,13 +77,16 @@ public class ContextualSearchStaticEventFilter extends EventFilter {
 
     @Override
     protected boolean onTouchEventInternal(MotionEvent event) {
+        OverlayPanel activePanel = mPanelManager.getActivePanel();
+        if (activePanel == null) return false;
+
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             // To avoid a gray flash of empty content, show the search content
             // view immediately on tap rather than waiting for panel expansion.
             // TODO(pedrosimonetti): Once we implement "side-swipe to dismiss"
             // we'll have to revisit this because we don't want to set the
             // Content View visibility to true when the side-swipe is detected.
-            mPanelManager.getActivePanel().notifyPanelTouched();
+            activePanel.notifyPanelTouched();
         }
 
         mSwipeRecognizer.onTouchEvent(event);
