@@ -872,6 +872,8 @@ public:
         SelectionDeleteDromDocument = 1011,
         SelectionDOMString = 1012,
         InputTypeRangeVerticalAppearance = 1013,
+        // The above items are available in M48 branch.
+
         CSSFilterReference = 1014,
         CSSFilterGrayscale = 1015,
         CSSFilterSepia = 1016,
@@ -885,6 +887,7 @@ public:
         CSSFilterDropShadow = 1024,
         BackgroundSyncRegister = 1025,
         BorderImageWithBorderStyleNone = 1026,
+        ExecCommandOnInputOrTextarea = 1027,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

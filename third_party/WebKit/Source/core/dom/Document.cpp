@@ -4394,6 +4394,8 @@ bool Document::execCommand(const String& commandName, bool, const String& value,
         exceptionState.throwDOMException(InvalidStateError, "execCommand is only supported on HTML documents.");
         return false;
     }
+    if (focusedElement() && isHTMLTextFormControlElement(*focusedElement()))
+        UseCounter::count(*this, UseCounter::ExecCommandOnInputOrTextarea);
 
     // We don't allow recursive |execCommand()| to protect against attack code.
     // Recursive call of |execCommand()| could be happened by moving iframe
