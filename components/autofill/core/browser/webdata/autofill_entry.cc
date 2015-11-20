@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
+#include <tuple>
+
 #include "base/strings/utf_string_conversions.h"
 
 namespace autofill {
@@ -33,14 +35,7 @@ bool AutofillKey::operator==(const AutofillKey& key) const {
 }
 
 bool AutofillKey::operator<(const AutofillKey& key) const {
-  int diff = name_.compare(key.name());
-  if (diff < 0)
-    return true;
-
-  if (diff == 0)
-    return value_.compare(key.value()) < 0;
-
-  return false;
+  return std::tie(name_, value_) < std::tie(key.name(), key.value());
 }
 
 AutofillEntry::AutofillEntry(const AutofillKey& key,

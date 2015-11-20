@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/renderer/autofill_agent.h"
 
+#include <tuple>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -163,15 +165,8 @@ AutofillAgent::~AutofillAgent() {}
 
 bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
-  if (lhs.name != rhs.name)
-    return lhs.name < rhs.name;
-  if (lhs.origin != rhs.origin)
-    return lhs.origin < rhs.origin;
-  if (lhs.action != rhs.action)
-    return lhs.action < rhs.action;
-  if (lhs.is_form_tag != rhs.is_form_tag)
-    return lhs.is_form_tag < rhs.is_form_tag;
-  return false;
+  return std::tie(lhs.name, lhs.origin, lhs.action, lhs.is_form_tag) <
+         std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
 }
 
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {

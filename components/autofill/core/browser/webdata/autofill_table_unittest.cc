@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -68,18 +69,10 @@ typedef std::set<AutofillEntry,
 typedef AutofillEntrySet::iterator AutofillEntrySetIterator;
 
 bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
-  int compVal = a.key().name().compare(b.key().name());
-  if (compVal != 0)
-    return compVal < 0;
-
-  compVal = a.key().value().compare(b.key().value());
-  if (compVal != 0)
-    return compVal < 0;
-
-  if (a.date_created() != b.date_created())
-    return a.date_created() < b.date_created();
-
-  return a.date_last_used() < b.date_last_used();
+  return std::tie(a.key().name(), a.key().value(),
+                  a.date_created(), a.date_last_used()) <
+         std::tie(b.key().name(), b.key().value(),
+                  b.date_created(), b.date_last_used());
 }
 
 AutofillEntry MakeAutofillEntry(const char* name,
