@@ -314,6 +314,8 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
         return ScriptValue::createNull(scriptState);
     }
 
+    bool floatType = false;
+
     switch (internalformat) {
     case GL_R8UI:
     case GL_R8I:
@@ -351,6 +353,19 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     case GL_DEPTH32F_STENCIL8:
     case GL_STENCIL_INDEX8:
         break;
+    case GL_R16F:
+    case GL_RG16F:
+    case GL_RGBA16F:
+    case GL_R32F:
+    case GL_RG32F:
+    case GL_RGBA32F:
+    case GL_R11F_G11F_B10F:
+        if (!extensionEnabled(EXTColorBufferFloatName)) {
+            synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid internalformat when EXT_color_buffer_float is not enabled");
+            return ScriptValue::createNull(scriptState);
+        }
+        floatType = true;
+        break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid internalformat");
         return ScriptValue::createNull(scriptState);
@@ -359,15 +374,22 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     switch (pname) {
     case GL_SAMPLES:
         {
+            OwnPtr<GLint[]> values;
             GLint length = -1;
-            webContext()->getInternalformativ(target, internalformat, GL_NUM_SAMPLE_COUNTS, 1, &length);
-            if (length <= 0)
-                return WebGLAny(scriptState, DOMInt32Array::create(0));
+            if (!floatType) {
+                webContext()->getInternalformativ(target, internalformat, GL_NUM_SAMPLE_COUNTS, 1, &length);
+                if (length <= 0)
+                    return WebGLAny(scriptState, DOMInt32Array::create(0));
 
-            OwnPtr<GLint[]> values = adoptArrayPtr(new GLint[length]);
-            for (GLint ii = 0; ii < length; ++ii)
-                values[ii] = 0;
-            webContext()->getInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
+                values = adoptArrayPtr(new GLint[length]);
+                for (GLint ii = 0; ii < length; ++ii)
+                    values[ii] = 0;
+                webContext()->getInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
+            } else {
+                length = 1;
+                values = adoptArrayPtr(new GLint[1]);
+                values[0] = 1;
+            }
             return WebGLAny(scriptState, DOMInt32Array::create(values.get(), length));
         }
     default:
@@ -539,6 +561,23 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
             return;
         }
         webContext()->renderbufferStorage(target, GL_DEPTH24_STENCIL8, width, height);
+        break;
+    case GL_R16F:
+    case GL_RG16F:
+    case GL_RGBA16F:
+    case GL_R32F:
+    case GL_RG32F:
+    case GL_RGBA32F:
+    case GL_R11F_G11F_B10F:
+        if (!extensionEnabled(EXTColorBufferFloatName)) {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "EXT_color_buffer_float not enabled");
+            return;
+        }
+        if (samples) {
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "multisampled float buffers not supported");
+            return;
+        }
+        webContext()->renderbufferStorage(target, internalformat, width, height);
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");

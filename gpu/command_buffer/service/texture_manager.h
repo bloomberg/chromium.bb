@@ -657,6 +657,9 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                                     GLsizei height,
                                     GLsizei depth);
 
+  static GLenum ExtractFormatFromStorageFormat(GLenum internalformat);
+  static GLenum ExtractTypeFromStorageFormat(GLenum internalformat);
+
   // Checks if a dimensions are valid for a given target.
   bool ValidForTarget(
       GLenum target, GLint level,

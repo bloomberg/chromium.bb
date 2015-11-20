@@ -140,8 +140,7 @@ void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum
 
 GLenum WebGLRenderbufferAttachment::type() const
 {
-    notImplemented();
-    return 0;
+    return WebGLTexture::getValidTypeForInternalFormat(m_renderbuffer->internalFormat());
 }
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
@@ -255,7 +254,7 @@ GLenum WebGLTextureAttachment::type() const
     return m_texture->getType(m_target, m_level);
 }
 
-bool isColorRenderable(GLenum internalformat)
+bool isColorRenderable(GLenum internalformat, bool includesFloat)
 {
     switch (internalformat) {
     case GL_RGB:
@@ -290,6 +289,14 @@ bool isColorRenderable(GLenum internalformat)
     case GL_RGBA32UI:
     case GL_RGBA32I:
         return true;
+    case GL_R16F:
+    case GL_RG16F:
+    case GL_RGBA16F:
+    case GL_R32F:
+    case GL_RG32F:
+    case GL_RGBA32F:
+    case GL_R11F_G11F_B10F:
+        return includesFloat;
     default:
         return false;
     }
@@ -432,7 +439,7 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
         break;
     default:
         ASSERT(attachment == GL_COLOR_ATTACHMENT0 || (attachment > GL_COLOR_ATTACHMENT0 && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + context()->maxColorAttachments())));
-        if (!isColorRenderable(internalformat)) {
+        if (!isColorRenderable(internalformat, context()->extensionEnabled(EXTColorBufferFloatName))) {
             *reason = "the internalformat of the attached image is not color-renderable";
             return false;
         }

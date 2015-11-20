@@ -12,6 +12,7 @@ enum WebGLExtensionName {
     ANGLEInstancedArraysName,
     CHROMIUMSubscribeUniformName,
     EXTBlendMinMaxName,
+    EXTColorBufferFloatName,
     EXTDisjointTimerQueryName,
     EXTFragDepthName,
     EXTShaderTextureLODName,

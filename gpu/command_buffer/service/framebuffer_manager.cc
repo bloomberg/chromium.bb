@@ -39,7 +39,10 @@ class RenderbufferAttachment
     return renderbuffer_->internal_format();
   }
 
-  GLenum texture_type() const override { return 0; }
+  GLenum texture_type() const override {
+    return TextureManager::ExtractTypeFromStorageFormat(
+        renderbuffer_->internal_format());
+  }
 
   GLsizei samples() const override { return renderbuffer_->samples(); }
 

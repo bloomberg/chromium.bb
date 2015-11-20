@@ -78,6 +78,7 @@ public:
     bool hasEverBeenBound() const { return object() && m_target; }
 
     static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
+    static GLenum getValidTypeForInternalFormat(GLenum);
 
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
@@ -121,8 +122,6 @@ private:
     int mapTargetToIndex(GLenum) const;
 
     const LevelInfo* getLevelInfo(GLenum target, GLint level) const;
-
-    static GLenum getValidTypeForInternalFormat(GLenum);
 
     GLenum m_target;
 
