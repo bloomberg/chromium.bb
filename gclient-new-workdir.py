@@ -75,8 +75,7 @@ def main():
       print('Creating: %s' % workdir)
       git_common.make_workdir(os.path.join(root, '.git'),
                               os.path.join(workdir, '.git'))
-      subprocess.check_call(['git', 'checkout', '-f'],
-                            cwd=new_workdir.rstrip('.git'))
+      subprocess.check_call(['git', 'checkout', '-f'], cwd=workdir)
 
 
 if __name__ == '__main__':
