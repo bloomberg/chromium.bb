@@ -26,7 +26,7 @@ class CredentialManagerPasswordFormManagerDelegate {
   virtual void OnProvisionalSaveComplete() = 0;
 };
 
-// A PasswordFormManager built to handle PassworForm objects synthesized
+// A PasswordFormManager built to handle PasswordForm objects synthesized
 // by the Credential Manager API.
 class CredentialManagerPasswordFormManager : public PasswordFormManager {
  public:

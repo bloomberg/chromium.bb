@@ -18,6 +18,7 @@
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -146,6 +147,19 @@ void RunAllPendingTasks() {
   run_loop.Run();
 }
 
+class SlightlyLessStubbyPasswordManagerDriver
+    : public StubPasswordManagerDriver {
+ public:
+  explicit SlightlyLessStubbyPasswordManagerDriver(
+      PasswordManagerClient* client)
+      : password_manager_(client) {}
+
+  PasswordManager* GetPasswordManager() override { return &password_manager_; }
+
+ private:
+  PasswordManager password_manager_;
+};
+
 }  // namespace
 
 class CredentialManagerDispatcherTest
@@ -156,9 +170,12 @@ class CredentialManagerDispatcherTest
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
-    client_.reset(new MockPasswordManagerClient(store_.get()));
+    client_.reset(
+        new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
+    stub_driver_.reset(
+        new SlightlyLessStubbyPasswordManagerDriver(client_.get()));
     dispatcher_.reset(new TestCredentialManagerDispatcher(
-        web_contents(), client_.get(), &stub_driver_));
+        web_contents(), client_.get(), stub_driver_.get()));
     ON_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
@@ -266,8 +283,8 @@ class CredentialManagerDispatcherTest
   autofill::PasswordForm origin_path_form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
-  scoped_ptr<MockPasswordManagerClient> client_;
-  StubPasswordManagerDriver stub_driver_;
+  scoped_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
+  scoped_ptr<SlightlyLessStubbyPasswordManagerDriver> stub_driver_;
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
 };
 
@@ -299,6 +316,63 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
   EXPECT_EQ(form_.origin, new_form.origin);
   EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+}
+
+TEST_F(CredentialManagerDispatcherTest, CredentialManagerStoreOverwrite) {
+  // Populate the PasswordStore with a form.
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  // Calling 'OnStore' with a credential that matches |form_| should update
+  // the password without prompting the user.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  info.password = base::ASCIIToUTF16("Totally new password.");
+  dispatcher()->OnStore(kRequestId, info);
+
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
+      .Times(testing::Exactly(0));
+
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // the form is a match for an existing form, and update the PasswordStore.
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(base::ASCIIToUTF16("Totally new password."),
+            passwords[form_.signon_realm][0].password_value);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerStoreOverwriteZeroClick) {
+  // Set the global zero click flag on, and populate the PasswordStore with a
+  // form that's set to skip zero click.
+  client_->set_zero_click_enabled(true);
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  // Calling 'OnStore' with a credential that matches |form_| should update
+  // the password without prompting the user.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  info.password = base::ASCIIToUTF16("Totally new password.");
+  dispatcher()->OnStore(kRequestId, info);
+  process()->sink().ClearMessages();
+
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // the form is a match for an existing form, and update the PasswordStore.
+  RunAllPendingTasks();
+
+  // Verify that the update didn't toggle the skip_zero_click flag off.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
