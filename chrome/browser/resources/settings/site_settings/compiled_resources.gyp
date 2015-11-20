@@ -16,7 +16,7 @@
           'site_details_permission.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/settings_private.js'
+          '../../../../../third_party/closure_compiler/externs/settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -33,7 +33,25 @@
           'site_settings_behavior.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/settings_private.js'
+          '../../../../../third_party/closure_compiler/externs/settings_private.js',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'site_list',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../prefs/prefs_behavior.js',
+          '../prefs/prefs_types.js',
+          'constants.js',
+          'site_settings_behavior.js',
+        ],
+        'externs': [
+          '../../../../../third_party/closure_compiler/externs/settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -49,7 +67,7 @@
           'constants.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/settings_private.js'
+          '../../../../../third_party/closure_compiler/externs/settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
@@ -68,7 +86,7 @@
           'site_settings_behavior.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/settings_private.js'
+          '../../../../../third_party/closure_compiler/externs/settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
