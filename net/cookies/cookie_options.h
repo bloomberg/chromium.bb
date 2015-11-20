@@ -41,6 +41,11 @@ class NET_EXPORT CookieOptions {
   void set_enforce_prefixes() { enforce_prefixes_ = true; }
   bool enforce_prefixes() const { return enforce_prefixes_; }
 
+  // TODO(jww): Remove once we decide wether to ship modifying 'secure' cookies
+  // only from secure schemes. https://crbug.com/546820
+  void set_enforce_strict_secure() { enforce_strict_secure_ = true; }
+  bool enforce_strict_secure() const { return enforce_strict_secure_; }
+
   // |server_time| indicates what the server sending us the Cookie thought the
   // current time was when the cookie was produced.  This is used to adjust for
   // clock skew between server and host.
@@ -55,6 +60,7 @@ class NET_EXPORT CookieOptions {
   bool include_first_party_only_;
   url::Origin first_party_;
   bool enforce_prefixes_;
+  bool enforce_strict_secure_;
   base::Time server_time_;
 };
 

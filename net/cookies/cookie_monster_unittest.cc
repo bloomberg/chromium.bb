@@ -100,6 +100,22 @@ struct CookieMonsterTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const int creation_time_granularity_in_ms = 0;
+  static const bool enforce_strict_secure = false;
+};
+
+struct CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits {
+  static scoped_refptr<CookieStore> Create() {
+    return new CookieMonster(NULL, NULL);
+  }
+
+  static const bool is_cookie_monster = true;
+  static const bool supports_http_only = true;
+  static const bool supports_non_dotted_domains = true;
+  static const bool preserves_trailing_dots = true;
+  static const bool filters_schemes = true;
+  static const bool has_path_prefix_bug = false;
+  static const int creation_time_granularity_in_ms = 0;
+  static const bool enforce_strict_secure = true;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
@@ -110,8 +126,21 @@ INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
                               MultiThreadedCookieStoreTest,
                               CookieMonsterTestTraits);
 
-class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
+INSTANTIATE_TYPED_TEST_CASE_P(
+    CookieMonsterSecureCookiesRequireSecureScheme,
+    CookieStoreTest,
+    CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits);
+
+template <typename T>
+class CookieMonsterTestBase : public CookieStoreTest<T> {
+ public:
+  using CookieStoreTest<T>::RunFor;
+  using CookieStoreTest<T>::SetCookie;
+
  protected:
+  using CookieStoreTest<T>::http_www_google_;
+  using CookieStoreTest<T>::https_www_google_;
+
   CookieList GetAllCookies(CookieMonster* cm) {
     DCHECK(cm);
     GetCookieListCallback callback;
@@ -160,7 +189,8 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     ResultSavingCookieCallback<bool> callback;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, false /* enforce prefixes */, priority,
+        first_party_only, false /* enforce prefixes */,
+        false /* enforces strict secure cookies */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(&callback)));
     RunFor(kTimeout);
@@ -575,6 +605,10 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
   }
 };
 
+using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;
+using CookieMonsterSecureCookiesRequireSecureSchemeTest = CookieMonsterTestBase<
+    CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits>;
+
 // TODO(erikwright): Replace the other callbacks and synchronous helper methods
 // in this test suite with these Mocks.
 template <typename T, typename C>
@@ -671,7 +705,8 @@ ACTION_P3(SetCookieWithDetailsAction, cookie_monster, cc, callback) {
   cookie_monster->SetCookieWithDetailsAsync(
       cc.url, cc.name, cc.value, cc.domain, cc.path, cc.expiration_time,
       cc.secure, cc.http_only, cc.first_party_only,
-      false /* enforce prefixes */, cc.priority, callback->AsCallback());
+      false /* enforce prefixes */, false /* enforces strict secure cookies */,
+      cc.priority, callback->AsCallback());
 }
 
 ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
@@ -2475,7 +2510,8 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
     CookiePriority priority = COOKIE_PRIORITY_DEFAULT;
     cm->SetCookieWithDetailsAsync(
         url, name, value, domain, path, expiration_time, secure, http_only,
-        first_party_only, false /* enforce prefixes */, priority,
+        first_party_only, false /* enforce prefixes */,
+        false /* enforces strict secure cookies */, priority,
         base::Bind(&ResultSavingCookieCallback<bool>::Run,
                    base::Unretained(callback)));
   }
@@ -2964,6 +3000,71 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectBucketCount(
       cookie_source_histogram,
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
+}
+
+TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, SetSecureCookies) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  GURL http_url("http://www.google.com");
+  GURL http_superdomain_url("http://google.com");
+  GURL https_url("https://www.google.com");
+
+  // A non-secure cookie can be created from either a URL with a secure or
+  // insecure scheme.
+  EXPECT_TRUE(SetCookie(cm.get(), http_url, "A=C;"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B;"));
+
+  // A secure cookie cannot be created from a URL with an insecure scheme.
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=B; Secure"));
+
+  // A secure cookie can be created from a URL with a secure scheme.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+
+  // If a non-secure cookie is created from a URL with an insecure scheme, and a
+  // secure cookie with the same name already exists, do not update the cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C;"));
+
+  // If a non-secure cookie is created from a URL with an secure scheme, and a
+  // secure cookie with the same name already exists, update the cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C;"));
+
+  // If a non-secure cookie is created from a URL with an insecure scheme, and
+  // a secure cookie with the same name already exists, no matter what the path
+  // is, do not update the cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/my/path"));
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure; path=/my/path"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; path=/my/path"));
+
+  // If a non-secure cookie is created from a URL with an insecure scheme, and
+  // a secure cookie with the same name already exists, if the domain strings
+  // domain-match, do not update the cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=B; Secure"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; domain=google.com"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=C; domain=www.google.com"));
+
+  // Since A=B was set above with no domain string, set a different cookie here
+  // so the insecure examples aren't trying to overwrite the one above.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "B=C; Secure; domain=google.com"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "B=D; domain=google.com"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "B=D"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_superdomain_url, "B=D"));
+
+  // Verify that if an httponly version of the cookie exists, adding a Secure
+  // version of the cookie still does not overwrite it.
+  CookieOptions include_httponly;
+  include_httponly.set_include_httponly();
+  include_httponly.set_enforce_strict_secure();
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), https_url, "C=D; httponly",
+                                   include_httponly));
+  // Note that the lack of an explicit options object below uses the default,
+  // which in this case includes "exclude_httponly = true".
+  EXPECT_FALSE(SetCookie(cm.get(), https_url, "C=E; Secure"));
 }
 
 class CookieMonsterNotificationTest : public CookieMonsterTest {

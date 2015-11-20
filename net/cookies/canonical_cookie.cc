@@ -254,6 +254,17 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
     return NULL;
   }
 
+  // Per 3.2.1 of "Deprecate modification of 'secure' cookies from non-secure
+  // origins", if the cookie's "secure-only-flag" is "true" and the requesting
+  // URL does not have a secure scheme, the cookie should be thrown away.
+  // https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone
+  if (options.enforce_strict_secure() && parsed_cookie.IsSecure() &&
+      !url.SchemeIsCryptographic()) {
+    VLOG(kVlogSetCookies)
+        << "Create() is trying to create a secure cookie from an insecure URL";
+    return NULL;
+  }
+
   std::string cookie_path = CanonicalCookie::CanonPath(url, parsed_cookie);
   Time server_time(creation_time);
   if (options.has_server_time())
@@ -286,6 +297,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                          bool secure,
                                          bool http_only,
                                          bool first_party_only,
+                                         bool enforce_strict_secure,
                                          CookiePriority priority) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
@@ -304,6 +316,9 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                                &cookie_domain)) {
     return NULL;
   }
+
+  if (enforce_strict_secure && secure && !url.SchemeIsCryptographic())
+    return NULL;
 
   std::string parsed_path = ParsedCookie::ParseValueString(path);
   if (parsed_path != path)

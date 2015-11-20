@@ -70,6 +70,8 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // different creation times.
 //   static const int creation_time_granularity_in_ms;
 //
+//   // The cookie store enforces secure flag requires a secure scheme.
+//   static const bool enforce_strict_secure;
 // };
 
 template <class CookieStoreTestTraits>
@@ -156,6 +158,8 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (!CookieStoreTestTraits::supports_http_only)
       options.set_include_httponly();
+    if (CookieStoreTestTraits::enforce_strict_secure)
+      options.set_enforce_strict_secure();
     return SetCookieWithOptions(cs, url, cookie_line, options);
   }
 

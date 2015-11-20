@@ -352,6 +352,9 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalWebPlatformFeatures)) {
       options.set_enforce_prefixes();
+      // TODO(jww): This should be hooked up to a Finch flag for M49, rather
+      // than the generic "experimental web platform features" flag.
+      options.set_enforce_strict_secure();
     }
     // Pass a null callback since we don't care about when the 'set' completes.
     context->cookie_store()->SetCookieWithOptionsAsync(

@@ -159,12 +159,14 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   // TODO(estark): Remove kEnableExperimentalWebPlatformFeatures check
   // when we decide whether to ship cookie
   // prefixes. https://crbug.com/541511
+  bool experimental_features_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
   monster->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
       cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(),
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures),
+      experimental_features_enabled, experimental_features_enabled,
       cookie.Priority(), cb);
 }
 

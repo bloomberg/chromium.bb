@@ -441,6 +441,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            bool http_only,
                            bool first_party_only,
                            bool enforce_prefixes,
+                           bool enforce_strict_secure,
                            CookiePriority priority,
                            const SetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
@@ -454,6 +455,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         http_only_(http_only),
         first_party_only_(first_party_only),
         enforce_prefixes_(enforce_prefixes),
+        enforce_strict_secure_(enforce_strict_secure),
         priority_(priority),
         callback_(callback) {}
 
@@ -474,6 +476,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   bool http_only_;
   bool first_party_only_;
   bool enforce_prefixes_;
+  bool enforce_strict_secure_;
   CookiePriority priority_;
   SetCookiesCallback callback_;
 
@@ -483,7 +486,8 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
-      http_only_, first_party_only_, enforce_prefixes_, priority_);
+      http_only_, first_party_only_, enforce_prefixes_, enforce_strict_secure_,
+      priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -933,11 +937,13 @@ void CookieMonster::SetCookieWithDetailsAsync(
     bool http_only,
     bool first_party_only,
     bool enforce_prefixes,
+    bool enforce_strict_secure,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
       this, url, name, value, domain, path, expiration_time, secure, http_only,
-      first_party_only, enforce_prefixes, priority, callback);
+      first_party_only, enforce_prefixes, enforce_strict_secure, priority,
+      callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -1118,6 +1124,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          bool http_only,
                                          bool first_party_only,
                                          bool enforce_prefixes,
+                                         bool enforce_strict_secure,
                                          CookiePriority priority) {
   base::AutoLock autolock(lock_);
 
@@ -1128,9 +1135,9 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   last_time_seen_ = creation_time;
 
   scoped_ptr<CanonicalCookie> cc;
-  cc.reset(CanonicalCookie::Create(url, name, value, domain, path,
-                                   creation_time, expiration_time, secure,
-                                   http_only, first_party_only, priority));
+  cc.reset(CanonicalCookie::Create(
+      url, name, value, domain, path, creation_time, expiration_time, secure,
+      http_only, first_party_only, enforce_strict_secure, priority));
 
   if (!cc.get())
     return false;
@@ -1140,6 +1147,8 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   options.set_include_first_party_only();
   if (enforce_prefixes)
     options.set_enforce_prefixes();
+  if (enforce_strict_secure)
+    options.set_enforce_strict_secure();
   return SetCanonicalCookie(&cc, creation_time, options);
 }
 
@@ -1776,20 +1785,38 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
 bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               const CanonicalCookie& ecc,
                                               bool skip_httponly,
-                                              bool already_expired) {
+                                              bool already_expired,
+                                              bool enforce_strict_secure) {
   lock_.AssertAcquired();
 
   bool found_equivalent_cookie = false;
   bool skipped_httponly = false;
+  bool skipped_secure_cookie = false;
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second;) {
     CookieMap::iterator curit = its.first;
     CanonicalCookie* cc = curit->second;
     ++its.first;
 
-    if (ecc.IsEquivalent(*cc)) {
+    // If strict secure cookies is being enforced, then the equivalency
+    // requirements are looser. If the cookie is being set from an insecure
+    // scheme, then if a cookie already exists with the same name and it is
+    // Secure, then the cookie should *not* be updated if they domain-match and
+    // ignoring the path attribute.
+    //
+    // See: https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone
+    if (enforce_strict_secure && !ecc.Source().SchemeIsCryptographic() &&
+        ecc.IsEquivalentForSecureCookieMatching(*cc) && cc->IsSecure()) {
+      skipped_secure_cookie = true;
+      // TODO(jww): We need to add metrics here before we add this as a Finch
+      // experiment, as our current Cookie.CookieSourceScheme and related
+      // metrics make very different assumptions from what this now means.
+      found_equivalent_cookie = true;
+    } else if (ecc.IsEquivalent(*cc)) {
       // We should never have more than one equivalent cookie, since they should
-      // overwrite each other.
+      // overwrite each other, unless secure cookies require secure scheme is
+      // being enforced. In that case, cookies with different paths might exist
+      // and be considered equivalent.
       CHECK(!found_equivalent_cookie)
           << "Duplicate equivalent cookies found, cookie store is corrupted.";
       if (skip_httponly && cc->IsHttpOnly()) {
@@ -1802,7 +1829,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       found_equivalent_cookie = true;
     }
   }
-  return skipped_httponly;
+  return skipped_httponly || skipped_secure_cookie;
 }
 
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
@@ -1889,8 +1916,18 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   bool already_expired = (*cc)->IsExpired(creation_time);
 
   if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
-                                already_expired)) {
-    VLOG(kVlogSetCookies) << "SetCookie() not clobbering httponly cookie";
+                                already_expired,
+                                options.enforce_strict_secure())) {
+    std::string error;
+    if (options.enforce_strict_secure()) {
+      error =
+          "SetCookie() not clobbering httponly cookie or secure cookie for "
+          "insecure scheme";
+    } else {
+      error = "SetCookie() not clobbering httponly cookie";
+    }
+
+    VLOG(kVlogSetCookies) << error;
     return false;
   }
 
@@ -2006,6 +2043,7 @@ int CookieMonster::GarbageCollect(const Time& current, const std::string& key) {
     CookieItVector cookie_its;
     num_deleted +=
         GarbageCollectExpired(current, cookies_.equal_range(key), &cookie_its);
+
     if (cookie_its.size() > kDomainMaxCookies) {
       VLOG(kVlogGarbageCollection) << "Deep Garbage Collect domain.";
       size_t purge_goal =

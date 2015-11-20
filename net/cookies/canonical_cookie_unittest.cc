@@ -94,7 +94,7 @@ TEST(CanonicalCookieTest, Create) {
   // string.
   cookie.reset(CanonicalCookie::Create(
       url, "A", "2", "www.example.com", "/test", creation_time, base::Time(),
-      false, false, false, COOKIE_PRIORITY_DEFAULT));
+      false, false, false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -106,7 +106,7 @@ TEST(CanonicalCookieTest, Create) {
 
   cookie.reset(CanonicalCookie::Create(
       url, "A", "2", ".www.example.com", "/test", creation_time, base::Time(),
-      false, false, false, COOKIE_PRIORITY_DEFAULT));
+      false, false, false, false, COOKIE_PRIORITY_DEFAULT));
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -238,6 +238,104 @@ TEST(CanonicalCookieTest, IsEquivalent) {
       expiration_time, last_access_time, secure, httponly, firstparty,
       COOKIE_PRIORITY_MEDIUM));
   EXPECT_FALSE(cookie->IsEquivalent(*other_cookie));
+}
+
+TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
+  GURL url("http://www.example.com/");
+  std::string cookie_name = "A";
+  std::string cookie_value = "2EDA-EF";
+  std::string cookie_domain = ".www.example.com";
+  std::string cookie_path = "/";
+  base::Time creation_time = base::Time::Now();
+  base::Time last_access_time = creation_time;
+  base::Time expiration_time = creation_time + base::TimeDelta::FromDays(2);
+  bool secure(false);
+  bool httponly(false);
+  bool firstparty(false);
+
+  // Test that a cookie is equivalent to itself.
+  scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
+      url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, secure, httponly, firstparty,
+      COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*cookie));
+
+  // Test that two identical cookies are equivalent.
+  scoped_ptr<CanonicalCookie> other_cookie(new CanonicalCookie(
+      url, cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, secure, httponly, firstparty,
+      COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  // Tests that use different variations of attribute values that
+  // DON'T affect cookie equivalence. Differs from the IsEquivalent tests above
+  // as follows:
+  //    * Should return true even if paths differ.
+  //    * Should return true if the domains "domain-match" (but are not
+  //      identical).
+  other_cookie.reset(
+      new CanonicalCookie(url, cookie_name, "2", cookie_domain, cookie_path,
+                          creation_time, expiration_time, last_access_time,
+                          secure, httponly, firstparty, COOKIE_PRIORITY_HIGH));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  base::Time other_creation_time =
+      creation_time + base::TimeDelta::FromMinutes(2);
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, "2", cookie_domain, cookie_path, other_creation_time,
+      expiration_time, last_access_time, secure, httponly, firstparty,
+      COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_name, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, true, httponly, firstparty,
+      COOKIE_PRIORITY_LOW));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_name, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, secure, true, firstparty,
+      COOKIE_PRIORITY_LOW));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_name, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, secure, httponly, true,
+      COOKIE_PRIORITY_LOW));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  // The following 3 tests' expected results differ from their IsEquivalent
+  // counterparts above.
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_value, cookie_domain, "/test/0", creation_time,
+      expiration_time, last_access_time, secure, httponly, firstparty,
+      COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_value, "www.example.com", cookie_path,
+      creation_time, expiration_time, last_access_time, secure, httponly,
+      firstparty, COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsDomainCookie());
+  EXPECT_FALSE(other_cookie->IsDomainCookie());
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  other_cookie.reset(new CanonicalCookie(
+      url, cookie_name, cookie_value, ".example.com", cookie_path,
+      creation_time, expiration_time, last_access_time, secure, httponly,
+      firstparty, COOKIE_PRIORITY_MEDIUM));
+  EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
+
+  // Tests that use different variations of attribute values that
+  // DO affect cookie equivalence. Note that unlike the IsEquivalent tests
+  // above, this does *not* include tests for differing paths or domains that
+  // "domain-match".
+  other_cookie.reset(new CanonicalCookie(
+      url, "B", cookie_value, cookie_domain, cookie_path, creation_time,
+      expiration_time, last_access_time, secure, httponly, firstparty,
+      COOKIE_PRIORITY_MEDIUM));
+  EXPECT_FALSE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
 }
 
 TEST(CanonicalCookieTest, IsDomainMatch) {
@@ -536,6 +634,50 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
   EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
                          https_url, "$HostA=B; Domain=" + domain + "; Secure;",
                          creation_time, options)));
+}
+
+TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
+  GURL http_url("http://www.example.com");
+  GURL https_url("https://www.example.com");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  options.set_enforce_strict_secure();
+
+  scoped_ptr<CanonicalCookie> http_cookie_no_secure(
+      CanonicalCookie::Create(http_url, "a=b", creation_time, options));
+  scoped_ptr<CanonicalCookie> http_cookie_secure(
+      CanonicalCookie::Create(http_url, "a=b; Secure", creation_time, options));
+  scoped_ptr<CanonicalCookie> https_cookie_no_secure(
+      CanonicalCookie::Create(https_url, "a=b", creation_time, options));
+  scoped_ptr<CanonicalCookie> https_cookie_secure(CanonicalCookie::Create(
+      https_url, "a=b; Secure", creation_time, options));
+
+  EXPECT_TRUE(http_cookie_no_secure.get());
+  EXPECT_FALSE(http_cookie_secure.get());
+  EXPECT_TRUE(https_cookie_no_secure.get());
+  EXPECT_TRUE(https_cookie_secure.get());
+
+  scoped_ptr<CanonicalCookie> http_cookie_no_secure_extended(
+      CanonicalCookie::Create(http_url, "a", "b", "", "", creation_time,
+                              creation_time, false, false, false, true,
+                              COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> http_cookie_secure_extended(
+      CanonicalCookie::Create(http_url, "a", "b", "", "", creation_time,
+                              creation_time, true, false, false, true,
+                              COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> https_cookie_no_secure_extended(
+      CanonicalCookie::Create(https_url, "a", "b", "", "", creation_time,
+                              creation_time, false, false, false, true,
+                              COOKIE_PRIORITY_DEFAULT));
+  scoped_ptr<CanonicalCookie> https_cookie_secure_extended(
+      CanonicalCookie::Create(https_url, "a", "b", "", "", creation_time,
+                              creation_time, true, false, false, true,
+                              COOKIE_PRIORITY_DEFAULT));
+
+  EXPECT_TRUE(http_cookie_no_secure_extended.get());
+  EXPECT_FALSE(http_cookie_secure_extended.get());
+  EXPECT_TRUE(https_cookie_no_secure_extended.get());
+  EXPECT_TRUE(https_cookie_secure_extended.get());
 }
 
 }  // namespace net

@@ -168,6 +168,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  bool http_only,
                                  bool first_party,
                                  bool enforce_prefixes,
+                                 bool enforce_strict_secure,
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback);
 
@@ -466,6 +467,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             bool http_only,
                             bool first_party,
                             bool enforce_prefixes,
+                            bool enforce_strict_secure,
                             CookiePriority priority);
 
   CookieList GetAllCookies();
@@ -563,14 +565,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
-  // return value with be true if |skip_httponly| skipped an httponly cookie.
-  // |key| is the key to find the cookie in cookies_; see the comment before
-  // the CookieMap typedef for details.
+  // return value will be true if |skip_httponly| skipped an httponly cookie or
+  // |enforce_strict_secure| is true and the cookie to
+  // delete was Secure and the scheme of |ecc| is insecure.  |key| is the key to
+  // find the cookie in cookies_; see the comment before the CookieMap typedef
+  // for details.
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
                                  bool skip_httponly,
-                                 bool already_expired);
+                                 bool already_expired,
+                                 bool enforce_strict_secure);
 
   // Takes ownership of *cc. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
