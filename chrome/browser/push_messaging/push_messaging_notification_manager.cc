@@ -53,6 +53,28 @@ content::StoragePartition* GetStoragePartition(Profile* profile,
   return content::BrowserContext::GetStoragePartitionForSite(profile, origin);
 }
 
+content::NotificationDatabaseData CreateDatabaseData(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const std::string& languages) {
+  content::PlatformNotificationData notification_data;
+  notification_data.title =
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin, languages);
+  notification_data.direction =
+      content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+  notification_data.body =
+      l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
+  notification_data.tag = kPushMessagingForcedNotificationTag;
+  notification_data.icon = GURL();
+  notification_data.silent = true;
+
+  content::NotificationDatabaseData database_data;
+  database_data.origin = origin;
+  database_data.service_worker_registration_id = service_worker_registration_id;
+  database_data.notification_data = notification_data;
+  return database_data;
+}
+
 }  // namespace
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
@@ -260,24 +282,9 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
   // The site failed to show a notification when one was needed, and they have
   // already failed once in the previous 10 push messages, so we will show a
   // generic notification. See https://crbug.com/437277.
-  content::PlatformNotificationData notification_data;
-  notification_data.title =
-      url_formatter::FormatUrlForSecurityDisplayOmitScheme(
-          origin, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  notification_data.direction =
-      content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
-  notification_data.body =
-      l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
-  notification_data.tag = kPushMessagingForcedNotificationTag;
-  notification_data.icon = GURL();
-  notification_data.silent = true;
-
-  content::NotificationDatabaseData database_data;
-  database_data.origin = origin;
-  database_data.service_worker_registration_id =
-      service_worker_registration_id;
-  database_data.notification_data = notification_data;
-
+  content::NotificationDatabaseData database_data = CreateDatabaseData(
+      origin, service_worker_registration_id,
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   scoped_refptr<content::PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   BrowserThread::PostTask(
@@ -287,7 +294,8 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
                  base::Bind(&PushMessagingNotificationManager::
                                 DidWriteNotificationDataIOProxy,
                             weak_factory_.GetWeakPtr(), origin,
-                            notification_data, message_handled_closure)));
+                            database_data.notification_data,
+                            message_handled_closure)));
 }
 
 // static
