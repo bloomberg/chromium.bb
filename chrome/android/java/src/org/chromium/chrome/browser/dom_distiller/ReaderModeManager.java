@@ -44,11 +44,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         implements InfoBarContainerObserver, ReaderModeManagerDelegate {
 
     /**
-     * URL scheme for dom-distiller.
-     */
-    public static final String DOM_DISTILLER_SCHEME = "chrome-distiller";
-
-    /**
      * POSSIBLE means reader mode can be entered.
      */
     public static final int POSSIBLE = 0;
@@ -289,11 +284,11 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     }
 
     @Override
-    public void onPanelPeek() {
-        String distillerUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
-                DOM_DISTILLER_SCHEME, mTabModelSelector.getCurrentTab().getUrl());
-        // Load the distilled page URL when the visibility of the panel changes.
-        mReaderModePanel.loadUrlInPanel(distillerUrl, false);
+    public WebContents getBasePageWebContents() {
+        Tab tab = mTabModelSelector.getCurrentTab();
+        if (tab == null) return null;
+
+        return tab.getWebContents();
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {

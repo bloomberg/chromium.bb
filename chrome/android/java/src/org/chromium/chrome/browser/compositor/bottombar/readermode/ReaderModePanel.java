@@ -18,8 +18,12 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Pane
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -74,22 +78,45 @@ public class ReaderModePanel extends OverlayPanel {
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         OverlayContentDelegate delegate = new OverlayContentDelegate() {
+            /**
+             * Track if a navigation/load is the first one for this content.
+             */
+            private boolean mIsInitialLoad = true;
+
             @Override
             public void onContentViewCreated(ContentViewCore contentView) {
                 mContentViewDelegate.setOverlayPanelContentViewCore(contentView);
+
+                WebContents distilledWebContents = contentView.getWebContents();
+                if (distilledWebContents == null) return;
+
+                WebContents sourceWebContents = mManagerDelegate.getBasePageWebContents();
+                if (sourceWebContents == null) return;
+
+                DomDistillerTabUtils.distillAndView(sourceWebContents, distilledWebContents);
             }
 
             @Override
             public void onContentViewDestroyed() {
                 mContentViewDelegate.releaseOverlayPanelContentViewCore();
+                mIsInitialLoad = true;
             }
 
             @Override
-            public void onMainFrameNavigation(String url, boolean isExternalUrl,
-                    boolean isFailure) {
-                if (isExternalUrl) {
-                    mManagerDelegate.createNewTab(url);
+            public boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
+                    NavigationParams navigationParams) {
+                // The initial load will be the distilled content; don't try to open a new tab if
+                // this is the case. All other navigations on distilled pages will come from link
+                // clicks.
+                if (mIsInitialLoad) {
+                    mIsInitialLoad = false;
+                    return true;
                 }
+                if (!navigationParams.isExternalProtocol) {
+                    mManagerDelegate.createNewTab(navigationParams.url);
+                    return false;
+                }
+                return true;
             }
         };
 
@@ -180,12 +207,6 @@ public class ReaderModePanel extends OverlayPanel {
     @Override
     public boolean canBeSuppressed() {
         return true;
-    }
-
-    @Override
-    public void peekPanel(StateChangeReason reason) {
-        super.peekPanel(reason);
-        mManagerDelegate.onPanelPeek();
     }
 
     @Override

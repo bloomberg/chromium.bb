@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Delegate for the panel to call into the manager.
@@ -38,9 +39,10 @@ public interface ReaderModeManagerDelegate {
     void onCloseButtonPressed();
 
     /**
-     * Notify the manager that the panel is starting to peek.
+     * Get the WebContents of the page that is being distilled.
+     * @return The WebContents for the currently visible tab.
      */
-    void onPanelPeek();
+    WebContents getBasePageWebContents();
 
     /**
      * @return The ChromeActivity that owns the manager.
