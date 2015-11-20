@@ -991,7 +991,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   if (browser_command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
-  AddFilter(new MemoryMessageFilter(this));
+  AddFilter(new MemoryMessageFilter());
   AddFilter(new PushMessagingMessageFilter(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
   // TODO(mfomitchev): Screen Orientation APIs on Aura - crbug.com/546719.
