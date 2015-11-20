@@ -9,6 +9,9 @@
 
 namespace web {
 
+// Returns the os cpu info portion for a user agent.
+std::string BuildOSCpuInfo();
+
 // Returns the user agent to use for the given product name.
 // The returned user agent is very similar to that used by Mobile Safari, for
 // web page compatibility.

@@ -58,6 +58,10 @@ const UAVersions& GetUAVersionsForCurrentOS() {
   return version_map[arraysize(version_map) - 1].ua_versions;
 }
 
+}  // namespace
+
+namespace web {
+
 std::string BuildOSCpuInfo() {
   int32 os_major_version = 0;
   int32 os_minor_version = 0;
@@ -97,10 +101,6 @@ std::string BuildOSCpuInfo() {
 
   return os_cpu;
 }
-
-}  // namespace
-
-namespace web {
 
 std::string BuildUserAgentFromProduct(const std::string& product) {
   // Retrieve the kernel build number.
