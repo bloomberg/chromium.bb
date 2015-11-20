@@ -23,7 +23,10 @@ class LocalFetcher : public shell::Fetcher {
   LocalFetcher(NetworkService* network_service,
                const GURL& url,
                const GURL& url_without_query,
+               const base::FilePath& shell_file_root,
                const FetchCallback& loader_callback);
+
+  ~LocalFetcher() override;
 
   void GetMimeTypeFromFileCallback(const mojo::String& mime_type);
 
@@ -47,6 +50,7 @@ class LocalFetcher : public shell::Fetcher {
 
   GURL url_;
   base::FilePath path_;
+  base::FilePath shell_file_root_;
   std::string mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFetcher);

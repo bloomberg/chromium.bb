@@ -99,6 +99,7 @@ class PackageManagerImpl : public shell::PackageManager {
   // Counter used to assign ids to content handlers.
   uint32_t content_handler_id_counter_;
   base::TaskRunner* task_runner_;
+  base::FilePath shell_file_root_;
 
   DISALLOW_COPY_AND_ASSIGN(PackageManagerImpl);
 };

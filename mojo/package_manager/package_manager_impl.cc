@@ -30,7 +30,8 @@ PackageManagerImpl::PackageManagerImpl(
       disable_cache_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCache)),
       content_handler_id_counter_(0u),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      shell_file_root_(shell_file_root) {
   if (!shell_file_root.empty()) {
     GURL mojo_root_file_url =
         util::FilePathToFileURL(shell_file_root).Resolve(std::string());
@@ -93,7 +94,7 @@ void PackageManagerImpl::FetchRequest(
     new fetcher::LocalFetcher(
         network_service_.get(), resolved_url,
         shell::GetBaseURLAndQuery(resolved_url, nullptr),
-        loader_callback);
+        shell_file_root_, loader_callback);
     return;
   }
 

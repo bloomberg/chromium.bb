@@ -5,6 +5,7 @@
 #include "mojo/fetcher/local_fetcher.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +16,7 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "url/url_util.h"
 
@@ -31,10 +33,12 @@ void IgnoreResult(bool result) {
 LocalFetcher::LocalFetcher(NetworkService* network_service,
                            const GURL& url,
                            const GURL& url_without_query,
+                           const base::FilePath& shell_file_root,
                            const FetchCallback& loader_callback)
     : Fetcher(loader_callback),
       url_(url),
-      path_(util::UrlToFilePath(url_without_query)) {
+      path_(util::UrlToFilePath(url_without_query)),
+      shell_file_root_(shell_file_root) {
   TRACE_EVENT1("mojo_shell", "LocalFetcher::LocalFetcher", "url", url.spec());
   const std::string ext(base::FilePath(path_.Extension()).AsUTF8Unsafe());
   if (network_service && !base::EqualsCaseInsensitiveASCII(ext, ".mojo")) {
@@ -47,6 +51,8 @@ LocalFetcher::LocalFetcher(NetworkService* network_service,
   }
 }
 
+LocalFetcher::~LocalFetcher() {}
+
 void LocalFetcher::GetMimeTypeFromFileCallback(const mojo::String& mime_type) {
   mime_type_ = mime_type.To<std::string>();
   loader_callback_.Run(make_scoped_ptr(this));
@@ -57,6 +63,32 @@ const GURL& LocalFetcher::GetURL() const {
 }
 
 GURL LocalFetcher::GetRedirectURL() const {
+  // Use Mandoline's Google Storage bucket if the Mojo component does not exist.
+  // TODO(msw): Integrate with Mandoline's component updater? crbug.com/479169
+  // TODO(msw): Integrate with planned Omaha fetcher and updater work.
+  // TODO(msw): Support fetching apps with resource files.
+  // TODO(msw): Handle broken URLs. (unavailable component files, etc.)
+  // TODO(msw): Avoid kPredictableAppFilenames switch? (need executable bit set)
+  if (!base::PathExists(path_) && shell_file_root_.IsParent(path_) &&
+      path_.MatchesExtension(FILE_PATH_LITERAL(".mojo")) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPredictableAppFilenames)) {
+    GURL url("https://storage.googleapis.com/mandoline/");
+    const std::string version("latest/");
+#if defined(OS_WIN)
+    const std::string platform("win/");
+#elif defined(OS_LINUX)
+    const std::string platform("linux/");
+#else
+    const std::string platform("unknown/");
+#endif
+    // Get the app path relative to the shell (and Google Storage) file root.
+    base::FilePath app_path;
+    bool result = shell_file_root_.AppendRelativePath(path_, &app_path);
+    DCHECK(result);
+    url = url.Resolve(version).Resolve(platform).Resolve(app_path.value());
+    return url;
+  }
   return GURL::EmptyGURL();
 }
 
