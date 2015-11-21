@@ -29,8 +29,8 @@
             base::Histogram::kUmaTargetedHistogramFlag))
 
 #define UMA_HISTOGRAM_CUSTOM_COUNTS_NO_CACHE(name, sample, min, max, \
-                                             bucket_count) \
-    STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(name, Add(sample), \
+                                             bucket_count, count) \
+    STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(name, AddCount(sample, count), \
         base::Histogram::FactoryGet(name, min, max, bucket_count, \
             base::HistogramBase::kUmaTargetedHistogramFlag))
 
