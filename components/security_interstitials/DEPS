@@ -1,6 +1,9 @@
 include_rules = [
+  "+components/google/core/browser",
   "+components/history/core/browser",
   "+components/metrics",
   "+components/rappor",
-  "+net/base"
+  "+grit/components_strings.h",
+  "+net/base",
+  "+ui/base"
 ]

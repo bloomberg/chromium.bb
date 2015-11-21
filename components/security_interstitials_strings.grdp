@@ -49,4 +49,9 @@
     </message>
   </if>
 
+  <!-- Extended reporting strings -->
+  <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
+    https://www.google.com/chrome/browser/privacy/whitepaper.html#malware
+  </message>
+
 </grit-part>

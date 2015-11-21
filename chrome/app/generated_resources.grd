@@ -9658,9 +9658,6 @@ I don't think this site should be blocked!
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE" desc="Label for the link to SafeBrowsing Privacy policy page">
         Privacy policy
       </message>
-      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
-        https://www.google.com/chrome/browser/privacy/whitepaper.html#malware
-      </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
         Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>

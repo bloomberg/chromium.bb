@@ -79,44 +79,10 @@ void SecurityInterstitialPage::Show() {
   interstitial_page_->Show();
 }
 
-void SecurityInterstitialPage::SetReportingPreference(bool report) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  PrefService* pref = profile->GetPrefs();
-  pref->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, report);
-  metrics_helper()->RecordUserInteraction(
-      report ? security_interstitials::MetricsHelper::
-                   SET_EXTENDED_REPORTING_ENABLED
-             : security_interstitials::MetricsHelper::
-                   SET_EXTENDED_REPORTING_DISABLED);
-}
-
 bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return profile->GetPrefs()->GetBoolean(pref);
-}
-
-void SecurityInterstitialPage::OpenExtendedReportingPrivacyPolicy() {
-  metrics_helper()->RecordUserInteraction(
-      security_interstitials::MetricsHelper::SHOW_PRIVACY_POLICY);
-  GURL privacy_url(
-      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
-  privacy_url = google_util::AppendGoogleLocaleParam(
-      privacy_url, g_browser_process->GetApplicationLocale());
-  OpenURLParams params(privacy_url, Referrer(), CURRENT_TAB,
-                       ui::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
-}
-
-security_interstitials::MetricsHelper*
-SecurityInterstitialPage::metrics_helper() const {
-  return metrics_helper_.get();
-}
-
-void SecurityInterstitialPage::set_metrics_helper(
-    scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
-  metrics_helper_ = metrics_helper.Pass();
 }
 
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
@@ -142,4 +108,24 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
                          .as_string();
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);
+}
+
+void SecurityInterstitialPage::OpenUrlInCurrentTab(const GURL& url) {
+  OpenURLParams params(url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+                       false);
+  web_contents()->OpenURL(params);
+}
+
+const std::string& SecurityInterstitialPage::GetApplicationLocale() {
+  return g_browser_process->GetApplicationLocale();
+}
+
+PrefService* SecurityInterstitialPage::GetPrefService() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return profile->GetPrefs();
+}
+
+const std::string SecurityInterstitialPage::GetExtendedReportingPrefName() {
+  return prefs::kSafeBrowsingExtendedReportingEnabled;
 }

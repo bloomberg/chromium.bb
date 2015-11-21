@@ -11,6 +11,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../ui/base/ui_base.gyp:ui_base',
+        'components_strings.gyp:components_strings',
+        'google_core_browser',
         'history_core_browser',
         'metrics',
         'rappor',
@@ -20,6 +23,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'security_interstitials/core/controller_client.cc',
+        'security_interstitials/core/controller_client.h',
         'security_interstitials/core/metrics_helper.cc',
         'security_interstitials/core/metrics_helper.h',
       ]

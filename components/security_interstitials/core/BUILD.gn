@@ -5,15 +5,20 @@
 # GYP version: components/security_interstitials.gyp:security_interstitials_core
 static_library("core") {
   sources = [
+    "controller_client.cc",
+    "controller_client.h",
     "metrics_helper.cc",
     "metrics_helper.h",
   ]
 
   deps = [
     "//base",
+    "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/metrics",
     "//components/rappor",
+    "//components/strings",
     "//net",
+    "//ui/base",
   ]
 }
