@@ -1001,8 +1001,6 @@ int MockTCPClientSocket::Write(IOBuffer* buf, int buf_len,
     return ERR_IO_PENDING;
   }
 
-  // TODO(rch): remove this once OrderedSocketData and DelayedSocketData
-  // have been removed.
   if (write_result.mode == ASYNC) {
     RunCallbackAsync(callback, write_result.result);
     return ERR_IO_PENDING;
