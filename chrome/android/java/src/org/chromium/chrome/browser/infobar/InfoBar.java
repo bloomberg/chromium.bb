@@ -186,11 +186,9 @@ public abstract class InfoBar implements InfoBarView {
             View closeButton = mContentView.findViewById(R.id.infobar_close_button);
             View primaryButton = mContentView.findViewById(R.id.button_primary);
             View secondaryButton = mContentView.findViewById(R.id.button_secondary);
-            View tertiaryButton = mContentView.findViewById(R.id.button_tertiary);
             if (closeButton != null) closeButton.setEnabled(state);
             if (primaryButton != null) primaryButton.setEnabled(state);
             if (secondaryButton != null) secondaryButton.setEnabled(state);
-            if (tertiaryButton != null) tertiaryButton.setEnabled(state);
         }
     }
 

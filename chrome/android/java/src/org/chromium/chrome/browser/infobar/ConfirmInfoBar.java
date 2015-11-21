@@ -33,8 +33,8 @@ public class ConfirmInfoBar extends InfoBar {
     /** Text shown on the secondary button, e.g. "Cancel".*/
     private final String mSecondaryButtonText;
 
-    /** Text shown on the extra button, e.g. "More info". */
-    private final String mTertiaryButtonText;
+    /** Text shown on the link, e.g. "Learn more". */
+    private final String mLinkText;
 
     /** Notified when one of the buttons is clicked. */
     private final InfoBarListeners.Confirm mConfirmListener;
@@ -54,7 +54,7 @@ public class ConfirmInfoBar extends InfoBar {
         super(confirmListener, iconDrawableId, iconBitmap, message);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
-        mTertiaryButtonText = linkText;
+        mLinkText = linkText;
         mConfirmListener = confirmListener;
     }
 
@@ -77,7 +77,8 @@ public class ConfirmInfoBar extends InfoBar {
 
     @Override
     public void createContent(InfoBarLayout layout) {
-        layout.setButtons(mPrimaryButtonText, mSecondaryButtonText, mTertiaryButtonText);
+        layout.setButtons(mPrimaryButtonText, mSecondaryButtonText);
+        if (mLinkText != null) layout.setMessageLinkText(mLinkText);
     }
 
     private static boolean hasPermission(Context context, String permission) {

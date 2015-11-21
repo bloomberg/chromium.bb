@@ -11,7 +11,10 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -134,13 +137,14 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     private ImageView mIconView;
     private ButtonCompat mPrimaryButton;
     private Button mSecondaryButton;
-    private Button mTertiaryButton;
     private View mCustomButton;
 
     private Group mMainGroup;
     private Group mButtonGroup;
 
     private boolean mIsUsingBigIcon;
+    private CharSequence mMessageMainText;
+    private String mMessageLinkText;
 
     /**
      * These values are used during onMeasure() to track where the next view will be placed.
@@ -219,8 +223,9 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         }
 
         // Set up the message view.
+        mMessageMainText = message;
         mMessageLayout = new InfoBarControlLayout(context);
-        mMessageTextView = mMessageLayout.addMainMessage(message);
+        mMessageTextView = mMessageLayout.addMainMessage(prepareMainMessageString());
     }
 
     /**
@@ -245,7 +250,17 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      *                    KK and L: https://crbug.com/543205
      */
     public void setMessage(CharSequence message) {
-        mMessageTextView.setText(message, TextView.BufferType.SPANNABLE);
+        mMessageMainText = message;
+        mMessageTextView.setText(prepareMainMessageString());
+    }
+
+    /**
+     * Sets the message to show for a link in the message, if an InfoBar requires a link
+     * (e.g. "Learn more").
+     */
+    public void setMessageLinkText(String linkText) {
+        mMessageLinkText = linkText;
+        mMessageTextView.setText(prepareMainMessageString());
     }
 
     /**
@@ -259,20 +274,12 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Calls setButtons(primaryText, secondaryText, null).
-     */
-    public void setButtons(String primaryText, String secondaryText) {
-        setButtons(primaryText, secondaryText, null);
-    }
-
-    /**
-     * Adds one, two, or three buttons to the layout.
+     * Adds one or two buttons to the layout.
      *
      * @param primaryText Text for the primary button.
      * @param secondaryText Text for the secondary button, or null if there isn't a second button.
-     * @param tertiaryText Text for the tertiary button, or null if there isn't a third button.
      */
-    public void setButtons(String primaryText, String secondaryText, String tertiaryText) {
+    public void setButtons(String primaryText, String secondaryText) {
         if (TextUtils.isEmpty(primaryText)) return;
 
         mPrimaryButton = new ButtonCompat(getContext(), mAccentColor);
@@ -288,22 +295,9 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         mSecondaryButton.setOnClickListener(this);
         mSecondaryButton.setText(secondaryText);
         mSecondaryButton.setTextColor(mAccentColor);
-
-        if (TextUtils.isEmpty(tertiaryText)) return;
-
-        mTertiaryButton = ButtonCompat.createBorderlessButton(getContext());
-        mTertiaryButton.setId(R.id.button_tertiary);
-        mTertiaryButton.setOnClickListener(this);
-        mTertiaryButton.setText(tertiaryText);
-        mTertiaryButton.setPadding(mMargin / 2, mTertiaryButton.getPaddingTop(), mMargin / 2,
-                mTertiaryButton.getPaddingBottom());
-        mTertiaryButton.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
-                R.color.infobar_tertiary_button_text));
     }
 
-    /**
-     * Adds a custom view to show in the button row in place of the tertiary button.
-     */
+    /** Adds a custom view to show in the button row. */
     public void setCustomViewInButtonRow(View view) {
         mCustomButton = view;
     }
@@ -349,8 +343,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     void onContentCreated() {
         mMainGroup = new Group(mMessageLayout);
 
-        View[] buttons = Group.filterNullViews(mCustomButton, mTertiaryButton,
-                mSecondaryButton, mPrimaryButton);
+        View[] buttons = Group.filterNullViews(mCustomButton, mSecondaryButton, mPrimaryButton);
         if (buttons.length != 0) mButtonGroup = new Group(buttons);
 
         // Add the child views in the desired focus order.
@@ -597,9 +590,6 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                 // Group is too wide to fit on a single row, so stack the group items vertically.
                 mButtonGroup.setVerticalMode(mMargin / 2, 0);
                 mButtonGroup.gravity = Gravity.FILL_HORIZONTAL;
-            } else if (mTertiaryButton != null) {
-                // Align tertiary or custom button at the start and the other buttons at the end.
-                ((LayoutParams) mTertiaryButton.getLayoutParams()).endMargin += extraWidth;
             }
         }
     }
@@ -611,11 +601,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      */
     @Override
     public void onClick(View view) {
-        // Disable the infobar controls unless the user clicked the tertiary button, which by
-        // convention is the "learn more" link.
-        if (view.getId() != R.id.button_tertiary) {
-            mInfoBarView.setControlsEnabled(false);
-        }
+        mInfoBarView.setControlsEnabled(false);
 
         if (view.getId() == R.id.infobar_close_button) {
             mInfoBarView.onCloseButtonClicked();
@@ -623,8 +609,32 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
             mInfoBarView.onButtonClicked(true);
         } else if (view.getId() == R.id.button_secondary) {
             mInfoBarView.onButtonClicked(false);
-        } else if (view.getId() == R.id.button_tertiary) {
-            mInfoBarView.onLinkClicked();
         }
+    }
+
+    /**
+     * Prepares text to be displayed as the InfoBar's main message, including setting up a
+     * clickable link if the InfoBar requires it.
+     */
+    private CharSequence prepareMainMessageString() {
+        SpannableStringBuilder fullString = new SpannableStringBuilder();
+
+        if (mMessageMainText != null) fullString.append(mMessageMainText);
+
+        // Concatenate the text to display for the link and make it clickable.
+        if (mMessageLinkText != null) {
+            if (fullString.length() > 0) fullString.append(" ");
+            int spanStart = fullString.length();
+
+            fullString.append(mMessageLinkText);
+            fullString.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    mInfoBarView.onLinkClicked();
+                }
+            }, spanStart, fullString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        return fullString;
     }
 }
