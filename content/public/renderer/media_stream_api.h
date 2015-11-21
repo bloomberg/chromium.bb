@@ -43,6 +43,11 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
     bool is_remote,
     bool is_readonly,
     const std::string& media_stream_url);
+CONTENT_EXPORT bool AddAudioTrackToMediaStream(
+    const scoped_refptr<media::AudioCapturerSource>& source,
+    bool is_remote,
+    bool is_readonly,
+    blink::WebMediaStream* web_stream);
 
 }  // namespace content
 

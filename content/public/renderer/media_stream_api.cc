@@ -30,16 +30,40 @@ blink::WebString MakeTrackId() {
 
 }  // namespace
 
-bool AddVideoTrackToMediaStream(
-    scoped_ptr<media::VideoCapturerSource> source,
-    bool is_remote,
-    bool is_readonly,
-    const std::string& media_stream_url) {
+bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
+                                bool is_remote,
+                                bool is_readonly,
+                                const std::string& media_stream_url) {
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
           GURL(media_stream_url));
   return AddVideoTrackToMediaStream(source.Pass(), is_remote, is_readonly,
                                     &web_stream);
+}
+
+bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
+                                bool is_remote,
+                                bool is_readonly,
+                                blink::WebMediaStream* web_stream) {
+  if (web_stream->isNull()) {
+    DLOG(ERROR) << "Stream not found";
+    return false;
+  }
+  const blink::WebString track_id = MakeTrackId();
+  blink::WebMediaStreamSource webkit_source;
+  scoped_ptr<MediaStreamVideoSource> media_stream_source(
+      new MediaStreamVideoCapturerSource(
+          MediaStreamSource::SourceStoppedCallback(), source.Pass()));
+  webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
+                           track_id, is_remote, is_readonly);
+  webkit_source.setExtraData(media_stream_source.get());
+
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  web_stream->addTrack(MediaStreamVideoTrack::CreateVideoTrack(
+      media_stream_source.release(), constraints,
+      MediaStreamVideoSource::ConstraintsCallback(), true));
+  return true;
 }
 
 bool AddAudioTrackToMediaStream(
@@ -52,10 +76,26 @@ bool AddAudioTrackToMediaStream(
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
           GURL(media_stream_url));
-  if (web_stream.isNull()) {
+  return AddAudioTrackToMediaStream(source,
+                                    is_remote, is_readonly, &web_stream);
+}
+
+bool AddAudioTrackToMediaStream(
+    const scoped_refptr<media::AudioCapturerSource>& source,
+    bool is_remote,
+    bool is_readonly,
+    blink::WebMediaStream* web_stream) {
+  if (web_stream->isNull()) {
     DLOG(ERROR) << "Stream not found";
     return false;
   }
+
+  media::AudioParameters params(
+      media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,
+      48000, /* sample rate */
+      16,    /* bits per sample */
+      480);  /* frames per buffer */
+
   blink::WebMediaStreamSource webkit_source;
   const blink::WebString track_id = MakeTrackId();
   webkit_source.initialize(track_id,
@@ -85,38 +125,7 @@ bool AddAudioTrackToMediaStream(
   RenderThreadImpl::current()->GetPeerConnectionDependencyFactory()->
       CreateLocalAudioTrack(web_media_audio_track);
 
-  web_stream.addTrack(web_media_audio_track);
-  return true;
-}
-
-bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
-                                bool is_remote,
-                                bool is_readonly,
-                                blink::WebMediaStream* web_stream) {
-  if (web_stream->isNull()) {
-    DLOG(ERROR) << "Stream not found";
-    return false;
-  }
-  const blink::WebString track_id = MakeTrackId();
-  blink::WebMediaStreamSource webkit_source;
-  scoped_ptr<MediaStreamVideoSource> media_stream_source(
-      new MediaStreamVideoCapturerSource(
-          MediaStreamSource::SourceStoppedCallback(),
-          source.Pass()));
-  webkit_source.initialize(track_id,
-                           blink::WebMediaStreamSource::TypeVideo,
-                           track_id,
-                           is_remote,
-                           is_readonly);
-  webkit_source.setExtraData(media_stream_source.get());
-
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
-  web_stream->addTrack(MediaStreamVideoTrack::CreateVideoTrack(
-      media_stream_source.release(),
-      constraints,
-      MediaStreamVideoSource::ConstraintsCallback(),
-      true));
+  web_stream->addTrack(web_media_audio_track);
   return true;
 }
 

@@ -318,7 +318,13 @@ void WebTestDelegateImpl::ResetPermissions() {
   NOTIMPLEMENTED();
 }
 
-bool WebTestDelegateImpl::AddMediaStreamSourceAndTrack(
+bool WebTestDelegateImpl::AddMediaStreamVideoSourceAndTrack(
+    blink::WebMediaStream* stream) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool WebTestDelegateImpl::AddMediaStreamAudioSourceAndTrack(
     blink::WebMediaStream* stream) {
   NOTIMPLEMENTED();
   return false;

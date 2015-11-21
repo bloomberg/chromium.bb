@@ -47,6 +47,7 @@
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
+#include "media/audio/audio_parameters.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
@@ -237,6 +238,22 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
       const VideoCaptureDeliverFrameCB& new_frame_callback,
       const RunningCallback& running_callback) override {}
   void StopCapture() override {}
+};
+
+class MockAudioCapturerSource : public media::AudioCapturerSource {
+ public:
+  MockAudioCapturerSource() = default;
+
+  void Initialize(const media::AudioParameters& params,
+                  CaptureCallback* callback,
+                  int session_id) override {}
+  void Start() override {}
+  void Stop() override {}
+  void SetVolume(double volume) override {}
+  void SetAutomaticGainControl(bool enable) override {}
+
+ protected:
+  ~MockAudioCapturerSource() override {}
 };
 
 }  // namespace
@@ -743,15 +760,25 @@ void BlinkTestRunner::OnWebTestProxyBaseDestroy(
     test_runner::WebTestProxyBase* proxy) {
 }
 
-bool BlinkTestRunner::AddMediaStreamSourceAndTrack(
+bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);
 #if defined(ENABLE_WEBRTC)
   return AddVideoTrackToMediaStream(
       make_scoped_ptr(new MockVideoCapturerSource()),
-      false /* is_remote */,
-      false /* is_readonly */,
-      stream);
+      false /* is_remote */, false /* is_readonly */, stream);
+#else
+  return false;
+#endif
+}
+
+bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
+    blink::WebMediaStream* stream) {
+  DCHECK(stream);
+#if defined(ENABLE_WEBRTC)
+  return AddAudioTrackToMediaStream(
+      make_scoped_refptr(new MockAudioCapturerSource()),
+      false /* is_remote */, false /* is_readonly */, stream);
 #else
   return false;
 #endif

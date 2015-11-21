@@ -250,7 +250,10 @@ class WebTestDelegate {
   virtual void ResetPermissions() = 0;
 
   // Add content MediaStream classes to the Blink MediaStream ones.
-  virtual bool AddMediaStreamSourceAndTrack(blink::WebMediaStream* stream) = 0;
+  virtual bool AddMediaStreamVideoSourceAndTrack(
+      blink::WebMediaStream* stream) = 0;
+  virtual bool AddMediaStreamAudioSourceAndTrack(
+      blink::WebMediaStream* stream) = 0;
 
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
