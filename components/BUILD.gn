@@ -650,26 +650,26 @@ test("components_browsertests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/strings",
     "//testing/gmock",
     "//testing/gtest",
-    "strings",
   ]
   if (!is_ios) {
     deps += [
+      "//components/autofill/content/browser",
+      "//components/autofill/content/renderer",
+      "//components/content_settings/core/common",
+      "//components/dom_distiller/content:content_browser",
+      "//components/dom_distiller/core",
+      "//components/dom_distiller/core:test_support",
+      "//components/password_manager/content/browser",
+      "//components/password_manager/content/common",
+      "//components/password_manager/content/renderer",
       "//components/tracing",
       "//content/test:browsertest_support",
       "//content/test:test_support",
       "//device/bluetooth",
       "//ui/base",
-      "autofill/content/browser",
-      "autofill/content/renderer",
-      "content_settings/core/common",
-      "dom_distiller/content:content_browser",
-      "dom_distiller/core",
-      "dom_distiller/core:test_support",
-      "password_manager/content/browser",
-      "password_manager/content/common",
-      "password_manager/content/renderer",
     ]
 
     data_deps = [
@@ -698,7 +698,7 @@ test("components_browsertests") {
     sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
     deps += [
       "//base:prefs_test_support",
-      "pref_registry:test_support",
+      "//components/pref_registry:test_support",
     ]
   }
 
