@@ -57,8 +57,8 @@ public:
         return adoptRefWillBeNoop(new Location(frame));
     }
 
-    Frame* frame() const;
-    void reset();
+    Frame* frame() const { return m_frame.get(); }
+    void reset() { m_frame = nullptr; }
 
     void setHref(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
     String href() const;

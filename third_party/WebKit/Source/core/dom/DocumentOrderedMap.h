@@ -68,7 +68,11 @@ private:
 
     class MapEntry : public NoBaseWillBeGarbageCollected<MapEntry> {
     public:
-        explicit MapEntry(Element*);
+        explicit MapEntry(Element* firstElement)
+            : element(firstElement)
+            , count(1)
+        {
+        }
 
         DECLARE_TRACE();
 

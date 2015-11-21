@@ -57,11 +57,6 @@ DEFINE_TRACE(DocumentResource)
     Resource::trace(visitor);
 }
 
-Document* DocumentResource::document() const
-{
-    return m_document.get();
-}
-
 void DocumentResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);

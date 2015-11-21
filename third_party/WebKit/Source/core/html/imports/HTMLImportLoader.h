@@ -74,7 +74,7 @@ public:
     ~HTMLImportLoader() override;
     void dispose();
 
-    Document* document() const;
+    Document* document() const { return m_document.get(); }
     void addImport(HTMLImportChild*);
     void removeImport(HTMLImportChild*);
 

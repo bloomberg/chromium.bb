@@ -49,7 +49,7 @@ public:
 
     void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, const Nullable<bool>& absolute);
 
-    DeviceOrientationData* orientation() const;
+    DeviceOrientationData* orientation() const { return m_orientation.get(); }
 
     double alpha(bool& isNull) const;
     double beta(bool& isNull) const;

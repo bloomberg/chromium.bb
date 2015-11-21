@@ -323,37 +323,9 @@ PairIterable<String, FormDataEntryValue>::IterationSource* FormData::startIterat
 
 // ----------------------------------------------------------------
 
-FormData::Entry::Entry(const CString& name, const CString& value)
-    : m_name(name)
-    , m_value(value)
-{
-}
-
-FormData::Entry::Entry(const CString& name, Blob* blob, const String& filename)
-    : m_name(name)
-    , m_blob(blob)
-    , m_filename(filename)
-{
-}
-
 DEFINE_TRACE(FormData::Entry)
 {
     visitor->trace(m_blob);
-}
-
-bool FormData::Entry::isString() const
-{
-    return !m_blob;
-}
-
-bool FormData::Entry::isFile() const
-{
-    return m_blob;
-}
-
-Blob* FormData::Entry::blob() const
-{
-    return m_blob.get();
 }
 
 File* FormData::Entry::file() const

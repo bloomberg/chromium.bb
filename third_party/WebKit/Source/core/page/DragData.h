@@ -27,7 +27,6 @@
 #define DragData_h
 
 #include "core/CoreExport.h"
-#include "core/clipboard/DataObject.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
@@ -37,6 +36,7 @@
 
 namespace blink {
 
+class DataObject;
 class DocumentFragment;
 class LocalFrame;
 class Range;
@@ -84,4 +84,4 @@ private:
 
 }
 
-#endif // DragData_h
+#endif // !DragData_h

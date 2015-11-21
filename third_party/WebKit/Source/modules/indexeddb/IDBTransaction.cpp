@@ -336,16 +336,6 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBTransaction::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-IDBDatabase* IDBTransaction::db() const
-{
-    return m_database;
-}
-
-DOMException* IDBTransaction::error() const
-{
-    return m_error;
-}
-
 const AtomicString& IDBTransaction::interfaceName() const
 {
     return EventTargetNames::IDBTransaction;

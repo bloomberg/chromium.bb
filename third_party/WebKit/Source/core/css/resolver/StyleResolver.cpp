@@ -1524,11 +1524,6 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
     }
 }
 
-ViewportStyleResolver* StyleResolver::viewportStyleResolver() const
-{
-    return m_viewportStyleResolver.get();
-}
-
 void StyleResolver::addMediaQueryResults(const MediaQueryResultList& list)
 {
     for (size_t i = 0; i < list.size(); ++i)

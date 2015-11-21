@@ -1447,11 +1447,6 @@ void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const 
     result = object;
 }
 
-InspectorHistory* InspectorDOMAgent::history() const
-{
-    return m_history.get();
-}
-
 void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<String> >& result)
 {
     Element* element = assertElement(errorString, nodeId);

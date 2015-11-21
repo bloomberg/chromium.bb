@@ -143,14 +143,4 @@ Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const
     return m_localStorage;
 }
 
-Storage* DOMWindowStorage::optionalSessionStorage() const
-{
-    return m_sessionStorage.get();
-}
-
-Storage* DOMWindowStorage::optionalLocalStorage() const
-{
-    return m_localStorage.get();
-}
-
 } // namespace blink

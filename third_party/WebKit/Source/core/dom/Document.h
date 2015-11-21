@@ -39,21 +39,15 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
-#include "core/dom/DocumentParser.h"
 #include "core/dom/DocumentTiming.h"
-#include "core/dom/DocumentType.h"
-#include "core/dom/ElementData.h"
-#include "core/dom/ElementDataCache.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
-#include "core/dom/ScriptRunner.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/fetch/ClientHintsPreferences.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/OriginsUsingFeatures.h"
@@ -96,9 +90,12 @@ class DocumentFragment;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
+class DocumentParser;
 class DocumentState;
+class DocumentType;
 class DocumentVisibilityObserver;
 class Element;
+class ElementDataCache;
 class ElementRegistrationOptions;
 class Event;
 class EventFactoryBase;
@@ -147,8 +144,10 @@ class ProcessingInstruction;
 class QualifiedName;
 class Range;
 class LayoutView;
+class ResourceFetcher;
 class SVGDocumentExtensions;
 class SVGUseElement;
+class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
 class ScriptedIdleTaskController;
@@ -269,11 +268,14 @@ public:
     String outgoingOrigin() const;
 
     void setDoctype(PassRefPtrWillBeRawPtr<DocumentType>);
-    DocumentType* doctype() const;
+    DocumentType* doctype() const { return m_docType.get(); }
 
     DOMImplementation& implementation();
 
-    Element* documentElement() const;
+    Element* documentElement() const
+    {
+        return m_documentElement.get();
+    }
 
     // Returns whether the Document has an AppCache manifest.
     bool hasAppCacheManifest() const;
@@ -380,7 +382,7 @@ public:
     // This is a DOM function.
     StyleSheetList* styleSheets();
 
-    StyleEngine& styleEngine();
+    StyleEngine& styleEngine() { ASSERT(m_styleEngine.get()); return *m_styleEngine.get(); }
 
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
@@ -584,17 +586,17 @@ public:
 
     bool setFocusedElement(PassRefPtrWillBeRawPtr<Element>, const FocusParams&);
     void clearFocusedElement();
-    Element* focusedElement() const;
+    Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
     void setNeedsFocusedElementCheck();
     void setAutofocusElement(Element*);
-    Element* autofocusElement() const;
+    Element* autofocusElement() const { return m_autofocusElement.get(); }
 
     void setActiveHoverElement(PassRefPtrWillBeRawPtr<Element>);
-    Element* activeHoverElement() const;
+    Element* activeHoverElement() const { return m_activeHoverElement.get(); }
 
-    Node* hoverNode() const;
+    Node* hoverNode() const { return m_hoverNode.get(); }
 
     void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
     void hoveredNodeDetached(Element&);
@@ -687,7 +689,7 @@ public:
     String title() const { return m_title; }
     void setTitle(const String&);
 
-    Element* titleElement() const;
+    Element* titleElement() const { return m_titleElement.get(); }
     void setTitleElement(Element*);
     void removeTitle(Element* titleElement);
 
@@ -772,9 +774,9 @@ public:
     Document& topDocument() const;
     WeakPtrWillBeRawPtr<Document> contextDocument();
 
-    ScriptRunner* scriptRunner() const;
+    ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
-    HTMLScriptElement* currentScript() const;
+    HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr; }
     void pushCurrentScript(PassRefPtrWillBeRawPtr<HTMLScriptElement>);
     void popCurrentScript();
 
@@ -925,7 +927,7 @@ public:
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
     ScriptValue registerElement(ScriptState*, const AtomicString& name, const ElementRegistrationOptions&, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
-    CustomElementRegistrationContext* registrationContext() const;
+    CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
     CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();
 
     void setImportsController(HTMLImportsController*);
@@ -946,7 +948,7 @@ public:
     void setContextFeatures(ContextFeatures&);
     ContextFeatures& contextFeatures() const { return *m_contextFeatures; }
 
-    ElementDataCache* elementDataCache() const;
+    ElementDataCache* elementDataCache() { return m_elementDataCache.get(); }
 
     void didLoadAllScriptBlockingResources();
     void didRemoveAllPendingStylesheet();

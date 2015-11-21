@@ -234,7 +234,7 @@ public:
     bool hasPendingActivity() const final;
 
 #if ENABLE(WEB_AUDIO)
-    AudioSourceProviderClient* audioSourceNode();
+    AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
     void setAudioSourceNode(AudioSourceProviderClient*);
 
     AudioSourceProvider& audioSourceProvider() { return m_audioSourceProvider; }
@@ -574,7 +574,11 @@ private:
     // When the audio format is known, Chromium calls setFormat().
     class AudioClientImpl final : public GarbageCollectedFinalized<AudioClientImpl>, public WebAudioSourceProviderClient {
     public:
-        explicit AudioClientImpl(AudioSourceProviderClient*);
+        explicit AudioClientImpl(AudioSourceProviderClient* client)
+            : m_client(client)
+        {
+        }
+
         ~AudioClientImpl() override { }
 
         // WebAudioSourceProviderClient

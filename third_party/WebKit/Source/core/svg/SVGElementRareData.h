@@ -60,14 +60,14 @@ public:
     bool instanceUpdatesBlocked() const { return m_instancesUpdatesBlocked; }
     void setInstanceUpdatesBlocked(bool value) { m_instancesUpdatesBlocked = value; }
 
-    SVGCursorElement* cursorElement() const;
-    void setCursorElement(SVGCursorElement*);
+    SVGCursorElement* cursorElement() const { return m_cursorElement; }
+    void setCursorElement(SVGCursorElement* cursorElement) { m_cursorElement = cursorElement; }
 
     SVGElement* correspondingElement() const { return m_correspondingElement.get(); }
     void setCorrespondingElement(SVGElement* correspondingElement) { m_correspondingElement = correspondingElement; }
 
-    CSSCursorImageValue* cursorImageValue() const;
-    void setCursorImageValue(CSSCursorImageValue*);
+    CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }
+    void setCursorImageValue(CSSCursorImageValue* cursorImageValue) { m_cursorImageValue = cursorImageValue; }
 
     MutableStylePropertySet* animatedSMILStyleProperties() const { return m_animatedSMILStyleProperties.get(); }
     MutableStylePropertySet* ensureAnimatedSMILStyleProperties();

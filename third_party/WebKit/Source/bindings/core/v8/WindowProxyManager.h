@@ -27,9 +27,9 @@ public:
     ~WindowProxyManager();
     DECLARE_TRACE();
 
-    Frame* frame() const;
+    Frame* frame() const { return m_frame.get(); }
     v8::Isolate* isolate() const { return m_isolate; }
-    WindowProxy* mainWorldProxy() const;
+    WindowProxy* mainWorldProxy() const { return m_windowProxy.get(); }
 
     WindowProxy* windowProxy(DOMWrapperWorld&);
 

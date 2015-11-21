@@ -1836,11 +1836,6 @@ WebViewImpl* WebLocalFrameImpl::viewImpl() const
     return WebViewImpl::fromPage(frame()->page());
 }
 
-WebDevToolsAgentImpl* WebLocalFrameImpl::devToolsAgentImpl() const
-{
-    return m_devToolsAgent.get();
-}
-
 WebDataSourceImpl* WebLocalFrameImpl::dataSourceImpl() const
 {
     return static_cast<WebDataSourceImpl*>(dataSource());

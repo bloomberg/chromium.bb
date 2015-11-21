@@ -59,7 +59,7 @@ private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     // Internal Frame helper overrides:
-    WindowProxyManager* windowProxyManager() const override;
+    WindowProxyManager* windowProxyManager() const override { return m_windowProxyManager.get(); }
 
     RemoteFrameClient* remoteFrameClient() const;
 
@@ -69,6 +69,11 @@ private:
     OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
     WebLayer* m_remotePlatformLayer;
 };
+
+inline RemoteFrameView* RemoteFrame::view() const
+{
+    return m_view.get();
+}
 
 DEFINE_TYPE_CASTS(RemoteFrame, Frame, remoteFrame, remoteFrame->isRemoteFrame(), remoteFrame.isRemoteFrame());
 

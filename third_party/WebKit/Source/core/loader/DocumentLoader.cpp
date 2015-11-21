@@ -154,11 +154,6 @@ const ResourceRequest& DocumentLoader::request() const
     return m_request;
 }
 
-ResourceFetcher* DocumentLoader::fetcher() const
-{
-    return m_fetcher.get();
-}
-
 const KURL& DocumentLoader::url() const
 {
     return m_request.url();

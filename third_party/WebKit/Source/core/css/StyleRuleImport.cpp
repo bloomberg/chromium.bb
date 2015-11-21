@@ -68,32 +68,6 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleSheetContents* StyleRuleImport::parentStyleSheet() const
-{
-    return m_parentStyleSheet;
-}
-
-void StyleRuleImport::setParentStyleSheet(StyleSheetContents* sheet)
-{
-    ASSERT(sheet);
-    m_parentStyleSheet = sheet;
-}
-
-void StyleRuleImport::clearParentStyleSheet()
-{
-    m_parentStyleSheet = nullptr;
-}
-
-StyleSheetContents* StyleRuleImport::styleSheet() const
-{
-    return m_styleSheet.get();
-}
-
-MediaQuerySet* StyleRuleImport::mediaQueries() const
-{
-    return m_mediaQueries.get();
-}
-
 void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)
 {
     if (m_styleSheet)

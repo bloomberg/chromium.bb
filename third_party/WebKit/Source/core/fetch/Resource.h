@@ -25,7 +25,6 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/CachedMetadataHandler.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -54,6 +53,7 @@ class ResourcePtrBase;
 class ResourceFetcher;
 class ResourceTimingInfo;
 class InspectorResource;
+class ResourceLoader;
 class SecurityOrigin;
 class SharedBuffer;
 

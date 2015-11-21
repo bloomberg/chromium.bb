@@ -26,8 +26,8 @@ public:
 
     Storage* sessionStorage(ExceptionState&) const;
     Storage* localStorage(ExceptionState&) const;
-    Storage* optionalSessionStorage() const;
-    Storage* optionalLocalStorage() const;
+    Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
+    Storage* optionalLocalStorage() const { return m_localStorage.get(); }
 
     DECLARE_TRACE();
 

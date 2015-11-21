@@ -121,22 +121,6 @@ WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 
 } // namespace
 
-WebGLRenderingContextBase::ScopedDrawingBufferBinder::ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-    : m_drawingBuffer(drawingBuffer)
-    , m_readFramebufferBinding(framebufferBinding)
-{
-    // Commit DrawingBuffer if needed (e.g., for multisampling)
-    if (!m_readFramebufferBinding && m_drawingBuffer)
-        m_drawingBuffer->commit();
-}
-
-WebGLRenderingContextBase::ScopedDrawingBufferBinder::~ScopedDrawingBufferBinder()
-{
-    // Restore DrawingBuffer if needed
-    if (!m_readFramebufferBinding && m_drawingBuffer)
-        m_drawingBuffer->restoreFramebufferBindings();
-}
-
 void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
 {
     WebGLRenderingContextBase* candidate = oldestContext();

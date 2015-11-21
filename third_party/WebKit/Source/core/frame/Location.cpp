@@ -52,16 +52,6 @@ DEFINE_TRACE(Location)
     visitor->trace(m_frame);
 }
 
-Frame* Location::frame() const
-{
-    return m_frame.get();
-}
-
-void Location::reset()
-{
-    m_frame = nullptr;
-}
-
 inline const KURL& Location::url() const
 {
     const KURL& url = toLocalFrame(m_frame)->document()->url();

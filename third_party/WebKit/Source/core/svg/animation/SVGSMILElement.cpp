@@ -177,11 +177,6 @@ SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const Str
 {
 }
 
-ConditionEventListener* SVGSMILElement::Condition::eventListener() const
-{
-    return m_eventListener.get();
-}
-
 SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     : SVGElement(tagName, doc)
     , SVGTests(this)
@@ -1294,11 +1289,6 @@ void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
         addBeginTime(elapsed, elapsed + condition->offset());
     else
         addEndTime(elapsed, elapsed + condition->offset());
-}
-
-SMILTimeContainer* SVGSMILElement::timeContainer() const
-{
-    return m_timeContainer.get();
 }
 
 void SVGSMILElement::beginByLinkActivation()

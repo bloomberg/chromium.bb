@@ -42,6 +42,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverParentScope.h"

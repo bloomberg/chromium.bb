@@ -40,15 +40,15 @@ public:
 
     ~StyleRuleImport();
 
-    StyleSheetContents* parentStyleSheet() const;
-    void setParentStyleSheet(StyleSheetContents*);
-    void clearParentStyleSheet();
+    StyleSheetContents* parentStyleSheet() const { return m_parentStyleSheet; }
+    void setParentStyleSheet(StyleSheetContents* sheet) { ASSERT(sheet); m_parentStyleSheet = sheet; }
+    void clearParentStyleSheet() { m_parentStyleSheet = nullptr; }
 
     String href() const { return m_strHref; }
-    StyleSheetContents* styleSheet() const;
+    StyleSheetContents* styleSheet() const { return m_styleSheet.get(); }
 
     bool isLoading() const;
-    MediaQuerySet* mediaQueries() const;
+    MediaQuerySet* mediaQueries() { return m_mediaQueries.get(); }
 
     void requestStyleSheet();
 

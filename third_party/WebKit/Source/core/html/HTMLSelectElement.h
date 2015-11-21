@@ -151,7 +151,7 @@ public:
     int optionIndexToBeShown() const;
     void showPopup();
     void hidePopup();
-    PopupMenu* popup() const;
+    PopupMenu* popup() const { return m_popup.get(); }
 
     void resetTypeAheadSessionForTesting();
 

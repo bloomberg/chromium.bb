@@ -5,14 +5,14 @@
 #ifndef InterpolationEnvironment_h
 #define InterpolationEnvironment_h
 
-#include "core/svg/SVGElement.h"
-#include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
 class StyleResolverState;
+class SVGPropertyBase;
+class SVGElement;
 
 class InterpolationEnvironment {
     STACK_ALLOCATED();

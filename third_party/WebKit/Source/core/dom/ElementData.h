@@ -66,7 +66,7 @@ public:
     const AtomicString& idForStyleResolution() const { return m_idForStyleResolution; }
     void setIdForStyleResolution(const AtomicString& newId) const { m_idForStyleResolution = newId; }
 
-    const StylePropertySet* inlineStyle() const;
+    const StylePropertySet* inlineStyle() const { return m_inlineStyle.get(); }
 
     const StylePropertySet* presentationAttributeStyle() const;
 
@@ -193,6 +193,13 @@ inline void ElementData::deref()
     destroy();
 }
 #endif
+
+inline const StylePropertySet* ElementData::presentationAttributeStyle() const
+{
+    if (!m_isUnique)
+        return 0;
+    return toUniqueElementData(this)->m_presentationAttributeStyle.get();
+}
 
 inline AttributeCollection ElementData::attributes() const
 {

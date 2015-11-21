@@ -68,7 +68,7 @@ public:
 
     EditorClient& client() const;
 
-    CompositeEditCommand* lastEditCommand() const;
+    CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 
     void handleKeyboardEvent(KeyboardEvent*);
     bool handleTextEvent(TextEvent*);

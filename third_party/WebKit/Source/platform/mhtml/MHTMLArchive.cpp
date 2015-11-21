@@ -227,11 +227,6 @@ void MHTMLArchive::generateMHTMLFooter(
     outputBuffer.append(asciiString.data(), asciiString.length());
 }
 
-ArchiveResource* MHTMLArchive::mainResource() const
-{
-    return m_mainResource.get();
-}
-
 #if !ENABLE(OILPAN)
 void MHTMLArchive::clearAllSubframeArchives()
 {

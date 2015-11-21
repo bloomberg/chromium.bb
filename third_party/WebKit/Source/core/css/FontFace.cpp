@@ -528,11 +528,6 @@ FontTraits FontFace::traits() const
     return FontTraits(style, variant, weight, stretch);
 }
 
-CSSFontFace* FontFace::cssFontFace() const
-{
-    return m_cssFontFace.get();
-}
-
 static PassOwnPtrWillBeRawPtr<CSSFontFace> createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange)
 {
     Vector<CSSFontFace::UnicodeRange> ranges;

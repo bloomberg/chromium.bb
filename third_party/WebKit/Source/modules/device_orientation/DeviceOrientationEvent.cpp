@@ -54,11 +54,6 @@ void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type
     m_orientation = DeviceOrientationData::create(alpha, beta, gamma, absolute);
 }
 
-DeviceOrientationData* DeviceOrientationEvent::orientation() const
-{
-    return m_orientation.get();
-}
-
 double DeviceOrientationEvent::alpha(bool& isNull) const
 {
     if (m_orientation->canProvideAlpha())

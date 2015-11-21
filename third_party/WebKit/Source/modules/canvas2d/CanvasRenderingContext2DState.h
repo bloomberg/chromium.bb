@@ -88,10 +88,10 @@ public:
     bool hasFilter() const { return m_filterValue; }
 
     void setStrokeStyle(CanvasStyle*);
-    CanvasStyle* strokeStyle() const;
+    CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
 
     void setFillStyle(CanvasStyle*);
-    CanvasStyle* fillStyle() const;
+    CanvasStyle* fillStyle() const { return m_fillStyle.get(); }
 
     CanvasStyle* style(PaintType) const;
 

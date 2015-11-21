@@ -120,7 +120,7 @@ protected:
     HTMLDocumentParser(HTMLDocument&, bool reportErrors, ParserSynchronizationPolicy);
     HTMLDocumentParser(DocumentFragment*, Element* contextElement, ParserContentPolicy);
 
-    HTMLTreeBuilder* treeBuilder() const;
+    HTMLTreeBuilder* treeBuilder() const { return m_treeBuilder.get(); }
 
     void forcePlaintextForTextDocument();
 

@@ -137,7 +137,7 @@ public:
 
     void computeFont(ComputedStyle*, const StylePropertySet&);
 
-    ViewportStyleResolver* viewportStyleResolver() const;
+    ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
     void addMediaQueryResults(const MediaQueryResultList&);
     MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }

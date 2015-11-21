@@ -94,7 +94,7 @@ public:
     void setError(DOMException* = nullptr);
     DOMException* error() const { return m_error; }
     FontTraits traits() const;
-    CSSFontFace* cssFontFace() const;
+    CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 

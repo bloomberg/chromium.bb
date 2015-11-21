@@ -86,7 +86,7 @@ public:
 
     void clearOwnerRule() { m_ownerRule = nullptr; }
     Document* ownerDocument() const;
-    MediaQuerySet* mediaQueries() const;
+    MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
     void setMediaQueries(PassRefPtrWillBeRawPtr<MediaQuerySet>);
     void setTitle(const String& title) { m_title = title; }
     // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this origin.
@@ -110,7 +110,7 @@ public:
 
     void clearChildRuleCSSOMWrappers();
 
-    StyleSheetContents* contents() const;
+    StyleSheetContents* contents() const { return m_contents.get(); }
 
     bool isInline() const { return m_isInlineStylesheet; }
     TextPosition startPositionInSource() const { return m_startPosition; }

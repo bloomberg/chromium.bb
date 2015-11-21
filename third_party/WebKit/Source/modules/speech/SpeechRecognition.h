@@ -67,8 +67,8 @@ public:
     void setInterimResults(bool interimResults) { m_interimResults = interimResults; }
     unsigned maxAlternatives() { return m_maxAlternatives; }
     void setMaxAlternatives(unsigned maxAlternatives) { m_maxAlternatives = maxAlternatives; }
-    MediaStreamTrack* audioTrack() const;
-    void setAudioTrack(MediaStreamTrack*);
+    MediaStreamTrack* audioTrack() { return m_audioTrack; }
+    void setAudioTrack(MediaStreamTrack* audioTrack) { m_audioTrack = audioTrack; }
 
     // Callable by the user.
     void start(ExceptionState&);

@@ -2333,11 +2333,6 @@ void FrameView::setNodeToDraw(Node* node)
     m_nodeToDraw = node;
 }
 
-Node* FrameView::nodeToDraw() const
-{
-    return m_nodeToDraw.get();
-}
-
 void FrameView::updateWidgetPositionsIfNeeded()
 {
     if (!m_needsUpdateWidgetPositions)

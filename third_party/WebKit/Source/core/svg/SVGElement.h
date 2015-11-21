@@ -146,7 +146,7 @@ public:
 
     void addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase>);
 
-    SVGAnimatedString* className();
+    SVGAnimatedString* className() { return m_className.get(); }
 
     bool inUseShadowTree() const;
 
@@ -208,8 +208,12 @@ protected:
     virtual bool selfHasRelativeLengths() const { return false; }
 
     SVGElementRareData* ensureSVGRareData();
-    bool hasSVGRareData() const;
-    SVGElementRareData* svgRareData() const;
+    inline bool hasSVGRareData() const { return m_SVGRareData; }
+    inline SVGElementRareData* svgRareData() const
+    {
+        ASSERT(m_SVGRareData);
+        return m_SVGRareData.get();
+    }
 
     // SVGFitToViewBox::parseAttribute uses reportAttributeParsingError.
     friend class SVGFitToViewBox;

@@ -767,11 +767,6 @@ void Database::logErrorMessage(const String& message)
     executionContext()->addConsoleMessage(ConsoleMessage::create(StorageMessageSource, ErrorMessageLevel, message));
 }
 
-DatabaseContext* Database::databaseContext() const
-{
-    return m_databaseContext;
-}
-
 ExecutionContext* Database::executionContext() const
 {
     return databaseContext()->executionContext();

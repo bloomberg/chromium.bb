@@ -409,11 +409,6 @@ Document* CSSStyleSheet::ownerDocument() const
     return root->ownerNode() ? &root->ownerNode()->document() : nullptr;
 }
 
-MediaQuerySet* CSSStyleSheet::mediaQueries() const
-{
-    return m_mediaQueries.get();
-}
-
 void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin)
 {
     m_allowRuleAccessFromOrigin = allowedOrigin;
@@ -422,11 +417,6 @@ void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allo
 void CSSStyleSheet::clearChildRuleCSSOMWrappers()
 {
     m_childRuleCSSOMWrappers.clear();
-}
-
-StyleSheetContents* CSSStyleSheet::contents() const
-{
-    return m_contents.get();
 }
 
 bool CSSStyleSheet::sheetLoaded()

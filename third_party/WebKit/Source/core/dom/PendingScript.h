@@ -67,7 +67,7 @@ public:
     void watchForLoad(ScriptResourceClient*);
     void stopWatchingForLoad(ScriptResourceClient*);
 
-    Element* element() const;
+    Element* element() const { return m_element.get(); }
     void setElement(Element*);
     PassRefPtrWillBeRawPtr<Element> releaseElementAndClear();
 

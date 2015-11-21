@@ -334,11 +334,6 @@ void SQLTransaction::clearCallbacks()
     m_errorCallback.clear();
 }
 
-Database* SQLTransaction::database() const
-{
-    return m_database;
-}
-
 SQLTransactionErrorCallback* SQLTransaction::releaseErrorCallback()
 {
     return m_errorCallback.release();

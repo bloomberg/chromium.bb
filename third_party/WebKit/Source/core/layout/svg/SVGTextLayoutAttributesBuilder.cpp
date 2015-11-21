@@ -232,13 +232,6 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
     }
 }
 
-SVGTextLayoutAttributesBuilder::TextPosition::TextPosition(SVGTextPositioningElement* newElement, unsigned newStart, unsigned newLength)
-    : element(newElement)
-    , start(newStart)
-    , length(newLength)
-{
-}
-
 DEFINE_TRACE(SVGTextLayoutAttributesBuilder::TextPosition)
 {
     visitor->trace(element);

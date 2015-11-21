@@ -64,7 +64,11 @@ public:
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
 
-    Document& document() const;
+    Document& document() const
+    {
+        ASSERT(m_document);
+        return *m_document;
+    }
 
     Node* ancestorInThisScope(Node*) const;
 
@@ -97,7 +101,7 @@ public:
 
     ContainerNode& rootNode() const { return *m_rootNode; }
 
-    IdTargetObserverRegistry& idTargetObserverRegistry() const;
+    IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
 #if !ENABLE(OILPAN)
     // Nodes belonging to this scope hold guard references -
@@ -135,7 +139,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    ScopedStyleResolver* scopedStyleResolver() const;
+    ScopedStyleResolver* scopedStyleResolver() const { return m_scopedStyleResolver.get(); }
     ScopedStyleResolver& ensureScopedStyleResolver();
     void clearScopedStyleResolver();
 
@@ -148,7 +152,7 @@ protected:
     void destroyTreeScopeData();
 #endif
 
-    void setDocument(Document&);
+    void setDocument(Document& document) { m_document = &document; }
     void setParentTreeScope(TreeScope&);
 
 #if !ENABLE(OILPAN)

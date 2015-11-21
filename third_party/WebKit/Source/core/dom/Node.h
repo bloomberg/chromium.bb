@@ -833,6 +833,12 @@ private:
     } m_data;
 };
 
+inline void Node::setParentOrShadowHostNode(ContainerNode* parent)
+{
+    ASSERT(isMainThread());
+    m_parentOrShadowHostNode = parent;
+}
+
 inline ContainerNode* Node::parentOrShadowHostNode() const
 {
     ASSERT(isMainThread());

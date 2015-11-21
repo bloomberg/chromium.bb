@@ -786,11 +786,6 @@ SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const
     return m_imageBuffer->canvas();
 }
 
-CanvasRenderingContext* HTMLCanvasElement::renderingContext() const
-{
-    return m_context.get();
-}
-
 ImageBuffer* HTMLCanvasElement::buffer() const
 {
     ASSERT(m_context);

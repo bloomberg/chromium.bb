@@ -103,11 +103,6 @@ PassRefPtrWillBeRawPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
     return create(document(), m_target, m_data);
 }
 
-StyleSheet* ProcessingInstruction::sheet() const
-{
-    return m_sheet.get();
-}
-
 void ProcessingInstruction::didAttributeChanged()
 {
     if (m_sheet)

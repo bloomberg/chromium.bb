@@ -58,8 +58,8 @@ public:
     void getAsString(ExecutionContext*, StringCallback*) const;
     Blob* getAsFile() const;
 
-    DataTransfer* dataTransfer() const;
-    DataObjectItem* dataObjectItem() const;
+    DataTransfer* dataTransfer() { return m_dataTransfer.get(); }
+    DataObjectItem* dataObjectItem() { return m_item.get(); }
 
     DECLARE_TRACE();
 

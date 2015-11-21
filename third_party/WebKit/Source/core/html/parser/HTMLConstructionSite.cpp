@@ -376,11 +376,6 @@ void HTMLConstructionSite::setForm(HTMLFormElement* form)
     m_form = form;
 }
 
-HTMLFormElement* HTMLConstructionSite::form() const
-{
-    return m_form.get();
-}
-
 PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLConstructionSite::takeForm()
 {
     return m_form.release();

@@ -157,17 +157,6 @@ SVGElementRareData* SVGElement::ensureSVGRareData()
     return m_SVGRareData.get();
 }
 
-bool SVGElement::hasSVGRareData() const
-{
-    return m_SVGRareData;
-}
-
-SVGElementRareData* SVGElement::svgRareData() const
-{
-    ASSERT(m_SVGRareData);
-    return m_SVGRareData.get();
-}
-
 bool SVGElement::isOutermostSVGSVGElement() const
 {
     if (!isSVGSVGElement(*this))
@@ -690,11 +679,6 @@ void SVGElement::addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property(passProperty);
     QualifiedName attributeName = property->attributeName();
     m_attributeToPropertyMap.set(attributeName, property.release());
-}
-
-SVGAnimatedString* SVGElement::className()
-{
-    return m_className.get();
 }
 
 PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)

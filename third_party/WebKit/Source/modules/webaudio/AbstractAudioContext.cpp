@@ -213,11 +213,6 @@ void AbstractAudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBuffe
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
 }
 
-AudioListener* AbstractAudioContext::listener() const
-{
-    return m_listener;
-}
-
 AudioBufferSourceNode* AbstractAudioContext::createBufferSource(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());

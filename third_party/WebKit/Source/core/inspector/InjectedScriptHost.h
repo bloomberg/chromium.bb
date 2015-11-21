@@ -33,10 +33,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptHostClient.h"
-#include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/v8/V8Debugger.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
-#include "platform/JSONValues.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -46,11 +42,15 @@
 
 namespace blink {
 
-class EventListenerInfo;
 class EventTarget;
 class InjectedScriptHostClient;
+class InspectorConsoleAgent;
 class JSONValue;
 class ScriptValue;
+class V8DebuggerAgent;
+class V8Debugger;
+
+class EventListenerInfo;
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
 // a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the

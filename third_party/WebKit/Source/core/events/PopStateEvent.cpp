@@ -73,11 +73,6 @@ PassRefPtrWillBeRawPtr<PopStateEvent> PopStateEvent::create(const AtomicString& 
     return adoptRefWillBeNoop(new PopStateEvent(type, initializer));
 }
 
-History* PopStateEvent::history() const
-{
-    return m_history.get();
-}
-
 const AtomicString& PopStateEvent::interfaceName() const
 {
     return EventNames::PopStateEvent;

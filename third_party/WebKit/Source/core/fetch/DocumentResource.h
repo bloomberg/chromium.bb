@@ -42,7 +42,7 @@ public:
     ~DocumentResource() override;
     DECLARE_VIRTUAL_TRACE();
 
-    Document* document() const;
+    Document* document() const { return m_document.get(); }
 
     void setEncoding(const String&) override;
     String encoding() const override;

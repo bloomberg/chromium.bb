@@ -80,11 +80,6 @@ StorageEvent::StorageEvent(const AtomicString& type, const StorageEventInit& ini
         m_storageArea = initializer.storageArea();
 }
 
-Storage* StorageEvent::storageArea() const
-{
-    return m_storageArea.get();
-}
-
 void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
 {
     if (dispatched())

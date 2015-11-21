@@ -100,16 +100,6 @@ FetchRequestData::FetchRequestData()
 {
 }
 
-BodyStreamBuffer* FetchRequestData::buffer() const
-{
-    return m_buffer;
-}
-
-void FetchRequestData::setBuffer(BodyStreamBuffer* buffer)
-{
-    m_buffer = buffer;
-}
-
 DEFINE_TRACE(FetchRequestData)
 {
     visitor->trace(m_buffer);

@@ -64,7 +64,7 @@ public:
     bool isDatabaseThread() { return m_thread && m_thread->isCurrentThread(); }
 
     SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }
-    SQLTransactionCoordinator* transactionCoordinator() const;
+    SQLTransactionCoordinator* transactionCoordinator() { return m_transactionCoordinator.get(); }
 
 private:
     DatabaseThread();

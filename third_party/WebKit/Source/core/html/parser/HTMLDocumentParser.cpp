@@ -602,11 +602,6 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
-HTMLTreeBuilder* HTMLDocumentParser::treeBuilder() const
-{
-    return m_treeBuilder.get();
-}
-
 void HTMLDocumentParser::forcePlaintextForTextDocument()
 {
     if (shouldUseThreading()) {

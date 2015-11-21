@@ -50,18 +50,6 @@ static size_t sizeForShareableElementDataWithAttributeCount(unsigned count)
     return sizeof(ShareableElementData) + sizeof(Attribute) * count;
 }
 
-const StylePropertySet* ElementData::inlineStyle() const
-{
-    return m_inlineStyle.get();
-}
-
-const StylePropertySet* ElementData::presentationAttributeStyle() const
-{
-    if (!m_isUnique)
-        return nullptr;
-    return toUniqueElementData(this)->m_presentationAttributeStyle.get();
-}
-
 ElementData::ElementData()
     : m_isUnique(true)
     , m_arraySize(0)

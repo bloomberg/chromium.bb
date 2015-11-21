@@ -41,7 +41,7 @@ class StyleSheetContents;
 
 class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
-    virtual Element* parentElement() const { return nullptr; }
+    virtual Element* parentElement() const { return 0; }
     StyleSheetContents* contextStyleSheet() const;
 
     DECLARE_VIRTUAL_TRACE();
@@ -127,7 +127,10 @@ protected:
 
 class InlineCSSStyleDeclaration final : public AbstractPropertySetCSSStyleDeclaration {
 public:
-    explicit InlineCSSStyleDeclaration(Element* parentElement);
+    explicit InlineCSSStyleDeclaration(Element* parentElement)
+        : m_parentElement(parentElement)
+    {
+    }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -138,7 +141,7 @@ private:
     void deref() override;
 #endif
     CSSStyleSheet* parentStyleSheet() const override;
-    Element* parentElement() const override;
+    Element* parentElement() const override { return m_parentElement; }
 
     void didMutate(MutationType) override;
 

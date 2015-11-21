@@ -145,20 +145,9 @@ ${member_list}
 #endif // !defined(InstrumentingAgentsInl_h)
 """)
 
-template_instrumenting_agent_accessor_prompt = string.Template("""
-    ${class_name}* ${getter_name}() const;
-    void set${class_name}(${class_name}* agent);""")
-
-template_instrumenting_agent_accessor_impl = string.Template("""
-${class_name}* InstrumentingAgents::${getter_name}() const
-{
-    return ${member_name};
-}
-
-void InstrumentingAgents::set${class_name}(${class_name}* agent)
-{
-    ${member_name} = agent;
-}""")
+template_instrumenting_agent_accessor = string.Template("""
+    ${class_name}* ${getter_name}() const { return ${member_name}; }
+    void set${class_name}(${class_name}* agent) { ${member_name} = agent; }""")
 
 template_instrumenting_agents_cpp = string.Template("""
 InstrumentingAgents::InstrumentingAgents()
@@ -174,9 +163,7 @@ DEFINE_TRACE(InstrumentingAgents)
 void InstrumentingAgents::reset()
 {
     $reset_list
-}
-
-${accessor_list}""")
+}""")
 
 
 
@@ -465,7 +452,6 @@ def generate_instrumenting_agents(used_agents):
 
     forward_list = []
     accessor_list = []
-    accessor_impl_list = []
     member_list = []
     init_list = []
     trace_list = []
@@ -476,11 +462,7 @@ def generate_instrumenting_agents(used_agents):
         member_name = "m_" + getter_name
 
         forward_list.append("class %s;" % class_name)
-        accessor_list.append(template_instrumenting_agent_accessor_prompt.substitute(
-            None,
-            class_name=class_name,
-            getter_name=getter_name))
-        accessor_impl_list.append(template_instrumenting_agent_accessor_impl.substitute(
+        accessor_list.append(template_instrumenting_agent_accessor.substitute(
             None,
             class_name=class_name,
             getter_name=getter_name,
@@ -492,7 +474,6 @@ def generate_instrumenting_agents(used_agents):
 
     forward_list.sort()
     accessor_list.sort()
-    accessor_impl_list.sort()
     member_list.sort()
     init_list.sort()
     trace_list.sort()
@@ -508,8 +489,7 @@ def generate_instrumenting_agents(used_agents):
         None,
         init_list="\n    , ".join(init_list),
         trace_list="\n    ".join(trace_list),
-        reset_list="\n    ".join(reset_list),
-        accessor_list="\n".join(accessor_impl_list))
+        reset_list="\n    ".join(reset_list))
 
     return header_lines, cpp_lines
 

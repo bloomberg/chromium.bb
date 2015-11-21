@@ -3452,11 +3452,6 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
 }
 
 #if ENABLE(WEB_AUDIO)
-AudioSourceProviderClient* HTMLMediaElement::audioSourceNode()
-{
-    return m_audioSourceNode;
-}
-
 void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
 {
     ASSERT(isMainThread());
@@ -3664,11 +3659,6 @@ void HTMLMediaElement::AudioSourceProviderImpl::provideInput(AudioBus* bus, size
         webAudioData[i] = bus->channel(i)->mutableData();
 
     m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
-}
-
-HTMLMediaElement::AudioClientImpl::AudioClientImpl(AudioSourceProviderClient* client)
-    : m_client(client)
-{
 }
 
 void HTMLMediaElement::AudioClientImpl::setFormat(size_t numberOfChannels, float sampleRate)

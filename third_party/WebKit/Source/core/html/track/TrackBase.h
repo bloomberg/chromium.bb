@@ -57,8 +57,8 @@ public:
     String id() const { return m_id; }
     void setId(const String& id) { m_id = id; }
 
-    void setMediaElement(HTMLMediaElement*);
-    HTMLMediaElement* mediaElement() const;
+    void setMediaElement(HTMLMediaElement* mediaElement) { m_mediaElement = mediaElement; }
+    HTMLMediaElement* mediaElement() const { return m_mediaElement; }
     Node* owner() const;
 
     DECLARE_VIRTUAL_TRACE();

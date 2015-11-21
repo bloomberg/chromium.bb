@@ -157,16 +157,6 @@ DOMTimerCoordinator* WorkerGlobalScope::timers()
     return &m_timers;
 }
 
-WorkerInspectorController* WorkerGlobalScope::workerInspectorController() const
-{
-    return m_workerInspectorController.get();
-}
-
-WorkerClients* WorkerGlobalScope::clients() const
-{
-    return m_workerClients.get();
-}
-
 WorkerLocation* WorkerGlobalScope::location() const
 {
     if (!m_location)

@@ -85,16 +85,6 @@ Blob* DataTransferItem::getAsFile() const
     return m_item->getAsFile();
 }
 
-DataTransfer* DataTransferItem::dataTransfer() const
-{
-    return m_dataTransfer;
-}
-
-DataObjectItem* DataTransferItem::dataObjectItem() const
-{
-    return m_item;
-}
-
 DataTransferItem::DataTransferItem(DataTransfer* dataTransfer, DataObjectItem* item)
     : m_dataTransfer(dataTransfer)
     , m_item(item)

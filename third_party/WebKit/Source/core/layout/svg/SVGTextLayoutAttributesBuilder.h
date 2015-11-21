@@ -58,7 +58,12 @@ public:
     struct TextPosition {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        TextPosition(SVGTextPositioningElement* = nullptr, unsigned newStart = 0, unsigned newLength = 0);
+        TextPosition(SVGTextPositioningElement* newElement = nullptr, unsigned newStart = 0, unsigned newLength = 0)
+            : element(newElement)
+            , start(newStart)
+            , length(newLength)
+        {
+        }
 
         DECLARE_TRACE();
 

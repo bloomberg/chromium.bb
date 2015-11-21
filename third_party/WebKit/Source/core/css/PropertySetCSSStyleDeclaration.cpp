@@ -349,11 +349,6 @@ DEFINE_TRACE(StyleRuleCSSStyleDeclaration)
     PropertySetCSSStyleDeclaration::trace(visitor);
 }
 
-InlineCSSStyleDeclaration::InlineCSSStyleDeclaration(Element* parentElement)
-    : m_parentElement(parentElement)
-{
-}
-
 MutableStylePropertySet& InlineCSSStyleDeclaration::propertySet() const
 {
     return m_parentElement->ensureMutableInlineStyle();
@@ -376,11 +371,6 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
 CSSStyleSheet* InlineCSSStyleDeclaration::parentStyleSheet() const
 {
     return m_parentElement ? &m_parentElement->document().elementSheet() : nullptr;
-}
-
-Element* InlineCSSStyleDeclaration::parentElement() const
-{
-    return m_parentElement;
 }
 
 #if !ENABLE(OILPAN)

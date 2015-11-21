@@ -48,16 +48,6 @@ SpeechRecognition* SpeechRecognition::create(ExecutionContext* context)
     return speechRecognition;
 }
 
-MediaStreamTrack* SpeechRecognition::audioTrack() const
-{
-    return m_audioTrack;
-}
-
-void SpeechRecognition::setAudioTrack(MediaStreamTrack* audioTrack)
-{
-    m_audioTrack = audioTrack;
-}
-
 void SpeechRecognition::start(ExceptionState& exceptionState)
 {
     if (!m_controller)

@@ -287,7 +287,7 @@ public:
 
     FrameView* frameView() const { return frame() ? frame()->view() : 0; }
 
-    WebDevToolsAgentImpl* devToolsAgentImpl() const;
+    WebDevToolsAgentImpl* devToolsAgentImpl() const { return m_devToolsAgent.get(); }
 
     // Getters for the impls corresponding to Get(Provisional)DataSource. They
     // may return 0 if there is no corresponding data source.

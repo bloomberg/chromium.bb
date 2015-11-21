@@ -75,11 +75,6 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& TreeScopeEventContext::ensure
     return *m_eventPath;
 }
 
-TouchEventContext* TreeScopeEventContext::touchEventContext() const
-{
-    return m_touchEventContext.get();
-}
-
 TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
 {
     if (!m_touchEventContext)

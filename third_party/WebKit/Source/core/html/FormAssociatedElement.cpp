@@ -130,11 +130,6 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
     return element->findFormAncestor();
 }
 
-HTMLFormElement* FormAssociatedElement::form() const
-{
-    return m_form.get();
-}
-
 void FormAssociatedElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);

@@ -75,8 +75,8 @@ public:
     // Implement the IDBTransaction IDL
     const String& mode() const;
     PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
-    IDBDatabase* db() const;
-    DOMException* error() const;
+    IDBDatabase* db() const { return m_database.get(); }
+    DOMException* error() const { return m_error; }
     IDBObjectStore* objectStore(const String& name, ExceptionState&);
     void abort(ExceptionState&);
 

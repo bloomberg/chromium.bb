@@ -58,7 +58,12 @@ public:
     DECLARE_TRACE();
 
 private:
-    WebPluginLoadObserver(WebPluginContainerImpl*, const WebURL&, void*);
+    WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer, const WebURL& notifyURL, void* notifyData)
+        : m_pluginContainer(pluginContainer)
+        , m_notifyURL(notifyURL)
+        , m_notifyData(notifyData)
+    {
+    }
 
     RawPtrWillBeWeakMember<WebPluginContainerImpl> m_pluginContainer;
     WebURL m_notifyURL;

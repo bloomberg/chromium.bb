@@ -40,21 +40,21 @@ public:
 
     void ensureDefaultStyleSheetsForElement(const Element&, bool& changedDefaultStyle);
 
-    RuleSet* defaultStyle() const;
-    RuleSet* defaultQuirksStyle() const;
-    RuleSet* defaultPrintStyle() const;
+    RuleSet* defaultStyle() { return m_defaultStyle.get(); }
+    RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
+    RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
     RuleSet* defaultViewSourceStyle();
     RuleSet* defaultMobileViewportStyle();
 
     // FIXME: Remove WAP support.
     RuleSet* defaultXHTMLMobileProfileStyle();
 
-    StyleSheetContents* defaultStyleSheet() const;
-    StyleSheetContents* quirksStyleSheet() const;
-    StyleSheetContents* svgStyleSheet() const;
-    StyleSheetContents* mathmlStyleSheet() const;
-    StyleSheetContents* mediaControlsStyleSheet() const;
-    StyleSheetContents* fullscreenStyleSheet() const;
+    StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
+    StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
+    StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
+    StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
+    StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet.get(); }
+    StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet.get(); }
 
     DECLARE_TRACE();
 

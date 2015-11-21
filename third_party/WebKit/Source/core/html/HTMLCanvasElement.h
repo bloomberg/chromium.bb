@@ -111,7 +111,7 @@ public:
     SkCanvas* existingDrawingCanvas() const;
 
     void setRenderingContext(PassOwnPtrWillBeRawPtr<CanvasRenderingContext>);
-    CanvasRenderingContext* renderingContext() const;
+    CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
     void ensureUnacceleratedImageBuffer();
     ImageBuffer* buffer() const;

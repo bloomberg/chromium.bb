@@ -132,11 +132,6 @@ void TreeScope::destroyTreeScopeData()
 }
 #endif
 
-void TreeScope::setDocument(Document& document)
-{
-    m_document = &document;
-}
-
 void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {
     // A document node cannot be re-parented.
@@ -149,11 +144,6 @@ void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 #endif
     m_parentTreeScope = &newParentScope;
     setDocument(newParentScope.document());
-}
-
-ScopedStyleResolver* TreeScope::scopedStyleResolver() const
-{
-    return m_scopedStyleResolver.get();
 }
 
 ScopedStyleResolver& TreeScope::ensureScopedStyleResolver()
@@ -202,12 +192,6 @@ void TreeScope::removeElementById(const AtomicString& elementId, Element* elemen
         return;
     m_elementsById->remove(elementId, element);
     m_idTargetObserverRegistry->notifyObservers(elementId);
-}
-
-Document& TreeScope::document() const
-{
-    ASSERT(m_document);
-    return *m_document;
 }
 
 Node* TreeScope::ancestorInThisScope(Node* node) const
@@ -433,11 +417,6 @@ void TreeScope::adoptIfNeeded(Node& node)
     TreeScopeAdopter adopter(node, *this);
     if (adopter.needsScopeChange())
         adopter.execute();
-}
-
-IdTargetObserverRegistry& TreeScope::idTargetObserverRegistry() const
-{
-    return *m_idTargetObserverRegistry.get();
 }
 
 Element* TreeScope::adjustedFocusedElement() const
