@@ -12,12 +12,6 @@ console.error('Proto file should not be executed.');
 /** @type {{background: Object}} */
 chrome.runtime.Manifest.prototype.app;
 
-/** @type {chrome.app.window.Bounds} */
-chrome.app.window.AppWindow.prototype.outerBounds;
-
-/** @type {chrome.app.window.Bounds} */
-chrome.app.window.AppWindow.prototype.innerBounds;
-
 /** @type {string} */
 chrome.app.window.AppWindow.prototype.id;
 
