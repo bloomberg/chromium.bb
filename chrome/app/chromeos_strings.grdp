@@ -4851,6 +4851,12 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode [US international keyboard].">
     US international
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_WORKMAN" desc="In the language menu button, this shows the input mode [US Workman keyboard].">
+    US Workman
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_WORKMAN_INTERNATIONAL" desc="In the language menu button, this shows the input mode [US Workman international keyboard].">
+    US Workman international
+  </message>
   <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode [Lithuanian keyboard].">
     Lithuanian
   </message>
@@ -5154,6 +5160,12 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_US_INTERNATIONAL" desc="The input method name shows in system tray menu, this shows [US International keyboard].">
     US International keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_WORKMAN" desc="The input method name shows in system tray menu, this shows [US Workman keyboard].">
+    US Workman keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_WORKMAN_INTERNATIONAL" desc="The input method name shows in system tray menu, this shows [US Workman international keyboard].">
+    US Workman international keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_US" desc="The input method name shows in system tray menu, this shows [US keyboard].">
     US keyboard

@@ -43,16 +43,18 @@
 #
 
 # U.S. English
-xkb:us::eng           us             en,en-US,en-AU,en-NZ US   login
-xkb:us:intl:eng       us(intl)       en,en-US             INTL login
-xkb:us:altgr-intl:eng us(altgr-intl) en,en-US             EXTD login
-xkb:us:dvorak:eng     us(dvorak)     en,en-US             DV   login
-xkb:us:colemak:eng    us(colemak)    en,en-US             CO   login
-xkb:us:intl:nld       us(intl)       nl                   INTL login
-xkb:us:intl:por       us(intl)       pt-BR                INTL login
-xkb:us::ind           us             id                   US   login
-xkb:us::fil           us             fil                  US   login
-xkb:us::msa           us             ms                   US   login
+xkb:us::eng             us               en,en-US,en-AU,en-NZ US   login
+xkb:us:intl:eng         us(intl)         en,en-US             INTL login
+xkb:us:altgr-intl:eng   us(altgr-intl)   en,en-US             EXTD login
+xkb:us:dvorak:eng       us(dvorak)       en,en-US             DV   login
+xkb:us:colemak:eng      us(colemak)      en,en-US             CO   login
+xkb:us:workman:eng      us(workman)      en,en-US             WM   login
+xkb:us:workman-intl:eng us(workman-intl) en,en-US             WMI  login
+xkb:us:intl:nld         us(intl)         nl                   INTL login
+xkb:us:intl:por         us(intl)         pt-BR                INTL login
+xkb:us::ind             us               id                   US   login
+xkb:us::fil             us               fil                  US   login
+xkb:us::msa             us               ms                   US   login
 
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.

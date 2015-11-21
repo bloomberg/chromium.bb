@@ -31,6 +31,8 @@ void Append_en_US_InputMethods(std::vector<std::string>* out) {
   out->push_back("xkb:us:dvorak:eng");
   out->push_back("xkb:us:dvp:eng");
   out->push_back("xkb:us:colemak:eng");
+  out->push_back("xkb:us:workman:eng");
+  out->push_back("xkb:us:workman-intl:eng");
   chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(out);
 }
 

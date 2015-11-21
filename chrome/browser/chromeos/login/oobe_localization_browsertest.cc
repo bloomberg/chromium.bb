@@ -76,66 +76,55 @@ struct LocalizationTestParams {
   const char* expected_keyboard_layout;
   const char* expected_keyboard_select_control;
 } const oobe_localization_test_parameters[] = {
-      // ------------------ Non-Latin setup
-      // For a non-Latin keyboard layout like Russian, we expect to see the US
-      // keyboard.
-      {"ru", "xkb:ru::rus", "ru", kUSLayout, "xkb:us::eng"},
-      {"ru", "xkb:us::eng,xkb:ru::rus", "ru", kUSLayout, "xkb:us::eng"},
+    // ------------------ Non-Latin setup
+    // For a non-Latin keyboard layout like Russian, we expect to see the US
+    // keyboard.
+    {"ru", "xkb:ru::rus", "ru", kUSLayout, "xkb:us::eng"},
+    {"ru", "xkb:us::eng,xkb:ru::rus", "ru", kUSLayout, "xkb:us::eng"},
 
-      // IMEs do not load at OOBE, so we just expect to see the (Latin) Japanese
-      // keyboard.
-      {"ja", "xkb:jp::jpn", "ja", "xkb:jp::jpn", "xkb:jp::jpn,[xkb:us::eng]"},
+    // IMEs do not load at OOBE, so we just expect to see the (Latin) Japanese
+    // keyboard.
+    {"ja", "xkb:jp::jpn", "ja", "xkb:jp::jpn", "xkb:jp::jpn,[xkb:us::eng]"},
 
-      // We don't use the Icelandic locale but the Icelandic keyboard layout
-      // should still be selected when specified as the default.
-      {"en-US",
-       "xkb:is::ice",
-       "en-US",
-       "xkb:is::ice",
-       "xkb:is::ice,[xkb:us::eng,xkb:us:intl:eng,xkb:us:altgr-intl:eng,"
-           "xkb:us:dvorak:eng,xkb:us:dvp:eng,xkb:us:colemak:eng]"},
-      // ------------------ Full Latin setup
-      // French Swiss keyboard.
-      {"fr",
-       "xkb:ch:fr:fra",
-       "fr",
-       "xkb:ch:fr:fra",
-       "xkb:ch:fr:fra,[xkb:fr::fra,xkb:be::fra,xkb:ca::fra,"
-           "xkb:ca:multix:fra,xkb:us::eng]"},
+    // We don't use the Icelandic locale but the Icelandic keyboard layout
+    // should still be selected when specified as the default.
+    {"en-US", "xkb:is::ice", "en-US", "xkb:is::ice",
+     "xkb:is::ice,[xkb:us::eng,xkb:us:intl:eng,xkb:us:altgr-intl:eng,"
+     "xkb:us:dvorak:eng,xkb:us:dvp:eng,xkb:us:colemak:eng,"
+     "xkb:us:workman:eng,xkb:us:workman-intl:eng]"},
+    // ------------------ Full Latin setup
+    // French Swiss keyboard.
+    {"fr", "xkb:ch:fr:fra", "fr", "xkb:ch:fr:fra",
+     "xkb:ch:fr:fra,[xkb:fr::fra,xkb:be::fra,xkb:ca::fra,"
+     "xkb:ca:multix:fra,xkb:us::eng]"},
 
-      // German Swiss keyboard.
-      {"de",
-       "xkb:ch::ger",
-       "de",
-       "xkb:ch::ger",
-       "xkb:ch::ger,[xkb:de::ger,xkb:de:neo:ger,xkb:be::ger,xkb:us::eng]"},
+    // German Swiss keyboard.
+    {"de", "xkb:ch::ger", "de", "xkb:ch::ger",
+     "xkb:ch::ger,[xkb:de::ger,xkb:de:neo:ger,xkb:be::ger,xkb:us::eng]"},
 
-      // NetworkScreenMultipleLocales
-      {"es,en-US,nl",
-       "xkb:be::nld",
-       "es,en-US,nl",
-       "xkb:be::nld",
-       "xkb:be::nld,[xkb:es::spa,xkb:latam::spa,xkb:us::eng]"},
+    // NetworkScreenMultipleLocales
+    {"es,en-US,nl", "xkb:be::nld", "es,en-US,nl", "xkb:be::nld",
+     "xkb:be::nld,[xkb:es::spa,xkb:latam::spa,xkb:us::eng]"},
 
-      {"ru,de", "xkb:ru::rus", "ru,de", kUSLayout, "xkb:us::eng"},
+    {"ru,de", "xkb:ru::rus", "ru,de", kUSLayout, "xkb:us::eng"},
 
-      // TODO(alemate/michaelpg): Figure out why these tests are failing
-      // and re-enable them. crbug.com/422702.
-      // ------------------ Regional Locales
-      // Syntetic example to test correct merging of different locales.
-      // {"fr-CH,it-CH,de-CH",
-      //  "xkb:fr::fra,xkb:it::ita,xkb:de::ger",
-      //  "fr-CH,it-CH,de-CH",
-      //  "xkb:fr::fra",
-      //  "xkb:fr::fra,xkb:it::ita,xkb:de::ger,[xkb:be::fra,xkb:ca::fra,"
-      //      "xkb:ch:fr:fra,xkb:ca:multix:fra,xkb:us::eng]"},
+    // TODO(alemate/michaelpg): Figure out why these tests are failing
+    // and re-enable them. crbug.com/422702.
+    // ------------------ Regional Locales
+    // Syntetic example to test correct merging of different locales.
+    // {"fr-CH,it-CH,de-CH",
+    //  "xkb:fr::fra,xkb:it::ita,xkb:de::ger",
+    //  "fr-CH,it-CH,de-CH",
+    //  "xkb:fr::fra",
+    //  "xkb:fr::fra,xkb:it::ita,xkb:de::ger,[xkb:be::fra,xkb:ca::fra,"
+    //      "xkb:ch:fr:fra,xkb:ca:multix:fra,xkb:us::eng]"},
 
-      // Another syntetic example. Check that british keyboard is available.
-      // {"en-AU",
-      //  "xkb:us::eng",
-      //  "en-AU",
-      //  "xkb:us::eng",
-      //  "xkb:us::eng,[xkb:gb:extd:eng,xkb:gb:dvorak:eng]"},
+    // Another syntetic example. Check that british keyboard is available.
+    // {"en-AU",
+    //  "xkb:us::eng",
+    //  "en-AU",
+    //  "xkb:us::eng",
+    //  "xkb:us::eng,[xkb:gb:extd:eng,xkb:gb:dvorak:eng]"},
 };
 
 class OobeLocalizationTest

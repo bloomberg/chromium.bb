@@ -58,7 +58,9 @@ const char* kLoginLayoutWhitelist[] = {
   "us(colemak)",
   "us(dvorak)",
   "us(dvp)",
-  "us(intl)"
+  "us(intl)",
+  "us(workman)",
+  "us(workman-intl)"
 };
 
 // Gets the input method category according to the given input method id.

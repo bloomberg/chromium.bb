@@ -135,7 +135,9 @@ INPUT_METHOD_ID_TO_OVERLAY_ID = {
   'xkb:us:dvorak:eng': 'en_US_dvorak',
   'xkb:us:intl:eng': 'en_US_intl',
   'xkb:us:intl:nld': 'en_US_intl',
-  'xkb:us:intl:por': 'en_US_intl'
+  'xkb:us:intl:por': 'en_US_intl',
+  'xkb:us:workman:eng': 'en_US_workman',
+  'xkb:us:workman-intl:eng': 'en_US_workman_intl',
 }
 
 # The file was first generated in 2012 and we have a policy of not updating

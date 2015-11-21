@@ -208,6 +208,38 @@
       "options_page": "hmm_options.html?code=xkb:us:colemak:eng"
     },
     {
+      "name": "__MSG_keyboard_us_workman__",
+      "type": "ime",
+      "id": "xkb:us:workman:eng",
+      "indicator": "WM",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(workman)"
+      ],
+      "input_view": "inputview.html#id=us-workman&language=en-US&passwordLayout=us-workman&name=keyboard_us_workman",
+      "options_page": "hmm_options.html?code=xkb:us:workman:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_workman_international__",
+      "type": "ime",
+      "id": "xkb:us:workman-intl:eng",
+      "indicator": "WMI",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(workman-intl)"
+      ],
+      "input_view": "inputview.html#id=us-workman-intl&language=en-US&passwordLayout=us-workman-intl&name=keyboard_us_workman_international",
+      "options_page": "hmm_options.html?code=xkb:us:workman-intl:eng"
+    },
+    {
       "name": "__MSG_keyboard_belgian__",
       "type": "ime",
       "id": "xkb:be::nld",
