@@ -3478,7 +3478,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Canvas.ContextType" enum="CanvasContextType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>junov@chromium.org</owner>
+  <owner>kbr@chromium.org</owner>
   <summary>
     Records the context type names used to create canvas rendering contexts.
   </summary>
@@ -51495,6 +51496,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.CanvasContextUsage" enum="CanvasContextUsage">
+  <owner>zmin@chromium.org</owner>
+  <owner>junov@chromium.org</owner>
+  <summary>
+    The usage of Canvas 2D Context API. Logged when the particular API is used.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.DistillabilityUs" units="microseconds">
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -55821,9 +55830,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="CanvasContextType" type="int">
   <int value="0" label="2d"/>
-  <int value="1" label="webkit-3d"/>
+  <int value="1" label="(obsolete) webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+  <int value="4" label="webgl2"/>
+</enum>
+
+<enum name="CanvasContextUsage" type="int">
+  <int value="0" label="CanvasCreated"/>
+  <int value="1" label="GPUAccelerated2DCanvasImageBufferCreated"/>
+  <int value="2" label="DisplayList2DCanvasImageBufferCreated"/>
+  <int value="3" label="Unaccelerated2DCanvasImageBufferCreated"/>
+  <int value="4" label="Accelerated2DCanvasGPUContextLost"/>
+  <int value="5" label="Unaccelerated2DCanvasImageBufferCreationFailed"/>
+  <int value="6" label="GPUAccelerated2DCanvasImageBufferCreationFailed"/>
+  <int value="7" label="DisplayList2DCanvasFallbackToRaster"/>
 </enum>
 
 <enum name="CAPSUpdaterStep" type="int">

@@ -48,6 +48,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
+#include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -117,6 +118,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_imageBufferIsClear(false)
 {
     setHasCustomStyleCallbacks();
+    CanvasMetrics::countCanvasContextUsage(CanvasMetrics::CanvasCreated);
 }
 
 DEFINE_NODE_FACTORY(HTMLCanvasElement)
@@ -653,20 +655,30 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         if (document().settings())
             *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
-        if (surface->isValid())
+        if (surface->isValid()) {
+            CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
             return surface.release();
+        }
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
     }
 
     OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
 
     if (shouldUseDisplayList(deviceSize)) {
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
-        if (surface->isValid())
+        if (surface->isValid()) {
+            CanvasMetrics::countCanvasContextUsage(CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
             return surface.release();
+        }
         surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
     }
-
-    return surfaceFactory->createSurface(deviceSize, opacityMode);
+    auto surface = surfaceFactory->createSurface(deviceSize, opacityMode);
+    if (!surface->isValid()) {
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Unaccelerated2DCanvasImageBufferCreationFailed);
+    } else {
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Unaccelerated2DCanvasImageBufferCreated);
+    }
+    return surface;
 }
 
 void HTMLCanvasElement::createImageBuffer()

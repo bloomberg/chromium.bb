@@ -500,6 +500,8 @@
       'graphics/Canvas2DImageBufferSurface.h',
       'graphics/Canvas2DLayerBridge.cpp',
       'graphics/Canvas2DLayerBridge.h',
+      'graphics/CanvasMetrics.h',
+      'graphics/CanvasMetrics.cpp',
       'graphics/Color.cpp',
       'graphics/Color.h',
       'graphics/ColorSpace.cpp',

@@ -32,6 +32,7 @@
 #include "SkSurface.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -378,6 +379,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
         }
         if (m_imageBuffer)
             m_imageBuffer->notifySurfaceInvalid();
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Accelerated2DCanvasGPUContextLost);
     }
     return m_surface;
 }

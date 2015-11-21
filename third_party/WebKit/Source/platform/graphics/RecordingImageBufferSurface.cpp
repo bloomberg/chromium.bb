@@ -6,6 +6,7 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -95,6 +96,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
         m_imageBuffer->resetCanvas(m_fallbackSurface->canvas());
     }
 
+    CanvasMetrics::countCanvasContextUsage(CanvasMetrics::DisplayList2DCanvasFallbackToRaster);
 }
 
 PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot(AccelerationHint hint)
