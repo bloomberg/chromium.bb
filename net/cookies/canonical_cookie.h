@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_constants.h"
@@ -159,6 +160,32 @@ class NET_EXPORT CanonicalCookie {
   bool FullCompare(const CanonicalCookie& other) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CanonicalCookiePrefixHistogramTest, TestHistograms);
+
+  // The special cookie prefixes as defined in
+  // https://tools.ietf.org/html/draft-west-cookie-prefixes
+  //
+  // This enum is being histogrammed; do not reorder or remove values.
+  enum CookiePrefix {
+    COOKIE_PREFIX_NONE = 0,
+    COOKIE_PREFIX_SECURE,
+    COOKIE_PREFIX_HOST,
+    COOKIE_PREFIX_LAST
+  };
+
+  // Returns the CookiePrefix (or COOKIE_PREFIX_NONE if none) that
+  // applies to the given cookie |name|.
+  static CookiePrefix GetCookiePrefix(const std::string& name);
+  // Records histograms to measure how often cookie prefixes appear in
+  // the wild and how often they would be blocked.
+  static void RecordCookiePrefixMetrics(CookiePrefix prefix,
+                                        bool is_cookie_valid);
+  // Returns true if a prefixed cookie does not violate any of the rules
+  // for that cookie.
+  static bool IsCookiePrefixValid(CookiePrefix prefix,
+                                  const GURL& url,
+                                  const ParsedCookie& parsed_cookie);
+
   // The source member of a canonical cookie is the origin of the URL that tried
   // to set this cookie.  This field is not persistent though; its only used in
   // the in-tab cookies dialog to show the user the source URL. This is used for

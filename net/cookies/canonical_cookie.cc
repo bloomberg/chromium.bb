@@ -47,6 +47,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -114,21 +115,6 @@ int PartialCookieOrdering(const CanonicalCookie& a, const CanonicalCookie& b) {
     return diff;
 
   return a.Path().compare(b.Path());
-}
-
-// Returns true if the cookie does not violate any constraints imposed
-// by the cookie name's prefix, as described in
-// https://tools.ietf.org/html/draft-west-cookie-prefixes
-bool IsCookiePrefixValid(const GURL& url, const ParsedCookie& parsed_cookie) {
-  const char kSecurePrefix[] = "$Secure-";
-  const char kHostPrefix[] = "$Host-";
-  if (parsed_cookie.Name().find(kSecurePrefix) == 0)
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic();
-  if (parsed_cookie.Name().find(kHostPrefix) == 0) {
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic() &&
-           !parsed_cookie.HasDomain() && parsed_cookie.Path() == "/";
-  }
-  return true;
 }
 
 }  // namespace
@@ -274,7 +260,11 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                                          creation_time,
                                                          server_time);
 
-  if (options.enforce_prefixes() && !IsCookiePrefixValid(url, parsed_cookie)) {
+  CookiePrefix prefix = CanonicalCookie::GetCookiePrefix(parsed_cookie.Name());
+  bool is_cookie_valid =
+      CanonicalCookie::IsCookiePrefixValid(prefix, url, parsed_cookie);
+  CanonicalCookie::RecordCookiePrefixMetrics(prefix, is_cookie_valid);
+  if (options.enforce_prefixes() && !is_cookie_valid) {
     VLOG(kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
     return nullptr;
@@ -482,6 +472,49 @@ bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
     return IsHttpOnly();
 
   return Priority() < other.Priority();
+}
+
+// static
+CanonicalCookie::CookiePrefix CanonicalCookie::GetCookiePrefix(
+    const std::string& name) {
+  const char kSecurePrefix[] = "$Secure-";
+  const char kHostPrefix[] = "$Host-";
+  if (name.find(kSecurePrefix) == 0)
+    return CanonicalCookie::COOKIE_PREFIX_SECURE;
+  if (name.find(kHostPrefix) == 0)
+    return CanonicalCookie::COOKIE_PREFIX_HOST;
+  return CanonicalCookie::COOKIE_PREFIX_NONE;
+}
+
+// static
+void CanonicalCookie::RecordCookiePrefixMetrics(
+    CanonicalCookie::CookiePrefix prefix,
+    bool is_cookie_valid) {
+  const char kCookiePrefixHistogram[] = "Cookie.CookiePrefix";
+  const char kCookiePrefixBlockedHistogram[] = "Cookie.CookiePrefixBlocked";
+  UMA_HISTOGRAM_ENUMERATION(kCookiePrefixHistogram, prefix,
+                            CanonicalCookie::COOKIE_PREFIX_LAST);
+  if (!is_cookie_valid) {
+    UMA_HISTOGRAM_ENUMERATION(kCookiePrefixBlockedHistogram, prefix,
+                              CanonicalCookie::COOKIE_PREFIX_LAST);
+  }
+}
+
+// Returns true if the cookie does not violate any constraints imposed
+// by the cookie name's prefix, as described in
+// https://tools.ietf.org/html/draft-west-cookie-prefixes
+//
+// static
+bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
+                                          const GURL& url,
+                                          const ParsedCookie& parsed_cookie) {
+  if (prefix == CanonicalCookie::COOKIE_PREFIX_SECURE)
+    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic();
+  if (prefix == CanonicalCookie::COOKIE_PREFIX_HOST) {
+    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic() &&
+           !parsed_cookie.HasDomain() && parsed_cookie.Path() == "/";
+  }
+  return true;
 }
 
 }  // namespace net

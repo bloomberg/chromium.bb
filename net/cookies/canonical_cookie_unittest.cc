@@ -5,6 +5,7 @@
 #include "net/cookies/canonical_cookie.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/test/histogram_tester.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -679,5 +680,78 @@ TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
   EXPECT_TRUE(https_cookie_no_secure_extended.get());
   EXPECT_TRUE(https_cookie_secure_extended.get());
 }
+
+namespace {
+
+class CanonicalCookiePrefixHistogramTest : public testing::TestWithParam<bool> {
+};
+
+}  // namespace
+
+TEST_P(CanonicalCookiePrefixHistogramTest, TestHistograms) {
+  base::HistogramTester histograms;
+  const char kCookiePrefixHistogram[] = "Cookie.CookiePrefix";
+  const char kCookiePrefixBlockedHistogram[] = "Cookie.CookiePrefixBlocked";
+  GURL https_url("https://www.example.test");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  if (GetParam())
+    options.set_enforce_prefixes();
+
+  scoped_ptr<CanonicalCookie> cookie1 = make_scoped_ptr(
+      CanonicalCookie::Create(https_url, "$Host-A=B;", creation_time, options));
+  if (GetParam())
+    EXPECT_EQ(nullptr, cookie1);
+  else
+    EXPECT_NE(nullptr, cookie1);
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
+
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Host-A=B; Path=/; Secure", creation_time,
+                         options)));
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 2);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$HostA=B; Path=/; Secure", creation_time,
+                         options)));
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 2);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
+
+  scoped_ptr<CanonicalCookie> cookie2 = make_scoped_ptr(CanonicalCookie::Create(
+      https_url, "$Secure-A=B;", creation_time, options));
+  if (GetParam())
+    EXPECT_EQ(nullptr, cookie2);
+  else
+    EXPECT_NE(nullptr, cookie2);
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$Secure-A=B; Path=/; Secure",
+                         creation_time, options)));
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
+  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
+                         https_url, "$SecureA=B; Path=/; Secure", creation_time,
+                         options)));
+  histograms.ExpectBucketCount(kCookiePrefixHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
+  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
+                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
+}
+
+INSTANTIATE_TEST_CASE_P(CanonicalCookiePrefixHistogramTests,
+                        CanonicalCookiePrefixHistogramTest,
+                        testing::Values(true, false));
 
 }  // namespace net

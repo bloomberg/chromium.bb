@@ -5229,6 +5229,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Intervals between access time updates for each cookie.</summary>
 </histogram>
 
+<histogram name="Cookie.CookiePrefix" enum="CookiePrefix">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Number of times a cookie was set with a name prefixed by
+    &quot;$Secure-&quot; or &quot;$Host-&quot; (prefixes reserved by
+    https://tools.ietf.org/html/draft-west-cookie-prefixes).
+  </summary>
+</histogram>
+
+<histogram name="Cookie.CookiePrefixBlocked" enum="CookiePrefix">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Number of times a cookie was set with a name prefixed by
+    &quot;$Secure-&quot; or &quot;$Host-&quot; that violate cookie prefix rules.
+    That is, a $Secure- cookie must be set over a secure connection with the
+    Secure attribute, and a $Host- cookie must be set over a secure connection,
+    with the Secure attribute, with no Domain attribute, and with a Path
+    attribute of &quot;/&quot;. (As defined in
+    https://tools.ietf.org/html/draft-west-cookie-prefixes.)
+  </summary>
+</histogram>
+
 <histogram name="Cookie.CookieSourceScheme" enum="CookieSourceScheme">
   <owner>estark@chromium.org</owner>
   <summary>
@@ -56757,6 +56779,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Only cookies"/>
   <int value="2" label="Only cache"/>
   <int value="3" label="Both"/>
+</enum>
+
+<enum name="CookiePrefix" type="int">
+  <int value="0" label="No special prefix"/>
+  <int value="1" label="Secure prefix"/>
+  <int value="2" label="Host prefix"/>
 </enum>
 
 <enum name="CookieSourceScheme" type="int">
