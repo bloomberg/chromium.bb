@@ -136,9 +136,6 @@ void CoreServicesApplicationDelegate::StartApplication(
   } else if (url == "mojo://web_view/") {
     delegate.reset(new web_view::WebViewApplicationDelegate);
   } else {
-#if defined(USE_AURA)
-    delegate = CreateApplicationDelegateAura(url);
-#endif
 #if !defined(OS_ANDROID)
     if (!delegate)
       delegate = CreateApplicationDelegateNotAndroid(url);

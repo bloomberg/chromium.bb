@@ -76,13 +76,4 @@ source_set("sources") {
   } else {
     sources += [ "application_delegate_factory_default.cc" ]
   }
-
-  if (use_aura) {
-    deps += [
-      "//components/mus/public/cpp",
-      "//mandoline/ui/desktop_ui:lib",
-      "//mandoline/ui/omnibox:lib",
-    ]
-    sources += [ "application_delegate_factory_aura.cc" ]
-  }
 }

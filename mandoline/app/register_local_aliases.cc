@@ -31,13 +31,6 @@ void RegisterLocalAliases(mojo::package_manager::PackageManagerImpl* manager) {
       GURL("mojo:resource_provider"), GURL("mojo:core_services"), "Files");
 #endif
 
-#if defined(USE_AURA)
-  manager->RegisterApplicationPackageAlias(GURL("mojo:desktop_ui"),
-                                           GURL("mojo:core_services"),
-                                           "Core");
-  manager->RegisterApplicationPackageAlias(
-      GURL("mojo:omnibox"), GURL("mojo:core_services"), "Core");
-#endif
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:web_view"), GURL("mojo:core_services"), "Core");
   manager->RegisterApplicationPackageAlias(

@@ -5,13 +5,13 @@
 import("//build/config/ui.gni")
 
 group("ui") {
-  deps = [
-    "phone_ui",
-  ]
+  deps = []
   if (use_aura) {
     deps += [
       "desktop_ui",
       "omnibox",
     ]
+  } else if (is_android) {
+    deps += [ "phone_ui" ]
   }
 }

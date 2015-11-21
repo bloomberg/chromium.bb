@@ -27,11 +27,6 @@ scoped_ptr<mojo::ApplicationDelegate> CreateApplicationDelegateNotAndroid(
     const std::string& url);
 #endif
 
-#if defined(USE_AURA)
-scoped_ptr<mojo::ApplicationDelegate> CreateApplicationDelegateAura(
-    const std::string& url);
-#endif
-
 }  // namespace core_services
 
 #endif  // MANDOLINE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_FACTORY_H_
