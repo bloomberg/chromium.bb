@@ -55,6 +55,7 @@
         '../../components/components.gyp:content_settings_core_browser',
         '../../components/components.gyp:crash_core_browser',
         '../../components/components.gyp:crash_core_common',
+        '../../components/components.gyp:data_reduction_proxy_core_browser',
         '../../components/components.gyp:data_reduction_proxy_core_common',
         '../../components/components.gyp:dom_distiller_core',
         '../../components/components.gyp:dom_distiller_ios',
