@@ -2056,9 +2056,8 @@
         'enable_browser_cdms%': 0,
       }],
 
-      # Native Client glibc toolchain is enabled
-      # by default except on arm, mips and mips64.
-      ['target_arch=="arm" or target_arch=="mipsel" or target_arch=="mips64el"', {
+      # Native Client glibc toolchain is enabled except on mips
+      ['target_arch=="mipsel" or target_arch=="mips64el"', {
         'disable_glibc%': 1,
       }, {
         'disable_glibc%': 0,
