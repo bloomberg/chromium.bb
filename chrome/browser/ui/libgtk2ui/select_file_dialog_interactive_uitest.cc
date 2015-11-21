@@ -100,3 +100,47 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 };
 
 }  // namespace libgtk2ui
+
+// Test that the file-picker is modal.
+IN_PROC_BROWSER_TEST_F(BrowserSelectFileDialogTest, ModalTest) {
+  // Bring the native window to the foreground. Returns true on success.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_TRUE(browser()->window()->IsActive());
+
+  // Leaks in GtkFileChooserDialog. http://crbug.com/537468
+  ANNOTATE_SCOPED_MEMORY_LEAK;
+  libgtk2ui::FilePicker file_picker(browser()->window());
+
+  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  ASSERT_NE(nullptr, widget);
+
+  // Run a nested loop until the browser window becomes inactive
+  // so that the file-picker can be active.
+  WidgetActivationWaiter waiter_inactive(widget, false);
+  waiter_inactive.Wait();
+  EXPECT_FALSE(browser()->window()->IsActive());
+
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  // The window should not get focus due to modal dialog.
+  EXPECT_FALSE(browser()->window()->IsActive());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  EXPECT_FALSE(browser()->window()->IsActive());
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(window));
+  EXPECT_FALSE(browser()->window()->IsActive());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_TAB, false, false, true, false));
+  EXPECT_FALSE(browser()->window()->IsActive());
+
+  file_picker.Close();
+
+  // Run a nested loop until the browser window becomes active.
+  WidgetActivationWaiter wait_active(widget, true);
+  wait_active.Wait();
+
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  EXPECT_TRUE(browser()->window()->IsActive());
+}
