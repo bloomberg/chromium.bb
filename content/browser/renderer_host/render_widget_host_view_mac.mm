@@ -2102,12 +2102,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // If there are multiple widgets on the page (such as when there are
   // out-of-process iframes), pick the one that should process this event.
-  if (widgetHost->delegate()) {
-    RenderWidgetHostImpl* focusedHost =
-        widgetHost->delegate()->GetFocusedRenderWidgetHost();
-    if (focusedHost)
-      widgetHost = focusedHost;
-  }
+  if (widgetHost->delegate())
+    widgetHost = widgetHost->delegate()->GetFocusedRenderWidgetHost(widgetHost);
 
   // Suppress the escape key up event if necessary.
   if (event.windowsKeyCode == ui::VKEY_ESCAPE && suppressNextEscapeKeyUp_) {

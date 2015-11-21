@@ -588,7 +588,8 @@ class CONTENT_EXPORT WebContentsImpl
       override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   void ReplicatePageFocus(bool is_focused) override;
-  RenderWidgetHostImpl* GetFocusedRenderWidgetHost() override;
+  RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
+      RenderWidgetHostImpl* receiving_widget) override;
   void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override;
   void RendererResponsive(RenderWidgetHostImpl* render_widget_host) override;
   void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,

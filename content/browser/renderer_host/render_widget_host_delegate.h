@@ -120,11 +120,17 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // current FrameTree, not including the main frame's SiteInstance.
   virtual void ReplicatePageFocus(bool is_focused) {}
 
-  // Get the RenderWidgetHost of the currently focused frame.  With
-  // out-of-process iframes, multiple RenderWidgetHosts may be involved in
-  // rendering a page, and this function determines which RenderWidgetHost
-  // should consume a keyboard input event.
-  virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost();
+  // Get the focused RenderWidgetHost associated with |receiving_widget|. A
+  // RenderWidgetHostView, upon receiving a keyboard event, will pass its
+  // RenderWidgetHost to this function to determine who should ultimately
+  // consume the event.  This facilitates keyboard event routing with
+  // out-of-process iframes, where multiple RenderWidgetHosts may be involved
+  // in rendering a page, yet keyboard events all arrive at the main frame's
+  // RenderWidgetHostView.  When a main frame's RenderWidgetHost is passed in,
+  // the function returns the focused frame that should consume keyboard
+  // events. In all other cases, the function returns back |receiving_widget|.
+  virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
+      RenderWidgetHostImpl* receiving_widget);
 
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.

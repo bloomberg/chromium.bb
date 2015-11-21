@@ -227,8 +227,11 @@ void InjectRawKeyEvent(WebContents* web_contents,
                        int modifiers) {
   NativeWebKeyboardEvent event;
   BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
-  static_cast<WebContentsImpl*>(web_contents)
-      ->GetFocusedRenderWidgetHost()
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  RenderWidgetHostImpl* main_frame_rwh =
+      web_contents_impl->GetMainFrame()->GetRenderWidgetHost();
+  web_contents_impl->GetFocusedRenderWidgetHost(main_frame_rwh)
       ->ForwardKeyboardEvent(event);
 }
 

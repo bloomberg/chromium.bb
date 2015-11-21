@@ -1606,13 +1606,19 @@ void WebContentsImpl::ReplicatePageFocus(bool is_focused) {
   frame_tree_.ReplicatePageFocus(is_focused);
 }
 
-RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost() {
+RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
+    RenderWidgetHostImpl* receiving_widget) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return GetMainFrame()->GetRenderWidgetHost();
+    return receiving_widget;
+
+  // Events for widgets other than the main frame (e.g., popup menus) should be
+  // forwarded directly to the widget they arrived on.
+  if (receiving_widget != GetMainFrame()->GetRenderWidgetHost())
+    return receiving_widget;
 
   FrameTreeNode* focused_frame = frame_tree_.GetFocusedFrame();
   if (!focused_frame)
-    return GetMainFrame()->GetRenderWidgetHost();
+    return receiving_widget;
 
   return RenderWidgetHostImpl::From(
       focused_frame->current_frame_host()->GetView()->GetRenderWidgetHost());

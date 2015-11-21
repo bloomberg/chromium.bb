@@ -50,8 +50,9 @@ RenderWidgetHostDelegate::GetInputEventRouter() {
 
 // If a delegate does not override this, the RenderWidgetHostView will
 // assume its own RenderWidgetHost should consume keyboard events.
-RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFocusedRenderWidgetHost() {
-  return nullptr;
+RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFocusedRenderWidgetHost(
+    RenderWidgetHostImpl* receiving_widget) {
+  return receiving_widget;
 }
 
 gfx::Rect RenderWidgetHostDelegate::GetRootWindowResizerRect(

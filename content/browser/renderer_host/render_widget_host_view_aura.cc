@@ -2803,12 +2803,8 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
 
   // If there are multiple widgets on the page (such as when there are
   // out-of-process iframes), pick the one that should process this event.
-  if (host_->delegate()) {
-    RenderWidgetHostImpl* focused_host =
-        host_->delegate()->GetFocusedRenderWidgetHost();
-    if (focused_host)
-      target_host = focused_host;
-  }
+  if (host_->delegate())
+    target_host = host_->delegate()->GetFocusedRenderWidgetHost(host_);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   ui::TextEditKeyBindingsDelegateAuraLinux* keybinding_delegate =
