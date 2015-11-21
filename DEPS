@@ -91,7 +91,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling dEQP
   # and whatever else without interference from each other.
-  'deqp_revision': '194294e69d44eac48bc1fb063bd607189650aa5e',
+  'deqp_revision': 'cc0ded6c77267bbb14d21aac358fc5d9690c07f8',
   'deqp_url': 'https://android.googlesource.com/platform/external/deqp',
 }
 
