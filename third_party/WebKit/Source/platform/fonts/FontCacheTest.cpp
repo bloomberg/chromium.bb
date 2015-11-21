@@ -7,16 +7,19 @@
 
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class EmptyPlatform : public TestingPlatformSupport {
+class EmptyPlatform : public Platform {
 public:
     EmptyPlatform() {}
     ~EmptyPlatform() override {}
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
+    {
+        RELEASE_ASSERT_NOT_REACHED();
+    }
 };
 
 TEST(FontCache, getLastResortFallbackFont)
@@ -24,7 +27,9 @@ TEST(FontCache, getLastResortFallbackFont)
     FontCache* fontCache = FontCache::fontCache();
     ASSERT_TRUE(fontCache);
 
-    EmptyPlatform platform;
+    Platform* oldPlatform = Platform::current();
+    OwnPtr<EmptyPlatform> platform = adoptPtr(new EmptyPlatform);
+    Platform::initialize(platform.get());
 
     FontDescription fontDescription;
     fontDescription.setGenericFamily(FontDescription::StandardFamily);
@@ -34,6 +39,8 @@ TEST(FontCache, getLastResortFallbackFont)
     fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
     fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);
     EXPECT_TRUE(fontData);
+
+    Platform::initialize(oldPlatform);
 }
 
 } // namespace blink

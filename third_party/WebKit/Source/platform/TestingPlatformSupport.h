@@ -31,15 +31,11 @@
 #ifndef TestingPlatformSupport_h
 #define TestingPlatformSupport_h
 
-#include "platform/PlatformExport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDiscardableMemory.h"
 #include "wtf/Vector.h"
 
 namespace blink {
-
-class WebCompositorSupport;
-class WebThread;
 
 class TestingDiscardableMemory : public WebDiscardableMemory {
 public:
@@ -68,7 +64,6 @@ public:
         WebCompositorSupport* compositorSupport;
     };
 
-    TestingPlatformSupport();
     explicit TestingPlatformSupport(const Config&);
 
     ~TestingPlatformSupport() override;
@@ -79,9 +74,8 @@ public:
     const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
-    WebThread* currentThread() override;
 
-protected:
+private:
     const Config m_config;
     Platform* const m_oldPlatform;
 };

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 
-#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -56,11 +55,34 @@ private:
     size_t m_length;
 };
 
-class OriginAccessEntryTestPlatform : public TestingPlatformSupport {
+class OriginAccessEntryTestPlatform : public blink::Platform {
 public:
+    OriginAccessEntryTestPlatform()
+        : m_oldPlatform(Platform::current())
+    {
+        Platform::initialize(this);
+    }
+
+    ~OriginAccessEntryTestPlatform()
+    {
+        Platform::initialize(m_oldPlatform);
+    }
+
     blink::WebPublicSuffixList* publicSuffixList() override
     {
         return &m_suffixList;
+    }
+
+    // Stub for pure virtual method.
+    void cryptographicallyRandomValues(unsigned char*, size_t) override
+    {
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+
+    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+    {
+        static const unsigned char tracingIsDisabled = 0;
+        return &tracingIsDisabled;
     }
 
     void setPublicSuffix(const blink::WebString& suffix)
@@ -69,6 +91,7 @@ public:
     }
 
 private:
+    blink::Platform* m_oldPlatform;
     OriginAccessEntryTestSuffixList m_suffixList;
 };
 
@@ -290,3 +313,4 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest)
 }
 
 } // namespace blink
+
