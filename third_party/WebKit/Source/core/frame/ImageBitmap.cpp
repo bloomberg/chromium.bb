@@ -8,12 +8,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
-#include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/RefPtr.h"
 
@@ -27,7 +21,7 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
-static PassRefPtr<SkImage> cropImage(PassRefPtr<SkImage> image, const IntRect& cropRect)
+static PassRefPtr<StaticBitmapImage> cropImage(StaticBitmapImage* image, const IntRect& cropRect)
 {
     ASSERT(image);
 
@@ -35,12 +29,12 @@ static PassRefPtr<SkImage> cropImage(PassRefPtr<SkImage> image, const IntRect& c
     const IntRect srcRect = intersection(imgRect, cropRect);
 
     if (cropRect == srcRect)
-        return adoptRef(image->newSubset(srcRect));
+        return StaticBitmapImage::create(adoptRef(image->imageForCurrentFrame()->newSubset(srcRect)));
 
     RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
 
     if (srcRect.isEmpty())
-        return adoptRef(surface->newImageSnapshot());
+        return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 
     SkScalar dstLeft = std::min(0, -cropRect.x());
     SkScalar dstTop = std::min(0, -cropRect.y());
@@ -48,13 +42,13 @@ static PassRefPtr<SkImage> cropImage(PassRefPtr<SkImage> image, const IntRect& c
         dstLeft = -cropRect.x();
     if (cropRect.y() < 0)
         dstTop = -cropRect.y();
-    surface->getCanvas()->drawImage(image.get(), dstLeft, dstTop);
-    return adoptRef(surface->newImageSnapshot());
+    surface->getCanvas()->drawImage(image->imageForCurrentFrame().get(), dstLeft, dstTop);
+    return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 {
-    m_image = cropImage(image->cachedImage()->image()->imageForCurrentFrame(), cropRect);
+    m_image = cropImage(static_cast<StaticBitmapImage*>(image->cachedImage()->image()), cropRect);
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
@@ -71,13 +65,13 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
 
     IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
-    m_image = buffer->newSkImageSnapshot(PreferNoAcceleration);
+    m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     ASSERT(canvas->isPaintable());
-    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration)->imageForCurrentFrame(), cropRect);
+    m_image = cropImage(static_cast<StaticBitmapImage*>(canvas->copiedImage(BackBuffer, PreferAcceleration).get()), cropRect);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
@@ -89,7 +83,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
         return;
 
     if (srcRect.isEmpty()) {
-        m_image = buffer->newSkImageSnapshot(PreferNoAcceleration);
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
         return;
     }
 
@@ -99,17 +93,17 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     if (cropRect.y() < 0)
         dstPoint.setY(-cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
-    m_image = buffer->newSkImageSnapshot(PreferNoAcceleration);
+    m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
 {
-    m_image = cropImage(bitmap->skImage(), cropRect);
+    m_image = cropImage(bitmap->bitmapImage(), cropRect);
 }
 
 ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
 {
-    m_image = cropImage(image->imageForCurrentFrame(), cropRect);
+    m_image = cropImage(static_cast<StaticBitmapImage*>(image), cropRect);
 }
 
 ImageBitmap::~ImageBitmap()
@@ -183,7 +177,7 @@ void ImageBitmap::notifyImageSourceChanged()
 PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
 {
     *status = NormalSourceImageStatus;
-    return m_image ? StaticBitmapImage::create(m_image) : nullptr;
+    return m_image ? m_image : nullptr;
 }
 
 void ImageBitmap::adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const

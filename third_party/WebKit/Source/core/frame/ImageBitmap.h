@@ -12,8 +12,8 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -34,7 +34,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(Image*, const IntRect&);
 
-    SkImage* skImage() const { return (m_image) ? m_image.get() : nullptr; }
+    StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;
@@ -61,7 +61,7 @@ private:
     void notifyImageSourceChanged() override;
     bool requestsHighLiveResourceCachePriority() override { return true; }
 
-    RefPtr<SkImage> m_image;
+    RefPtr<StaticBitmapImage> m_image;
 };
 
 } // namespace blink
