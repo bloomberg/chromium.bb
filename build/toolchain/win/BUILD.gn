@@ -26,8 +26,8 @@ if (use_goma) {
 # This value will be inherited in the toolchain below.
 concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 
-# Copy the VS runtime DLL for the default toolchain the root build directory so
-# things will run.
+# Copy the VS runtime DLL for the default toolchain to the root build directory
+# so things will run.
 if (current_toolchain == default_toolchain) {
   if (is_debug) {
     configuration_name = "Debug"

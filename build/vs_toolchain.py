@@ -26,7 +26,7 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   returns the location of the VS runtime DLLs so they can be copied into
   the output directory after gyp generation.
   """
-  vs2013_runtime_dll_dirs = None
+  vs_runtime_dll_dirs = None
   depot_tools_win_toolchain = \
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   # When running on a non-Windows host, only do this if the SDK has explicitly
@@ -47,7 +47,7 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     # TODO(scottmg): The order unfortunately matters in these. They should be
     # split into separate keys for x86 and x64. (See CopyVsRuntimeDlls call
     # below). http://crbug.com/345992
-    vs2013_runtime_dll_dirs = toolchain_data['runtime_dirs']
+    vs_runtime_dll_dirs = toolchain_data['runtime_dirs']
 
     os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
     os.environ['GYP_MSVS_VERSION'] = version
@@ -62,9 +62,9 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     os.environ['WINDOWSSDKDIR'] = win_sdk
     os.environ['WDK_DIR'] = wdk
     # Include the VS runtime in the PATH in case it's not machine-installed.
-    runtime_path = ';'.join(vs2013_runtime_dll_dirs)
+    runtime_path = ';'.join(vs_runtime_dll_dirs)
     os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
-  return vs2013_runtime_dll_dirs
+  return vs_runtime_dll_dirs
 
 
 def _VersionNumber():
@@ -111,6 +111,34 @@ def _CopyRuntime2015(target_dir, source_dir, dll_pattern):
     _CopyRuntimeImpl(target, source)
 
 
+def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
+  """Copy the VS runtime DLLs, only if the target doesn't exist, but the target
+  directory does exist. Handles VS 2013 and VS 2015."""
+  suffix = "d.dll" if debug else ".dll"
+  if os.environ.get('GYP_MSVS_VERSION') == '2015':
+    _CopyRuntime2015(target_dir, source_dir, '%s140' + suffix)
+  else:
+    _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
+
+  # Copy the PGO runtime library to the release directories.
+  if not debug and os.environ.get('GYP_MSVS_OVERRIDE_PATH'):
+    pgo_x86_runtime_dir = os.path.join(os.environ.get('GYP_MSVS_OVERRIDE_PATH'),
+                                        'VC', 'bin')
+    pgo_x64_runtime_dir = os.path.join(pgo_x86_runtime_dir, 'amd64')
+    pgo_runtime_dll = 'pgort' + _VersionNumber() + '.dll'
+    if target_cpu == "x86":
+      source_x86 = os.path.join(pgo_x86_runtime_dir, pgo_runtime_dll)
+      if os.path.exists(source_x86):
+        _CopyRuntimeImpl(os.path.join(target_dir, pgo_runtime_dll), source_x86)
+    elif target_cpu == "x64":
+      source_x64 = os.path.join(pgo_x64_runtime_dir, pgo_runtime_dll)
+      if os.path.exists(source_x64):
+        _CopyRuntimeImpl(os.path.join(target_dir, pgo_runtime_dll),
+                          source_x64)
+    else:
+      raise NotImplementedError("Unexpected target_cpu value:" + target_cpu)
+
+
 def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """Copies the VS runtime DLLs from the given |runtime_dirs| to the output
   directory so that even if not system-installed, built binaries are likely to
@@ -118,6 +146,8 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
 
   This needs to be run after gyp has been run so that the expected target
   output directories are already created.
+
+  This is used for the GYP build and gclient runhooks.
   """
   x86, x64 = runtime_dirs
   out_debug = os.path.join(output_dir, 'Debug')
@@ -131,35 +161,12 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
     os.makedirs(out_debug_nacl64)
   if os.path.exists(out_release) and not os.path.exists(out_release_nacl64):
     os.makedirs(out_release_nacl64)
-  if os.environ.get('GYP_MSVS_VERSION') == '2015':
-    _CopyRuntime2015(out_debug,          x86, '%s140d.dll')
-    _CopyRuntime2015(out_release,        x86, '%s140.dll')
-    _CopyRuntime2015(out_debug_x64,      x64, '%s140d.dll')
-    _CopyRuntime2015(out_release_x64,    x64, '%s140.dll')
-    _CopyRuntime2015(out_debug_nacl64,   x64, '%s140d.dll')
-    _CopyRuntime2015(out_release_nacl64, x64, '%s140.dll')
-  else:
-    # VS2013 is the default.
-    _CopyRuntime2013(out_debug,          x86, 'msvc%s120d.dll')
-    _CopyRuntime2013(out_release,        x86, 'msvc%s120.dll')
-    _CopyRuntime2013(out_debug_x64,      x64, 'msvc%s120d.dll')
-    _CopyRuntime2013(out_release_x64,    x64, 'msvc%s120.dll')
-    _CopyRuntime2013(out_debug_nacl64,   x64, 'msvc%s120d.dll')
-    _CopyRuntime2013(out_release_nacl64, x64, 'msvc%s120.dll')
-
-  # Copy the PGO runtime library to the release directories.
-  if os.environ.get('GYP_MSVS_OVERRIDE_PATH'):
-    pgo_x86_runtime_dir = os.path.join(os.environ.get('GYP_MSVS_OVERRIDE_PATH'),
-                                       'VC', 'bin')
-    pgo_x64_runtime_dir = os.path.join(pgo_x86_runtime_dir, 'amd64')
-    pgo_runtime_dll = 'pgort' + _VersionNumber() + '.dll'
-    source_x86 = os.path.join(pgo_x86_runtime_dir, pgo_runtime_dll)
-    if os.path.exists(source_x86):
-      _CopyRuntimeImpl(os.path.join(out_release, pgo_runtime_dll), source_x86)
-    source_x64 = os.path.join(pgo_x64_runtime_dir, pgo_runtime_dll)
-    if os.path.exists(source_x64):
-      _CopyRuntimeImpl(os.path.join(out_release_x64, pgo_runtime_dll),
-                       source_x64)
+  _CopyRuntime(out_debug,          x86, "x86", debug=True)
+  _CopyRuntime(out_release,        x86, "x86", debug=False)
+  _CopyRuntime(out_debug_x64,      x64, "x64", debug=True)
+  _CopyRuntime(out_release_x64,    x64, "x64", debug=False)
+  _CopyRuntime(out_debug_nacl64,   x64, "x64", debug=True)
+  _CopyRuntime(out_release_nacl64, x64, "x64", debug=False)
 
 
 def CopyDlls(target_dir, configuration, target_cpu):
@@ -170,18 +177,18 @@ def CopyDlls(target_dir, configuration, target_cpu):
 
   The debug configuration gets both the debug and release DLLs; the
   release config only the latter.
+
+  This is used for the GN build.
   """
-  vs2013_runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
-  if not vs2013_runtime_dll_dirs:
+  vs_runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
+  if not vs_runtime_dll_dirs:
     return
 
-  x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
+  x64_runtime, x86_runtime = vs_runtime_dll_dirs
   runtime_dir = x64_runtime if target_cpu == 'x64' else x86_runtime
-  _CopyRuntime2013(
-      target_dir, runtime_dir, 'msvc%s' + _VersionNumber() + '.dll')
+  _CopyRuntime(target_dir, runtime_dir, target_cpu, debug=False)
   if configuration == 'Debug':
-    _CopyRuntime2013(
-        target_dir, runtime_dir, 'msvc%s' + _VersionNumber() + 'd.dll')
+    _CopyRuntime(target_dir, runtime_dir, target_cpu, debug=True)
 
 
 def _GetDesiredVsToolchainHashes():

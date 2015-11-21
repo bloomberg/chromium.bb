@@ -613,6 +613,11 @@ config("default_warnings") {
     cflags += [
       # Warnings permanently disabled:
 
+      # C4091: 'typedef ': ignored on left of 'X' when no variable is
+      #                    declared.
+      # This happens in a number of Windows headers. Dumb.
+      "/wd4091",
+
       # C4127: conditional expression is constant
       # This warning can in theory catch dead code and other problems, but
       # triggers in far too many desirable cases where the conditional
@@ -677,8 +682,17 @@ config("default_warnings") {
       "/wd4510",  # Default constructor could not be generated.
       "/wd4512",  # Assignment operator could not be generated.
       "/wd4610",  # Class can never be instantiated, constructor required.
+      "/wd4838",  # Narrowing conversion. Doesn't seem to be very useful.
       "/wd4995",  # 'X': name was marked as #pragma deprecated
       "/wd4996",  # Deprecated function warning.
+
+      # These are variable shadowing warnings that are new in VS2015. We
+      # should work through these at some point -- they may be removed from
+      # the RTM release in the /W4 set.
+      "/wd4456",
+      "/wd4457",
+      "/wd4458",
+      "/wd4459",
     ]
 
     # VS xtree header file needs to be patched or 4702 (unreachable code
