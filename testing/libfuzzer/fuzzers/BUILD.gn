@@ -164,6 +164,7 @@ test("url_parse_fuzzer") {
     "url_parse_fuzzer.cc",
   ]
   deps = [
+    "//base:i18n",
     "//testing/libfuzzer:libfuzzer_main",
     "//url:url",
   ]
