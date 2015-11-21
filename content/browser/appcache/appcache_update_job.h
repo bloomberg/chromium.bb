@@ -283,6 +283,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   PendingMasters pending_master_entries_;
   size_t master_entries_completed_;
+  std::set<GURL> failed_master_entries_;
 
   // TODO(jennb): Delete when update no longer fetches master entries directly.
   // Helper containers to track which pending master entries have yet to be
