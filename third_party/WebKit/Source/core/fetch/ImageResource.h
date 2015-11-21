@@ -67,7 +67,8 @@ public:
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
-    bool canRender(const LayoutObject& layoutObject, float multiplier) { return !errorOccurred() && !imageSizeForLayoutObject(&layoutObject, multiplier).isEmpty(); }
+    // Assumes that image rotation or scale doesn't effect the image size being empty or not.
+    bool canRender() { return !errorOccurred() && !imageSizeForLayoutObject(nullptr, 1).isEmpty(); }
 
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;

@@ -1062,7 +1062,7 @@ bool InlineFlowBox::boxShadowCanBeAppliedToBackground(const FillLayer& lastBackg
     // The checks here match how paintFillLayer() decides whether to clip (if it does, the shadow
     // would be clipped out, so it has to be drawn separately).
     StyleImage* image = lastBackgroundLayer.image();
-    bool hasFillImage = image && image->canRender(layoutObject(), layoutObject().style()->effectiveZoom());
+    bool hasFillImage = image && image->canRender();
     return (!hasFillImage && !layoutObject().style()->hasBorderRadius()) || (!prevLineBox() && !nextLineBox()) || !parent();
 }
 

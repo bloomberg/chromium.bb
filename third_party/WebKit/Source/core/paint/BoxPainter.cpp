@@ -143,7 +143,7 @@ void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& p
 static bool isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
 {
     return layer.hasOpaqueImage(&imageClient)
-        && layer.image()->canRender(imageClient, imageClient.style()->effectiveZoom())
+        && layer.image()->canRender()
         && !layer.image()->imageSize(&imageClient, imageClient.style()->effectiveZoom()).isEmpty()
         && layer.hasRepeatXY();
 }
@@ -438,7 +438,7 @@ void BoxPainter::paintFillLayerExtended(const LayoutBoxModelObject& obj, const P
     BackgroundImageGeometry geometry;
     if (bgImage)
         geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.globalPaintFlags(), bgLayer, scrolledPaintRect);
-    bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(obj, obj.style()->effectiveZoom());
+    bool shouldPaintBackgroundImage = bgImage && bgImage->canRender();
 
     // Paint the color first underneath all images, culled if background image occludes it.
     // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the culling test

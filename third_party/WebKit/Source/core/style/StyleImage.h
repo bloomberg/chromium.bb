@@ -53,7 +53,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const = 0;
     virtual PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const = 0;
 
-    virtual bool canRender(const LayoutObject&, float /*multiplier*/) const { return true; }
+    virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
     virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const = 0;

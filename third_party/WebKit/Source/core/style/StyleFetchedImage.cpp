@@ -66,9 +66,9 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::computedCSSValue() const
     return cssValue();
 }
 
-bool StyleFetchedImage::canRender(const LayoutObject& layoutObject, float multiplier) const
+bool StyleFetchedImage::canRender() const
 {
-    return m_image->canRender(layoutObject, multiplier);
+    return m_image->canRender();
 }
 
 bool StyleFetchedImage::isLoaded() const

@@ -70,7 +70,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
 {
     LayoutBoxModelObject* boxModel = toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject()));
     StyleImage* img = fillLayer.image();
-    bool hasFillImage = img && img->canRender(m_inlineFlowBox.layoutObject(), m_inlineFlowBox.lineLayoutItem().style()->effectiveZoom());
+    bool hasFillImage = img && img->canRender();
     if ((!hasFillImage && !m_inlineFlowBox.lineLayoutItem().style()->hasBorderRadius()) || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
         BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else if (m_inlineFlowBox.lineLayoutItem().style()->boxDecorationBreak() == DCLONE) {
@@ -164,8 +164,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
     if (m_inlineFlowBox.parent() && m_inlineFlowBox.lineLayoutItem().style()->hasBorderDecoration()) {
         const NinePieceImage& borderImage = m_inlineFlowBox.lineLayoutItem().style()->borderImage();
         StyleImage* borderImageSource = borderImage.image();
-        const ComputedStyle* styleToUse = m_inlineFlowBox.lineLayoutItem().style(m_inlineFlowBox.isFirstLineStyle());
-        bool hasBorderImage = borderImageSource && borderImageSource->canRender(m_inlineFlowBox.layoutObject(), styleToUse->effectiveZoom());
+        bool hasBorderImage = borderImageSource && borderImageSource->canRender();
         if (hasBorderImage && !borderImageSource->isLoaded())
             return DontPaintBorders;
 
@@ -278,7 +277,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
     paintFillLayers(paintInfo, Color::transparent, m_inlineFlowBox.lineLayoutItem().style()->maskLayers(), paintRect, compositeOp);
 
-    bool hasBoxImage = maskBoxImage && maskBoxImage->canRender(m_inlineFlowBox.layoutObject(), m_inlineFlowBox.lineLayoutItem().style()->effectiveZoom());
+    bool hasBoxImage = maskBoxImage && maskBoxImage->canRender();
     if (!hasBoxImage || !maskBoxImage->isLoaded()) {
         if (pushTransparencyLayer)
             paintInfo.context->endLayer();

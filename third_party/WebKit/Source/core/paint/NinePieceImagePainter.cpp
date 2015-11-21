@@ -33,7 +33,7 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
     if (!styleImage->isLoaded())
         return true; // Never paint a nine-piece image incrementally, but don't paint the fallback borders either.
 
-    if (!styleImage->canRender(m_layoutObject, style.effectiveZoom()))
+    if (!styleImage->canRender())
         return false;
 
     // Find out if the hasImage() check in ComputedStyle::border*Width had any affect, i.e. if a border is non-zero while border-style is

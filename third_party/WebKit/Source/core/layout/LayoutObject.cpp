@@ -956,7 +956,7 @@ bool LayoutObject::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& 
 
     // Make sure we have a valid image.
     StyleImage* img = layer.image();
-    if (!img || !img->canRender(*this, style()->effectiveZoom()))
+    if (!img || !img->canRender())
         return false;
 
     if (layer.repeatY() != RepeatFill && layer.repeatY() != NoRepeatFill)

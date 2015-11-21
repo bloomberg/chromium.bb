@@ -47,7 +47,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
-    bool canRender(const LayoutObject&, float multiplier) const override;
+    bool canRender() const override;
     bool isLoaded() const override;
     bool errorOccurred() const override;
     LayoutSize imageSize(const LayoutObject*, float multiplier) const override;

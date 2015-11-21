@@ -88,9 +88,7 @@ static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* la
 {
     ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject->document());
 
-    // If the image can be rendered at 1 zoom it will have non-empty dimension
-    // and should be able to render at other scales as well.
-    if (!cachedImage || !cachedImage->canRender(*layoutObject, 1))
+    if (!cachedImage || !cachedImage->canRender())
         return nullptr;
 
     return cachedImage->image();

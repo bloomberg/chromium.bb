@@ -59,7 +59,7 @@ public:
     void clearImageSetValue() { m_imageSetValue = nullptr; }
 #endif
 
-    bool canRender(const LayoutObject&, float multiplier) const override;
+    bool canRender() const override;
     bool isLoaded() const override;
     bool errorOccurred() const override;
     LayoutSize imageSize(const LayoutObject*, float multiplier) const override;

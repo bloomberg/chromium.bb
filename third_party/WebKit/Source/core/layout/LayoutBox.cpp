@@ -4762,7 +4762,7 @@ inline bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLaye
 
     // Make sure we have a valid image.
     StyleImage* img = layer.image();
-    if (!img || !img->canRender(*this, style()->effectiveZoom()))
+    if (!img || !img->canRender())
         return false;
 
     if (layer.repeatX() != RepeatFill && layer.repeatX() != NoRepeatFill)
@@ -4837,7 +4837,7 @@ bool LayoutBox::canRenderBorderImage() const
         return false;
 
     StyleImage* borderImage = style()->borderImage().image();
-    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
+    return borderImage && borderImage->canRender() && borderImage->isLoaded();
 }
 
 ShapeOutsideInfo* LayoutBox::shapeOutsideInfo() const
