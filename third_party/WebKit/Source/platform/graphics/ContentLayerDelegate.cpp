@@ -87,14 +87,6 @@ void ContentLayerDelegate::paintContents(
 {
     TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
 
-    // TODO(pdr): Remove when slimming paint v2 is further along. This is only
-    // here so the browser is usable during development and does not crash due
-    // to committing the new display items twice.
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        paintArtifactToWebDisplayItemList(webDisplayItemList, m_painter->paintController()->paintArtifact(), clip);
-        return;
-    }
-
     PaintController* paintController = m_painter->paintController();
     ASSERT(paintController);
     paintController->setDisplayItemConstructionIsDisabled(
