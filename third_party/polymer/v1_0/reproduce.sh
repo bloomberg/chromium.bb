@@ -18,6 +18,8 @@ rm -rf ../../web-animations-js/sources
 
 bower install
 
+rm components/*/.travis.yml
+
 mv components/web-animations-js ../../web-animations-js/sources
 cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
 
