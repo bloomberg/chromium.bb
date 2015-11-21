@@ -671,6 +671,7 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
 
   PumpLoop();
 
+  EXPECT_EQ(last_deleted_bookmark_id(), kTestPageBookmarkId1);
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
   ASSERT_EQ(1u, store->offline_pages().size());
   EXPECT_EQ(kTestUrl2, store->offline_pages()[0].url);
@@ -684,6 +685,7 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
 
   PumpLoop();
 
+  EXPECT_EQ(last_deleted_bookmark_id(), kTestPageBookmarkId2);
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
   EXPECT_EQ(0u, store->offline_pages().size());
 }

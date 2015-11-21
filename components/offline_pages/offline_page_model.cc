@@ -569,6 +569,12 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
         "OfflinePages.DeletePage.PageSize", iter->second.file_size / 1024);
     UMA_HISTOGRAM_COUNTS(
         "OfflinePages.DeletePage.AccessCount", iter->second.access_count);
+    // If the page is not marked for deletion at this point, the model has not
+    // yet informed the observer that the offline page is deleted.
+    if (!iter->second.IsMarkedForDeletion()) {
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        OfflinePageDeleted(iter->second.bookmark_id));
+    }
     offline_pages_.erase(iter);
   }
   if (bookmark_ids.size() > 1) {
