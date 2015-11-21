@@ -54638,6 +54638,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="kCodecPCM_S24BE"/>
   <int value="12" label="kCodecOpus"/>
   <int value="14" label="kCodecPCM_ALAW"/>
+  <int value="15" label="kCodecALAC"/>
 </enum>
 
 <enum name="AudioFramesPerBuffer" type="int">
@@ -68292,6 +68293,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="EAC3"/>
   <int value="8" label="MP3"/>
   <int value="9" label="OPUS"/>
+  <int value="10" label="HEVC"/>
 </enum>
 
 <enum name="MultiProfileSessionMode" type="int">
