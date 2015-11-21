@@ -27,7 +27,7 @@
 #include "platform/text/LocaleMac.h"
 
 #include "platform/DateComponents.h"
-#include "platform/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/DateMath.h"
@@ -39,8 +39,6 @@ namespace blink {
 
 class LocalePlatformSupport : public TestingPlatformSupport {
 public:
-    LocalePlatformSupport() : TestingPlatformSupport(TestingPlatformSupport::Config()) { }
-
     WebString queryLocalizedString(WebLocalizedString::Name /*name*/) override
     {
         return WebString::fromUTF8("Week $2, $1");

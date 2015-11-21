@@ -26,7 +26,7 @@
 #define CompositorAnimationsTestHelper_h
 
 #include "core/animation/CompositorAnimations.h"
-#include "public/platform/Platform.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/WebCompositorAnimationPlayer.h"
 #include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -152,31 +152,13 @@ public:
     };
 
 private:
-    class PlatformProxy : public Platform {
+    class PlatformProxy : public TestingPlatformSupport {
     public:
-        PlatformProxy(WebCompositorSupportMock** compositor) : m_platform(Platform::current()), m_compositor(compositor) { }
-
-        ~PlatformProxy()
-        {
-            blink::Platform::initialize(m_platform);
-        }
-
-        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
-        const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
-        {
-            static const unsigned char tracingIsDisabled = 0;
-            return &tracingIsDisabled;
-        }
-
-        WebThread* currentThread() override
-        {
-            return m_platform->currentThread();
-        }
-
+        explicit PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
     private:
-        blink::Platform* m_platform; // Not owned.
-        WebCompositorSupportMock** m_compositor;
         WebCompositorSupport* compositorSupport() override { return *m_compositor; }
+
+        WebCompositorSupportMock** m_compositor;
     };
 
     WebCompositorSupportMock* m_mockCompositor;

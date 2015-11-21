@@ -209,10 +209,10 @@ component("platform") {
   ]
   deps = [
     ":make_platform_generated",
+    "//third_party/WebKit/Source/platform/heap",
+    "//third_party/WebKit/Source/wtf",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
-    "//third_party/WebKit/Source/wtf",
-    "//third_party/WebKit/Source/platform/heap",
   ]
 
   if (is_mac) {
@@ -326,6 +326,10 @@ source_set("test_support") {
   deps = [
     ":platform",
   ]
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]  # Truncation from size_t to int.
+  }
 }
 
 # GYP: blink_heap_unittests
@@ -349,11 +353,11 @@ test("heap_unittests") {
     "//base",
     "//base/allocator",
     "//base/test:test_support",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
-    "//content/test:test_support",
   ]
   if (is_android) {
     apk_deps = [
@@ -401,9 +405,9 @@ test("platform_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/harfbuzz-ng",
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/wtf:test_support",
+    "//third_party/harfbuzz-ng",
     "//url",
   ]
 
