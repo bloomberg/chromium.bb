@@ -41,6 +41,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
                       TranslatedShaderSourceType type);
 
   void DoCompile();
+  void RefreshTranslatedShaderSource();
 
   ShaderState shader_state() const {
     return shader_state_;

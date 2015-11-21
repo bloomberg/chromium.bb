@@ -871,6 +871,10 @@ bool Program::Link(ShaderManager* manager,
     GatherInterfaceBlockInfo();
     Update();
     if (link) {
+      // ANGLE updates the translated shader sources on link.
+      for (auto shader : attached_shaders_) {
+        shader->RefreshTranslatedShaderSource();
+      }
       if (cache) {
         cache->SaveLinkedProgram(service_id(),
                                  attached_shaders_[0].get(),

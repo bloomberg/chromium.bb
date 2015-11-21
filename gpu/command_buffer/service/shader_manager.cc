@@ -86,23 +86,10 @@ void Shader::DoCompile() {
 
   glShaderSource(service_id_, 1, &source_for_driver, NULL);
   glCompileShader(service_id_);
+
   if (source_type_ == kANGLE) {
-    GLint max_len = 0;
-    glGetShaderiv(service_id_,
-                  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
-                  &max_len);
-    source_for_driver = "\0";
-    translated_source_.resize(max_len);
-    if (max_len) {
-      GLint len = 0;
-      glGetTranslatedShaderSourceANGLE(
-          service_id_, translated_source_.size(),
-          &len, &translated_source_.at(0));
-      DCHECK(max_len == 0 || len < max_len);
-      DCHECK(len == 0 || translated_source_[len] == '\0');
-      translated_source_.resize(len);
-      source_for_driver = translated_source_.c_str();
-    }
+    RefreshTranslatedShaderSource();
+    source_for_driver = translated_source_.c_str();
   }
 
   GLint status = GL_FALSE;
@@ -135,6 +122,23 @@ void Shader::DoCompile() {
         << "\n--original-shader--\n" << last_compiled_source_
         << "\n--translated-shader--\n" << source_for_driver
         << "\n--info-log--\n" << log_info_;
+  }
+}
+
+void Shader::RefreshTranslatedShaderSource() {
+  if (source_type_ == kANGLE) {
+    GLint max_len = 0;
+    glGetShaderiv(service_id_, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+                  &max_len);
+    translated_source_.resize(max_len);
+    if (max_len) {
+      GLint len = 0;
+      glGetTranslatedShaderSourceANGLE(service_id_, translated_source_.size(),
+                                       &len, &translated_source_.at(0));
+      DCHECK(max_len == 0 || len < max_len);
+      DCHECK(len == 0 || translated_source_[len] == '\0');
+      translated_source_.resize(len);
+    }
   }
 }
 
