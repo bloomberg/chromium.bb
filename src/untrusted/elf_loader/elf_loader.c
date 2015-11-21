@@ -91,7 +91,8 @@ static void my_pread(const char *file, const char *fail_message,
 static uintptr_t my_mmap(const char *file,
                          const char *segment_type, unsigned int segnum,
                          uintptr_t address, size_t size,
-                         int prot, int flags, int fd, uintptr_t pos) {
+                         int prot, int flags, int fd, uintptr_t pos,
+                         bool unreserved_code_address) {
   DEBUG_PRINTF("XXX %s %u mmap(%#x, %#x, %#x, %#x, %d, %#x)\n",
                segment_type, segnum, address, size, prot, flags, fd, pos);
   void *result = mmap((void *) address, size, prot, flags, fd, pos);
@@ -123,6 +124,30 @@ static uintptr_t my_mmap(const char *file,
         fprintf(stderr, "%s: Failed to map %s %u (dyncode_create: %s)\n",
                 file, segment_type, segnum, strerror(errno));
         exit(1);
+      }
+      if (unreserved_code_address) {
+        /*
+         * A successful PROT_EXEC mmap would have implicitly updated the
+         * bookkeeping so that a future allocate_code_data call would
+         * know that this range of the address space is already occupied.
+         * That doesn't happen implicitly with dyncode_create, so it's
+         * necessary to do an explicit call to update the bookkeeping.
+         */
+        uintptr_t allocated_address;
+        error = code_data_alloc.allocate_code_data(address, size, 0, 0,
+                                                   &allocated_address);
+        if (error) {
+          fprintf(stderr, "%s: Failed to map %s %u (allocate_code_data: %s)\n",
+                  file, segment_type, segnum, strerror(errno));
+          exit(1);
+        }
+        if (allocated_address != address) {
+          fprintf(stderr,
+                  "%s: Failed to map %s %u: allocate_code_data(%#" PRIxPTR
+                  ", %#zx) yielded %#" PRIxPTR " instead!\n",
+                  file, segment_type, segnum, address, size, allocated_address);
+          exit(1);
+        }
       }
       return address;
     }
@@ -327,7 +352,8 @@ static Elf32_Addr load_elf_file(const char *filename,
           load_bias + round_down(first_load->p_vaddr, pagesize),
           first_load->p_memsz, prot_from_phdr(first_load),
           MAP_PRIVATE | MAP_FIXED, fd,
-          round_down(first_load->p_offset, pagesize));
+          round_down(first_load->p_offset, pagesize),
+          !anywhere);
 
   Elf32_Addr last_end = first_load->p_vaddr + load_bias + first_load->p_memsz;
   Elf32_Addr last_page_end = round_up(last_end, pagesize);
@@ -371,7 +397,7 @@ static Elf32_Addr load_elf_file(const char *filename,
         my_mmap(filename, "segment", ph - phdr,
                 start, map_end - start,
                 prot_from_phdr(ph), MAP_PRIVATE | MAP_FIXED, fd,
-                round_down(ph->p_offset, pagesize));
+                round_down(ph->p_offset, pagesize), false);
       }
 
       if (map_end < last_page_end) {
@@ -394,7 +420,7 @@ static Elf32_Addr load_elf_file(const char *filename,
 
         my_mmap(filename, "bss segment", ph - phdr,
                 map_end, last_page_end - map_end, prot_from_phdr(ph),
-                MAP_ANON | MAP_PRIVATE | MAP_FIXED, -1, 0);
+                MAP_ANON | MAP_PRIVATE | MAP_FIXED, -1, 0, false);
 
         if (file_end > map_end) {
           /*
