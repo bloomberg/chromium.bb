@@ -273,8 +273,8 @@ static_library("ash_shell_lib_with_content") {
   sources = gypi_values.ash_shell_with_content_lib_sources
 
   deps = [
-    #"//chrome:packed_resources",  TODO(GYP)
     ":ash_shell_lib",
+    "//chrome:packed_resources",
     "//content",
     "//content/shell:content_shell_lib",
     "//skia",
