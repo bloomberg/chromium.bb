@@ -38,6 +38,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
@@ -54,8 +55,6 @@ const double kOriginalRequestDateAsDouble = 233433000.;
 
 const char kOneDayBeforeOriginalRequest[] = "Wed, 24 May 1977 18:30:00 GMT";
 const char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
-
-const unsigned char kAConstUnsignedCharZero = 0;
 
 class MockFetchContext : public FetchContext {
 public:
@@ -120,23 +119,13 @@ protected:
 
 private:
     // A simple platform that mocks out the clock, for cache freshness testing.
-    class ProxyPlatform : public blink::Platform {
+    class ProxyPlatform : public TestingPlatformSupport {
     public:
-        ProxyPlatform() : m_platform(blink::Platform::current()), m_elapsedSeconds(0.) { }
-
-        ~ProxyPlatform()
-        {
-            blink::Platform::initialize(m_platform);
-        }
+        ProxyPlatform() : m_elapsedSeconds(0.) { }
 
         void advanceClock(double seconds)
         {
             m_elapsedSeconds += seconds;
-        }
-
-        WebThread* currentThread() override
-        {
-            return m_platform->currentThread();
         }
 
     private:
@@ -146,24 +135,11 @@ private:
             return kOriginalRequestDateAsDouble + m_elapsedSeconds;
         }
 
-        // These blink::Platform methods must be overriden to make a usable object.
-        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
-        {
-            RELEASE_ASSERT_NOT_REACHED();
-        }
-        virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName)
-        {
-            return &kAConstUnsignedCharZero;
-        }
-
-        blink::Platform* m_platform; // Not owned.
         double m_elapsedSeconds;
     };
 
     virtual void SetUp()
     {
-        blink::Platform::initialize(&m_proxyPlatform);
-
         // Save the global memory cache to restore it upon teardown.
         m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
 

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "platform/scroll/ScrollableArea.h"
 
-#include "platform/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
@@ -86,7 +86,7 @@ public:
 // We need just enough scaffolding for the Timer constructor to not segfault.
 class FakePlatform : public TestingPlatformSupport {
 public:
-    FakePlatform() : TestingPlatformSupport(TestingPlatformSupport::Config()) { }
+    FakePlatform() { }
     ~FakePlatform() override { }
 
     WebThread* currentThread() override

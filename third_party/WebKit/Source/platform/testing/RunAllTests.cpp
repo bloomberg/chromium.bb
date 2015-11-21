@@ -31,8 +31,8 @@
 #include "config.h"
 
 #include "platform/EventTracer.h"
-#include "platform/TestingPlatformSupport.h"
 #include "platform/heap/Heap.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"

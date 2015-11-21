@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/SharedBuffer.h"
 
-#include "platform/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
