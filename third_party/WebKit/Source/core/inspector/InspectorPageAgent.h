@@ -103,7 +103,7 @@ public:
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
     void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtrWillBeRawPtr<SearchInResourceCallback>) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
+    void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, const int* everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
     void setOverlayMessage(ErrorString*, const String*) override;
 

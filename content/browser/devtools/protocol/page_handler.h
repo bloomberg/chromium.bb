@@ -65,9 +65,10 @@ class PageHandler : public NotificationObserver {
   Response StartScreencast(const std::string* format,
                            const int* quality,
                            const int* max_width,
-                           const int* max_height);
+                           const int* max_height,
+                           const int* every_nth_frame);
   Response StopScreencast();
-  Response ScreencastFrameAck(int frame_number);
+  Response ScreencastFrameAck(int session_id);
 
   Response HandleJavaScriptDialog(bool accept, const std::string* prompt_text);
 
@@ -106,13 +107,14 @@ class PageHandler : public NotificationObserver {
   int screencast_quality_;
   int screencast_max_width_;
   int screencast_max_height_;
+  int capture_every_nth_frame_;
   int capture_retry_count_;
   bool has_compositor_frame_metadata_;
   cc::CompositorFrameMetadata next_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
-  int screencast_frame_sent_;
-  int screencast_frame_acked_;
-  bool processing_screencast_frame_;
+  int session_id_;
+  int frame_counter_;
+  int frames_in_flight_;
 
   scoped_ptr<ColorPicker> color_picker_;
 
