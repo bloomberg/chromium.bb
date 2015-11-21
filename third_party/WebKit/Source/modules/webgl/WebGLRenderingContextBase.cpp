@@ -3841,7 +3841,7 @@ bool WebGLRenderingContextBase::validateReadPixelsFuncParameters(GLsizei width, 
     // Calculate array size, taking into consideration of PACK_ALIGNMENT.
     unsigned totalBytesRequired = 0;
     unsigned padding = 0;
-    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
+    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, 1, m_packAlignment, &totalBytesRequired, &padding);
     if (error != GL_NO_ERROR) {
         synthesizeGLError(error, "readPixels", "invalid dimensions");
         return false;
@@ -4290,7 +4290,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0)
-        || !validateTexFuncData("texImage2D", level, width, height, format, type, pixels, NullAllowed))
+        || !validateTexFuncData("texImage2D", level, width, height, 1, format, type, pixels, NullAllowed))
         return;
     void* data = pixels ? pixels->baseAddress() : 0;
     Vector<uint8_t> tempData;
@@ -4614,7 +4614,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, 0, width, height, 0, format, type, xoffset, yoffset)
-        || !validateTexFuncData("texSubImage2D", level, width, height, format, type, pixels, NullNotAllowed))
+        || !validateTexFuncData("texSubImage2D", level, width, height, 1, format, type, pixels, NullNotAllowed))
         return;
     void* data = pixels->baseAddress();
     Vector<uint8_t> tempData;
@@ -5714,7 +5714,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
+bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
@@ -5791,14 +5791,14 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
     }
 
     unsigned totalBytesRequired;
-    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, m_unpackAlignment, &totalBytesRequired, 0);
+    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, depth, m_unpackAlignment, &totalBytesRequired, 0);
     if (error != GL_NO_ERROR) {
         synthesizeGLError(error, functionName, "invalid texture dimensions");
         return false;
     }
     if (pixels->byteLength() < totalBytesRequired) {
         if (m_unpackAlignment != 1) {
-            error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, 1, &totalBytesRequired, 0);
+            error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, depth, 1, &totalBytesRequired, 0);
             if (pixels->byteLength() == totalBytesRequired) {
                 synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request with UNPACK_ALIGNMENT > 1");
                 return false;

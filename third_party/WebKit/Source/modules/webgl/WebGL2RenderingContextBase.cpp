@@ -702,7 +702,7 @@ bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GL
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexImage3D("texImage3D", target, level, internalformat, width, height, depth, border, format, type)
-        || !validateTexFuncData("texImage3D", level, width, height, format, type, pixels, NullAllowed))
+        || !validateTexFuncData("texImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
     void* data = pixels ? pixels->baseAddress() : 0;
@@ -810,7 +810,7 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, width, height, depth)
-        || !validateTexFuncData("texSubImage3D", level, width, height, format, type, pixels, NullAllowed))
+        || !validateTexFuncData("texSubImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
     // FIXME: Ensure pixels is large enough to contain the desired texture dimensions.

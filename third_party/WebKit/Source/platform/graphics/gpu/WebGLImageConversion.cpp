@@ -1976,16 +1976,16 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum 
     return true;
 }
 
-GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes)
+GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes)
 {
     ASSERT(imageSizeInBytes);
     ASSERT(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);
-    if (width < 0 || height < 0)
+    if (width < 0 || height < 0 || depth < 0)
         return GL_INVALID_VALUE;
     unsigned bytesPerComponent, componentsPerPixel;
     if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
         return GL_INVALID_ENUM;
-    if (!width || !height) {
+    if (!width || !height || !depth) {
         *imageSizeInBytes = 0;
         if (paddingInBytes)
             *paddingInBytes = 0;
@@ -2003,7 +2003,7 @@ GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type,
         checkedValue += padding;
     }
     // Last row needs no padding.
-    checkedValue *= (height - 1);
+    checkedValue *= (height * depth - 1);
     checkedValue += validRowSize;
     if (!checkedValue.isValid())
         return GL_INVALID_VALUE;
@@ -2206,7 +2206,7 @@ bool WebGLImageConversion::packImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GL_NO_ERROR)
+    if (computeImageSizeInBytes(format, type, width, height, 1, 1, &packedSize, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 
@@ -2233,7 +2233,7 @@ bool WebGLImageConversion::extractImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GL_NO_ERROR)
+    if (computeImageSizeInBytes(format, type, width, height, 1, 1, &packedSize, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 
