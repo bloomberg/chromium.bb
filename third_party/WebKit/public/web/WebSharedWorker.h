@@ -62,10 +62,10 @@ public:
     virtual void terminateWorkerContext() = 0;
 
     virtual void pauseWorkerContextOnStart() = 0;
-    virtual void attachDevTools(const WebString& hostId) = 0;
-    virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) = 0;
+    virtual void attachDevTools(const WebString& hostId, int sessionId) = 0;
+    virtual void reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState) = 0;
     virtual void detachDevTools() = 0;
-    virtual void dispatchDevToolsMessage(const WebString&) = 0;
+    virtual void dispatchDevToolsMessage(int sessionId, const WebString&) = 0;
 };
 
 } // namespace blink

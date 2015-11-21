@@ -74,11 +74,11 @@ ${types}\
 
 class DevToolsProtocolDispatcher {
  public:
-  using Notifier = DevToolsProtocolClient::RawMessageCallback;
   using CommandHandler =
-      base::Callback<bool(int, scoped_ptr<base::DictionaryValue>)>;
+      base::Callback<bool(DevToolsCommandId,
+                          scoped_ptr<base::DictionaryValue>)>;
 
-  explicit DevToolsProtocolDispatcher(const Notifier& notifier);
+  explicit DevToolsProtocolDispatcher(DevToolsProtocolDelegate* notifier);
   ~DevToolsProtocolDispatcher();
 
   CommandHandler FindCommandHandler(const std::string& method);
@@ -91,7 +91,7 @@ ${setters}\
 
 ${methods}\
 
-  Notifier notifier_;
+  DevToolsProtocolDelegate* notifier_;
   DevToolsProtocolClient client_;
   CommandHandlers command_handlers_;
 ${fields}\
@@ -208,7 +208,7 @@ tmpl_client = string.Template("""\
 namespace ${domain} {
 class Client : public DevToolsProtocolClient {
  public:
-  explicit Client(const RawMessageCallback& raw_message_callback);
+  explicit Client(DevToolsProtocolDelegate* notifier);
   ~Client() override;
 
 ${methods}\
@@ -252,7 +252,7 @@ ${includes}\
 namespace content {
 
 DevToolsProtocolDispatcher::DevToolsProtocolDispatcher(
-    const Notifier& notifier)
+    DevToolsProtocolDelegate* notifier)
     : notifier_(notifier),
       client_(notifier),
       ${fields_init} {
@@ -405,8 +405,8 @@ tmpl_object_pass = string.Template(
 tmpl_client_impl = string.Template("""\
 namespace ${domain} {
 
-Client::Client(const RawMessageCallback& raw_message_callback)
-    : DevToolsProtocolClient(raw_message_callback) {
+Client::Client(DevToolsProtocolDelegate* notifier)
+    : DevToolsProtocolClient(notifier) {
 }
 
 Client::~Client() {

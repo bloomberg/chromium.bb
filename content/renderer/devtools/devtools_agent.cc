@@ -101,12 +101,12 @@ void DevToolsAgent::WidgetWillClose() {
   ContinueProgram();
 }
 
-void DevToolsAgent::sendProtocolMessage(
-    int call_id,
-    const blink::WebString& message,
-    const blink::WebString& state_cookie) {
-  SendChunkedProtocolMessage(
-      this, routing_id(), call_id, message.utf8(), state_cookie.utf8());
+void DevToolsAgent::sendProtocolMessage(int session_id,
+                                        int call_id,
+                                        const blink::WebString& message,
+                                        const blink::WebString& state_cookie) {
+  SendChunkedProtocolMessage(this, routing_id(), session_id, call_id,
+                             message.utf8(), state_cookie.utf8());
 }
 
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
@@ -157,18 +157,19 @@ DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
 }
 
 // static
-void DevToolsAgent::SendChunkedProtocolMessage(
-    IPC::Sender* sender,
-    int routing_id,
-    int call_id,
-    const std::string& message,
-    const std::string& post_state) {
+void DevToolsAgent::SendChunkedProtocolMessage(IPC::Sender* sender,
+                                               int routing_id,
+                                               int session_id,
+                                               int call_id,
+                                               const std::string& message,
+                                               const std::string& post_state) {
   DevToolsMessageChunk chunk;
   chunk.message_size = message.size();
   chunk.is_first = true;
 
   if (message.length() < kMaxMessageChunkSize) {
     chunk.data = message;
+    chunk.session_id = session_id;
     chunk.call_id = call_id;
     chunk.post_state = post_state;
     chunk.is_last = true;
@@ -179,6 +180,7 @@ void DevToolsAgent::SendChunkedProtocolMessage(
 
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
     chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
+    chunk.session_id = chunk.is_last ? session_id : 0;
     chunk.call_id = chunk.is_last ? call_id : 0;
     chunk.post_state = chunk.is_last ? post_state : std::string();
     chunk.data = message.substr(pos, kMaxMessageChunkSize);
@@ -189,19 +191,20 @@ void DevToolsAgent::SendChunkedProtocolMessage(
   }
 }
 
-void DevToolsAgent::OnAttach(const std::string& host_id) {
+void DevToolsAgent::OnAttach(const std::string& host_id, int session_id) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->attach(WebString::fromUTF8(host_id));
+    web_agent->attach(WebString::fromUTF8(host_id), session_id);
     is_attached_ = true;
   }
 }
 
 void DevToolsAgent::OnReattach(const std::string& host_id,
+                               int session_id,
                                const std::string& agent_state) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->reattach(WebString::fromUTF8(host_id),
+    web_agent->reattach(WebString::fromUTF8(host_id), session_id,
                         WebString::fromUTF8(agent_state));
     is_attached_ = true;
   }
@@ -215,11 +218,13 @@ void DevToolsAgent::OnDetach() {
   }
 }
 
-void DevToolsAgent::OnDispatchOnInspectorBackend(const std::string& message) {
+void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
+                                                 const std::string& message) {
   TRACE_EVENT0("devtools", "DevToolsAgent::OnDispatchOnInspectorBackend");
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent)
-    web_agent->dispatchOnInspectorBackend(WebString::fromUTF8(message));
+    web_agent->dispatchOnInspectorBackend(session_id,
+                                          WebString::fromUTF8(message));
 }
 
 void DevToolsAgent::OnInspectElement(int x, int y) {

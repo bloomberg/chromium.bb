@@ -398,8 +398,8 @@ void InputHandler::SynthesizeRepeatingScroll(
     DevToolsCommandId command_id) {
   if (!interaction_marker_name.empty()) {
     // TODO(alexclarke): Can we move this elsewhere? It doesn't really fit here.
-    TRACE_EVENT_COPY_ASYNC_BEGIN0("benchmark",
-                                  interaction_marker_name.c_str(), command_id);
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("benchmark", interaction_marker_name.c_str(),
+                                  command_id.call_id);
   }
 
   host_->QueueSyntheticGesture(
@@ -417,8 +417,8 @@ void InputHandler::OnScrollFinished(
     DevToolsCommandId command_id,
     SyntheticGesture::Result result) {
   if (!interaction_marker_name.empty()) {
-    TRACE_EVENT_COPY_ASYNC_END0("benchmark",
-                                interaction_marker_name.c_str(), command_id);
+    TRACE_EVENT_COPY_ASYNC_END0("benchmark", interaction_marker_name.c_str(),
+                                command_id.call_id);
   }
 
   if (repeat_count > 0) {

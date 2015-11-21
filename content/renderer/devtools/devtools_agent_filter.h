@@ -43,7 +43,7 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   ~DevToolsAgentFilter() override;
 
  private:
-  void OnDispatchOnInspectorBackend(const std::string& message);
+  void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
 
   // Called on IO thread
   void AddEmbeddedWorkerRoute(int32 routing_id);

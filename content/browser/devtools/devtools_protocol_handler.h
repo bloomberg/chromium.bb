@@ -10,26 +10,30 @@
 namespace content {
 
 class DevToolsAgentHost;
+class DevToolsAgentHostImpl;
+class DevToolsProtocolDelegate;
 
 class DevToolsProtocolHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
-  using Notifier = base::Callback<void(const std::string& message)>;
 
-  DevToolsProtocolHandler(DevToolsAgentHost* agent_host,
-                          const Notifier& notifier);
+  explicit DevToolsProtocolHandler(DevToolsAgentHostImpl* agent_host);
   virtual ~DevToolsProtocolHandler();
 
-  void HandleMessage(const std::string& message);
-  bool HandleOptionalMessage(const std::string& message, int* call_id);
+  void HandleMessage(int session_id, const std::string& message);
+  bool HandleOptionalMessage(int session_id,
+                             const std::string& message,
+                             int* call_id);
 
   DevToolsProtocolDispatcher* dispatcher() { return &dispatcher_; }
 
  private:
-  scoped_ptr<base::DictionaryValue> ParseCommand(const std::string& message);
-  bool PassCommandToDelegate(base::DictionaryValue* command);
-  void HandleCommand(scoped_ptr<base::DictionaryValue> command);
-  bool HandleOptionalCommand(scoped_ptr<base::DictionaryValue> command,
+  scoped_ptr<base::DictionaryValue> ParseCommand(int session_id,
+                                                 const std::string& message);
+  bool PassCommandToDelegate(int session_id, base::DictionaryValue* command);
+  void HandleCommand(int session_id, scoped_ptr<base::DictionaryValue> command);
+  bool HandleOptionalCommand(int session_id,
+                             scoped_ptr<base::DictionaryValue> command,
                              int* call_id);
 
   DevToolsAgentHost* agent_host_;

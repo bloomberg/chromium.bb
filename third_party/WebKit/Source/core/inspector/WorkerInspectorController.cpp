@@ -109,7 +109,7 @@ private:
     {
     }
 
-    void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override
+    void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override
     {
         // Worker messages are wrapped, no need to handle callId.
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
@@ -212,8 +212,10 @@ void WorkerInspectorController::restoreInspectorStateFromCookie(const String& in
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
     InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
-    if (m_backendDispatcher)
-        m_backendDispatcher->dispatch(message);
+    if (m_backendDispatcher) {
+        // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
+        m_backendDispatcher->dispatch(0, message);
+    }
 }
 
 void WorkerInspectorController::dispose()

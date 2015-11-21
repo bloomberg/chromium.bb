@@ -1705,7 +1705,7 @@ class Generator:
 
         Generator.method_name_enum_list.append("        %s," % cmd_enum_name)
         Generator.method_handler_list.append("            &InspectorBackendDispatcherImpl::%s_%s," % (domain_name, json_command_name))
-        Generator.backend_method_declaration_list.append("    void %s_%s(int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);" % (domain_name, json_command_name))
+        Generator.backend_method_declaration_list.append("    void %s_%s(int sessionId, int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);" % (domain_name, json_command_name))
 
         backend_agent_interface_list = [] if "redirect" in json_command else Generator.backend_agent_interface_list
 
@@ -1786,7 +1786,7 @@ class Generator:
 
             callback_writer.newline("class " + callback_name + " : public CallbackBase {\n")
             callback_writer.newline("public:\n")
-            callback_writer.newline("    " + callback_name + "(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl>, int id);\n")
+            callback_writer.newline("    " + callback_name + "(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl>, int sessionId, int id);\n")
             callback_writer.newline("    CORE_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
             error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
@@ -1807,7 +1807,7 @@ class Generator:
 
             ad_hoc_type_output.append(callback_output)
 
-            method_out_code += "    RefPtrWillBeRawPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRefWillBeNoop(new " + agent_interface_name + "::" + callback_name + "(this, callId));\n"
+            method_out_code += "    RefPtrWillBeRawPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRefWillBeNoop(new " + agent_interface_name + "::" + callback_name + "(this, sessionId, callId));\n"
             agent_call_param_list.append("callback")
             normal_response_cook_text += "    if (!error.length()) \n"
             normal_response_cook_text += "        return;\n"

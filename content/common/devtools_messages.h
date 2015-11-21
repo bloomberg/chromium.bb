@@ -58,12 +58,14 @@
 // Agent -> Client message chunk.
 //   |is_first| marks the first chunk, comes with the |message_size| for
 //   total message size.
-//   |is_last| marks the last chunk. |call_id| and |post_state| are optional
-//    parameters passed with the last chunk of the protocol response.
+//   |is_last| marks the last chunk. |call_id|, |session_id| and |post_state|
+//   are optional parameters passed with the last chunk of the protocol
+//   response.
 IPC_STRUCT_BEGIN(DevToolsMessageChunk)
   IPC_STRUCT_MEMBER(bool, is_first)
   IPC_STRUCT_MEMBER(bool, is_last)
   IPC_STRUCT_MEMBER(int, message_size)
+  IPC_STRUCT_MEMBER(int, session_id)
   IPC_STRUCT_MEMBER(int, call_id)
   IPC_STRUCT_MEMBER(std::string, data)
   IPC_STRUCT_MEMBER(std::string, post_state)
@@ -77,20 +79,23 @@ IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
 // Tells agent that there is a client host connected to it.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Attach,
-                    std::string /* host_id */)
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_Attach,
+                    std::string /* host_id */,
+                    int /* session_id */)
 
 // Tells agent that a client host was disconnected from another agent and
 // connected to this one.
-IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_Reattach,
+IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_Reattach,
                     std::string /* host_id */,
+                    int /* session_id */,
                     std::string /* agent_state */)
 
 // Tells agent that there is no longer a client host connected to it.
 IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
 
 // WebKit-level transport.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_DispatchOnInspectorBackend,
+                    int /* session_id */,
                     std::string /* message */)
 
 // Inspect element with the given coordinates.

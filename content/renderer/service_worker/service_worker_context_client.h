@@ -117,7 +117,8 @@ class ServiceWorkerContextClient
                             const blink::WebString& message,
                             int line_number,
                             const blink::WebString& source_url) override;
-  void sendDevToolsMessage(int call_id,
+  void sendDevToolsMessage(int session_id,
+                           int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state) override;
   void didHandleActivateEvent(int request_id,

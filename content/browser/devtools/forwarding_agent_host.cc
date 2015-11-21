@@ -18,7 +18,7 @@ ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
 void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
-  SendMessageToClient(message);
+  SendMessageToClient(session_id(), message);
 }
 
 void ForwardingAgentHost::ConnectionClosed() {

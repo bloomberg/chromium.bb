@@ -253,10 +253,12 @@ EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
 }
 
 void EmbeddedSharedWorkerStub::sendDevToolsMessage(
+    int session_id,
     int call_id,
     const blink::WebString& message,
     const blink::WebString& state) {
-  worker_devtools_agent_->SendDevToolsMessage(call_id, message, state);
+  worker_devtools_agent_->SendDevToolsMessage(
+      session_id, call_id, message, state);
 }
 
 void EmbeddedSharedWorkerStub::Shutdown() {

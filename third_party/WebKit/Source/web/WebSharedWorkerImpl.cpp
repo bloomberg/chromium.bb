@@ -197,9 +197,9 @@ int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource)
     return m_networkProvider->serviceWorkerID(dataSource);
 }
 
-void WebSharedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
+void WebSharedWorkerImpl::sendProtocolMessage(int sessionId, int callId, const WebString& message, const WebString& state)
 {
-    m_client->sendDevToolsMessage(callId, message, state);
+    m_client->sendDevToolsMessage(sessionId, callId, message, state);
 }
 
 void WebSharedWorkerImpl::resumeStartup()
@@ -364,18 +364,18 @@ void WebSharedWorkerImpl::pauseWorkerContextOnStart()
     m_pauseWorkerContextOnStart = true;
 }
 
-void WebSharedWorkerImpl::attachDevTools(const WebString& hostId)
+void WebSharedWorkerImpl::attachDevTools(const WebString& hostId, int sessionId)
 {
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->attach(hostId);
+        devtoolsAgent->attach(hostId, sessionId);
 }
 
-void WebSharedWorkerImpl::reattachDevTools(const WebString& hostId, const WebString& savedState)
+void WebSharedWorkerImpl::reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState)
 {
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->reattach(hostId, savedState);
+        devtoolsAgent->reattach(hostId, sessionId, savedState);
     resumeStartup();
 }
 
@@ -386,13 +386,13 @@ void WebSharedWorkerImpl::detachDevTools()
         devtoolsAgent->detach();
 }
 
-void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
+void WebSharedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebString& message)
 {
     if (m_askedToTerminate)
         return;
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->dispatchOnInspectorBackend(message);
+        devtoolsAgent->dispatchOnInspectorBackend(sessionId, message);
 }
 
 WebSharedWorker* WebSharedWorker::create(WebSharedWorkerClient* client)

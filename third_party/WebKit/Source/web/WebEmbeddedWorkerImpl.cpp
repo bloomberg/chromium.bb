@@ -157,18 +157,18 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
     m_workerInspectorProxy->workerThreadTerminated();
 }
 
-void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId)
+void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId, int sessionId)
 {
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->attach(hostId);
+        devtoolsAgent->attach(hostId, sessionId);
 }
 
-void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& hostId, const WebString& savedState)
+void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState)
 {
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->reattach(hostId, savedState);
+        devtoolsAgent->reattach(hostId, sessionId, savedState);
     resumeStartup();
 }
 
@@ -179,13 +179,13 @@ void WebEmbeddedWorkerImpl::detachDevTools()
         devtoolsAgent->detach();
 }
 
-void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
+void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebString& message)
 {
     if (m_askedToTerminate)
         return;
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
-        devtoolsAgent->dispatchOnInspectorBackend(message);
+        devtoolsAgent->dispatchOnInspectorBackend(sessionId, message);
 }
 
 void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
@@ -285,9 +285,9 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
     // invoked and |this| might have been deleted at this point.
 }
 
-void WebEmbeddedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)
+void WebEmbeddedWorkerImpl::sendProtocolMessage(int sessionId, int callId, const WebString& message, const WebString& state)
 {
-    m_workerContextClient->sendDevToolsMessage(callId, message, state);
+    m_workerContextClient->sendDevToolsMessage(sessionId, callId, message, state);
 }
 
 void WebEmbeddedWorkerImpl::resumeStartup()

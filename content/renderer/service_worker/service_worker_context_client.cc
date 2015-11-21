@@ -468,12 +468,13 @@ void ServiceWorkerContextClient::reportConsoleMessage(
 }
 
 void ServiceWorkerContextClient::sendDevToolsMessage(
+    int session_id,
     int call_id,
     const blink::WebString& message,
     const blink::WebString& state_cookie) {
   DevToolsAgent::SendChunkedProtocolMessage(
-      sender_.get(), worker_devtools_agent_route_id_,
-      call_id, message.utf8(), state_cookie.utf8());
+      sender_.get(), worker_devtools_agent_route_id_, session_id, call_id,
+      message.utf8(), state_cookie.utf8());
 }
 
 void ServiceWorkerContextClient::didHandleActivateEvent(

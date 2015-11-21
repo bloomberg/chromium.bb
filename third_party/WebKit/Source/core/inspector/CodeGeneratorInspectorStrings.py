@@ -43,19 +43,19 @@ ${frontendDomainMethodDeclarations}
 """)
 
 backend_method = (
-"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(int callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
+"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(int sessionId, int callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
 {
     if (!$agentField)
         protocolErrors->pushString("${domainName} handler is not available.");
 $methodCode
     if (protocolErrors->length()) {
-        reportProtocolError(callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
+        reportProtocolError(sessionId, callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
         return;
     }
 $agentCallParamsDeclaration
     $agentField->$methodName($agentCallParams);
 $responseCook
-    sendResponse(callId, $sendResponseCallParams);
+    sendResponse(sessionId, callId, $sendResponseCallParams);
 }
 """)
 
@@ -69,7 +69,7 @@ $code    if (m_inspectorFrontendChannel)
 """)
 
 callback_main_methods = (
-"""InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int id) : CallbackBase(backendImpl, id) {}
+"""InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) {}
 
 void InspectorBackendDispatcher::$agentName::$callbackName::sendSuccess($parameters)
 {
@@ -150,7 +150,7 @@ public:
 
     class CORE_EXPORT CallbackBase: public RefCountedWillBeGarbageCollectedFinalized<CallbackBase> {
     public:
-        CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int id);
+        CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id);
         virtual ~CallbackBase();
         DECLARE_VIRTUAL_TRACE();
         void sendFailure(const ErrorString&);
@@ -163,6 +163,7 @@ public:
         void disable() { m_alreadySent = true; }
 
         RefPtrWillBeMember<InspectorBackendDispatcherImpl> m_backendImpl;
+        int m_sessionId;
         int m_id;
         bool m_alreadySent;
 
@@ -184,9 +185,9 @@ $virtualSetters
         LastEntry,
     };
 
-    void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage) const;
-    virtual void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
-    virtual void dispatch(const String& message) = 0;
+    void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage) const;
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
+    virtual void dispatch(int sessionId, const String& message) = 0;
     static bool getCommandName(const String& message, String* result);
 
     enum MethodNames {
@@ -258,16 +259,16 @@ $constructorInit
     }
 
     virtual void clearFrontend() { m_inspectorFrontendChannel = 0; }
-    virtual void dispatch(const String& message);
-    virtual void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
+    virtual void dispatch(int sessionId, const String& message);
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
     using InspectorBackendDispatcher::reportProtocolError;
 
-    void sendResponse(int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
+    void sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
     bool isActive() { return m_inspectorFrontendChannel; }
 
 $setters
 private:
-    using CallHandler = void (InspectorBackendDispatcherImpl::*)(int callId, JSONObject* messageObject, JSONArray* protocolErrors);
+    using CallHandler = void (InspectorBackendDispatcherImpl::*)(int sessionId, int callId, JSONObject* messageObject, JSONArray* protocolErrors);
     using DispatchMap = HashMap<String, CallHandler>;
 
 $methodDeclarations
@@ -285,13 +286,13 @@ $fieldDeclarations
     static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
     static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
 
-    void sendResponse(int callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
+    void sendResponse(int sessionId, int callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
     {
-        sendResponse(callId, invocationError, RefPtr<JSONValue>(), result);
+        sendResponse(sessionId, callId, invocationError, RefPtr<JSONValue>(), result);
     }
-    void sendResponse(int callId, ErrorString invocationError)
+    void sendResponse(int sessionId, int callId, ErrorString invocationError)
     {
-        sendResponse(callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
+        sendResponse(sessionId, callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
     }
     static const char InvalidParamsFormatString[];
 
@@ -309,7 +310,7 @@ PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::c
 }
 
 
-void InspectorBackendDispatcherImpl::dispatch(const String& message)
+void InspectorBackendDispatcherImpl::dispatch(int sessionId, const String& message)
 {
     RefPtrWillBeRawPtr<InspectorBackendDispatcher> protect(this);
     int callId = 0;
@@ -329,18 +330,18 @@ void InspectorBackendDispatcherImpl::dispatch(const String& message)
 
     HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
-        reportProtocolError(callId, MethodNotFound, "'" + method + "' wasn't found");
+        reportProtocolError(sessionId, callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
     }
 
     RefPtr<JSONArray> protocolErrors = JSONArray::create();
-    ((*this).*it->value)(callId, messageObject.get(), protocolErrors.get());
+    ((*this).*it->value)(sessionId, callId, messageObject.get(), protocolErrors.get());
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
+void InspectorBackendDispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
 {
     if (invocationError.length()) {
-        reportProtocolError(callId, ServerError, invocationError, errorData);
+        reportProtocolError(sessionId, callId, ServerError, invocationError, errorData);
         return;
     }
 
@@ -348,15 +349,15 @@ void InspectorBackendDispatcherImpl::sendResponse(int callId, const ErrorString&
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", result);
     if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendProtocolResponse(callId, responseMessage.release());
+        m_inspectorFrontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
 }
 
-void InspectorBackendDispatcher::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage) const
+void InspectorBackendDispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage) const
 {
-    reportProtocolError(callId, code, errorMessage, PassRefPtr<JSONValue>());
+    reportProtocolError(sessionId, callId, code, errorMessage, PassRefPtr<JSONValue>());
 }
 
-void InspectorBackendDispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
+void InspectorBackendDispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
 {
     ASSERT(code >=0);
     ASSERT((unsigned)code < m_commonErrors.size());
@@ -371,7 +372,7 @@ void InspectorBackendDispatcherImpl::reportProtocolError(int callId, CommonError
     message->setObject("error", error);
     message->setNumber("id", callId);
     if (m_inspectorFrontendChannel)
-        m_inspectorFrontendChannel->sendProtocolResponse(callId, message.release());
+        m_inspectorFrontendChannel->sendProtocolResponse(sessionId, callId, message.release());
 }
 
 template<typename R, typename V, typename V0>
@@ -464,8 +465,8 @@ bool InspectorBackendDispatcher::getCommandName(const String& message, String* r
     return true;
 }
 
-InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int id)
-    : m_backendImpl(backendImpl), m_id(id), m_alreadySent(false) {}
+InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int sessionId, int id)
+    : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id), m_alreadySent(false) {}
 
 InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
 
@@ -489,7 +490,7 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
 {
     if (m_alreadySent)
         return;
-    m_backendImpl->sendResponse(m_id, invocationError, errorData, partialMessage);
+    m_backendImpl->sendResponse(m_sessionId, m_id, invocationError, errorData, partialMessage);
     m_alreadySent = true;
 }
 

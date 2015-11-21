@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/devtools/protocol/devtools_protocol_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -22,7 +23,8 @@ namespace content {
 class BrowserContext;
 
 // Describes interface for managing devtools agents from the browser process.
-class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
+class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
+                                             public DevToolsProtocolDelegate {
  public:
   // Informs the hosted agent that a client host has attached.
   virtual void Attach() = 0;
@@ -44,13 +46,20 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
 
+  // DevToolsProtocolDelegate implementation.
+  void SendProtocolResponse(int session_id,
+                            const std::string& message) override;
+  void SendProtocolNotification(const std::string& message) override;
+
  protected:
   DevToolsAgentHostImpl();
   ~DevToolsAgentHostImpl() override;
 
   void HostClosed();
-  void SendMessageToClient(const std::string& message);
+  void SendMessageToClient(int session_id, const std::string& message);
   devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
+
+  int session_id() { DCHECK(client_); return session_id_; }
 
   static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
 
@@ -59,13 +68,14 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void InnerDetach();
 
   const std::string id_;
+  int session_id_;
   DevToolsAgentHostClient* client_;
   devtools::DevToolsIOContext io_context_;
 };
 
 class DevToolsMessageChunkProcessor {
  public:
-  using SendMessageCallback = base::Callback<void(const std::string&)>;
+  using SendMessageCallback = base::Callback<void(int, const std::string&)>;
   explicit DevToolsMessageChunkProcessor(const SendMessageCallback& callback);
   ~DevToolsMessageChunkProcessor();
 

@@ -78,7 +78,7 @@ public:
     // Ownership of the returned object is transferred to the caller.
     virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return nullptr; }
 
-    virtual void sendDevToolsMessage(int callId, const WebString& message, const WebString& state) { }
+    virtual void sendDevToolsMessage(int sessionId, int callId, const WebString& message, const WebString& state) { }
 };
 
 } // namespace blink

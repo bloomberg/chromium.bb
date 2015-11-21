@@ -86,7 +86,9 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   void Attach();
   void Reattach(FrameHostHolder* old);
   void Detach();
-  void DispatchProtocolMessage(int call_id, const std::string& message);
+  void DispatchProtocolMessage(int session_id,
+                               int call_id,
+                               const std::string& message);
   void InspectElement(int x, int y);
   void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   void Suspend();
@@ -95,15 +97,17 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
  private:
   void GrantPolicy();
   void RevokePolicy();
-  void SendMessageToClient(const std::string& message);
+  void SendMessageToClient(int session_id, const std::string& message);
 
   RenderFrameDevToolsAgentHost* agent_;
   RenderFrameHostImpl* host_;
   bool attached_;
   bool suspended_;
   DevToolsMessageChunkProcessor chunk_processor_;
-  std::vector<std::string> pending_messages_;
-  std::map<int, std::string> sent_messages_;
+  // <session_id, message>
+  std::vector<std::pair<int, std::string>> pending_messages_;
+  // <call_id> -> <session_id, message>
+  std::map<int, std::pair<int, std::string>> sent_messages_;
 };
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::FrameHostHolder(
@@ -126,7 +130,7 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::~FrameHostHolder() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Attach() {
   host_->Send(new DevToolsAgentMsg_Attach(
-      host_->GetRoutingID(), agent_->GetId()));
+      host_->GetRoutingID(), agent_->GetId(), agent_->session_id()));
   GrantPolicy();
   attached_ = true;
 }
@@ -136,10 +140,13 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
   if (old)
     chunk_processor_.set_state_cookie(old->chunk_processor_.state_cookie());
   host_->Send(new DevToolsAgentMsg_Reattach(
-      host_->GetRoutingID(), agent_->GetId(), chunk_processor_.state_cookie()));
+      host_->GetRoutingID(), agent_->GetId(), agent_->session_id(),
+      chunk_processor_.state_cookie()));
   if (old) {
-    for (const auto& pair : old->sent_messages_)
-      DispatchProtocolMessage(pair.first, pair.second);
+    for (const auto& pair : old->sent_messages_) {
+      DispatchProtocolMessage(pair.second.first, pair.first,
+                              pair.second.second);
+    }
   }
   GrantPolicy();
   attached_ = true;
@@ -179,10 +186,12 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::RevokePolicy() {
   }
 }
 void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
-    int call_id, const std::string& message) {
+    int session_id,
+    int call_id,
+    const std::string& message) {
   host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-      host_->GetRoutingID(), message));
-  sent_messages_[call_id] = message;
+      host_->GetRoutingID(), session_id, message));
+  sent_messages_[call_id] = std::make_pair(session_id, message);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
@@ -199,12 +208,13 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
+    int session_id,
     const std::string& message) {
   sent_messages_.erase(chunk_processor_.last_call_id());
   if (suspended_)
-    pending_messages_.push_back(message);
+    pending_messages_.push_back(std::make_pair(session_id, message));
   else
-    agent_->SendMessageToClient(message);
+    agent_->SendMessageToClient(session_id, message);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
@@ -213,9 +223,9 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
   suspended_ = false;
-  for (const std::string& message : pending_messages_)
-    agent_->SendMessageToClient(message);
-  std::vector<std::string> empty;
+  for (const auto& pair : pending_messages_)
+    agent_->SendMessageToClient(pair.first, pair.second);
+  std::vector<std::pair<int, std::string>> empty;
   pending_messages_.swap(empty);
 }
 
@@ -326,10 +336,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
           GetIOContext())),
       emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
-      protocol_handler_(new DevToolsProtocolHandler(
-          this,
-          base::Bind(&RenderFrameDevToolsAgentHost::SendMessageToClient,
-                     base::Unretained(this)))),
+      protocol_handler_(new DevToolsProtocolHandler(this)),
       current_frame_crashed_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
@@ -424,13 +431,13 @@ void RenderFrameDevToolsAgentHost::Detach() {
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
-  if (protocol_handler_->HandleOptionalMessage(message, &call_id))
+  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id))
     return true;
 
   if (current_)
-    current_->DispatchProtocolMessage(call_id, message);
+    current_->DispatchProtocolMessage(session_id(), call_id, message);
   if (pending_)
-    pending_->DispatchProtocolMessage(call_id, message);
+    pending_->DispatchProtocolMessage(session_id(), call_id, message);
   return true;
 }
 
