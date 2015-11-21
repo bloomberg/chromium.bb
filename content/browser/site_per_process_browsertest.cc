@@ -2785,8 +2785,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
       "    parent.frames['frame2'].location.href = 'data:text/html,foo');"));
   console_delegate->Wait();
 
-  std::string frame_origin =
-      root->child_at(1)->current_replication_state().origin.Serialize();
+  std::string frame_origin = root->child_at(1)->current_origin().Serialize();
   EXPECT_EQ(frame_origin + "/", frame_url.GetOrigin().spec());
   EXPECT_TRUE(
       base::MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))
