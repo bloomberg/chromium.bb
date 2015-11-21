@@ -23,6 +23,8 @@ public:
         ASSERT(!item || item.isSVGInlineText());
     }
 
+    explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) { }
+
     LineLayoutSVGInlineText() { }
 
     SVGTextLayoutAttributes* layoutAttributes() const

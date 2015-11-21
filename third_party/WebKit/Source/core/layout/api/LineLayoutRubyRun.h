@@ -23,6 +23,8 @@ public:
         ASSERT(!item || item.isRubyRun());
     }
 
+    explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) { }
+
     LineLayoutRubyRun() { }
 
     void getOverhang(bool firstLine, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem, int& startOverhang, int& endOverhang) const

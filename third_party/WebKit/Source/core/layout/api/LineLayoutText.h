@@ -25,6 +25,8 @@ public:
         ASSERT(!item || item.isText());
     }
 
+    explicit LineLayoutText(std::nullptr_t) : LineLayoutItem(nullptr) { }
+
     LineLayoutText() { }
 
     InlineTextBox* firstTextBox() const

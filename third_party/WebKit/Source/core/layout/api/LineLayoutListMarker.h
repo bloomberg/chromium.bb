@@ -23,6 +23,8 @@ public:
         ASSERT(!item || item.isListMarker());
     }
 
+    explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) { }
+
     LineLayoutListMarker() { }
 
     bool isInside() const

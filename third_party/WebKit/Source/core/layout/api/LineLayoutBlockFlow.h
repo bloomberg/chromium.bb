@@ -30,6 +30,8 @@ public:
         ASSERT(!item || item.isLayoutBlockFlow());
     }
 
+    explicit LineLayoutBlockFlow(std::nullptr_t) : LineLayoutBox(nullptr) { }
+
     LineLayoutBlockFlow() { }
 
     LineLayoutItem firstChild() const

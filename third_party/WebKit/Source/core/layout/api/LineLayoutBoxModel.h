@@ -26,6 +26,8 @@ public:
         ASSERT(!item || item.isBoxModelObject());
     }
 
+    explicit LineLayoutBoxModel(std::nullptr_t) : LineLayoutItem(nullptr) { }
+
     LineLayoutBoxModel() { }
 
     PaintLayer* layer() const

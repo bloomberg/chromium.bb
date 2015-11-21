@@ -23,6 +23,8 @@ public:
         ASSERT(!item || item.isCombineText());
     }
 
+    explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) { }
+
     LineLayoutTextCombine() { }
 
     bool isCombined() const

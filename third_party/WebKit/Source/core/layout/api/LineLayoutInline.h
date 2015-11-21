@@ -28,6 +28,8 @@ public:
         ASSERT(!item || item.isLayoutInline());
     }
 
+    explicit LineLayoutInline(std::nullptr_t) : LineLayoutBoxModel(nullptr) { }
+
     LineLayoutInline() { }
 
     LineLayoutItem firstChild() const
