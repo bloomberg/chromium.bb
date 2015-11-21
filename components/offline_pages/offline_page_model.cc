@@ -472,6 +472,16 @@ void OfflinePageModel::BookmarkNodeRemoved(
   MarkPageForDeletion(node->id(), base::Bind(&EmptyDeleteCallback));
 }
 
+void OfflinePageModel::BookmarkNodeChanged(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  // BookmarkNodeChanged could be triggered if title or URL gets changed. If
+  // the latter, we need to invalidate the offline copy.
+  DCHECK(offline_pages_.count(node->id()) > 0);
+  if (offline_pages_[node->id()].url != node->url())
+    DeletePageByBookmarkId(node->id(), DeletePageCallback());
+}
+
 void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
   store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
                           weak_ptr_factory_.GetWeakPtr()));

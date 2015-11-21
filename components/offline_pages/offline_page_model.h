@@ -214,6 +214,8 @@ class OfflinePageModel : public KeyedService,
                            int old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* node) override;
 
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone();
