@@ -287,7 +287,6 @@ enum SpdyFrameType {
   GOAWAY,
   HEADERS,
   WINDOW_UPDATE,
-  CREDENTIAL = 10,  // No longer valid.  Kept for identifiability.
   PUSH_PROMISE,
   CONTINUATION,
   PRIORITY,
@@ -383,7 +382,6 @@ enum SpdyRstStreamStatus {
   RST_STREAM_FLOW_CONTROL_ERROR = 7,
   RST_STREAM_STREAM_IN_USE = 8,
   RST_STREAM_STREAM_ALREADY_CLOSED = 9,
-  RST_STREAM_INVALID_CREDENTIALS = 10,
   // FRAME_TOO_LARGE (defined by SPDY versions 3.1 and below), and
   // FRAME_SIZE_ERROR (defined by HTTP/2) are mapped to the same internal
   // reset status.

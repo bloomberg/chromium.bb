@@ -237,7 +237,7 @@ size_t SpdyFramer::GetSynStreamMinimumSize() const {
   if (protocol_version() <= SPDY3) {
     // Calculated as:
     // control frame header + 2 * 4 (stream IDs) + 1 (priority)
-    // + 1 (unused, was credential slot)
+    // + 1 (unused)
     return GetControlFrameHeaderSize() + 10;
   } else {
     return GetControlFrameHeaderSize() +
@@ -497,8 +497,6 @@ const char* SpdyFramer::StatusCodeToString(int status_code) {
       return "STREAM_IN_USE";
     case RST_STREAM_STREAM_ALREADY_CLOSED:
       return "STREAM_ALREADY_CLOSED";
-    case RST_STREAM_INVALID_CREDENTIALS:
-      return "INVALID_CREDENTIALS";
     case RST_STREAM_FRAME_TOO_LARGE:
       return "FRAME_TOO_LARGE";
     case RST_STREAM_CONNECT_ERROR:
@@ -533,8 +531,6 @@ const char* SpdyFramer::FrameTypeToString(SpdyFrameType type) {
       return "HEADERS";
     case WINDOW_UPDATE:
       return "WINDOW_UPDATE";
-    case CREDENTIAL:
-      return "CREDENTIAL";
     case PUSH_PROMISE:
       return "PUSH_PROMISE";
     case CONTINUATION:
@@ -889,19 +885,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
   DCHECK_LE(GetControlFrameHeaderSize(), current_frame_buffer_.len());
-
-  // TODO(mlavan): Either remove credential frames from the code entirely,
-  // or add them to parsing + serialization methods for SPDY3.
-  // Early detection of deprecated frames that we ignore.
-  if (protocol_version() <= SPDY3) {
-    if (control_frame_type_field == CREDENTIAL) {
-      current_frame_type_ = CREDENTIAL;
-      DCHECK_EQ(SPDY3, protocol_version());
-      DVLOG(1) << "CREDENTIAL control frame found. Ignoring.";
-      CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
-      return;
-    }
-  }
 
   if (!SpdyConstants::IsValidFrameType(protocol_version(),
                                        control_frame_type_field)) {
@@ -1464,7 +1447,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             priority = priority >> 5;
           }
 
-          // Seek past unused byte; used to be credential slot in SPDY 3.
+          // Seek past unused byte.
           reader.Seek(1);
 
           DCHECK(reader.IsDoneReading());
@@ -2377,7 +2360,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   builder.WriteUInt32(syn_stream.stream_id());
   builder.WriteUInt32(syn_stream.associated_to_stream_id());
   builder.WriteUInt8(priority << ((protocol_version() <= SPDY2) ? 6 : 5));
-  builder.WriteUInt8(0);  // Unused byte where credential slot used to be.
+  builder.WriteUInt8(0);  // Unused byte.
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   SerializeHeaderBlock(&builder, syn_stream);
 

@@ -4084,7 +4084,6 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
     0,                                      // Associated Stream ID
     ConvertRequestPriorityToSpdyPriority(
         LOWEST, spdy_util_.spdy_version()),
-    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
     RST_STREAM_INVALID,                     // Status
@@ -4191,7 +4190,6 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
     0,                                      // Associated Stream ID
     ConvertRequestPriorityToSpdyPriority(
         LOWEST, spdy_util_.spdy_version()),
-    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_NONE,                      // Control Flags
     false,                                  // Compressed
     RST_STREAM_INVALID,                     // Status

@@ -20,8 +20,6 @@
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 
-// TODO(akalin): Remove support for CREDENTIAL frames.
-
 typedef struct z_stream_s z_stream;  // Forward declaration for zlib.
 
 namespace net {

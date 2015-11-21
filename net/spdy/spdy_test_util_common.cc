@@ -849,7 +849,6 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
     stream_id,
     associated_stream_id,
     ConvertRequestPriorityToSpdyPriority(request_priority, spdy_version_),
-    0,  // credential slot
     flags,
     compressed,
     RST_STREAM_INVALID,  // status
@@ -1313,7 +1312,6 @@ const SpdyHeaderInfo SpdyTestUtil::MakeSpdyHeader(SpdyFrameType type) {
     1,                            // Stream ID
     0,                            // Associated stream ID
     ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_version_),
-    kSpdyCredentialSlotUnused,
     CONTROL_FLAG_FIN,             // Control Flags
     false,                        // Compressed
     RST_STREAM_INVALID,

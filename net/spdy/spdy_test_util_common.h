@@ -136,15 +136,12 @@ class StreamReleaserCallback : public TestCompletionCallbackBase {
   void OnComplete(SpdyStreamRequest* request, int result);
 };
 
-const size_t kSpdyCredentialSlotUnused = 0;
-
 // This struct holds information used to construct spdy control and data frames.
 struct SpdyHeaderInfo {
   SpdyFrameType kind;
   SpdyStreamId id;
   SpdyStreamId assoc_id;
   SpdyPriority priority;
-  size_t credential_slot;  // SPDY3 only
   SpdyControlFlags control_flags;
   bool compressed;
   SpdyRstStreamStatus status;

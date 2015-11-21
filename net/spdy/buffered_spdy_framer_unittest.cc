@@ -118,11 +118,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     goaway_debug_data_.assign(debug_data.data(), debug_data.size());
   }
 
-  bool OnCredentialFrameData(const char*, size_t) {
-    LOG(FATAL) << "Unexpected OnCredentialFrameData call.";
-    return false;
-  }
-
   void OnDataFrameHeader(const SpdyFrame* frame) {
     LOG(FATAL) << "Unexpected OnDataFrameHeader call.";
   }
@@ -146,8 +141,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return true;
   }
-
-  void OnCredential(const SpdyFrame& frame) {}
 
   // Convenience function which runs a framer simulation with particular input.
   void SimulateInFramer(const unsigned char* input, size_t size) {

@@ -399,8 +399,6 @@ SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
           return RST_STREAM_STREAM_IN_USE;
         case 9:
           return RST_STREAM_STREAM_ALREADY_CLOSED;
-        case 10:
-          return RST_STREAM_INVALID_CREDENTIALS;
         case 11:
           return RST_STREAM_FRAME_TOO_LARGE;
       }
@@ -462,8 +460,6 @@ int SpdyConstants::SerializeRstStreamStatus(
           return 8;
         case RST_STREAM_STREAM_ALREADY_CLOSED:
           return 9;
-        case RST_STREAM_INVALID_CREDENTIALS:
-          return 10;
         case RST_STREAM_FRAME_TOO_LARGE:
           return 11;
         default:

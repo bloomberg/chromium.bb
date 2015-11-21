@@ -4265,72 +4265,6 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   EXPECT_EQ(2, visitor.last_window_update_delta_);
 }
 
-TEST_P(SpdyFramerTest, ReceiveCredentialFrame) {
-  if (!IsSpdy3()) {
-    return;
-  }
-  SpdyFramer framer(spdy_version_);
-  const unsigned char kV3FrameData[] = {  // Also applies for V2.
-      0x80, spdy_version_ch_, 0x00, 0x0A,
-      0x00, 0x00, 0x00, 0x33,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-  };
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  visitor.SimulateInFramer(kV3FrameData, arraysize(kV3FrameData));
-  EXPECT_EQ(0, visitor.error_count_);
-}
-
-TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
-  if (!IsSpdy3()) {
-    return;
-  }
-  SpdyFramer framer(spdy_version_);
-  const unsigned char kV3FrameData[] = {  // Also applies for V2.
-      0x80, spdy_version_ch_, 0x00, 0x0A,
-      0x00, 0x00, 0x00, 0x33,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-  };
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  string multiple_frame_data(reinterpret_cast<const char*>(kV3FrameData),
-                             arraysize(kV3FrameData));
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.SerializeWindowUpdate(SpdyWindowUpdateIR(1, 2)));
-  multiple_frame_data.append(string(control_frame->data(),
-                                    control_frame->size()));
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned const char*>(multiple_frame_data.data()),
-      multiple_frame_data.length());
-  EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1u, visitor.last_window_update_stream_);
-  EXPECT_EQ(2, visitor.last_window_update_delta_);
-}
-
 TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
   if (spdy_version_ <= SPDY3) {
     return;
@@ -4922,8 +4856,6 @@ TEST_P(SpdyFramerTest, FrameTypeToStringTest) {
                SpdyFramer::FrameTypeToString(WINDOW_UPDATE));
   EXPECT_STREQ("PUSH_PROMISE",
                SpdyFramer::FrameTypeToString(PUSH_PROMISE));
-  EXPECT_STREQ("CREDENTIAL",
-               SpdyFramer::FrameTypeToString(CREDENTIAL));
   EXPECT_STREQ("CONTINUATION",
                SpdyFramer::FrameTypeToString(CONTINUATION));
 }

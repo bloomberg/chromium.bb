@@ -300,7 +300,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyPriority priority;
     SpdyStreamId parent_stream_id;
     bool exclusive;
-    uint8 credential_slot;
     bool fin;
     bool unidirectional;
   };

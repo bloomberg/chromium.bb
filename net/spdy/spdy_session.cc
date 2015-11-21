@@ -417,8 +417,6 @@ SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
       return STATUS_CODE_STREAM_IN_USE;
     case RST_STREAM_STREAM_ALREADY_CLOSED:
       return STATUS_CODE_STREAM_ALREADY_CLOSED;
-    case RST_STREAM_INVALID_CREDENTIALS:
-      return STATUS_CODE_INVALID_CREDENTIALS;
     case RST_STREAM_FRAME_SIZE_ERROR:
       return STATUS_CODE_FRAME_SIZE_ERROR;
     case RST_STREAM_SETTINGS_TIMEOUT:
@@ -1069,7 +1067,6 @@ void SpdySession::EnqueueStreamWrite(
     scoped_ptr<SpdyBufferProducer> producer) {
   DCHECK(frame_type == HEADERS ||
          frame_type == DATA ||
-         frame_type == CREDENTIAL ||
          frame_type == SYN_STREAM);
   EnqueueWrite(stream->priority(), frame_type, producer.Pass(), stream);
 }
