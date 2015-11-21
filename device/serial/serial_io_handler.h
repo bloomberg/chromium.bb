@@ -190,6 +190,16 @@ class SerialIoHandler : public base::NonThreadSafe,
   // Possibly fixes up a serial port path name in a platform-specific manner.
   static std::string MaybeFixUpPortName(const std::string& port_name);
 
+  base::SingleThreadTaskRunner* file_thread_task_runner() const {
+    return file_thread_task_runner_.get();
+  }
+
+  base::SingleThreadTaskRunner* ui_thread_task_runner() const {
+    return ui_thread_task_runner_.get();
+  }
+
+  const std::string& port() const { return port_; }
+
  private:
   friend class base::RefCounted<SerialIoHandler>;
 
@@ -228,6 +238,8 @@ class SerialIoHandler : public base::NonThreadSafe,
   scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
   // On Chrome OS, PermissionBrokerClient should be called on the UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
+
+  std::string port_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandler);
 };

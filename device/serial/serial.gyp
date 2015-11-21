@@ -51,6 +51,7 @@
         '../../net/net.gyp:net',
         '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../third_party/re2/re2.gyp:re2',
+        '../core/core.gyp:device_core',
       ],
       'export_dependent_settings': [
         'device_serial_mojo',

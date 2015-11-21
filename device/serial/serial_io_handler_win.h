@@ -32,6 +32,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
   bool PostOpen() override;
 
  private:
+  class UiThreadHelper;
   friend class SerialIoHandler;
 
   explicit SerialIoHandlerWin(
@@ -43,6 +44,8 @@ class SerialIoHandlerWin : public SerialIoHandler,
   void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                      DWORD bytes_transfered,
                      DWORD error) override;
+
+  void OnDeviceRemoved(const std::string& device_path);
 
   // Context used for asynchronous WaitCommEvent calls.
   scoped_ptr<base::MessageLoopForIO::IOContext> comm_context_;
@@ -60,6 +63,11 @@ class SerialIoHandlerWin : public SerialIoHandler,
   // WaitCommEvent, as opposed to waiting on actual ReadFile completion
   // after a corresponding WaitCommEvent has completed.
   bool is_comm_pending_;
+
+  // The helper lives on the UI thread and holds a weak reference back to the
+  // handler that owns it.
+  UiThreadHelper* helper_ = nullptr;
+  base::WeakPtrFactory<SerialIoHandlerWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerWin);
 };
