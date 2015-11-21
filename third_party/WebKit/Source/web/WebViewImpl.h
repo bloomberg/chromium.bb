@@ -721,7 +721,6 @@ private:
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
     GraphicsLayer* m_rootGraphicsLayer;
-    GraphicsLayer* m_rootTransformLayer;
     OwnPtr<GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_matchesHeuristicsForGpuRasterization;
     // If true, the graphics context is being restored.

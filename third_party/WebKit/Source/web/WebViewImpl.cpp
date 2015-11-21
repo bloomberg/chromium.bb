@@ -433,7 +433,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(nullptr)
     , m_rootLayer(nullptr)
     , m_rootGraphicsLayer(nullptr)
-    , m_rootTransformLayer(nullptr)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
@@ -4145,7 +4144,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     if (layer) {
         m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
         m_rootLayer = m_rootGraphicsLayer->platformLayer();
-        m_rootTransformLayer = m_rootGraphicsLayer;
         updateRootLayerTransform();
         m_layerTreeView->setRootLayer(*m_rootLayer);
         // We register viewport layers here since there may not be a layer
@@ -4161,7 +4159,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     } else {
         m_rootGraphicsLayer = nullptr;
         m_rootLayer = nullptr;
-        m_rootTransformLayer = nullptr;
         // This means that we're transitioning to a new page. Suppress
         // commits until Blink generates invalidations so we don't
         // attempt to paint too early in the next page load.
@@ -4340,16 +4337,11 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor()
 
 void WebViewImpl::updateRootLayerTransform()
 {
-    // If we don't have a root graphics layer, we won't bother trying to find
-    // or update the transform layer.
-    if (!m_rootGraphicsLayer)
-        return;
-
-    if (m_rootTransformLayer) {
+    if (m_rootGraphicsLayer) {
         TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
-        m_rootTransformLayer->setTransform(transform);
+        m_rootGraphicsLayer->setTransform(transform);
     }
 }
 
