@@ -131,7 +131,12 @@ void AutoscrollController::updateAutoscrollLayoutObject()
 
     while (layoutObject && !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll()))
         layoutObject = layoutObject->parent();
-    m_autoscrollLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
+
+    LayoutBox* autoscrollLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
+    if (m_autoscrollLayoutObject && !autoscrollLayoutObject)
+        stopAutoscrollIfNeeded(m_autoscrollLayoutObject);
+
+    m_autoscrollLayoutObject = autoscrollLayoutObject;
 }
 
 void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
