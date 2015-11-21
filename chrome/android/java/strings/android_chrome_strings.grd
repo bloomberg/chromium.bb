@@ -1932,6 +1932,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_NTP_BUTTON_NAME" desc="Text for saved pages button on the new tab page [CHAR-LIMIT=20]">
         Saved pages
       </message>
+      <message name="IDS_OFFLINE_PAGES_NTP_BUTTON_ACCESSIBILITY" desc="Content description for saved pages button on the new tab page.">
+        Saved pages
+      </message>
       <message name="IDS_OFFLINE_PAGES_OPEN_STORAGE_SETTINGS_DIALOG_TEXT" desc="Text of the dialog asking if the user wants to open storage settings to remove files to make space.">
         Your device storage is full. Please remove other media to make space.
       </message>
