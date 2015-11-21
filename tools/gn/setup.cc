@@ -148,6 +148,42 @@ void DecrementWorkCount() {
   g_scheduler->DecrementWorkCount();
 }
 
+#if defined(OS_WIN)
+const base::char16 kPythonExeName[] = L"python.exe";
+
+base::FilePath FindWindowsPython() {
+  base::char16 current_directory[MAX_PATH];
+  ::GetCurrentDirectory(MAX_PATH, current_directory);
+
+  // First search for python.exe in the current directory.
+  base::FilePath cur_dir_candidate_exe =
+      base::FilePath(current_directory).Append(kPythonExeName);
+  if (base::PathExists(cur_dir_candidate_exe))
+    return cur_dir_candidate_exe;
+
+  // Get the path.
+  const base::char16 kPathEnvVarName[] = L"Path";
+  DWORD path_length = ::GetEnvironmentVariable(kPathEnvVarName, nullptr, 0);
+  if (path_length == 0)
+    return base::FilePath();
+  scoped_ptr<base::char16[]> full_path(new base::char16[path_length]);
+  DWORD actual_path_length =
+      ::GetEnvironmentVariable(kPathEnvVarName, full_path.get(), path_length);
+  CHECK_EQ(path_length, actual_path_length + 1);
+
+  // Search for python.exe in the path.
+  for (const auto& component : base::SplitStringPiece(
+           base::StringPiece16(full_path.get(), path_length), L";",
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    base::FilePath candidate_exe =
+        base::FilePath(component).Append(kPythonExeName);
+    if (base::PathExists(candidate_exe))
+      return candidate_exe;
+  }
+  return base::FilePath();
+}
+#endif
+
 }  // namespace
 
 const char Setup::kBuildArgFileName[] = "args.gn";
@@ -478,21 +514,13 @@ void Setup::FillPythonPath() {
   // Trace this since it tends to be a bit slow on Windows.
   ScopedTrace setup_trace(TraceItem::TRACE_SETUP, "Fill Python Path");
 #if defined(OS_WIN)
-  // Find Python on the path so we can use the absolute path in the build.
-  const base::char16 kGetPython[] =
-      L"cmd.exe /c python -c \"import sys; print sys.executable\"";
-  std::string python_path;
-  if (base::GetAppOutput(kGetPython, &python_path)) {
-    base::TrimWhitespaceASCII(python_path, base::TRIM_ALL, &python_path);
-    if (scheduler_.verbose_logging())
-      scheduler_.Log("Found python", python_path);
-  } else {
+  base::FilePath python_path = FindWindowsPython();
+  if (python_path.empty()) {
     scheduler_.Log("WARNING", "Could not find python on path, using "
         "just \"python.exe\"");
-    python_path = "python.exe";
+    python_path = base::FilePath(kPythonExeName);
   }
-  build_settings_.set_python_path(base::FilePath(base::UTF8ToUTF16(python_path))
-                                      .NormalizePathSeparatorsTo('/'));
+  build_settings_.set_python_path(python_path.NormalizePathSeparatorsTo('/'));
 #else
   build_settings_.set_python_path(base::FilePath("python"));
 #endif
