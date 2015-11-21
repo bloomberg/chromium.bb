@@ -9,7 +9,7 @@ function test()
     function check(text) {
         InspectorTest.addResult("");
         InspectorTest.addResult("Input: " + text);
-        var parsedJSON = WebInspector.RequestJSONView.parseJSON(text);
+        var parsedJSON = WebInspector.JSONView.parseJSON(text);
         if (!parsedJSON) {
             InspectorTest.addResult("Can't parse");
             return;

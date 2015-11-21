@@ -6,7 +6,7 @@
 function test() {
     function check(jsonText)
     {
-        var result = WebInspector.RequestJSONView.parseJSON(jsonText);
+        var result = WebInspector.JSONView.parseJSON(jsonText);
         InspectorTest.addResult("");
         InspectorTest.addResult("Input: " + jsonText);
         if (!result) {

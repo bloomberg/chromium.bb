@@ -18,7 +18,7 @@ function test()
     {
         var previewView = new WebInspector.RequestPreviewView(request, null);
         var previewer = previewView._createPreviewView();
-        InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer instanceof WebInspector.RequestJSONView));
+        InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer instanceof WebInspector.JSONView));
     }
 
     function testType(contentType, callback)
