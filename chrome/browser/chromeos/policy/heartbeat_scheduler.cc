@@ -27,14 +27,26 @@ const char* kHeartbeatGCMAppID = "com.google.chromeos.monitoring";
 const char* kHeartbeatGCMDestinationID = "1013309121859";
 const char* kHeartbeatGCMSenderSuffix = "@google.com";
 
-const char* kMonitoringMessageTypeKey = "type";
+// Destination of upstream notification sign up message.
+const char* kUpstreamNotificationSignUpDestinationID =
+    "https://gcm.googleapis.com/gcm/gcm.event_tracker";
+
+// A bit mask, listening events of upstream notification.
+const char* kUpstreamNotificationSignUpListeningEvents =
+    "7";  // START | DISCONNECTED | HEARTBEAT
+
+const char* kGcmMessageTypeKey = "type";
 const char* kHeartbeatTimestampKey = "timestamp";
 const char* kHeartbeatDomainNameKey = "domain_name";
 const char* kHeartbeatDeviceIDKey = "device_id";
 const char* kHeartbeatTypeValue = "hb";
+const char* kUpstreamNotificationNotifyKey = "notify";
 
 // If we get an error registering with GCM, try again in two minutes.
 const int64 kRegistrationRetryDelayMs = 2 * 60 * 1000;
+
+const char* kHeartbeatSchedulerScope =
+    "policy.heartbeat_scheduler.upstream_notification";
 
 // Returns the destination ID for GCM heartbeats.
 std::string GetDestinationID() {
@@ -212,9 +224,13 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // value because CrosSettings can become untrusted at arbitrary times and we
   // want to use the last trusted value).
   int frequency;
-  if (settings->GetInteger(chromeos::kHeartbeatFrequency, &frequency))
+  if (settings->GetInteger(chromeos::kHeartbeatFrequency, &frequency)) {
     heartbeat_interval_ = EnsureValidHeartbeatInterval(
         base::TimeDelta::FromMilliseconds(frequency));
+  }
+
+  gcm_driver_->AddHeartbeatInterval(kHeartbeatSchedulerScope,
+                                    heartbeat_interval_.InMilliseconds());
 
   bool enabled;
   if (settings->GetBoolean(chromeos::kHeartbeatEnabled, &enabled))
@@ -241,7 +257,9 @@ void HeartbeatScheduler::ShutdownGCM() {
   registration_id_.clear();
   if (registered_app_handler_) {
     registered_app_handler_ = false;
+    gcm_driver_->RemoveHeartbeatInterval(kHeartbeatSchedulerScope);
     gcm_driver_->RemoveAppHandler(kHeartbeatGCMAppID);
+    gcm_driver_->RemoveConnectionObserver(this);
   }
 }
 
@@ -274,6 +292,7 @@ void HeartbeatScheduler::ScheduleNextHeartbeat() {
       // a GCM connection.
       registered_app_handler_ = true;
       gcm_driver_->AddAppHandler(kHeartbeatGCMAppID, this);
+      gcm_driver_->AddConnectionObserver(this);
       registration_helper_.reset(new HeartbeatRegistrationHelper(
           gcm_driver_, task_runner_));
       registration_helper_->Register(
@@ -308,6 +327,7 @@ void HeartbeatScheduler::OnRegistrationComplete(
         registration_id,
         base::Bind(&HeartbeatScheduler::OnGcmIdUpdateRequestSent,
                    weak_factory_.GetWeakPtr()));
+    SignUpUpstreamNotification();
   }
 
   // Now that GCM registration is complete, start sending heartbeats.
@@ -328,7 +348,7 @@ void HeartbeatScheduler::SendHeartbeat() {
   // https://developer.chrome.com/apps/cloudMessaging#send_messages
   message.id = base::Int64ToString(
       base::Time::NowFromSystemTime().ToInternalValue());
-  message.data[kMonitoringMessageTypeKey] = kHeartbeatTypeValue;
+  message.data[kGcmMessageTypeKey] = kHeartbeatTypeValue;
   message.data[kHeartbeatTimestampKey] = base::Int64ToString(
       base::Time::NowFromSystemTime().ToJavaTime());
   message.data[kHeartbeatDomainNameKey] = enrollment_domain_;
@@ -337,6 +357,24 @@ void HeartbeatScheduler::SendHeartbeat() {
                     GetDestinationID() + kHeartbeatGCMSenderSuffix,
                     message,
                     base::Bind(&HeartbeatScheduler::OnHeartbeatSent,
+                               weak_factory_.GetWeakPtr()));
+}
+
+void HeartbeatScheduler::SignUpUpstreamNotification() {
+  DCHECK(gcm_driver_);
+
+  if (registration_id_.empty())
+    return;
+
+  gcm::OutgoingMessage message;
+  message.id =
+      base::Int64ToString(base::Time::NowFromSystemTime().ToInternalValue());
+  message.data[kGcmMessageTypeKey] = kUpstreamNotificationSignUpListeningEvents;
+  message.data[kUpstreamNotificationNotifyKey] =
+      GetDestinationID() + kHeartbeatGCMSenderSuffix;
+  gcm_driver_->Send(kHeartbeatGCMAppID,
+                    kUpstreamNotificationSignUpDestinationID, message,
+                    base::Bind(&HeartbeatScheduler::OnUpstreamNotificationSent,
                                weak_factory_.GetWeakPtr()));
 }
 
@@ -349,6 +387,14 @@ void HeartbeatScheduler::OnHeartbeatSent(const std::string& message_id,
       "Error sending monitoring heartbeat: " << result;
   last_heartbeat_ = base::Time::NowFromSystemTime();
   ScheduleNextHeartbeat();
+}
+
+void HeartbeatScheduler::OnUpstreamNotificationSent(
+    const std::string& message_id,
+    gcm::GCMClient::Result result) {
+  DVLOG(1) << "Upstream notification signup message sent - result = " << result;
+  DLOG_IF(ERROR, result != gcm::GCMClient::SUCCESS)
+      << "Error sending upstream notification signup message: " << result;
 }
 
 HeartbeatScheduler::~HeartbeatScheduler() {
@@ -383,6 +429,10 @@ void HeartbeatScheduler::OnSendError(
 void HeartbeatScheduler::OnSendAcknowledged(const std::string& app_id,
                                             const std::string& message_id) {
   DVLOG(1) << "Heartbeat sent with message_id: " << message_id;
+}
+
+void HeartbeatScheduler::OnConnected(const net::IPEndPoint&) {
+  SignUpUpstreamNotification();
 }
 
 void HeartbeatScheduler::OnGcmIdUpdateRequestSent(bool success) {
