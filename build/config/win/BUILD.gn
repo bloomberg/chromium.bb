@@ -13,11 +13,12 @@ assert(is_win)
 # Windows-only.
 config("compiler") {
   asmflags = [
-    # When /SAFESEH is specified, the linker will only produce an image if it
+    # When /safeseh is specified, the linker will only produce an image if it
     # can also produce a table of the image's safe exception handlers. This
     # table specifies for the operating system which exception handlers are
-    # valid for the image.
-    "/SAFESEH",
+    # valid for the image. Note that /SAFESEH isn't accepted on the command
+    # line, only /safeseh.
+    "/safeseh",
   ]
 
   cflags = [
