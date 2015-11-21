@@ -27,6 +27,31 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
+static PassRefPtr<SkImage> cropImage(PassRefPtr<SkImage> image, const IntRect& cropRect)
+{
+    ASSERT(image);
+
+    IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
+    const IntRect srcRect = intersection(imgRect, cropRect);
+
+    if (cropRect == srcRect)
+        return adoptRef(image->newSubset(srcRect));
+
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
+
+    if (srcRect.isEmpty())
+        return adoptRef(surface->newImageSnapshot());
+
+    SkScalar dstLeft = std::min(0, -cropRect.x());
+    SkScalar dstTop = std::min(0, -cropRect.y());
+    if (cropRect.x() < 0)
+        dstLeft = -cropRect.x();
+    if (cropRect.y() < 0)
+        dstTop = -cropRect.y();
+    surface->getCanvas()->drawImage(image.get(), dstLeft, dstTop);
+    return adoptRef(surface->newImageSnapshot());
+}
+
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 {
     m_image = cropImage(image->cachedImage()->image()->imageForCurrentFrame(), cropRect);
@@ -127,31 +152,6 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(Image* image, const IntR
     return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));
 }
 
-PassRefPtr<SkImage> ImageBitmap::cropImage(PassRefPtr<SkImage> image, const IntRect& cropRect)
-{
-    ASSERT(image);
-
-    IntRect imgRect = IntRect(IntPoint(), IntSize(image->width(), image->height()));
-    const IntRect srcRect = intersection(imgRect, cropRect);
-
-    if (cropRect == srcRect)
-        return adoptRef(image->newSubset(srcRect));
-
-    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
-
-    if (srcRect.isEmpty())
-        return adoptRef(surface->newImageSnapshot());
-
-    SkScalar dstLeft = std::min(0, -cropRect.x());
-    SkScalar dstTop = std::min(0, -cropRect.y());
-    if (cropRect.x() < 0)
-        dstLeft = -cropRect.x();
-    if (cropRect.y() < 0)
-        dstTop = -cropRect.y();
-    surface->getCanvas()->drawImage(image.get(), dstLeft, dstTop);
-    return adoptRef(surface->newImageSnapshot());
-}
-
 unsigned long ImageBitmap::width() const
 {
     if (!m_image)
@@ -188,7 +188,6 @@ PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status
 
 void ImageBitmap::adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const
 {
-
 }
 
 FloatSize ImageBitmap::elementSize() const

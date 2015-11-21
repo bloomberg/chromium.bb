@@ -57,8 +57,6 @@ private:
     ImageBitmap(ImageBitmap*, const IntRect&);
     ImageBitmap(Image*, const IntRect&);
 
-    PassRefPtr<SkImage> cropImage(PassRefPtr<SkImage>, const IntRect&);
-
     // ImageLoaderClient
     void notifyImageSourceChanged() override;
     bool requestsHighLiveResourceCachePriority() override { return true; }
