@@ -66,6 +66,13 @@
             'exo/wayland/server.cc',
             'exo/wayland/server.h',
           ],
+          'conditions': [
+            ['use_ozone==1', {
+              'dependencies': [
+                '../third_party/mesa/mesa.gyp:wayland_drm_protocol',
+              ],
+            }],
+          ],
         },
       ],
     }],

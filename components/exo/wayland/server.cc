@@ -20,6 +20,10 @@
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
+#if defined(USE_OZONE)
+#include <wayland-drm-server-protocol.h>
+#endif
+
 namespace exo {
 namespace wayland {
 namespace {
@@ -270,7 +274,7 @@ void shm_pool_create_buffer(wl_client* client,
                             int32_t height,
                             int32_t stride,
                             uint32_t format) {
-  const auto supported_format =
+  const auto* supported_format =
       std::find_if(shm_supported_formats,
                    shm_supported_formats + arraysize(shm_supported_formats),
                    [format](const shm_supported_format& supported_format) {
@@ -363,6 +367,123 @@ void bind_shm(wl_client* client, void* data, uint32_t version, uint32_t id) {
   for (const auto& supported_format : shm_supported_formats)
     wl_shm_send_format(resource, supported_format.shm_format);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_drm_interface:
+
+#if defined(USE_OZONE)
+const struct drm_supported_format {
+  uint32_t drm_format;
+  gfx::BufferFormat buffer_format;
+} drm_supported_formats[] = {
+    {WL_DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
+    {WL_DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
+    {WL_DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
+    {WL_DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888}};
+
+void drm_authenticate(wl_client* client, wl_resource* resource, uint32_t id) {
+  wl_drm_send_authenticated(resource);
+}
+
+void drm_create_buffer(wl_client* client,
+                       wl_resource* resource,
+                       uint32_t id,
+                       uint32_t name,
+                       int32_t width,
+                       int32_t height,
+                       uint32_t stride,
+                       uint32_t format) {
+  wl_resource_post_error(resource, WL_DRM_ERROR_INVALID_NAME,
+                         "GEM names are not supported");
+}
+
+void drm_create_planar_buffer(wl_client* client,
+                              wl_resource* resource,
+                              uint32_t id,
+                              uint32_t name,
+                              int32_t width,
+                              int32_t height,
+                              uint32_t format,
+                              int32_t offset0,
+                              int32_t stride0,
+                              int32_t offset1,
+                              int32_t stride1,
+                              int32_t offset2,
+                              int32_t stride3) {
+  wl_resource_post_error(resource, WL_DRM_ERROR_INVALID_NAME,
+                         "GEM names are not supported");
+}
+
+void drm_create_prime_buffer(wl_client* client,
+                             wl_resource* resource,
+                             uint32_t id,
+                             int32_t name,
+                             int32_t width,
+                             int32_t height,
+                             uint32_t format,
+                             int32_t offset0,
+                             int32_t stride0,
+                             int32_t offset1,
+                             int32_t stride1,
+                             int32_t offset2,
+                             int32_t stride2) {
+  const auto* supported_format =
+      std::find_if(drm_supported_formats,
+                   drm_supported_formats + arraysize(drm_supported_formats),
+                   [format](const drm_supported_format& supported_format) {
+                     return supported_format.drm_format == format;
+                   });
+  if (supported_format ==
+      (drm_supported_formats + arraysize(drm_supported_formats))) {
+    wl_resource_post_error(resource, WL_DRM_ERROR_INVALID_FORMAT,
+                           "invalid format 0x%x", format);
+    return;
+  }
+
+  scoped_ptr<Buffer> buffer =
+      GetUserDataAs<Display>(resource)
+          ->CreatePrimeBuffer(base::ScopedFD(name), gfx::Size(width, height),
+                              supported_format->buffer_format, stride0);
+  if (!buffer) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  wl_resource* buffer_resource =
+      wl_resource_create(client, &wl_buffer_interface, 1, id);
+  if (!buffer_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  buffer->set_release_callback(
+      base::Bind(&wl_buffer_send_release, base::Unretained(buffer_resource)));
+
+  SetImplementation(buffer_resource, &buffer_implementation, buffer.Pass());
+}
+
+const struct wl_drm_interface drm_implementation = {
+    drm_authenticate, drm_create_buffer, drm_create_planar_buffer,
+    drm_create_prime_buffer};
+
+const uint32_t drm_version = 2;
+
+void bind_drm(wl_client* client, void* data, uint32_t version, uint32_t id) {
+  wl_resource* resource = wl_resource_create(
+      client, &wl_drm_interface, std::min(version, drm_version), id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  wl_resource_set_implementation(resource, &drm_implementation, data, nullptr);
+
+  if (version >= 2)
+    wl_drm_send_capabilities(resource, WL_DRM_CAPABILITY_PRIME);
+
+  for (const auto& supported_format : drm_supported_formats)
+    wl_drm_send_format(resource, supported_format.drm_format);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_subsurface_interface:
@@ -584,6 +705,10 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    compositor_version, display_, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
+#if defined(USE_OZONE)
+  wl_global_create(wl_display_.get(), &wl_drm_interface, drm_version, display_,
+                   bind_drm);
+#endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,

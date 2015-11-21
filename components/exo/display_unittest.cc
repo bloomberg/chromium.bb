@@ -11,6 +11,12 @@
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/native_pixmap.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#endif
+
 namespace exo {
 namespace {
 
@@ -45,6 +51,33 @@ TEST_F(DisplayTest, CreateSharedMemory) {
       display->CreateSharedMemory(base::SharedMemoryHandle(), shm_size);
   EXPECT_FALSE(shm2);
 }
+
+#if defined(USE_OZONE)
+TEST_F(DisplayTest, CreatePrimeBuffer) {
+  const gfx::Size buffer_size(256, 256);
+
+  scoped_ptr<Display> display(new Display);
+
+  // Creating a prime buffer from a native pixmap handle should succeed.
+  scoped_refptr<ui::NativePixmap> pixmap =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, buffer_size,
+                               gfx::BufferFormat::RGBA_8888,
+                               gfx::BufferUsage::GPU_READ);
+  gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
+  scoped_ptr<Buffer> buffer1 = display->CreatePrimeBuffer(
+      base::ScopedFD(native_pixmap_handle.fd.fd), buffer_size,
+      gfx::BufferFormat::RGBA_8888, native_pixmap_handle.stride);
+  EXPECT_TRUE(buffer1);
+
+  // Creating a prime buffer using an invalid fd should fail.
+  scoped_ptr<Buffer> buffer2 = display->CreatePrimeBuffer(
+      base::ScopedFD(), buffer_size, gfx::BufferFormat::RGBA_8888,
+      buffer_size.width() * 4);
+  EXPECT_FALSE(buffer2);
+}
+#endif
 
 TEST_F(DisplayTest, CreateShellSurface) {
   scoped_ptr<Display> display(new Display);
