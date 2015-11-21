@@ -346,9 +346,4 @@ private:
 
 } // namespace blink
 
-// During refactoring, there are some places where we need to do type conversions that
-// will not be needed once all instances of LocalFrame and RemoteFrame are sorted out.
-// At that time this #define will be removed and all the uses of it will need to be corrected.
-#define toLocalFrameTemporary toLocalFrame
-
 #endif // LocalFrame_h
