@@ -99,4 +99,9 @@ Polymer({
   resetTheme_: function() {
     chrome.send('resetTheme');
   },
+
+  /** @private */
+  showFontsPage_: function() {
+    return this.currentRoute.subpage[0] == 'appearance-fonts';
+  },
 });

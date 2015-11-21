@@ -93,8 +93,11 @@
       <neon-animatable id="appearance-fonts">
         <settings-subheader i18n-values="page-title:customizeFonts">
         </settings-subheader>
-        <settings-appearance-fonts-page prefs="{{prefs}}">
-        </settings-appearance-fonts-page>
+        <template is="dom-if" if="[[showFontsPage_(currentRoute.subpage.*)]]"
+            restamp>
+          <settings-appearance-fonts-page prefs="{{prefs}}">
+          </settings-appearance-fonts-page>
+        </template>
       </neon-animatable>
     </settings-animated-pages>
   </template>
