@@ -847,10 +847,8 @@ void WebContentsViewAura::CreateView(
     // It should be OK to not set a default parent since such users will
     // explicitly add this WebContentsViewAura to their tree after they create
     // us.
-    if (root_window) {
-      aura::client::ParentWindowWithContext(
-          window_.get(), root_window, root_window->GetBoundsInScreen());
-    }
+    aura::client::ParentWindowWithContext(window_.get(), root_window,
+                                          root_window->GetBoundsInScreen());
   }
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
