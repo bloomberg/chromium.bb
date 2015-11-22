@@ -829,7 +829,12 @@ group("chromium_builder_perf") {
       deps += [ "//chrome/test:performance_browser_tests" ]
     }
     if (is_linux && !is_chromeos) {
-      deps += [ "//chrome:linux_symbols" ]
+      if (is_official_build) {
+        # In GN builds, this is controlled by the 'linux_dump_symbols'
+        # flag, which defaults to 1 for official builds. For now,
+        # we skip the separate flag and just key off of is_official_build.
+        deps += [ "//chrome:linux_symbols" ]
+      }
 
       if (!is_chromeos) {
         deps += [ "//tools/perf/clear_system_cache" ]

@@ -81,8 +81,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
 
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(handle.release().value())),
-        "exe:application_manager_apptest_target",
-        "0");
+        "exe:application_manager_apptest_target");
     // Put the other end on the command line used to launch the target.
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);

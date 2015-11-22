@@ -97,6 +97,7 @@ group("tests") {
   deps += [
     "//mojo/package_manager:unittests",
     "//mojo/services/network:apptests",
+    "//mojo/shell:apptests",
     "//mojo/shell:mojo_shell_unittests",
   ]
 

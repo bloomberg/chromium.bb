@@ -25,9 +25,9 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate {
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
     CreateInstanceForHandleTestPtr service;
-    app->ConnectToService(
-        mojo::URLRequest::From(std::string("mojo:mojo_shell_apptests")),
-        &service);
+    mojo::ApplicationImpl::ConnectParams params(
+        std::string("mojo:mojo_shell_apptests"));
+    app->ConnectToService(&params, &service);
     service->Ping("From Target");
   }
   bool ConfigureIncomingConnection(
