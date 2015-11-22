@@ -4,17 +4,6 @@
 
 #include "net/http/transport_security_state.h"
 
-#if defined(USE_OPENSSL)
-#include <openssl/ecdsa.h>
-#include <openssl/ssl.h>
-#else  // !defined(USE_OPENSSL)
-#include <cryptohi.h>
-#include <hasht.h>
-#include <keyhi.h>
-#include <nspr.h>
-#include <pk11pub.h>
-#endif
-
 #include <algorithm>
 
 #include "base/base64.h"
@@ -38,10 +27,6 @@
 #include "net/http/http_security_headers.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
-
-#if defined(USE_OPENSSL)
-#include "crypto/openssl_util.h"
-#endif
 
 namespace net {
 
