@@ -432,8 +432,8 @@ source_set("browser") {
     sources += [
       "compositor/software_output_device_mus.cc",
       "compositor/software_output_device_mus.h",
-      "frame_host/render_widget_host_view_mus.cc",
-      "frame_host/render_widget_host_view_mus.h",
+      "renderer_host/render_widget_host_view_mus.cc",
+      "renderer_host/render_widget_host_view_mus.h",
       "web_contents/web_contents_view_mus.cc",
       "web_contents/web_contents_view_mus.h",
     ]

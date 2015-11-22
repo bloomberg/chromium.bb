@@ -5,7 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_mus.h"
 
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_widget_host_view_mus.h"
+#include "content/browser/renderer_host/render_widget_host_view_mus.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
