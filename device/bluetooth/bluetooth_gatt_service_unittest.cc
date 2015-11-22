@@ -26,10 +26,10 @@ TEST_F(BluetoothGattServiceTest, GetIdentifier) {
   // 2 devices to verify unique IDs across them.
   BluetoothDevice* device1 = DiscoverLowEnergyDevice(3);
   BluetoothDevice* device2 = DiscoverLowEnergyDevice(4);
-  device1->CreateGattConnection(GetGattConnectionCallback(),
-                                GetConnectErrorCallback());
-  device2->CreateGattConnection(GetGattConnectionCallback(),
-                                GetConnectErrorCallback());
+  device1->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device2->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device1);
   SimulateGattConnection(device2);
 
@@ -62,8 +62,8 @@ TEST_F(BluetoothGattServiceTest, GetUUID) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
-  device->CreateGattConnection(GetGattConnectionCallback(),
-                               GetConnectErrorCallback());
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
 
   // Create multiple instances with the same UUID.
@@ -84,8 +84,8 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_FindNone) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
-  device->CreateGattConnection(GetGattConnectionCallback(),
-                               GetConnectErrorCallback());
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
 
   // Simulate a service, with no Characteristics:
@@ -103,8 +103,8 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_and_GetCharacteristic) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
-  device->CreateGattConnection(GetGattConnectionCallback(),
-                               GetConnectErrorCallback());
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
 
   // Simulate a service, with several Characteristics:

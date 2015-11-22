@@ -24,8 +24,8 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
     InitWithFakeAdapter();
     StartLowEnergyDiscoverySession();
     device_ = DiscoverLowEnergyDevice(3);
-    device_->CreateGattConnection(GetGattConnectionCallback(),
-                                  GetConnectErrorCallback());
+    device_->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                  GetConnectErrorCallback(Call::NOT_EXPECTED));
     SimulateGattConnection(device_);
     std::vector<std::string> services;
     std::string uuid("00000000-0000-1000-8000-00805f9b34fb");
@@ -55,10 +55,10 @@ TEST_F(BluetoothGattCharacteristicTest, GetIdentifier) {
   // 2 devices to verify unique IDs across them.
   BluetoothDevice* device1 = DiscoverLowEnergyDevice(3);
   BluetoothDevice* device2 = DiscoverLowEnergyDevice(4);
-  device1->CreateGattConnection(GetGattConnectionCallback(),
-                                GetConnectErrorCallback());
-  device2->CreateGattConnection(GetGattConnectionCallback(),
-                                GetConnectErrorCallback());
+  device1->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device2->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device1);
   SimulateGattConnection(device2);
 
@@ -116,8 +116,8 @@ TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
-  device->CreateGattConnection(GetGattConnectionCallback(),
-                               GetConnectErrorCallback());
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
   std::vector<std::string> services;
   services.push_back("00000000-0000-1000-8000-00805f9b34fb");
@@ -154,8 +154,8 @@ TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
-  device->CreateGattConnection(GetGattConnectionCallback(),
-                               GetConnectErrorCallback());
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
   std::vector<std::string> services;
   std::string uuid("00000000-0000-1000-8000-00805f9b34fb");
@@ -182,8 +182,9 @@ TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_Empty) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicRead(characteristic1_, empty_vector);
@@ -191,8 +192,6 @@ TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_Empty) {
   // Duplicate read reported from OS shouldn't cause a problem:
   SimulateGattCharacteristicRead(characteristic1_, empty_vector);
 
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(empty_vector, last_read_value_);
   EXPECT_EQ(empty_vector, characteristic1_->GetValue());
 }
@@ -204,13 +203,12 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
   SimulateGattCharacteristicWrite(characteristic1_);
 
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 #endif  // defined(OS_ANDROID)
@@ -220,8 +218,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
@@ -232,8 +231,6 @@ TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic) {
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicRead(characteristic1_, empty_vector);
 
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(test_vector, last_read_value_);
   EXPECT_EQ(test_vector, characteristic1_->GetValue());
 }
@@ -246,14 +243,13 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic) {
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
   std::vector<uint8_t> test_vector(values, values + arraysize(values));
-  characteristic1_->WriteRemoteCharacteristic(test_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
 
   SimulateGattCharacteristicWrite(characteristic1_);
 
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(test_vector, last_write_value_);
 }
 #endif  // defined(OS_ANDROID)
@@ -263,8 +259,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic) {
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_Twice) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
@@ -277,8 +274,9 @@ TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_Twice) {
 
   // Read again, with different value:
   ResetEventCounts();
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicRead(characteristic1_, empty_vector);
@@ -296,8 +294,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Twice) {
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
   std::vector<uint8_t> test_vector(values, values + arraysize(values));
-  characteristic1_->WriteRemoteCharacteristic(test_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
 
   SimulateGattCharacteristicWrite(characteristic1_);
@@ -308,8 +307,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Twice) {
   // Write again, with different value:
   ResetEventCounts();
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
   SimulateGattCharacteristicWrite(characteristic1_);
   EXPECT_EQ(1, callback_count_);
@@ -324,10 +324,12 @@ TEST_F(BluetoothGattCharacteristicTest,
        ReadRemoteCharacteristic_MultipleCharacteristics) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
-  characteristic2_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic2_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(2, gatt_read_characteristic_attempts_);
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -357,14 +359,16 @@ TEST_F(BluetoothGattCharacteristicTest,
 
   std::vector<uint8_t> test_vector1;
   test_vector1.push_back(111);
-  characteristic1_->WriteRemoteCharacteristic(test_vector1, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector1, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(test_vector1, last_write_value_);
 
   std::vector<uint8_t> test_vector2;
   test_vector2.push_back(222);
-  characteristic2_->WriteRemoteCharacteristic(test_vector2, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic2_->WriteRemoteCharacteristic(
+      test_vector2, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(test_vector2, last_write_value_);
 
   EXPECT_EQ(2, gatt_write_characteristic_attempts_);
@@ -384,14 +388,13 @@ TEST_F(BluetoothGattCharacteristicTest,
 TEST_F(BluetoothGattCharacteristicTest, ReadError) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
   SimulateGattCharacteristicReadError(
       characteristic1_, BluetoothGattService::GATT_ERROR_INVALID_LENGTH);
   SimulateGattCharacteristicReadError(characteristic1_,
                                       BluetoothGattService::GATT_ERROR_FAILED);
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
@@ -403,14 +406,14 @@ TEST_F(BluetoothGattCharacteristicTest, WriteError) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
   SimulateGattCharacteristicWriteError(
       characteristic1_, BluetoothGattService::GATT_ERROR_INVALID_LENGTH);
   SimulateGattCharacteristicWriteError(characteristic1_,
                                        BluetoothGattService::GATT_ERROR_FAILED);
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
+
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
@@ -422,8 +425,9 @@ TEST_F(BluetoothGattCharacteristicTest, ReadSynchronousError) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   SimulateGattCharacteristicReadWillFailSynchronouslyOnce(characteristic1_);
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
   EXPECT_EQ(0, gatt_read_characteristic_attempts_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
@@ -432,8 +436,9 @@ TEST_F(BluetoothGattCharacteristicTest, ReadSynchronousError) {
 
   // After failing once, can succeed:
   ResetEventCounts();
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicRead(characteristic1_, empty_vector);
@@ -449,8 +454,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteSynchronousError) {
 
   SimulateGattCharacteristicWriteWillFailSynchronouslyOnce(characteristic1_);
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
   EXPECT_EQ(0, gatt_write_characteristic_attempts_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
@@ -459,8 +465,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteSynchronousError) {
 
   // After failing once, can succeed:
   ResetEventCounts();
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
   SimulateGattCharacteristicWrite(characteristic1_);
   EXPECT_EQ(1, callback_count_);
@@ -473,10 +480,15 @@ TEST_F(BluetoothGattCharacteristicTest, WriteSynchronousError) {
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_ReadPending) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_IN_PROGRESS,
@@ -498,10 +510,15 @@ TEST_F(BluetoothGattCharacteristicTest,
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_IN_PROGRESS,
@@ -521,10 +538,15 @@ TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_WritePending) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   std::vector<uint8_t> empty_vector;
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_IN_PROGRESS,
@@ -544,10 +566,14 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_ReadPending) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   std::vector<uint8_t> empty_vector;
-  characteristic1_->ReadRemoteCharacteristic(GetReadValueCallback(),
-                                             GetGattErrorCallback());
-  characteristic1_->WriteRemoteCharacteristic(empty_vector, GetCallback(),
-                                              GetGattErrorCallback());
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothGattService::GATT_ERROR_IN_PROGRESS,
@@ -566,8 +592,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_ReadPending) {
 TEST_F(BluetoothGattCharacteristicTest, StartNotifySession) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->StartNotifySession(GetNotifyCallback(),
-                                       GetGattErrorCallback());
+  characteristic1_->StartNotifySession(
+      GetNotifyCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
   EXPECT_EQ(0, callback_count_);
   SimulateGattNotifySessionStarted(characteristic1_);
@@ -588,8 +615,8 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_SynchronousError) {
 
   SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
       characteristic1_);
-  characteristic1_->StartNotifySession(GetNotifyCallback(),
-                                       GetGattErrorCallback());
+  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
+                                       GetGattErrorCallback(Call::EXPECTED));
   EXPECT_EQ(0, error_callback_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
@@ -604,10 +631,12 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_SynchronousError) {
 TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
-  characteristic1_->StartNotifySession(GetNotifyCallback(),
-                                       GetGattErrorCallback());
-  characteristic1_->StartNotifySession(GetNotifyCallback(),
-                                       GetGattErrorCallback());
+  characteristic1_->StartNotifySession(
+      GetNotifyCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+  characteristic1_->StartNotifySession(
+      GetNotifyCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
 #if defined(OS_ANDROID)
   // TODO(crbug.com/551634): Decide when implementing IsNotifying if Android
   // should trust the notification request always worked, or if we should always

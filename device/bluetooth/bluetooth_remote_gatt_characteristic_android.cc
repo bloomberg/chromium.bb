@@ -144,7 +144,10 @@ void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(error_callback,
+                              BluetoothGattService::GATT_ERROR_IN_PROGRESS));
+    return;
   }
 
   if (!Java_ChromeBluetoothRemoteGattCharacteristic_readRemoteCharacteristic(
@@ -166,7 +169,10 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
-    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(error_callback,
+                              BluetoothGattService::GATT_ERROR_IN_PROGRESS));
+    return;
   }
 
   JNIEnv* env = AttachCurrentThread();

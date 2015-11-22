@@ -29,6 +29,8 @@ class BluetoothDevice;
 // BluetoothTest.
 class BluetoothTestBase : public testing::Test {
  public:
+  enum class Call { EXPECTED, NOT_EXPECTED };
+
   static const std::string kTestAdapterName;
   static const std::string kTestAdapterAddress;
 
@@ -46,9 +48,19 @@ class BluetoothTestBase : public testing::Test {
   BluetoothTestBase();
   ~BluetoothTestBase() override;
 
+  // Checks that no unexpected calls have been made to callbacks.
+  // Overrides of this method should always call the parent's class method.
+  void TearDown() override;
+
   // Calls adapter_->StartDiscoverySessionWithFilter with Low Energy transport,
-  // and this fixture's callbacks. Then RunLoop().RunUntilIdle().
+  // and this fixture's callbacks expecting success.
+  // Then RunLoop().RunUntilIdle().
   void StartLowEnergyDiscoverySession();
+
+  // Calls adapter_->StartDiscoverySessionWithFilter with Low Energy transport,
+  // and this fixture's callbacks expecting error.
+  // Then RunLoop().RunUntilIdle().
+  void StartLowEnergyDiscoverySessionExpectedToFail();
 
   // Check if Low Energy is available. On Mac, we require OS X >= 10.10.
   virtual bool PlatformSupportsLowEnergy() = 0;
@@ -148,31 +160,38 @@ class BluetoothTestBase : public testing::Test {
   virtual void DeleteDevice(BluetoothDevice* device);
 
   // Callbacks that increment |callback_count_|, |error_callback_count_|:
-  void Callback();
-  void DiscoverySessionCallback(scoped_ptr<BluetoothDiscoverySession>);
-  void GattConnectionCallback(scoped_ptr<BluetoothGattConnection>);
-  void NotifyCallback(scoped_ptr<BluetoothGattNotifySession>);
-  void ReadValueCallback(const std::vector<uint8>& value);
-  void ErrorCallback();
-  void ConnectErrorCallback(enum BluetoothDevice::ConnectErrorCode);
-  void GattErrorCallback(BluetoothGattService::GattErrorCode);
+  void Callback(Call expected);
+  void DiscoverySessionCallback(Call expected,
+                                scoped_ptr<BluetoothDiscoverySession>);
+  void GattConnectionCallback(Call expected,
+                              scoped_ptr<BluetoothGattConnection>);
+  void NotifyCallback(Call expected, scoped_ptr<BluetoothGattNotifySession>);
+  void ReadValueCallback(Call expected, const std::vector<uint8>& value);
+  void ErrorCallback(Call expected);
+  void ConnectErrorCallback(Call expected,
+                            enum BluetoothDevice::ConnectErrorCode);
+  void GattErrorCallback(Call expected, BluetoothGattService::GattErrorCode);
 
   // Accessors to get callbacks bound to this fixture:
-  base::Closure GetCallback();
-  BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback();
-  BluetoothDevice::GattConnectionCallback GetGattConnectionCallback();
-  BluetoothGattCharacteristic::NotifySessionCallback GetNotifyCallback();
-  BluetoothGattCharacteristic::ValueCallback GetReadValueCallback();
-  BluetoothAdapter::ErrorCallback GetErrorCallback();
-  BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback();
+  base::Closure GetCallback(Call expected);
+  BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
+      Call expected);
+  BluetoothDevice::GattConnectionCallback GetGattConnectionCallback(
+      Call expected);
+  BluetoothGattCharacteristic::NotifySessionCallback GetNotifyCallback(
+      Call expected);
+  BluetoothGattCharacteristic::ValueCallback GetReadValueCallback(
+      Call expected);
+  BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
+  BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);
   base::Callback<void(BluetoothGattService::GattErrorCode)>
-  GetGattErrorCallback();
+  GetGattErrorCallback(Call expected);
 
   // Reset all event count members to 0.
   void ResetEventCounts();
 
   // A Message loop is required by some implementations that will PostTasks and
-  // by base::RunLoop().RunUntilIdle() use in this fixuture.
+  // by base::RunLoop().RunUntilIdle() use in this fixture.
   base::MessageLoop message_loop_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
@@ -184,6 +203,7 @@ class BluetoothTestBase : public testing::Test {
   std::vector<uint8> last_read_value_;
   std::vector<uint8> last_write_value_;
   BluetoothGattService::GattErrorCode last_gatt_error_code_;
+
   int callback_count_ = 0;
   int error_callback_count_ = 0;
   int gatt_connection_attempts_ = 0;
@@ -192,6 +212,16 @@ class BluetoothTestBase : public testing::Test {
   int gatt_notify_characteristic_attempts_ = 0;
   int gatt_read_characteristic_attempts_ = 0;
   int gatt_write_characteristic_attempts_ = 0;
+
+  // The following values are used to make sure the correct callbacks
+  // have been called. They are not reset when calling ResetEventCounts().
+  int expected_success_callback_calls_ = 0;
+  int expected_error_callback_calls_ = 0;
+  int actual_success_callback_calls_ = 0;
+  int actual_error_callback_calls_ = 0;
+  bool unexpected_success_callback_ = false;
+  bool unexpected_error_callback_ = false;
+
   base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
 };
 
