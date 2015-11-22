@@ -47,15 +47,32 @@ enum ColorPickerPopupAction {
 ColorChooserPopupUIController::ColorChooserPopupUIController(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
     : ColorChooserUIController(frame, client)
     , m_chromeClient(chromeClient)
-    , m_popup(0)
+    , m_popup(nullptr)
     , m_locale(Locale::defaultLocale())
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController()
 {
+#if !ENABLE(OILPAN)
     closePopup();
+#endif
     // ~ColorChooserUIController ends the ColorChooser.
+}
+
+void ColorChooserPopupUIController::dispose()
+{
+    // Finalized earlier so as to access m_chromeClient while alive.
+    closePopup();
+}
+
+DEFINE_TRACE(ColorChooserPopupUIController)
+{
+    visitor->trace(m_chromeClient);
+    ColorChooserUIController::trace(visitor);
 }
 
 void ColorChooserPopupUIController::openUI()
@@ -76,7 +93,7 @@ void ColorChooserPopupUIController::endChooser()
 
 AXObject* ColorChooserPopupUIController::rootAXObject()
 {
-    return m_popup ? m_popup->rootAXObject() : 0;
+    return m_popup ? m_popup->rootAXObject() : nullptr;
 }
 
 void ColorChooserPopupUIController::writeDocument(SharedBuffer* data)
@@ -128,7 +145,7 @@ void ColorChooserPopupUIController::setValue(const String& value)
 
 void ColorChooserPopupUIController::didClosePopup()
 {
-    m_popup = 0;
+    m_popup = nullptr;
 
     if (!m_chooser)
         didEndChooser();
