@@ -111,6 +111,7 @@ public:
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
+    void setSublayers(const GraphicsLayerVector&);
 
     bool hasChildTransformLayer() const { return m_childTransformLayer; }
     GraphicsLayer* childTransformLayer() const { return m_childTransformLayer.get(); }
@@ -329,9 +330,9 @@ private:
     //      | + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
     //      |                                             + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
     //      |                                               + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
-    //      + m_overflowControlsClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
-    //        + m_overflowControlsHostLayer [OPTIONAL]   //  graphics layer tree by the RLC to ensure that they stack
-    //          + m_layerForVerticalScrollbar [OPTIONAL] //  above scrolling content.
+    //      + m_overflowControlsAncestorClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
+    //        + m_overflowControlsHostLayer [OPTIONAL]           //  graphics layer tree by the RLC to ensure that they stack
+    //          + m_layerForVerticalScrollbar [OPTIONAL]         //  above scrolling content.
     //          + m_layerForHorizontalScrollbar [OPTIONAL]
     //          + m_layerForScrollCorner [OPTIONAL]
     //
@@ -398,17 +399,18 @@ private:
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 
-    // This layer exists to simplify the reparenting of overflow control that is occasionally required
-    // to ensure that scrollbars appear above scrolling content.
+    // This layer contains the scrollbar and scroll corner layers and clips them to the border box
+    // bounds of our LayoutObject. It is usually added to m_graphicsLayer, but may be reparented by
+    // GraphicsLayerTreeBuilder to ensure that scrollbars appear above scrolling content.
     OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;
 
     // The reparented overflow controls sometimes need to be clipped by a non-ancestor. In just the same
     // way we need an ancestor clipping layer to clip this CLM's internal hierarchy, we add another layer
-    // to clip the overflow controls. It would be possible to make m_overflowControlsHostLayer be
-    // responsible for applying this clip, but that could require repositioning all of the overflow
-    // controls since the this clip may apply an offset. By using a separate layer, the overflow controls
-    // can remain ignorant of the layers above them and still work correctly.
-    OwnPtr<GraphicsLayer> m_overflowControlsClippingLayer;
+    // to clip the overflow controls. We could combine this with m_overflowControlsHostLayer, but that
+    // would require manually intersecting their clips, and shifting the overflow controls to compensate
+    // for this clip's offset. By using a separate layer, the overflow controls can remain ignorant of
+    // ancestor clipping.
+    OwnPtr<GraphicsLayer> m_overflowControlsAncestorClippingLayer;
 
     // A squashing CLM has two possible squashing-related structures.
     //

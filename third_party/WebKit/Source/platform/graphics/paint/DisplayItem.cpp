@@ -140,6 +140,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ClipLayerOverflowControls);
         DEBUG_STRING_CASE(ClipNodeImage);
         DEBUG_STRING_CASE(ClipPopupListBoxFrame);
+        DEBUG_STRING_CASE(ClipScrollbarsToBoxBounds);
         DEBUG_STRING_CASE(ClipSelectionImage);
         DEBUG_STRING_CASE(PageWidgetDelegateClip);
         DEBUG_STRING_CASE(ClipPrintedPage);

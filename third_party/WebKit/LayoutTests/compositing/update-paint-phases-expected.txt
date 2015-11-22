@@ -48,6 +48,7 @@
               ]
             },
             {
+              "bounds": [102, 102],
               "paintingPhases": [
                 "GraphicsLayerPaintBackground",
                 "GraphicsLayerPaintForeground",

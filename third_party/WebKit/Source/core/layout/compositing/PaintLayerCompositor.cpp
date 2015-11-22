@@ -645,8 +645,7 @@ PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(LayoutPart* 
     return nullptr;
 }
 
-// FIXME: What does this function do? It needs a clearer name.
-bool PaintLayerCompositor::parentFrameContentLayers(LayoutPart* layoutObject)
+bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(LayoutPart* layoutObject)
 {
     PaintLayerCompositor* innerCompositor = frameContentsCompositor(layoutObject);
     if (!innerCompositor || !innerCompositor->staleInCompositingMode() || innerCompositor->rootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)
@@ -656,13 +655,7 @@ bool PaintLayerCompositor::parentFrameContentLayers(LayoutPart* layoutObject)
     if (!layer->hasCompositedLayerMapping())
         return false;
 
-    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
-    GraphicsLayer* hostingLayer = compositedLayerMapping->parentForSublayers();
-    GraphicsLayer* rootLayer = innerCompositor->rootGraphicsLayer();
-    if (hostingLayer->children().size() != 1 || hostingLayer->children()[0] != rootLayer) {
-        hostingLayer->removeAllChildren();
-        hostingLayer->addChild(rootLayer);
-    }
+    layer->compositedLayerMapping()->setSublayers(GraphicsLayerVector(1, innerCompositor->rootGraphicsLayer()));
     return true;
 }
 
