@@ -132,7 +132,6 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
 AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
     : autofill_on_empty_values(false),
       requires_caret_at_end(false),
-      datalist_only(false),
       show_full_suggestion_list(false),
       show_password_suggestions_only(false) {
 }
@@ -460,7 +459,6 @@ void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
 void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;
-  options.datalist_only = true;
   ShowSuggestions(element, options);
 }
 
@@ -647,14 +645,14 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
                                     const ShowSuggestionsOptions& options) {
   if (!element.isEnabled() || element.isReadOnly())
     return;
-  if (!options.datalist_only && !element.suggestedValue().isEmpty())
+  if (!element.suggestedValue().isEmpty())
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
   if (input_element) {
     if (!input_element->isTextField())
       return;
-    if (!options.datalist_only && !input_element->suggestedValue().isEmpty())
+    if (!input_element->suggestedValue().isEmpty())
       return;
   } else {
     DCHECK(form_util::IsTextAreaElement(element));
@@ -665,12 +663,11 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   // Don't attempt to autofill with values that are too large or if filling
   // criteria are not met.
   WebString value = element.editingValue();
-  if (!options.datalist_only &&
-      (value.length() > kMaxDataLength ||
-       (!options.autofill_on_empty_values && value.isEmpty()) ||
-       (options.requires_caret_at_end &&
-        (element.selectionStart() != element.selectionEnd() ||
-         element.selectionEnd() != static_cast<int>(value.length()))))) {
+  if (value.length() > kMaxDataLength ||
+      (!options.autofill_on_empty_values && value.isEmpty()) ||
+      (options.requires_caret_at_end &&
+       (element.selectionStart() != element.selectionEnd() ||
+        element.selectionEnd() != static_cast<int>(value.length())))) {
     // Any popup currently showing is obsolete.
     HidePopup();
     return;
@@ -696,12 +693,11 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   if (input_element && input_element->isPasswordField())
     return;
 
-  QueryAutofillSuggestions(element, options.datalist_only);
+  QueryAutofillSuggestions(element);
 }
 
 void AutofillAgent::QueryAutofillSuggestions(
-    const WebFormControlElement& element,
-    bool datalist_only) {
+    const WebFormControlElement& element) {
   if (!element.document().frame())
     return;
 
@@ -718,8 +714,6 @@ void AutofillAgent::QueryAutofillSuggestions(
     // at providing suggestions.
     WebFormControlElementToFormField(element, form_util::EXTRACT_VALUE, &field);
   }
-  if (datalist_only)
-    field.should_autocomplete = false;
 
   gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
       render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
