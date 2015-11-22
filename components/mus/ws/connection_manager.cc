@@ -443,6 +443,7 @@ void ConnectionManager::OnWindowClientAreaChanged(
 void ConnectionManager::OnWindowReordered(ServerWindow* window,
                                           ServerWindow* relative,
                                           mojom::OrderDirection direction) {
+  ProcessWindowReorder(window, relative, direction);
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
 }

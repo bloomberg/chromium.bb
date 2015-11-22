@@ -413,9 +413,7 @@ TEST_F(WindowServerTest, MultiRoots) {
   EXPECT_NE(embedded1, embedded2);
 }
 
-// TODO(alhaad): Currently, the RunLoop gets stuck waiting for order change.
-// Debug and re-enable this.
-TEST_F(WindowServerTest, DISABLED_Reorder) {
+TEST_F(WindowServerTest, Reorder) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(window1);
@@ -429,29 +427,48 @@ TEST_F(WindowServerTest, DISABLED_Reorder) {
   Window* window12 = embedded->NewWindow();
   window12->SetVisible(true);
   embedded->GetRoot()->AddChild(window12);
+  ASSERT_TRUE(WaitForTreeSizeToMatch(window1, 3u));
 
   Window* root_in_embedded = embedded->GetRoot();
 
   {
-    ASSERT_TRUE(WaitForTreeSizeToMatch(root_in_embedded, 3u));
     window11->MoveToFront();
-    ASSERT_TRUE(WaitForOrderChange(embedded, root_in_embedded));
-
+    // The |embedded| tree should be updated immediately.
     EXPECT_EQ(root_in_embedded->children().front(),
               embedded->GetWindowById(window12->id()));
     EXPECT_EQ(root_in_embedded->children().back(),
               embedded->GetWindowById(window11->id()));
+
+    // The |window_manager()| tree is still not updated.
+    EXPECT_EQ(window1->children().back(),
+              window_manager()->GetWindowById(window12->id()));
+
+    // Wait until |window_manager()| tree is updated.
+    ASSERT_TRUE(WaitForOrderChange(
+        window_manager(), window_manager()->GetWindowById(window11->id())));
+    EXPECT_EQ(window1->children().front(),
+              window_manager()->GetWindowById(window12->id()));
+    EXPECT_EQ(window1->children().back(),
+              window_manager()->GetWindowById(window11->id()));
   }
 
   {
     window11->MoveToBack();
-    ASSERT_TRUE(
-        WaitForOrderChange(embedded, embedded->GetWindowById(window11->id())));
-
+    // |embedded| should be updated immediately.
     EXPECT_EQ(root_in_embedded->children().front(),
               embedded->GetWindowById(window11->id()));
     EXPECT_EQ(root_in_embedded->children().back(),
               embedded->GetWindowById(window12->id()));
+
+    // |window_manager()| is also eventually updated.
+    EXPECT_EQ(window1->children().back(),
+              window_manager()->GetWindowById(window11->id()));
+    ASSERT_TRUE(WaitForOrderChange(
+        window_manager(), window_manager()->GetWindowById(window11->id())));
+    EXPECT_EQ(window1->children().front(),
+              window_manager()->GetWindowById(window11->id()));
+    EXPECT_EQ(window1->children().back(),
+              window_manager()->GetWindowById(window12->id()));
   }
 }
 
