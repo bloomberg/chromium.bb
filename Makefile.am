@@ -15,5 +15,4 @@ dist_noinst_DATA =								\
 	$(sort $(foreach p,$(unstable_protocols),$(dir $p)README))		\
 	$(NULL)
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = wayland-protocols.pc
+noarch_pkgconfig_DATA = wayland-protocols.pc

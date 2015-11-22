@@ -21,7 +21,7 @@ AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
 
 AM_SILENT_RULES([yes])
 
-PKG_PROG_PKG_CONFIG()
+PKG_NOARCH_INSTALLDIR
 
 AC_CONFIG_FILES([
 	Makefile
