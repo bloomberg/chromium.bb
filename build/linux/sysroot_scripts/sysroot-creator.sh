@@ -141,7 +141,7 @@ SetEnvironmentVariables() {
 SanityCheck() {
   Banner "Sanity Checks"
 
-  local chrome_dir=$(cd "${SCRIPT_DIR}/../../../.." && pwd)
+  local chrome_dir=$(cd "${SCRIPT_DIR}/../../.." && pwd)
   BUILD_DIR="${chrome_dir}/out/sysroot-build/${DIST}"
   mkdir -p ${BUILD_DIR}
   echo "Using build directory: ${BUILD_DIR}"
@@ -215,7 +215,8 @@ GeneratePackageListARM() {
   DownloadOrCopy "${PACKAGE_LIST_ARM}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_ARM}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
-  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}"
+  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
+    ${DEBIAN_PACKAGES_ARM}"
 }
 
 GeneratePackageListMips() {
@@ -567,16 +568,21 @@ VerifyPackageListing() {
   local output_file=$2
   local release_file="${BUILD_DIR}/${RELEASE_FILE}"
   local release_file_gpg="${BUILD_DIR}/${RELEASE_FILE_GPG}"
-  local tmp_keyring_file="${BUILD_DIR}/keyring.gpg"
+  local local_keyring_file="${BUILD_DIR}/keyring.gpg"
 
   CheckForDebianGPGKeyring
 
   DownloadOrCopy ${RELEASE_LIST} ${release_file}
   DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
+  if [ ! -f "${local_keyring_file}" ]; then
+    echo "Generating keyring: ${local_keyring_file}"
+    set -x
+    cp "${KEYRING_FILE}" "${local_keyring_file}"
+    gpg --primary-keyring "${local_keyring_file}" --recv-keys 2B90D010
+    set +x
+  fi
   echo "Verifying: ${release_file} with ${release_file_gpg}"
-  cp "${KEYRING_FILE}" "${tmp_keyring_file}"
-  gpg --primary-keyring "${tmp_keyring_file}" --recv-keys 2B90D010
-  gpgv --keyring "${tmp_keyring_file}" "${release_file_gpg}" "${release_file}"
+  gpgv --keyring "${local_keyring_file}" "${release_file_gpg}" "${release_file}"
 
   echo "Verifying: ${output_file}"
   local checksums=$(grep ${file_path} ${release_file} | cut -d " " -f 2)
