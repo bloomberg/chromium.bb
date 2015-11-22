@@ -31,6 +31,7 @@ enum ScrollRestoration {"auto", "manual"};
     GarbageCollected,
 ] interface History {
     readonly attribute unsigned long length;
+    [RuntimeEnabled=ScrollRestoration, Measure] attribute ScrollRestoration scrollRestoration;
     // TODO(philipj): The SerializedScriptValue type should be any.
     [CachedAttribute=stateChanged] readonly attribute SerializedScriptValue state;
     [CallWith=ExecutionContext] void go(optional long delta = 0);
@@ -40,8 +41,4 @@ enum ScrollRestoration {"auto", "manual"};
     // TODO(philipj): The title arguments should simply be 'DOMString title'.
     [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
     [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
-
-    // Experimental Scroll Restoration API
-    // https://www.chromestatus.com/features/5657284784947200
-    [RuntimeEnabled=ScrollRestoration] attribute ScrollRestoration scrollRestoration;
 };

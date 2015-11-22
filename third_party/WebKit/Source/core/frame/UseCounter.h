@@ -888,6 +888,8 @@ public:
         BackgroundSyncRegister = 1025,
         BorderImageWithBorderStyleNone = 1026,
         ExecCommandOnInputOrTextarea = 1027,
+        V8History_ScrollRestoration_AttributeGetter = 1028,
+        V8History_ScrollRestoration_AttributeSetter = 1029,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
