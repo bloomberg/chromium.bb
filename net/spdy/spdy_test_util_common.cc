@@ -383,6 +383,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_compression(false),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
+      enable_npn(true),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -441,6 +442,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
+  params.enable_npn = session_deps->enable_npn;
   params.spdy_default_protocol = session_deps->protocol;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
