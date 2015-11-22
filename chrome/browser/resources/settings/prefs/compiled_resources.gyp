@@ -12,6 +12,7 @@
           'pref_util.js',
           'prefs_behavior.js',
           'prefs_types.js',
+          '../settings_private_interface.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'

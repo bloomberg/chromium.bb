@@ -28,6 +28,13 @@ var CrSettingsPrefs = (function() {
     },
 
     /**
+     * Whether to defer initialization. Used in testing to prevent premature
+     * initialization when intending to fake the settings API.
+     * @type {boolean}
+     */
+    deferInitialization: false,
+
+    /**
      * Called to set up the promise and resolve methods.
      * @private
      */

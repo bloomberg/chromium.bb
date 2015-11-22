@@ -152,8 +152,13 @@
 
     /** @override */
     ready: function() {
-      this.singleton_.initialize();
+      // Register a callback on CrSettingsPrefs.initialized immediately so prefs
+      // is set as soon as the settings API returns. This enables other elements
+      // dependent on |prefs| to add their own callbacks to
+      // CrSettingsPrefs.initialized.
       this.startListening_();
+      if (!CrSettingsPrefs.deferInitialization)
+        this.initialize();
     },
 
     /**
@@ -222,13 +227,25 @@
       this.ignoreChanges_ = false;
     },
 
+    /** Initializes the singleton, which will fetch the prefs. */
+    initialize: function() {
+      this.singleton_.initialize();
+    },
+
+    /**
+     * Used to initialize the singleton with a fake SettingsPrivate.
+     * @param {SettingsPrivate} settingsApi Fake implementation to use.
+     */
+    initializeForTesting: function(settingsApi) {
+      this.singleton_.initialize(settingsApi);
+    },
+
     /**
      * Uninitializes this element to remove it from tests. Also resets
      * settings-prefs-singleton, allowing newly created elements to
      * re-initialize it.
      */
     resetForTesting: function() {
-      this.stopListening_();
       this.singleton_.resetForTesting();
     },
   });
@@ -267,18 +284,21 @@
       'prefs-changed': 'prefsChanged_',
     },
 
-    settingsApi_: chrome.settingsPrivate,
+    /** @type {SettingsPrivate} */
+    settingsApi_: /** @type {SettingsPrivate} */(chrome.settingsPrivate),
 
-    initialize: function() {
+    /**
+     * @param {SettingsPrivate=} opt_settingsApi SettingsPrivate implementation
+     *     to use (chrome.settingsPrivate by default).
+     */
+    initialize: function(opt_settingsApi) {
       // Only initialize once (or after resetForTesting() is called).
       if (this.initialized_)
         return;
       this.initialized_ = true;
 
-      // Set window.mockApi to pass a custom settings API, i.e. for tests.
-      // TODO(michaelpg): don't use a global.
-      if (window.mockApi)
-        this.settingsApi_ = window.mockApi;
+      if (opt_settingsApi)
+        this.settingsApi_ = opt_settingsApi;
 
       this.settingsApi_.onPrefsChanged.addListener(
           this.onSettingsPrivatePrefsChanged_.bind(this));
@@ -405,9 +425,13 @@
      * Resets the element so it can be re-initialized with a new prefs state.
      */
     resetForTesting: function() {
+      if (!this.initialized_)
+        return;
       this.prefs = undefined;
       this.lastPrefValues_ = {};
       this.initialized_ = false;
+      this.settingsApi_ =
+          /** @type {SettingsPrivate} */(chrome.settingsPrivate);
     },
   });
 })();

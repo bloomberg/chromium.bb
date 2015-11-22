@@ -3,50 +3,70 @@
 // found in the LICENSE file.
 
 /**
- * @type {Array<{key: string,
- *               type: chrome.settingsPrivate.PrefType,
- *               values: !Array<*>}>}
- * Test cases containing preference data. Each pref has three test values,
- * which can be used to change the pref. Intentionally, for a given pref, not
- * every test value is different from the one before it; this tests what
- * happens when stale changes are reported.
+ * @type {Array<{pref: settings.FakeSettingsPrivate.Pref,
+ *               nextValues: Array<*>}>}
+ * Test cases containing preference data. Each test case has a pref with an
+ * initial value, and two "next" values used to change the pref. Intentionally,
+ * for a given pref, not every "next" value is different from the previous
+ * value; this tests what happens when stale changes are reported.
  */
 var prefsTestCases = [{
-  key: 'top_level_pref',
-  type: chrome.settingsPrivate.PrefType.BOOLEAN,
-  values: [true, false, true],
+  pref: {
+    key: 'top_level_pref',
+    type: chrome.settingsPrivate.PrefType.BOOLEAN,
+    value: true,
+  },
+  nextValues: [false, true],
 }, {
-  key: 'browser.enable_flash',
-  type: chrome.settingsPrivate.PrefType.BOOLEAN,
-  values: [false, true, false],
+  pref: {
+    key: 'browser.enable_flash',
+    type: chrome.settingsPrivate.PrefType.BOOLEAN,
+    value: false,
+  },
+  nextValues: [true, false],
 }, {
-  key: 'browser.enable_html5',
-  type: chrome.settingsPrivate.PrefType.BOOLEAN,
-  values: [true, false, false],
+  pref: {
+    key: 'browser.enable_html5',
+    type: chrome.settingsPrivate.PrefType.BOOLEAN,
+    value: true,
+  },
+  nextValues: [false, false],
 }, {
-  key: 'device.overclock',
-  type: chrome.settingsPrivate.PrefType.NUMBER,
-  values: [0, .2, .6],
+  pref: {
+    key: 'device.overclock',
+    type: chrome.settingsPrivate.PrefType.NUMBER,
+    value: 0,
+  },
+  nextValues: [.2, .6],
 }, {
-  key: 'browser.on.startup.homepage',
-  type: chrome.settingsPrivate.PrefType.STRING,
-  values: ['example.com', 'chromium.org', 'chrome.example.com'],
+  pref: {
+    key: 'browser.on.startup.homepage',
+    type: chrome.settingsPrivate.PrefType.STRING,
+    value: 'example.com',
+  },
+  nextValues: ['chromium.org', 'chrome.example.com'],
 }, {
-  key: 'profile.name',
-  type: chrome.settingsPrivate.PrefType.STRING,
-  values: ['Puppy', 'Puppy', 'Horsey'],
+  pref: {
+    key: 'profile.name',
+    type: chrome.settingsPrivate.PrefType.STRING,
+    value: 'Puppy',
+  },
+  nextValues: ['Puppy', 'Horsey'],
 }, {
-  key: 'content.sites',
-  type: chrome.settingsPrivate.PrefType.LIST,
-  // Arrays of dictionaries.
-  values: [
-    [{javascript: ['chromium.org', 'example.com'],
-      cookies: ['example.net'],
-      mic: ['example.com'],
-      flash: []},
-     {some: 4,
-      other: 8,
-      dictionary: 16}],
+  pref: {
+    key: 'content.sites',
+    type: chrome.settingsPrivate.PrefType.LIST,
+    // Array of dictionaries.
+    value:
+        [{javascript: ['chromium.org', 'example.com'],
+          cookies: ['example.net'],
+          mic: ['example.com'],
+          flash: []},
+         {some: 4,
+           other: 8,
+           dictionary: 16}],
+  },
+  nextValues: [
     [{javascript: ['example.com', 'example.net'],
       cookies: ['example.net', 'example.com'],
       mic: ['example.com']},
@@ -58,25 +78,28 @@ var prefsTestCases = [{
       flash: ['localhost'],
       mic: ['example.com']},
      {some: 2.2,
-      dictionary: 4.4}]
+      dictionary: 4.4}],
   ],
 }, {
-  key: 'content_settings.exceptions.notifications',
-  type: chrome.settingsPrivate.PrefType.DICTIONARY,
-  values: [{
-    'https:\/\/foo.com,*': {
-      last_used: 1442486000.4000,
-      'setting': 0,
+  pref: {
+    key: 'content_settings.exceptions.notifications',
+    type: chrome.settingsPrivate.PrefType.DICTIONARY,
+    value: {
+      'https:\/\/foo.com,*': {
+        last_used: 1442486000.4000,
+        'setting': 0,
+      },
+      'https:\/\/bar.com,*': {
+        'last_used': 1442487000.3000,
+        'setting': 1,
+      },
+      'https:\/\/baz.com,*': {
+        'last_used': 1442482000.8000,
+        'setting': 2,
+      },
     },
-    'https:\/\/bar.com,*': {
-      'last_used': 1442487000.3000,
-      'setting': 1,
-    },
-    'https:\/\/baz.com,*': {
-      'last_used': 1442482000.8000,
-      'setting': 2,
-    },
-  }, {
+  },
+  nextValues: [{
     'https:\/\/foo.com,*': {
       last_used: 1442486000.4000,
       'setting': 0,
