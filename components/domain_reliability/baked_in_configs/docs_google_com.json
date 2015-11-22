@@ -1,48 +1,20 @@
 {
-  "config_version": "docs-google-com $Revision: #5 $",
-  "config_valid_until": 1446336000,
-  "monitored_domain": "docs.google.com",
+  "origin": "https://docs.google.com/",
+  "has_same_origin_collector": true,
+  "success_sample_rate": 0.05,
   "collectors": [
-    {
-      "upload_url": "https://clients2.google.com/domainreliability/upload"
-    },
-    {
-      "upload_url": "https://beacons.gvt2.com/domainreliability/upload"
-    },
-    {
-      "upload_url": "https://beacons2.gvt2.com/domainreliability/upload"
-    },
-    {
-      "upload_url": "https://beacons3.gvt2.com/domainreliability/upload"
-    },
-    {
-      "upload_url": "https://beacons4.gvt2.com/domainreliability/upload"
-    }
+    "https://beacons.gvt2.com/domainreliability/upload",
+    "https://beacons2.gvt2.com/domainreliability/upload",
+    "https://clients2.google.com/domainreliability/upload",
+    "https://beacons3.gvt2.com/domainreliability/upload",
+    "https://beacons4.gvt2.com/domainreliability/upload"
   ],
-  "monitored_resources": [
-    {
-      "resource_name": "docs-google-com-docs",
-      "url_patterns": ["http*://docs.google.com/*/document/*"],
-      "success_sample_rate": 0.05,
-      "failure_sample_rate": 1.00
-    },
-    {
-      "resource_name": "docs-google-com-slides",
-      "url_patterns": ["http*://docs.google.com/*/presentation/*"],
-      "success_sample_rate": 0.05,
-      "failure_sample_rate": 1.00
-    },
-    {
-      "resource_name": "docs-google-com-sheets",
-      "url_patterns": ["http*://docs.google.com/*/spreadsheets/*"],
-      "success_sample_rate": 0.05,
-      "failure_sample_rate": 1.00
-    },
-    {
-      "resource_name": "docs-google-com-other",
-      "url_patterns": ["*"],
-      "success_sample_rate": 0.05,
-      "failure_sample_rate": 1.00
-    }
+  "failure_sample_rate": 1.0,
+  "include_subdomains": false,
+  "path_prefixes": [
+    "/*/document",
+    "/*/presentation",
+    "/*/spreadsheets",
+    ""
   ]
 }

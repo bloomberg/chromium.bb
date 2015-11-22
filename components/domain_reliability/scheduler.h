@@ -20,7 +20,7 @@ class Value;
 
 namespace domain_reliability {
 
-class DomainReliabilityConfig;
+struct DomainReliabilityConfig;
 class MockableTime;
 
 // Determines when an upload should be scheduled. A domain's config will

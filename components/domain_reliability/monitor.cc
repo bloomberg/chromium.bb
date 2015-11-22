@@ -10,6 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"
+#include "components/domain_reliability/google_configs.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -38,22 +40,30 @@ int URLRequestStatusToNetError(const net::URLRequestStatus& status) {
   }
 }
 
-// Updates the status, chrome_error, and server_ip fields of |beacon| from
-// the endpoint and result of |attempt|. If there is no matching status for
-// the result, returns false (which means the attempt should not result in a
-// beacon being reported).
-bool UpdateBeaconFromAttempt(DomainReliabilityBeacon* beacon,
-                             const net::ConnectionAttempt& attempt) {
+// Creates a new beacon based on |beacon_template| but fills in the status,
+// chrome_error, and server_ip fields based on the endpoint and result of
+// |attempt|.
+//
+// If there is no matching status for the result, returns false (which
+// means the attempt should not result in a beacon being reported).
+scoped_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
+    const DomainReliabilityBeacon& beacon_template,
+    const net::ConnectionAttempt& attempt) {
+  std::string status;
   if (!GetDomainReliabilityBeaconStatus(
-          attempt.result, beacon->http_response_code, &beacon->status)) {
-    return false;
+          attempt.result, beacon_template.http_response_code, &status)) {
+    return scoped_ptr<DomainReliabilityBeacon>();
   }
+
+  scoped_ptr<DomainReliabilityBeacon> beacon(
+      new DomainReliabilityBeacon(beacon_template));
+  beacon->status = status;
   beacon->chrome_error = attempt.result;
   if (!attempt.endpoint.address().empty())
     beacon->server_ip = attempt.endpoint.ToString();
   else
     beacon->server_ip = "";
-  return true;
+  return beacon.Pass();
 }
 
 }  // namespace
@@ -147,10 +157,18 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
     base::StringPiece json(kBakedInJsonConfigs[i]);
     scoped_ptr<const DomainReliabilityConfig> config =
         DomainReliabilityConfig::FromJSON(json);
-    if (!config)
+    if (!config) {
+      DLOG(WARNING) << "Baked-in Domain Reliability config failed to parse: "
+                    << json;
       continue;
+    }
     context_manager_.AddContextForConfig(config.Pass());
   }
+
+  std::vector<DomainReliabilityConfig*> google_configs;
+  GetAllGoogleConfigs(&google_configs);
+  for (auto google_config : google_configs)
+    context_manager_.AddContextForConfig(make_scoped_ptr(google_config));
 }
 
 void DomainReliabilityMonitor::SetDiscardUploads(bool discard_uploads) {
@@ -293,15 +311,15 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   net::ConnectionAttempt url_request_attempt(
       request.remote_endpoint, URLRequestStatusToNetError(request.status));
 
-  DomainReliabilityBeacon beacon;
-  beacon.protocol = GetDomainReliabilityProtocol(
-      request.response_info.connection_info,
-      request.response_info.ssl_info.is_valid());
-  beacon.http_response_code = response_code;
-  beacon.start_time = request.load_timing_info.request_start;
-  beacon.elapsed = time_->NowTicks() - beacon.start_time;
-  beacon.was_proxied = request.response_info.was_fetched_via_proxy;
-  beacon.domain = request.url.host();
+  DomainReliabilityBeacon beacon_template;
+  beacon_template.protocol =
+      GetDomainReliabilityProtocol(request.response_info.connection_info,
+                                   request.response_info.ssl_info.is_valid());
+  beacon_template.http_response_code = response_code;
+  beacon_template.start_time = request.load_timing_info.request_start;
+  beacon_template.elapsed = time_->NowTicks() - beacon_template.start_time;
+  beacon_template.was_proxied = request.response_info.was_fetched_via_proxy;
+  beacon_template.url = request.url;
 
   // This is not foolproof -- it's possible that we'll see the same error twice
   // (e.g. an SSL error during connection on one attempt, and then an error
@@ -312,16 +330,20 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   for (const auto& attempt : request.connection_attempts) {
     if (attempt.result == url_request_attempt.result)
       url_request_attempt_is_duplicate = true;
-    if (!UpdateBeaconFromAttempt(&beacon, attempt))
-      continue;
-    context_manager_.RouteBeacon(request.url, beacon);
+
+    scoped_ptr<DomainReliabilityBeacon> beacon =
+        CreateBeaconFromAttempt(beacon_template, attempt);
+    if (beacon)
+      context_manager_.RouteBeacon(beacon.Pass());
   }
 
   if (url_request_attempt_is_duplicate)
     return;
-  if (!UpdateBeaconFromAttempt(&beacon, url_request_attempt))
-    return;
-  context_manager_.RouteBeacon(request.url, beacon);
+
+  scoped_ptr<DomainReliabilityBeacon> beacon =
+      CreateBeaconFromAttempt(beacon_template, url_request_attempt);
+  if (beacon)
+    context_manager_.RouteBeacon(beacon.Pass());
 }
 
 base::WeakPtr<DomainReliabilityMonitor>

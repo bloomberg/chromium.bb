@@ -1,6 +1,6 @@
 {
-  "origin": "https://mail.google.com/",
-  "has_same_origin_collector": true,
+  "origin": "https://gvt1.com/",
+  "has_same_origin_collector": false,
   "success_sample_rate": 0.05,
   "collectors": [
     "https://beacons.gvt2.com/domainreliability/upload",
@@ -10,9 +10,23 @@
     "https://beacons4.gvt2.com/domainreliability/upload"
   ],
   "failure_sample_rate": 1.0,
-  "include_subdomains": false,
+  "include_subdomains": true,
   "path_prefixes": [
-    "/*/channel/bind",
+    "/videoplayback",
+    "/videochunk",
+    "/chunk_present",
+    "/cm2_state",
+    "/videolookup",
+    "/videogoodput",
+    "/MotifFiles",
+    "/StudioFiles",
+    "/packdata",
+    "/edgedl",
+    "/market",
+    "/packages",
+    "/crx",
+    "/initplayback",
+    "/initsegment",
     ""
   ]
 }

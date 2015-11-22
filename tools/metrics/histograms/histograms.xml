@@ -8162,19 +8162,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="DomainReliability.AddBeaconDidEvict" enum="BooleanDidEvict">
-  <owner>ttuttle@chromium.org</owner>
-  <summary>
-    Whether adding a beacon to a Domain Reliability context caused it to evict
-    an older beacon to stay within memory limits.
-  </summary>
-</histogram>
-
 <histogram name="DomainReliability.BeaconReported" enum="BooleanReported">
   <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether a beacon added to a Domain Reliability context was saved to be
     uploaded to the collector.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.OnBeaconDidEvict" enum="BooleanDidEvict">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether adding a beacon to a Domain Reliability context caused it to evict
+    an older beacon to stay within memory limits.
   </summary>
 </histogram>
 

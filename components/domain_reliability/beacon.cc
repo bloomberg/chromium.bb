@@ -5,6 +5,7 @@
 #include "components/domain_reliability/beacon.h"
 
 #include "base/values.h"
+#include "components/domain_reliability/util.h"
 #include "net/base/net_errors.h"
 
 namespace domain_reliability {
@@ -15,16 +16,15 @@ using base::DictionaryValue;
 DomainReliabilityBeacon::DomainReliabilityBeacon() {}
 DomainReliabilityBeacon::~DomainReliabilityBeacon() {}
 
-Value* DomainReliabilityBeacon::ToValue(
+scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
     base::TimeTicks upload_time,
-    base::TimeTicks last_network_change_time) const {
-  DictionaryValue* beacon_value = new DictionaryValue();
-  if (!url.empty())
-    beacon_value->SetString("url", url);
-  if (!domain.empty())
-    beacon_value->SetString("domain", domain);
-  if (!resource.empty())
-    beacon_value->SetString("resource", resource);
+    base::TimeTicks last_network_change_time,
+    const GURL& collector_url,
+    const ScopedVector<std::string>& path_prefixes) const {
+  scoped_ptr<DictionaryValue> beacon_value(new DictionaryValue());
+  DCHECK(url.is_valid());
+  GURL sanitized_url = SanitizeURLForReport(url, collector_url, path_prefixes);
+  beacon_value->SetString("url", sanitized_url.spec());
   beacon_value->SetString("status", status);
   if (chrome_error != net::OK) {
     DictionaryValue* failure_value = new DictionaryValue();
@@ -37,13 +37,12 @@ Value* DomainReliabilityBeacon::ToValue(
   beacon_value->SetString("protocol", protocol);
   if (http_response_code >= 0)
     beacon_value->SetInteger("http_response_code", http_response_code);
-  beacon_value->SetInteger("request_elapsed_ms",
-                           elapsed.InMilliseconds());
-  beacon_value->SetInteger("request_age_ms",
-                           (upload_time - start_time).InMilliseconds());
+  beacon_value->SetInteger("request_elapsed_ms", elapsed.InMilliseconds());
+  base::TimeDelta request_age = upload_time - start_time;
+  beacon_value->SetInteger("request_age_ms", request_age.InMilliseconds());
   bool network_changed = last_network_change_time > start_time;
   beacon_value->SetBoolean("network_changed", network_changed);
-  return beacon_value;
+  return beacon_value.Pass();
 }
 
 }  // namespace domain_reliability

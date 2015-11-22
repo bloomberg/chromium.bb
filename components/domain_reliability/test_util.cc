@@ -160,42 +160,21 @@ DomainReliabilityScheduler::Params MakeTestSchedulerParams() {
   return params;
 }
 
-scoped_ptr<const DomainReliabilityConfig> MakeTestConfig() {
-  return MakeTestConfigWithDomain("example");
+scoped_ptr<DomainReliabilityConfig> MakeTestConfig() {
+  return MakeTestConfigWithOrigin(GURL("https://example/"));
 }
 
-scoped_ptr<const DomainReliabilityConfig> MakeTestConfigWithDomain(
-    const std::string& domain) {
+scoped_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
+    const GURL& origin) {
   DomainReliabilityConfig* config = new DomainReliabilityConfig();
-  DomainReliabilityConfig::Resource* resource;
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "always_report";
-  resource->url_patterns.push_back(
-      new std::string("http://*/always_report"));
-  resource->success_sample_rate = 1.0;
-  resource->failure_sample_rate = 1.0;
-  config->resources.push_back(resource);
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "never_report";
-  resource->url_patterns.push_back(
-      new std::string("http://*/never_report"));
-  resource->success_sample_rate = 0.0;
-  resource->failure_sample_rate = 0.0;
-  config->resources.push_back(resource);
-
-  DomainReliabilityConfig::Collector* collector;
-  collector = new DomainReliabilityConfig::Collector();
-  collector->upload_url = GURL("https://exampleuploader/upload");
-  config->collectors.push_back(collector);
-
-  config->version = "1";
-  config->domain = domain;
+  config->origin = origin;
+  config->collectors.push_back(new GURL("https://exampleuploader/upload"));
+  config->failure_sample_rate = 1.0;
+  config->success_sample_rate = 0.0;
 
   DCHECK(config->IsValid());
 
-  return scoped_ptr<const DomainReliabilityConfig>(config);
+  return scoped_ptr<DomainReliabilityConfig>(config);
 }
 
 }  // namespace domain_reliability

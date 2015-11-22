@@ -16,13 +16,12 @@ DomainReliabilityContextManager::~DomainReliabilityContextManager() {
 }
 
 void DomainReliabilityContextManager::RouteBeacon(
-    const GURL& url,
-    const DomainReliabilityBeacon& beacon) {
-  DomainReliabilityContext* context = GetContextForHost(url.host());
+    scoped_ptr<DomainReliabilityBeacon> beacon) {
+  DomainReliabilityContext* context = GetContextForHost(beacon->url.host());
   if (!context)
     return;
 
-  context->OnBeacon(url, beacon);
+  context->OnBeacon(beacon.Pass());
 }
 
 void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
@@ -32,7 +31,13 @@ void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
 
 DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
     scoped_ptr<const DomainReliabilityConfig> config) {
-  std::string domain = config->domain;
+  // TODO(ttuttle): Convert this to actual origin.
+
+  std::string wildcard_prefix = "";
+  if (config->include_subdomains)
+    wildcard_prefix = "*.";
+
+  std::string domain = wildcard_prefix + config->origin.host();
   scoped_ptr<DomainReliabilityContext> context =
       context_factory_->CreateContextForConfig(config.Pass());
   DomainReliabilityContext** entry = &contexts_[domain];

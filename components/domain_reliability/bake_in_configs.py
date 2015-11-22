@@ -483,7 +483,11 @@ def read_json_files_from_file(list_file):
   return shlex.split(list_text)
 
 
-def domain_is_whitelisted(domain):
+def origin_is_whitelisted(origin):
+  if origin.startswith('https://') and origin.endswith('/'):
+    domain = origin[8:-1]
+  else:
+    return False
   return any(domain == e or domain.endswith('.' + e)  for e in DOMAIN_WHITELIST)
 
 
@@ -557,14 +561,14 @@ def main():
       print >> sys.stderr, "%s: error parsing JSON: %s" % (json_file, e)
       found_invalid_config = True
       continue
-    if 'monitored_domain' not in config:
-      print >> sys.stderr, '%s: no monitored_domain found' % json_file
+    if 'origin' not in config:
+      print >> sys.stderr, '%s: no origin found' % json_file
       found_invalid_config = True
       continue
-    domain = config['monitored_domain']
-    if not domain_is_whitelisted(domain):
-      print >> sys.stderr, ('%s: monitored_domain "%s" not in whitelist' %
-                            (json_file, domain))
+    origin = config['origin']
+    if not origin_is_whitelisted(origin):
+      print >> sys.stderr, ('%s: origin "%s" not in whitelist' %
+                            (json_file, origin))
       found_invalid_config = True
       continue
 

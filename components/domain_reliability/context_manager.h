@@ -27,7 +27,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
 
   // If |url| maps to a context added to this manager, calls |OnBeacon| on
   // that context with |beacon|. Otherwise, does nothing.
-  void RouteBeacon(const GURL& url, const DomainReliabilityBeacon& beacon);
+  void RouteBeacon(scoped_ptr<DomainReliabilityBeacon> beacon);
 
   // Calls |ClearBeacons| on all contexts added to this manager, but leaves
   // the contexts themselves intact.

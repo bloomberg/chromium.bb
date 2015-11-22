@@ -15,68 +15,21 @@ namespace {
 
 scoped_ptr<DomainReliabilityConfig> MakeBaseConfig() {
   DomainReliabilityConfig* config = new DomainReliabilityConfig();
-  config->domain = "example";
-  config->version = "1";
-
-  DomainReliabilityConfig::Collector* collector =
-      new DomainReliabilityConfig::Collector();
-  collector->upload_url = GURL("https://example/upload");
-  config->collectors.push_back(collector);
-
+  config->origin = GURL("https://example/");
+  config->include_subdomains = false;
+  config->collectors.push_back(new GURL("https://example/upload"));
+  config->failure_sample_rate = 1.0;
+  config->success_sample_rate = 0.0;
+  EXPECT_TRUE(config->IsValid());
   return scoped_ptr<DomainReliabilityConfig>(config);
 }
 
 scoped_ptr<DomainReliabilityConfig> MakeSampleConfig() {
   scoped_ptr<DomainReliabilityConfig> config(MakeBaseConfig());
-
-  DomainReliabilityConfig::Resource* resource =
-      new DomainReliabilityConfig::Resource();
-  resource->name = "home";
-  resource->url_patterns.push_back(
-      new std::string("http://example/"));
-  resource->success_sample_rate = 0.0;
-  resource->failure_sample_rate = 1.0;
-  config->resources.push_back(resource);
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "static";
-  resource->url_patterns.push_back(new std::string("http://example/css/*"));
-  resource->url_patterns.push_back(new std::string("http://example/js/*"));
-  resource->success_sample_rate = 0.0;
-  resource->failure_sample_rate = 1.0;
-  config->resources.push_back(resource);
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "html";
-  resource->url_patterns.push_back(
-      new std::string("http://example/*.html"));
-  resource->success_sample_rate = 0.0;
-  resource->failure_sample_rate = 1.0;
-  config->resources.push_back(resource);
-
+  config->path_prefixes.push_back(new std::string("/css/"));
+  config->path_prefixes.push_back(new std::string("/js/"));
   EXPECT_TRUE(config->IsValid());
   return config.Pass();
-}
-
-scoped_ptr<DomainReliabilityConfig> MakeConfigWithResource(
-    const std::string& name,
-    const std::string& pattern) {
-  scoped_ptr<DomainReliabilityConfig> config(MakeBaseConfig());
-
-  DomainReliabilityConfig::Resource* resource =
-      new DomainReliabilityConfig::Resource();
-  resource->name = name;
-  resource->url_patterns.push_back(new std::string(pattern));
-  resource->success_sample_rate = 1.0;
-  resource->failure_sample_rate = 1.0;
-  config->resources.push_back(resource);
-
-  EXPECT_TRUE(config->IsValid());
-  return config.Pass();
-}
-
-int GetIndex(DomainReliabilityConfig* config, const char* url_string) {
-  return config->GetResourceIndexForUrl(GURL(url_string));
 }
 
 class DomainReliabilityConfigTest : public testing::Test { };
@@ -88,32 +41,7 @@ TEST_F(DomainReliabilityConfigTest, IsValid) {
   EXPECT_TRUE(config->IsValid());
 
   config = MakeSampleConfig();
-  config->domain = "";
-  EXPECT_FALSE(config->IsValid());
-
-  // Version is optional.
-  config = MakeSampleConfig();
-  config->version = "";
-  EXPECT_TRUE(config->IsValid());
-
-  config = MakeSampleConfig();
-  config->resources.clear();
-  EXPECT_FALSE(config->IsValid());
-
-  config = MakeSampleConfig();
-  config->resources[0]->name.clear();
-  EXPECT_FALSE(config->IsValid());
-
-  config = MakeSampleConfig();
-  config->resources[0]->url_patterns.clear();
-  EXPECT_FALSE(config->IsValid());
-
-  config = MakeSampleConfig();
-  config->resources[0]->success_sample_rate = 2.0;
-  EXPECT_FALSE(config->IsValid());
-
-  config = MakeSampleConfig();
-  config->resources[0]->failure_sample_rate = 2.0;
+  config->origin = GURL();
   EXPECT_FALSE(config->IsValid());
 
   config = MakeSampleConfig();
@@ -121,71 +49,45 @@ TEST_F(DomainReliabilityConfigTest, IsValid) {
   EXPECT_FALSE(config->IsValid());
 
   config = MakeSampleConfig();
-  config->collectors[0]->upload_url = GURL();
+  delete config->collectors[0];
+  config->collectors[0] = new GURL();
   EXPECT_FALSE(config->IsValid());
-}
 
-TEST_F(DomainReliabilityConfigTest, GetResourceIndexForUrl) {
-  scoped_ptr<DomainReliabilityConfig> config = MakeSampleConfig();
+  config = MakeSampleConfig();
+  config->failure_sample_rate = 2.0;
+  EXPECT_FALSE(config->IsValid());
 
-  EXPECT_EQ(0, GetIndex(config.get(), "http://example/"));
-  EXPECT_EQ(1, GetIndex(config.get(), "http://example/css/foo.css"));
-  EXPECT_EQ(1, GetIndex(config.get(), "http://example/js/bar.js"));
-  EXPECT_EQ(2, GetIndex(config.get(), "http://example/test.html"));
-  EXPECT_EQ(-1, GetIndex(config.get(), "http://example/no-resource"));
-}
-
-TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchUsername) {
-  scoped_ptr<DomainReliabilityConfig> config =
-      MakeConfigWithResource("username", "*username*");
-
-  EXPECT_EQ(-1, GetIndex(config.get(), "http://username:password@example/"));
-}
-
-TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchPassword) {
-  scoped_ptr<DomainReliabilityConfig> config =
-      MakeConfigWithResource("password", "*password*");
-
-  EXPECT_EQ(-1, GetIndex(config.get(), "http://username:password@example/"));
-}
-
-TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchFragment) {
-  scoped_ptr<DomainReliabilityConfig> config =
-      MakeConfigWithResource("fragment", "*fragment*");
-
-  EXPECT_EQ(-1, GetIndex(config.get(), "http://example/#fragment"));
+  config = MakeSampleConfig();
+  config->success_sample_rate = 2.0;
+  EXPECT_FALSE(config->IsValid());
 }
 
 TEST_F(DomainReliabilityConfigTest, FromJSON) {
   std::string config_json =
-    "{ \"config_version\": \"1\","
-    "  \"monitored_domain\": \"test.example\","
-    "  \"monitored_resources\": [ {"
-    "    \"resource_name\": \"home\","
-    "    \"url_patterns\": [ \"http://test.example/\" ],"
-    "    \"success_sample_rate\": 0.01,"
-    "    \"failure_sample_rate\": 0.10"
-    "  } ],"
-    "  \"collectors\": [ {"
-    "    \"upload_url\": \"https://test.example/domrel/upload\""
-    "  } ]"
+    "{ \"origin\": \"https://example/\","
+    "  \"include_subdomains\": false,"
+    "  \"collectors\": [ \"https://example/upload\" ],"
+    "  \"path_prefixes\": ["
+    "    \"/css/\","
+    "    \"/js/\""
+    "  ],"
+    "  \"failure_sample_rate\": 0.10,"
+    "  \"success_sample_rate\": 0.01"
     "}";
 
   scoped_ptr<const DomainReliabilityConfig> config(
       DomainReliabilityConfig::FromJSON(config_json));
 
   EXPECT_TRUE(config);
-  EXPECT_EQ("1", config->version);
-  EXPECT_EQ("test.example", config->domain);
-  EXPECT_EQ(1u, config->resources.size());
-  EXPECT_EQ("home", config->resources[0]->name);
-  EXPECT_EQ(1u, config->resources[0]->url_patterns.size());
-  EXPECT_EQ("http://test.example/", *(config->resources[0]->url_patterns[0]));
-  EXPECT_EQ(0.01, config->resources[0]->success_sample_rate);
-  EXPECT_EQ(0.10, config->resources[0]->failure_sample_rate);
+  EXPECT_EQ("https://example/", config->origin.spec());
+  EXPECT_FALSE(config->include_subdomains);
   EXPECT_EQ(1u, config->collectors.size());
-  EXPECT_EQ(GURL("https://test.example/domrel/upload"),
-      config->collectors[0]->upload_url);
+  EXPECT_EQ(GURL("https://example/upload"), *config->collectors[0]);
+  EXPECT_EQ(2u, config->path_prefixes.size());
+  EXPECT_EQ("/css/", *config->path_prefixes[0]);
+  EXPECT_EQ("/js/", *config->path_prefixes[1]);
+  EXPECT_EQ(0.10, config->failure_sample_rate);
+  EXPECT_EQ(0.01, config->success_sample_rate);
 }
 
 }  // namespace

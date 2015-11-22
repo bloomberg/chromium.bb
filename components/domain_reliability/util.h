@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -48,6 +49,10 @@ void GetUploadResultFromResponseDetails(
     int http_response_code,
     base::TimeDelta retry_after,
     DomainReliabilityUploader::UploadResult* result);
+
+GURL SanitizeURLForReport(const GURL& beacon_url,
+                          const GURL& collector_url,
+                          const ScopedVector<std::string>& path_prefixes);
 
 // Mockable wrapper around TimeTicks::Now and Timer. Mock version is in
 // test_util.h.

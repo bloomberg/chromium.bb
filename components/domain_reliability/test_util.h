@@ -12,6 +12,7 @@
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/host_port_pair.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestStatus;
@@ -119,9 +120,9 @@ class MockTime : public MockableTime {
   TaskMap tasks_;
 };
 
-scoped_ptr<const DomainReliabilityConfig> MakeTestConfig();
-scoped_ptr<const DomainReliabilityConfig> MakeTestConfigWithDomain(
-    const std::string& domain);
+scoped_ptr<DomainReliabilityConfig> MakeTestConfig();
+scoped_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
+    const GURL& origin);
 DomainReliabilityScheduler::Params MakeTestSchedulerParams();
 
 }  // namespace domain_reliability

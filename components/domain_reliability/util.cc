@@ -67,6 +67,11 @@ const struct NetErrorMapping {
   { net::ERR_SSL_UNRECOGNIZED_NAME_ALERT, "ssl.unrecognized_name_alert" }
 };
 
+bool CanReportFullBeaconURLToCollector(const GURL& beacon_url,
+                                       const GURL& collector_url) {
+  return beacon_url.GetOrigin() == collector_url.GetOrigin();
+}
+
 }  // namespace
 
 // static
@@ -152,6 +157,34 @@ void GetUploadResultFromResponseDetails(
 
   result->status = DomainReliabilityUploader::UploadResult::FAILURE;
   return;
+}
+
+// N.B. This uses a ScopedVector because that's what JSONValueConverter uses
+// for repeated fields of any type, and Config uses JSONValueConverter to parse
+// JSON configs.
+GURL SanitizeURLForReport(const GURL& beacon_url,
+                          const GURL& collector_url,
+                          const ScopedVector<std::string>& path_prefixes) {
+  if (CanReportFullBeaconURLToCollector(beacon_url, collector_url))
+    return beacon_url.GetAsReferrer();
+
+  std::string path = beacon_url.path();
+  const std::string empty_path;
+  const std::string* longest_path_prefix = &empty_path;
+  for (const std::string* path_prefix : path_prefixes) {
+    if (path.substr(0, path_prefix->length()) == *path_prefix &&
+        path_prefix->length() > longest_path_prefix->length()) {
+      longest_path_prefix = path_prefix;
+    }
+  }
+
+  GURL::Replacements replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  replacements.SetPathStr(*longest_path_prefix);
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  return beacon_url.ReplaceComponents(replacements);
 }
 
 namespace {

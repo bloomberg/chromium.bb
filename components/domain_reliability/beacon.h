@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "url/gurl.h"
 
 namespace base {
 class Value;
@@ -24,13 +26,21 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
 
   // Converts the Beacon to JSON format for uploading. Calculates the age
   // relative to an upload time of |upload_time|.
-  base::Value* ToValue(base::TimeTicks upload_time,
-                       base::TimeTicks last_network_change_time) const;
+  //
+  // |last_network_change_time| is used to determine which beacons are
+  // labeled as from a previous network connection.
+  // |collector_url| is compared to the URLs in the beacons to determine which
+  // are being uploaded to a same-origin collector.
+  // |path_prefixes| are used to include only a known-safe (not PII) prefix of
+  // URLs when uploading to a non-same-origin collector.
+  scoped_ptr<base::Value> ToValue(
+      base::TimeTicks upload_time,
+      base::TimeTicks last_network_change_time,
+      const GURL& collector_url,
+      const ScopedVector<std::string>& path_prefixes) const;
 
   // The URL that the beacon is reporting on, if included.
-  std::string url;
-  // The domain that the beacon is reporting on, if included.
-  std::string domain;
+  GURL url;
   // The resource name that the beacon is reporting on, if included.
   std::string resource;
   // Status string (e.g. "ok", "dns.nxdomain", "http.403").

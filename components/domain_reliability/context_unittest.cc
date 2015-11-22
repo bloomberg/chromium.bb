@@ -21,20 +21,20 @@
 namespace domain_reliability {
 namespace {
 
-typedef std::vector<DomainReliabilityBeacon> BeaconVector;
+typedef std::vector<const DomainReliabilityBeacon*> BeaconVector;
 
-DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
-  DomainReliabilityBeacon beacon;
-  beacon.domain = "localhost";
-  beacon.status = "ok";
-  beacon.chrome_error = net::OK;
-  beacon.server_ip = "127.0.0.1";
-  beacon.was_proxied = false;
-  beacon.protocol = "HTTP";
-  beacon.http_response_code = 200;
-  beacon.elapsed = base::TimeDelta::FromMilliseconds(250);
-  beacon.start_time = time->NowTicks() - beacon.elapsed;
-  return beacon;
+scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
+  scoped_ptr<DomainReliabilityBeacon> beacon(new DomainReliabilityBeacon());
+  beacon->url = GURL("https://localhost/");
+  beacon->status = "tcp.connection_reset";
+  beacon->chrome_error = net::ERR_CONNECTION_RESET;
+  beacon->server_ip = "127.0.0.1";
+  beacon->was_proxied = false;
+  beacon->protocol = "HTTP";
+  beacon->http_response_code = -1;
+  beacon->elapsed = base::TimeDelta::FromMilliseconds(250);
+  beacon->start_time = time->NowTicks() - beacon->elapsed;
+  return beacon.Pass();
 }
 
 class DomainReliabilityContextTest : public testing::Test {
@@ -89,14 +89,6 @@ class DomainReliabilityContextTest : public testing::Test {
     return beacons.empty();
   }
 
-  bool CheckCounts(size_t index,
-                   unsigned expected_successful,
-                   unsigned expected_failed) {
-    unsigned successful, failed;
-    context_.GetRequestCountsForTesting(index, &successful, &failed);
-    return successful == expected_successful && failed == expected_failed;
-  }
-
   MockTime time_;
   base::TimeTicks last_network_change_time_;
   DomainReliabilityDispatcher dispatcher_;
@@ -125,65 +117,32 @@ class DomainReliabilityContextTest : public testing::Test {
 
 TEST_F(DomainReliabilityContextTest, Create) {
   EXPECT_TRUE(CheckNoBeacons());
-  EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
-TEST_F(DomainReliabilityContextTest, NoResource) {
-  GURL url("http://example/no_resource");
-  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.OnBeacon(url, beacon);
-
-  EXPECT_TRUE(CheckNoBeacons());
-  EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
-}
-
-TEST_F(DomainReliabilityContextTest, NeverReport) {
-  GURL url("http://example/never_report");
-  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.OnBeacon(url, beacon);
-
-  EXPECT_TRUE(CheckNoBeacons());
-  EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckCounts(1, 1, 0));
-}
-
-TEST_F(DomainReliabilityContextTest, AlwaysReport) {
-  GURL url("http://example/always_report");
-  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.OnBeacon(url, beacon);
+TEST_F(DomainReliabilityContextTest, Report) {
+  context_.OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
   context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
-  EXPECT_TRUE(CheckCounts(0, 1, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
-TEST_F(DomainReliabilityContextTest, ReportUpload) {
-  GURL url("http://example/always_report");
-  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.OnBeacon(url, beacon);
+TEST_F(DomainReliabilityContextTest, Upload) {
+  context_.OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
   context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
-  EXPECT_TRUE(CheckCounts(0, 1, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 
   // N.B.: Assumes max_delay is 5 minutes.
   const char* kExpectedReport = "{"
-      "\"config_version\":\"1\","
-      "\"entries\":[{\"domain\":\"localhost\","
-          "\"http_response_code\":200,\"network_changed\":false,"
-          "\"protocol\":\"HTTP\",\"request_age_ms\":300250,"
-          "\"request_elapsed_ms\":250,\"resource\":\"always_report\","
-          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\","
-          "\"was_proxied\":false}],"
-      "\"reporter\":\"test-reporter\","
-      "\"resources\":[{\"failed_requests\":0,\"name\":\"always_report\","
-          "\"successful_requests\":1}]}";
+    "\"entries\":["
+      "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
+      "\"network_changed\":false,\"protocol\":\"HTTP\","
+      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
+      "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
+      "\"url\":\"https://localhost/\",\"was_proxied\":false}],"
+      "\"reporter\":\"test-reporter\"}";
 
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
@@ -195,38 +154,28 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   CallUploadCallback(result);
 
   EXPECT_TRUE(CheckNoBeacons());
-  EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
-TEST_F(DomainReliabilityContextTest, ReportUpload_NetworkChanged) {
-  GURL url("http://example/always_report");
-  DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.OnBeacon(url, beacon);
+TEST_F(DomainReliabilityContextTest, Upload_NetworkChanged) {
+  context_.OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
   context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
-  EXPECT_TRUE(CheckCounts(0, 1, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 
   // N.B.: Assumes max_delay is 5 minutes.
   const char* kExpectedReport = "{"
-      "\"config_version\":\"1\","
-      "\"entries\":[{\"domain\":\"localhost\","
-          "\"http_response_code\":200,\"network_changed\":true,"
-          "\"protocol\":\"HTTP\",\"request_age_ms\":300250,"
-          "\"request_elapsed_ms\":250,\"resource\":\"always_report\","
-          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\","
-          "\"was_proxied\":false}],"
-      "\"reporter\":\"test-reporter\","
-      "\"resources\":[{\"failed_requests\":0,\"name\":\"always_report\","
-          "\"successful_requests\":1}]}";
+    "\"entries\":["
+      "{\"failure_data\":{\"custom_error\":\"net::ERR_CONNECTION_RESET\"},"
+      "\"network_changed\":true,\"protocol\":\"HTTP\","
+      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
+      "\"server_ip\":\"127.0.0.1\",\"status\":\"tcp.connection_reset\","
+      "\"url\":\"https://localhost/\",\"was_proxied\":false}],"
+      "\"reporter\":\"test-reporter\"}";
 
   // Simulate a network change after the request but before the upload.
   last_network_change_time_ = time_.NowTicks();
   time_.Advance(max_delay());
-
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -236,9 +185,9 @@ TEST_F(DomainReliabilityContextTest, ReportUpload_NetworkChanged) {
   CallUploadCallback(result);
 
   EXPECT_TRUE(CheckNoBeacons());
-  EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
+
+// TODO(ttuttle): Add beacon_unittest.cc to test serialization.
 
 }  // namespace
 }  // namespace domain_reliability

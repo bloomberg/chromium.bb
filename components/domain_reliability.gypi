@@ -41,6 +41,8 @@
         'domain_reliability/dispatcher.cc',
         'domain_reliability/dispatcher.h',
         'domain_reliability/domain_reliability_export.h',
+        'domain_reliability/google_configs.cc',
+        'domain_reliability/google_configs.h',
         'domain_reliability/monitor.cc',
         'domain_reliability/monitor.h',
         'domain_reliability/scheduler.cc',
