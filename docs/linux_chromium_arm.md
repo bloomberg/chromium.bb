@@ -24,7 +24,7 @@ These instruction are designed to run on Ubuntu Precise.
 The install-build-deps script can be used to install all the compiler
 and library dependencies directly from Ubuntu:
 
-    $ ./build/install-build-deps.sh --arm
+    $ ./build/install-build-deps.sh
 
 ### Installing the rootfs
 
@@ -52,26 +52,15 @@ but are not needed at build-time (when you run make/ninja).
 
 ### Automated Build and Testing
 
-Chromium's testing infrastructure for ARM/Linux is (to say the least)
-in its infancy. There are currently two builders setup, one on the
-FYI waterfall and one the the trybot waterfall:
-
-*   [Linux ARM Cross-Compile](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Cross-Compile)
-*   [linux_arm](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm)
-
-These builders cross compile on x86-64 and then trigger testing on real ARM hard
-bots:
-
-*   [Linux ARM Tests (Panda)](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Tests%20%28Panda%29/)
-*   [linux_arm_tester](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_tester)
-
-Unfortunately, even those the builders are usually green, the testers are not
-yet well maintained or monitored.
-
-There is compile-only trybot and fyi bot also:
+Chromium's testing infrastructure for ARM/Linux is somewhat limited.
+There are currently two builders setup, one on the FYI waterfall and one
+the the trybot waterfall:
 
 *   [Linux ARM](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM)
 *   [linux_arm_compile](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_compile)
+
+These bots run x86-64 linux and cross-compile the ARM targets.  Tests are
+run on ARM hardware via swarming.
 
 ### Testing with QEMU
 
