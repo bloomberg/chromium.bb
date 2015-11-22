@@ -42,7 +42,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
 
   scoped_ptr<WebLayerImpl> layer_;
   blink::WebContentLayerClient* client_;
-  bool draws_content_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentLayerImpl);
