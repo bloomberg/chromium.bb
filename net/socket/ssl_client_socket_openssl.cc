@@ -52,10 +52,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if !defined(OS_NACL)
-#include "net/ssl/ssl_platform_key.h"
-#endif
-
 #if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
