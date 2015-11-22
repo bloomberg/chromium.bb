@@ -52,27 +52,10 @@ const int kUploadDataSize = arraysize(kUploadData)-1;
 // SPDY.
 NextProtoVector SpdyNextProtos();
 
-// Chop a frame into an array of MockWrites.
-// |data| is the frame to chop.
-// |length| is the length of the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockWrite* ChopWriteFrame(const char* data, int length, int num_chunks);
-
 // Chop a SpdyFrame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
 MockWrite* ChopWriteFrame(const SpdyFrame& frame, int num_chunks);
-
-// Chop a frame into an array of MockReads.
-// |data| is the frame to chop.
-// |length| is the length of the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockRead* ChopReadFrame(const char* data, int length, int num_chunks);
-
-// Chop a SpdyFrame into an array of MockReads.
-// |frame| is the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockRead* ChopReadFrame(const SpdyFrame& frame, int num_chunks);
 
 // Adds headers and values to a map.
 // |extra_headers| is an array of { name, value } pairs, arranged as strings
@@ -415,11 +398,6 @@ class SpdyTestUtil {
                               SpdyStreamId stream_id,
                               RequestPriority request_priority);
 
-  SpdyFrame* ConstructSpdyGetForProxy(const char* const url,
-                                      bool compressed,
-                                      SpdyStreamId stream_id,
-                                      RequestPriority request_priority) const;
-
   // Constructs a standard SPDY GET SYN frame, optionally compressed.
   // |extra_headers| are the extra header-value pairs, which typically
   // will vary the most between calls.  If |direct| is false, the
@@ -556,8 +534,6 @@ class SpdyTestUtil {
   // when setting dependencies based on priorioties) to notify the utility
   // class of stream destruction.
   void UpdateWithStreamDestruction(int stream_id);
-
-  const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type);
 
   // For versions below SPDY4, adds the version HTTP/1.1 header.
   void MaybeAddVersionHeader(SpdyFrameWithHeaderBlockIR* frame_ir) const;

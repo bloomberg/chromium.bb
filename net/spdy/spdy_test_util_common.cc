@@ -64,49 +64,19 @@ NextProtoVector SpdyNextProtos() {
 }
 
 // Chop a frame into an array of MockWrites.
-// |data| is the frame to chop.
-// |length| is the length of the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockWrite* ChopWriteFrame(const char* data, int length, int num_chunks) {
-  MockWrite* chunks = new MockWrite[num_chunks];
-  int chunk_size = length / num_chunks;
-  for (int index = 0; index < num_chunks; index++) {
-    const char* ptr = data + (index * chunk_size);
-    if (index == num_chunks - 1)
-      chunk_size += length % chunk_size;  // The last chunk takes the remainder.
-    chunks[index] = MockWrite(ASYNC, ptr, chunk_size);
-  }
-  return chunks;
-}
-
-// Chop a SpdyFrame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
 MockWrite* ChopWriteFrame(const SpdyFrame& frame, int num_chunks) {
-  return ChopWriteFrame(frame.data(), frame.size(), num_chunks);
-}
-
-// Chop a frame into an array of MockReads.
-// |data| is the frame to chop.
-// |length| is the length of the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockRead* ChopReadFrame(const char* data, int length, int num_chunks) {
-  MockRead* chunks = new MockRead[num_chunks];
-  int chunk_size = length / num_chunks;
+  MockWrite* chunks = new MockWrite[num_chunks];
+  int chunk_size = frame.size() / num_chunks;
   for (int index = 0; index < num_chunks; index++) {
-    const char* ptr = data + (index * chunk_size);
+    const char* ptr = frame.data() + (index * chunk_size);
     if (index == num_chunks - 1)
-      chunk_size += length % chunk_size;  // The last chunk takes the remainder.
-    chunks[index] = MockRead(ASYNC, ptr, chunk_size);
+      chunk_size +=
+          frame.size() % chunk_size;  // The last chunk takes the remainder.
+    chunks[index] = MockWrite(ASYNC, ptr, chunk_size);
   }
   return chunks;
-}
-
-// Chop a SpdyFrame into an array of MockReads.
-// |frame| is the frame to chop.
-// |num_chunks| is the number of chunks to create.
-MockRead* ChopReadFrame(const SpdyFrame& frame, int num_chunks) {
-  return ChopReadFrame(frame.data(), frame.size(), num_chunks);
 }
 
 // Adds headers and values to a map.
@@ -1304,22 +1274,6 @@ void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {
     }
   }
   NOTREACHED();
-}
-
-const SpdyHeaderInfo SpdyTestUtil::MakeSpdyHeader(SpdyFrameType type) {
-  const SpdyHeaderInfo kHeader = {
-    type,
-    1,                            // Stream ID
-    0,                            // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_version_),
-    CONTROL_FLAG_FIN,             // Control Flags
-    false,                        // Compressed
-    RST_STREAM_INVALID,
-    NULL,                         // Data
-    0,                            // Length
-    DATA_FLAG_NONE
-  };
-  return kHeader;
 }
 
 scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer(bool compressed) const {
