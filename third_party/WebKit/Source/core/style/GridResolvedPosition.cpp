@@ -75,14 +75,14 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     GridResolvedPosition resolvedFinalPosition = resolvedInitialPosition.next();
 
     if (initialPosition.isSpan())
-        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalSide);
+        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalSide);
     if (finalPosition.isSpan())
-        return *resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalSide);
+        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalSide);
 
-    return GridSpan(resolvedInitialPosition, resolvedFinalPosition);
+    return GridSpan::definiteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
+GridSpan GridResolvedPosition::resolveGridPositionsFromStyle(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
@@ -92,7 +92,7 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const C
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         // We can't get our grid positions without running the auto placement algorithm.
-        return nullptr;
+        return GridSpan::indefiniteGridSpan();
     }
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition()) {
@@ -114,7 +114,7 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const C
     if (resolvedFinalPosition <= resolvedInitialPosition)
         resolvedFinalPosition = resolvedInitialPosition.next();
 
-    return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
+    return GridSpan::definiteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
 
 size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
@@ -210,12 +210,12 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const Co
     return GridResolvedPosition(0);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+GridSpan GridResolvedPosition::resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     if (position.isAuto()) {
         if ((side == ColumnStartSide || side == RowStartSide) && resolvedOppositePosition.toInt())
-            return GridSpan::create(resolvedOppositePosition.prev(), resolvedOppositePosition);
-        return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition.next());
+            return GridSpan::definiteGridSpan(resolvedOppositePosition.prev(), resolvedOppositePosition);
+        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition.next());
     }
 
     ASSERT(position.isSpan());
@@ -226,10 +226,10 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionAgainstOppositePos
         return resolveNamedGridLinePositionAgainstOppositePosition(gridContainerStyle, resolvedOppositePosition, position, side);
     }
 
-    return GridSpan::createWithSpanAgainstOpposite(resolvedOppositePosition, position, side);
+    return GridSpan::definiteGridSpanWithSpanAgainstOpposite(resolvedOppositePosition, position, side);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+GridSpan GridResolvedPosition::resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     ASSERT(position.isSpan());
     ASSERT(!position.namedGridLine().isNull());
@@ -243,11 +243,11 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveNamedGridLinePositionAgainstOp
     // See http://lists.w3.org/Archives/Public/www-style/2013Jun/0394.html.
     if (it == gridLinesNames.end()) {
         if ((side == ColumnStartSide || side == RowStartSide) && resolvedOppositePosition.toInt())
-            return GridSpan::create(resolvedOppositePosition.prev(), resolvedOppositePosition);
-        return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition.next());
+            return GridSpan::definiteGridSpan(resolvedOppositePosition.prev(), resolvedOppositePosition);
+        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition.next());
     }
 
-    return GridSpan::createWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, it->value);
+    return GridSpan::definiteGridSpanWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, it->value);
 }
 
 } // namespace blink

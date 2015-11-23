@@ -2954,24 +2954,24 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
 
         NamedGridAreaMap::iterator gridAreaIt = gridAreaMap.find(gridAreaName);
         if (gridAreaIt == gridAreaMap.end()) {
-            gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan(rowCount, rowCount + 1), GridSpan(currentCol, lookAheadCol)));
+            gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan::definiteGridSpan(rowCount, rowCount + 1), GridSpan::definiteGridSpan(currentCol, lookAheadCol)));
         } else {
             GridCoordinate& gridCoordinate = gridAreaIt->value;
 
             // The following checks test that the grid area is a single filled-in rectangle.
             // 1. The new row is adjacent to the previously parsed row.
-            if (rowCount != gridCoordinate.rows.resolvedFinalPosition.toInt())
+            if (rowCount != gridCoordinate.rows.resolvedFinalPosition().toInt())
                 return false;
 
             // 2. The new area starts at the same position as the previously parsed area.
-            if (currentCol != gridCoordinate.columns.resolvedInitialPosition.toInt())
+            if (currentCol != gridCoordinate.columns.resolvedInitialPosition().toInt())
                 return false;
 
             // 3. The new area ends at the same position as the previously parsed area.
-            if (lookAheadCol != gridCoordinate.columns.resolvedFinalPosition.toInt())
+            if (lookAheadCol != gridCoordinate.columns.resolvedFinalPosition().toInt())
                 return false;
 
-            ++gridCoordinate.rows.resolvedFinalPosition;
+            gridCoordinate.rows = GridSpan::definiteGridSpan(gridCoordinate.rows.resolvedInitialPosition(), gridCoordinate.rows.resolvedFinalPosition().next());
         }
         currentCol = lookAheadCol - 1;
     }

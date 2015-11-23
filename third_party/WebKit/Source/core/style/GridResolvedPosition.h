@@ -37,11 +37,11 @@ public:
     static GridPositionSide finalPositionSide(GridTrackSizingDirection);
     static void initialAndFinalPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, GridPosition &initialPosition, GridPosition &finalPosition);
     static GridSpan resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, const GridResolvedPosition&);
-    static PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
+    static GridSpan resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
     static GridResolvedPosition resolveNamedGridLinePositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
     static GridResolvedPosition resolveGridPositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
-    static PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
-    static PassOwnPtr<GridSpan> resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
+    static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
+    static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
 
     GridResolvedPosition(size_t position)
         : m_integerPosition(position)

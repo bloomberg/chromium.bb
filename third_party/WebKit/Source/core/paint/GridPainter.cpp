@@ -25,7 +25,7 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
         --endGridAreaIndex;
 
     // GridSpan stores lines' indexes (not tracks' indexes).
-    return GridSpan(startGridAreaIndex, endGridAreaIndex + 1);
+    return GridSpan::definiteGridSpan(startGridAreaIndex, endGridAreaIndex + 1);
 }
 
 class GridItemsSorter {
