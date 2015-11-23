@@ -16,6 +16,7 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
@@ -272,44 +273,7 @@ int NaClMprotect(void *addr, size_t len, int prot) {
     return -EINVAL;
   }
   end_addr = start_addr + len;
-
-#define M(P)                                                      \
-  do {                                                            \
-    NaClLog(2, "NaClMprotect: newProtection %s, 0x%x\n", #P, P);  \
-    newProtection = P;                                            \
-  } while (0)
-
-  switch (prot) {
-    case PROT_EXEC: {
-      M(PAGE_EXECUTE);
-      break;
-    }
-    case PROT_EXEC | PROT_READ: {
-      M(PAGE_EXECUTE_READ);
-      break;
-    }
-    case PROT_EXEC | PROT_READ | PROT_WRITE: {
-      M(PAGE_EXECUTE_READWRITE);
-      break;
-    }
-    case PROT_READ: {
-      M(PAGE_READONLY);
-      break;
-    }
-    case PROT_READ | PROT_WRITE: {
-      M(PAGE_READWRITE);
-      break;
-    }
-    case PROT_NONE: {
-      M(PAGE_NOACCESS);
-      break;
-    }
-    default: {
-      NaClLog(2, "NaClMprotect: invalid protection mode\n");
-      return -EINVAL;
-    }
-  }
-#undef M
+  newProtection = NaClflProtectMap(prot);
   /*
    * VirtualProtect region cannot span allocations: all addresses from
    * [lpAddress, lpAddress+dwSize) must be in one region of memory
