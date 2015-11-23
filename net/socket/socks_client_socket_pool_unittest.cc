@@ -109,7 +109,9 @@ class SOCKSClientSocketPoolTest : public testing::Test {
     return test_base_.GetOrderOfRequest(index);
   }
 
-  ScopedVector<TestSocketRequest>* requests() { return test_base_.requests(); }
+  std::vector<scoped_ptr<TestSocketRequest>>* requests() {
+    return test_base_.requests();
+  }
 
   MockClientSocketFactory transport_client_socket_factory_;
   MockTransportClientSocketPool transport_socket_pool_;

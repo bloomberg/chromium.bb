@@ -1029,9 +1029,9 @@ class ClientSocketPoolTest {
       RequestPriority priority,
       const scoped_refptr<typename PoolType::SocketParams>& socket_params) {
     DCHECK(socket_pool);
-    TestSocketRequest* request =
-        new TestSocketRequest(&request_order_, &completion_count_);
-    requests_.push_back(request);
+    TestSocketRequest* request(
+        new TestSocketRequest(&request_order_, &completion_count_));
+    requests_.push_back(make_scoped_ptr(request));
     int rv = request->handle()->Init(group_name,
                                      socket_params,
                                      priority,
@@ -1058,14 +1058,14 @@ class ClientSocketPoolTest {
 
   // Note that this uses 0-based indices, while GetOrderOfRequest takes and
   // returns 0-based indices.
-  TestSocketRequest* request(int i) { return requests_[i]; }
+  TestSocketRequest* request(int i) { return requests_[i].get(); }
 
   size_t requests_size() const { return requests_.size(); }
-  ScopedVector<TestSocketRequest>* requests() { return &requests_; }
+  std::vector<scoped_ptr<TestSocketRequest>>* requests() { return &requests_; }
   size_t completion_count() const { return completion_count_; }
 
  private:
-  ScopedVector<TestSocketRequest> requests_;
+  std::vector<scoped_ptr<TestSocketRequest>> requests_;
   std::vector<TestSocketRequest*> request_order_;
   size_t completion_count_;
 
@@ -1133,7 +1133,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
 
  private:
   ClientSocketFactory* client_socket_factory_;
-  ScopedVector<MockConnectJob> job_list_;
+  std::vector<scoped_ptr<MockConnectJob>> job_list_;
   RequestPriority last_request_priority_;
   int release_count_;
   int cancel_count_;

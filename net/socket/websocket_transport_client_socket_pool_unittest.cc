@@ -102,7 +102,9 @@ class WebSocketTransportClientSocketPoolTest : public ::testing::Test {
 
   TestSocketRequest* request(int i) { return test_base_.request(i); }
 
-  ScopedVector<TestSocketRequest>* requests() { return test_base_.requests(); }
+  std::vector<scoped_ptr<TestSocketRequest>>* requests() {
+    return test_base_.requests();
+  }
   size_t completion_count() const { return test_base_.completion_count(); }
 
   TestNetLog net_log_;

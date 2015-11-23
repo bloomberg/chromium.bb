@@ -1785,19 +1785,18 @@ int ClientSocketPoolTest::GetOrderOfRequest(size_t index) const {
     return kIndexOutOfBounds;
 
   for (size_t i = 0; i < request_order_.size(); i++)
-    if (requests_[index] == request_order_[i])
+    if (requests_[index].get() == request_order_[i])
       return i + 1;
 
   return kRequestNotFound;
 }
 
 bool ClientSocketPoolTest::ReleaseOneConnection(KeepAlive keep_alive) {
-  ScopedVector<TestSocketRequest>::iterator i;
-  for (i = requests_.begin(); i != requests_.end(); ++i) {
-    if ((*i)->handle()->is_initialized()) {
+  for (scoped_ptr<TestSocketRequest>& it : requests_) {
+    if (it->handle()->is_initialized()) {
       if (keep_alive == NO_KEEP_ALIVE)
-        (*i)->handle()->socket()->Disconnect();
-      (*i)->handle()->Reset();
+        it->handle()->socket()->Disconnect();
+      it->handle()->Reset();
       base::RunLoop().RunUntilIdle();
       return true;
     }
@@ -1902,16 +1901,15 @@ int MockTransportClientSocketPool::RequestSocket(
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), net_log.net_log(), NetLog::Source());
   MockConnectJob* job = new MockConnectJob(socket.Pass(), handle, callback);
-  job_list_.push_back(job);
+  job_list_.push_back(make_scoped_ptr(job));
   handle->set_pool_id(1);
   return job->Connect();
 }
 
 void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
                                                   ClientSocketHandle* handle) {
-  std::vector<MockConnectJob*>::iterator i;
-  for (i = job_list_.begin(); i != job_list_.end(); ++i) {
-    if ((*i)->CancelHandle(handle)) {
+  for (scoped_ptr<MockConnectJob>& it : job_list_) {
+    if (it->CancelHandle(handle)) {
       cancel_count_++;
       break;
     }
