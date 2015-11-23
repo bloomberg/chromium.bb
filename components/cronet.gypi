@@ -164,6 +164,7 @@
           ],
           'dependencies': [
             '../net/net.gyp:net_small',
+            '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
           ],
           'conditions': [
             ['enable_data_reduction_proxy_support==1',
@@ -183,6 +184,7 @@
           'dependencies': [
             '../base/base.gyp:base_i18n',
             '../net/net.gyp:net',
+            '../url/url.gyp:url_lib',
           ],
           'conditions': [
             ['enable_data_reduction_proxy_support==1',
@@ -205,7 +207,6 @@
             'cronet_static_small',
             '../base/base.gyp:base',
             '../net/net.gyp:net_small',
-            '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
           ],
         },
         { # cronet_api.jar defines Cronet API and provides implementation of
@@ -363,7 +364,6 @@
             '../net/net.gyp:net_quic_proto',
             '../net/net.gyp:net_test_support',
             '../net/net.gyp:simple_quic_tools',
-            '../url/url.gyp:url_lib',
             '../base/base.gyp:base_i18n',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
@@ -444,6 +444,36 @@
             'run_findbugs': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
+          'target_name': 'cronet_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'cronet_static',
+            'metrics',
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+          'sources': [
+            'cronet/run_all_unittests.cc',
+            'cronet/url_request_context_config_unittest.cc',
+            'cronet/histogram_manager_unittest.cc',
+          ],
+        },
+        {
+          'target_name': 'cronet_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cronet_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cronet_unittests',
+          },
+          'includes': [
+            '../build/apk_test.gypi',
+          ],
         },
         {
           'target_name': 'cronet_package',
