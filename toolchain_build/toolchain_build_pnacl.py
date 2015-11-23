@@ -871,6 +871,13 @@ def HostTools(host, options):
                    '--disable-bindings', # ocaml is currently the only binding.
                    '--disable-jit',
                    '--disable-terminfo',
+                   # Nothing built here actually uses -ledit for anything,
+                   # but configure will decide to use it and then the tools
+                   # buildt will have a runtime dependency on libedit.  On
+                   # newer Mac versions, this gets a dependency on
+                   # libedit.3.dylib--but older Mac installs have only
+                   # libedit.2.dylib available.
+                   '--disable-libedit',
                    '--disable-zlib',
                    '--enable-optimized=' + ('no' if HostIsDebug(options)
                                             else 'yes'),
