@@ -20,6 +20,8 @@ PASS new RTCIceCandidate({candidate:"x"}); did not throw exception.
 PASS candidate.candidate is "bar"
 PASS candidate.sdpMid is "foo"
 PASS candidate.sdpMLineIndex is 0
+PASS candidate.candidate is "null"
+PASS candidate.sdpMid is "null"
 PASS successfullyParsed is true
 
 TEST COMPLETE

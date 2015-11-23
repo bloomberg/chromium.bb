@@ -38,6 +38,10 @@ shouldBeEqualToString('candidate.candidate', 'bar');
 shouldBeEqualToString('candidate.sdpMid', 'foo');
 shouldBe('candidate.sdpMLineIndex', '0');
 
+candidate.candidate = null;
+candidate.sdpMid = null;
+shouldBeEqualToString('candidate.candidate', 'null');
+shouldBeEqualToString('candidate.sdpMid', 'null');
 
 window.successfullyParsed = true;
 </script>
