@@ -4596,6 +4596,25 @@ public:
     Member<IntWrapper> m_obj;
 };
 
+class DerivedMultipleMixins : public MultipleMixins {
+public:
+    DerivedMultipleMixins() : m_obj(IntWrapper::create(103)) { }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        s_traceCalled++;
+        visitor->trace(m_obj);
+        MultipleMixins::trace(visitor);
+    }
+
+    static int s_traceCalled;
+
+private:
+    Member<IntWrapper> m_obj;
+};
+
+int DerivedMultipleMixins::s_traceCalled = 0;
+
 static const bool s_isMixinTrue = IsGarbageCollectedMixin<MultipleMixins>::value;
 static const bool s_isMixinFalse = IsGarbageCollectedMixin<IntWrapper>::value;
 
@@ -4619,6 +4638,29 @@ TEST(HeapTest, MultipleMixins)
     }
     preciselyCollectGarbage();
     EXPECT_EQ(3, IntWrapper::s_destructorCalls);
+}
+
+TEST(HeapTest, DerivedMultipleMixins)
+{
+    clearOutOldGarbage();
+    IntWrapper::s_destructorCalls = 0;
+    DerivedMultipleMixins::s_traceCalled = 0;
+
+    DerivedMultipleMixins* obj = new DerivedMultipleMixins();
+    {
+        Persistent<MixinA> a = obj;
+        preciselyCollectGarbage();
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+        EXPECT_EQ(1, DerivedMultipleMixins::s_traceCalled);
+    }
+    {
+        Persistent<MixinB> b = obj;
+        preciselyCollectGarbage();
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+        EXPECT_EQ(2, DerivedMultipleMixins::s_traceCalled);
+    }
+    preciselyCollectGarbage();
+    EXPECT_EQ(4, IntWrapper::s_destructorCalls);
 }
 
 class GCParkingThreadTester {
