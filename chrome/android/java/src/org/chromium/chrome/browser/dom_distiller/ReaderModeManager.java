@@ -299,9 +299,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                     boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                     boolean isIframeSrcdoc) {
                 if (!isMainFrame) return;
-                mTabStatusMap.get(readerTabId).setUrl(validatedUrl);
+
+                // Make sure the tab was not destroyed.
+                ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
+                if (tabInfo == null) return;
+
+                tabInfo.setUrl(validatedUrl);
                 if (DomDistillerUrlUtils.isDistilledPage(validatedUrl)) {
-                    mTabStatusMap.get(readerTabId).setStatus(STARTED);
+                    tabInfo.setStatus(STARTED);
                     closeReaderPanel(StateChangeReason.UNKNOWN, true);
                     mReaderModePageUrl = validatedUrl;
                 }
@@ -316,16 +321,20 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 if (isNavigationInPage) return;
                 if (DomDistillerUrlUtils.isDistilledPage(url)) return;
 
-                mTabStatusMap.get(readerTabId).setStatus(POSSIBLE);
+                // Make sure the tab was not destroyed.
+                ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
+                if (tabInfo == null) return;
+
+                tabInfo.setStatus(POSSIBLE);
                 if (!TextUtils.equals(url,
                         DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
                                 mReaderModePageUrl))) {
-                    mTabStatusMap.get(readerTabId).setStatus(NOT_POSSIBLE);
+                    tabInfo.setStatus(NOT_POSSIBLE);
                     mIsUmaRecorded = false;
                 }
                 mReaderModePageUrl = null;
-                if (mTabStatusMap.containsKey(readerTabId)
-                        && mTabStatusMap.get(readerTabId).getStatus() != POSSIBLE) {
+
+                if (tabInfo.getStatus() != POSSIBLE) {
                     closeReaderPanel(StateChangeReason.UNKNOWN, false);
                 } else {
                     requestReaderPanelShow(StateChangeReason.UNKNOWN);
@@ -409,10 +418,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 new DistillablePageUtils.PageDistillableDelegate() {
                     @Override
                     public void onIsPageDistillableResult(boolean isDistillable, boolean isLast) {
-                        if (!mTabStatusMap.containsKey(readerTabId)) return;
                         ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
-
                         Tab readerTab = mTabModelSelector.getTabById(readerTabId);
+
+                        // It is possible that the tab was destroyed before this callback happens.
+                        // TODO(wychen/mdjones): Remove the callback when a Tab/WebContents is
+                        // destroyed so that this never happens.
+                        if (readerTab == null || tabInfo == null) return;
+
                         // Make sure the page didn't navigate while waiting for a response.
                         if (!readerTab.getUrl().equals(tabInfo.getUrl())) return;
 
