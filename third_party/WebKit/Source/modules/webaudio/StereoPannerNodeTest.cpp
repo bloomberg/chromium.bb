@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
+#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/StereoPannerNode.h"
 
 #include "core/testing/DummyPageHolder.h"
@@ -26,3 +27,5 @@ TEST(StereoPannerNodeTest, StereoPannerLifetime)
 }
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)

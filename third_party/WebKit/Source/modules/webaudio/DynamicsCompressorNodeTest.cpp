@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
+#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/DynamicsCompressorNode.h"
 
 #include "core/testing/DummyPageHolder.h"
@@ -27,3 +28,5 @@ TEST(DynamicsCompressorNodeTest, ProcessorLifetime)
 }
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
