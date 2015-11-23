@@ -38,6 +38,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        bug=559359)
+    self.Fail('conformance/textures/misc/cube-incomplete-fbo.html',
+        bug=559362)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +
@@ -112,8 +116,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
 
     # Win / OpenGL / Intel failures
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/functions/glsl-function-normalize.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
@@ -140,8 +144,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/functions/' +
         'glsl-function-smoothstep-gentype.html',
         ['mac', ('intel', 0x116)], bug=225642)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['mac', ('intel', 0x116)], bug=369349)
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['mac', ('intel', 0x116)], bug=369349)
 
     # Mac 10.8 / Intel HD 3000 failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -339,6 +343,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # shell.
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'qualcomm'], bug=499555)
+    # Nexus 5 failures
+    self.Fail('conformance/glsl/bugs/struct-constructor-highp-bug.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=559342)
     # Nexus 6 failures only
     self.Fail('conformance/context/' +
               'context-attributes-alpha-depth-stencil-antialias.html',

@@ -79,10 +79,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=483282)
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
+    self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     self.Fail('conformance2/glsl3/invalid-default-precision.html', bug=483282)
     self.Fail('conformance2/glsl3/sequence-operator-returns-non-constant.html',
-        bug=483282)
-    self.Fail('conformance2/glsl3/ternary-operator-on-arrays-glsl3.html',
         bug=483282)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         bug=483282)
