@@ -48,7 +48,7 @@ syncer::SyncError DeviceInfoService::MergeSyncData(
 
 syncer::SyncError DeviceInfoService::ApplySyncChanges(
     syncer_v2::MetadataChanges* metadata_changes,
-    syncer_v2::EntityDataList entity_data_list) {
+    syncer_v2::EntityChangeList entity_changes) {
   // TODO(skym): Implementation.
   return syncer::SyncError();
 }

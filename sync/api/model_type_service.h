@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "sync/api/entity_change.h"
 #include "sync/api/entity_data.h"
 #include "sync/api/model_type_change_processor.h"
 #include "sync/base/sync_export.h"
@@ -49,10 +50,9 @@ class SYNC_EXPORT ModelTypeService {
                                           EntityDataList entity_data_list) = 0;
 
   // Apply changes from the sync server locally.
-  // TODO(skym): The change type should be in here somehow.
   virtual syncer::SyncError ApplySyncChanges(
       MetadataChanges* metadata_changes,
-      EntityDataList entity_data_list) = 0;
+      EntityChangeList entity_changes) = 0;
 
   // Asynchronously retrieve the sync metadata.
   virtual void LoadMetadata(MetadataCallback callback) = 0;

@@ -47,7 +47,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       syncer_v2::EntityDataList entity_data_list) override;
   syncer::SyncError ApplySyncChanges(
       syncer_v2::MetadataChanges* metadata_changes,
-      syncer_v2::EntityDataList entity_data_list) override;
+      syncer_v2::EntityChangeList entity_changes) override;
   void LoadMetadata(MetadataCallback callback) override;
   void GetData(ClientKeyList client_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;

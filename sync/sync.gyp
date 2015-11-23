@@ -77,6 +77,8 @@
         'api/attachments/attachment_store_backend.cc',
         'api/attachments/attachment_store_backend.h',
         'api/data_batch.h',
+        'api/entity_change.cc',
+        'api/entity_change.h',
         'api/entity_data.cc',
         'api/entity_data.h',
         'api/metadata_batch.h',
