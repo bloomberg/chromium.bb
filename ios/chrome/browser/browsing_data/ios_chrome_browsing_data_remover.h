@@ -52,6 +52,7 @@ class IOSChromeBrowsingDataRemover {
     REMOVE_CHANNEL_IDS = 1 << 10,
     REMOVE_GOOGLE_APP_LAUNCHER_DATA = 1 << 11,
     REMOVE_CACHE_STORAGE = 1 << 12,
+    REMOVE_VISITED_LINKS = 1 << 13,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, service workers, cache storage, plugin data, and web app
@@ -60,7 +61,8 @@ class IOSChromeBrowsingDataRemover {
                        REMOVE_LOCAL_STORAGE |
                        REMOVE_CACHE_STORAGE |
                        REMOVE_WEBSQL |
-                       REMOVE_CHANNEL_IDS,
+                       REMOVE_CHANNEL_IDS |
+                       REMOVE_VISITED_LINKS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a ChromeBrowserState, to
