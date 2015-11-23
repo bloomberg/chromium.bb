@@ -286,8 +286,14 @@ void InstalledBubbleContent::LinkClicked(views::Link* source, int event_flags) {
   GetWidget()->Close();
 
   if (source == sign_in_link_) {
+#if defined(OS_ANDROID)
+    // TODO(bshe): Figure out what to do on Android platform. See
+    // crbug.com/559340.
+    NOTIMPLEMENTED();
+#else
     chrome::ShowBrowserSignin(
         browser_, signin_metrics::SOURCE_EXTENSION_INSTALL_BUBBLE);
+#endif
     return;
   }
 
