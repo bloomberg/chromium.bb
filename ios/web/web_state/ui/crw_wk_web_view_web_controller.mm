@@ -212,6 +212,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // YES if the user has interacted with the content area since the last URL
   // change.
   BOOL _interactionRegisteredSinceLastURLChange;
+
+  // YES if the web process backing _wkWebView is believed to currently be dead.
+  BOOL _webProcessIsDead;
 }
 
 // Dictionary where keys are the names of WKWebView properties and values are
@@ -878,6 +881,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)webViewWebProcessDidCrash {
+  _webProcessIsDead = YES;
   if ([self.delegate respondsToSelector:
           @selector(webControllerWebProcessDidCrash:)]) {
     [self.delegate webControllerWebProcessDidCrash:self];
@@ -1469,6 +1473,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)webViewTitleDidChange {
+  // WKWebView's title becomes empty when the web process dies; ignore that
+  // update.
+  if (_webProcessIsDead) {
+    DCHECK_EQ(self.title.length, 0U);
+    return;
+  }
+
   if ([self.delegate respondsToSelector:
           @selector(webController:titleDidChange:)]) {
     DCHECK(self.title);
@@ -1541,6 +1552,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
                     decisionHandler:
         (void (^)(WKNavigationActionPolicy))decisionHandler {
+  _webProcessIsDead = NO;
   if (self.isBeingDestroyed) {
     decisionHandler(WKNavigationActionPolicyCancel);
     return;
