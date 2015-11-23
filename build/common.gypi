@@ -88,10 +88,11 @@
           # Enable Wayland display server support.
           'enable_wayland_server%' : 0,
 
-          # Build against pre-built sysroot image on linux.  By default
-          # the sysroot image is only used for Official builds or when cross
-          # compiling.
-          'use_sysroot%': 0,
+          # By default we build against a stable sysroot image to avoid
+          # depending on the packages installed on the local machine. Set this
+          # to 0 to build against locally installed headers and libraries (e.g.
+          # if packaging for a linux distro)
+          'use_sysroot%': 1,
 
           # Override buildtype to select the desired build flavor.
           # Dev - everyday build for development/testing
@@ -294,8 +295,11 @@
             'mips_arch_variant%': 'r1',
           }],
 
-          # The system root for cross-compiles. Default: none.
-          ['OS=="linux" and chromeos==0 and ((branding=="Chrome" and buildtype=="Official") or target_arch=="arm" or target_arch=="mipsel" or use_sysroot==1)', {
+          # The system root for linux compiles.
+          # Not used when chromecast=1 since ozone_platform_gbm doesn't
+          # currently build against the linux sysroot
+          # TODO(sbc): http://crbug.com/559708
+          ['OS=="linux" and chromeos==0 and chromecast==0 and use_sysroot==1', {
             # sysroot needs to be an absolute path otherwise it generates
             # incorrect results when passed to pkg-config
             'conditions': [

@@ -103,28 +103,6 @@ def DetectArch(gyp_defines, is_android):
   return None
 
 
-def UsingSysroot(target_arch, is_android, gyp_defines):
-  # ChromeOS uses a chroot, so doesn't need a sysroot
-  if gyp_defines.get('chromeos'):
-    return False
-
-  # When cross-compiling non-Android builds we always use a sysroot
-  if not is_android and target_arch in ('arm', 'mips', 'i386'):
-    return True
-
-  # Setting use_sysroot=1 GYP_DEFINES forces the use of the sysroot even
-  # when not cross compiling
-  if gyp_defines.get('use_sysroot'):
-    return True
-
-  # Official builds always use the sysroot.
-  if (gyp_defines.get('branding') == 'Chrome' and
-      gyp_defines.get('buildtype') == 'Official'):
-    return True
-
-  return False
-
-
 def main():
   if options.running_as_hook and not sys.platform.startswith('linux'):
     return 0
@@ -134,6 +112,10 @@ def main():
   gyp_defines = gyp_chromium.GetGypVars(supplemental_includes)
   is_android = gyp_defines.get('OS') == 'android'
 
+  if (options.running_as_hook and (not is_android) and
+      (gyp_defines.get('chromeos') or gyp_defines.get('use_sysroot') == '0')):
+    return 0
+
   if options.arch:
     target_arch = options.arch
   else:
@@ -141,10 +123,6 @@ def main():
     if not target_arch:
       print 'Unable to detect target architecture'
       return 1
-
-  if (options.running_as_hook and
-      not UsingSysroot(target_arch, is_android, gyp_defines)):
-    return 0
 
   if is_android:
     # 32-bit Android builds require a 32-bit host sysroot for the v8 snapshot.

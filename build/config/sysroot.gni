@@ -11,6 +11,7 @@ declare_args() {
   # The absolute path of the sysroot that is applied when compiling using
   # the target toolchain.
   target_sysroot = ""
+  use_sysroot = true
 }
 
 if (current_toolchain == default_toolchain && target_sysroot != "") {
@@ -32,28 +33,23 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
   } else {
     sysroot = ""
   }
-} else if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
-  # For official builds, use the sysroot checked into the internal source repo
-  # so that the builds work on older versions of Linux.
+} else if (is_linux && !is_chromeos && use_sysroot) {
+  # By default build against a sysroot image downloaded from Cloud Storage
+  # during gclient runhooks.
   if (current_cpu == "x64") {
     sysroot = rebase_path("//build/linux/debian_wheezy_amd64-sysroot")
   } else if (current_cpu == "x86") {
     sysroot = rebase_path("//build/linux/debian_wheezy_i386-sysroot")
+  } else if (current_cpu == "mipsel") {
+    sysroot = rebase_path("//build/linux/debian_wheezy_mips-sysroot")
+  } else if (current_cpu == "arm") {
+    sysroot = rebase_path("//build/linux/debian_wheezy_arm-sysroot")
   } else {
     # Any other builds don't use a sysroot.
     sysroot = ""
   }
-} else if (is_linux && !is_chromeos) {
-  if (current_cpu == "mipsel") {
-    sysroot = rebase_path("//mipsel-sysroot/sysroot")
-  } else if (current_cpu == "arm") {
-    sysroot = rebase_path("//build/linux/debian_wheezy_arm-sysroot")
-  } else {
-    sysroot = ""
-  }
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
-
   sysroot = mac_sdk_path
 } else if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
