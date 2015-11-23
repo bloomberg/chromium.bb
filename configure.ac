@@ -30,5 +30,6 @@ AC_CONFIG_FILES([
 AC_OUTPUT
 
 AC_MSG_RESULT([
+	Version			${WAYLAND_PROTOCOLS_VERSION}
 	Prefix			${prefix}
 	])
