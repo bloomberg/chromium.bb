@@ -57,12 +57,13 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'unittests'
 
-  # If the unit tests take longer than 70 minutes, abort. They usually take
-  # ten minutes to run.
+  # If the unit tests take longer than 90 minutes, abort. They usually take
+  # thirty minutes to run, but they can take twice as long if the machine is
+  # under load (e.g. in canary groups).
   #
   # If the processes hang, parallel_emerge will print a status report after 60
-  # minutes, so we picked 70 minutes because it gives us a little buffer time.
-  UNIT_TEST_TIMEOUT = 70 * 60
+  # minutes, so we picked 90 minutes because it gives us a little buffer time.
+  UNIT_TEST_TIMEOUT = 90 * 60
 
   def PerformStage(self):
     extra_env = {}
