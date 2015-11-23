@@ -58,6 +58,7 @@
         },
         {
           "position": [98, 90],
+          "bounds": [102, 102],
           "children": [
             {
               "position": [94, 1],

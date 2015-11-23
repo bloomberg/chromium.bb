@@ -25,6 +25,7 @@ Even though the fixed-position element's container is nonscrollable, it should s
               ]
             },
             {
+              "bounds": [302, 302],
               "children": [
                 {
                   "position": [1, 286],

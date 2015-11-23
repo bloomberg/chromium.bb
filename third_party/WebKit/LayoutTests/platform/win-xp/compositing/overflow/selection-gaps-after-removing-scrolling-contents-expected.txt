@@ -39,6 +39,7 @@ Lorem Ipsum
               ]
             },
             {
+              "bounds": [300, 500],
               "children": [
                 {
                   "position": [0, 485],
@@ -136,10 +137,10 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2546],
+  "bounds": [785, 2562],
   "children": [
     {
-      "bounds": [785, 2546],
+      "bounds": [785, 2562],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -161,6 +162,7 @@ Lorem Ipsum
               ]
             },
             {
+              "bounds": [300, 500],
               "children": [
                 {
                   "position": [0, 485],
@@ -258,10 +260,10 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4498],
+  "bounds": [785, 4530],
   "children": [
     {
-      "bounds": [785, 4498],
+      "bounds": [785, 4530],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -280,6 +282,7 @@ Lorem Ipsum
               ]
             },
             {
+              "bounds": [300, 500],
               "children": [
                 {
                   "position": [0, 485],
@@ -377,10 +380,10 @@ Lorem Ipsum
 *** iteration 4: ***
 
 {
-  "bounds": [785, 6402],
+  "bounds": [785, 6450],
   "children": [
     {
-      "bounds": [785, 6402],
+      "bounds": [785, 6450],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -399,6 +402,7 @@ Lorem Ipsum
               ]
             },
             {
+              "bounds": [300, 500],
               "children": [
                 {
                   "position": [0, 485],

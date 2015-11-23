@@ -26,6 +26,7 @@
                   ]
                 },
                 {
+                  "bounds": [104, 104],
                   "children": [
                     {
                       "position": [2, 87],
@@ -87,6 +88,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -143,6 +145,7 @@
                   ]
                 },
                 {
+                  "bounds": [104, 104],
                   "children": [
                     {
                       "position": [2, 87],
@@ -207,6 +210,7 @@
                   ]
                 },
                 {
+                  "bounds": [104, 104],
                   "children": [
                     {
                       "position": [2, 87],
@@ -268,6 +272,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -324,6 +329,7 @@
                   ]
                 },
                 {
+                  "bounds": [104, 104],
                   "children": [
                     {
                       "position": [2, 87],
@@ -384,6 +390,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -437,6 +444,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -491,6 +499,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -551,6 +560,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -612,6 +622,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],
@@ -672,6 +683,7 @@
               ]
             },
             {
+              "bounds": [104, 104],
               "children": [
                 {
                   "position": [2, 87],

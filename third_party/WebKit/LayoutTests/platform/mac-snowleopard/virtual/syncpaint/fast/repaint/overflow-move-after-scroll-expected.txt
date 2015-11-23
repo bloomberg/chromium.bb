@@ -33,6 +33,7 @@
               ]
             },
             {
+              "bounds": [700, 400],
               "children": [
                 {
                   "position": [0, 385],

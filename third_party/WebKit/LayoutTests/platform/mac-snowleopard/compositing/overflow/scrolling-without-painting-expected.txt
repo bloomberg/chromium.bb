@@ -23,6 +23,7 @@
               ]
             },
             {
+              "bounds": [202, 202],
               "children": [
                 {
                   "position": [1, 186],
