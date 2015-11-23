@@ -178,8 +178,8 @@ void SpdyStream::PushedStreamReplay() {
 
   while (!pending_recv_data_.empty()) {
     // Take ownership of the first element of |pending_recv_data_|.
-    scoped_ptr<SpdyBuffer> buffer(pending_recv_data_.front());
-    pending_recv_data_.weak_erase(pending_recv_data_.begin());
+    scoped_ptr<SpdyBuffer> buffer = std::move(pending_recv_data_.at(0));
+    pending_recv_data_.erase(pending_recv_data_.begin());
 
     bool eof = (buffer == NULL);
 
@@ -484,7 +484,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
     // It should be valid for this to happen in the server push case.
     // We'll return received data when delegate gets attached to the stream.
     if (buffer) {
-      pending_recv_data_.push_back(buffer.Pass());
+      pending_recv_data_.push_back(std::move(buffer));
     } else {
       pending_recv_data_.push_back(NULL);
       // Note: we leave the stream open in the session until the stream

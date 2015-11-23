@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
@@ -547,7 +546,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // after the data is fully read. Specifically, data received before the
   // delegate is attached must be buffered and later replayed. A remote FIN
   // is represented by a final, zero-length buffer.
-  ScopedVector<SpdyBuffer> pending_recv_data_;
+  std::vector<scoped_ptr<SpdyBuffer>> pending_recv_data_;
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.
