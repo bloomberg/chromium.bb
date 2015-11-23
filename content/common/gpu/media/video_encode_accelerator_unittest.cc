@@ -239,7 +239,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   test_stream->coded_size = coded_size;
 
   size_t num_planes = media::VideoFrame::NumPlanes(kInputFormat);
-  std::vector<size_t> padding_sizes(num_planes);
+  std::vector<std::vector<uint8>> padding(num_planes);
   std::vector<size_t> coded_bpl(num_planes);
   std::vector<size_t> visible_bpl(num_planes);
   std::vector<size_t> visible_plane_rows(num_planes);
@@ -265,7 +265,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const size_t padding_rows =
         media::VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
         visible_plane_rows[i];
-    padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;
+    padding[i].resize(padding_rows * coded_bpl[i] + Align64Bytes(size) - size);
   }
 
   base::MemoryMappedFile src_file;
@@ -299,7 +299,11 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
         src += visible_bpl[i];
         dest_offset += coded_bpl[i];
       }
-      dest_offset += padding_sizes[i];
+      if (!padding[i].empty()) {
+        LOG_ASSERT(WriteFile(&dest_file, dest_offset, &padding[i][0],
+                             padding[i].size()));
+        dest_offset += padding[i].size();
+      }
     }
   }
   LOG_ASSERT(test_stream->mapped_aligned_in_file.Initialize(dest_file.Pass()));
