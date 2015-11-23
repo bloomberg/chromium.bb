@@ -27,13 +27,19 @@ class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
   void AdvanceTo(base::TimeTicks now);
 
  protected:
-  void RequestWakeup(base::TimeDelta delay) override;
+  void OnRegisterWithTaskQueueManager(
+      TaskQueueManagerDelegate* task_queue_manager_delegate,
+      base::Closure do_work_closure) override;
+  void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
 
  private:
   mutable base::Lock lock_;  // Protects |now_|.
   base::TimeTicks now_;
+
+  TaskQueueManagerDelegate* task_queue_manager_delegate_;  // NOT OWNED
+  base::Closure do_work_closure_;
 
   ~VirtualTimeDomain() override;
 

@@ -43,8 +43,8 @@ TaskQueueManager::TaskQueueManager(
   do_work_closure_ =
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
 
-  real_time_domain_ =
-      make_scoped_refptr(new RealTimeDomain(delegate.get(), do_work_closure_));
+  // TODO(alexclarke): Change this to be a parameter that's passed in.
+  real_time_domain_ = make_scoped_refptr(new RealTimeDomain());
   RegisterTimeDomain(real_time_domain_);
 }
 
@@ -61,6 +61,8 @@ TaskQueueManager::~TaskQueueManager() {
 void TaskQueueManager::RegisterTimeDomain(
     const scoped_refptr<TimeDomain>& time_domain) {
   time_domains_.insert(time_domain);
+  time_domain->OnRegisterWithTaskQueueManager(delegate_.get(),
+                                              do_work_closure_);
 }
 
 void TaskQueueManager::UnregisterTimeDomain(

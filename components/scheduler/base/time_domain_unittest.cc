@@ -13,6 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
+using testing::Mock;
 
 namespace scheduler {
 
@@ -34,10 +35,12 @@ class MockTimeDomain : public TimeDomain {
       base::trace_event::TracedValue* state) const override {}
 
   bool MaybeAdvanceTime() override { return false; }
-
   const char* GetName() const override { return "Test"; }
+  void OnRegisterWithTaskQueueManager(
+      TaskQueueManagerDelegate* task_queue_manager_delegate,
+      base::Closure do_work_closure) override {}
 
-  MOCK_METHOD1(RequestWakeup, void(base::TimeDelta delay));
+  MOCK_METHOD2(RequestWakeup, void(LazyNow* lazy_now, base::TimeDelta delay));
 
   void SetNow(base::TimeTicks now) { now_ = now; }
 
@@ -67,7 +70,7 @@ class TimeDomainTest : public testing::Test {
 TEST_F(TimeDomainTest, ScheduleDelayedWork) {
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks delayed_runtime = time_domain_->Now() + delay;
-  EXPECT_CALL(*time_domain_.get(), RequestWakeup(delay));
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
   LazyNow lazy_now = time_domain_->CreateLazyNow();
   time_domain_->ScheduleDelayedWork(task_queue_.get(),
                                     time_domain_->Now() + delay, &lazy_now);
@@ -81,13 +84,41 @@ TEST_F(TimeDomainTest, ScheduleDelayedWork) {
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 }
 
+TEST_F(TimeDomainTest, RequestWakeup_OnlyCalledForEarlierTasks) {
+  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(20);
+  base::TimeDelta delay3 = base::TimeDelta::FromMilliseconds(30);
+  base::TimeDelta delay4 = base::TimeDelta::FromMilliseconds(1);
+
+  // RequestWakeup should always be called if there are no other wakeups.
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay1));
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->ScheduleDelayedWork(task_queue_.get(),
+                                    time_domain_->Now() + delay1, &lazy_now);
+
+  Mock::VerifyAndClearExpectations(time_domain_.get());
+
+  // RequestWakeup should not be called when scheduling later tasks.
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _)).Times(0);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(),
+                                    time_domain_->Now() + delay2, &lazy_now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(),
+                                    time_domain_->Now() + delay3, &lazy_now);
+
+  // RequestWakeup should be called when scheduling earlier tasks.
+  Mock::VerifyAndClearExpectations(time_domain_.get());
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay4));
+  time_domain_->ScheduleDelayedWork(task_queue_.get(),
+                                    time_domain_->Now() + delay4, &lazy_now);
+}
+
 TEST_F(TimeDomainTest, UnregisterQueue) {
   scoped_refptr<internal::TaskQueueImpl> task_queue2_ =
       make_scoped_refptr(new internal::TaskQueueImpl(
           nullptr, time_domain_, TaskQueue::Spec("test_queue2"),
           "test.category", "test.category"));
 
-  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_)).Times(2);
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _)).Times(1);
   LazyNow lazy_now = time_domain_->CreateLazyNow();
   time_domain_->ScheduleDelayedWork(
       task_queue_.get(),
@@ -132,7 +163,7 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   // MoveReadyDelayedTasksToIncomingQueue as expected.
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   base::TimeTicks delayed_runtime = time_domain_->Now() + delay;
-  EXPECT_CALL(*time_domain_.get(), RequestWakeup(delay));
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
   LazyNow lazy_now = time_domain_->CreateLazyNow();
   time_domain_->ScheduleDelayedWork(dummy_queue.get(), delayed_runtime,
                                     &lazy_now);

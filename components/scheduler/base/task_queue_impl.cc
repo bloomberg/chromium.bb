@@ -325,10 +325,6 @@ void TaskQueueImpl::EnqueueDelayedTaskLocked(const Task& pending_task) {
     return;
   if (any_thread().incoming_queue.empty())
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
-  if (any_thread().pump_policy == PumpPolicy::AUTO &&
-      any_thread().incoming_queue.empty()) {
-    any_thread().task_queue_manager->MaybePostDoWorkOnMainRunner();
-  }
   // TODO(alexclarke): consider std::move() when allowed.
   any_thread().incoming_queue.push(pending_task);
   any_thread().incoming_queue.back().set_enqueue_order(

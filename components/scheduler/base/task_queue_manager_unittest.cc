@@ -1458,4 +1458,28 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   manager_->UnregisterTimeDomain(domain_b);
 }
 
+namespace {
+void ChromiumRunloopInspectionTask(
+    scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner) {
+  EXPECT_EQ(1u, test_task_runner->NumPendingTasks());
+}
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, NumberOfPendingTasksOnChromiumRunLoop) {
+  Initialize(1u);
+
+  // NOTE because tasks posted to the chromiumrun loop are not cancellable, we
+  // will end up with a lot more tasks posted if the delayed tasks were posted
+  // in the reverse order.
+  // TODO(alexclarke): Consider talking to the message pump directly.
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  for (int i = 1; i < 100; i++) {
+    runners_[0]->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ChromiumRunloopInspectionTask, test_task_runner_),
+        base::TimeDelta::FromMilliseconds(i));
+  }
+  test_task_runner_->RunUntilIdle();
+}
+
 }  // namespace scheduler

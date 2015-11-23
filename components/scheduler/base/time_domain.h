@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,7 @@ namespace internal {
 class TaskQueueImpl;
 }  // internal
 class TaskQueueManager;
+class TaskQueueManagerDelegate;
 
 class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
  public:
@@ -79,9 +81,14 @@ class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
   void UpdateWorkQueues(bool should_trigger_wakeup,
                         const internal::TaskQueueImpl::Task* previous_task);
 
+  // Called by the TaskQueueManager when the TimeDomain is registered.
+  virtual void OnRegisterWithTaskQueueManager(
+      TaskQueueManagerDelegate* task_queue_manager_delegate,
+      base::Closure do_work_closure) = 0;
+
   // The implementaion will secedule task processing to run with |delay| with
   // respect to the TimeDomain's time source.
-  virtual void RequestWakeup(base::TimeDelta delay) = 0;
+  virtual void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) = 0;
 
   // For implementation specific tracing.
   virtual void AsValueIntoInternal(
@@ -109,7 +116,6 @@ class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
   std::set<internal::TaskQueueImpl*> updatable_queue_set_;
 
   base::ThreadChecker main_thread_checker_;
-  base::WeakPtrFactory<TimeDomain> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeDomain);
 };

@@ -15,13 +15,22 @@ VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time)
 
 VirtualTimeDomain::~VirtualTimeDomain() {}
 
+void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
+    TaskQueueManagerDelegate* task_queue_manager_delegate,
+    base::Closure do_work_closure) {
+  task_queue_manager_delegate_ = task_queue_manager_delegate;
+  do_work_closure_ = do_work_closure;
+  DCHECK(task_queue_manager_delegate_);
+}
+
 LazyNow VirtualTimeDomain::CreateLazyNow() {
   base::AutoLock lock(lock_);
   return LazyNow(now_);
 }
 
-void VirtualTimeDomain::RequestWakeup(base::TimeDelta delay) {
-  // We don't need to do anything here because AdvanceTo triggers delayed tasks.
+void VirtualTimeDomain::RequestWakeup(LazyNow* lazy_now,
+                                      base::TimeDelta delay) {
+  // We don't need to do anything here because AdvanceTo posts a DoWork.
 }
 
 bool VirtualTimeDomain::MaybeAdvanceTime() {
@@ -35,8 +44,7 @@ void VirtualTimeDomain::AdvanceTo(base::TimeTicks now) {
   base::AutoLock lock(lock_);
   DCHECK_GE(now, now_);
   now_ = now;
-  LazyNow lazy_now(now_);
-  WakeupReadyDelayedQueues(&lazy_now);
+  task_queue_manager_delegate_->PostTask(FROM_HERE, do_work_closure_);
 }
 
 const char* VirtualTimeDomain::GetName() const {

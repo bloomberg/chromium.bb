@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SCHEDULER_BASE_REAL_TIME_DOMAIN_H_
 #define COMPONENTS_SCHEDULER_BASE_REAL_TIME_DOMAIN_H_
 
-#include "base/callback.h"
+#include <set>
+
 #include "base/macros.h"
 #include "components/scheduler/base/time_domain.h"
 #include "components/scheduler/scheduler_export.h"
@@ -15,8 +16,7 @@ class TaskQueueManagerDelegate;
 
 class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
  public:
-  RealTimeDomain(TaskQueueManagerDelegate* task_queue_manager_delegate,
-                 base::Closure do_work_closure);
+  RealTimeDomain();
 
   // TimeDomain implementation:
   LazyNow CreateLazyNow() override;
@@ -24,13 +24,21 @@ class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
   const char* GetName() const override;
 
  protected:
-  void RequestWakeup(base::TimeDelta delay) override;
+  void OnRegisterWithTaskQueueManager(
+      TaskQueueManagerDelegate* task_queue_manager_delegate,
+      base::Closure do_work_closure) override;
+  void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
 
  private:
+  void PostWrappedDoWork(base::TimeTicks now, base::TimeTicks run_time);
+  void WrappedDoWorkTask(base::TimeTicks run_time);
+
   TaskQueueManagerDelegate* task_queue_manager_delegate_;  // NOT OWNED
+  std::set<base::TimeTicks> pending_wakeups_;
   base::Closure do_work_closure_;
+  base::WeakPtrFactory<RealTimeDomain> weak_factory_;
 
   ~RealTimeDomain() override;
 

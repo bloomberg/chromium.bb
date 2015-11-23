@@ -12,7 +12,7 @@
 
 namespace scheduler {
 
-TimeDomain::TimeDomain() : weak_factory_(this) {}
+TimeDomain::TimeDomain() {}
 
 TimeDomain::~TimeDomain() {}
 
@@ -31,7 +31,7 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
     }
   }
 
-  // |newly_updatable_| might contain |task_queue|, we use
+  // |newly_updatable_| might contain |queue|, we use
   // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
   updatable_queue_set_.erase(queue);
@@ -66,12 +66,12 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
                                      LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Dedupe wakeups.
-  if (delayed_wakeup_multimap_.find(delayed_run_time) ==
-      delayed_wakeup_multimap_.end()) {
+
+  if (delayed_wakeup_multimap_.empty() ||
+      delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
     base::TimeDelta delay =
         std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
-    RequestWakeup(delay);
+    RequestWakeup(lazy_now, delay);
   }
   delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
 }
