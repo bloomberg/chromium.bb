@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/metro_viewer
       'target_name': 'metro_viewer_messages',
       'type': 'static_library',
       'dependencies': [

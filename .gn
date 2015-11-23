@@ -244,6 +244,7 @@ check_targets = [
   #"//ui/*",  # Just a few problems.
   "//url/*",
   "//v8/*",
+  "//win8/*",
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists

@@ -1,0 +1,79 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/chrome_build.gni")
+import("//build/config/ui.gni")
+import("//chrome/version.gni")
+import("//testing/test.gni")
+
+executable("delegate_execute") {
+  sources = [
+    "delegate_execute.cc",
+    "delegate_execute.rc",
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
+  deps = [
+    ":lib",
+    ":version_resources",
+  ]
+}
+
+source_set("lib") {
+  visibility = [ ":*" ]
+  sources = [
+    "chrome_util.cc",
+    "chrome_util.h",
+    "command_execute_impl.cc",
+    "command_execute_impl.h",
+    "command_execute_impl.rgs",
+    "crash_server_init.cc",
+    "crash_server_init.h",
+    "delegate_execute_operation.cc",
+    "delegate_execute_operation.h",
+    "delegate_execute_util.cc",
+    "delegate_execute_util.h",
+    "resource.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//breakpad:breakpad_handler",
+    "//chrome/common:constants",
+    "//chrome/installer/util",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  if (use_aura) {
+    public_deps += [ "//win8:metro_viewer_constants" ]
+  }
+
+  if (is_chrome_branded) {
+    public_deps += [ "//google_update" ]
+  }
+}
+
+process_version("version_resources") {
+  visibility = [ ":*" ]
+  sources = [
+    "delegate_execute_exe.ver",
+  ]
+  output = "$target_gen_dir/delegate_execute_exe.rc"
+  template_file = chrome_version_rc_template
+}
+
+test("delegate_execute_unittests") {
+  sources = [
+    "delegate_execute_util_unittest.cc",
+  ]
+  deps = [
+    ":lib",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
+  ]
+}

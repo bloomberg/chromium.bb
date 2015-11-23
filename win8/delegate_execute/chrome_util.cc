@@ -29,7 +29,7 @@
 #include "chrome/installer/util/util_constants.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "google_update/google_update_idl.h"
+#include "google_update/google_update_idl.h"  // nogncheck
 #endif
 
 namespace {

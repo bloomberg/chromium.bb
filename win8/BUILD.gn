@@ -10,29 +10,24 @@ source_set("metro_viewer_constants") {
 }
 
 component("metro_viewer") {
+  sources = [
+    "viewer/metro_viewer_process_host.cc",
+    "viewer/metro_viewer_process_host.h",
+  ]
+
+  defines = [ "METRO_VIEWER_IMPLEMENTATION" ]
+
   deps = [
     ":metro_viewer_constants",
     "//base",
     "//ipc",
     "//ui/aura",
+    "//ui/gfx",
     "//ui/metro_viewer",
   ]
-  sources = [
-    "viewer/metro_viewer_process_host.cc",
-    "viewer/metro_viewer_process_host.h",
-  ]
-  defines = [ "METRO_VIEWER_IMPLEMENTATION" ]
 }
 
 source_set("test_support_win8") {
-  deps = [
-    ":test_registrar_constants",
-    "//base",
-  ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   sources = [
     "test/open_with_dialog_async.cc",
     "test/open_with_dialog_async.h",
@@ -40,6 +35,14 @@ source_set("test_support_win8") {
     "test/open_with_dialog_controller.h",
     "test/ui_automation_client.cc",
     "test/ui_automation_client.h",
+  ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":test_registrar_constants",
+    "//base",
   ]
 }
 
@@ -51,6 +54,16 @@ source_set("test_registrar_constants") {
 }
 
 executable("test_registrar") {
+  sources = [
+    "test/test_registrar.cc",
+    "test/test_registrar.rc",
+    "test/test_registrar.rgs",
+    "test/test_registrar_resource.h",
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
   deps = [
     ":test_registrar_constants",
     "//base",
@@ -61,11 +74,4 @@ executable("test_registrar") {
     # process.
     "//chrome",
   ]
-  sources = [
-    "test/test_registrar.cc",
-    "test/test_registrar.rc",
-    "test/test_registrar.rgs",
-    "test/test_registrar_resource.h",
-  ]
-  configs += [ "//build/config/win:windowed" ]
 }

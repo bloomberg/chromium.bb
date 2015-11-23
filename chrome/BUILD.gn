@@ -141,8 +141,6 @@ if (!is_android) {
         ":file_pre_reader",
 
         # 'chrome_nacl_win64" TODO(GYP) bug 512869
-        # '../win8/delegate_execute/delegate_execute.gyp:*', TODO(GYP) bug 512867
-        # '../win8/metro_driver/metro_driver.gyp:metro_driver', TODO(GYP) bug 512864
         "//base",
         "//breakpad:breakpad_handler",
         "//breakpad:breakpad_sender",
@@ -160,6 +158,8 @@ if (!is_android) {
         "//crypto",
         "//sandbox",
         "//ui/gfx",
+        "//win8/delegate_execute",
+        "//win8/metro_driver",
       ]
       data_deps = [
         "//chrome/app/version_assembly:version_assembly_manifest",

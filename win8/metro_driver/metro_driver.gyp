@@ -29,6 +29,7 @@
       },
       'targets': [
         {
+          # GN version: //win8/metro_driver:version_resources
           'target_name': 'metro_driver_version_resources',
           'type': 'none',
           'variables': {
@@ -44,6 +45,7 @@
           ],
         },
         {
+          # GN version: //win8/metro_driver
           'target_name': 'metro_driver',
           'type': 'shared_library',
           'dependencies': [
@@ -114,6 +116,7 @@
           ],
           'copies': [
             {
+              # GN version: //win8/metro_viewer:copy_resources
               'destination': '<(PRODUCT_DIR)',
               'files': [
                 'resources/Logo.png',
@@ -125,6 +128,7 @@
           ],
         },
         {
+          # GN version: //win8/metro_driver:metro_driver_unittests
           'target_name': 'metro_driver_unittests',
           'type': 'executable',
           'dependencies': [

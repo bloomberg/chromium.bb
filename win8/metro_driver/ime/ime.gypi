@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 {
+  # GN version: //win8/metro_driver/ime
   'sources': [
     'ime_popup_monitor.cc',
     'ime_popup_monitor.h',

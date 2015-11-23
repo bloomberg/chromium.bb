@@ -11,6 +11,7 @@
   ],
   'targets': [
     {
+      # GN version: //win8/delegate_execute:version_resources
       'target_name': 'delegate_execute_version_resources',
       'type': 'none',
       'conditions': [
@@ -36,6 +37,7 @@
       ],
     },
     {
+      # GN version: //win8/delegate_execute
       'target_name': 'delegate_execute',
       'type': 'executable',
       'dependencies': [
@@ -85,6 +87,7 @@
       ],
     },
     {
+      # GN version: //win8/delegate_execute:delegate_execute_unittests
       'target_name': 'delegate_execute_unittests',
       'type': 'executable',
       'dependencies': [
