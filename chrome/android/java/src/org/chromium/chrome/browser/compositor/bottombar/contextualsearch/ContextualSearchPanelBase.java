@@ -1410,7 +1410,12 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     public void showPromoViewAtYPosition(float y) {
         if (mPromoView == null || !isPromoVisible()) return;
 
-        mPromoView.setTranslationX(getOffsetX() / mPxToDp);
+        float offsetX = getOffsetX() / mPxToDp;
+        if (LocalizationUtils.isLayoutRtl()) {
+            offsetX = -offsetX;
+        }
+
+        mPromoView.setTranslationX(offsetX);
         mPromoView.setTranslationY(y);
         mPromoView.setVisibility(View.VISIBLE);
 
