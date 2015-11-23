@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_SOUNDS_WAV_AUDIO_HANDLER_H_
 #define MEDIA_AUDIO_SOUNDS_WAV_AUDIO_HANDLER_H_
 
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -17,15 +19,20 @@ class AudioBus;
 // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
 class MEDIA_EXPORT WavAudioHandler {
  public:
-  explicit WavAudioHandler(const base::StringPiece& wav_data);
   virtual ~WavAudioHandler();
+
+  // Create a WavAudioHandler using |wav_data|. If |wav_data| cannot be parsed
+  // correctly, the returned scoped_ptr will be null. The underlying memory for
+  // wav_data must survive for the lifetime of this class.
+  static scoped_ptr<WavAudioHandler> Create(const base::StringPiece wav_data);
 
   // Returns true when cursor points to the end of the track.
   bool AtEnd(size_t cursor) const;
 
   // Copies the audio data to |bus| starting from the |cursor| and in
   // the case of success stores the number of written bytes in
-  // |bytes_written|. |bytes_written| should not be NULL.
+  // |bytes_written|. |bytes_written| should not be NULL. Returns false if the
+  // operation was unsuccessful. Returns true otherwise.
   bool CopyTo(AudioBus* bus, size_t cursor, size_t* bytes_written) const;
 
   // Accessors.
@@ -39,22 +46,20 @@ class MEDIA_EXPORT WavAudioHandler {
   base::TimeDelta GetDuration() const;
 
  private:
-  // Parses a chunk of wav format data. Returns the length of the chunk.
-  int ParseSubChunk(const base::StringPiece& data);
-
-  // Parses the 'fmt' section chunk and stores |params_|.
-  bool ParseFmtChunk(const base::StringPiece& data);
-
-  // Parses the 'data' section chunk and stores |data_|.
-  bool ParseDataChunk(const base::StringPiece& data);
+  // Note: It is preferred to pass |audio_data| by value here.
+  WavAudioHandler(base::StringPiece audio_data,
+                  uint16_t num_channels,
+                  uint32_t sample_rate,
+                  uint16_t bits_per_sample);
 
   // Data part of the |wav_data_|.
-  base::StringPiece data_;
-
-  uint16_t num_channels_;
-  uint32_t sample_rate_;
-  uint16_t bits_per_sample_;
+  const base::StringPiece data_;
+  const uint16_t num_channels_;
+  const uint32_t sample_rate_;
+  const uint16_t bits_per_sample_;
   uint32_t total_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(WavAudioHandler);
 };
 
 }  // namespace media

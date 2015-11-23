@@ -48,8 +48,8 @@ class MEDIA_EXPORT SineWaveAudioSource
   base::Lock time_lock_;
 };
 
-class FileSource : public AudioOutputStream::AudioSourceCallback,
-                   public AudioConverter::InputCallback {
+class MEDIA_EXPORT FileSource : public AudioOutputStream::AudioSourceCallback,
+                                public AudioConverter::InputCallback {
  public:
   FileSource(const AudioParameters& params,
              const base::FilePath& path_to_wav_file);
@@ -62,7 +62,12 @@ class FileSource : public AudioOutputStream::AudioSourceCallback,
  private:
   AudioParameters params_;
   base::FilePath path_to_wav_file_;
-  scoped_ptr<uint8[]> wav_file_data_;
+
+  // The WAV data at |path_to_wav_file_| is read into memory and kept here.
+  // This memory needs to survive for the lifetime of |wav_audio_handler_|,
+  // so declare it first. Do not access this member directly.
+  scoped_ptr<char[]> raw_wav_data_;
+
   scoped_ptr<WavAudioHandler> wav_audio_handler_;
   scoped_ptr<AudioConverter> file_audio_converter_;
   int wav_file_read_pos_;

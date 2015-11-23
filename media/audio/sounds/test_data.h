@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SOUNDS_TEST_UTILS_H_
-#define MEDIA_AUDIO_SOUNDS_TEST_UTILS_H_
+#ifndef MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
+#define MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -18,9 +18,11 @@ namespace media {
 
 const int kTestAudioKey = 1000;
 
-const char kTestAudioData[] = "RIFF\x26\x00\x00\x00WAVEfmt \x10\x00\x00\x00"
+const char kTestAudioData[] =
+    "RIFF\x28\x00\x00\x00WAVEfmt \x10\x00\x00\x00"
     "\x01\x00\x02\x00\x80\xbb\x00\x00\x00\x77\x01\x00\x02\x00\x10\x00"
     "data\x04\x00\x00\x00\x01\x00\x01\x00";
+const size_t kTestAudioDataSize = arraysize(kTestAudioData) - 1;
 
 class TestObserver : public AudioStreamHandler::TestObserver {
  public:
@@ -48,4 +50,4 @@ class TestObserver : public AudioStreamHandler::TestObserver {
 
 }  // namespace media
 
-#endif // MEDIA_AUDIO_SOUNDS_TEST_UTILS_H_
+#endif  // MEDIA_AUDIO_SOUNDS_TEST_DATA_H_

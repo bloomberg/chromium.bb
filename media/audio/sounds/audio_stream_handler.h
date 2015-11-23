@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -53,7 +53,8 @@ class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
   // Stops current playback.
   void Stop();
 
-  const WavAudioHandler& wav_audio_handler() const { return wav_audio_; }
+  // Get the duration of the WAV data passed in.
+  base::TimeDelta duration() const;
 
  private:
   friend class AudioStreamHandlerTest;
@@ -65,10 +66,8 @@ class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
   static void SetAudioSourceForTesting(
       AudioOutputStream::AudioSourceCallback* source);
 
-  WavAudioHandler wav_audio_;
+  base::TimeDelta duration_;
   scoped_ptr<AudioStreamContainer> stream_;
-
-  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };

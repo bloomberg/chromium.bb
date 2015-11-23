@@ -11,12 +11,13 @@
 #include "base/sys_byteorder.h"
 #include "media/base/audio_bus.h"
 
+namespace media {
 namespace {
 
 const char kChunkId[] = "RIFF";
 const char kFormat[] = "WAVE";
-const char kSubchunk1Id[] = "fmt ";
-const char kSubchunk2Id[] = "data";
+const char kFmtSubchunkId[] = "fmt ";
+const char kDataSubchunkId[] = "data";
 
 // The size of the header of a wav file. The header consists of 'RIFF', 4 bytes
 // of total data length, and 'WAVE'.
@@ -38,6 +39,20 @@ const size_t kBitsPerSampleOffset = 14;
 // Some constants for audio format.
 const int kAudioFormatPCM = 1;
 
+// A convenience struct for passing WAV parameters around. AudioParameters is
+// too heavyweight for this. Keep this class internal to this implementation.
+struct WavAudioParameters {
+  int audio_format;
+  uint16_t num_channels;
+  uint32_t sample_rate;
+  uint16_t bits_per_sample;
+};
+
+bool ParamsAreValid(const WavAudioParameters& params) {
+  return (params.audio_format == kAudioFormatPCM && params.num_channels != 0u &&
+          params.sample_rate != 0u && params.bits_per_sample != 0u);
+}
+
 // Reads an integer from |data| with |offset|.
 template <typename T>
 T ReadInt(const base::StringPiece& data, size_t offset) {
@@ -50,30 +65,127 @@ T ReadInt(const base::StringPiece& data, size_t offset) {
   return result;
 }
 
-}  // namespace
+// Parse a "fmt " chunk from wav data into its parameters.
+bool ParseFmtChunk(const base::StringPiece data, WavAudioParameters* params) {
+  DCHECK(params);
 
-namespace media {
-
-WavAudioHandler::WavAudioHandler(const base::StringPiece& wav_data)
-    : num_channels_(0), sample_rate_(0), bits_per_sample_(0), total_frames_(0) {
-  CHECK_LE(kWavFileHeaderSize, wav_data.size()) << "wav data is too small";
-  CHECK(wav_data.starts_with(kChunkId) &&
-        memcmp(wav_data.data() + 8, kFormat, 4) == 0)
-      << "incorrect wav header";
-
-  uint32 total_length = std::min(ReadInt<uint32>(wav_data, 4),
-                                 static_cast<uint32>(wav_data.size()));
-  uint32 offset = kWavFileHeaderSize;
-  while (offset < total_length) {
-    const int length = ParseSubChunk(wav_data.substr(offset));
-    CHECK_LE(0, length) << "can't parse wav sub-chunk";
-    offset += length;
+  // If the chunk is too small, return false.
+  if (data.size() < kFmtChunkMinimumSize) {
+    LOG(ERROR) << "Data size " << data.size() << " is too short.";
+    return false;
   }
 
+  // Read in serialized parameters.
+  params->audio_format = ReadInt<uint16>(data, kAudioFormatOffset);
+  params->num_channels = ReadInt<uint16>(data, kChannelOffset);
+  params->sample_rate = ReadInt<uint32>(data, kSampleRateOffset);
+  params->bits_per_sample = ReadInt<uint16>(data, kBitsPerSampleOffset);
+  return true;
+}
+
+bool ParseWavData(const base::StringPiece wav_data,
+                  base::StringPiece* audio_data_out,
+                  WavAudioParameters* params_out) {
+  DCHECK(audio_data_out);
+  DCHECK(params_out);
+
+  // The data is not long enough to contain a header.
+  if (wav_data.size() < kWavFileHeaderSize) {
+    LOG(ERROR) << "wav_data is too small";
+    return false;
+  }
+
+  // The header should look like: |R|I|F|F|1|2|3|4|W|A|V|E|
+  if (!wav_data.starts_with(kChunkId) ||
+      memcmp(wav_data.data() + 8, kFormat, 4) != 0) {
+    LOG(ERROR) << "incorrect wav header";
+    return false;
+  }
+
+  // Get the total length of the data. This number should reflect the total
+  // number of valid bytes in |wav_data|. Read this from the header and add
+  // 8 (4 for "RIFF" and 4 for the size itself), and if that is too big, use
+  // the length of |wav_data|. We will attempt to parse the data.
+  uint32_t total_length = std::min(ReadInt<uint32_t>(wav_data, 4) + 8,
+                                   static_cast<uint32_t>(wav_data.size()));
+
+  uint32_t offset = kWavFileHeaderSize;
+  bool got_format = false;
+  while (offset < total_length) {
+    // This is just junk left at the end. Break.
+    if (total_length - offset < kChunkHeaderSize)
+      break;
+
+    // We should be at the beginning of a subsection. The next 8 bytes are the
+    // header and should look like: "|f|m|t| |1|2|3|4|" or "|d|a|t|a|1|2|3|4|".
+    // Get the |chunk_header| and the |chunk_payload that follows.
+    base::StringPiece chunk_header = wav_data.substr(offset, kChunkHeaderSize);
+    uint32_t chunk_length = ReadInt<uint32_t>(chunk_header, 4);
+    base::StringPiece chunk_payload =
+        wav_data.substr(offset + kChunkHeaderSize, chunk_length);
+
+    // Parse the subsection header, handling it if it is a "data" or "fmt "
+    // chunk. Skip it otherwise.
+    if (chunk_header.starts_with(kFmtSubchunkId)) {
+      got_format = true;
+      if (!ParseFmtChunk(chunk_payload, params_out))
+        return false;
+    } else if (chunk_header.starts_with(kDataSubchunkId)) {
+      *audio_data_out = chunk_payload;
+    } else {
+      DVLOG(1) << "Skipping unknown data chunk: " << chunk_header.substr(0, 4)
+               << ".";
+    }
+
+    offset += kChunkHeaderSize + chunk_length;
+  }
+
+  // Check that data format has been read in and is valid.
+  if (!got_format) {
+    LOG(ERROR) << "Invalid: No \"" << kFmtSubchunkId << "\" header found!";
+    return false;
+  } else if (!ParamsAreValid(*params_out)) {
+    LOG(ERROR) << "Format is invalid. "
+               << "num_channels: " << params_out->num_channels << " "
+               << "sample_rate: " << params_out->sample_rate << " "
+               << "bits_per_sample: " << params_out->bits_per_sample;
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
+
+WavAudioHandler::WavAudioHandler(base::StringPiece audio_data,
+                                 uint16_t num_channels,
+                                 uint32_t sample_rate,
+                                 uint16_t bits_per_sample)
+    : data_(audio_data),
+      num_channels_(num_channels),
+      sample_rate_(sample_rate),
+      bits_per_sample_(bits_per_sample) {
+  DCHECK_NE(num_channels_, 0u);
+  DCHECK_NE(sample_rate_, 0u);
+  DCHECK_NE(bits_per_sample_, 0u);
   total_frames_ = data_.size() * 8 / num_channels_ / bits_per_sample_;
 }
 
 WavAudioHandler::~WavAudioHandler() {}
+
+// static
+scoped_ptr<WavAudioHandler> WavAudioHandler::Create(
+    const base::StringPiece wav_data) {
+  WavAudioParameters params;
+  base::StringPiece audio_data;
+
+  // Attempt to parse the WAV data.
+  if (!ParseWavData(wav_data, &audio_data, &params))
+    return scoped_ptr<WavAudioHandler>();
+
+  return make_scoped_ptr(new WavAudioHandler(audio_data, params.num_channels,
+                                             params.sample_rate,
+                                             params.bits_per_sample));
+}
 
 bool WavAudioHandler::AtEnd(size_t cursor) const {
   return data_.size() <= cursor;
@@ -105,39 +217,6 @@ bool WavAudioHandler::CopyTo(AudioBus* bus,
 base::TimeDelta WavAudioHandler::GetDuration() const {
   return base::TimeDelta::FromSecondsD(total_frames_ /
                                        static_cast<double>(sample_rate_));
-}
-
-int WavAudioHandler::ParseSubChunk(const base::StringPiece& data) {
-  if (data.size() < kChunkHeaderSize)
-    return data.size();
-  uint32 chunk_length = ReadInt<uint32>(data, 4);
-  if (data.starts_with(kSubchunk1Id)) {
-    if (!ParseFmtChunk(data.substr(kChunkHeaderSize, chunk_length)))
-      return -1;
-  } else if (data.starts_with(kSubchunk2Id)) {
-    if (!ParseDataChunk(data.substr(kChunkHeaderSize, chunk_length)))
-      return -1;
-  } else {
-    DVLOG(1) << "Unknown data chunk: " << data.substr(0, 4) << ".";
-  }
-  return chunk_length + kChunkHeaderSize;
-}
-
-bool WavAudioHandler::ParseFmtChunk(const base::StringPiece& data) {
-  if (data.size() < kFmtChunkMinimumSize) {
-    DLOG(ERROR) << "Data size " << data.size() << " is too short.";
-    return false;
-  }
-  DCHECK_EQ(ReadInt<uint16>(data, kAudioFormatOffset), kAudioFormatPCM);
-  num_channels_ = ReadInt<uint16>(data, kChannelOffset);
-  sample_rate_ = ReadInt<uint32>(data, kSampleRateOffset);
-  bits_per_sample_ = ReadInt<uint16>(data, kBitsPerSampleOffset);
-  return true;
-}
-
-bool WavAudioHandler::ParseDataChunk(const base::StringPiece& data) {
-  data_ = data;
-  return true;
 }
 
 }  // namespace media

@@ -1550,7 +1550,7 @@
               'audio/mac/audio_low_latency_input_mac_unittest.cc',
             ],
           }],
-          ['chromeos==1', {
+          ['chromeos==1 or chromecast==1', {
             'sources': [
               'audio/sounds/audio_stream_handler_unittest.cc',
               'audio/sounds/sounds_manager_unittest.cc',

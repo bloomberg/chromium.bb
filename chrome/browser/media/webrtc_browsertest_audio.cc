@@ -16,8 +16,8 @@ namespace {
 // bluntly trigger CHECKs if we can't read the file or if it's malformed. The
 // caller takes ownership of the returned data. The size of the data is stored
 // in |read_length|.
-scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
-                                size_t* file_length) {
+scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
+                               size_t* file_length) {
   base::File wav_file(
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!wav_file.IsValid()) {
@@ -27,28 +27,15 @@ scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
 
   size_t wav_file_length = wav_file.GetLength();
 
-  uint8* wav_file_data = new uint8[wav_file_length];
-  size_t read_bytes = wav_file.Read(0, reinterpret_cast<char*>(wav_file_data),
-                                    wav_file_length);
+  scoped_ptr<char[]> data(new char[wav_file_length]);
+  size_t read_bytes = wav_file.Read(0, data.get(), wav_file_length);
   if (read_bytes != wav_file_length) {
-    CHECK(false) << "Failed to read all bytes of " << wav_filename.value();
+    LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();
     return nullptr;
   }
   *file_length = wav_file_length;
-  return scoped_ptr<uint8[]>(wav_file_data);
+  return data;
 }
-
-scoped_ptr<media::WavAudioHandler> CreateWavAudioHandler(
-    const base::FilePath& wav_filename, const uint8* wav_file_data,
-    size_t wav_file_length) {
-  base::StringPiece wav_data(reinterpret_cast<const char*>(wav_file_data),
-                             wav_file_length);
-  scoped_ptr<media::WavAudioHandler> wav_audio_handler(
-      new media::WavAudioHandler(wav_data));
-
-  return wav_audio_handler.Pass();
-}
-
 }  // namespace
 
 namespace test {
@@ -57,9 +44,9 @@ float ComputeAudioEnergyForWavFile(const base::FilePath& wav_filename,
                                    media::AudioParameters* file_parameters) {
   // Read the file, and put its data in a scoped_ptr so it gets deleted later.
   size_t file_length = 0;
-  scoped_ptr<uint8[]> wav_file_data = ReadWavFile(wav_filename, &file_length);
-  scoped_ptr<media::WavAudioHandler> wav_audio_handler = CreateWavAudioHandler(
-      wav_filename, wav_file_data.get(), file_length);
+  scoped_ptr<char[]> wav_file_data = ReadWavFile(wav_filename, &file_length);
+  auto wav_audio_handler = media::WavAudioHandler::Create(
+      base::StringPiece(wav_file_data.get(), file_length));
 
   scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
       wav_audio_handler->num_channels(), wav_audio_handler->total_frames());

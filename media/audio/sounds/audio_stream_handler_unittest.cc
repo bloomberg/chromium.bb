@@ -63,6 +63,9 @@ TEST_F(AudioStreamHandlerTest, Play) {
   SetObserverForTesting(&observer);
 
   ASSERT_TRUE(audio_stream_handler()->IsInitialized());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
+            audio_stream_handler()->duration());
+
   ASSERT_TRUE(audio_stream_handler()->Play());
 
   run_loop.Run();
@@ -83,6 +86,8 @@ TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
   SetAudioSourceForTesting(&source);
 
   ASSERT_TRUE(audio_stream_handler()->IsInitialized());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
+            audio_stream_handler()->duration());
 
   ASSERT_TRUE(audio_stream_handler()->Play());
   base::MessageLoop::current()->PostDelayedTask(
@@ -103,6 +108,18 @@ TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
 
   ASSERT_EQ(1, observer.num_play_requests());
   ASSERT_EQ(1, observer.num_stop_requests());
+}
+
+TEST_F(AudioStreamHandlerTest, BadWavDataDoesNotInitialize) {
+  // The class members and SetUp() will be ignored for this test. Create a
+  // handler on the stack with some bad WAV data.
+  AudioStreamHandler handler("RIFF1234WAVEjunkjunkjunkjunk");
+  EXPECT_FALSE(handler.IsInitialized());
+  EXPECT_FALSE(handler.Play());
+  EXPECT_EQ(base::TimeDelta(), handler.duration());
+
+  // Call Stop() to ensure that there is no crash.
+  handler.Stop();
 }
 
 }  // namespace media

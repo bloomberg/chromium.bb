@@ -16,13 +16,13 @@
 #include "media/base/audio_bus.h"
 
 namespace media {
-
+namespace {
 // Opens |wav_filename|, reads it and loads it as a wav file. This function will
 // return a null pointer if we can't read the file or if it's malformed. The
 // caller takes ownership of the returned data. The size of the data is stored
 // in |read_length|.
-static scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
-                                       size_t* file_length) {
+scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
+                               size_t* read_length) {
   base::File wav_file(
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!wav_file.IsValid()) {
@@ -38,26 +38,14 @@ static scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
     return nullptr;
   }
 
-  uint8* wav_file_data = new uint8[wav_file_length];
-  size_t read_bytes = wav_file.Read(0, reinterpret_cast<char*>(wav_file_data),
-                                    wav_file_length);
+  scoped_ptr<char[]> data(new char[wav_file_length]);
+  size_t read_bytes = wav_file.Read(0, data.get(), wav_file_length);
   if (read_bytes != wav_file_length) {
     LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();
     return nullptr;
   }
-  *file_length = wav_file_length;
-  return scoped_ptr<uint8[]>(wav_file_data);
-}
-
-// Opens |wav_filename|, reads it and loads it as a wav file. This function will
-// bluntly trigger CHECKs if we can't read the file or if it's malformed.
-static scoped_ptr<WavAudioHandler> CreateWavAudioHandler(
-    const base::FilePath& wav_filename, const uint8* wav_file_data,
-    size_t wav_file_length, const AudioParameters& expected_params) {
-  base::StringPiece wav_data(reinterpret_cast<const char*>(wav_file_data),
-                             wav_file_length);
-  scoped_ptr<WavAudioHandler> wav_audio_handler(new WavAudioHandler(wav_data));
-  return wav_audio_handler.Pass();
+  *read_length = wav_file_length;
+  return data;
 }
 
 // These values are based on experiments for local-to-local
@@ -101,6 +89,7 @@ class BeepContext {
 
 static base::LazyInstance<BeepContext>::Leaky g_beep_context =
     LAZY_INSTANCE_INITIALIZER;
+}  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
 // SineWaveAudioSource implementation.
@@ -171,16 +160,24 @@ void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   if (load_failed_)
     return;
 
-  // Read the file, and put its data in a scoped_ptr so it gets deleted later.
-  size_t file_length = 0;
-  wav_file_data_ = ReadWavFile(path_to_wav_file, &file_length);
-  if (!wav_file_data_) {
+  // Read the file, and put its data in a scoped_ptr so it gets deleted when
+  // this class destructs. This data must be valid for the lifetime of
+  // |wav_audio_handler_|.
+  size_t length = 0u;
+  raw_wav_data_ = ReadWavFile(path_to_wav_file, &length);
+  if (!raw_wav_data_) {
     load_failed_ = true;
     return;
   }
 
-  wav_audio_handler_ = CreateWavAudioHandler(
-      path_to_wav_file, wav_file_data_.get(), file_length, params_);
+  // Attempt to create a handler with this data. If the data is invalid, return.
+  wav_audio_handler_ =
+      WavAudioHandler::Create(base::StringPiece(raw_wav_data_.get(), length));
+  if (!wav_audio_handler_) {
+    LOG(ERROR) << "WAV data could be read but is not valid";
+    load_failed_ = true;
+    return;
+  }
 
   // Hook us up so we pull in data from the file into the converter. We need to
   // modify the wav file's audio parameters since we'll be reading small slices
