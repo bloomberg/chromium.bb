@@ -12,6 +12,7 @@ namespace ios {
 
 class FakeProfileOAuth2TokenServiceIOSProvider;
 class FakeStringProvider;
+class TestUpdatableResourceProvider;
 
 class TestChromeBrowserProvider : public ChromeBrowserProvider {
  public:
@@ -23,6 +24,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
 
   // ChromeBrowserProvider:
   ChromeIdentityService* GetChromeIdentityService() override;
+  UpdatableResourceProvider* GetUpdatableResourceProvider() override;
   StringProvider* GetStringProvider() override;
 
   // Returns the string provider as a |FakeStringProvider|.
@@ -31,6 +33,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
  private:
   scoped_ptr<ChromeIdentityService> chrome_identity_service_;
   scoped_ptr<FakeStringProvider> string_provider_;
+  scoped_ptr<TestUpdatableResourceProvider> test_updatable_resource_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
 };
