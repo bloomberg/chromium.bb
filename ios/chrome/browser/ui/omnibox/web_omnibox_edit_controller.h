@@ -18,6 +18,8 @@ class WebOmniboxEditController : public OmniboxEditController {
   // Returns the WebState of the currently active tab.
   virtual web::WebState* GetWebState() = 0;
 
+  virtual void OnKillFocus() = 0;
+
  protected:
   WebOmniboxEditController();
   ~WebOmniboxEditController() override;
