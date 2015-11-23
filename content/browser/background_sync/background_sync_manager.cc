@@ -174,17 +174,9 @@ void BackgroundSyncManager::Register(
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // For UMA, determine here whether the sync could fire immediately
-  BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-      AreOptionConditionsMet(options)
-          ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
-          : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
-
   if (disabled_) {
-    BackgroundSyncMetrics::CountRegister(
-        options.periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
     return;
   }
@@ -407,17 +399,9 @@ void BackgroundSyncManager::RegisterImpl(
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // For UMA, determine here whether the sync could fire immediately
-  BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-      AreOptionConditionsMet(options)
-          ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
-          : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
-
   if (disabled_) {
-    BackgroundSyncMetrics::CountRegister(
-        options.periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
     return;
   }
@@ -430,10 +414,8 @@ void BackgroundSyncManager::RegisterImpl(
   }
 
   if (options.tag.length() > kMaxTagLength) {
-    BackgroundSyncMetrics::CountRegister(
-        options.periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }
@@ -441,10 +423,8 @@ void BackgroundSyncManager::RegisterImpl(
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
-    BackgroundSyncMetrics::CountRegister(
-        options.periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback);
     return;
   }
@@ -468,11 +448,14 @@ void BackgroundSyncManager::RegisterImpl(
       BackgroundSyncRegistration* existing_registration =
           existing_registration_ref->value();
 
-    // Record the duplicated registration
-    BackgroundSyncMetrics::CountRegister(
-        existing_registration->options()->periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE,
-        BACKGROUND_SYNC_STATUS_OK);
+      BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
+          AreOptionConditionsMet(options)
+              ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
+              : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
+      BackgroundSyncMetrics::CountRegisterSuccess(
+          existing_registration->options()->periodicity,
+          registration_could_fire,
+          BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE);
 
     if (existing_registration->IsFiring()) {
       existing_registration->set_sync_state(
@@ -646,17 +629,10 @@ void BackgroundSyncManager::RegisterDidStore(
   const BackgroundSyncRegistration* new_registration =
       new_registration_ref->value();
 
-  // For UMA, determine here whether the sync could fire immediately
-  BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-      AreOptionConditionsMet(*new_registration->options())
-          ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
-          : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
-
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // The service worker registration is gone.
-    BackgroundSyncMetrics::CountRegister(
-        new_registration->options()->periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
+    BackgroundSyncMetrics::CountRegisterFailure(
+        new_registration->options()->periodicity,
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     active_registrations_.erase(sw_registration_id);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
@@ -666,9 +642,8 @@ void BackgroundSyncManager::RegisterDidStore(
   if (status != SERVICE_WORKER_OK) {
     LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
                   "failure.";
-    BackgroundSyncMetrics::CountRegister(
-        new_registration->options()->periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
+    BackgroundSyncMetrics::CountRegisterFailure(
+        new_registration->options()->periodicity,
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     DisableAndClearManager(base::Bind(
         callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
@@ -676,10 +651,14 @@ void BackgroundSyncManager::RegisterDidStore(
     return;
   }
 
-  BackgroundSyncMetrics::CountRegister(
+  BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
+      AreOptionConditionsMet(*new_registration->options())
+          ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
+          : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
+  BackgroundSyncMetrics::CountRegisterSuccess(
       new_registration->options()->periodicity, registration_could_fire,
-      BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-      BACKGROUND_SYNC_STATUS_OK);
+      BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
+
   FireReadyEvents();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

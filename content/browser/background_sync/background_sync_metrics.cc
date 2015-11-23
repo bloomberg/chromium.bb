@@ -32,6 +32,7 @@ ResultPattern EventResultToResultPattern(bool success,
 
 namespace content {
 
+// static
 void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
                                               bool success,
                                               bool finished_in_foreground) {
@@ -52,6 +53,7 @@ void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
   NOTREACHED();
 }
 
+// static
 void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
     const base::TimeDelta& time,
     int number_of_batched_sync_events) {
@@ -64,14 +66,15 @@ void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
                            number_of_batched_sync_events);
 }
 
-void BackgroundSyncMetrics::CountRegister(
+// static
+void BackgroundSyncMetrics::CountRegisterSuccess(
     SyncPeriodicity periodicity,
     RegistrationCouldFire registration_could_fire,
-    RegistrationIsDuplicate registration_is_duplicate,
-    BackgroundSyncStatus result) {
+    RegistrationIsDuplicate registration_is_duplicate) {
   switch (periodicity) {
     case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
+      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot",
+                                BACKGROUND_SYNC_STATUS_OK,
                                 BACKGROUND_SYNC_STATUS_MAX + 1);
       UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.CouldFire",
                             registration_could_fire == REGISTRATION_COULD_FIRE);
@@ -80,7 +83,8 @@ void BackgroundSyncMetrics::CountRegister(
           registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
       return;
     case SYNC_PERIODIC:
-      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic", result,
+      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic",
+                                BACKGROUND_SYNC_STATUS_OK,
                                 BACKGROUND_SYNC_STATUS_MAX + 1);
       UMA_HISTOGRAM_BOOLEAN(
           "BackgroundSync.Registration.Periodic.IsDuplicate",
@@ -90,6 +94,23 @@ void BackgroundSyncMetrics::CountRegister(
   NOTREACHED();
 }
 
+// static
+void BackgroundSyncMetrics::CountRegisterFailure(SyncPeriodicity periodicity,
+                                                 BackgroundSyncStatus result) {
+  switch (periodicity) {
+    case SYNC_ONE_SHOT:
+      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
+                                BACKGROUND_SYNC_STATUS_MAX + 1);
+      return;
+    case SYNC_PERIODIC:
+      UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic", result,
+                                BACKGROUND_SYNC_STATUS_MAX + 1);
+      return;
+  }
+  NOTREACHED();
+}
+
+// static
 void BackgroundSyncMetrics::CountUnregister(SyncPeriodicity periodicity,
                                             BackgroundSyncStatus result) {
   switch (periodicity) {
