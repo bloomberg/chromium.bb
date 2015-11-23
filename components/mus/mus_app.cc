@@ -4,6 +4,7 @@
 
 #include "components/mus/mus_app.h"
 
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "components/mus/common/args.h"
 #include "components/mus/gles2/gpu_impl.h"
@@ -14,11 +15,14 @@
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "components/mus/ws/window_tree_impl.h"
+#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
@@ -36,6 +40,26 @@ using mus::mojom::WindowTreeHostFactory;
 using mus::mojom::Gpu;
 
 namespace mus {
+namespace {
+
+void InitResources(ApplicationImpl* app) {
+  const std::string resource_file = "ui_resources_100_percent.pak";
+
+  std::set<std::string> paths;
+  paths.insert(resource_file);
+  resource_provider::ResourceLoader resource_loader(app, paths);
+  CHECK(resource_loader.BlockUntilLoaded());
+  CHECK(resource_loader.loaded());
+  ui::RegisterPathProvider();
+  base::File pak_file = resource_loader.ReleaseFile(resource_file);
+  base::File pak_file_2 = pak_file.Duplicate();
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+      pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
+}
+
+}  // namespace
 
 MandolineUIServicesApp::MandolineUIServicesApp()
     : app_impl_(nullptr) {}
@@ -48,6 +72,8 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
 }
 
 void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
+  InitResources(app);
+
   app_impl_ = app;
   surfaces_state_ = new SurfacesState;
 
