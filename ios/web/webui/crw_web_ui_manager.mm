@@ -88,6 +88,10 @@ const char kScriptCommandPrefix[] = "webui";
 - (void)webState:(web::WebState*)webState
     didStartProvisionalNavigationForURL:(const GURL&)URL {
   DCHECK(webState == _webState);
+  // If URL is not an application specific URL, ignore the navigation.
+  if (!web::GetWebClient()->IsAppSpecificURL(URL))
+    return;
+
   GURL navigationURL(URL);
   // Add request group ID to the URL, if not present. Request group ID may
   // already be added if restoring state to a WebUI page.
