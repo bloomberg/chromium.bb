@@ -19,11 +19,7 @@ END
 fi
 declare -r glibc_url_prefix=http://storage.googleapis.com/nativeclient-archive2/between_builders/x86_glibc/r
 declare -r glibc_revision="$("$(dirname "$0")/glibc_revision.sh")"
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  declare -r tar=gnutar
-else
-  declare -r tar=tar
-fi
+declare -r tar=tar
 max_sleep=10000
 if ((${#@}>1)); then
   max_sleep="$2"
