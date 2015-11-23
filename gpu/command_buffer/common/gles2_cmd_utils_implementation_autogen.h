@@ -4007,14 +4007,6 @@ std::string GLES2Util::GetStringInternalFormatParameter(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringInvalidateFrameBufferTarget(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_FRAMEBUFFER, "GL_FRAMEBUFFER"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
 std::string GLES2Util::GetStringMapBufferAccess(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_MAP_READ_BIT, "GL_MAP_READ_BIT"},

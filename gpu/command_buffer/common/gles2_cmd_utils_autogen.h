@@ -44,7 +44,6 @@ static std::string GetStringIndexType(uint32_t value);
 static std::string GetStringIndexedBufferTarget(uint32_t value);
 static std::string GetStringIndexedGLState(uint32_t value);
 static std::string GetStringInternalFormatParameter(uint32_t value);
-static std::string GetStringInvalidateFrameBufferTarget(uint32_t value);
 static std::string GetStringMapBufferAccess(uint32_t value);
 static std::string GetStringMatrixMode(uint32_t value);
 static std::string GetStringPathCoordType(uint32_t value);

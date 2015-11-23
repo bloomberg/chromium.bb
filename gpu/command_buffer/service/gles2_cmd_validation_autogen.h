@@ -44,7 +44,6 @@ ValueValidator<GLenum> index_type;
 ValueValidator<GLenum> indexed_buffer_target;
 ValueValidator<GLenum> indexed_g_l_state;
 ValueValidator<GLenum> internal_format_parameter;
-ValueValidator<GLenum> invalidate_frame_buffer_target;
 ValueValidator<GLenum> map_buffer_access;
 ValueValidator<GLenum> matrix_mode;
 ValueValidator<GLenum> path_coord_type;

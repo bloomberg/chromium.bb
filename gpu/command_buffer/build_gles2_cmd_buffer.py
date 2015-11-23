@@ -603,16 +603,6 @@ _NAMED_TYPE_INFO = {
       'GL_RENDERBUFFER',
     ],
   },
-  'InvalidateFrameBufferTarget': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_FRAMEBUFFER',
-    ],
-    'invalid': [
-      'GL_DRAW_FRAMEBUFFER' ,
-      'GL_READ_FRAMEBUFFER' ,
-    ],
-  },
   'RenderBufferTarget': {
     'type': 'GLenum',
     'valid': [

@@ -395,10 +395,6 @@ static const GLenum valid_internal_format_parameter_table[] = {
     GL_NUM_SAMPLE_COUNTS, GL_SAMPLES,
 };
 
-static const GLenum valid_invalidate_frame_buffer_target_table[] = {
-    GL_FRAMEBUFFER,
-};
-
 static const GLenum valid_map_buffer_access_table[] = {
     GL_MAP_READ_BIT,
     GL_MAP_WRITE_BIT,
@@ -1025,9 +1021,6 @@ Validators::Validators()
       internal_format_parameter(
           valid_internal_format_parameter_table,
           arraysize(valid_internal_format_parameter_table)),
-      invalidate_frame_buffer_target(
-          valid_invalidate_frame_buffer_target_table,
-          arraysize(valid_invalidate_frame_buffer_target_table)),
       map_buffer_access(valid_map_buffer_access_table,
                         arraysize(valid_map_buffer_access_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),

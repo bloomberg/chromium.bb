@@ -36,8 +36,8 @@ public:
     void blitFramebuffer(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum);
     void framebufferTextureLayer(ScriptState*, GLenum, GLenum, WebGLTexture*, GLint, GLint);
     ScriptValue getInternalformatParameter(ScriptState*, GLenum, GLenum, GLenum);
-    void invalidateFramebuffer(GLenum, Vector<GLenum>&);
-    void invalidateSubFramebuffer(GLenum, Vector<GLenum>&, GLint, GLint, GLsizei, GLsizei);
+    void invalidateFramebuffer(GLenum, const Vector<GLenum>&);
+    void invalidateSubFramebuffer(GLenum, const Vector<GLenum>&, GLint, GLint, GLsizei, GLsizei);
     void readBuffer(GLenum);
 
     /* Renderbuffer objects */
@@ -212,6 +212,8 @@ protected:
 
     void vertexAttribIivImpl(const char*, GLuint, const GLint*, GLsizei);
     void vertexAttribIuivImpl(const char*, GLuint, const GLuint*, GLsizei);
+
+    bool checkAndTranslateAttachments(const char* functionName, GLenum, const Vector<GLenum>&, Vector<GLenum>&);
 
     /* WebGLRenderingContextBase overrides */
     unsigned getMaxWebGLLocationLength() const override { return 1024; };
