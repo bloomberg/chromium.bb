@@ -151,6 +151,9 @@ Background.prototype = {
       return;
 
     this.currentRange_ = value;
+
+    if (this.currentRange_)
+      this.currentRange_.start.node.makeVisible();
   },
 
   /**
@@ -328,8 +331,8 @@ Background.prototype = {
               .onSpeechEnd(function() { continueReading(prevRange); })
               .go();
           prevRange = this.currentRange_;
-          this.currentRange_ =
-              this.currentRange_.move(cursors.Unit.NODE, Dir.FORWARD);
+          this.currentRange =
+              this.currentRange.move(cursors.Unit.NODE, Dir.FORWARD);
 
           if (!this.currentRange_ || this.currentRange_.equals(prevRange))
             global.isReadingContinuously = false;
@@ -405,7 +408,7 @@ Background.prototype = {
       actionNode.focus();
 
       var prevRange = this.currentRange_;
-      this.currentRange_ = current;
+      this.currentRange = current;
 
       new Output().withSpeechAndBraille(
               this.currentRange_, prevRange, Output.EventType.NAVIGATE)

@@ -334,8 +334,15 @@
     // The $(ref:automation.StateType)s describing this node.
     object state;
 
-    // The rendered location (as a bounding box) of this node within the frame.
+    // The rendered location (as a bounding box) of this node in global
+    // screen coordinates.
     automation.Rect location;
+
+    // Computes the bounding box of a subrange of this node in global screen
+    // coordinates. Returns the same as |location| if range information
+    // is not available. The start and end indices are zero-based offsets
+    // into the node's "name" string attribute.
+    static automation.Rect boundsForRange(long startIndex, long endIndex);
 
     // The purpose of the node, other than the role, if any.
     DOMString description;

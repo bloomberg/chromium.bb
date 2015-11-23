@@ -63,9 +63,9 @@ Output = function() {
 
   /**
    * Current global options.
-   * @type {{speech: boolean, braille: boolean, location: boolean}}
+   * @type {{speech: boolean, braille: boolean}}
    */
-  this.formatOptions_ = {speech: true, braille: false, location: true};
+  this.formatOptions_ = {speech: true, braille: false};
 
   /**
    * Speech properties to apply to the entire output.
@@ -618,7 +618,7 @@ Output.prototype = {
    * @return {!Output}
    */
   withSpeech: function(range, prevRange, type) {
-    this.formatOptions_ = {speech: true, braille: false, location: true};
+    this.formatOptions_ = {speech: true, braille: false};
     this.render_(range, prevRange, type, this.speechBuffer_);
     return this;
   },
@@ -631,8 +631,21 @@ Output.prototype = {
    * @return {!Output}
    */
   withBraille: function(range, prevRange, type) {
-    this.formatOptions_ = {speech: false, braille: true, location: false};
+    this.formatOptions_ = {speech: false, braille: true};
     this.render_(range, prevRange, type, this.brailleBuffer_);
+    return this;
+  },
+
+  /**
+   * Specify ranges for location.
+   * @param {!cursors.Range} range
+   * @param {cursors.Range} prevRange
+   * @param {chrome.automation.EventType|Output.EventType} type
+   * @return {!Output}
+   */
+  withLocation: function(range, prevRange, type) {
+    this.formatOptions_ = {speech: false, braille: false};
+    this.render_(range, prevRange, type, this.speechBuffer_);
     return this;
   },
 
@@ -666,10 +679,10 @@ Output.prototype = {
    * @return {!Output}
    */
   format: function(formatStr) {
-    this.formatOptions_ = {speech: true, braille: false, location: true};
+    this.formatOptions_ = {speech: true, braille: false};
     this.format_(null, formatStr, this.speechBuffer_);
 
-    this.formatOptions_ = {speech: false, braille: true, location: false};
+    this.formatOptions_ = {speech: false, braille: true};
     this.format_(null, formatStr, this.brailleBuffer_);
 
     return this;
@@ -1054,8 +1067,7 @@ Output.prototype = {
       var buff = [];
       this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
-      if (this.formatOptions_.location)
-        this.locations_.push(node.location);
+      this.locations_.push(node.location);
       return buff;
     }.bind(this);
 
@@ -1183,6 +1195,8 @@ Output.prototype = {
       endIndex++;
     this.append_(
         buff, range.start.getText().substring(startIndex, endIndex));
+    this.locations_.push(
+        range.start.node.boundsForRange(startIndex, endIndex));
   },
 
   /**

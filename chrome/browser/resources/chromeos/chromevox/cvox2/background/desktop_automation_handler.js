@@ -247,6 +247,16 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
+   * Handle updating the active indicator when the document scrolls.
+   * @override
+   */
+  onScrollPositionChanged: function(evt) {
+    var currentRange = global.backgroundObj.currentRange;
+    if (currentRange)
+      new Output().withLocation(currentRange, null, evt.type).go();
+  },
+
+  /**
    * Create an editable text handler for the given node if needed.
    * @param {Object} node
    */

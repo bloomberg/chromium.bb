@@ -124,6 +124,17 @@ var GetLocation = requireNative('automationInternal').GetLocation;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @param {number} startIndex The start index of the range.
+ * @param {number} endIndex The end index of the range.
+ * @return {?automation.Rect} The bounding box of the subrange of this node,
+ *     or the location if there are no subranges, or undefined if
+ *     the tree or node wasn't found.
+ */
+var GetBoundsForRange = requireNative('automationInternal').GetBoundsForRange;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @param {string} attr The name of a string attribute.
  * @return {?string} The value of this attribute, or undefined if the tree,
  *     node, or attribute wasn't found.
@@ -220,6 +231,10 @@ AutomationNodeImpl.prototype = {
 
   get location() {
     return GetLocation(this.treeID, this.id);
+  },
+
+  boundsForRange: function(startIndex, endIndex) {
+    return GetBoundsForRange(this.treeID, this.id, startIndex, endIndex);
   },
 
   get indexInParent() {
@@ -935,7 +950,8 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'addEventListener',
                                                 'removeEventListener',
                                                 'domQuerySelector',
-                                                'toString' ],
+                                                'toString',
+                                                'boundsForRange'],
                                     readonly: publicAttributes.concat(
                                               ['parent',
                                                'firstChild',

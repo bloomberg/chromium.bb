@@ -35,6 +35,7 @@ BaseAutomationHandler = function(node) {
     loadComplete: this.onLoadComplete,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
+    scrollPositionChanged: this.onScrollPositionChanged,
     textChanged: this.onTextOrTextSelectionChanged,
     textSelectionChanged: this.onTextOrTextSelectionChanged,
     valueChanged: this.onValueChanged
@@ -114,7 +115,16 @@ BaseAutomationHandler.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {},
+
+  /**
+   * @param {Object} evt
+   */
   onEventDefault: function(evt) {},
+
+  /**
+   * @param {Object} evt
+   */
+  onScrollPositionChanged: function(evt) {},
 
   /**
    * @param {Object} evt

@@ -435,6 +435,19 @@ chrome.automation.AutomationNode.prototype.location;
 
 
 /**
+ * @param {number} start
+ * @param {number} end
+ * @return {
+ *     ({top: number, left: number, height: number, width: number})|undefined}
+ */
+chrome.automation.AutomationNode.prototype.boundsForRange =
+    function(start, end) {};
+
+
+chrome.automation.AutomationNode.prototype.makeVisible = function() {};
+
+
+/**
  * @param {chrome.automation.EventType} eventType
  * @param {function(!chrome.automation.AutomationEvent) : void} callback
  * @param {boolean} capture

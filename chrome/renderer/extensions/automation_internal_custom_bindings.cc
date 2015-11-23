@@ -63,6 +63,81 @@ v8::Local<v8::Value> CreateV8String(v8::Isolate* isolate,
                                  v8::String::kNormalString, str.length());
 }
 
+v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
+                                     const gfx::Rect& rect) {
+  v8::Local<v8::Object> result(v8::Object::New(isolate));
+  result->Set(CreateV8String(isolate, "left"),
+              v8::Integer::New(isolate, rect.x()));
+  result->Set(CreateV8String(isolate, "top"),
+              v8::Integer::New(isolate, rect.y()));
+  result->Set(CreateV8String(isolate, "width"),
+              v8::Integer::New(isolate, rect.width()));
+  result->Set(CreateV8String(isolate, "height"),
+              v8::Integer::New(isolate, rect.height()));
+  return result;
+}
+
+// Compute the bounding box of a node, fixing nodes with empty bounds by
+// unioning the bounds of their children.
+static gfx::Rect ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
+  gfx::Rect bounds = node->data().location;
+  if (bounds.width() > 0 && bounds.height() > 0)
+    return bounds;
+
+  // Compute the bounds of each child.
+  for (size_t i = 0; i < node->children().size(); i++) {
+    ui::AXNode* child = node->children()[i];
+    gfx::Rect child_bounds = ComputeLocalNodeBounds(cache, child);
+
+    // Ignore children that don't have valid bounds themselves.
+    if (child_bounds.width() == 0 || child_bounds.height() == 0)
+      continue;
+
+    // For the first valid child, just set the bounds to that child's bounds.
+    if (bounds.width() == 0 || bounds.height() == 0) {
+      bounds = child_bounds;
+      continue;
+    }
+
+    // Union each additional child's bounds.
+    bounds.Union(child_bounds);
+  }
+
+  return bounds;
+}
+
+// Compute the bounding box of a node in global coordinates, walking up the
+// parent hierarchy to offset by frame offsets and scroll offsets.
+static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache, ui::AXNode* node) {
+  gfx::Rect bounds = ComputeLocalNodeBounds(cache, node);
+  ui::AXNode* parent = node->parent();
+  bool need_to_offset_web_area = node->data().role == ui::AX_ROLE_WEB_AREA ||
+                                 node->data().role == ui::AX_ROLE_ROOT_WEB_AREA;
+  while (parent) {
+    if (bounds.IsEmpty()) {
+      bounds = parent->data().location;
+    } else if (need_to_offset_web_area && parent->data().location.width() > 0 &&
+               parent->data().location.height() > 0) {
+      bounds.Offset(parent->data().location.x(), parent->data().location.y());
+      need_to_offset_web_area = false;
+    }
+
+    if (parent->data().role == ui::AX_ROLE_WEB_AREA ||
+        parent->data().role == ui::AX_ROLE_ROOT_WEB_AREA) {
+      int sx = 0;
+      int sy = 0;
+      if (parent->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          parent->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+        bounds.Offset(-sx, -sy);
+      }
+      need_to_offset_web_area = true;
+    }
+    parent = parent->parent();
+  }
+
+  return bounds;
+}
+
 //
 // Helper class that helps implement bindings for a JavaScript function
 // that takes a single input argument consisting of a Tree ID. Looks up
@@ -200,6 +275,59 @@ class NodeIDPlusAttributeWrapper
 
   AutomationInternalCustomBindings* automation_bindings_;
   NodeIDPlusAttributeFunction function_;
+};
+
+//
+// Helper class that helps implement bindings for a JavaScript function
+// that takes four input arguments: a tree ID, node ID, and integer start
+// and end indices. Looks up the TreeCache and the AXNode and passes them
+// to the function passed to the constructor.
+//
+
+typedef void (*NodeIDPlusRangeFunction)(v8::Isolate* isolate,
+                                        v8::ReturnValue<v8::Value> result,
+                                        TreeCache* cache,
+                                        ui::AXNode* node,
+                                        int start,
+                                        int end);
+
+class NodeIDPlusRangeWrapper
+    : public base::RefCountedThreadSafe<NodeIDPlusRangeWrapper> {
+ public:
+  NodeIDPlusRangeWrapper(AutomationInternalCustomBindings* automation_bindings,
+                         NodeIDPlusRangeFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 4 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+        !args[2]->IsNumber() || !args[3]->IsNumber()) {
+      ThrowInvalidArgumentsException(automation_bindings_);
+    }
+
+    int tree_id = args[0]->Int32Value();
+    int node_id = args[1]->Int32Value();
+    int start = args[2]->Int32Value();
+    int end = args[3]->Int32Value();
+
+    TreeCache* cache = automation_bindings_->GetTreeCacheFromTreeID(tree_id);
+    if (!cache)
+      return;
+
+    ui::AXNode* node = cache->tree.GetFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), cache, node, start, end);
+  }
+
+ private:
+  virtual ~NodeIDPlusRangeWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDPlusRangeWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDPlusRangeFunction function_;
 };
 
 }  // namespace
@@ -378,18 +506,52 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   RouteNodeIDFunction(
       "GetLocation", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                         TreeCache* cache, ui::AXNode* node) {
-        v8::Local<v8::Object> location_obj(v8::Object::New(isolate));
-        gfx::Rect location = node->data().location;
+        gfx::Rect location = ComputeGlobalNodeBounds(cache, node);
         location.Offset(cache->location_offset);
-        location_obj->Set(CreateV8String(isolate, "left"),
-                          v8::Integer::New(isolate, location.x()));
-        location_obj->Set(CreateV8String(isolate, "top"),
-                          v8::Integer::New(isolate, location.y()));
-        location_obj->Set(CreateV8String(isolate, "width"),
-                          v8::Integer::New(isolate, location.width()));
-        location_obj->Set(CreateV8String(isolate, "height"),
-                          v8::Integer::New(isolate, location.height()));
-        result.Set(location_obj);
+        result.Set(RectToV8Object(isolate, location));
+      });
+
+  // Bindings that take a Tree ID and Node ID and string attribute name
+  // and return a property of the node.
+
+  RouteNodeIDPlusRangeFunction(
+      "GetBoundsForRange",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         TreeCache* cache, ui::AXNode* node, int start, int end) {
+        gfx::Rect location = ComputeGlobalNodeBounds(cache, node);
+        location.Offset(cache->location_offset);
+        if (node->data().role == ui::AX_ROLE_INLINE_TEXT_BOX) {
+          std::string name = node->data().GetStringAttribute(ui::AX_ATTR_NAME);
+          std::vector<int> character_offsets =
+              node->data().GetIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS);
+          int len =
+              static_cast<int>(std::min(name.size(), character_offsets.size()));
+          if (start >= 0 && start <= end && end <= len) {
+            int start_offset = start > 0 ? character_offsets[start - 1] : 0;
+            int end_offset = end > 0 ? character_offsets[end - 1] : 0;
+
+            switch (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION)) {
+              case ui::AX_TEXT_DIRECTION_LTR:
+              default:
+                location.set_x(location.x() + start_offset);
+                location.set_width(end_offset - start_offset);
+                break;
+              case ui::AX_TEXT_DIRECTION_RTL:
+                location.set_x(location.x() + location.width() - end_offset);
+                location.set_width(end_offset - start_offset);
+                break;
+              case ui::AX_TEXT_DIRECTION_TTB:
+                location.set_y(location.y() + start_offset);
+                location.set_height(end_offset - start_offset);
+                break;
+              case ui::AX_TEXT_DIRECTION_BTT:
+                location.set_y(location.y() + location.height() - end_offset);
+                location.set_height(end_offset - start_offset);
+                break;
+            }
+          }
+        }
+        result.Set(RectToV8Object(isolate, location));
       });
 
   // Bindings that take a Tree ID and Node ID and string attribute name
@@ -590,6 +752,14 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
   scoped_refptr<NodeIDPlusAttributeWrapper> wrapper =
       new NodeIDPlusAttributeWrapper(this, callback);
   RouteFunction(name, base::Bind(&NodeIDPlusAttributeWrapper::Run, wrapper));
+}
+
+void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
+    const std::string& name,
+    NodeIDPlusRangeFunction callback) {
+  scoped_refptr<NodeIDPlusRangeWrapper> wrapper =
+      new NodeIDPlusRangeWrapper(this, callback);
+  RouteFunction(name, base::Bind(&NodeIDPlusRangeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::GetChildIDAtIndex(

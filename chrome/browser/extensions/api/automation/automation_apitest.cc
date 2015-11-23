@@ -124,6 +124,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, BoundsForRange) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
+                                  "bounds_for_range.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(
