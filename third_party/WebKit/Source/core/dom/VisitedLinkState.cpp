@@ -64,8 +64,10 @@ void VisitedLinkState::invalidateStyleForAllLinks()
     if (m_linksCheckedForVisitedState.isEmpty())
         return;
     for (Node& node : NodeTraversal::startsAt(document().firstChild())) {
-        if (node.isLink())
-            node.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisitedLink));
+        if (node.isLink()) {
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
+        }
     }
 }
 
@@ -74,8 +76,10 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
     if (!m_linksCheckedForVisitedState.contains(linkHash))
         return;
     for (Node& node : NodeTraversal::startsAt(document().firstChild())) {
-        if (node.isLink() && linkHashForElement(toElement(node)) == linkHash)
-            node.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisitedLink));
+        if (node.isLink() && linkHashForElement(toElement(node)) == linkHash) {
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
+            toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);
+        }
     }
 }
 
