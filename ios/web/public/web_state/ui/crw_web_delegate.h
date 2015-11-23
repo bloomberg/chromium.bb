@@ -174,7 +174,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 - (void)webDidPrepareForGoBack;
 // ---------------------------------------------------------------------
 
-
 @optional
 
 // Called to ask CRWWebDelegate if |CRWWebController| should open the given URL.
