@@ -62721,6 +62721,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1022" label="CSSFilterContrast"/>
   <int value="1023" label="CSSFilterBlur"/>
   <int value="1024" label="CSSFilterDropShadow"/>
+  <int value="1025" label="BackgroundSyncRegister"/>
+  <int value="1026" label="BorderImageWithBorderStyleNone"/>
+  <int value="1027" label="ExecCommandOnInputOrTextarea"/>
+  <int value="1028" label="V8History_ScrollRestoration_AttributeGetter"/>
+  <int value="1029" label="V8History_ScrollRestoration_AttributeSetter"/>
+  <int value="1030" label="SVG1DOMFilter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

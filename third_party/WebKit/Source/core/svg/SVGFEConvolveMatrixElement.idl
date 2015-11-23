@@ -29,22 +29,22 @@
     DoNotCheckConstants,
 ] interface SVGFEConvolveMatrixElement : SVGElement {
     // Edge Mode Values
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_EDGEMODE_UNKNOWN = 0;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_EDGEMODE_DUPLICATE = 1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_EDGEMODE_WRAP = 2;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_EDGEMODE_NONE = 3;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_EDGEMODE_UNKNOWN = 0;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_EDGEMODE_DUPLICATE = 1;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_EDGEMODE_WRAP = 2;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] const unsigned short SVG_EDGEMODE_NONE = 3;
 
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedString in1;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedInteger orderX;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedInteger orderY;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumberList kernelMatrix;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber divisor;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber bias;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedInteger targetX;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedInteger targetY;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration edgeMode;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber kernelUnitLengthX;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber kernelUnitLengthY;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedString in1;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedInteger orderX;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedInteger orderY;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumberList kernelMatrix;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber divisor;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber bias;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedInteger targetX;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedInteger targetY;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration edgeMode;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber kernelUnitLengthX;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber kernelUnitLengthY;
 
     // TODO(philipj): The following was part of SVG 1.1:
     // http://www.w3.org/TR/SVG11/filters.html#InterfaceSVGFEConvolveMatrixElement
