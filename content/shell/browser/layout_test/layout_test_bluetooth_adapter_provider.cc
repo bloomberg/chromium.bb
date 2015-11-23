@@ -109,7 +109,7 @@ std::set<BluetoothUUID> GetUUIDs(
   std::set<BluetoothUUID> result;
   filter->GetUUIDs(result);
   return result;
-};
+}
 
 // Notifies the adapter's observers that the services have been discovered.
 void NotifyServicesDiscovered(MockBluetoothAdapter* adapter,
@@ -128,35 +128,35 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     const std::string& fake_adapter_name) {
   if (fake_adapter_name == "BaseAdapter")
     return GetBaseAdapter();
-  else if (fake_adapter_name == "NotPresentAdapter")
+  if (fake_adapter_name == "NotPresentAdapter")
     return GetNotPresentAdapter();
-  else if (fake_adapter_name == "NotPoweredAdapter")
+  if (fake_adapter_name == "NotPoweredAdapter")
     return GetNotPoweredAdapter();
-  else if (fake_adapter_name == "ScanFilterCheckingAdapter")
+  if (fake_adapter_name == "ScanFilterCheckingAdapter")
     return GetScanFilterCheckingAdapter();
-  else if (fake_adapter_name == "EmptyAdapter")
+  if (fake_adapter_name == "EmptyAdapter")
     return GetEmptyAdapter();
-  else if (fake_adapter_name == "FailStartDiscoveryAdapter")
+  if (fake_adapter_name == "FailStartDiscoveryAdapter")
     return GetFailStartDiscoveryAdapter();
-  else if (fake_adapter_name == "GlucoseHeartRateAdapter")
+  if (fake_adapter_name == "GlucoseHeartRateAdapter")
     return GetGlucoseHeartRateAdapter();
-  else if (fake_adapter_name == "UnicodeDeviceAdapter")
+  if (fake_adapter_name == "UnicodeDeviceAdapter")
     return GetUnicodeDeviceAdapter();
-  else if (fake_adapter_name == "MissingServiceHeartRateAdapter")
+  if (fake_adapter_name == "MissingServiceHeartRateAdapter")
     return GetMissingServiceHeartRateAdapter();
-  else if (fake_adapter_name == "MissingCharacteristicHeartRateAdapter")
+  if (fake_adapter_name == "MissingCharacteristicHeartRateAdapter")
     return GetMissingCharacteristicHeartRateAdapter();
-  else if (fake_adapter_name == "HeartRateAdapter")
+  if (fake_adapter_name == "HeartRateAdapter")
     return GetHeartRateAdapter();
-  else if (fake_adapter_name == "FailingConnectionsAdapter")
+  if (fake_adapter_name == "FailingConnectionsAdapter")
     return GetFailingConnectionsAdapter();
-  else if (fake_adapter_name == "FailingGATTOperationsAdapter")
+  if (fake_adapter_name == "FailingGATTOperationsAdapter")
     return GetFailingGATTOperationsAdapter();
-  else if (fake_adapter_name == "SecondDiscoveryFindsHeartRateAdapter")
+  if (fake_adapter_name == "SecondDiscoveryFindsHeartRateAdapter")
     return GetSecondDiscoveryFindsHeartRateAdapter();
-  else if (fake_adapter_name == "DelayedServicesDiscoveryAdapter")
+  if (fake_adapter_name == "DelayedServicesDiscoveryAdapter")
     return GetDelayedServicesDiscoveryAdapter();
-  else if (fake_adapter_name == "")
+  if (fake_adapter_name.empty())
     return nullptr;
 
   if (base::StartsWith(fake_adapter_name, "PowerValueAdapter",
@@ -194,7 +194,7 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
   }
 
   NOTREACHED() << fake_adapter_name;
-  return NULL;
+  return nullptr;
 }
 
 // Adapters
@@ -697,7 +697,7 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessService(
 
   // Write response.
   ON_CALL(*device_name, WriteRemoteCharacteristic(_, _, _))
-      .WillByDefault(RunCallback<1 /* sucess callback */>());
+      .WillByDefault(RunCallback<1 /* success callback */>());
 
   generic_access->AddMockCharacteristic(device_name.Pass());
 

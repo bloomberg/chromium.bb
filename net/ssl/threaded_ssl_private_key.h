@@ -38,7 +38,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     virtual std::vector<SSLPrivateKey::Hash> GetDigestPreferences() = 0;
     virtual size_t GetMaxSignatureLengthInBytes() = 0;
 
-    // Signs |input| as a digest of type |hash|. On sucess it returns OK and
+    // Signs |input| as a digest of type |hash|. On success it returns OK and
     // sets |signature| to the resulting signature. Otherwise it returns a net
     // error code. It will only be called on the task runner passed to the
     // owning ThreadedSSLPrivateKey.

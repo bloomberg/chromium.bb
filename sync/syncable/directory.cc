@@ -1324,7 +1324,7 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         }
         // If the next check failed, it would imply that an item exists
         // on the server, isn't waiting for application locally, but either
-        // is an unsynced create or a sucessful delete in the local copy.
+        // is an unsynced create or a successful delete in the local copy.
         // Either way, that's a mismatch.
         if (!SyncAssert(0 == server_version, FROM_HERE,
                         "Server version should be zero.",

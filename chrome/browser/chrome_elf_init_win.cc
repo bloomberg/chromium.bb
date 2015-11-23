@@ -99,7 +99,7 @@ void InitializeChromeElf() {
   // Report all successful blacklist interceptions.
   ReportSuccessfulBlocks();
 
-  // Schedule another task to report all sucessful interceptions later.
+  // Schedule another task to report all successful interceptions later.
   // This time delay should be long enough to catch any dlls that attempt to
   // inject after Chrome has started up.
   content::BrowserThread::PostDelayedTask(

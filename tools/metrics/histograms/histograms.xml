@@ -18235,7 +18235,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB">
   <owner>xhwang@chromium.org</owner>
   <summary>
-    Size in KB of the last file sucessfully read by the CDM through CDM FileIO
+    Size in KB of the last file successfully read by the CDM through CDM FileIO
     before a specific error happens. This is reported only when the error
     happens, which should be rare.
   </summary>
@@ -18244,8 +18244,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnFirstRead" units="KB">
   <owner>xhwang@chromium.org</owner>
   <summary>
-    Size in KB of the first file sucessfully read by the CDM through CDM FileIO.
-    This is recorded once per CDM instance.
+    Size in KB of the first file successfully read by the CDM through CDM
+    FileIO. This is recorded once per CDM instance.
   </summary>
 </histogram>
 

@@ -39,13 +39,13 @@ class PnaclTranslationCache
   virtual ~PnaclTranslationCache();
 
   // Initialize the translation cache in |cache_dir|.  If the return value is
-  // net::ERR_IO_PENDING, |callback| will be called with a 0 argument on sucess
+  // net::ERR_IO_PENDING, |callback| will be called with a 0 argument on success
   // and <0 otherwise.
   int InitOnDisk(const base::FilePath& cache_dir,
                  const CompletionCallback& callback);
 
   // Initialize the translation cache in memory.  If the return value is
-  // net::ERR_IO_PENDING, |callback| will be called with a 0 argument on sucess
+  // net::ERR_IO_PENDING, |callback| will be called with a 0 argument on success
   // and <0 otherwise.
   int InitInMemory(const CompletionCallback& callback);
 

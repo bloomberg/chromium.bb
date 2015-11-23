@@ -57,7 +57,7 @@ public abstract class ContentUriUtils {
      *
      * @param context {@link Context} in interest
      * @param uriString the content URI to open
-     * @return file desciptor upon sucess, or -1 otherwise.
+     * @return file desciptor upon success, or -1 otherwise.
      */
     @CalledByNative
     public static int openContentUriForRead(Context context, String uriString) {

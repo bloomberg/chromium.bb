@@ -137,7 +137,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
         WaitForIPCMessage(TracingHostMsg_ProcessMemoryDumpResponse::ID);
     EXPECT_NE(nullptr, msg);
 
-    // Check that the |dump_guid| and the |sucess| fields are properly set.
+    // Check that the |dump_guid| and the |success| fields are properly set.
     TracingHostMsg_ProcessMemoryDumpResponse::Param params;
     TracingHostMsg_ProcessMemoryDumpResponse::Read(msg, &params);
     const uint64 resp_guid = base::get<0>(params);

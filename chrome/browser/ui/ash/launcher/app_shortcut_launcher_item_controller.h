@@ -79,7 +79,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
       content::WebContents* content);
 
   // Advance to the next item if an owned item is already active. The function
-  // will return true if it has sucessfully advanced.
+  // will return true if it has successfully advanced.
   bool AdvanceToNextApp();
 
   // Returns true if the application is a V2 app.

@@ -150,7 +150,7 @@ void FindServiceWorkerRegistration(
   // This LOG(INFO) deliberately exists to help track down the cause of
   // https://crbug.com/534537, where notifications sometimes do not react to
   // the user clicking on them. It should be removed once that's fixed.
-  LOG(INFO) << "Lookup for ServiceWoker Registration: sucesss:" << success
+  LOG(INFO) << "Lookup for ServiceWoker Registration: success:" << success
             << " action_index: " << action_index;
 #endif
   if (!success) {

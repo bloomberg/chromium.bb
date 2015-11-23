@@ -60,7 +60,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 - (BOOL)processFindInPageResult:(NSString*)result
                  scrollPosition:(CGPoint*)point;
 // Updates find in page model with results. Calls |completionHandler| with the
-// the result of the processing and the new scroll position if successfull. If
+// the result of the processing and the new scroll position if successful. If
 // |completionHandler| is called with NO, further pumping is required.
 // |completionHandler| cannot be nil.
 - (void)processFindInPagePumpResult:(NSString*)result

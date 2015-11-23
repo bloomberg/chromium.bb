@@ -88,7 +88,7 @@ class EnterpriseEnrollmentHelper {
   // auth code to authentication token, then tries to enroll the device with the
   // received token.
   // If |fetch_additional_token| is true, the helper fetches an additional token
-  // and passes it to the |status_consumer| on successfull enrollment.
+  // and passes it to the |status_consumer| on successful enrollment.
   // EnrollUsingAuthCode can be called only once during this object's lifetime,
   // and only if neither of EnrollUsing* methods was called before.
   virtual void EnrollUsingAuthCode(const std::string& auth_code,

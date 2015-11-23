@@ -643,7 +643,7 @@ TEST_F(VideoEncoderResourceTest, InitializeFailure) {
 TEST_F(VideoEncoderResourceTest, InitializeSuccess) {
   {
     // Verify the initialize callback is called when initialization is
-    // successfull.
+    // successful.
     LockingResourceReleaser encoder(CreateEncoder());
     ResourceMessageCallParams params;
     PP_Size size = kFrameSize;

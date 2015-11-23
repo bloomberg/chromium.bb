@@ -93,7 +93,7 @@ Status GenerateEnsemblePatch(SourceStream* old, SourceStream* target,
 // Detects the type of an executable file, and it's length. The length
 // may be slightly smaller than some executables (like ELF), but will include
 // all bytes the courgette algorithm has special benefit for.
-// On sucess:
+// On success:
 //   Fill in type and detected_length, and return C_OK.
 // On failure:
 //   Fill in type with UNKNOWN, detected_length with 0, and

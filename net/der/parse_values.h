@@ -111,7 +111,7 @@ NET_EXPORT bool ParseUTCTimeRelaxed(const Input& in,
 
 // Reads a DER-encoded ASN.1 GeneralizedTime value from |in| and puts the
 // resulting value in |out|, returning true if the GeneralizedTime could
-// be parsed sucessfully. This function is even more restrictive than the
+// be parsed successfully. This function is even more restrictive than the
 // DER rules - it follows the rules from RFC5280, which does not allow for
 // fractional seconds.
 NET_EXPORT bool ParseGeneralizedTime(const Input& in,

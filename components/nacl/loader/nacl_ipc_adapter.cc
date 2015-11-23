@@ -676,7 +676,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     return;
   }
 
-  // The file token was sucessfully resolved.
+  // The file token was successfully resolved.
   std::string file_path_str = file_path.AsUTF8Unsafe();
   base::PlatformFile handle =
       IPC::PlatformFileForTransitToPlatformFile(ipc_fd);

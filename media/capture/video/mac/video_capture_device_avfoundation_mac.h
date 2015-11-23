@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
-#define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
+#ifndef MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
+#define MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -98,7 +98,7 @@ class VideoCaptureDeviceMac;
 // the deviceId is known, the library objects are created if needed and
 // connected for the capture, and a by default resolution is set. If deviceId is
 // nil, then the eventual capture is stopped and library objects are
-// disconnected. Returns YES on sucess, NO otherwise. This method should not be
+// disconnected. Returns YES on success, NO otherwise. This method should not be
 // called during capture.
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
@@ -111,7 +111,7 @@ class VideoCaptureDeviceMac;
 
 // Starts video capturing and register the notification listeners. Must be
 // called after setCaptureDevice:, and, eventually, also after
-// setCaptureHeight:width:frameRate:. Returns YES on sucess, NO otherwise.
+// setCaptureHeight:width:frameRate:. Returns YES on success, NO otherwise.
 - (BOOL)startCapture;
 
 // Stops video capturing and stops listening to notifications.
@@ -119,4 +119,4 @@ class VideoCaptureDeviceMac;
 
 @end
 
-#endif  // MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
+#endif  // MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_

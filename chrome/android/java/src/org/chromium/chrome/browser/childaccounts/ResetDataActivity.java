@@ -24,7 +24,7 @@ public class ResetDataActivity extends Activity  {
 
     /**
      * The operation succeeded. Note that this value will only be returned for dry runs, because
-     * sucessfully resetting data will kill this process and return
+     * successfully resetting data will kill this process and return
      * {@link Activity#RESULT_CANCELED}.
      */
     private static final int RESULT_OK = Activity.RESULT_OK;

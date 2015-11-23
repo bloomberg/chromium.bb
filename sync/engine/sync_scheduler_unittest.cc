@@ -719,7 +719,6 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
-
 }
 
 TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
@@ -1084,7 +1083,6 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
   ASSERT_EQ(1, retry_counter.times_called());
-
 }
 
 // Test that backoff is shaping traffic properly with consecutive errors.
@@ -1201,7 +1199,7 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
 
   StartSyncScheduler(base::Time());
 
-  // Run the unsucessful poll. The failed poll should not trigger backoff.
+  // Run the unsuccessful poll. The failed poll should not trigger backoff.
   RunLoop();
   EXPECT_TRUE(scheduler()->IsBackingOff());
 

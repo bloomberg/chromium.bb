@@ -12,7 +12,7 @@ namespace prefs {
 const char kCryptAuthDeviceSyncIsRecoveringFromFailure[] =
     "cryptauth.device_sync.is_recovering_from_failure";
 
-// The timestamp of the last successfull CryptAuth device_sync in seconds.
+// The timestamp of the last successful CryptAuth device_sync in seconds.
 const char kCryptAuthDeviceSyncLastSyncTimeSeconds[] =
     "cryptauth.device_sync.last_device_sync_time_seconds";
 
@@ -32,7 +32,7 @@ const char kCryptAuthDeviceSyncUnlockKeys[] =
 const char kCryptAuthEnrollmentIsRecoveringFromFailure[] =
     "cryptauth.enrollment.is_recovering_from_failure";
 
-// The timestamp of the last successfull CryptAuth enrollment in seconds.
+// The timestamp of the last successful CryptAuth enrollment in seconds.
 const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
     "cryptauth.enrollment.last_enrollment_time_seconds";
 
@@ -54,4 +54,4 @@ extern const char kCryptAuthGCMRegistrationId[] =
     "cryptauth.gcm_registration_id";
 
 }  // namespace prefs
-}  // proximity_auth
+}  // namespace proximity_auth

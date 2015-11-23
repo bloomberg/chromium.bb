@@ -98,7 +98,7 @@ public class ExternalDataUseObserver {
     /*
      * {@link #onReportDataUseDone}  reports the result of {@link #reportDataUse} to
      * the native.
-     * @param success true if the data report was sucessfully submitted to the external observer.
+     * @param success true if the data report was successfully submitted to the external observer.
      */
     protected void onReportDataUseDone(boolean success) {
         // Check if native object is destroyed.  This may happen at the time of Chromium shutdown.

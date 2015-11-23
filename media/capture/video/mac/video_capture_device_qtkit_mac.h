@@ -5,8 +5,8 @@
 // VideoCaptureDeviceQTKit implements all QTKit related code for
 // communicating with a QTKit capture device.
 
-#ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_
-#define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_
+#ifndef MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_
+#define MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -54,7 +54,7 @@ class VideoCaptureDeviceMac;
 // Set the frame receiver.
 - (void)setFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver;
 
-// Sets which capture device to use. Returns YES on sucess, NO otherwise.
+// Sets which capture device to use. Returns YES on success, NO otherwise.
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
 // Configures the capture properties.
@@ -62,7 +62,7 @@ class VideoCaptureDeviceMac;
                    width:(int)width
                frameRate:(float)frameRate;
 
-// Start video capturing. Returns YES on sucess, NO otherwise.
+// Start video capturing. Returns YES on success, NO otherwise.
 - (BOOL)startCapture;
 
 // Stops video capturing.
@@ -73,4 +73,4 @@ class VideoCaptureDeviceMac;
 
 @end
 
-#endif  // MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_
+#endif  // MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_QTKIT_MAC_H_

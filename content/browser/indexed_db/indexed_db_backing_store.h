@@ -261,7 +261,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     // List of blob files being newly written as part of this transaction.
     // These will be added to the primary blob journal prior to commit, then
-    // removed after a sucessful commit.
+    // removed after a successful commit.
     BlobJournalType blobs_to_write_;
 
     // List of blob files being deleted as part of this transaction. These will

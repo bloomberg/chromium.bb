@@ -17,7 +17,7 @@ namespace {
 
 class AutofillQueryXmlParserTest : public testing::Test {
  public:
-  AutofillQueryXmlParserTest(): upload_required_(USE_UPLOAD_RATES) {};
+  AutofillQueryXmlParserTest(): upload_required_(USE_UPLOAD_RATES) {}
   ~AutofillQueryXmlParserTest() override{};
 
  protected:
@@ -36,7 +36,7 @@ class AutofillQueryXmlParserTest : public testing::Test {
 
 class AutofillUploadXmlParserTest : public testing::Test {
  public:
-  AutofillUploadXmlParserTest(): positive_(0), negative_(0) {};
+  AutofillUploadXmlParserTest(): positive_(0), negative_(0) {}
   ~AutofillUploadXmlParserTest() override{};
 
  protected:
@@ -160,7 +160,7 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
 }
 
-// Test successfull upload response.
+// Test successful upload response.
 TEST_F(AutofillUploadXmlParserTest, TestSuccessfulResponse) {
   ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
                  "negativeuploadrate=\"0.3\"/>",

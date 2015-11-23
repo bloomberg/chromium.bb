@@ -118,8 +118,8 @@ class VpxVideoDecoder::MemoryPool
   // being used by libvpx. Parameters:
   // |user_priv|  Private data passed to libvpx (pointer to memory pool).
   // |fb|         Pointer to the frame buffer that's being released.
-  static int32 ReleaseVP9FrameBuffer(void *user_priv,
-                                     vpx_codec_frame_buffer *fb);
+  static int32 ReleaseVP9FrameBuffer(void* user_priv,
+                                     vpx_codec_frame_buffer* fb);
 
   // Generates a "no_longer_needed" closure that holds a reference to this pool.
   base::Closure CreateFrameCallback(void* fb_priv_data);
@@ -216,7 +216,8 @@ int32 VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
 }
 
 int32 VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
-    void *user_priv, vpx_codec_frame_buffer *fb) {
+    void* user_priv,
+    vpx_codec_frame_buffer* fb) {
   DCHECK(user_priv);
   DCHECK(fb);
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb->priv);
@@ -351,7 +352,7 @@ void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     bound_decode_cb.Run(kDecodeError);
     return;
   }
-  // We might get a successfull VpxDecode but not a frame if only a partial
+  // We might get a successful VpxDecode but not a frame if only a partial
   // decode happened.
   if (video_frame.get())
     output_cb_.Run(video_frame);

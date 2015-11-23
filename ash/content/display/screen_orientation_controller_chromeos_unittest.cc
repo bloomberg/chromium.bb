@@ -616,7 +616,7 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   EXPECT_TRUE(RotationLocked());
 }
 
-// Verifies rotating an inactive Display is sucessful.
+// Verifies rotating an inactive Display is successful.
 TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   const int64 kInternalDisplayId = 9;
   const int64 kExternalDisplayId = 10;

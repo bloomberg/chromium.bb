@@ -67,7 +67,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
 // Tests that generating a MHTML does create contents.
 // Note that the actual content of the file is not tested, the purpose of this
-// test is to ensure we were successfull in creating the MHTML data from the
+// test is to ensure we were successful in creating the MHTML data from the
 // renderer.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   base::FilePath path(temp_dir_.path());

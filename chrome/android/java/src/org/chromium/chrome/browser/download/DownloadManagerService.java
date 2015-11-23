@@ -514,7 +514,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (downloadInfo.getFilePath() != null) {
                 File file = new File(downloadInfo.getFilePath());
                 if (!file.delete()) {
-                    Log.w(TAG, "Failed to remove the unsucessful download");
+                    Log.w(TAG, "Failed to remove the unsuccessful download");
                 }
             }
             return INVALID_DOWNLOAD_ID;

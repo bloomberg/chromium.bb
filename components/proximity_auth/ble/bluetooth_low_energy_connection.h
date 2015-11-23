@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_H
-#define COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
+#define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
 
 #include <queue>
 #include <string>
@@ -204,7 +204,7 @@ class BluetoothLowEnergyConnection : public Connection,
   void ProcessNextWriteRequest();
 
   // Called when the BluetoothGattCharacteristic::RemoteCharacteristicWrite() is
-  // sucessfully complete.
+  // successfully complete.
   void OnRemoteCharacteristicWritten(bool run_did_send_message_callback);
 
   // Called when there is an error writing to the remote characteristic
@@ -306,4 +306,4 @@ class BluetoothLowEnergyConnection : public Connection,
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_H_

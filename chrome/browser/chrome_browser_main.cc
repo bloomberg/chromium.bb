@@ -1353,7 +1353,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // Setup.exe has determined that we need to run a retention experiment
     // and has lauched chrome to show the experiment UI. It is guaranteed that
     // no other Chrome is currently running as the process singleton was
-    // sucessfully grabbed above.
+    // successfully grabbed above.
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
     TryChromeDialogView::Result answer = TryChromeDialogView::Show(

@@ -296,7 +296,7 @@ struct QueryURLResult {
 // HistoryBackend::GetVisibleVisitCountToHost.
 struct VisibleVisitCountToHostResult {
   // Indicates whether the call to HistoryBackend::GetVisibleVisitCountToHost
-  // was successfull or not. If false, then both |count| and |first_visit| are
+  // was successful or not. If false, then both |count| and |first_visit| are
   // undefined.
   bool success;
   int count;

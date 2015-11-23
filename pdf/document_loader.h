@@ -47,7 +47,7 @@ class DocumentLoader {
             const std::string& url,
             const std::string& headers);
 
-  // Data access interface. Return true is sucessful.
+  // Data access interface. Return true is successful.
   bool GetBlock(uint32_t position, uint32_t size, void* buf) const;
 
   // Data availability interface. Return true data avaialble.

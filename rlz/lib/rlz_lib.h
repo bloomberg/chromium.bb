@@ -282,7 +282,7 @@ bool RLZ_LIB_API CreateMachineState(void);
 // Set the OEM Deal Confirmation Code (DCC). This information is used for RLZ
 // initalization.
 // Access: HKLM write, or
-// HKCU read if rlz_lib::CreateMachineState() has been sucessfully called.
+// HKCU read if rlz_lib::CreateMachineState() has been successfully called.
 bool RLZ_LIB_API SetMachineDealCode(const char* dcc);
 
 // Get the DCC cgi argument string to append to a daily ping.
@@ -337,7 +337,7 @@ bool RLZ_LIB_API SetMachineDealCodeFromPingResponse(const char* response);
 // the time skip check is specific to each supplementary brand.
 class SupplementaryBranding {
  public:
-  SupplementaryBranding(const char* brand);
+  explicit SupplementaryBranding(const char* brand);
   ~SupplementaryBranding();
 
   static const std::string& GetBrand();

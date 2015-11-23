@@ -56,7 +56,7 @@ class AppContainerAttributes {
 ResultCode CreateAppContainer(const base::string16& sid,
                               const base::string16& name);
 
-// Deletes an AppContainer previously created with a successfull call to
+// Deletes an AppContainer previously created with a successful call to
 // CreateAppContainer.
 ResultCode DeleteAppContainer(const base::string16& sid);
 

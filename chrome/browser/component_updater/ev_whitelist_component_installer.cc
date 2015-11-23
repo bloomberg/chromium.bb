@@ -52,7 +52,7 @@ void LoadWhitelistFromDisk(const base::FilePath& whitelist_path,
     return;
   }
 
-  VLOG(0) << "EV whitelist: Sucessfully loaded.";
+  VLOG(0) << "EV whitelist: Successfully loaded.";
   packed_ct_ev_whitelist::SetEVCertsWhitelist(new_whitelist);
 }
 

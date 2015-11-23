@@ -164,7 +164,7 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // array as soon as a frame of the desired buffer size has been recorded.
   scoped_ptr<uint8[]> audio_data_buffer_;
 
-  // True after successfull Start(), false after successful Stop().
+  // True after successful Start(), false after successful Stop().
   bool started_;
 
   // Fixed capture hardware latency in frames.

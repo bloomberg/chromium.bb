@@ -167,7 +167,7 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
   } else {
     // If we are not doing TLS, we are ready to send data now.
     // In case of TLS, SignalConnect will be sent only after TLS handshake is
-    // successfull. So no buffering will be done at socket handlers if any
+    // successful. So no buffering will be done at socket handlers if any
     // packets sent before that by the application.
     OnOpen();
   }

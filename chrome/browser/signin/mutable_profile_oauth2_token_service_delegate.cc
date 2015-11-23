@@ -42,7 +42,7 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
 
 // This class sends a request to GAIA to revoke the given refresh token from
 // the server.  This is a best effort attempt only.  This class deletes itself
-// when done sucessfully or otherwise.
+// when done successfully or otherwise.
 class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
     : public GaiaAuthConsumer {
  public:

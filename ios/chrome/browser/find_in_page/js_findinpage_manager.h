@@ -47,7 +47,7 @@ extern FindInPageEntry FindInPageEntryZero;
     completionHandler:(void (^)(BOOL, CGPoint))completionHandler;
 
 // Searches for more matches. Calls |completionHandler| with a success BOOL and
-// scroll position if pumping was successfull. If the pumping was unsuccessfull
+// scroll position if pumping was successful. If the pumping was unsuccessfull
 // another pumping call maybe required. |completionHandler| cannot be nil.
 // TODO(shreyasv): Consider folding the logic for re-pumping into this class
 // instead of having clients having to do it.

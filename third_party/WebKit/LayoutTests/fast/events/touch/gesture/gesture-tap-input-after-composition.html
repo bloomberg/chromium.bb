@@ -6,7 +6,7 @@
 <script>
 test(function(t)
 {
-    var sucessInput = false;
+    var successInput = false;
     if (!window.eventSender)
         return;
     var input = document.getElementById('input1');
@@ -18,7 +18,7 @@ test(function(t)
 
     var input2 = document.getElementById('input2');
     input2.addEventListener('input', function () {
-        sucessInput = true;
+        successInput = true;
     });
     var x = input2.offsetLeft + input2.offsetWidth / 2;
     var y = input2.offsetTop + input2.offsetHeight / 2;
@@ -27,6 +27,6 @@ test(function(t)
     eventSender.gestureTap(x, y);
 
     eventSender.keyDown('a');
-    assert_true(sucessInput);
+    assert_true(successInput);
 }, "This tests if the composition is reset before tapping of gesture.");
 </script>

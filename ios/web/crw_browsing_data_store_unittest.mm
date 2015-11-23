@@ -153,7 +153,7 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
   EXPECT_EQ(0U, [observer modeChangeCount]);
 
   __block int callbacks_received_count = 0;
-  void (^unsucessfullCallback)(BOOL) = ^(BOOL success) {
+  void (^unsuccessfullCallback)(BOOL) = ^(BOOL success) {
     ASSERT_TRUE([NSThread isMainThread]);
     ++callbacks_received_count;
     BrowsingDataStoreMode mode = [browsing_data_store_ mode];
@@ -163,20 +163,20 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
 
   [browsing_data_store_ makeActiveWithCompletionHandler:^(BOOL success) {
     EXPECT_EQ(0, callbacks_received_count);
-    unsucessfullCallback(success);
+    unsuccessfullCallback(success);
   }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
   EXPECT_EQ(1U, [observer modeChangeCount]);
 
   [browsing_data_store_ makeInactiveWithCompletionHandler:^(BOOL success) {
     EXPECT_EQ(1, callbacks_received_count);
-    unsucessfullCallback(success);
+    unsuccessfullCallback(success);
   }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
 
   [browsing_data_store_ makeActiveWithCompletionHandler:^(BOOL success) {
     EXPECT_EQ(2, callbacks_received_count);
-    unsucessfullCallback(success);
+    unsuccessfullCallback(success);
   }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
 

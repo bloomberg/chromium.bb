@@ -50,7 +50,7 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 // |completionHandler| can be nil.
 - (void)startPumpingWithCompletionHandler:(ProceduralBlock)completionHandler;
 // Gives find in page more time to complete. Calls |completionHandler| with
-// a BOOL indicating if the find operation was successfull. |completionHandler|
+// a BOOL indicating if the find operation was successful. |completionHandler|
 // can be nil.
 - (void)pumpFindStringInPageWithCompletionHandler:
     (void (^)(BOOL))completionHandler;

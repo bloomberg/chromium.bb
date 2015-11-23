@@ -510,7 +510,7 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
 
   if (!IsTranslateLibReady()) {
     // The library is not ready, try again later, unless we have tried several
-    // times unsucessfully already.
+    // times unsuccessfully already.
     if (++count >= kMaxTranslateInitCheckAttempts) {
       NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;

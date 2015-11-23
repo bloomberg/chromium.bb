@@ -84,7 +84,7 @@ interface PPB_Compositor {
    * of a module.
    *
    * @return A <code>PP_Resource</code> containing the compositor resource if
-   * sucessful or 0 otherwise.
+   * successful or 0 otherwise.
    */
   PP_Resource Create([in] PP_Instance instance);
 
@@ -102,7 +102,7 @@ interface PPB_Compositor {
    * a compositor layer resource.
    *
    * @return A <code>PP_Resource</code> containing the compositor layer
-   * resource if sucessful or 0 otherwise.
+   * resource if successful or 0 otherwise.
    */
   PP_Resource AddLayer([in] PP_Resource compositor);
 

@@ -183,7 +183,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   // If |external| is true then external video encoder (VEA) is used.
-  // |expect_init_sucess| is true if initialization is expected to succeed.
+  // |expect_init_success| is true if initialization is expected to succeed.
   void InitEncoder(bool external, bool expect_init_success) {
     VideoSenderConfig video_config = GetDefaultVideoSenderConfig();
     video_config.use_external_encoder = external;
@@ -253,6 +253,7 @@ class VideoSenderTest : public ::testing::Test {
   int last_pixel_value_;
   base::TimeTicks first_frame_timestamp_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(VideoSenderTest);
 };
 

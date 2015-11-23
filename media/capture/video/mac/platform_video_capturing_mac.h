@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_
-#define MEDIA_VIDEO_CAPTURE_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_
+#ifndef MEDIA_CAPTURE_VIDEO_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_
+#define MEDIA_CAPTURE_VIDEO_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -32,7 +32,7 @@ class VideoCaptureDeviceMac;
 // device names are usually obtained via VideoCaptureDevice::GetDeviceNames()
 // method. This method will also configure all device properties except those in
 // setCaptureHeight:width:frameRate. If |deviceId| is nil, capture is stopped
-// and all potential configuration is torn down. Returns YES on sucess, NO
+// and all potential configuration is torn down. Returns YES on success, NO
 // otherwise.
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
@@ -41,7 +41,7 @@ class VideoCaptureDeviceMac;
                    width:(int)width
                frameRate:(float)frameRate;
 
-// Starts video capturing, registers observers. Returns YES on sucess, NO
+// Starts video capturing, registers observers. Returns YES on success, NO
 // otherwise.
 - (BOOL)startCapture;
 
@@ -50,4 +50,4 @@ class VideoCaptureDeviceMac;
 
 @end
 
-#endif  // MEDIA_VIDEO_CAPTURE_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_
+#endif  // MEDIA_CAPTURE_VIDEO_MAC_PLATFORM_VIDEO_CAPTURING_MAC_H_

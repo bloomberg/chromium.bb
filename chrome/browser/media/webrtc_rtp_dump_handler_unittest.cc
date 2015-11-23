@@ -42,17 +42,17 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
 
   void EndDump(RtpDumpType type,
                const EndDumpCallback& finished_callback) override {
-    bool incoming_sucess = end_dump_success_;
+    bool incoming_success = end_dump_success_;
     bool outgoing_success = end_dump_success_;
 
     if (type == RTP_DUMP_INCOMING)
       outgoing_success = false;
     else if (type == RTP_DUMP_OUTGOING)
-      incoming_sucess = false;
+      incoming_success = false;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(finished_callback, incoming_sucess, outgoing_success));
+        base::Bind(finished_callback, incoming_success, outgoing_success));
   }
 
  private:

@@ -1015,7 +1015,7 @@ test("synchronous request", function() {
 test("synchronous request with callbacks", function() {
 	expect(2);
 	var result;
-	jQuery.ajax({url: url("data/json_obj.js"), async: false, dataType: "text", success: function(data) { ok(true, "sucess callback executed"); result = data; } });
+	jQuery.ajax({url: url("data/json_obj.js"), async: false, dataType: "text", success: function(data) { ok(true, "success callback executed"); result = data; } });
 	ok( /^{ "data"/.test( result ), "check returned text" );
 });
 

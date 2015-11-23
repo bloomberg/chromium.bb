@@ -38,7 +38,7 @@ ALG_ID GetAESAlgIDForKeySize(size_t key_size_in_bits) {
       NOTREACHED();
       return 0;
   }
-};
+}
 
 // Imports a raw/plaintext key of |key_size| stored in |*key_data| into a new
 // key created for the specified |provider|. |alg| contains the algorithm of
@@ -83,7 +83,7 @@ bool ImportRawKey(HCRYPTPROV provider,
       CryptImportKey(provider, actual_key, actual_size, 0, flags, &unsafe_key);
 
   // Clean up the temporary copy of key, regardless of whether it was imported
-  // sucessfully or not.
+  // successfully or not.
   SecureZeroMemory(actual_key, actual_size);
 
   if (!ok)

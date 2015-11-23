@@ -170,7 +170,7 @@ bool NetworkManagerWlanApi::GetAccessPointData(
         ++fail_count;
     }
   }
-  // At least one successfull scan overrides any other adapter reporting error.
+  // At least one successful scan overrides any other adapter reporting error.
   return success_count || fail_count == 0;
 }
 

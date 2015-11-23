@@ -23,7 +23,7 @@ namespace content {
 //
 // If Attachment Execution Services is unavailable, then this function will
 // attempt to manually annotate the file with security zone information. A
-// failure code will be returned in this case even if the file is sucessfully
+// failure code will be returned in this case even if the file is successfully
 // annotated.
 //
 // IAE::Save() will delete the file if it was found to be blocked by local
