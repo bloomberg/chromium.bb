@@ -108,7 +108,7 @@ void SynchronousCompositorRegistryInProc::UnregisterOutputSurface(
 
 void SynchronousCompositorRegistryInProc::RegisterInputHandler(
     int routing_id,
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(CalledOnValidThread());
   DCHECK(synchronous_input_handler_proxy);
   Entry& entry = entry_map_[routing_id];

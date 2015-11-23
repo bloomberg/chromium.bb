@@ -13,8 +13,8 @@
 #include "content/browser/android/synchronous_compositor_base.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
-#include "content/renderer/input/synchronous_input_handler_proxy.h"
 #include "ipc/ipc_message.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 
 namespace cc {
 class InputHandler;
@@ -32,7 +32,7 @@ struct DidOverscrollParams;
 // This class is created on the main thread but most of the APIs are called
 // from the Compositor thread.
 class SynchronousCompositorImpl
-    : public SynchronousInputHandler,
+    : public ui::SynchronousInputHandler,
       public SynchronousCompositorBase,
       public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
@@ -50,7 +50,7 @@ class SynchronousCompositorImpl
   void DidInitializeRendererObjects(
       SynchronousCompositorOutputSurface* output_surface,
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-      SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
+      ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void DidDestroyRendererObjects();
 
   // SynchronousCompositorExternalBeginFrameSourceClient overrides.
@@ -109,7 +109,7 @@ class SynchronousCompositorImpl
   SynchronousCompositorClient* const compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
   SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
-  SynchronousInputHandlerProxy* synchronous_input_handler_proxy_;
+  ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy_;
   bool registered_with_client_;
   bool is_active_;
   bool renderer_needs_begin_frames_;

@@ -13,6 +13,10 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
 
+namespace ui {
+class SynchronousInputHandlerProxy;
+}
+
 namespace content {
 
 class SynchronousCompositorProxy;
@@ -54,7 +58,8 @@ class SynchronousCompositorFilter : public IPC::MessageFilter,
   void SetBoundHandler(const Handler& handler) override;
   void DidAddInputHandler(
       int routing_id,
-      SynchronousInputHandlerProxy* synchronous_input_handler_proxy) override;
+      ui::SynchronousInputHandlerProxy*
+          synchronous_input_handler_proxy) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
@@ -92,7 +97,7 @@ class SynchronousCompositorFilter : public IPC::MessageFilter,
   struct Entry {
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
 
     Entry();
     bool IsReady();

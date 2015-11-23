@@ -373,9 +373,14 @@ test("events_unittests") {
   ]
 
   if (!is_ios) {
-    sources += [ "gestures/blink/web_gesture_curve_impl_unittest.cc" ]
+    sources += [
+      "blink/input_handler_proxy_unittest.cc",
+      "blink/input_scroll_elasticity_controller_unittest.cc",
+      "gestures/blink/web_gesture_curve_impl_unittest.cc",
+    ]
     deps += [
       "//third_party/WebKit/public:blink_headers",
+      "//ui/events/blink",
       "//ui/events/gestures/blink",
     ]
   }

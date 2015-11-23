@@ -10,7 +10,7 @@
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
 #include "content/renderer/input/input_handler_manager_client.h"
-#include "content/renderer/input/synchronous_input_handler_proxy.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -35,7 +35,7 @@ struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 
 class SynchronousCompositorProxy
-    : public SynchronousInputHandler,
+    : public ui::SynchronousInputHandler,
       public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
  public:
@@ -44,11 +44,11 @@ class SynchronousCompositorProxy
       IPC::Sender* sender,
       SynchronousCompositorOutputSurface* output_surface,
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-      SynchronousInputHandlerProxy* input_handler_proxy,
+      ui::SynchronousInputHandlerProxy* input_handler_proxy,
       InputHandlerManagerClient::Handler* handler);
   ~SynchronousCompositorProxy() override;
 
-  // SynchronousInputHandler overrides.
+  // ui::SynchronousInputHandler overrides.
   void SetNeedsSynchronousAnimateInput() override;
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
@@ -98,7 +98,7 @@ class SynchronousCompositorProxy
   IPC::Sender* const sender_;
   SynchronousCompositorOutputSurface* const output_surface_;
   SynchronousCompositorExternalBeginFrameSource* const begin_frame_source_;
-  SynchronousInputHandlerProxy* const input_handler_proxy_;
+  ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
   InputHandlerManagerClient::Handler* const input_handler_;
   bool inside_receive_;
 

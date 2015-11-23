@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
-#define CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
+#ifndef UI_EVENTS_BLINK_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
+#define UI_EVENTS_BLINK_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/scroll_elasticity_helper.h"
-#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 // InputScrollElasticityController is based on
@@ -42,9 +41,9 @@ namespace cc {
 struct InputHandlerScrollResult;
 }  // namespace cc
 
-namespace content {
+namespace ui {
 
-class CONTENT_EXPORT InputScrollElasticityController {
+class InputScrollElasticityController {
  public:
   explicit InputScrollElasticityController(cc::ScrollElasticityHelper* helper);
   virtual ~InputScrollElasticityController();
@@ -143,6 +142,6 @@ class CONTENT_EXPORT InputScrollElasticityController {
   DISALLOW_COPY_AND_ASSIGN(InputScrollElasticityController);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
+#endif  // UI_EVENTS_BLINK_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_

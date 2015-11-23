@@ -114,7 +114,7 @@ void SynchronousCompositorImpl::SetGpuServiceInProc(
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(!output_surface_);
   DCHECK(!begin_frame_source_);
   DCHECK(output_surface);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/input/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/input_scroll_elasticity_controller.h"
 
 #include <math.h>
 
@@ -37,7 +37,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -407,4 +407,4 @@ void InputScrollElasticityController::ReconcileStretchAndScroll() {
   }
 }
 
-}  // namespace content
+}  // namespace ui

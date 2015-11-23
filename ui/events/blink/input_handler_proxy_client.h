@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
-#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
+#ifndef UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_CLIENT_H_
+#define UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_CLIENT_H_
 
 namespace blink {
 class WebGestureCurve;
@@ -12,9 +12,7 @@ struct WebFloatPoint;
 struct WebSize;
 }
 
-namespace content {
-
-struct DidOverscrollParams;
+namespace ui {
 
 // All callbacks invoked from the compositor thread.
 class InputHandlerProxyClient {
@@ -34,7 +32,11 @@ class InputHandlerProxyClient {
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) = 0;
 
-  virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
+  virtual void DidOverscroll(
+      const gfx::Vector2dF& accumulated_overscroll,
+      const gfx::Vector2dF& latest_overscroll_delta,
+      const gfx::Vector2dF& current_fling_velocity,
+      const gfx::PointF& causal_event_viewport_point) = 0;
 
   virtual void DidStopFlinging() = 0;
 
@@ -44,6 +46,6 @@ class InputHandlerProxyClient {
   virtual ~InputHandlerProxyClient() {}
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
+#endif  // UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_CLIENT_H_

@@ -6,9 +6,16 @@ source_set("blink") {
   sources = [
     "blink_event_util.cc",
     "blink_event_util.h",
+    "input_handler_proxy.cc",
+    "input_handler_proxy.h",
+    "input_handler_proxy_client.h",
+    "input_scroll_elasticity_controller.cc",
+    "input_scroll_elasticity_controller.h",
+    "synchronous_input_handler_proxy.h",
   ]
 
   deps = [
+    "//cc:cc",
     "//third_party/WebKit/public:blink_headers",
     "//ui/events",
     "//ui/events:gesture_detection",

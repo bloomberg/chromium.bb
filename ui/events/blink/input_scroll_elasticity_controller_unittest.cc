@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/blink/input_scroll_elasticity_controller.h"
+
 #include "cc/input/input_handler.h"
-#include "content/renderer/input/input_scroll_elasticity_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace content {
+namespace ui {
 namespace {
 
 enum Phase {
@@ -384,4 +385,4 @@ TEST_F(ScrollElasticityControllerTest, UserScrollableRequiredForStretch) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace ui

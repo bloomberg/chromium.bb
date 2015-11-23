@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_
-#define CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_
+#ifndef UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
+#define UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
-#include "content/common/content_export.h"
-#include "content/renderer/input/synchronous_input_handler_proxy.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 
-namespace content {
+namespace ui {
 
 namespace test {
 class InputHandlerProxyTest;
@@ -24,16 +24,19 @@ class InputHandlerProxyTest;
 
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
+class SynchronousInputHandler;
+class SynchronousInputHandlerProxy;
 
-// This class is a proxy between the content input event filtering and the
-// compositor's input handling logic. InputHandlerProxy instances live entirely
-// on the compositor thread. Each InputHandler instance handles input events
-// intended for a specific WebWidget.
-class CONTENT_EXPORT InputHandlerProxy
+// This class is a proxy between the blink web input events for a WebWidget and
+// the compositor's input handling logic. InputHandlerProxy instances live
+// entirely on the compositor thread. Each InputHandler instance handles input
+// events intended for a specific WebWidget.
+class InputHandlerProxy
     : public cc::InputHandlerClient,
       public SynchronousInputHandlerProxy,
       public NON_EXPORTED_BASE(blink::WebGestureCurveTarget) {
  public:
+
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client);
   ~InputHandlerProxy() override;
@@ -41,6 +44,8 @@ class CONTENT_EXPORT InputHandlerProxy
   InputScrollElasticityController* scroll_elasticity_controller() {
     return scroll_elasticity_controller_.get();
   }
+
+  void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
 
   enum EventDisposition {
     DID_HANDLE,
@@ -184,6 +189,6 @@ class CONTENT_EXPORT InputHandlerProxy
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_RENDERER_INPUT_INPUT_HANDLER_PROXY_H_
+#endif  // UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_

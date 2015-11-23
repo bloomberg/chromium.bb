@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/input/input_handler_proxy.h"
+#include "ui/events/blink/input_handler_proxy.h"
 
 #include <algorithm>
 
@@ -14,13 +14,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/input/did_overscroll_params.h"
-#include "content/common/input/web_input_event_traits.h"
-#include "content/public/common/content_switches.h"
-#include "content/renderer/input/input_handler_proxy_client.h"
-#include "content/renderer/input/input_scroll_elasticity_controller.h"
-#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/input_handler_proxy_client.h"
+#include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -178,7 +174,7 @@ void ReportInputEventLatencyUma(const WebInputEvent& event,
 
 }  // namespace
 
-namespace content {
+namespace ui {
 
 InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
                                      InputHandlerProxyClient* client)
@@ -196,11 +192,10 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       disallow_horizontal_fling_scroll_(false),
       disallow_vertical_fling_scroll_(false),
       has_fling_animation_started_(false),
+      smooth_scroll_enabled_(false),
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()) {
   DCHECK(client);
   input_handler_->BindToClient(this);
-  smooth_scroll_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSmoothScrolling);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
       input_handler_->CreateScrollElasticityHelper();
   if (scroll_elasticity_helper) {
@@ -241,8 +236,6 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     const WebInputEvent& event) {
   DCHECK(input_handler_);
-  TRACE_EVENT1("input,benchmark", "InputHandlerProxy::HandleInputEvent",
-               "type", WebInputEventTraits::GetName(event.type));
 
   if (FilterInputEventForFlingBoosting(event))
     return DID_HANDLE;
@@ -870,24 +863,20 @@ void InputHandlerProxy::HandleOverscroll(
                "dy",
                scroll_result.unused_scroll_delta.y());
 
-  DidOverscrollParams params;
-  params.accumulated_overscroll = scroll_result.accumulated_root_overscroll;
-  params.latest_overscroll_delta = scroll_result.unused_scroll_delta;
-  params.current_fling_velocity =
-      ToClientScrollIncrement(current_fling_velocity_);
-  params.causal_event_viewport_point = gfx::PointF(causal_event_viewport_point);
-
   if (fling_curve_) {
     static const int kFlingOverscrollThreshold = 1;
     disallow_horizontal_fling_scroll_ |=
-        std::abs(params.accumulated_overscroll.x()) >=
+        std::abs(scroll_result.accumulated_root_overscroll.x()) >=
         kFlingOverscrollThreshold;
     disallow_vertical_fling_scroll_ |=
-        std::abs(params.accumulated_overscroll.y()) >=
+        std::abs(scroll_result.accumulated_root_overscroll.y()) >=
         kFlingOverscrollThreshold;
   }
 
-  client_->DidOverscroll(params);
+  client_->DidOverscroll(scroll_result.accumulated_root_overscroll,
+                         scroll_result.unused_scroll_delta,
+                         ToClientScrollIncrement(current_fling_velocity_),
+                         gfx::PointF(causal_event_viewport_point));
 }
 
 bool InputHandlerProxy::CancelCurrentFling() {
@@ -1045,4 +1034,4 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
   return did_scroll;
 }
 
-}  // namespace content
+}  // namespace ui

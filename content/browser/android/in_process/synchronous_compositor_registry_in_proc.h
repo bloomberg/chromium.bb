@@ -8,9 +8,10 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 
-namespace cc {
-class InputHandler;
+namespace ui {
+class SynchronousInputHandlerProxy;
 }
 
 namespace content {
@@ -18,7 +19,6 @@ namespace content {
 class SynchronousCompositorExternalBeginFrameSource;
 class SynchronousCompositorImpl;
 class SynchronousCompositorOutputSurface;
-class SynchronousInputHandlerProxy;
 
 class SynchronousCompositorRegistryInProc
     : public SynchronousCompositorRegistry {
@@ -31,7 +31,7 @@ class SynchronousCompositorRegistryInProc
                             SynchronousCompositorImpl* compositor);
   void RegisterInputHandler(
       int routing_id,
-      SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
+      ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void UnregisterInputHandler(int routing_id);
 
   // SynchronousCompositorRegistry overrides.
@@ -58,7 +58,7 @@ class SynchronousCompositorRegistryInProc
     SynchronousCompositorImpl* compositor;
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
 
     Entry();
     bool IsReady();

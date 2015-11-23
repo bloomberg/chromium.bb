@@ -11,12 +11,14 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/input/input_handler.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
-#include "content/renderer/input/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/input_handler_proxy.h"
 
 using blink::WebInputEvent;
+using ui::InputHandlerProxy;
 using scheduler::RendererScheduler;
 
 namespace content {
@@ -137,6 +139,8 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     const WebInputEvent* input_event,
     ui::LatencyInfo* latency_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("input,benchmark", "InputHandlerManager::HandleInputEvent",
+                 "type", WebInputEventTraits::GetName(input_event->type));
 
   auto it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {
@@ -146,6 +150,8 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
 
+  TRACE_EVENT1("input", "InputHandlerManager::HandleInputEvent",
+               "result", "EventSentToInputHandlerProxy");
   InputHandlerProxy* proxy = it->second->input_handler_proxy();
   InputEventAckState input_event_ack_state = InputEventDispositionToAck(
       proxy->HandleInputEventWithLatencyInfo(*input_event, latency_info));

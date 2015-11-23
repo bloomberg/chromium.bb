@@ -255,7 +255,7 @@
             '../net/net.gyp:net_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',
-            '../ui/events/events.gyp:events_unittests_apk',
+            '../ui/events/events_unittests.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
           'includes': ['build/tests/test_list.gypi'],

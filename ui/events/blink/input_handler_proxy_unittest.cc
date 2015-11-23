@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/input/input_handler_proxy.h"
+#include "ui/events/blink/input_handler_proxy.h"
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/swap_promise_monitor.h"
-#include "content/common/input/did_overscroll_params.h"
-#include "content/renderer/input/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -16,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -34,7 +33,7 @@ using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using testing::Field;
 
-namespace content {
+namespace ui {
 namespace test {
 
 namespace {
@@ -150,7 +149,7 @@ class MockInputHandler : public cc::InputHandler {
   DISALLOW_COPY_AND_ASSIGN(MockInputHandler);
 };
 
-class MockSynchronousInputHandler : public content::SynchronousInputHandler {
+class MockSynchronousInputHandler : public SynchronousInputHandler {
  public:
   MOCK_METHOD0(SetNeedsSynchronousAnimateInput, void());
   MOCK_METHOD6(UpdateRootLayerState,
@@ -193,7 +192,7 @@ class FakeWebGestureCurve : public blink::WebGestureCurve {
 };
 
 class MockInputHandlerProxyClient
-    : public content::InputHandlerProxyClient {
+    : public InputHandlerProxyClient {
  public:
   MockInputHandlerProxyClient() {}
   ~MockInputHandlerProxyClient() override {}
@@ -212,7 +211,11 @@ class MockInputHandlerProxyClient
         blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }
 
-  MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
+  MOCK_METHOD4(DidOverscroll,
+               void(const gfx::Vector2dF& accumulated_overscroll,
+                    const gfx::Vector2dF& latest_overscroll_delta,
+                    const gfx::Vector2dF& current_fling_velocity,
+                    const gfx::PointF& causal_event_viewport_point));
   void DidStopFlinging() override {}
   void DidAnimateForInput() override {}
 
@@ -254,7 +257,8 @@ class InputHandlerProxyTest
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
         expected_disposition_(InputHandlerProxy::DID_HANDLE) {
     input_handler_.reset(
-        new content::InputHandlerProxy(&mock_input_handler_, &mock_client_));
+        new ui::InputHandlerProxy(
+            &mock_input_handler_, &mock_client_));
     scroll_result_did_scroll_.did_scroll = true;
     scroll_result_did_not_scroll_.did_scroll = false;
 
@@ -358,7 +362,7 @@ class InputHandlerProxyTest
   testing::StrictMock<MockInputHandler> mock_input_handler_;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler_;
-  scoped_ptr<content::InputHandlerProxy> input_handler_;
+  scoped_ptr<ui::InputHandlerProxy> input_handler_;
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   WebGestureEvent gesture_;
   InputHandlerProxy::EventDisposition expected_disposition_;
@@ -1510,16 +1514,11 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
       .WillOnce(testing::Return(overscroll));
   EXPECT_CALL(
       mock_client_,
-      DidOverscroll(testing::AllOf(
-          testing::Field(
-              &DidOverscrollParams::accumulated_overscroll,
-              testing::Eq(overscroll.accumulated_root_overscroll)),
-          testing::Field(
-              &DidOverscrollParams::latest_overscroll_delta,
-              testing::Eq(overscroll.unused_scroll_delta)),
-          testing::Field(
-              &DidOverscrollParams::current_fling_velocity,
-              testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
+      DidOverscroll(
+          overscroll.accumulated_root_overscroll,
+          overscroll.unused_scroll_delta,
+          testing::Property(&gfx::Vector2dF::y, testing::Lt(0)),
+          testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollEnd());
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   time += base::TimeDelta::FromMilliseconds(100);
@@ -1670,16 +1669,11 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
       .WillOnce(testing::Return(overscroll));
   EXPECT_CALL(
       mock_client_,
-      DidOverscroll(testing::AllOf(
-          testing::Field(
-              &DidOverscrollParams::accumulated_overscroll,
-              testing::Eq(overscroll.accumulated_root_overscroll)),
-          testing::Field(
-              &DidOverscrollParams::latest_overscroll_delta,
-              testing::Eq(overscroll.unused_scroll_delta)),
-          testing::Field(
-              &DidOverscrollParams::current_fling_velocity,
-              testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
+      DidOverscroll(
+          overscroll.accumulated_root_overscroll,
+          overscroll.unused_scroll_delta,
+          testing::Property(&gfx::Vector2dF::y, testing::Lt(0)),
+          testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   time += base::TimeDelta::FromMilliseconds(10);
   Animate(time);
@@ -1704,16 +1698,11 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
       .WillOnce(testing::Return(overscroll));
   EXPECT_CALL(
       mock_client_,
-      DidOverscroll(testing::AllOf(
-          testing::Field(
-              &DidOverscrollParams::accumulated_overscroll,
-              testing::Eq(overscroll.accumulated_root_overscroll)),
-          testing::Field(
-              &DidOverscrollParams::latest_overscroll_delta,
-              testing::Eq(overscroll.unused_scroll_delta)),
-          testing::Field(
-              &DidOverscrollParams::current_fling_velocity,
-              testing::Property(&gfx::Vector2dF::x, testing::Lt(0))))));
+      DidOverscroll(
+          overscroll.accumulated_root_overscroll,
+          overscroll.unused_scroll_delta,
+          testing::Property(&gfx::Vector2dF::x, testing::Lt(0)),
+          testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollEnd());
   time += base::TimeDelta::FromMilliseconds(10);
   Animate(time);
@@ -2373,7 +2362,8 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   testing::StrictMock<MockInputHandlerProxyClientWithDidAnimateForInput>
       mock_client;
   input_handler_.reset(
-        new content::InputHandlerProxy(&mock_input_handler_, &mock_client));
+        new ui::InputHandlerProxy(
+            &mock_input_handler_, &mock_client));
   if (install_synchronous_handler_) {
     EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
         .Times(1);
@@ -2407,7 +2397,7 @@ TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
 
   // When adding a SynchronousInputHandler, immediately request an
   // UpdateRootLayerStateForSynchronousInputHandler() call.
@@ -2433,7 +2423,7 @@ TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 
@@ -2458,7 +2448,7 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 
@@ -2475,4 +2465,4 @@ INSTANTIATE_TEST_CASE_P(AnimateInput,
                         InputHandlerProxyTest,
                         testing::ValuesIn(test_types));
 }  // namespace test
-}  // namespace content
+}  // namespace ui

@@ -67,9 +67,6 @@ content/renderer/history_entry.h
 # Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
 # Moved from third_party/WebKit/.
 content/renderer/history_entry.cc
-# Copyright Apple Inc; BSD license. Moved from third_party/WebKit/.
-content/renderer/input/input_scroll_elasticity_controller.cc
-content/renderer/input/input_scroll_elasticity_controller.h
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
 # Copyright WebM Project authors; BSD license. Copied and modified from
@@ -171,6 +168,9 @@ ui/base/clipboard/clipboard_util_win.cc
 ui/base/cocoa/tool_tip_base_view.mm
 # Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
 ui/base/dragdrop/os_exchange_data_provider_win.cc
+# Copyright Apple Inc; BSD license. Moved from third_party/WebKit/.
+ui/events/blink/input_scroll_elasticity_controller.cc
+ui/events/blink/input_scroll_elasticity_controller.h
 # Copyright The Chromium Authors, Michael Emmel, Google Inc; BSD license. This
 # third-party code is taken from WebKit, the license for which we already pick
 # up from webkit/.

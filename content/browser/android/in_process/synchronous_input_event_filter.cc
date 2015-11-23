@@ -8,6 +8,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/events/latency_info.h"
 
 using blink::WebInputEvent;
@@ -47,7 +48,7 @@ void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
 
 void SynchronousInputEventFilter::DidAddInputHandler(
     int routing_id,
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SynchronousCompositorRegistryInProc::GetInstance()->RegisterInputHandler(
       routing_id, synchronous_input_handler_proxy);

@@ -18,7 +18,7 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
     IPC::Sender* sender,
     SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-    SynchronousInputHandlerProxy* input_handler_proxy,
+    ui::SynchronousInputHandlerProxy* input_handler_proxy,
     InputHandlerManagerClient::Handler* handler)
     : routing_id_(routing_id),
       sender_(sender),

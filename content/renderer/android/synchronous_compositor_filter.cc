@@ -10,6 +10,7 @@
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/android/synchronous_compositor_proxy.h"
+#include "ui/events/blink/synchronous_input_handler_proxy.h"
 
 namespace content {
 
@@ -214,7 +215,7 @@ void SynchronousCompositorFilter::SetBoundHandlerOnCompositorThread(
 
 void SynchronousCompositorFilter::DidAddInputHandler(
     int routing_id,
-    SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   DCHECK(synchronous_input_handler_proxy);
   Entry& entry = entry_map_[routing_id];

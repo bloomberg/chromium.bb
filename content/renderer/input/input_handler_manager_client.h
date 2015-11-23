@@ -24,9 +24,12 @@ namespace blink {
 class WebInputEvent;
 }
 
+namespace ui {
+class SynchronousInputHandlerProxy;
+}
+
 namespace content {
 struct DidOverscrollParams;
-class SynchronousInputHandlerProxy;
 
 class CONTENT_EXPORT InputHandlerManagerClient {
  public:
@@ -46,7 +49,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // Called from the compositor thread.
   virtual void DidAddInputHandler(
       int routing_id,
-      SynchronousInputHandlerProxy* synchronous_handler) = 0;
+      ui::SynchronousInputHandlerProxy* synchronous_handler) = 0;
   virtual void DidRemoveInputHandler(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
                              const DidOverscrollParams& params) = 0;

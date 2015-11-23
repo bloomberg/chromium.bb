@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
-#define CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
+#ifndef UI_EVENTS_BLINK_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
+#define UI_EVENTS_BLINK_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 
 namespace gfx {
 class ScrollOffset;
 class SizeF;
 }
 
-namespace content {
+namespace ui {
 
-class CONTENT_EXPORT SynchronousInputHandler {
+class SynchronousInputHandler {
  public:
   virtual ~SynchronousInputHandler() {}
 
@@ -40,7 +39,7 @@ class CONTENT_EXPORT SynchronousInputHandler {
 // This interface provides support for that behaviour. The WebView embedder will
 // act as the InputHandler for controlling the timing of input (fling)
 // animations.
-class CONTENT_EXPORT SynchronousInputHandlerProxy {
+class SynchronousInputHandlerProxy {
  public:
   virtual ~SynchronousInputHandlerProxy() {}
 
@@ -68,6 +67,6 @@ class CONTENT_EXPORT SynchronousInputHandlerProxy {
       const gfx::ScrollOffset& root_offset) = 0;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_RENDERER_INPUT_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_
+#endif  // UI_EVENTS_BLINK_SYNCHRONOUS_INPUT_HANDLER_PROXY_H_

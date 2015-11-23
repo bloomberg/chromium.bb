@@ -16,6 +16,10 @@ namespace blink {
 class WebInputEvent;
 }
 
+namespace ui {
+class SynchronousInputHandlerProxy;
+}
+
 namespace content {
 
 // This class perform synchronous, in-process InputEvent handling.
@@ -35,7 +39,8 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
   void SetBoundHandler(const Handler& handler) override;
   void DidAddInputHandler(
       int routing_id,
-      SynchronousInputHandlerProxy* synchronous_input_handler_proxy) override;
+      ui::SynchronousInputHandlerProxy*
+          synchronous_input_handler_proxy) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;

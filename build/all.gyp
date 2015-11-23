@@ -473,7 +473,7 @@
         }],
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [
-            '../ui/events/events.gyp:events_unittests',
+            '../ui/events/events_unittests.gyp:events_unittests',
           ],
         }],
         ['use_ash==1', {
@@ -831,7 +831,7 @@
             '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
             '../ui/android/ui_android.gyp:ui_android_unittests',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-            '../ui/events/events.gyp:events_unittests',
+            '../ui/events/events_unittests.gyp:events_unittests',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             # Unit test bundles packaged as an apk.
             '../base/base.gyp:base_unittests_apk',
@@ -855,7 +855,7 @@
             '../tools/android/heap_profiler/heap_profiler.gyp:heap_profiler_unittests_apk',
             '../ui/android/ui_android.gyp:ui_android_unittests_apk',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests_apk',
-            '../ui/events/events.gyp:events_unittests_apk',
+            '../ui/events/events_unittests.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
             '../ui/gl/gl_tests.gyp:gl_unittests_apk',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_apk',
@@ -1091,7 +1091,7 @@
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../tools/telemetry/telemetry.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-            '../ui/events/events.gyp:events_unittests',
+            '../ui/events/events_unittests.gyp:events_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/gl/gl_tests.gyp:gl_unittests',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
@@ -1196,7 +1196,7 @@
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/display/display.gyp:display_unittests',
-            '../ui/events/events.gyp:events_unittests',
+            '../ui/events/events_unittests.gyp:events_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/gl/gl_tests.gyp:gl_unittests',
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',
