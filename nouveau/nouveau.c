@@ -59,31 +59,63 @@ debug_init(char *args)
 }
 #endif
 
+static void
+nouveau_object_fini(struct nouveau_object *obj)
+{
+	if (obj->data) {
+		abi16_delete(obj);
+		free(obj->data);
+		obj->data = NULL;
+		return;
+	}
+}
+
+static int
+nouveau_object_init(struct nouveau_object *parent, uint32_t handle,
+		    int32_t oclass, void *data, uint32_t size,
+		    struct nouveau_object *obj)
+{
+	int (*func)(struct nouveau_object *);
+	int ret = -ENOSYS;
+
+	obj->parent = parent;
+	obj->handle = handle;
+	obj->oclass = oclass;
+	obj->length = 0;
+	obj->data = NULL;
+
+	abi16_object(obj, &func);
+	if (func) {
+		obj->length = size ? size : sizeof(struct nouveau_object *);
+		if (!(obj->data = malloc(obj->length)))
+			return -ENOMEM;
+		if (data)
+			memcpy(obj->data, data, obj->length);
+		*(struct nouveau_object **)obj->data = obj;
+
+		ret = func(obj);
+	}
+
+	if (ret) {
+		nouveau_object_fini(obj);
+		return ret;
+	}
+
+	return 0;
+}
+
 int
 nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 		   uint32_t oclass, void *data, uint32_t length,
 		   struct nouveau_object **pobj)
 {
 	struct nouveau_object *obj;
-	int (*func)(struct nouveau_object *);
-	int ret = -EINVAL;
+	int ret;
 
-	if (length == 0)
-		length = sizeof(struct nouveau_object *);
-	obj = malloc(sizeof(*obj) + length);
-	obj->parent = parent;
-	obj->handle = handle;
-	obj->oclass = oclass;
-	obj->length = length;
-	obj->data = obj + 1;
-	if (data)
-		memcpy(obj->data, data, length);
-	*(struct nouveau_object **)obj->data = obj;
+	if (!(obj = malloc(sizeof(*obj))))
+		return -ENOMEM;
 
-	abi16_object(obj, &func);
-	if (func)
-		ret = func(obj);
-
+	ret = nouveau_object_init(parent, handle, oclass, data, length, obj);
 	if (ret) {
 		free(obj);
 		return ret;
@@ -98,7 +130,7 @@ nouveau_object_del(struct nouveau_object **pobj)
 {
 	struct nouveau_object *obj = *pobj;
 	if (obj) {
-		abi16_delete(obj);
+		nouveau_object_fini(obj);
 		free(obj);
 		*pobj = NULL;
 	}
