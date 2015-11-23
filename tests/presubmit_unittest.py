@@ -1887,7 +1887,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckGNFormatted',
       'CheckRietveldTryJobExecution',
       'CheckSingletonInHeaders',
-      'CheckSvnModifiedDirectories',
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'RunPythonUnitTests', 'RunPylint',
       'RunUnitTests', 'RunUnitTestsInDirectory',
@@ -2333,32 +2332,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         r".*? All Rights Reserved\." "\n"
     )
     self._LicenseCheck(text, license_text, True, None, accept_empty_files=True)
-
-  def testCannedCheckSvnAccidentalSubmission(self):
-    modified_dir_file = 'foo/'
-    accidental_submssion_file = 'foo/bar.cc'
-
-    change = self.mox.CreateMock(presubmit.SvnChange)
-    change.scm = 'svn'
-    change.GetModifiedFiles().AndReturn([modified_dir_file])
-    change.GetAllModifiedFiles().AndReturn([modified_dir_file,
-                                            accidental_submssion_file])
-    input_api = self.MockInputApi(change, True)
-
-    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    affected_file.Action().AndReturn('M')
-    affected_file.IsDirectory().AndReturn(True)
-    affected_file.AbsoluteLocalPath().AndReturn(accidental_submssion_file)
-    affected_file.LocalPath().AndReturn(accidental_submssion_file)
-    input_api.AffectedFiles(file_filter=None).AndReturn([affected_file])
-
-    self.mox.ReplayAll()
-
-    check = presubmit_canned_checks.CheckSvnModifiedDirectories
-    results = check(input_api, presubmit.OutputApi, None)
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
-                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckSvnForCommonMimeTypes(self):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
