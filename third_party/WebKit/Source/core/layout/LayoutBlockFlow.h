@@ -516,6 +516,10 @@ private:
     LayoutUnit collapsedMarginBefore() const final { return maxPositiveMarginBefore() - maxNegativeMarginBefore(); }
     LayoutUnit collapsedMarginAfter() const final { return maxPositiveMarginAfter() - maxNegativeMarginAfter(); }
 
+    // Floats' margins do not collapse with page or column boundaries, and we therefore need to
+    // treat them specially in some cases.
+    LayoutUnit marginBeforeIfFloating() const { return isFloating() ? marginBefore() : LayoutUnit(); }
+
     LayoutUnit collapseMargins(LayoutBox& child, MarginInfo&, bool childIsSelfCollapsing, bool childDiscardMarginBefore, bool childDiscardMarginAfter);
     LayoutUnit clearFloatsIfNeeded(LayoutBox& child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing, bool childDiscardMargin);
     LayoutUnit estimateLogicalTopPosition(LayoutBox& child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);

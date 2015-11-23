@@ -716,9 +716,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
             // FIXME: Should really check if we're exceeding the page height before propagating the strut, but we don't
             // have all the information to do so (the strut only has the remaining amount to push). Gecko gets this wrong too
             // and pushes to the next page anyway, so not too concerned about it.
-            paginationStrut += logicalTop;
-            if (isFloating())
-                paginationStrut += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
+            paginationStrut += logicalTop + marginBeforeIfFloating();
             setPaginationStrutPropagatedFromChild(paginationStrut);
             if (childBlockFlow)
                 childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
@@ -760,14 +758,6 @@ static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInline
             wantsStrutOnBlock = true;
     }
     return wantsStrutOnBlock && block.allowsPaginationStrut();
-}
-
-static LayoutUnit calculateStrutForPropagation(const LayoutBlockFlow& blockFlow, LayoutUnit lineLogicalOffset)
-{
-    LayoutUnit paginationStrut = std::max<LayoutUnit>(LayoutUnit(), lineLogicalOffset);
-    if (blockFlow.isFloating())
-        paginationStrut += blockFlow.marginBefore(); // Floats' margins do not collapse with page or column boundaries.
-    return paginationStrut;
 }
 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
@@ -813,7 +803,8 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             // content-less portions (struts) at the beginning of a block before a break, if it can
             // be avoided. After all, that's the reason for setting struts on blocks and not lines
             // in the first place.
-            setPaginationStrutPropagatedFromChild(calculateStrutForPropagation(*this, remainingLogicalHeight + logicalOffset));
+            LayoutUnit strut = remainingLogicalHeight + logicalOffset + marginBeforeIfFloating();
+            setPaginationStrutPropagatedFromChild(strut);
         } else {
             logicalOffset += remainingLogicalHeight;
             delta += remainingLogicalHeight;
@@ -828,15 +819,15 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // case it's a float) margin, we may want to set a strut on the block, so that everything
         // ends up in the next column or page. Setting a strut on the block is also important when
         // it comes to satisfying orphan requirements.
-        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight))
-            setPaginationStrutPropagatedFromChild(calculateStrutForPropagation(*this, logicalOffset));
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight)) {
+            LayoutUnit strut = logicalOffset + marginBeforeIfFloating();
+            setPaginationStrutPropagatedFromChild(strut);
+        }
     } else if (lineBox == firstRootBox() && allowsPaginationStrut()) {
         // This is the first line in the block. The block may still start in the previous column or
         // page, and if that's the case, attempt to pull it over to where this line is, so that we
         // don't split the top border, padding, or (in case it's a float) margin.
-        LayoutUnit totalLogicalOffset = logicalOffset;
-        if (isFloating())
-            totalLogicalOffset += marginBefore(); // Floats' margins do not collapse with page or column boundaries.
+        LayoutUnit totalLogicalOffset = logicalOffset + marginBeforeIfFloating();
         LayoutUnit strut = remainingLogicalHeight + totalLogicalOffset - pageLogicalHeight;
         if (strut > 0) {
             // The block starts in a previous column or page. Set a strut on the block if there's
@@ -2932,6 +2923,7 @@ bool LayoutBlockFlow::allowsPaginationStrut() const
 
 void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut)
 {
+    strut = std::max(strut, LayoutUnit());
     if (!m_rareData) {
         if (!strut)
             return;
