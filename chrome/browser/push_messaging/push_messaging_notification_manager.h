@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
@@ -18,6 +19,7 @@ class Profile;
 namespace content {
 struct NotificationDatabaseData;
 struct PlatformNotificationData;
+class WebContents;
 }
 
 // Developers may be required to display a Web Notification in response to an
@@ -45,6 +47,8 @@ class PushMessagingNotificationManager {
       const base::Closure& message_handled_closure);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest, IsTabVisible);
+
   static void DidGetNotificationsFromDatabaseIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
       const GURL& origin,
@@ -59,6 +63,13 @@ class PushMessagingNotificationManager {
       const base::Closure& message_handled_closure,
       bool success,
       const std::vector<content::NotificationDatabaseData>& data);
+
+  // Checks whether |profile| is the one owning this instance,
+  // |active_web_contents| exists and its main frame is visible, and the URL
+  // currently visible to the user is for |origin|.
+  bool IsTabVisible(Profile* profile,
+                    content::WebContents* active_web_contents,
+                    const GURL& origin);
 
   void DidGetNotificationsShownAndNeeded(
       const GURL& origin,

@@ -141,11 +141,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // notification doesn't count.
   int notification_count = success ? data.size() : 0;
   bool notification_shown = notification_count > 0;
-
   bool notification_needed = true;
 
   // Sites with a currently visible tab don't need to show notifications.
-
 #if defined(OS_ANDROID)
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     Profile* profile = (*it)->GetProfile();
@@ -156,26 +154,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     WebContents* active_web_contents =
         it->tab_strip_model()->GetActiveWebContents();
 #endif
-    if (!active_web_contents || !active_web_contents->GetMainFrame())
-      continue;
-
-    // Don't leak information from other profiles.
-    if (profile != profile_)
-      continue;
-
-    // Ignore minimized windows etc.
-    switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-      case blink::WebPageVisibilityStateHidden:
-      case blink::WebPageVisibilityStatePrerender:
-        continue;
-      case blink::WebPageVisibilityStateVisible:
-        break;
-    }
-
-    // Use the visible URL since that's the one the user is aware of (and it
-    // doesn't matter whether the page loaded successfully).
-    const GURL& active_url = active_web_contents->GetVisibleURL();
-    if (origin == active_url.GetOrigin()) {
+    if (IsTabVisible(profile, active_web_contents, origin)) {
       notification_needed = false;
       break;
     }
@@ -227,6 +206,31 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN);
     message_handled_closure.Run();
   }
+}
+
+bool PushMessagingNotificationManager::IsTabVisible(
+    Profile* profile,
+    WebContents* active_web_contents,
+    const GURL& origin) {
+  if (!active_web_contents || !active_web_contents->GetMainFrame())
+    return false;
+
+  // Don't leak information from other profiles.
+  if (profile != profile_)
+    return false;
+
+  // Ignore minimized windows.
+  switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
+    case blink::WebPageVisibilityStateHidden:
+    case blink::WebPageVisibilityStatePrerender:
+      return false;
+    case blink::WebPageVisibilityStateVisible:
+      break;
+  }
+
+  // Use the visible URL since that's the one the user is aware of (and it
+  // doesn't matter whether the page loaded successfully).
+  return origin == active_web_contents->GetVisibleURL().GetOrigin();
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
