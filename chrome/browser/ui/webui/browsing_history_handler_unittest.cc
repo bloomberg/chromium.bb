@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/history_ui.h"
+#include "chrome/browser/ui/webui/browsing_history_handler.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +49,7 @@ bool ResultEquals(
 
 // Tests that the MergeDuplicateResults method correctly removes duplicate
 // visits to the same URL on the same day.
-TEST(HistoryUITest, MergeDuplicateResults) {
+TEST(BrowsingHistoryHandlerTest, MergeDuplicateResults) {
   {
     // Basic test that duplicates on the same day are removed.
     TestResult test_data[] = {

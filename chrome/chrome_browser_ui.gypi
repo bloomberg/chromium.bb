@@ -203,6 +203,8 @@
       'browser/ui/website_settings/website_settings_ui.h',
       'browser/ui/webui/about_ui.cc',
       'browser/ui/webui/about_ui.h',
+      'browser/ui/webui/browsing_history_handler.cc',
+      'browser/ui/webui/browsing_history_handler.h',
       'browser/ui/webui/chrome_web_ui_controller_factory.cc',
       'browser/ui/webui/chrome_web_ui_controller_factory.h',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',
