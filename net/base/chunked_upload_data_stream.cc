@@ -28,7 +28,8 @@ void ChunkedUploadDataStream::AppendData(
   DCHECK(data_len > 0 || is_done);
   if (data_len > 0) {
     DCHECK(data);
-    upload_data_.push_back(new std::vector<char>(data, data + data_len));
+    upload_data_.push_back(
+        make_scoped_ptr(new std::vector<char>(data, data + data_len)));
   }
   all_data_appended_ = is_done;
 
@@ -74,7 +75,7 @@ int ChunkedUploadDataStream::ReadChunk(IOBuffer* buf, int buf_len) {
   // Copy as much data as possible from |upload_data_| to |buf|.
   int bytes_read = 0;
   while (read_index_ < upload_data_.size() && bytes_read < buf_len) {
-    std::vector<char>* data = upload_data_[read_index_];
+    std::vector<char>* data = upload_data_[read_index_].get();
     size_t bytes_to_read =
         std::min(static_cast<size_t>(buf_len - bytes_read),
                  data->size() - read_offset_);

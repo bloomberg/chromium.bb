@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/upload_data_stream.h"
@@ -48,7 +47,7 @@ class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
   // True once all data has been appended to the stream.
   bool all_data_appended_;
 
-  ScopedVector<std::vector<char>> upload_data_;
+  std::vector<scoped_ptr<std::vector<char>>> upload_data_;
 
   // Buffer to write the next read's data to. Only set when a call to
   // ReadInternal reads no data.
