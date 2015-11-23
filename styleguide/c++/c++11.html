@@ -298,6 +298,18 @@ Parameter pack</a></td>
 </tr>
 
 <tr>
+<td>Begin and End Non-Member Functions</td>
+<td><code>std::begin()</code> and <code>std::end()</code></td>
+<td>Allows use of free functions on any container, including
+fixed-size arrays</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">
+std::begin</a> and
+<a href="http://en.cppreference.com/w/cpp/iterator/end">
+std::end</a></td>
+<td>Useful for fixed-size arrays. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/5iFNE8P5qT4/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Containers containing movable types</td>
 <td><code>vector&lt;scoped_ptr&gt;</code></td>
 <td>Enables containers that contain move-only types like <code>scoped_ptr</code></td>
@@ -679,18 +691,6 @@ std::allocator_traits</a></td>
 <td><a href="http://en.cppreference.com/w/cpp/container/array">
 std::array</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Begin and End Non-Member Functions</td>
-<td><code>std::begin()</code> and <code>std::end()</code></td>
-<td>Allows use of free functions on any container, including
-built-in arrays</td>
-<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">
-std::begin</a> and
-<a href="http://en.cppreference.com/w/cpp/iterator/end">
-std::end</a></td>
-<td>Useful for built-in arrays.</td>
 </tr>
 
 <tr>

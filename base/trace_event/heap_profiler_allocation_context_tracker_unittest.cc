@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iterator>
+
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
@@ -19,23 +21,16 @@ const char kEclair[] = "Eclair";
 const char kFroyo[] = "Froyo";
 const char kGingerbread[] = "Gingerbread";
 
-// Returns a pointer past the end of the fixed-size array |array| of |T| of
-// length |N|, identical to C++11 |std::end|.
-template <typename T, int N>
-const T* End(const T(&array)[N]) {
-  return array + N;
-}
-
 // Asserts that the fixed-size array |expected_backtrace| matches the backtrace
 // in |AllocationContextTracker::GetContextSnapshot|.
 template <size_t N>
 void AssertBacktraceEquals(const StackFrame(&expected_backtrace)[N]) {
   AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
 
-  auto actual = ctx.backtrace.frames;
-  auto actual_bottom = End(ctx.backtrace.frames);
-  auto expected = expected_backtrace;
-  auto expected_bottom = End(expected_backtrace);
+  auto actual = std::begin(ctx.backtrace.frames);
+  auto actual_bottom = std::end(ctx.backtrace.frames);
+  auto expected = std::begin(expected_backtrace);
+  auto expected_bottom = std::end(expected_backtrace);
 
   // Note that this requires the pointers to be equal, this is not doing a deep
   // string comparison.

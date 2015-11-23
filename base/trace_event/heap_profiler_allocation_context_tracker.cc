@@ -5,6 +5,7 @@
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/atomicops.h"
 #include "base/threading/thread_local_storage.h"
@@ -23,13 +24,6 @@ ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
 // thread exits.
 void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
   delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
-}
-
-// Returns a pointer past the end of the fixed-size array |array| of |T| of
-// length |N|, identical to C++11 |std::end|.
-template <typename T, int N>
-T* End(T(&array)[N]) {
-  return array + N;
 }
 
 }  // namespace
@@ -99,9 +93,9 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
   // Fill the backtrace.
   {
     auto src = tracker->pseudo_stack_.begin();
-    auto dst = ctx.backtrace.frames;
+    auto dst = std::begin(ctx.backtrace.frames);
     auto src_end = tracker->pseudo_stack_.end();
-    auto dst_end = End(ctx.backtrace.frames);
+    auto dst_end = std::end(ctx.backtrace.frames);
 
     // Copy as much of the bottom of the pseudo stack into the backtrace as
     // possible.
