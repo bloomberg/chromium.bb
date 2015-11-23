@@ -145,7 +145,7 @@ struct window_output {
 
 struct toysurface {
 	/*
-	 * Prepare the surface for drawing. Makes sure there is a surface
+	 * Prepare the surface for drawing. Ensure there is a surface
 	 * of the right size available for rendering, and return it.
 	 * dx,dy are the x,y of wl_surface.attach.
 	 * width,height are the new buffer size.
