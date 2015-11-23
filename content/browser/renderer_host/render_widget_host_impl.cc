@@ -245,6 +245,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   new_content_rendering_timeout_.reset(new TimeoutMonitor(
       base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
                  weak_factory_.GetWeakPtr())));
+
+  delegate_->RenderWidgetCreated(this);
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {

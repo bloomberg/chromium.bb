@@ -39,6 +39,9 @@ struct NativeWebKeyboardEvent;
 //  of the RenderWidgetHost.
 class CONTENT_EXPORT RenderWidgetHostDelegate {
  public:
+  // The RenderWidgetHost has just been created.
+  virtual void RenderWidgetCreated(RenderWidgetHostImpl* render_widget_host) {}
+
   // The RenderWidgetHost is going to be deleted.
   virtual void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) {}
 

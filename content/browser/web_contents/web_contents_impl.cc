@@ -1497,17 +1497,20 @@ void WebContentsImpl::LostCapture(RenderWidgetHostImpl* render_widget_host) {
     delegate_->LostCapture();
 }
 
+void WebContentsImpl::RenderWidgetCreated(
+    RenderWidgetHostImpl* render_widget_host) {
+  created_widgets_.insert(render_widget_host);
+}
+
 void WebContentsImpl::RenderWidgetDeleted(
     RenderWidgetHostImpl* render_widget_host) {
-  if (is_being_destroyed_) {
-    // |created_widgets_| might have been destroyed.
-    return;
-  }
+  // Note that |is_being_destroyed_| can be true at this point as
+  // ~WebContentsImpl() calls RFHM::ClearRFHsPendingShutdown(), which might lead
+  // us here.
+  created_widgets_.erase(render_widget_host);
 
-  std::set<RenderWidgetHostImpl*>::iterator iter =
-      created_widgets_.find(render_widget_host);
-  if (iter != created_widgets_.end())
-    created_widgets_.erase(iter);
+  if (is_being_destroyed_)
+    return;
 
   if (render_widget_host &&
       render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_) {
@@ -1923,7 +1926,6 @@ void WebContentsImpl::CreateNewWidget(int32 render_process_id,
 
   RenderWidgetHostImpl* widget_host =
       new RenderWidgetHostImpl(this, process, route_id, IsHidden());
-  created_widgets_.insert(widget_host);
 
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
