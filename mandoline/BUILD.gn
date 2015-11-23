@@ -17,8 +17,8 @@ group("all") {
     deps += [ "//mandoline/app/android" ]
   } else {
     deps += [
-      "//components/mus/example",
       "//mandoline/app/desktop",
+      "//mash/example",
     ]
   }
 }

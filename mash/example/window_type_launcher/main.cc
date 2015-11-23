@@ -10,7 +10,7 @@
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "components/mus/example/window_type_launcher/window_type_launcher.h"
+#include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/message_pump/message_pump_mojo.h"

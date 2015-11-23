@@ -1558,7 +1558,6 @@
       "chromedriver_unittests",
       "components_browsertests",
       "components_unittests",
-      "components/mus/example:all",
       "compositor_unittests",
       "content_unittests",
       "courgette_unittests",
@@ -1576,6 +1575,7 @@
       "jingle_unittests",
       "keyboard_unittests",
       "mandoline:all",
+      "mash:all",
       "media_unittests",
       "media_blink_unittests",
       "message_center_unittests",
@@ -1641,7 +1641,7 @@
         "test": "mojo_view_manager_lib_unittests"
       },
       {
-        "test": "mustash_unittests"
+        "test": "mash_unittests"
       },
       {
         "test": "resource_provider_unittests"

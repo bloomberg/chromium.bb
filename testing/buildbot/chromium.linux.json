@@ -301,8 +301,8 @@
   "Linux Builder": {
     "additional_compile_targets": [
       "blimp",
-      "components/mus/example:all",
       "mandoline:all",
+      "mash:all",
       "remoting_all"
     ]
   },
@@ -504,6 +504,9 @@
         "test": "jingle_unittests"
       },
       {
+        "test": "mash_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -568,9 +571,6 @@
       },
       {
         "test": "mojo_view_manager_lib_unittests"
-      },
-      {
-        "test": "mustash_unittests"
       },
       {
         "swarming": {

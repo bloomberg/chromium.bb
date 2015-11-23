@@ -308,8 +308,8 @@
     "label": "//ui/message_center:message_center_unittests",
     "type": "unknown",
   },
-  "mustash_unittests": {
-    "label": "//components/mus/example:mustash_unittests",
+  "mash_unittests": {
+    "label": "//mash:mash_unittests",
     "type": "unknown",
   },
   "nacl_loader_unittests": {

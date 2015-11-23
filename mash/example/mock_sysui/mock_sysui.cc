@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/mock_sysui/mock_sysui.h"
+#include "mash/example/mock_sysui/mock_sysui.h"
 
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"

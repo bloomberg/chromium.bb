@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_
-#define COMPONENTS_MUS_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_
+#ifndef MASH_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_
+#define MASH_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -30,4 +30,4 @@ class MainApplicationDelegate : public mojo::ApplicationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MainApplicationDelegate);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_
+#endif  // MASH_EXAMPLE_MAIN_MAIN_APPLICATION_DELEGATE_H_

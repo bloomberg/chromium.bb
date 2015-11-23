@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WINDOW_TYPE_LAUNCHER_WINDOW_TYPE_LAUNCHER_H_
-#define COMPONENTS_MUS_EXAMPLE_WINDOW_TYPE_LAUNCHER_WINDOW_TYPE_LAUNCHER_H_
+#ifndef MASH_EXAMPLE_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_
+#define MASH_EXAMPLE_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
 class AuraInit;
 }
 
-class WindowTypeLauncher : public mojo::ApplicationDelegate {
+class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
  public:
-  WindowTypeLauncher();
-  ~WindowTypeLauncher() override;
+  ViewsExamplesApplicationDelegate();
+  ~ViewsExamplesApplicationDelegate() override;
 
  private:
   // ApplicationDelegate:
@@ -24,9 +25,11 @@ class WindowTypeLauncher : public mojo::ApplicationDelegate {
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
+  mojo::TracingImpl tracing_;
+
   scoped_ptr<views::AuraInit> aura_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
+  DISALLOW_COPY_AND_ASSIGN(ViewsExamplesApplicationDelegate);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WINDOW_TYPE_LAUNCHER_WINDOW_TYPE_LAUNCHER_H_
+#endif  // MASH_EXAMPLE_VIEWS_EXAMPLES_APPLICATION_DELEGATE_H_

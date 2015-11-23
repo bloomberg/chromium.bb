@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/example/window_type_launcher/window_type_launcher.h"
+#include "mash/example/window_type_launcher/window_type_launcher.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"

@@ -9,25 +9,12 @@ group("all") {
   testonly = true
 
   deps = [
-    ":example",
-    ":mustash_unittests",
+    ":mash_unittests",
+    "//mash/example",
   ]
 }
 
-group("example") {
-  testonly = true
-
-  deps = [
-    "//components/mus/example/main",
-    "//components/mus/example/mock_sysui",
-    "//components/mus/example/views_examples",
-    "//components/mus/example/window_type_launcher",
-    "//mash/wm",
-    "//mojo/runner",
-  ]
-}
-
-test("mustash_unittests") {
+test("mash_unittests") {
   deps = [
     "//base",
     "//base/test:run_all_unittests",

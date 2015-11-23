@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
-#define COMPONENTS_MUS_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
+#ifndef MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
+#define MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,4 +32,4 @@ class MockSysUI : public mojo::ApplicationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockSysUI);
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
+#endif  // MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_

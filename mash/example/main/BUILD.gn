@@ -25,7 +25,7 @@ mojo_native_application("main") {
   ]
 
   data_deps = [
-    "//components/mus/example/views_examples",
-    "//components/mus/example/window_type_launcher",
+    "//mash/example/views_examples",
+    "//mash/example/window_type_launcher",
   ]
 }
