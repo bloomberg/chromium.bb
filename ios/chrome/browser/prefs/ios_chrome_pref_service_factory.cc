@@ -33,12 +33,10 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 
 void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
                     const base::FilePath& pref_filename,
-                    base::SequencedTaskRunner* pref_io_task_runner,
-                    bool async) {
+                    base::SequencedTaskRunner* pref_io_task_runner) {
   factory->set_user_prefs(make_scoped_refptr(new JsonPrefStore(
       pref_filename, pref_io_task_runner, scoped_ptr<PrefFilter>())));
 
-  factory->set_async(async);
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   factory->SetPrefModelAssociatorClient(
       IOSChromePrefModelAssociatorClient::GetInstance());
@@ -49,10 +47,9 @@ void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
 scoped_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
-    const scoped_refptr<PrefRegistry>& pref_registry,
-    bool async) {
+    const scoped_refptr<PrefRegistry>& pref_registry) {
   syncable_prefs::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, pref_filename, pref_io_task_runner, async);
+  PrepareFactory(&factory, pref_filename, pref_io_task_runner);
   return factory.Create(pref_registry.get());
 }
 
@@ -60,8 +57,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
-    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
-    bool async) {
+    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry) {
   // chrome_prefs::CreateProfilePrefs uses ProfilePrefStoreManager to create
   // the preference store however since Chrome on iOS does not need to track
   // preference modifications (as applications are sand-boxed), it can use a
@@ -69,7 +65,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
   // on platforms that do not track preference modifications).
   syncable_prefs::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, browser_state_path.Append(kPreferencesFilename),
-                 pref_io_task_runner, async);
+                 pref_io_task_runner);
   scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());

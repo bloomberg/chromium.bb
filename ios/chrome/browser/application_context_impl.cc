@@ -198,7 +198,7 @@ void ApplicationContextImpl::CreateLocalState() {
   RegisterLocalStatePrefs(pref_registry.get());
 
   local_state_ = ::CreateLocalState(
-      local_state_path, local_state_task_runner_.get(), pref_registry, false);
+      local_state_path, local_state_task_runner_.get(), pref_registry);
 
   const int max_per_proxy =
       local_state_->GetInteger(ios::prefs::kMaxConnectionsPerProxy);
