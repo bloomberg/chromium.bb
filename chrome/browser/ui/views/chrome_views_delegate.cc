@@ -94,6 +94,7 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 #if defined(OS_WIN)
 bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
   APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge };
+  taskbar_data.hWnd = ::GetForegroundWindow();
 
   // TODO(robliao): Remove ScopedTracker below once crbug.com/462368 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -105,12 +106,31 @@ bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
   // idea for multi-monitor systems.  Unfortunately, it appears to not work at
   // least some of the time (erroneously returning NULL) and there's almost no
   // online documentation or other sample code using it that suggests ways to
-  // address this problem.  So we just use ABM_GETAUTOHIDEBAR and hope the user
-  // only cares about autohide bars on the monitor with the primary taskbar.
-  //
+  // address this problem. We do the following:-
+  // 1. Use the ABM_GETAUTOHIDEBAR message. If it works, i.e. returns a valid
+  //    window we are done.
+  // 2. If the ABM_GETAUTOHIDEBAR message does not work we query the auto hide
+  //    state of the taskbar and then retrieve its position. That call returns
+  //    the edge on which the taskbar is present. If it matches the edge we
+  //    are looking for, we are done.
   // NOTE: This call spins a nested message loop.
   HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
                                                         &taskbar_data));
+  if (!::IsWindow(taskbar)) {
+    APPBARDATA taskbar_data = { sizeof(APPBARDATA), 0, 0, 0};
+    unsigned int taskbar_state = SHAppBarMessage(ABM_GETSTATE,
+                                                 &taskbar_data);
+    if (!(taskbar_state & ABS_AUTOHIDE))
+      return false;
+
+    taskbar_data.hWnd = ::FindWindow(L"Shell_TrayWnd", NULL);
+    if (!::IsWindow(taskbar_data.hWnd))
+      return false;
+
+    SHAppBarMessage(ABM_GETTASKBARPOS, &taskbar_data);
+    if (taskbar_data.uEdge == edge)
+      taskbar = taskbar_data.hWnd;
+  }
   return ::IsWindow(taskbar) &&
       (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONULL) == monitor) &&
       (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
