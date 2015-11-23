@@ -33,11 +33,15 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageData*, const IntRect&);
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(Image*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;
+
+    bool isNeutered() const { return m_isNeutered; }
+    PassRefPtr<StaticBitmapImage> transfer();
 
     ~ImageBitmap() override;
 
@@ -56,12 +60,14 @@ private:
     ImageBitmap(ImageData*, const IntRect&);
     ImageBitmap(ImageBitmap*, const IntRect&);
     ImageBitmap(Image*, const IntRect&);
+    ImageBitmap(PassRefPtr<StaticBitmapImage>);
 
     // ImageLoaderClient
     void notifyImageSourceChanged() override;
     bool requestsHighLiveResourceCachePriority() override { return true; }
 
     RefPtr<StaticBitmapImage> m_image;
+    bool m_isNeutered = false;
 };
 
 } // namespace blink

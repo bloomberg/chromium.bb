@@ -42,7 +42,7 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
 
     v8::Local<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
-    SerializedScriptValueFactory::instance().create(isolate(), v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION);
+    SerializedScriptValueFactory::instance().create(isolate(), v8OriginalFile, nullptr, nullptr, nullptr, ASSERT_NO_EXCEPTION);
     v8::Local<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
@@ -62,7 +62,7 @@ TEST_F(SerializedScriptValueTest, FileConstructorFile)
 
     v8::Local<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
-    SerializedScriptValueFactory::instance().create(isolate(), v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION);
+    SerializedScriptValueFactory::instance().create(isolate(), v8OriginalFile, nullptr, nullptr, nullptr, ASSERT_NO_EXCEPTION);
     v8::Local<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));

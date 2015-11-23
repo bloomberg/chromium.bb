@@ -74,8 +74,8 @@ enum AssymetricCryptoKeyType {
 };
 
 
-ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
-    : ScriptValueSerializer(writer, messagePorts, arrayBuffers, blobInfo, blobDataHandles, tryCatch, scriptState)
+ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+    : ScriptValueSerializer(writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, blobDataHandles, tryCatch, scriptState)
 {
 }
 
@@ -624,8 +624,8 @@ bool SerializedScriptValueReaderForModules::doReadKeyUsages(WebCryptoKeyUsageMas
     return true;
 }
 
-ScriptValueDeserializerForModules::ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents)
-    : ScriptValueDeserializer(reader, messagePorts, arrayBufferContents)
+ScriptValueDeserializerForModules::ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents, ImageBitmapContentsArray* imageBitmapContents)
+    : ScriptValueDeserializer(reader, messagePorts, arrayBufferContents, imageBitmapContents)
 {
 }
 

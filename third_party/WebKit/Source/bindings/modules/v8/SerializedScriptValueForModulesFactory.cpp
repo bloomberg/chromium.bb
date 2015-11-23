@@ -12,7 +12,7 @@
 
 namespace blink {
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::create();
     SerializedScriptValueWriterForModules writer;
@@ -20,7 +20,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     String errorMessage;
     {
         v8::TryCatch tryCatch;
-        status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, arrayBuffers, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
+        status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
         if (status == ScriptValueSerializer::JSException) {
             // If there was a JS exception thrown, re-throw it.
             exceptionState.rethrowV8Exception(tryCatch.Exception());
@@ -33,7 +33,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
         exceptionState.throwDOMException(DataCloneError, errorMessage);
         return serializedValue.release();
     case ScriptValueSerializer::Success:
-        transferData(serializedValue.get(), writer, arrayBuffers, exceptionState, isolate);
+        transferData(serializedValue.get(), writer, arrayBuffers, imageBitmaps, exceptionState, isolate);
         return serializedValue.release();
     case ScriptValueSerializer::JSException:
         ASSERT_NOT_REACHED();
@@ -51,15 +51,15 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     return createFromWire(wireData);
 }
 
-ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
+ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
 {
-    ScriptValueSerializerForModules serializer(writer, messagePorts, arrayBuffers, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
+    ScriptValueSerializerForModules serializer(writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
     ScriptValueSerializer::Status status = serializer.serialize(value);
     errorMessage = serializer.errorMessage();
     return status;
 }
 
-v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray* arrayBufferContentsArray, v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
+v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray* arrayBufferContentsArray, ImageBitmapContentsArray* imageBitmapContentsArray, v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
 {
     if (!data.impl())
         return v8::Null(isolate);
@@ -70,7 +70,7 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(String&
     // information stored in m_data isn't even encoded in UTF-16. Instead,
     // unicode characters are encoded as UTF-8 with two code units per UChar.
     SerializedScriptValueReaderForModules reader(reinterpret_cast<const uint8_t*>(data.impl()->characters16()), 2 * data.length(), blobInfo, blobDataHandles, ScriptState::current(isolate));
-    ScriptValueDeserializerForModules deserializer(reader, messagePorts, arrayBufferContentsArray);
+    ScriptValueDeserializerForModules deserializer(reader, messagePorts, arrayBufferContentsArray, imageBitmapContentsArray);
     return deserializer.deserialize();
 }
 

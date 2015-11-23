@@ -106,6 +106,18 @@ ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
     m_image = cropImage(static_cast<StaticBitmapImage*>(image), cropRect);
 }
 
+ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
+{
+    m_image = image;
+}
+
+PassRefPtr<StaticBitmapImage> ImageBitmap::transfer()
+{
+    ASSERT(!isNeutered());
+    m_isNeutered = true;
+    return m_image.release();
+}
+
 ImageBitmap::~ImageBitmap()
 {
 }
@@ -144,6 +156,11 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(Image* image, const IntR
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));
+}
+
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
+{
+    return adoptRefWillBeNoop(new ImageBitmap(image));
 }
 
 unsigned long ImageBitmap::width() const
