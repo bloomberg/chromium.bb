@@ -47,13 +47,16 @@ public:
     {
         return adoptRefWillBeNoop(new SVGPath());
     }
+    static PassRefPtrWillBeRawPtr<SVGPath> create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+    {
+        return adoptRefWillBeNoop(new SVGPath(pathByteStream));
+    }
 
     ~SVGPath() override;
 
     const Path& path() const;
 
     const SVGPathByteStream& byteStream() const;
-    SVGPathByteStream& mutableByteStream();
 
     // SVGPropertyBase:
     PassRefPtrWillBeRawPtr<SVGPath> clone() const;
@@ -72,7 +75,8 @@ private:
     explicit SVGPath(PassOwnPtr<SVGPathByteStream>);
 
     SVGPathByteStream& ensureByteStream();
-    void byteStreamWillChange();
+    void byteStreamChanged();
+    void setValueAsByteStream(PassOwnPtr<SVGPathByteStream>);
 
     OwnPtr<SVGPathByteStream> m_byteStream;
     mutable OwnPtr<Path> m_cachedPath;

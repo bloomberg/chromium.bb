@@ -20,11 +20,9 @@
 #include "config.h"
 #include "core/svg/SVGPathUtilities.h"
 
-#include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathBuilder.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
-#include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathParser.h"
 #include "core/svg/SVGPathStringBuilder.h"
 #include "core/svg/SVGPathStringSource.h"
@@ -83,21 +81,6 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream& result
     bool ok = parser.parsePathDataFromSource(parsingMode);
     result.shrinkToFit();
     return ok;
-}
-
-bool addToSVGPathByteStream(SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount)
-{
-    if (fromStream.isEmpty() || byStream.isEmpty())
-        return true;
-
-    OwnPtr<SVGPathByteStream> fromStreamCopy = fromStream.copy();
-    fromStream.clear();
-
-    SVGPathByteStreamBuilder builder(fromStream);
-    SVGPathByteStreamSource fromSource(*fromStreamCopy);
-    SVGPathByteStreamSource bySource(byStream);
-    SVGPathBlender blender(&fromSource, &bySource, &builder);
-    return blender.addAnimatedPath(repeatCount);
 }
 
 unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream& stream, float length)

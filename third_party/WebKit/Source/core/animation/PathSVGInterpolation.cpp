@@ -433,12 +433,12 @@ PassRefPtr<PathSVGInterpolation> PathSVGInterpolation::maybeCreate(SVGPropertyBa
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, const Vector<SVGPathSegType>& pathSegTypes)
 {
-    RefPtrWillBeRawPtr<SVGPath> result = SVGPath::create();
+    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     InterpolatedPathSource source(toInterpolableList(value), pathSegTypes);
-    SVGPathByteStreamBuilder builder(result->mutableByteStream());
+    SVGPathByteStreamBuilder builder(*pathByteStream);
     SVGPathParser parser(&source, &builder);
     parser.parsePathDataFromSource(UnalteredParsing, false);
-    return result.release();
+    return SVGPath::create(pathByteStream.release());
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::interpolatedValue(SVGElement&) const

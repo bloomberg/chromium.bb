@@ -36,6 +36,35 @@
 
 namespace blink {
 
+namespace {
+
+PassOwnPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& toStream, float progress)
+{
+    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    SVGPathByteStreamBuilder builder(*resultStream);
+    SVGPathByteStreamSource fromSource(fromStream);
+    SVGPathByteStreamSource toSource(toStream);
+    SVGPathBlender blender(&fromSource, &toSource, &builder);
+    blender.blendAnimatedPath(progress);
+    return resultStream.release();
+}
+
+PassOwnPtr<SVGPathByteStream> addPathByteStreams(PassOwnPtr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
+{
+    if (fromStream->isEmpty() || byStream.isEmpty())
+        return fromStream;
+    OwnPtr<SVGPathByteStream> tempFromStream = fromStream;
+    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    SVGPathByteStreamBuilder builder(*resultStream);
+    SVGPathByteStreamSource fromSource(*tempFromStream);
+    SVGPathByteStreamSource bySource(byStream);
+    SVGPathBlender blender(&fromSource, &bySource, &builder);
+    blender.addAnimatedPath(repeatCount);
+    return resultStream.release();
+}
+
+}
+
 SVGPath::SVGPath()
     : SVGPropertyBase(classType())
 {
@@ -63,7 +92,7 @@ const Path& SVGPath::path() const
 
 PassRefPtrWillBeRawPtr<SVGPath> SVGPath::clone() const
 {
-    return adoptRefWillBeNoop(new SVGPath(byteStream().copy()));
+    return SVGPath::create(byteStream().copy());
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPath::cloneForAnimation(const String& value) const
@@ -81,7 +110,7 @@ SVGPathByteStream& SVGPath::ensureByteStream()
     return *m_byteStream.get();
 }
 
-void SVGPath::byteStreamWillChange()
+void SVGPath::byteStreamChanged()
 {
     m_cachedPath.clear();
 }
@@ -89,12 +118,6 @@ void SVGPath::byteStreamWillChange()
 const SVGPathByteStream& SVGPath::byteStream() const
 {
     return const_cast<SVGPath*>(this)->ensureByteStream();
-}
-
-SVGPathByteStream& SVGPath::mutableByteStream()
-{
-    byteStreamWillChange();
-    return ensureByteStream();
 }
 
 String SVGPath::valueAsString() const
@@ -106,17 +129,24 @@ String SVGPath::valueAsString() const
 
 void SVGPath::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
-    if (!buildSVGPathByteStreamFromString(string, mutableByteStream(), UnalteredParsing))
+    if (!buildSVGPathByteStreamFromString(string, ensureByteStream(), UnalteredParsing))
         exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
+    byteStreamChanged();
+}
+
+void SVGPath::setValueAsByteStream(PassOwnPtr<SVGPathByteStream> byteStream)
+{
+    m_byteStream = byteStream;
+    byteStreamChanged();
 }
 
 void SVGPath::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
-    RefPtrWillBeRawPtr<SVGPath> otherList = toSVGPath(other);
-    if (byteStream().size() != otherList->byteStream().size())
+    const SVGPathByteStream& otherPathByteStream = toSVGPath(other)->byteStream();
+    if (byteStream().size() != otherPathByteStream.size())
         return;
 
-    addToSVGPathByteStream(mutableByteStream(), otherList->byteStream());
+    setValueAsByteStream(addPathByteStreams(m_byteStream.release(), otherPathByteStream));
 }
 
 void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
@@ -124,56 +154,47 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
     ASSERT(animationElement);
     bool isToAnimation = animationElement->animationMode() == ToAnimation;
 
-    const RefPtrWillBeRawPtr<SVGPath> from = toSVGPath(fromValue);
     const RefPtrWillBeRawPtr<SVGPath> to = toSVGPath(toValue);
-    const RefPtrWillBeRawPtr<SVGPath> toAtEndOfDuration = toSVGPath(toAtEndOfDurationValue);
-
     const SVGPathByteStream& toStream = to->byteStream();
-    const SVGPathByteStream* fromStream = &from->byteStream();
-    OwnPtr<SVGPathByteStream> copy;
 
     // If no 'to' value is given, nothing to animate.
     if (!toStream.size())
         return;
 
+    const RefPtrWillBeRawPtr<SVGPath> from = toSVGPath(fromValue);
+    const SVGPathByteStream* fromStream = &from->byteStream();
+
+    OwnPtr<SVGPathByteStream> copy;
     if (isToAnimation) {
         copy = byteStream().copy();
         fromStream = copy.get();
     }
 
-    byteStreamWillChange();
-
     // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
     if (fromStream->size() != toStream.size() && fromStream->size()) {
         if (percentage < 0.5) {
             if (!isToAnimation) {
-                m_byteStream = fromStream->copy();
+                setValueAsByteStream(fromStream->copy());
                 return;
             }
         } else {
-            m_byteStream = toStream.copy();
+            setValueAsByteStream(toStream.copy());
             return;
         }
     }
 
     OwnPtr<SVGPathByteStream> lastAnimatedStream = m_byteStream.release();
-
-    m_byteStream = SVGPathByteStream::create();
-    SVGPathByteStreamBuilder builder(*m_byteStream);
-
-    SVGPathByteStreamSource fromSource(*fromStream);
-    SVGPathByteStreamSource toSource(toStream);
-
-    SVGPathBlender blender(&fromSource, &toSource, &builder);
-    blender.blendAnimatedPath(percentage);
+    OwnPtr<SVGPathByteStream> newStream = blendPathByteStreams(*fromStream, toStream, percentage);
 
     // Handle additive='sum'.
     if (!fromStream->size() || (animationElement->isAdditive() && !isToAnimation))
-        addToSVGPathByteStream(*m_byteStream, *lastAnimatedStream);
+        newStream = addPathByteStreams(newStream.release(), *lastAnimatedStream);
 
     // Handle accumulate='sum'.
     if (animationElement->isAccumulated() && repeatCount)
-        addToSVGPathByteStream(*m_byteStream, toAtEndOfDuration->byteStream(), repeatCount);
+        newStream = addPathByteStreams(newStream.release(), toSVGPath(toAtEndOfDurationValue)->byteStream(), repeatCount);
+
+    setValueAsByteStream(newStream.release());
 }
 
 float SVGPath::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)

@@ -40,8 +40,6 @@ bool buildSVGPathByteStreamFromString(const String&, SVGPathByteStream&, PathPar
 // SVGPathByteStream -> String
 bool buildStringFromByteStream(const SVGPathByteStream&, String&, PathParsingMode);
 
-bool addToSVGPathByteStream(SVGPathByteStream&, const SVGPathByteStream&, unsigned repeatCount = 1);
-
 unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream&, float length);
 float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream&);
 FloatPoint getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream&, float length);
