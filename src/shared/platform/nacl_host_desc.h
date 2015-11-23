@@ -164,9 +164,13 @@ extern uintptr_t NaClHostDescMap(struct NaClHostDesc  *d,
  * start_addr and len must be multiples of NACL_MAP_PAGESIZE.
  *
  * Underlying host-OS syscalls: munmap / UnmapViewOfFile
+ *
+ * This is labelled as "unsafe" because it is not safe to use on the
+ * untrusted address space, because it leaves an unallocated hole in
+ * address space.
  */
-extern int NaClHostDescUnmapUnsafe(void   *start_addr,
-                                   size_t len) NACL_WUR;
+extern void NaClHostDescUnmapUnsafe(void   *start_addr,
+                                    size_t len);
 
 
 /*

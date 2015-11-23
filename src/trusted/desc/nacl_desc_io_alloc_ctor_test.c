@@ -200,7 +200,6 @@ int TestIsOkayP(char const *filename, struct TestParams const *params) {
   ssize_t io_sys_ret;
   char buffer[TEST_IO_BYTES];
   uintptr_t addr;
-  int sys_ret;
 
   h = MakeTestFile(filename, params->flags);
   if ((NaClHandle) -1 == h) {
@@ -288,11 +287,7 @@ int TestIsOkayP(char const *filename, struct TestParams const *params) {
         return 0;
       }
     }
-    sys_ret = NaClHostDescUnmapUnsafe((void *) addr, TEST_FILE_BYTES);
-    if (0 != sys_ret) {
-      NaClLog(LOG_ERROR, "Unmap failure\n");
-      return 0;
-    }
+    NaClHostDescUnmapUnsafe((void *) addr, TEST_FILE_BYTES);
   } else {
     if ((uintptr_t) -4095 < addr) {
       if (params->expected_mmap_error != (int) addr) {

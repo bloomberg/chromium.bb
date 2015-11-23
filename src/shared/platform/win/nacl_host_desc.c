@@ -880,8 +880,8 @@ cleanup:
   return retval;
 }
 
-int NaClHostDescUnmapUnsafe(void    *start_addr,
-                            size_t  len) {
+void NaClHostDescUnmapUnsafe(void    *start_addr,
+                             size_t  len) {
   uintptr_t addr;
   size_t    off;
 
@@ -889,13 +889,13 @@ int NaClHostDescUnmapUnsafe(void    *start_addr,
 
   for (off = 0; off < len; off += NACL_MAP_PAGESIZE) {
     if (!UnmapViewOfFile((void *) (addr + off))) {
-      NaClLog(LOG_ERROR,
-              "NaClHostDescUnmap: UnmapViewOfFile(0x%08x) failed\n",
-              addr + off);
-      return -NACL_ABI_EINVAL;
+      NaClLog(LOG_FATAL,
+              "NaClHostDescUnmapUnsafe: UnmapViewOfFile() failed: "
+              "start address 0x%p, length 0x%" NACL_PRIxS
+              ", offset 0x%" NACL_PRIxS ", error %d\n",
+              start_addr, len, off, GetLastError());
     }
   }
-  return 0;
 }
 
 static void NaClHostDescCtorIntern(struct NaClHostDesc *hd,

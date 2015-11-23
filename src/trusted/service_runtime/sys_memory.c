@@ -772,7 +772,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         /*
          * Remove scratch mapping.
          */
-        NaClDescUnmapUnsafe(ndp, (void *) image_sys_addr, length);
+        NaClHostDescUnmapUnsafe((void *) image_sys_addr, length);
         /*
          * We must succeed in mapping into the untrusted executable
          * space, since otherwise it would mean that the temporary
@@ -828,7 +828,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         map_result = (int32_t) usraddr;
       }
 
-      NaClDescUnmapUnsafe(ndp, (void *) image_sys_addr, length);
+      NaClHostDescUnmapUnsafe((void *) image_sys_addr, length);
       goto cleanup_no_locks;
     } else {
       /*

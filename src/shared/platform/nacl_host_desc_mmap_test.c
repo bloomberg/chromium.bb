@@ -30,10 +30,6 @@
 
 static const size_t kNumFileBytes = 2 * 0x10000;
 
-#if !NACL_WINDOWS
-# define NaClHostDescUnmapUnsafe munmap
-#endif
-
 
 /*
  * mmap PROT_EXEC test
@@ -73,7 +69,7 @@ int prot_exec_test(struct NaClHostDesc *d, void *test_specifics) {
     CHECK(value == param+1);
   }
 
-  CHECK(0 == NaClHostDescUnmapUnsafe((void *) addr, kNumFileBytes));
+  NaClHostDescUnmapUnsafe((void *) addr, kNumFileBytes);
 
   return 0;
 }
@@ -129,8 +125,8 @@ int map_shared_test(struct NaClHostDesc *d, void *test_specifics) {
   v2ptr[0x400] = 'y';
   CHECK(v1ptr[0x400] == 'y');
 
-  CHECK(0 == NaClHostDescUnmapUnsafe((void *) view1, kNumFileBytes));
-  CHECK(0 == NaClHostDescUnmapUnsafe((void *) view2, kNumFileBytes));
+  NaClHostDescUnmapUnsafe((void *) view1, kNumFileBytes);
+  NaClHostDescUnmapUnsafe((void *) view2, kNumFileBytes);
 
   return 0;
 }
@@ -237,8 +233,8 @@ int map_private_test(struct NaClHostDesc *d, void *test_specifics) {
   v2ptr[0x400] = 'y';
   CHECK(v1ptr[0x400] == '\0');
 
-  CHECK(0 == NaClHostDescUnmapUnsafe((void *) view1, kNumFileBytes));
-  CHECK(0 == NaClHostDescUnmapUnsafe((void *) view2, kNumFileBytes));
+  NaClHostDescUnmapUnsafe((void *) view1, kNumFileBytes);
+  NaClHostDescUnmapUnsafe((void *) view2, kNumFileBytes);
 
   return 0;
 }

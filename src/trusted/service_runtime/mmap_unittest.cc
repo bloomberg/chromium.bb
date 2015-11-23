@@ -560,7 +560,7 @@ TEST_F(MmapTest, TestTrustedMapBeyondFileExtent) {
       file_offset);
   ASSERT_FALSE(NaClPtrIsNegErrno(&map_result));
   AssertArrayFilled((char *) map_result, file_size);
-  NaClDescUnmapUnsafe(desc, (void *) map_result, file_size);
+  NaClHostDescUnmapUnsafe((void *) map_result, file_size);
 
   // Check the behaviour of Map() when given a rounded-up (page-aligned)
   // size that goes beyond the file's extent.
@@ -586,13 +586,13 @@ TEST_F(MmapTest, TestTrustedMapBeyondFileExtent) {
     // On Unix, the Map() should succeed.
     ASSERT_FALSE(NaClPtrIsNegErrno(&map_result));
     AssertArrayFilled((char *) map_result, file_size);
-    NaClDescUnmapUnsafe(desc, (void *) map_result, file_size_rounded_up);
+    NaClHostDescUnmapUnsafe((void *) map_result, file_size_rounded_up);
   }
 }
 
 #if NACL_OSX
 // Test that Mach shared memory mappings can be unmapped by
-// NaClDescUnmapUnsafe(), which uses munmap().
+// NaClHostDescUnmapUnsafe(), which uses munmap().
 TEST_F(MmapTest, TestPosixUnmapShmMachMappings) {
   // Mach shared memory is only implemented on OSX 10.7+.
   if (!NaClOSX10Dot7OrLater())
@@ -627,7 +627,7 @@ TEST_F(MmapTest, TestPosixUnmapShmMachMappings) {
   uintptr_t sys_addr = NaClUserToSys(&app, user_addr);
 
   // Unmap the memory, leaving a hole.
-  NaClDescUnmapUnsafe(desc, (void *) sys_addr, size);
+  NaClHostDescUnmapUnsafe((void *) sys_addr, size);
 
   // Check that we can map the memory with VM_FLAGS_FIXED but without
   // VM_FLAGS_OVERWRITE. If the unmap failed, then this call will fail as well.

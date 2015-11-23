@@ -43,7 +43,7 @@ int TryToMap(struct NaClHostDesc *hd, size_t map_bytes, int prot, int flags,
       NaClLog(LOG_ERROR, "NaClHostDescMap returned errno %d\n", -(int) addr);
       return 0;
     }
-    CHECK(0 == NaClHostDescUnmapUnsafe((void *) addr, map_bytes));
+    NaClHostDescUnmapUnsafe((void *) addr, map_bytes);
     return 1;
   } else {
     if ((uintptr_t) -4095 < addr) {
@@ -54,7 +54,7 @@ int TryToMap(struct NaClHostDesc *hd, size_t map_bytes, int prot, int flags,
     } else {
       NaClLog(LOG_ERROR, "NaClHostDescMap succeeded, expected errno %d\n",
               expected_errno);
-      CHECK(0 == NaClHostDescUnmapUnsafe((void *) addr, map_bytes));
+      NaClHostDescUnmapUnsafe((void *) addr, map_bytes);
     }
     return expected_errno == -(int) addr;
   }

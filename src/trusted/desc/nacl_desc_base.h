@@ -516,9 +516,6 @@ int NaClDescInternalizeCtor(struct NaClDesc *vself,
 
 /* utility routines */
 
-/* Unmap memory, leaving an unallocated hole in address space. */
-void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length);
-
 int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
                                          nacl_host_stat_t const  *src);
 

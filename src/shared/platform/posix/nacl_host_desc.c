@@ -323,8 +323,12 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   return (uintptr_t) map_addr;
 }
 
-int NaClHostDescUnmapUnsafe(void *start_addr, size_t len) {
-  return (0 == munmap(start_addr, len)) ? 0 : -errno;
+void NaClHostDescUnmapUnsafe(void *addr, size_t length) {
+  if (munmap(addr, length) != 0) {
+    NaClLog(LOG_FATAL, "NaClHostDescUnmapUnsafe: munmap() failed: "
+            "address 0x%p, length 0x%" NACL_PRIxS ", errno %d\n",
+            addr, length, errno);
+  }
 }
 
 static int NaClHostDescCtor(struct NaClHostDesc  *d,

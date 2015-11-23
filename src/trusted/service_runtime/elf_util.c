@@ -662,8 +662,7 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
        * Remove scratch mapping, then map directly into untrusted
        * address space or pread.
        */
-      NaClDescUnmapUnsafe(ndp, (void *) image_sys_addr,
-                          rounded_filesz);
+      NaClHostDescUnmapUnsafe((void *) image_sys_addr, rounded_filesz);
       NACL_MAKE_MEM_UNDEFINED((void *) paddr, rounded_filesz);
 
       if (NaClValidationSucceeded != validator_status) {

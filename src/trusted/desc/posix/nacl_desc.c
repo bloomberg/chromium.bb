@@ -27,16 +27,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
-void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length) {
-  UNREFERENCED_PARAMETER(desc);
-
-  if (munmap(addr, length) != 0) {
-    NaClLog(LOG_FATAL, "NaClDescUnmapUnsafe: munmap() failed: address 0x%p, "
-            "length 0x%" NACL_PRIxS ", errno %d\n",
-            addr, length, errno);
-  }
-}
-
 /*
  * Not quite a copy ctor.  Call it a translating ctor, since the
  * struct nacl_abi_stat POD object is constructed from the
