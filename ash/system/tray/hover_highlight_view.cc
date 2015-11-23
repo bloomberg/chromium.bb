@@ -73,6 +73,7 @@ void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
   views::ImageView* image_view =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   image_view->SetImage(image);
+  image_view->SetEnabled(enabled());
   AddChildView(image_view);
 
   text_label_ = new views::Label(text);
@@ -80,6 +81,7 @@ void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
   text_label_->SetFontList(GetFontList(highlight));
   if (text_default_color_)
     text_label_->SetEnabledColor(text_default_color_);
+  text_label_->SetEnabled(enabled());
   AddChildView(text_label_);
 
   SetAccessibleName(text);
@@ -107,6 +109,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
   text_label_->SetDisabledColor(SkColorSetARGB(255, 127, 127, 127));
   if (text_default_color_)
     text_label_->SetEnabledColor(text_default_color_);
+  text_label_->SetEnabled(enabled());
   AddChildView(text_label_);
 
   SetAccessibleName(text);
@@ -129,6 +132,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     views::ImageView* image_view = new FixedSizedImageView(margin, 0);
     image_view->SetImage(check);
     image_view->SetHorizontalAlignment(views::ImageView::TRAILING);
+    image_view->SetEnabled(enabled());
     AddChildView(image_view);
 
     text_label_ = new views::Label(text);
@@ -137,6 +141,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
     if (text_default_color_)
       text_label_->SetEnabledColor(text_default_color_);
+    text_label_->SetEnabled(enabled());
     AddChildView(text_label_);
 
     SetAccessibleName(text);
@@ -153,6 +158,8 @@ void HoverHighlightView::SetExpandable(bool expandable) {
 }
 
 void HoverHighlightView::SetHoverHighlight(bool hover) {
+  if (!enabled() && hover)
+    return;
   if (hover_ == hover)
     return;
   hover_ = hover;
@@ -218,6 +225,8 @@ void HoverHighlightView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void HoverHighlightView::OnEnabledChanged() {
+  if (!enabled())
+    SetHoverHighlight(false);
   for (int i = 0; i < child_count(); ++i)
     child_at(i)->SetEnabled(enabled());
 }
