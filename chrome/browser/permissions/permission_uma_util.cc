@@ -95,50 +95,51 @@ void RecordPermissionAction(ContentSettingsType permission,
       case CONTENT_SETTINGS_TYPE_GEOLOCATION:
         PERMISSION_ACTION_UMA(
             secure_origin,
-            "ContentSettings.PermissionActions_Geolocation",
-            "ContentSettings.PermissionActionsSecureOrigin_Geolocation",
-            "ContentSettings.PermissionActionsInsecureOrigin_Geolocation",
+            "Permissions.Action.Geolocation",
+            "Permissions.Action.SecureOrigin.Geolocation",
+            "Permissions.Action.InsecureOrigin.Geolocation",
             action);
         break;
       case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
         PERMISSION_ACTION_UMA(
             secure_origin,
-            "ContentSettings.PermissionActions_Notifications",
-            "ContentSettings.PermissionActionsSecureOrigin_Notifications",
-            "ContentSettings.PermissionActionsInsecureOrigin_Notifications",
+            "Permissions.Action.Notifications",
+            "Permissions.Action.SecureOrigin.Notifications",
+            "Permissions.Action.InsecureOrigin.Notifications",
             action);
         break;
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
         PERMISSION_ACTION_UMA(
             secure_origin,
-            "ContentSettings.PermissionActions_MidiSysEx",
-            "ContentSettings.PermissionActionsSecureOrigin_MidiSysEx",
-            "ContentSettings.PermissionActionsInsecureOrigin_MidiSysEx",
+            "Permissions.Action.MidiSysEx",
+            "Permissions.Action.SecureOrigin.MidiSysEx",
+            "Permissions.Action.InsecureOrigin.MidiSysEx",
             action);
         break;
       case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
         PERMISSION_ACTION_UMA(
             secure_origin,
-            "ContentSettings.PermissionActions_PushMessaging",
-            "ContentSettings.PermissionActionsSecureOrigin_PushMessaging",
-            "ContentSettings.PermissionActionsInsecureOrigin_PushMessaging",
+            "Permissions.Action.PushMessaging",
+            "Permissions.Action.SecureOrigin.PushMessaging",
+            "Permissions.Action.InsecureOrigin.PushMessaging",
             action);
         break;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
         PERMISSION_ACTION_UMA(
             secure_origin,
-            "ContentSettings.PermissionActions_ProtectedMedia",
-            "ContentSettings.PermissionActionsSecureOrigin_ProtectedMedia",
-            "ContentSettings.PermissionActionsInsecureOrigin_ProtectedMedia",
+            "Permissions.Action.ProtectedMedia",
+            "Permissions.Action.SecureOrigin.ProtectedMedia",
+            "Permissions.Action.InsecureOrigin.ProtectedMedia",
             action);
         break;
 #endif
       case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
         PERMISSION_ACTION_UMA(
-            secure_origin, "ContentSettings.PermissionActions_DurableStorage",
-            "ContentSettings.PermissionActionsSecureOrigin_DurableStorage",
-            "ContentSettings.PermissionActionsInsecureOrigin_DurableStorage",
+            secure_origin,
+            "Permissions.Action.DurableStorage",
+            "Permissions.Action.SecureOrigin.DurableStorage",
+            "Permissions.Action.InsecureOrigin.DurableStorage",
             action);
         break;
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
