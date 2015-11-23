@@ -113,17 +113,19 @@ LatencyInfoTracedValue::LatencyInfoTracedValue(base::Value* value)
     : value_(value) {
 }
 
-struct BenchmarkEnabledInitializer {
-  BenchmarkEnabledInitializer() :
-      benchmark_enabled(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
-          "benchmark")) {
+const char kTraceCategoriesForAsyncEvents[] = "benchmark,latencyInfo";
+
+struct LatencyInfoEnabledInitializer {
+  LatencyInfoEnabledInitializer() :
+      latency_info_enabled(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+          kTraceCategoriesForAsyncEvents)) {
   }
 
-  const unsigned char* benchmark_enabled;
+  const unsigned char* latency_info_enabled;
 };
 
-static base::LazyInstance<BenchmarkEnabledInitializer>::Leaky
-  g_benchmark_enabled = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<LatencyInfoEnabledInitializer>::Leaky
+  g_latency_info_enabled = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -222,15 +224,15 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     uint32 event_count,
     const char* trace_name_str) {
 
-  const unsigned char* benchmark_enabled =
-      g_benchmark_enabled.Get().benchmark_enabled;
+  const unsigned char* latency_info_enabled =
+      g_latency_info_enabled.Get().latency_info_enabled;
 
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
     CHECK_EQ(-1, trace_id_);
     trace_id_ = component_sequence_number;
 
-    if (*benchmark_enabled) {
+    if (*latency_info_enabled) {
       // The timestamp for ASYNC_BEGIN trace event is used for drawing the
       // beginning of the trace event in trace viewer. For better visualization,
       // for an input event, we want to draw the beginning as when the event is
@@ -257,7 +259,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       }
 
       TRACE_EVENT_COPY_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          "benchmark,latencyInfo",
+          kTraceCategoriesForAsyncEvents,
           trace_name_.c_str(),
           TRACE_ID_DONT_MANGLE(trace_id_),
           ts);
@@ -294,11 +296,12 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     CHECK(!terminated_);
     terminated_ = true;
 
-    if (*benchmark_enabled) {
-      TRACE_EVENT_COPY_ASYNC_END2("benchmark,latencyInfo", trace_name_.c_str(),
-                                  TRACE_ID_DONT_MANGLE(trace_id_), "data",
-                                  AsTraceableData(), "coordinates",
-                                  CoordinatesAsTraceableData());
+    if (*latency_info_enabled) {
+      TRACE_EVENT_COPY_ASYNC_END2(kTraceCategoriesForAsyncEvents,
+                                  trace_name_.c_str(),
+                                  TRACE_ID_DONT_MANGLE(trace_id_),
+                                  "data", AsTraceableData(),
+                                  "coordinates", CoordinatesAsTraceableData());
     }
 
     TRACE_EVENT_WITH_FLOW0("input,benchmark",
