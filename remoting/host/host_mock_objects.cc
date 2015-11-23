@@ -89,15 +89,4 @@ MockMouseCursorMonitor::MockMouseCursorMonitor() {}
 
 MockMouseCursorMonitor::~MockMouseCursorMonitor() {}
 
-MockVideoEncoder::MockVideoEncoder() {
-}
-
-MockVideoEncoder::~MockVideoEncoder() {
-}
-
-scoped_ptr<VideoPacket> MockVideoEncoder::Encode(
-    const webrtc::DesktopFrame& frame) {
-  return make_scoped_ptr(EncodePtr(frame));
-}
-
 }  // namespace remoting

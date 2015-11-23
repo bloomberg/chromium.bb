@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_VIDEO_FRAME_PUMP_H_
-#define REMOTING_HOST_VIDEO_FRAME_PUMP_H_
+#ifndef REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_
+#define REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/capture_scheduler.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {
@@ -22,11 +22,10 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
-
 namespace protocol {
+
 class VideoFeedbackStub;
 class VideoStub;
-}  // namespace protocol
 
 // Class responsible for scheduling frame captures from a screen capturer.,
 // delivering them to a VideoEncoder to encode, and
@@ -192,6 +191,7 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   DISALLOW_COPY_AND_ASSIGN(VideoFramePump);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_VIDEO_FRAME_PUMP_H_
+#endif  // REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_

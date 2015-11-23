@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/video_frame_pump.h"
+#include "remoting/protocol/video_frame_pump.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -12,18 +12,14 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/host/desktop_capturer_proxy.h"
-#include "remoting/host/fake_desktop_capturer.h"
-#include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
-
-using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -33,6 +29,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 
@@ -51,6 +48,20 @@ scoped_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
   // updated_region() is already empty by default in new BasicDesktopFrames.
   return make_scoped_ptr(new webrtc::BasicDesktopFrame(kSize));
 }
+
+class MockVideoEncoder : public VideoEncoder {
+ public:
+  MockVideoEncoder() {}
+  ~MockVideoEncoder() {}
+
+  MOCK_METHOD1(SetLosslessEncode, void(bool));
+  MOCK_METHOD1(SetLosslessColor, void(bool));
+  MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
+
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
+    return make_scoped_ptr(EncodePtr(frame));
+  }
+};
 
 }  // namespace
 
@@ -123,7 +134,6 @@ class VideoFramePumpTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_refptr<AutoThreadTaskRunner> capture_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
   scoped_ptr<VideoFramePump> pump_;
@@ -134,7 +144,6 @@ class VideoFramePumpTest : public testing::Test {
 void VideoFramePumpTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(
       message_loop_.task_runner(), run_loop_.QuitClosure());
-  capture_task_runner_ = AutoThread::Create("capture", main_task_runner_);
   encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
 }
 
@@ -142,7 +151,6 @@ void VideoFramePumpTest::TearDown() {
   pump_.reset();
 
   // Release the task runners, so that the test can quit.
-  capture_task_runner_ = nullptr;
   encode_task_runner_ = nullptr;
   main_task_runner_ = nullptr;
 
@@ -154,7 +162,7 @@ void VideoFramePumpTest::TearDown() {
 // cycle.
 TEST_F(VideoFramePumpTest, StartAndStop) {
   scoped_ptr<ThreadCheckDesktopCapturer> capturer(
-      new ThreadCheckDesktopCapturer(capture_task_runner_));
+      new ThreadCheckDesktopCapturer(main_task_runner_));
   scoped_ptr<ThreadCheckVideoEncoder> encoder(
       new ThreadCheckVideoEncoder(encode_task_runner_));
 
@@ -162,15 +170,12 @@ TEST_F(VideoFramePumpTest, StartAndStop) {
 
   // When the first ProcessVideoPacket is received we stop the VideoFramePump.
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .WillOnce(DoAll(
-          FinishSend(),
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
+      .WillOnce(DoAll(FinishSend(),
+                      InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_,
-                                 make_scoped_ptr(new DesktopCapturerProxy(
-                                     capture_task_runner_, capturer.Pass())),
+  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
                                  encoder.Pass(), &video_stub_));
 
   // Run MessageLoop until the first frame is received.
@@ -197,9 +202,7 @@ TEST_F(VideoFramePumpTest, NullFrame) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_,
-                                 make_scoped_ptr(new DesktopCapturerProxy(
-                                     capture_task_runner_, capturer.Pass())),
+  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
                                  encoder.Pass(), &video_stub_));
 
   // Run MessageLoop until the first frame is received..
@@ -227,13 +230,12 @@ TEST_F(VideoFramePumpTest, UnchangedFrame) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  pump_.reset(new VideoFramePump(encode_task_runner_,
-                                 make_scoped_ptr(new DesktopCapturerProxy(
-                                     capture_task_runner_, capturer.Pass())),
+  pump_.reset(new VideoFramePump(encode_task_runner_, capturer.Pass(),
                                  encoder.Pass(), &video_stub_));
 
-  // Run MessageLoop until the first frame is received..
+  // Run MessageLoop until the first frame is received.
   run_loop.Run();
 }
 
+}  // namespace protocol
 }  // namespace remoting

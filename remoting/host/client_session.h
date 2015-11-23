@@ -41,7 +41,10 @@ class DesktopEnvironmentFactory;
 class InputInjector;
 class MouseShapePump;
 class ScreenControls;
+
+namespace protocol {
 class VideoFramePump;
+}  // namespace protocol
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -209,7 +212,7 @@ class ClientSession
   // |video_frame_pump_| and |mouse_shape_pump_| may be nullptr if the video
   // stream is handled by an extension, see ResetVideoPipeline().
   scoped_ptr<AudioPump> audio_pump_;
-  scoped_ptr<VideoFramePump> video_frame_pump_;
+  scoped_ptr<protocol::VideoFramePump> video_frame_pump_;
   scoped_ptr<MouseShapePump> mouse_shape_pump_;
 
   // The set of all capabilities supported by the client.

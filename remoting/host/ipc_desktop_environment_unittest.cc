@@ -24,10 +24,10 @@
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/ipc_desktop_environment.h"
+#include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -366,7 +366,7 @@ InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
 }
 
 webrtc::DesktopCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
-  return new FakeDesktopCapturer();
+  return new protocol::FakeDesktopCapturer();
 }
 
 webrtc::MouseCursorMonitor*

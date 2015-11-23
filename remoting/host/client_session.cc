@@ -26,7 +26,6 @@
 #include "remoting/host/mouse_shape_pump.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/video_frame_pump.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
@@ -34,6 +33,7 @@
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/video_frame_pump.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
@@ -487,9 +487,9 @@ void ClientSession::ResetVideoPipeline() {
   // When using IpcDesktopCapturer the capture thread is not useful.
   scoped_ptr<DesktopCapturerProxy> capturer_proxy(new DesktopCapturerProxy(
       video_capture_task_runner_, video_capturer.Pass()));
-  video_frame_pump_.reset(
-      new VideoFramePump(video_encode_task_runner_, capturer_proxy.Pass(),
-                         video_encoder.Pass(), &mouse_clamping_filter_));
+  video_frame_pump_.reset(new protocol::VideoFramePump(
+      video_encode_task_runner_, capturer_proxy.Pass(), video_encoder.Pass(),
+      &mouse_clamping_filter_));
 
   // Apply video-control parameters to the new scheduler.
   video_frame_pump_->SetLosslessEncode(lossless_video_encode_);

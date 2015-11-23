@@ -30,24 +30,23 @@ source_set("protocol") {
     "//remoting/signaling",
   ]
 
-  if (is_nacl) {
-    sources -= [
-      "chromium_port_allocator.cc",
-      "chromium_port_allocator_factory.cc",
-      "chromium_socket_factory.cc",
-    ]
-  }
+  if (!is_nacl) {
+    sources +=
+        rebase_path(remoting_srcs_gypi_values.remoting_protocol_nonnacl_sources,
+                    ".",
+                    "//remoting")
 
-  if (!is_nacl && enable_webrtc) {
-    deps += [
-      # TODO(GYP): crbug.com/481633. We should probably not have to depend on
-      # libjingle_webrtc; that should be pulled in automatically by
-      # libpeerconnection instead.
-      "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/libjingle:libpeerconnection",
-    ]
-  } else {
-    sources -= [ "webrtc_transport.cc" ]
+    if (enable_webrtc) {
+      deps += [
+        # TODO(GYP): crbug.com/481633. We should probably not have to depend on
+        # libjingle_webrtc; that should be pulled in automatically by
+        # libpeerconnection instead.
+        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/libjingle:libpeerconnection",
+      ]
+    } else {
+      sources -= [ "webrtc_transport.cc" ]
+    }
   }
 }
 
@@ -61,6 +60,8 @@ source_set("test_support") {
     "fake_connection_to_host.h",
     "fake_datagram_socket.cc",
     "fake_datagram_socket.h",
+    "fake_desktop_capturer.cc",
+    "fake_desktop_capturer.h",
     "fake_session.cc",
     "fake_session.h",
     "fake_stream_socket.cc",
@@ -81,6 +82,7 @@ source_set("unit_tests") {
   sources = [
     "authenticator_test_base.cc",
     "authenticator_test_base.h",
+    "capture_scheduler_unittest.cc",
     "channel_multiplexer_unittest.cc",
     "channel_socket_adapter_unittest.cc",
     "chromium_socket_factory_unittest.cc",
@@ -108,6 +110,7 @@ source_set("unit_tests") {
     "ssl_hmac_channel_authenticator_unittest.cc",
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
+    "video_frame_pump_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 

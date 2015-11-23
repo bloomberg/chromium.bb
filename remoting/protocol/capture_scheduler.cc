@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capture_scheduler.h"
+#include "remoting/protocol/capture_scheduler.h"
 
 #include <algorithm>
 
@@ -39,6 +39,7 @@ static const int kMaxUnacknowledgedFrames = 4;
 }  // namespace
 
 namespace remoting {
+namespace protocol {
 
 // We assume that the number of available cores is constant.
 CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
@@ -178,4 +179,5 @@ void CaptureScheduler::CaptureNextFrame() {
   capture_closure_.Run();
 }
 
+}  // namespace protocol
 }  // namespace remoting

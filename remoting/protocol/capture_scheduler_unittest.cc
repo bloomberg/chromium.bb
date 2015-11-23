@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/capture_scheduler.h"
+#include "remoting/protocol/capture_scheduler.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+namespace protocol {
 
 static const int kTestInputs[] = { 100, 50, 30, 20, 10, 30, 60, 80 };
 static const int kMinumumFrameIntervalMs = 50;
@@ -192,4 +193,5 @@ TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
   EXPECT_TRUE(capture_timer_->IsRunning());
 }
 
+}  // namespace protocol
 }  // namespace remoting

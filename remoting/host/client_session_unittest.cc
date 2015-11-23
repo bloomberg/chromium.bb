@@ -16,12 +16,12 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_host_extension.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -296,7 +296,7 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
 }
 
 webrtc::DesktopCapturer* ClientSessionTest::CreateVideoCapturer() {
-  return new FakeDesktopCapturer();
+  return new protocol::FakeDesktopCapturer();
 }
 
 webrtc::MouseCursorMonitor* ClientSessionTest::CreateMouseCursorMonitor() {
@@ -557,9 +557,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation connected = authenticated;
 
   int input_x[3] = { -999, 100, 999 };
-  int expected_x[3] = { 0, 100, FakeDesktopCapturer::kWidth - 1 };
+  int expected_x[3] = { 0, 100, protocol::FakeDesktopCapturer::kWidth - 1 };
   int input_y[3] = { -999, 50, 999 };
-  int expected_y[3] = { 0, 50, FakeDesktopCapturer::kHeight - 1 };
+  int expected_y[3] = { 0, 50, protocol::FakeDesktopCapturer::kHeight - 1 };
 
   protocol::MouseEvent expected_event;
   for (int j = 0; j < 3; j++) {

@@ -166,18 +166,6 @@ class MockMouseCursorMonitor : public webrtc::MouseCursorMonitor {
   DISALLOW_COPY_AND_ASSIGN(MockMouseCursorMonitor);
 };
 
-class MockVideoEncoder : public VideoEncoder {
- public:
-  MockVideoEncoder();
-  ~MockVideoEncoder() override;
-
-  MOCK_METHOD1(SetLosslessEncode, void(bool));
-  MOCK_METHOD1(SetLosslessColor, void(bool));
-  MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
-
-  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override;
-};
-
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_HOST_MOCK_OBJECTS_H_

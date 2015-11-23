@@ -22,12 +22,12 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
-#include "remoting/host/video_frame_pump.h"
 #include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/video_frame_pump.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_port_allocator.h"
@@ -82,7 +82,7 @@ class ProtocolPerfTest
       : host_thread_("host"),
         capture_thread_("capture"),
         encode_thread_("encode") {
-    VideoFramePump::EnableTimestampsForTests();
+    protocol::VideoFramePump::EnableTimestampsForTests();
     host_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     capture_thread_.Start();

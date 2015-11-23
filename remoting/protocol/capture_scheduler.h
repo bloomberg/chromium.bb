@@ -1,11 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CAPTURE_SCHEDULER_H_
-#define REMOTING_HOST_CAPTURE_SCHEDULER_H_
+#ifndef REMOTING_PROTOCOL_CAPTURE_SCHEDULER_H_
+#define REMOTING_PROTOCOL_CAPTURE_SCHEDULER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -17,6 +18,8 @@ namespace remoting {
 
 class VideoPacket;
 
+namespace protocol {
+
 // CaptureScheduler is used by the VideoFramePump to schedule frame capturer,
 // taking into account capture delay, encoder delay, network bandwidth, etc.
 // It implements VideoFeedbackStub to receive frame acknowledgments from the
@@ -27,7 +30,7 @@ class VideoPacket;
 //  - Parallelize capture, encode and transmission, to achieve frame rate as
 //    close to the target of 30fps as possible.
 //  - Limit CPU usage to 50%.
-class CaptureScheduler : public protocol::VideoFeedbackStub {
+class CaptureScheduler : public VideoFeedbackStub {
  public:
   explicit CaptureScheduler(const base::Closure& capture_closure);
   ~CaptureScheduler() override;
@@ -108,6 +111,7 @@ class CaptureScheduler : public protocol::VideoFeedbackStub {
   DISALLOW_COPY_AND_ASSIGN(CaptureScheduler);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CAPTURE_SCHEDULER_H_
+#endif  // REMOTING_PROTOCOL_CAPTURE_SCHEDULER_H_

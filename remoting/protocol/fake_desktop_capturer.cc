@@ -1,16 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/fake_desktop_capturer.h"
+#include "remoting/protocol/fake_desktop_capturer.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
+namespace protocol {
 
 // FakeDesktopCapturer generates a white picture of size kWidth x kHeight
 // with a rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed
@@ -150,4 +150,5 @@ void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   callback_->OnCaptureCompleted(frame.release());
 }
 
+}  // namespace protocol
 }  // namespace remoting

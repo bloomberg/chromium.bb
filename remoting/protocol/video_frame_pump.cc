@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/video_frame_pump.h"
+#include "remoting/protocol/video_frame_pump.h"
 
 #include <algorithm>
 
@@ -19,6 +19,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
+namespace protocol {
 
 // Interval between empty keep-alive frames. These frames are sent only when the
 // stream is paused or inactive for some other reason (e.g. when blocked on
@@ -253,4 +254,5 @@ void VideoFramePump::OnKeepAlivePacketSent() {
   keep_alive_timer_.Reset();
 }
 
+}  // namespace protocol
 }  // namespace remoting

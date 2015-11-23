@@ -1,17 +1,19 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_FAKE_DESKTOP_CAPTURER_H_
-#define REMOTING_HOST_FAKE_DESKTOP_CAPTURER_H_
+#ifndef REMOTING_PROTOCOL_FAKE_DESKTOP_CAPTURER_H_
+#define REMOTING_PROTOCOL_FAKE_DESKTOP_CAPTURER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capture_frame_queue.h"
 
 namespace remoting {
+namespace protocol {
 
 // A FakeDesktopCapturer generates artificial image for testing purpose.
 //
@@ -44,6 +46,7 @@ class FakeDesktopCapturer : public webrtc::DesktopCapturer {
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopCapturer);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_FAKE_DESKTOP_CAPTURER_H_
+#endif  // REMOTING_PROTOCOL_FAKE_DESKTOP_CAPTURER_H_

@@ -206,8 +206,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     testonly = true
 
     sources = [
-      "fake_desktop_capturer.cc",
-      "fake_desktop_capturer.h",
       "fake_desktop_environment.cc",
       "fake_desktop_environment.h",
       "fake_host_extension.cc",
@@ -250,7 +248,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "audio_pump_unittest.cc",
       "audio_silence_detector_unittest.cc",
       "backoff_timer_unittest.cc",
-      "capture_scheduler_unittest.cc",
       "chromeos/aura_desktop_capturer_unittest.cc",
       "chromeos/clipboard_aura_unittest.cc",
       "chromoting_host_context_unittest.cc",
@@ -295,7 +292,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "third_party_auth_config_unittest.cc",
       "token_validator_factory_impl_unittest.cc",
       "touch_injector_win_unittest.cc",
-      "video_frame_pump_unittest.cc",
       "video_frame_recorder_unittest.cc",
       "win/rdp_client_unittest.cc",
       "win/worker_process_launcher_unittest.cc",

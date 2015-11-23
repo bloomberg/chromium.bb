@@ -6,10 +6,10 @@
 #define REMOTING_HOST_FAKE_DESKTOP_ENVIRONMENT_H_
 
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
+#include "remoting/protocol/fake_desktop_capturer.h"
 
 namespace remoting {
 
@@ -40,10 +40,10 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   FakeDesktopEnvironment();
   ~FakeDesktopEnvironment() override;
 
-  // Sets frame generator to be used for FakeDesktopCapturer created by
-  // FakeDesktopEnvironment.
+  // Sets frame generator to be used for protocol::FakeDesktopCapturer created
+  // by FakeDesktopEnvironment.
   void set_frame_generator(
-      FakeDesktopCapturer::FrameGenerator frame_generator) {
+      protocol::FakeDesktopCapturer::FrameGenerator frame_generator) {
     frame_generator_ = frame_generator;
   }
 
@@ -59,7 +59,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
       protocol::ClientStub* client_stub) override;
 
  private:
-  FakeDesktopCapturer::FrameGenerator frame_generator_;
+  protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironment);
 };
@@ -69,10 +69,10 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   FakeDesktopEnvironmentFactory();
   ~FakeDesktopEnvironmentFactory() override;
 
-  // Sets frame generator to be used for FakeDesktopCapturer created by
-  // FakeDesktopEnvironment.
+  // Sets frame generator to be used for protocol::FakeDesktopCapturer created
+  // by FakeDesktopEnvironment.
   void set_frame_generator(
-      FakeDesktopCapturer::FrameGenerator frame_generator) {
+      protocol::FakeDesktopCapturer::FrameGenerator frame_generator) {
     frame_generator_ = frame_generator;
   }
 
@@ -84,7 +84,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   void SetEnableGnubbyAuth(bool enable) override;
 
  private:
-  FakeDesktopCapturer::FrameGenerator frame_generator_;
+  protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironmentFactory);
 };
