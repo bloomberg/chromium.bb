@@ -32,14 +32,13 @@ class ChromeBrowserStateManager {
 
   // Returns the ChromeBrowserState associated with |path|, creating one if
   // necessary.
-  virtual ChromeBrowserState* GetChromeBrowserState(
-      const base::FilePath& path) = 0;
+  virtual ChromeBrowserState* GetBrowserState(const base::FilePath& path) = 0;
 
   // Returns the BrowserStateInfoCache associated with this manager.
   virtual BrowserStateInfoCache* GetBrowserStateInfoCache() = 0;
 
   // Returns the list of loaded ChromeBrowserStates.
-  virtual std::vector<ChromeBrowserState*> GetLoadedChromeBrowserStates() = 0;
+  virtual std::vector<ChromeBrowserState*> GetLoadedBrowserStates() = 0;
 
  protected:
   ChromeBrowserStateManager() {}

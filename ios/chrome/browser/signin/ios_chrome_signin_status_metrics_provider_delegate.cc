@@ -74,5 +74,5 @@ std::vector<ios::ChromeBrowserState*>
 IOSChromeSigninStatusMetricsProviderDelegate::GetLoadedChromeBrowserStates() {
   return GetApplicationContext()
       ->GetChromeBrowserStateManager()
-      ->GetLoadedChromeBrowserStates();
+      ->GetLoadedBrowserStates();
 }
