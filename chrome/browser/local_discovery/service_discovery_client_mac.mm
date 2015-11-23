@@ -352,6 +352,7 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     if (end_point.FromSockAddr(socket, length)) {
       service_description_.address =
           net::HostPortPair::FromIPEndPoint(end_point);
+      service_description_.ip_address = end_point.address();
       break;
     }
   }

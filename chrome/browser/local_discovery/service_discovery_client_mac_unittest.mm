@@ -147,8 +147,9 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
 
   EXPECT_EQ(1, num_resolves_);
   EXPECT_EQ(2u, last_service_description_.metadata.size());
-  EXPECT_EQ(kIp, last_service_description_.address.host());
+  EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());
+  EXPECT_EQ(kIp, last_service_description_.address.host());
 }
 
 }  // namespace local_discovery
