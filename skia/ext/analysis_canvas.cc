@@ -65,7 +65,7 @@ bool IsFullQuad(SkCanvas* canvas, const SkRect& drawn_rect) {
     return false;
   
   // if the clip is smaller than the canvas, we're partly clipped, so abort.
-  if (!clip_irect.contains(SkIRect::MakeSize(canvas->getDeviceSize())))
+  if (!clip_irect.contains(SkIRect::MakeSize(canvas->getBaseLayerSize())))
     return false;
 
   const SkMatrix& matrix = canvas->getTotalMatrix();
@@ -450,7 +450,7 @@ SkCanvas::SaveLayerStrategy AnalysisCanvas::willSaveLayer(
 
   ++saved_stack_size_;
 
-  SkIRect canvas_ibounds = SkIRect::MakeSize(this->getDeviceSize());
+  SkIRect canvas_ibounds = SkIRect::MakeSize(this->getBaseLayerSize());
   SkRect canvas_bounds;
   canvas_bounds.set(canvas_ibounds);
 

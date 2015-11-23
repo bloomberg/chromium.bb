@@ -20,9 +20,9 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -174,7 +174,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
   SkISize canvas_size;
   if (hud_surface_)
-    canvas_size = hud_surface_->getCanvas()->getDeviceSize();
+    canvas_size = hud_surface_->getCanvas()->getBaseLayerSize();
   else
     canvas_size.set(0, 0);
 

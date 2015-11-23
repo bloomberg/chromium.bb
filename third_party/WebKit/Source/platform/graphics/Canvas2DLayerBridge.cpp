@@ -27,10 +27,6 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
-#include "GrContext.h"
-#include "SkDevice.h"
-#include "SkSurface.h"
-
 #include "platform/TraceEvent.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
@@ -44,6 +40,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "wtf/RefCountedLeakCounter.h"
 
 namespace {

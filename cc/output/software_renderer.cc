@@ -128,7 +128,7 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   if (!current_canvas_)
     return;
   is_scissor_enabled_ = false;
-  SkISize size = current_canvas_->getDeviceSize();
+  SkISize size = current_canvas_->getBaseLayerSize();
   SetClipRect(gfx::Rect(size.width(), size.height()));
 }
 

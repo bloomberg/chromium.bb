@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -41,8 +41,8 @@ void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
   canvas->clear(SK_ColorTRANSPARENT);
 
   SkRect clip;
-  clip.set(0, 0, canvas->getDeviceSize().width(),
-           canvas->getDeviceSize().height());
+  clip.set(0, 0, canvas->getBaseLayerSize().width(),
+           canvas->getBaseLayerSize().height());
   canvas->clipRect(clip, SkRegion::kReplace_Op);
   canvas->drawBitmapRect(image, damage, NULL);
 }

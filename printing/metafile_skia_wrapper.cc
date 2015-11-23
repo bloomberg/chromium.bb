@@ -5,9 +5,9 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMetaData.h"
+
+class SkCanvas;
 
 namespace printing {
 

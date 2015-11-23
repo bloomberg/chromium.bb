@@ -164,8 +164,8 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
 
-  surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
-                            canvas->getDeviceSize().height());
+  surface_size_ = gfx::Size(canvas->getBaseLayerSize().width(),
+                            canvas->getBaseLayerSize().height());
 
   // Pass in the cached hw viewport and transform for tile priority to avoid
   // tile thrashing when the WebView is alternating between hardware and

@@ -86,7 +86,7 @@ TEST(NineImagePainterTest, PaintHighDPI) {
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
@@ -120,7 +120,7 @@ TEST(NineImagePainterTest, PaintStaysInBounds) {
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
@@ -153,7 +153,7 @@ TEST(NineImagePainterTest, PaintWithBoundOffset) {
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
@@ -192,7 +192,7 @@ TEST(NineImagePainterTest, PaintWithScale) {
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
@@ -224,7 +224,7 @@ TEST(NineImagePainterTest, PaintWithNegativeScale) {
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
-  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  const SkISize size = canvas.sk_canvas()->getBaseLayerSize();
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 

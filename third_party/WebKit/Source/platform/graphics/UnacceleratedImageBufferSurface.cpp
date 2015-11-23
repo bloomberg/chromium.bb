@@ -31,10 +31,10 @@
 #include "config.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
+
+class SkCanvas;
 
 namespace blink {
 

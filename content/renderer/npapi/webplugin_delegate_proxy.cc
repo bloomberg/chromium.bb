@@ -571,8 +571,10 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   if (uses_shared_bitmaps_) {
     if (!front_buffer_canvas() ||
-        (window_rect.width() != front_buffer_canvas()->getDevice()->width() ||
-         window_rect.height() != front_buffer_canvas()->getDevice()->height()))
+        (window_rect.width() !=
+             front_buffer_canvas()->getBaseLayerSize().width() ||
+         window_rect.height() !=
+             front_buffer_canvas()->getBaseLayerSize().height()))
     {
       bitmaps_changed = true;
 
@@ -689,8 +691,7 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
     UpdateFrontBuffer(offset_rect, false);
   }
 
-  const SkBitmap& bitmap =
-      front_buffer_canvas()->getDevice()->accessBitmap(false);
+  const SkBitmap bitmap = skia::ReadPixels(front_buffer_canvas());
   SkPaint paint;
   paint.setXfermodeMode(
       transparent_ ? SkXfermode::kSrcATop_Mode : SkXfermode::kSrc_Mode);

@@ -558,7 +558,7 @@ class ProfileBadge : public gfx::CanvasImageSource {
 
   // CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {
-    const SkISize size = canvas->sk_canvas()->getDeviceSize();
+    const SkISize size = canvas->sk_canvas()->getBaseLayerSize();
     gfx::Rect bounds(0, 0, size.width(), size.height());
 
     SkPaint paint;

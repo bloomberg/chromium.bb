@@ -9,8 +9,6 @@
 #include "cc/resources/shared_bitmap.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"

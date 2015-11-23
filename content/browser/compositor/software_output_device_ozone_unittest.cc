@@ -7,8 +7,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkDevice.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/geometry/size.h"
@@ -125,8 +124,8 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
   output_device_->Resize(size, 1.f);
 
   SkCanvas* canvas = output_device_->BeginPaint(damage);
-  gfx::Size canvas_size(canvas->getDeviceSize().width(),
-                        canvas->getDeviceSize().height());
+  gfx::Size canvas_size(canvas->getBaseLayerSize().width(),
+                        canvas->getBaseLayerSize().height());
   EXPECT_EQ(size.ToString(), canvas_size.ToString());
 
   size.SetSize(1000, 500);
@@ -134,8 +133,8 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
   output_device_->Resize(size, 1.f);
 
   canvas = output_device_->BeginPaint(damage);
-  canvas_size.SetSize(canvas->getDeviceSize().width(),
-                      canvas->getDeviceSize().height());
+  canvas_size.SetSize(canvas->getBaseLayerSize().width(),
+                      canvas->getBaseLayerSize().height());
   EXPECT_EQ(size.ToString(), canvas_size.ToString());
 
 }

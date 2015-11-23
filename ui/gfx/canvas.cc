@@ -120,7 +120,7 @@ ImageSkiaRep Canvas::ExtractImageRep() const {
   // Make a bitmap to return, and a canvas to draw into it. We don't just want
   // to call extractSubset or the copy constructor, since we want an actual copy
   // of the bitmap.
-  const SkISize size = canvas_->getDeviceSize();
+  const SkISize size = canvas_->getBaseLayerSize();
   SkBitmap result;
   result.allocN32Pixels(size.width(), size.height());
 

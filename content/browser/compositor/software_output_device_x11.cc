@@ -8,8 +8,7 @@
 #include <X11/Xutil.h>
 
 #include "content/public/browser/browser_thread.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/compositor/compositor.h"

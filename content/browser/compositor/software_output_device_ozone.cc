@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/browser/compositor/software_output_device_ozone.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"

@@ -160,10 +160,10 @@ HGLOBAL CreateGlobalData(const std::basic_string<charT>& str) {
   return data;
 }
 
-bool BitmapHasInvalidPremultipliedColors(const SkBitmap& bitmap) {
-  for (int x = 0; x < bitmap.width(); ++x) {
-    for (int y = 0; y < bitmap.height(); ++y) {
-      uint32_t pixel = *bitmap.getAddr32(x, y);
+bool BitmapHasInvalidPremultipliedColors(const SkPixmap& pixmap) {
+  for (int x = 0; x < pixmap.width(); ++x) {
+    for (int y = 0; y < pixmap.height(); ++y) {
+      uint32_t pixel = *pixmap.addr32(x, y);
       if (SkColorGetR(pixel) > SkColorGetA(pixel) ||
           SkColorGetG(pixel) > SkColorGetA(pixel) ||
           SkColorGetB(pixel) > SkColorGetA(pixel))
@@ -173,10 +173,10 @@ bool BitmapHasInvalidPremultipliedColors(const SkBitmap& bitmap) {
   return false;
 }
 
-void MakeBitmapOpaque(const SkBitmap& bitmap) {
-  for (int x = 0; x < bitmap.width(); ++x) {
-    for (int y = 0; y < bitmap.height(); ++y) {
-      *bitmap.getAddr32(x, y) = SkColorSetA(*bitmap.getAddr32(x, y), 0xFF);
+void MakeBitmapOpaque(SkPixmap* pixmap) {
+  for (int x = 0; x < pixmap->width(); ++x) {
+    for (int y = 0; y < pixmap->height(); ++y) {
+      *pixmap->writable_addr32(x, y) = SkColorSetA(*pixmap->addr32(x, y), 0xFF);
     }
   }
 }
@@ -631,14 +631,13 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
   // we assume the alpha channel contains garbage and force the bitmap to be
   // opaque as well. Note that this  heuristic will fail on a transparent bitmap
   // containing only black pixels...
-  const SkBitmap& device_bitmap =
-      canvas.sk_canvas()->getDevice()->accessBitmap(true);
+  SkPixmap device_pixels;
+  skia::GetWritablePixels(canvas.sk_canvas(), &device_pixels);
   {
-    SkAutoLockPixels lock(device_bitmap);
     bool has_invalid_alpha_channel = bitmap->bmiHeader.biBitCount < 32 ||
-        BitmapHasInvalidPremultipliedColors(device_bitmap);
+        BitmapHasInvalidPremultipliedColors(device_pixels);
     if (has_invalid_alpha_channel) {
-      MakeBitmapOpaque(device_bitmap);
+      MakeBitmapOpaque(&device_pixels);
     }
   }
 

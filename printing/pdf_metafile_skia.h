@@ -16,8 +16,6 @@
 #include <windows.h>
 #endif
 
-class SkBaseDevice;
-
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {
 struct FileDescriptor;
