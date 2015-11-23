@@ -295,9 +295,6 @@ def AddChromeOSActions(actions):
   actions.add('Updater.ServerCertificateChanged')
   actions.add('Updater.ServerCertificateFailed')
 
-  # Actions sent by Chrome OS cryptohome.
-  actions.add('Cryptohome.PKCS11InitFail')
-
 def AddExtensionActions(actions):
   """Add actions reported by extensions via chrome.metricsPrivate API.
 

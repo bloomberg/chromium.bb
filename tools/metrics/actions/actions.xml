@@ -2503,6 +2503,7 @@ should be able to be added at any place in this file.
 <action name="Cryptohome.PKCS11InitFail">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 11/2015.</obsolete>
 </action>
 
 <action name="CustomTabsCustomActionButtonClick">
