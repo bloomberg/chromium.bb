@@ -16,15 +16,6 @@ namespace switches {
 const char kDisableViewsRectBasedTargeting[] =
     "disable-views-rect-based-targeting";
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-// When enabled, tries to get a transparent X11 visual so that we can have
-// per-pixel alpha in windows.
-//
-// TODO(erg): Remove this switch once we've stabilized the code
-// path. http://crbug.com/369209
-const char kEnableTransparentVisuals[] = "enable-transparent-visuals";
-#endif
-
 bool IsRectBasedTargetingEnabled() {
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(

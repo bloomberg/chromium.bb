@@ -10,6 +10,8 @@
 namespace switches {
 
 #if !defined(OS_CHROMEOS)
+GFX_EXPORT extern const char kEnableTransparentVisuals[];
+GFX_EXPORT extern const char kWindowDepth[];
 GFX_EXPORT extern const char kX11Display[];
 #endif
 

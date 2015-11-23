@@ -61,6 +61,7 @@
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_switches.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -147,6 +148,12 @@ int GpuMain(const MainFunctionParams& parameters) {
       SEM_NOOPENFILEERRORBOX);
 #elif defined(USE_X11)
   ui::SetDefaultX11ErrorHandlers();
+
+#if !defined(OS_CHROMEOS)
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWindowDepth));
+#endif
+
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);

@@ -25,6 +25,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util_internal.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -1117,30 +1118,20 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
-  // Detect whether we're running inside a compositing manager. If so, try to
-  // use the ARGB visual. Otherwise, just use our parent's visual.
-  Visual* visual = CopyFromParent;
-  int depth = CopyFromParent;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTransparentVisuals) &&
-      XGetSelectionOwner(xdisplay_, atom_cache_.GetAtom("_NET_WM_CM_S0")) !=
-          None) {
-    Visual* rgba_visual = GetARGBVisual();
-    if (rgba_visual) {
-      visual = rgba_visual;
-      depth = 32;
+  Visual* visual;
+  int depth;
+  ui::ChooseVisualForWindow(&visual, &depth);
+  if (depth == 32) {
+    attribute_mask |= CWColormap;
+    swa.colormap =
+        XCreateColormap(xdisplay_, x_root_window_, visual, AllocNone);
 
-      attribute_mask |= CWColormap;
-      swa.colormap = XCreateColormap(xdisplay_, x_root_window_, visual,
-                                     AllocNone);
+    // x.org will BadMatch if we don't set a border when the depth isn't the
+    // same as the parent depth.
+    attribute_mask |= CWBorderPixel;
+    swa.border_pixel = 0;
 
-      // x.org will BadMatch if we don't set a border when the depth isn't the
-      // same as the parent depth.
-      attribute_mask |= CWBorderPixel;
-      swa.border_pixel = 0;
-
-      use_argb_visual_ = true;
-    }
+    use_argb_visual_ = true;
   }
 
   bounds_in_pixels_ = ToPixelRect(params.bounds);
@@ -1617,33 +1608,6 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x)
       data->push_back(bitmap.getColor(x, y));
-}
-
-Visual* DesktopWindowTreeHostX11::GetARGBVisual() {
-  XVisualInfo visual_template;
-  visual_template.screen = 0;
-
-  int visuals_len;
-  gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
-      xdisplay_, VisualScreenMask, &visual_template, &visuals_len));
-  for (int i = 0; i < visuals_len; ++i) {
-    // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
-    // gdkvisual-x11.cc, they look for this specific visual and use it for all
-    // their alpha channel using needs.
-    //
-    // TODO(erg): While the following does find a valid visual, some GL drivers
-    // don't believe that this has an alpha channel. According to marcheu@,
-    // this should work on open source driver though. (It doesn't work with
-    // NVidia's binaries currently.) http://crbug.com/369209
-    const XVisualInfo& info = visual_list[i];
-    if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
-        info.visual->green_mask == 0x00ff00 &&
-        info.visual->blue_mask == 0x0000ff) {
-      return info.visual;
-    }
-  }
-
-  return nullptr;
 }
 
 std::list<XID>& DesktopWindowTreeHostX11::open_windows() {

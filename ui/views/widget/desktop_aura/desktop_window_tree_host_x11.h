@@ -235,10 +235,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void SerializeImageRepresentation(const gfx::ImageSkiaRep& rep,
                                     std::vector<unsigned long>* data);
 
-  // Returns an 8888 ARGB visual. Can return NULL if there is no matching
-  // visual on this display.
-  Visual* GetARGBVisual();
-
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 

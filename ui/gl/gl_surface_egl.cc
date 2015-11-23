@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +34,10 @@ extern "C" {
 #if defined (USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+#endif
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/gfx/x/x11_switches.h"
 #endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)
@@ -273,9 +278,27 @@ bool GLSurfaceEGL::InitializeOneOff() {
           switches::kEnableUnsafeES3APIs)) {
     renderable_type = EGL_OPENGL_ES3_BIT;
   }
+
+  EGLint buffer_size = 32;
+  EGLint alpha_size = 8;
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWindowDepth)) {
+    std::string depth =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kWindowDepth);
+
+    bool succeed = base::StringToInt(depth, &buffer_size);
+    DCHECK(succeed);
+
+    alpha_size = buffer_size == 32 ? 8 : 0;
+  }
+#endif
+
   const EGLint kConfigAttribs[] = {
-    EGL_BUFFER_SIZE, 32,
-    EGL_ALPHA_SIZE, 8,
+    EGL_BUFFER_SIZE, buffer_size,
+    EGL_ALPHA_SIZE, alpha_size,
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,

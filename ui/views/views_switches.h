@@ -15,10 +15,6 @@ namespace switches {
 // Please keep alphabetized.
 VIEWS_EXPORT extern const char kDisableViewsRectBasedTargeting[];
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-VIEWS_EXPORT extern const char kEnableTransparentVisuals[];
-#endif
-
 // Returns true if rect-based targeting in views should be used.
 VIEWS_EXPORT bool IsRectBasedTargetingEnabled();
 

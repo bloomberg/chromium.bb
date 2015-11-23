@@ -162,7 +162,9 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_switches.h"
 #include "ui/gfx/x/x11_types.h"
 #endif
 
@@ -1374,6 +1376,17 @@ bool BrowserMainLoop::InitializeToolkit() {
 #if defined(USE_X11)
   if (!gfx::GetXDisplay())
     return false;
+
+#if !defined(OS_CHROMEOS)
+  // InitializeToolkit is called before CreateStartupTasks which one starts the
+  // gpu process.
+  int depth = 0;
+  ui::ChooseVisualForWindow(NULL, &depth);
+  DCHECK(depth > 0);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWindowDepth, base::IntToString(depth));
+#endif
+
 #endif
 
   // Env creates the compositor. Aura widgets need the compositor to be created
