@@ -59,6 +59,13 @@ debug_init(char *args)
 }
 #endif
 
+int
+nouveau_object_mthd(struct nouveau_object *obj,
+		    uint32_t mthd, void *data, uint32_t size)
+{
+	return -ENODEV;
+}
+
 static void
 nouveau_object_fini(struct nouveau_object *obj)
 {
