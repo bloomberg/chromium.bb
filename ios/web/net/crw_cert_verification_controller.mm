@@ -18,7 +18,6 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -430,8 +429,9 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
         web::CertVerifierBlockAdapter::Params params(
             blockCert.Pass(), base::SysNSStringToUTF8(host));
         params.flags = self.certVerifyFlags;
-        params.crl_set = net::SSLConfigService::GetCRLSet();
         // OCSP response is not provided by iOS API.
+        // CRLSets are not used, as the OS is used to make load/no-load
+        // decisions, not the CertVerifier.
         _certVerifier->Verify(params, ^(net::CertVerifyResult result, int) {
           completionHandler(result, YES);
         });
