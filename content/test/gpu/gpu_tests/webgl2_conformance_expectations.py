@@ -83,6 +83,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/invalid-default-precision.html', bug=483282)
     self.Fail('conformance2/glsl3/sequence-operator-returns-non-constant.html',
         bug=483282)
+    self.Fail('conformance2/extensions/promoted-extensions-in-shaders.html',
+        bug=295792)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html', bug=483282)
@@ -92,6 +94,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
+    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
+        bug=295792)
 
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
@@ -184,8 +188,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/*', ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/texture-npot.html',
         ['mac'], bug=483282)
 
@@ -215,8 +217,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/buffers/buffer-overflow-test.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
-        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
+        ['linux', 'amd'], bug=295792)
+
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
