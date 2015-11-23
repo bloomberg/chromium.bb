@@ -170,7 +170,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                                   const std::string& service_path,
                                   const base::DictionaryValue& properties);
 
-  bool IsNetworkProhibitedByPolicy(const std::string& guid,
+  bool IsNetworkProhibitedByPolicy(const std::string& type,
+                                   const std::string& guid,
                                    const std::string& profile_path);
 
   // Queues a connect request until certificates have loaded.

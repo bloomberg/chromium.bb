@@ -287,7 +287,8 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
   if (network && network->connectable() && network->type() != shill::kTypeVPN) {
-    if (IsNetworkProhibitedByPolicy(network->guid(), network->profile_path())) {
+    if (IsNetworkProhibitedByPolicy(network->type(), network->guid(),
+                                    network->profile_path())) {
       ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
       return;
     }
@@ -423,7 +424,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
   const base::DictionaryValue* user_policy =
       managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile);
 
-  if (IsNetworkProhibitedByPolicy(guid, profile)) {
+  if (IsNetworkProhibitedByPolicy(type, guid, profile)) {
     ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
     return;
   }
@@ -536,9 +537,12 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 }
 
 bool NetworkConnectionHandler::IsNetworkProhibitedByPolicy(
+    const std::string& type,
     const std::string& guid,
     const std::string& profile_path) {
   if (!logged_in_)
+    return false;
+  if (type != shill::kTypeWifi)
     return false;
   const base::DictionaryValue* global_network_config =
       managed_configuration_handler_->GetGlobalConfigFromPolicy(
