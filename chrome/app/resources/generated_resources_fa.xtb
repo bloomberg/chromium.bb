@@ -564,7 +564,6 @@
 <translation id="1774833706453699074">نشانک‌گذاری صفحه‌های باز...</translation>
 <translation id="1775135663370355363">نمایش سابقه از این دستگاه. <ph name="BEGIN_LINK" />کسب اطلاعات بیشتر<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">‏خطای وارد کردن PKCS #12</translation>
 <translation id="1779652936965200207">لطفاً این کلیدواژه را در "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="1779766957982586368">بستن پنجره</translation>
 <translation id="1781502536226964113">باز کردن صفحه «برگه جدید»</translation>
@@ -1774,7 +1773,6 @@
 <translation id="347719495489420368">برای اجرای <ph name="PLUGIN_NAME" />، کلیک راست کنید.</translation>
 <translation id="347785443197175480">همچنان دسترسی به دوربین و میکروفون شما، توسط <ph name="HOST" /> مجاز باشد</translation>
 <translation id="3478315065074101056">‏XPS گزینه‌های پیشرفته برای چاپگرهای کلاسیک مرتبط شده با Cloud Print از طریق Chrome را فعال می‌کند. چاپگرها بعد از تغییر این پرچم باید دوباره متصل شوند.</translation>
-<translation id="3478477114335130296">برخی از تنظیمات شما ممکن است بدون اطلاع شما تغییر کرده باشد.</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3480892288821151001">قراردادن پنجره در چپ</translation>
 <translation id="3481915276125965083">پنجره‌های بازشوی زیر در این صفحه مسدود شده‌اند:</translation>
@@ -1892,7 +1890,6 @@
 <translation id="3612673635130633812">‏دانلود شده توسط &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">نشان دادن <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">باز &amp;کردن در برگهٔ جدید</translation>
-<translation id="3613796918523876348">در هر صورت بازیابی شود</translation>
 <translation id="3616741288025931835">&amp;پاک کردن داده‌های مرور...</translation>
 <translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="3620292326130836921">همه پشتیبان‌گیری شدند.</translation>
@@ -2454,7 +2451,6 @@
 <translation id="4439318412377770121">‏می‌خواهید <ph name="DEVICE_NAME" /> را در دستگاه‌های Google Cloud ثبت کنید؟</translation>
 <translation id="4441124369922430666">آیا می‌خواهید با روشن شدن دستگاه، این برنامه به‌طور خودکار شروع شود؟</translation>
 <translation id="444134486829715816">گسترده کردن...</translation>
-<translation id="4442309605992420742">‏فعال کردن مرتبط‌سازی Weave</translation>
 <translation id="444267095790823769">استثنائات محتوای محافظت‌شده</translation>
 <translation id="4443536555189480885">&amp;راهنما</translation>
 <translation id="4444304522807523469">‏دسترسی به اسکنرهای سند متصل شده از طریق USB یا در شبکه محلی</translation>
@@ -4197,7 +4193,6 @@
 <translation id="7014051144917845222">سعی در اتصال <ph name="PRODUCT_NAME" /> به <ph name="HOST_NAME" /> رد شده است. وب سایت‌ها ممکن است خراب باشند یا شبکه شما بدرستی پیکربندی نشده باشد.</translation>
 <translation id="7014174261166285193">نصب انجام نشد.</translation>
 <translation id="7015226785571892184">اگر این درخواست را قبول کنید، برنامه زیر شروع به کار می‌کند: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">‏برنامه Weave از مرتبط‌سازی Weave برای ارتباط امن با دستگاه‌های موجود در شبکه محلی استفاده می‌کند.</translation>
 <translation id="7017004637493394352">‏دوباره بگویید «Ok Google»</translation>
 <translation id="7017219178341817193">افزودن صفحه جدید</translation>
 <translation id="7017354871202642555">بعد از تنظیم پنجره، تنظیم حالت امکان‌پذیر نیست.</translation>
@@ -4397,7 +4392,6 @@
 <translation id="733186066867378544">موارد استثنای موقعیت مکانی جغرافیایی</translation>
 <translation id="7331991248529612614">فعال کردن پویانمایی دکمه حالت خواندن</translation>
 <translation id="7334190995941642545">‏در حال حاضر Smart Lock در دسترس نیست. لطفاً بعداً دوباره امتحان کنید.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> برای دسترسی به نشانک‌هایتان در همه جا.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> برای دسترسی به شبکه با مشکل مواجه است. <ph name="LINE_BREAK" /> این امر ممکن است به این دلیل باشد که فایروال یا نرم‌افزار آنتی ویروس شما به اشتباه فکر می‌کند <ph name="PRODUCT_NAME" /> در رایانهٔ شما یک مزاحم است و آن‌ را از اتصال به اینترنت باز می‌دارد.</translation>
 <translation id="7339763383339757376">‏PKCS #7، گواهی تکی</translation>
 <translation id="7339785458027436441">بررسی املا هنگام تایپ</translation>
@@ -5575,7 +5569,7 @@
 <translation id="9003647077635673607">در همه وب‌سایت‌ها مجاز باشد</translation>
 <translation id="9003677638446136377">بررسی مجدد</translation>
 <translation id="9004952710076978168">یک اعلان برای یک چاپگر ناشناس دریافت شد.</translation>
-<translation id="9006533633560719845">رضایت کاربر برای اسکریپت‌های برنامه افزودنی</translation>
+<translation id="9006533633560719845">رضایت کاربر برای اسکریپت‌های افزونه</translation>
 <translation id="9008201768610948239">نادیده گرفتن</translation>
 <translation id="9009299913548444929">این ویژگی به صورت موقت در دسترس نیست. <ph name="BEGIN_LINK" />راهنما<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">در حال آپلود کردن (%<ph name="PROGRESS_PERCENT" />)</translation>

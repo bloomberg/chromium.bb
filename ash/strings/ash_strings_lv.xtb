@@ -28,7 +28,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="1923539912171292317">Automātiskie klikšķi</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Konti</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="2204305834655267233">Tīkla informācija</translation>
 <translation id="2208323208084708176">Vienots darbvirsmas režīms</translation>
@@ -72,7 +71,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
 <translation id="3157169093162779309">Iespējot rotācijas bloķēšanu</translation>
 <translation id="3294437725009624529">Viesis</translation>
-<translation id="3433830597744061105">Pārvaldīt kontus</translation>
 <translation id="3473479545200714844">Ekrāna lupa</translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
@@ -99,7 +97,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3967919079500697218">Jūsu administrators ir atspējojis ekrānuzņēmumu veidošanu.</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="4053612967614057854">Atspējot ekrāna tastatūru</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (galvenais)</translation>
 <translation id="412065659894267608">Līdz pilnīgai uzlādei atlikušais laiks: <ph name="HOUR" /> h <ph name="MINUTE" /> min</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4279490309300973883">Spoguļošana</translation>
@@ -166,7 +163,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6785414152754474415">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE" />%; uzlāde tiek turpināta.</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="68610848741840742">ChromeVox (balss komentāri)</translation>
-<translation id="6895424601869865703">Pievienot lietotāja <ph name="GIVEN_NAME" /> kontu</translation>
 <translation id="6911468394164995108">Pievienoties citam...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google disks</translation>

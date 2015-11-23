@@ -28,7 +28,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Konten</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2204305834655267233">Netzwerkinformationen</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
@@ -72,7 +71,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
 <translation id="3294437725009624529">Gast</translation>
-<translation id="3433830597744061105">Konten verwalten</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3595596368722241419">Akku voll</translation>
@@ -99,7 +97,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="4053612967614057854">Bildschirmtastatur deaktivieren</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (primär)</translation>
 <translation id="412065659894267608">In <ph name="HOUR" /> Std. <ph name="MINUTE" /> Min. vollständig aufgeladen</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
@@ -166,7 +163,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
 <translation id="68610848741840742">ChromeVox (gesprochenes Feedback)</translation>
-<translation id="6895424601869865703">Konto für <ph name="GIVEN_NAME" /> hinzufügen</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

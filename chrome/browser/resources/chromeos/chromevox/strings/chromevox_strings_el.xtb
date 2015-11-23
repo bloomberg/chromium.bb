@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Προηγούμενη σειρά πίνακα</translation>
 <translation id="4736221692378411923">Αύγουστος</translation>
 <translation id="4740661827607246557">Εντολές βοήθειας</translation>
+<translation id="4755857887974653209">Απενεργοποίηση ChromeVox</translation>
 <translation id="4759716709594980008">Εξερεύνηση πληκτρολογίου ChromeOS</translation>
 <translation id="4763296182459741068">Ενσωμάτωση στο κάτω μέρος</translation>
 <translation id="4763480195061959176">βίντεο</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Η επιλογή είναι</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Δεν υπάρχουν ορόσημα ARIA.</translation>
+<translation id="8132379720172247073">Μενού ChromeVox</translation>
 <translation id="8153880621934657047">Όχι μέσα στον πίνακα.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{σύμβολο υπογράμμισης}other{# σύμβολα υπογράμμισης}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">κεφαλίδα 5</translation>
 <translation id="8587549812518406253">Επόμενο στοιχείο λίστας</translation>
 <translation id="860150890330522909">Το πλαίσιο ελέγχου <ph name="NAME" /> επιλέχθηκε</translation>
+<translation id="8603071050456974042">Παράθυρο ChromeVox</translation>
 <translation id="8606621670302093223">Έλεγχος δεδομένων</translation>
 <translation id="8631359288236106450">έχουν επιλεγεί <ph name="COUNT" /> στοιχεία</translation>
 <translation id="8638532244051952400">Ανακοίνωση συντεταγμένων τρέχοντος κελιού</translation>

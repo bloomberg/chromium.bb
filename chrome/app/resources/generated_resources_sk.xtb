@@ -567,7 +567,6 @@
 <translation id="1774833706453699074">Pridať otvorené stránky medzi záložky...</translation>
 <translation id="1775135663370355363">Zobrazuje sa história tohto zariadenia. <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Chyba importovania súboru PKCS #12</translation>
 <translation id="1779652936965200207">Zadajte tento prístupový kľúč v zariadení <ph name="DEVICE_NAME" />:</translation>
 <translation id="1779766957982586368">Zavrieť okno</translation>
 <translation id="1781502536226964113">Otvoriť stránku Nová karta</translation>
@@ -1781,7 +1780,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="347719495489420368">Doplnok <ph name="PLUGIN_NAME" /> spustíte kliknutím pravým tlačidlom myši.</translation>
 <translation id="347785443197175480">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup ku kamere a mikrofónu</translation>
 <translation id="3478315065074101056">Funkcia XPS umožní klasickým tlačiarňam pripojeným k službe Cloud Print pomocou prehliadača Chrome používať rozšírené možnosti. Po zmenení tohto príznaku je potrebné tlačiarne znova pripojiť.</translation>
-<translation id="3478477114335130296">Niektoré nastavenia mohli byť zmenené bez vášho vedomia.</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3480892288821151001">Prichytiť okno vľavo</translation>
 <translation id="3481915276125965083">Na tejto stránke boli zablokované nasledujúce kontextové okná:</translation>
@@ -1900,7 +1898,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3612673635130633812">Stiahnuté rozšírením &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Zobraziť priečinok <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Otvoriť na novej karte</translation>
-<translation id="3613796918523876348">Napriek tomu obnoviť</translation>
 <translation id="3616741288025931835">&amp;Vymazať údaje prehliadania...</translation>
 <translation id="3618849550573277856">Vyhľadať „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Všetko je zálohované!</translation>
@@ -2462,7 +2459,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4439318412377770121">Chcete zariadenie <ph name="DEVICE_NAME" /> zaregistrovať v službe Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Chcete automaticky spustiť túto aplikáciu po zapnutí zariadenia?</translation>
 <translation id="444134486829715816">Rozbaliť...</translation>
-<translation id="4442309605992420742">Povoliť párovanie pomocou protokolu Weave</translation>
 <translation id="444267095790823769">Výnimky chráneného obsahu</translation>
 <translation id="4443536555189480885">&amp;Pomocník</translation>
 <translation id="4444304522807523469">Mať prístup ku skenerom dokumentov pripojeným cez USB alebo v miestnej sieti</translation>
@@ -4215,7 +4211,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7015226785571892184">Ak túto žiadosť prijmete, spustí sa nasledovná aplikácia:
 
 <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Párovanie pomocou protokolu Weave používa aplikácia Weave na zabezpečenú komunikáciu so zariadeniami v miestnej sieti.</translation>
 <translation id="7017004637493394352">Vyslovte „Ok Google“ ešte raz</translation>
 <translation id="7017219178341817193">Pridať novú stránku</translation>
 <translation id="7017354871202642555">Po nastavení okna nie je možné nastaviť režim.</translation>
@@ -4415,7 +4410,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="733186066867378544">Výnimky určovania geografickej polohy</translation>
 <translation id="7331991248529612614">Povoliť animáciu pre tlačidlo režimu čítačky</translation>
 <translation id="7334190995941642545">Funkcia Smart Lock nie je momentálne k dispozícii. Skúste to znova neskôr.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> a majte svoje záložky všade k dispozícii.</translation>
 <translation id="7337488620968032387">Aplikácia <ph name="PRODUCT_NAME" /> má ťažkosti s prístupom k sieti. <ph name="LINE_BREAK" /> Môže to byť spôsobené tým, že vaša brána firewall alebo antivírusový softvér nesprávne identifikoval aplikáciu <ph name="PRODUCT_NAME" /> ako útočníka a zablokovali jej pripojenie k internetu.</translation>
 <translation id="7339763383339757376">Štandard PKCS #7, jeden certifikát</translation>
 <translation id="7339785458027436441">Kontrolovať pravopis počas písania</translation>

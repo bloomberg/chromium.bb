@@ -785,7 +785,7 @@
 
       Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
 
-        Hvis du ikke angir denne regelen, brukes standardkatalogen for nedlasting. Brukeren kan i så fall endre denne katalogen.</translation>
+      Hvis du ikke angir denne regelen, brukes standardkatalogen for nedlasting. Brukeren kan i så fall endre denne katalogen.</translation>
 <translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="3806576699227917885">Tillat avspilling av lyd.
 
@@ -916,11 +916,11 @@
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="4349746760316962317">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til å lagre bufrede filer på disken.
 
-Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke.
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke.
 
-Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+      Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
 
-Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--disk-cache-dir»</translation>
+      Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--disk-cache-dir»</translation>
 <translation id="436581050240847513">Rapportér nettverksgrensesnitt for enheten</translation>
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
@@ -1006,7 +1006,7 @@ Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren
 
           Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, som angitt i regelen «ChromeFrameRendererSettings».
 
-          Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
+          Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
@@ -1106,11 +1106,11 @@ Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren
           Hvis handlingen er å suspendere økten, kan <ph name="PRODUCT_OS_NAME" /> konfigureres til å låse eller ikke låse skjermen før økten suspenderes.</translation>
 <translation id="5111712393799006197">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til lagring av brukerdata.
 
-      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har angitt «--user-data-dir»-flagget eller ikke. 
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen, uansett om brukeren har angitt «--user-data-dir»-flagget eller ikke. 
 
       Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
 
-        Hvis du ikke angir denne regelen, brukes standardbanen for profiler. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--user-data-dir».</translation>
+      Hvis du ikke angir denne regelen, brukes standardbanen for profiler. Brukeren kan i så fall overstyre den med kommandolinjeflagget «--user-data-dir».</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1298,20 +1298,20 @@ Hvis du ikke angir denne regelen, brukes standardkatalogen for bufring. Brukeren
 <translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
 <translation id="5815129011704381141">Start automatisk på nytt etter oppdatering</translation>
-<translation id="5815353477778354428">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME" /> bruker til lagring av brukerdata. 
+<translation id="5815353477778354428">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME" /> bruker til lagring av brukerdata.
 
-       Hvis du angir denne regelen, bruker <ph name="PRODUCT_FRAME_NAME" /> den oppgitte katalogen.
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_FRAME_NAME" /> den oppgitte katalogen.
 
       Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
 
-     Hvis du ikke angir denne innstillingen, brukes standardkatalogen for profiler.</translation>
-<translation id="5819660021114910752">Spesifiserer tidssonen som skal brukes på enheten. Brukerne kan overstyre den angitte tidssonen for den gjeldende økten, men ved avlogging tilbakestilles den til den spesifiserte tidssonen. Hvis du angir en ugyldig verdi, slås regelen fortsatt på, men «GMT» brukes som tidssone. Hvis strengen er tom, ignoreres regelen.
+      Hvis du ikke angir denne innstillingen, brukes standardkatalogen for profiler.</translation>
+<translation id="5819660021114910752">Spesifiserer tidssonen som skal brukes på enheten. Brukerne kan overstyre den angitte tidssonen for den gjeldende økten, men ved avlogging tilbakestilles den til den spesifiserte tidssonen. Hvis du angir en ugyldig verdi, blir regelen likevel slått på, men «GMT» brukes som tidssone. Hvis strengen er tom, ignoreres regelen.
 
-      Hvis du ikke bruker denne regelen, brukes fortsatt den aktive tidssonen. Brukerne kan imidlertid endre tidssonen, og endringen er varig. Endringer som gjøres av brukere, påvirker imidlertid påloggingssiden og alle andre brukere.
+      Hvis du ikke bruker denne regelen, brukes fortsatt den aktive tidssonen. Brukerne kan imidlertid endre tidssonen, og endringen er varig. Endringer som gjøres av brukere, påvirker derfor påloggingssiden og alle andre brukere.
 
       «US Pacific Time» (USA og Stillehavskysten) er konfigurert som tidssonen for nye enheter.
 
-      Formatet til verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan refereres til som «continent/large_city» eller «ocean/large_city».</translation>
+      Formatet på verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan angis som «kontinent/stor_by» eller «hav/stor_by».</translation>
 <translation id="5826047473100157858">Angir om brukeren kan åpne sider i inkognitomodus i <ph name="PRODUCT_NAME" />.
 
       Hvis dette er aktivert, eller hvis retningslinjen ikke er angitt, kan sider åpnes i inkognitomodus.
@@ -2080,7 +2080,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
 
-          Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, som den er angitt i regelen «ChromeFrameRendererSettings».
+          Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, slik den er angitt i regelen «ChromeFrameRendererSettings».
 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>

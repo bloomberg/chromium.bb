@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">רוחב אחיד</translation>
 <translation id="2646820313617290661">ההורים שלך עוזרים בניהול ההגדרות האלה.</translation>
 <translation id="2677748264148917807">צא</translation>
-<translation id="2678212031093903894">גבה וסנכרן את הסימניות</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="271033894570825754">חדש</translation>
@@ -212,7 +211,7 @@
 <translation id="4532845899244822526">בחר תיקייה</translation>
 <translation id="4543087392704641517">כותרת סימניה</translation>
 <translation id="4543661749405994812">העתק כתובת אימייל</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{קישור אחד לאינטרנט ווירטופיזי בקרבת מקום}two{# קישורים לאינטרנט ווירטופיזי בקרבת מקום}many{# קישורים לאינטרנט ווירטופיזי בקרבת מקום}other{# קישורים לאינטרנט ווירטופיזי בקרבת מקום}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{קישור אחד לאינטרנט הווירטופיזי בקרבת מקום}two{# קישורים לאינטרנט הווירטופיזי בקרבת מקום}many{# קישורים לאינטרנט הווירטופיזי בקרבת מקום}other{# קישורים לאינטרנט הווירטופיזי בקרבת מקום}}</translation>
 <translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> סימניות נמחקו</translation>
 <translation id="4665282149850138822">האתר <ph name="NAME" /> נוסף למסך דף הבית שלך</translation>
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">החיבור שלך לאתר זה אינו פרטי.</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
 <translation id="764743049316168389">תיקיית <ph name="FOLDER_NAME" /></translation>
-<translation id="7648120236428811856">‏היכנס אל Chrome כדי לגשת אל הסימניות מכל מכשיר</translation>
 <translation id="7648422057306047504">‏הצפן סיסמאות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>

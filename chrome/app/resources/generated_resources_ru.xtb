@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Добавить все вкладки в закладки…</translation>
 <translation id="1775135663370355363">Отображается история только для этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Ошибка импорта PKCS #12</translation>
 <translation id="1779652936965200207">Введите данный ключ доступа в "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Закрыть окно</translation>
 <translation id="1781502536226964113">Новую вкладку</translation>
@@ -680,7 +679,7 @@
 <translation id="1973277570128718649">Включить медиамаршрутизатор</translation>
 <translation id="1973491249112991739">Не удалось скачать плагин <ph name="PLUGIN_NAME" />.</translation>
 <translation id="1974043046396539880">Точки распространения списков отзыва сертификатов</translation>
-<translation id="1974060860693918893">Дополнительно</translation>
+<translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1974371662733320303">Применение стратегии сброса памяти</translation>
 <translation id="1975360744064614709">Отключение аппаратного ускорения для декодирования MJPEG при захвате кадра</translation>
 <translation id="197560921582345123">Редактирование</translation>
@@ -1776,7 +1775,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="347719495489420368">Нажмите правую кнопку мыши, чтобы запустить <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Предоставить сайту <ph name="HOST" /> доступ к камере и микрофону</translation>
 <translation id="3478315065074101056">XPS дает дополнительные возможности принтерам, подключенным к Виртуальному принтеру с помощью Chrome. После изменения этого параметра принтеры должны быть подключены заново.</translation>
-<translation id="3478477114335130296">Некоторые настройки могли быть изменены без вашего ведома.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3480892288821151001">Закрепить окно слева</translation>
 <translation id="3481915276125965083">Заблокированы следующие всплывающие окна:</translation>
@@ -1895,7 +1893,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3612673635130633812">Скачано с помощью расширения &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Показать папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="3613422051106148727">&amp;Открыть в новой вкладке</translation>
-<translation id="3613796918523876348">Да, скачать</translation>
 <translation id="3616741288025931835">Очистить данные просмотров...</translation>
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Данные сохранены!</translation>
@@ -2457,7 +2454,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4439318412377770121">Зарегистрировать <ph name="DEVICE_NAME" /> как устройство с поддержкой облачных технологий Google?</translation>
 <translation id="4441124369922430666">Автоматически запускать это приложение при включении устройства?</translation>
 <translation id="444134486829715816">Развернуть...</translation>
-<translation id="4442309605992420742">Связать с устройствами Weave</translation>
 <translation id="444267095790823769">Исключения для защищенного контента</translation>
 <translation id="4443536555189480885">&amp;Справка</translation>
 <translation id="4444304522807523469">Доступ к сканерам, подключенным через USB-порт или локальную сеть</translation>
@@ -4201,7 +4197,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7014051144917845222">Попытка <ph name="PRODUCT_NAME" /> подключиться к <ph name="HOST_NAME" /> была отклонена. Сайт недоступен или ваша сеть настроена неправильно.</translation>
 <translation id="7014174261166285193">Установка не выполнена.</translation>
 <translation id="7015226785571892184">Если вы примете этот запрос, будет запущено приложение <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Приложение Weave использует этот тип подключения для защиты взаимодействия с устройствами в локальной сети.</translation>
 <translation id="7017004637493394352">Скажите "О'кей, Google" ещё раз</translation>
 <translation id="7017219178341817193">Добавить страницу</translation>
 <translation id="7017354871202642555">Нельзя настроить режим после настройки окна.</translation>
@@ -4401,7 +4396,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="733186066867378544">Передача геоданных – исключения</translation>
 <translation id="7331991248529612614">Включить анимацию кнопки "Режим чтения"</translation>
 <translation id="7334190995941642545">В настоящий момент функция Smart Lock недоступна. Повторите попытку позже.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> для синхронизации закладок.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> не может подключиться к сети.<ph name="LINE_BREAK" />Возможно, брандмауэр или антивирус ошибочно считает, что <ph name="PRODUCT_NAME" /> является посторонней программой на вашем компьютере, и поэтому блокирует ей доступ в Интернет.</translation>
 <translation id="7339763383339757376">PKCS #7, единый сертификат</translation>
 <translation id="7339785458027436441">Проверять правописание при наборе текста</translation>

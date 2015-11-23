@@ -568,7 +568,6 @@
 <translation id="1774833706453699074">Đánh dấu các trang đang mở...</translation>
 <translation id="1775135663370355363">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Lỗi nhập PKCS #12</translation>
 <translation id="1779652936965200207">Vui lòng nhập mã xác nhận này trên "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Đóng cửa sổ</translation>
 <translation id="1781502536226964113">Mở trang tab mới</translation>
@@ -1784,7 +1783,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="347719495489420368">Nhấp chuột phải để chạy <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Tiếp tục cho phép <ph name="HOST" /> truy cập vào máy ảnh và micrô của bạn</translation>
 <translation id="3478315065074101056">XPS bật tùy chọn nâng cao cho máy in cổ điển được kết nối với Cloud Print bằng Chrome. Máy in phải được kết nối lại sau khi thay đổi cờ này.</translation>
-<translation id="3478477114335130296">Một số cài đặt của bạn có thể đã được thay đổi mà bạn không biết.</translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="3480892288821151001">Gắn cửa sổ về phía bên trái</translation>
 <translation id="3481915276125965083">Các cửa sổ bật lên sau đã bị chặn trên trang này:</translation>
@@ -1903,7 +1901,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="3612673635130633812">Đã tải xuống bởi &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Hiển thị <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Mở trong tab mới</translation>
-<translation id="3613796918523876348">Vẫn khôi phục</translation>
 <translation id="3616741288025931835">&amp;Xoá Dữ liệu Duyệt web...</translation>
 <translation id="3618849550573277856">Tra cứu “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Đã sao lưu tất cả!</translation>
@@ -2464,7 +2461,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4439318412377770121">Bạn có muốn đăng ký <ph name="DEVICE_NAME" /> với Google Cloud Devices không?</translation>
 <translation id="4441124369922430666">Bạn có muốn tự động khởi động ứng dụng này khi máy bật không?</translation>
 <translation id="444134486829715816">Mở rộng...</translation>
-<translation id="4442309605992420742">Bật tính năng ghép nối Weave</translation>
 <translation id="444267095790823769">Ngoại lệ cho nội dung được bảo vệ</translation>
 <translation id="4443536555189480885">&amp;Trợ giúp</translation>
 <translation id="4444304522807523469">Truy cập máy quét tài liệu được lắp qua USB hoặc trên mạng cục bộ</translation>
@@ -4223,7 +4219,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
         được định cấu hình đúng cách.</translation>
 <translation id="7014174261166285193">Cài đặt không thành công.</translation>
 <translation id="7015226785571892184">Ứng dụng sau sẽ được chạy nếu bạn chấp nhận yêu cầu này: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Tính năng ghép nối Weave được ứng dụng Weave sử dụng để giao tiếp an toàn với các thiết bị trong mạng cục bộ.</translation>
 <translation id="7017004637493394352">Nói "Ok Google" lần nữa</translation>
 <translation id="7017219178341817193">Thêm trang mới</translation>
 <translation id="7017354871202642555">Không thể đặt chế độ sau khi cửa sổ được đặt.</translation>
@@ -4423,7 +4418,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="733186066867378544">Ngoại lệ cho vị trí địa lý</translation>
 <translation id="7331991248529612614">Bật hoạt ảnh nút chế độ đọc</translation>
 <translation id="7334190995941642545">Smart Lock hiện không khả dụng. Vui lòng thử lại sau.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> để truy cập dấu trang của bạn ở mọi nơi.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           đang gặp sự cố khi truy cập mạng.
           <ph name="LINE_BREAK" />

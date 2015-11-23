@@ -566,7 +566,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1774833706453699074">Aggiungi pagine aperte ai Preferiti...</translation>
 <translation id="1775135663370355363">Visualizzazione della cronologia da questo dispositivo. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Errore di importazione di PKCS #12</translation>
 <translation id="1779652936965200207">Inserisci questa passkey su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Chiudi finestra</translation>
 <translation id="1781502536226964113">Apri la pagina Nuova scheda</translation>
@@ -1771,7 +1770,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="347719495489420368">Fai clic con il pulsante destro del mouse per riprodurre <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continua a consentire l'accesso di <ph name="HOST" /> alla webcam e al microfono</translation>
 <translation id="3478315065074101056">XPS attiva opzioni avanzate per le stampanti classiche collegate a Cloud Print con Chrome. Dopo avere modificato questo flag è necessario ricollegare le stampanti.</translation>
-<translation id="3478477114335130296">Alcune impostazioni potrebbero essere state modificate a tua insaputa.</translation>
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="3480892288821151001">Aggancia la finestra a sinistra</translation>
 <translation id="3481915276125965083">I seguenti popup sono stati bloccati in questa pagina:</translation>
@@ -1887,7 +1885,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3612673635130633812">Scaricato da &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Mostra <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Apri in un'altra scheda</translation>
-<translation id="3613796918523876348">Recupera comunque</translation>
 <translation id="3616741288025931835">&amp;Cancella dati di navigazione...</translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Backup di tutti i contenuti completato.</translation>
@@ -2437,7 +2434,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4439318412377770121">Vuoi registrare <ph name="DEVICE_NAME" /> su Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Vuoi avviare automaticamente questa app all'accensione del computer?</translation>
 <translation id="444134486829715816">Espandi...</translation>
-<translation id="4442309605992420742">Attiva l'accoppiamento Weave</translation>
 <translation id="444267095790823769">Eccezioni di contenuti protetti</translation>
 <translation id="4443536555189480885">&amp;Guida</translation>
 <translation id="4444304522807523469">Accesso a scanner di documenti aggiunti tramite USB o sulla rete locale</translation>
@@ -3898,7 +3894,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6575251558004911012">Chiedi quando un sito richiede l'accesso alla fotocamera (opzione consigliata)</translation>
 <translation id="6581162200855843583">Link Google Drive</translation>
 <translation id="6583070985841601920">Accesso eseguito come <ph name="USER_EMAIL_ADDRESS" />. La sincronizzazione è stata disattivata dall'amministratore.</translation>
-<translation id="65832705307647870">Inserisci automaticamente siti famosi nella pagina Nuova scheda</translation>
+<translation id="65832705307647870">Inserisci automaticamente siti famosi nella pagina Nuova scheda.</translation>
 <translation id="6584878029876017575">Firma definitiva Microsoft</translation>
 <translation id="6585234750898046415">Scegli un'immagine da visualizzare per il tuo account nella schermata di accesso.</translation>
 <translation id="6585283250473596934">Accesso a una sessione pubblica.</translation>
@@ -4177,7 +4173,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7014051144917845222">Il tentativo di connessione di <ph name="PRODUCT_NAME" /> a <ph name="HOST_NAME" /> è stato rifiutato. Il sito web potrebbe non essere disponibile o la rete potrebbe non essere configurata correttamente.</translation>
 <translation id="7014174261166285193">Installazione non riuscita.</translation>
 <translation id="7015226785571892184">Se accetti la richiesta, verrà avviata la seguente applicazione: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">L'accoppiamento Weave viene utilizzato dall'app Weave per le comunicazioni protette con i dispositivi sulla rete locale.</translation>
 <translation id="7017004637493394352">Dì "Ok Google" di nuovo</translation>
 <translation id="7017219178341817193">Aggiungi una nuova pagina</translation>
 <translation id="7017354871202642555">Impossibile impostare la modalità dopo l'impostazione della finestra.</translation>
@@ -4377,7 +4372,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="733186066867378544">Eccezioni di localizzazione geografica</translation>
 <translation id="7331991248529612614">Attiva animazione del pulsante Modalità Reader</translation>
 <translation id="7334190995941642545">La funzione Smart Lock non è al momento disponibile. Riprova più tardi.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> per avere a disposizione i tuoi Preferiti ovunque.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> ha problemi di accesso alla rete. <ph name="LINE_BREAK" /> Questo può essere dovuto al fatto che il firewall o il software antivirus considera erroneamente <ph name="PRODUCT_NAME" /> come un intruso sul computer e blocca la sua connessione a Internet.</translation>
 <translation id="7339763383339757376">PKCS #7, singolo certificato</translation>
 <translation id="7339785458027436441">Controllo ortografico durante la digitazione</translation>

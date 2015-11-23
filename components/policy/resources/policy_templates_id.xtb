@@ -1113,6 +1113,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika setelan ini dinonaktifkan atau tidak disetel, baik pengguna lokal maupun pengguna jarak jauh dapat berinteraksi dengan hosting ketika sedang dibagikan.</translation>
 <translation id="5423001109873148185">Kebijakan ini memaksa mesin telusur untuk diimpor dari browser default yang digunakan, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, mesin telusur default tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
+<translation id="5423197884968724595">Nama batasan Android WebView:</translation>
 <translation id="5447306928176905178">Aktifkan pelaporan info memori (JS heap size) ke laman (dipensiunkan)</translation>
 <translation id="5457065417344056871">Mengaktifkan mode tamu dalam browser</translation>
 <translation id="5457924070961220141">Memungkinkan Anda mengonfigurasi perender HTML default saat <ph name="PRODUCT_FRAME_NAME" /> dipasang. Setelan default yang digunakan ketika kebijakan ini tidak disetel adalah mengizinkan browser host melakukan perenderan, tetapi Anda dapat menimpanya secara opsional dan membiarkan <ph name="PRODUCT_FRAME_NAME" /> merender laman HTML secara default.</translation>
@@ -1211,13 +1212,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Buka http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk melihat daftar variabel yang dapat digunakan.
 
       Jika setelan ini tidak disetel, direktori profil default akan digunakan.</translation>
-<translation id="5819660021114910752">Menetapkan zona waktu yang akan digunakan pada perangkat. Pengguna dapat mengganti zona waktu yang ditetapkan untuk sesi saat ini. Akan tetapi, hal ini akan disetel kembali ke zona waktu yang ditetapkan saat pengguna keluar. Jika pengguna memberikan nilai yang tidak valid, kebijakan akan tetap diaktifkan menggunakan "GMT". Jika pengguna memberikan string kosong, kebijakan ini akan diabaikan.
+<translation id="5819660021114910752">Menetapkan zona waktu yang akan digunakan pada perangkat. Pengguna dapat mengganti zona waktu yang ditetapkan untuk sesi saat ini. Akan tetapi, zona waktu tersebut akan disetel kembali ke zona waktu yang ditetapkan saat pengguna keluar. Jika pengguna memberikan nilai yang tidak valid, kebijakan akan tetap diaktifkan menggunakan "GMT". Jika pengguna memberikan string kosong, kebijakan ini akan diabaikan.
 
-      Jika kebijakan ini tidak digunakan, zona waktu yang saat ini aktif akan tetap digunakan, tapi pengguna dapat mengubah zona waktu dan perubahan ini bersifat tetap. Oleh karena itu, perubahan dari seorang pengguna akan memengaruhi layar masuk dan semua pengguna lain.
+      Jika kebijakan ini tidak digunakan, zona waktu yang saat ini aktif akan tetap digunakan, tapi pengguna dapat mengubah zona waktu dan perubahan ini bersifat tetap. Oleh karena itu, bila ada seorang pengguna yang mengubahnya, maka layar masuk dan semua pengguna lain akan ikut terpengaruh.
 
-      Perangkat baru akan dimulai dengan zona waktu yang disetel ke "AS/Pasifik".
+      Perangkat baru akan dimulai dengan zona waktu yang disetel ke "Amerika Serikat/Pasifik".
 
-      Format nilai akan mengikuti nama zona waktu dalam "Basis Data Zona Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khusus, sebagian besar zona waktu dapat dirujuk menurut "continent/large_city" atau "ocean/large_city".</translation>
+      Format nilai akan mengikuti nama zona waktu dalam "Basis Data Zona Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Terutama sebagian besar zona waktu dapat dirujuk menurut "continent/large_city" atau "ocean/large_city".</translation>
 <translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka laman dalam mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, laman dapat dibuka dalam mode Penyamaran. Jika 'Nonaktifkan' dipilih, laman tidak dapat dibuka dalam mode Penyamaran. Jika 'Paksa' dipilih, laman dapat dibuka HANYA dalam mode Penyamaran.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="5845159892130426052">Mengaktifkan API ShowModalDialog sampai 30.04.2015</translation>

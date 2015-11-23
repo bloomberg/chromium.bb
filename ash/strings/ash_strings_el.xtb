@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1013923882670373915">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτόν τον κωδικό PIN στη συγκεκριμένη συσκευή: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Η συντόμευση για εναλλαγή στην επόμενη μέθοδο εισαγωγής άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Αυτόματη απόκρυψη ραφιού</translation>
 <translation id="1195412055398077112">υπερσάρωση</translation>
 <translation id="1270290102613614947">Το πληκτρολόγιο οθόνης είναι απενεργοποιημένο</translation>
@@ -25,10 +26,11 @@
 <translation id="1812696562331527143">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />τρίτου μέρους<ph name="END_LINK" />).
 Πατήστε Shift + Alt για εναλλαγή.</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Η συντόμευση για το άνοιγμα της Διαχείρισης Εργασιών άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Αυτόματα κλικ</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Λογαριασμοί</translation>
 <translation id="2127372758936585790">Χαμηλή ισχύς φορτιστή</translation>
 <translation id="2204305834655267233">Πληροφορίες δικτύου</translation>
 <translation id="2208323208084708176">Ενιαία λειτουργία επιφάνειας εργασίας.</translation>
@@ -72,7 +74,6 @@
 <translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="3157169093162779309">Ενεργοποίηση κλειδώματος περιστροφής</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
-<translation id="3433830597744061105">Διαχείριση λογαριασμών</translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε "<ph name="FROM_LOCALE" />" (απαιτείται επανεκκίνηση)</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
@@ -99,7 +100,6 @@
 <translation id="3967919079500697218">Η δυνατότητα λήψης στιγμιότυπων οθόνης έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="4053612967614057854">Απενεργοποίηση πληκτρολογίου οθόνης</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (κύριος)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ω <ph name="MINUTE" />λ μέχρι να ολοκληρωθεί η φόρτιση</translation>
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="4279490309300973883">Κατοπτρισμός</translation>
@@ -108,6 +108,7 @@
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
+<translation id="4544944664594876241">Η συντόμευση για το κλείδωμα της οθόνης άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Αποσύνδεση</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
@@ -116,6 +117,7 @@
 <translation id="4957722034734105353">Μάθετε περισσότερα…</translation>
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Ρυθμίσεις Google Drive...</translation>
 <translation id="5102001756192215136">Απομένουν <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
@@ -135,6 +137,7 @@
 Πατήστε Shift + Alt για εναλλαγή.</translation>
 <translation id="5871632337994001636">Διαχείριση συσκευών…</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Μετάδοση σε έναν άγνωστο δέκτη</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Επαναφορά</translation>
@@ -158,6 +161,7 @@
 <translation id="6426039856985689743">Απενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="6452181791372256707">Απόρριψη</translation>
 <translation id="6459472438155181876">Επέκταση οθόνης σε <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Μετάδοση οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Διεύθυνση IP</translation>
@@ -165,14 +169,15 @@
 <translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6785414152754474415">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />% και φορτίζει.</translation>
 <translation id="6803622936009808957">Δεν ήταν δυνατός ο αντικατοπτρισμός των οθονών καθώς δεν βρέθηκαν υποστηριζόμενες αναλύσεις. Έχει ενεργοποιηθεί εναλλακτικά η εκτεταμένη επιφάνεια εργασίας.</translation>
+<translation id="683971173229319003">Πλήκτρο αναζήτησης+L</translation>
 <translation id="68610848741840742">ChromeVox (προφορικά σχόλια)</translation>
-<translation id="6895424601869865703">Προσθέστε έναν λογαριασμό για <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
 <translation id="703171847531699602">Δεν υπάρχουν συσκευές για μετάδοση</translation>
+<translation id="7034339000180558234">Μετάδοση <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
 <translation id="7097613348211027502">Το ChromeVox (προφορικά σχόλια) έχει ενεργοποιηθεί.
 Πατήστε Ctrl+Alt+Z για απενεργοποίηση.</translation>
@@ -184,6 +189,7 @@
 <translation id="737451040872859086">Μικρόφωνο (Εσωτερικό)</translation>
 <translation id="742594950370306541">Η κάμερα δεν χρησιμοποιείται.</translation>
 <translation id="743058460480092004">Η κάμερα και το μικρόφωνο χρησιμοποιούνται.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME" /> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
@@ -211,6 +217,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Κάντε κλικ για προβολή</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
 <translation id="8940956008527784070">Χαμηλή στάθμη μπαταρίας (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

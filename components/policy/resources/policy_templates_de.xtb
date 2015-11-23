@@ -1209,7 +1209,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Bei neuen Geräten ist die Zeitzone "US/Pacific" voreingestellt.
 
-      Das Format des Werts entspricht den Namen der Zeitzone in der "IANA Time Zone Database" (siehe "https://en.wikipedia.org/wiki/Tz_database"). Auf den meisten Zeitzonen kann über "Kontinent/Stadt" oder "Ozean/Stadt" verwiesen werden.</translation>
+      Das Format des Werts entspricht den Namen der Zeitzone in der "IANA Time Zone Database" (siehe "https://en.wikipedia.org/wiki/Tz_database"). Auf die meisten Zeitzonen kann über "Kontinent/Stadt" oder "Ozean/Stadt" verwiesen werden.</translation>
 <translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME" /> im Inkognitomodus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognitomodus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognitomodus geöffnet werden. Mit dem Wert "Forced" können Seiten ausschließlich im Inkognitomodus geöffnet werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remote-Zugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5845159892130426052">ShowModalDialog API über 2015.04.30 aktivieren</translation>

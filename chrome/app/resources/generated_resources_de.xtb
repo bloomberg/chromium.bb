@@ -561,7 +561,6 @@
 <translation id="1774833706453699074">Offene Seiten als Lesezeichen speichern...</translation>
 <translation id="1775135663370355363">Der Verlauf für dieses Gerät wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 - Fehler beim Import</translation>
 <translation id="1779652936965200207">Bitte geben Sie diesen Zugangscode auf "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="1779766957982586368">Fenster schließen</translation>
 <translation id="1781502536226964113">"Neuer Tab"-Seite öffnen</translation>
@@ -1768,7 +1767,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="347719495489420368">Klicken Sie zum Abspielen von <ph name="PLUGIN_NAME" /> mit der rechten Maustaste.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> weiterhin Zugriff auf Kamera und Mikrofon gestatten</translation>
 <translation id="3478315065074101056">XPS aktiviert erweiterte Optionen für klassische Drucker, die über Chrome mit Google Cloud Print verbunden sind. Drucker müssen nach Änderung dieses Attributs wieder neu verbunden werden.</translation>
-<translation id="3478477114335130296">Einige Einstellungen wurden möglicherweise ohne Ihr Wissen geändert.</translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3480892288821151001">Fenster links verankern</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
@@ -1887,7 +1885,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="3612673635130633812">Heruntergeladen von &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">"<ph name="FOLDER_NAME" />" anzeigen</translation>
 <translation id="3613422051106148727">In &amp;neuem Tab öffnen</translation>
-<translation id="3613796918523876348">Trotzdem wiederherstellen</translation>
 <translation id="3616741288025931835">&amp;Browserdaten löschen...</translation>
 <translation id="3618849550573277856">"<ph name="LOOKUP_STRING" />" nachschlagen</translation>
 <translation id="3620292326130836921">Alle Daten gesichert</translation>
@@ -2449,7 +2446,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4439318412377770121">Möchten Sie <ph name="DEVICE_NAME" /> bei Google Cloud Devices registrieren?</translation>
 <translation id="4441124369922430666">Soll diese App beim Einschalten des Geräts automatisch gestartet werden?</translation>
 <translation id="444134486829715816">Anzeigen...</translation>
-<translation id="4442309605992420742">Weave-Pairing aktivieren</translation>
 <translation id="444267095790823769">Ausnahmen bei geschützten Inhalten</translation>
 <translation id="4443536555189480885">&amp;Hilfe</translation>
 <translation id="4444304522807523469">Auf Dokumentenscanner zugreifen, die per USB angeschlossen sind oder sich im lokalen Netzwerk befinden</translation>
@@ -4175,7 +4171,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7014051144917845222">Der Versuch, eine Verbindung zwischen <ph name="PRODUCT_NAME" /> und <ph name="HOST_NAME" /> herzustellen, wurde abgelehnt. Möglicherweise ist die Website inaktiv oder Ihr Netzwerk ist nicht richtig konfiguriert.</translation>
 <translation id="7014174261166285193">Installation fehlgeschlagen</translation>
 <translation id="7015226785571892184">Folgende App wird gestartet, wenn Sie diese Anfrage akzeptieren: <ph name="APPLICATION" />.</translation>
-<translation id="7016688023264690202">Weave-Pairing wird von der Weave App zur sicheren Kommunikation mit Geräten in einem lokalen Netzwerk verwendet.</translation>
 <translation id="7017004637493394352">Sagen Sie noch einmal "Ok Google".</translation>
 <translation id="7017219178341817193">Neue Seite hinzufügen</translation>
 <translation id="7017354871202642555">Nach Erstellung des Fensters kann der Modus nicht mehr festgelegt werden.</translation>
@@ -4375,7 +4370,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="733186066867378544">Ausnahmen für Geostandorte</translation>
 <translation id="7331991248529612614">Animation für Lesemodus-Schaltfläche aktivieren</translation>
 <translation id="7334190995941642545">Smart Lock ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />, um überall auf Ihre Lesezeichen zugreifen zu können</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> hat Probleme beim Zugriff auf das Netzwerk. <ph name="LINE_BREAK" /> Dies liegt möglicherweise daran, dass Ihre Firewall oder Antivirensoftware irrtümlicherweise der Meinung ist, dass <ph name="PRODUCT_NAME" /> eine Bedrohung für Ihren Computer darstellt und es daher am Zugriff auf das Internet hindert.</translation>
 <translation id="7339763383339757376">PKCS #7, Einzelzertifikat</translation>
 <translation id="7339785458027436441">Rechtschreibung während der Eingabe prüfen</translation>
@@ -5217,7 +5211,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8509646642152301857">Beim Herunterladen des Wörterbuchs für die Rechtschreibprüfung ist ein Fehler aufgetreten.</translation>
 <translation id="8512476990829870887">Prozess beenden</translation>
 <translation id="851263357009351303">Anzeige von Bildern für <ph name="HOST" /> immer zulassen</translation>
-<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" führt eine Problembehebung für diesen Browser durch.</translation>
+<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" führt ein Debugging für diesen Browser durch.</translation>
 <translation id="8513974249124254369">ChromeVox (gesprochenes Feedback) ist aktiviert. Zum Deaktivieren Strg+Alt+Z drücken.</translation>
 <translation id="8515737884867295000">Zertifikatbasierte Authentifizierung fehlgeschlagen</translation>
 <translation id="8518865679229538285">Tamilische Eingabemethode (Typewriter)</translation>

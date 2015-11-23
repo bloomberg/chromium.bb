@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">கணக்குகள்</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
 <translation id="2204305834655267233">பிணைய தகவல்</translation>
 <translation id="2208323208084708176">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறை</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
-<translation id="3433830597744061105">கணக்குகளை நிர்வகி</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">ஸ்கிரீன் ஷாட்டுகள் எடுக்கும் திறனை உங்கள் நிர்வாகி முடக்கியுள்ளார்.</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
 <translation id="4053612967614057854">ஆன்ஸ்க்ரீன் விசைப்பலகையை முடக்கு</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (முதன்மை)</translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR" />ம <ph name="MINUTE" />நி</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="4279490309300973883">பிரதிபலிக்கிறது</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
 <translation id="68610848741840742">ChromeVox (பேச்சுவடிவ கருத்து)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> க்காகக் கணக்கைச் சேர்</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google இயக்ககம்</translation>

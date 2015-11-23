@@ -570,7 +570,6 @@
 <translation id="1774833706453699074">खुले पृष्ठों को बुकमार्क करें...</translation>
 <translation id="1775135663370355363">इस डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 आयात त्रुटि</translation>
 <translation id="1779652936965200207">कृपया यह पासकुंजी "<ph name="DEVICE_NAME" />" पर दर्ज करें:</translation>
 <translation id="1779766957982586368">विंडो बंद करें</translation>
 <translation id="1781502536226964113">नया टैब पृष्ठ खोलें</translation>
@@ -1791,7 +1790,6 @@
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" /> चलाने के लिए राइट-क्‍लिक करें.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> को अपने कैमरे और माइक्रोफ़ोन को एक्सेस करते रहन दें</translation>
 <translation id="3478315065074101056">XPS, Chrome के साथ क्लाउड प्रिंट से कनेक्ट किए गए क्लासिक प्रिंटर के लिए उन्नत विकल्पों को सक्षम करता है. इस फ़्लैग को बदलने के बाद प्रिंटर पुन: कनेक्ट किए जाने चाहिए.</translation>
-<translation id="3478477114335130296">हो सकता है आपकी कुछ सेटिंग आपकी जानकारी के बिना बदल गई हों.</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3480892288821151001">विंडो को बाईं ओर डॉक करें</translation>
 <translation id="3481915276125965083">इस पृष्ठ पर निम्न पॉप-अप अवरोधित कर दिए गए थे:</translation>
@@ -1911,7 +1909,6 @@
 <translation id="3612673635130633812">&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt; के द्वारा डाउनलोड किया गया</translation>
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> दिखाएं</translation>
 <translation id="3613422051106148727">नए टैब में &amp;खोलें</translation>
-<translation id="3613796918523876348">फिर भी पुनर्प्राप्त करें</translation>
 <translation id="3616741288025931835">ब्राउज़िंग डेटा &amp;साफ़ करें...</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="3620292326130836921">सभी का बैक अप लिया गया!</translation>
@@ -2472,7 +2469,6 @@
 <translation id="4439318412377770121">क्या आप <ph name="DEVICE_NAME" /> को Google क्लाउड डिवाइस में पंजीकृत करना चाहते हैं?</translation>
 <translation id="4441124369922430666">क्या आप चाहते हैं कि मशीन चालू होने पर यह ऐप्स  स्वचालित रूप से प्रारंभ हो जाए?</translation>
 <translation id="444134486829715816">विस्तृत करें...</translation>
-<translation id="4442309605992420742">Weave युग्मन सक्षम करें</translation>
 <translation id="444267095790823769">संरक्षित सामग्री अपवाद</translation>
 <translation id="4443536555189480885">&amp;मदद</translation>
 <translation id="4444304522807523469">USB के द्वारा संलग्‍न किए गए या स्‍थानीय नेटवर्क पर मौजूद दस्‍तावेज़ स्‍कैनर ऐक्‍सेस करें</translation>
@@ -4226,7 +4222,6 @@
 <translation id="7015226785571892184">यदि आप यह अनुरोध स्‍वीकार करते हैं तो निम्‍न ऐप्स  लॉन्‍च होगा:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave युग्मन का उपयोग स्थानीय नेटवर्क वाले डिवाइसों के साथ सुरक्षित संचार के लिए Weave ऐप के द्वारा किया जाता है.</translation>
 <translation id="7017004637493394352">पुन: "Ok Google" बोलें</translation>
 <translation id="7017219178341817193">कोई नया पृष्ठ जोड़ें</translation>
 <translation id="7017354871202642555">विंडो के सेट होने के बाद मोड सेट नहीं कर सकता है.</translation>
@@ -4426,7 +4421,6 @@
 <translation id="733186066867378544">भौगोलिक-स्थिति अपवाद</translation>
 <translation id="7331991248529612614">रीडर मोड बटन एनिमेशन सक्षम करें</translation>
 <translation id="7334190995941642545">Smart Lock वर्तमान में अनुपलब्‍ध है. कृपया बाद में पुन: प्रयास करें.</translation>
-<translation id="7336748286991450492">अपने बुकमार्क कहीं भी प्राप्त करने के लिए <ph name="SIGN_IN_LINK" /> करें.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           को नेटवर्क में पहुंचने में समस्या आ रही है.
           <ph name="LINE_BREAK" />
@@ -5184,7 +5178,7 @@
 <translation id="8381179624334829711">कैमरा सेटिंग प्रबंधित करें...</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME" /> को दूरस्थ रूप से इंस्टॉल किया गया था</translation>
 <translation id="8382913212082956454">ईमेल पते की प्रतिलिपि बनाएं</translation>
-<translation id="8384113940676655504">यह Smart Lock सेटिंग को सक्षम करता है जो Chromebook को ब्लूटूथ निम्न ऊर्जा पर स्थित फ़ोन को खोजने की अनुमति देती है ताकि Chromebook के फ़ोन के नज़दीक होने पर इसे अनलॉक किया जा सके.</translation>
+<translation id="8384113940676655504">यह एक Smart Lock सेटिंग को सक्षम करता है जो Chromebook को ब्लूटूथ निम्न ऊर्जा पर स्थित फ़ोन को खोजने देती है ताकि फ़ोन के नज़दीक होने पर Chromebook को अनलॉक किया जा सके.</translation>
 <translation id="8390029840652165810">कृपया सुनिश्चित करें कि आपका नेटवर्क कनेक्शन कार्य कर रहा है और यदि समस्या बनी रहती है, तो कृपया अपने प्रमाणिकता रीफ्रेश करने के लिए प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="8390445751804042000">कुछ नेटवर्क पैकेट की प्राप्‍ति के आधार पर डिवाइस चालू करना सक्षम करता है.</translation>
 <translation id="8390449457866780408">सर्वर अनुपलब्‍ध है.</translation>

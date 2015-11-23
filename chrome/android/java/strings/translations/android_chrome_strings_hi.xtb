@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">मोनोस्पेस</translation>
 <translation id="2646820313617290661">आपके अभिभावक इन सेटिंग को प्रबंधित करने में आपकी सहायता करते हैं.</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
-<translation id="2678212031093903894">अपने बुकमार्क का बैक अप लें और समन्‍वयित करें</translation>
 <translation id="2707726405694321444">पृष्ठ रीफ्रेश करें</translation>
 <translation id="2709516037105925701">स्‍वत: भरण</translation>
 <translation id="271033894570825754">नया</translation>
@@ -212,7 +211,7 @@
 <translation id="4532845899244822526">फ़ोल्डर चुनें</translation>
 <translation id="4543087392704641517">शीर्षक बुकमार्क करें</translation>
 <translation id="4543661749405994812">ईमेल पते की प्रतिलिपि बनाएं</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 शारीरिक वेब आस-पास है}one{# शारीरिक वेब लिंक आस-पास हैं}other{# शारीरिक वेब लिंक आस-पास हैं}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 शारीरिक वेब लिंक आस-पास है}one{# शारीरिक वेब लिंक आस-पास हैं}other{# शारीरिक वेब लिंक आस-पास हैं}}</translation>
 <translation id="4645575059429386691">आपके अभिभावक द्वारा प्रबंधित</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">इस साइट से आपका कनेक्‍शन निजी नहीं है.</translation>
 <translation id="7638584964844754484">गलत पासफ़्रेज़</translation>
 <translation id="764743049316168389"><ph name="FOLDER_NAME" /> फ़ोल्डर</translation>
-<translation id="7648120236428811856">किसी भी डिवाइस से अपने बुकमार्क ऐक्‍सेस करने के लिए Chrome में प्रवेश करें</translation>
 <translation id="7648422057306047504">Google प्रमाणिकता के साथ पासवर्ड एन्क्रिप्ट करें</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>

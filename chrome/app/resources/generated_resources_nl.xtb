@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Bladwijzer toevoegen voor geopende pagina's...</translation>
 <translation id="1775135663370355363">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Importfout voor PKCS #12</translation>
 <translation id="1779652936965200207">Geef deze toegangscode op '<ph name="DEVICE_NAME" />' op:</translation>
 <translation id="1779766957982586368">Venster sluiten</translation>
 <translation id="1781502536226964113">De pagina 'Nieuw tabblad' openen</translation>
@@ -1778,7 +1777,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="347719495489420368">Klik met de rechtermuisknop om <ph name="PLUGIN_NAME" /> af te spelen.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> toegang blijven geven tot je camera en microfoon</translation>
 <translation id="3478315065074101056">XPS schakelt geavanceerde opties in voor klassieke printers die via Chrome zijn gekoppeld aan Cloudprinter. Printers moeten opnieuw worden gekoppeld nadat deze markering is gewijzigd.</translation>
-<translation id="3478477114335130296">Enkele van je instellingen kunnen zonder je medeweten zijn aangepast</translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3480892288821151001">Venster links koppelen</translation>
 <translation id="3481915276125965083">De volgende pop-ups zijn op deze pagina geblokkeerd:</translation>
@@ -1897,7 +1895,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3612673635130633812">Gedownload door &lt;a href='<ph name="URL" />'&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> weergeven</translation>
 <translation id="3613422051106148727">&amp;Openen op nieuw tabblad</translation>
-<translation id="3613796918523876348">Toch herstellen</translation>
 <translation id="3616741288025931835">&amp;Browsegegevens wissen...</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' opzoeken</translation>
 <translation id="3620292326130836921">Er is een back-up van alles gemaakt</translation>
@@ -2458,7 +2455,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4439318412377770121">Wil je de <ph name="DEVICE_NAME" /> registreren voor Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Wil je dat deze app automatisch start wanneer het apparaat wordt ingeschakeld?</translation>
 <translation id="444134486829715816">Uitvouwen...</translation>
-<translation id="4442309605992420742">Weave-koppeling inschakelen</translation>
 <translation id="444267095790823769">Uitzonderingen voor beveiligde inhoud</translation>
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="4444304522807523469">Toegang tot documentscanners die zijn aangesloten via USB of die zich op het lokale netwerk bevinden</translation>
@@ -4213,7 +4209,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7015226785571892184">De volgende applicatie wordt gestart als je dit verzoek accepteert:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave-koppeling wordt gebruikt door de Weave App voor beveiligde communicatie met apparaten in het lokale netwerk.</translation>
 <translation id="7017004637493394352">Zeg nog een keer "Ok Google"</translation>
 <translation id="7017219178341817193">Een nieuwe pagina toevoegen</translation>
 <translation id="7017354871202642555">Kan modus niet instellen nadat venster is ingesteld.</translation>
@@ -4413,7 +4408,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="733186066867378544">Uitzonderingen voor geolocatie</translation>
 <translation id="7331991248529612614">Animatie inschakelen voor knop 'Lezermodus'</translation>
 <translation id="7334190995941642545">Smart Lock is momenteel niet beschikbaar. Probeer het later opnieuw.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> om overal toegang tot je bladwijzers te krijgen.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           ondervindt problemen bij het krijgen van toegang tot het netwerk.
           <ph name="LINE_BREAK" />

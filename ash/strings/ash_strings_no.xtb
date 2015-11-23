@@ -28,7 +28,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Kontoer</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2204305834655267233">Nettverksinformasjon</translation>
 <translation id="2208323208084708176">Enhetlig skrivebordsmodus</translation>
@@ -72,7 +71,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="3157169093162779309">Slå på rotasjonslås</translation>
 <translation id="3294437725009624529">Gjest</translation>
-<translation id="3433830597744061105">Administrer kontoer</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
@@ -100,7 +98,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3967919079500697218">Muligheten til å ta skjermdumper er deaktivert av administratoren.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="4053612967614057854">Slå av skjermtastaturet</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (primær)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> t og <ph name="MINUTE" /> m til batteriet er ferdigladet</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4279490309300973883">Speiling</translation>
@@ -167,7 +164,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="68610848741840742">ChromeVox (muntlig tilbakemelding)</translation>
-<translation id="6895424601869865703">Legg til en konto for <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Koble til annet</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Disk</translation>

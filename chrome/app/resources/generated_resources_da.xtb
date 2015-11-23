@@ -563,7 +563,6 @@
 <translation id="1774833706453699074">Tilføj åbne sider som bogmærker...</translation>
 <translation id="1775135663370355363">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12-importfejl</translation>
 <translation id="1779652936965200207">Angiv denne adgangsnøgle på "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Luk vindue</translation>
 <translation id="1781502536226964113">Åbn siden Ny fane</translation>
@@ -1775,7 +1774,6 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="347719495489420368">Højreklik for at afspille <ph name="PLUGIN_NAME" /> .</translation>
 <translation id="347785443197175480">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera og din mikrofon</translation>
 <translation id="3478315065074101056">XPS giver avancerede muligheder for klassiske printere, som er tilsluttet Cloudprinter med Chrome. Printere skal tilsluttes igen, når dette flag er ændret.</translation>
-<translation id="3478477114335130296">Nogle af dine indstillinger kan muligvis være blevet ændret uden dit vidende.</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="3480892288821151001">Fastgør vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende pop op-vinduer blev blokeret på denne side:</translation>
@@ -1894,7 +1892,6 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="3612673635130633812">Downloadet af &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Vis <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Åbn på ny fane</translation>
-<translation id="3613796918523876348">Gendan alligevel</translation>
 <translation id="3616741288025931835">&amp;Slet browserdata...</translation>
 <translation id="3618849550573277856">Slå "<ph name="LOOKUP_STRING" />" op</translation>
 <translation id="3620292326130836921">Alt er sikkerhedskopieret.</translation>
@@ -2455,7 +2452,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4439318412377770121">Vil du tilmelde <ph name="DEVICE_NAME" /> til Google Cloud-enheder?</translation>
 <translation id="4441124369922430666">Skal denne app startes automatisk, når du tænder computeren?</translation>
 <translation id="444134486829715816">Udvid...</translation>
-<translation id="4442309605992420742">Aktivér Weave-parring</translation>
 <translation id="444267095790823769">Undtagelser for beskyttet indhold</translation>
 <translation id="4443536555189480885">&amp;Hjælp</translation>
 <translation id="4444304522807523469">Få adgang til dokumentscannere, der er forbundet via USB eller det lokale netværk</translation>
@@ -2949,7 +2945,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5167131699331641907">Hollandsk tastatur</translation>
 <translation id="5170477580121653719">Ledig plads på Google Drev: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
-<translation id="5171045022955879922">Søg efter, eller indtast en webadresse</translation>
+<translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5175870427301879686"><ph name="URL" /> vil gemme data permanent på din lokale computer.</translation>
 <translation id="5177479852722101802">Fortsæt blokering af adgang til kamera og mikrofon</translation>
 <translation id="5177526793333269655">Miniaturevisning</translation>
@@ -4205,7 +4201,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME" />s forsøg på at oprette forbindelse til <ph name="HOST_NAME" /> blev afvist. Websitet er muligvis nede, eller dit netværk er måske ikke konfigureret korrekt.</translation>
 <translation id="7014174261166285193">Installationen mislykkedes.</translation>
 <translation id="7015226785571892184">Denne applikation åbnes, hvis du accepterer denne anmodning: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave-parring bruges af Weave-appen til sikker kommunikation med enheder på lokale netværk.</translation>
 <translation id="7017004637493394352">Sig "Ok Google" igen</translation>
 <translation id="7017219178341817193">Tilføj en ny side</translation>
 <translation id="7017354871202642555">Tilstanden kan ikke indstilles, når vinduet er indstillet.</translation>
@@ -4405,7 +4400,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="733186066867378544">Undtagelser for geografisk placering</translation>
 <translation id="7331991248529612614">Aktivér knapanimation for læsetilstand</translation>
 <translation id="7334190995941642545">Smart Lock er ikke tilgængelig i øjeblikket. Prøv igen senere.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> for at få adgang til dine bogmærker overalt.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> har problemer med at få adgang til netværket.<ph name="LINE_BREAK" />Dette kan skyldes, at din firewall eller antivirussoftware fejlagtigt tror, at <ph name="PRODUCT_NAME" /> er trængt ind på din computer, og det forhindres derfor fra at oprette forbindelse til internettet.</translation>
 <translation id="7339763383339757376">PKCS #7, enkeltcertifikat</translation>
 <translation id="7339785458027436441">Kontrollér stavning under indtastning</translation>
@@ -5115,7 +5109,7 @@ Beregner resterende tid</translation>
           for at undersøge din forbindelse.</translation>
 <translation id="8303655282093186569">Indstillinger for pinyin-indtastning</translation>
 <translation id="830598693585544337">Aktivering af denne indstilling forhindrer websites i at få adgang til WebAudio API.</translation>
-<translation id="8306534594034939679">Aktivér understøttelse af alternative tjenester – en eksperimentel HTTP-funktion.</translation>
+<translation id="8306534594034939679">Aktivér understøttelse af Alternative Services – en eksperimentel HTTP-funktion.</translation>
 <translation id="8307376264102990850">Oplader Beregner tid, indtil fuld</translation>
 <translation id="8308179586020895837">Spørg, om <ph name="HOST" /> vil have adgang til dit kamera</translation>
 <translation id="830868413617744215">Beta</translation>

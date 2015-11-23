@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">એકાઉન્ટ્સ</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="2204305834655267233">નેટવર્ક માહિતી</translation>
 <translation id="2208323208084708176">એકીકૃત ડેસ્કટૉપ મોડ</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="3157169093162779309">પરિભ્રમણ લૉક સક્ષમ કરો</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
-<translation id="3433830597744061105">એકાઉન્ટ્સનું સંચાલન કરો</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">સ્ક્રીનશૉટ્સ લેવાની ક્ષમતા તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="4053612967614057854">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કરો</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (પ્રાથમિક)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ક <ph name="MINUTE" />મિ સુધીમાં પૂર્ણ</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>
 <translation id="68610848741840742">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> માટે એક એકાઉન્ટ ઉમેરો</translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>

@@ -567,7 +567,6 @@
 <translation id="1774833706453699074">Lisa avatud lehed järjehoidjatesse ...</translation>
 <translation id="1775135663370355363">Kuvatakse ajalugu sellest seadmest. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 impordiviga</translation>
 <translation id="1779652936965200207">Sisestage seadmesse „<ph name="DEVICE_NAME" />” pääsukood:</translation>
 <translation id="1779766957982586368">Sulgeb akna</translation>
 <translation id="1781502536226964113">Ava uus vaheleht</translation>
@@ -1781,7 +1780,6 @@ Nende ja edasiste juhiste nägemiseks vaadake meile aadressil <ph name="ACCOUNT_
 <translation id="347719495489420368">Paremklõpsake pistikprogrammi <ph name="PLUGIN_NAME" /> esitamiseks.</translation>
 <translation id="347785443197175480">Luba hostile <ph name="HOST" /> jätkuvalt juurdepääs kaamerale ja mikrofonile</translation>
 <translation id="3478315065074101056">XPS lubab täpsemad valikud klassikaliste printerite jaoks, mis on ühendatud Chrome'i abil pilvprintimisega. Printerid tuleb pärast selle märgendi muutmist uuesti ühendada.</translation>
-<translation id="3478477114335130296">Mõnda seadet on võib-olla teie teadmata muudetud.</translation>
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="3480892288821151001">Doki aken vasakule</translation>
 <translation id="3481915276125965083">Sellel lehel blokeeriti järgmised hüpikaknad:</translation>
@@ -1900,7 +1898,6 @@ Nende ja edasiste juhiste nägemiseks vaadake meile aadressil <ph name="ACCOUNT_
 <translation id="3612673635130633812">Laadis alla &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Kuva <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Ava uuel vahelehel</translation>
-<translation id="3613796918523876348">Taasta ikkagi</translation>
 <translation id="3616741288025931835">Kustuta sirvi&amp;mise andmed...</translation>
 <translation id="3618849550573277856">Otsi terminit „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Kõik on varundatud.</translation>
@@ -2461,7 +2458,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4439318412377770121">Kas soovite registreerida seadme <ph name="DEVICE_NAME" /> teenuses Google'i pilvseadmed?</translation>
 <translation id="4441124369922430666">Kas soovite selle rakenduse seadme sisselülitamisel automaatselt käivitada?</translation>
 <translation id="444134486829715816">Laienda ...</translation>
-<translation id="4442309605992420742">Luba Weave'i sidumine</translation>
 <translation id="444267095790823769">Kaitstud sisu erandid</translation>
 <translation id="4443536555189480885">&amp;Abi</translation>
 <translation id="4444304522807523469">Juurdepääs dokumendiskänneritele USB või kohaliku võrgu kaudu</translation>
@@ -4215,7 +4211,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7015226785571892184">Selle taotlusega nõustumisel käivitatakse järgmine rakendus:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave'i sidumist kasutab Weave'i rakendus, et side seadmete vahel oleks kohalikus võrgus turvaline.</translation>
 <translation id="7017004637493394352">Öelge uuesti: „Ok Google”</translation>
 <translation id="7017219178341817193">Lisa uus leht</translation>
 <translation id="7017354871202642555">Pärast akna seadistamist ei saa režiimi määrata.</translation>
@@ -4415,7 +4410,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="733186066867378544">Geograafilise asukoha erandid</translation>
 <translation id="7331991248529612614">Lugejarežiimi nupu animatsiooni lubamine</translation>
 <translation id="7334190995941642545">Smart Lock ei ole praegu saadaval. Proovige hiljem uuesti.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> – nii saate järjehoidjaid kõikjal kasutada.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> ei pääse võrku. <ph name="LINE_BREAK" /> Põhjuseks võib olla see, et teie arvuti tulemüür või viirusetõrjetarkvara peab teenust <ph name="PRODUCT_NAME" /> sissetungijaks ja takistab sellel Internetiga ühenduse loomist.</translation>
 <translation id="7339763383339757376">PKCS 7, üks sertifikaat</translation>
 <translation id="7339785458027436441">Kontrolli õigekirja tippimise ajal</translation>
@@ -5199,7 +5193,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8425755597197517046">Kl&amp;eebi ja otsi</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="8427933533533814946">Foto autor:</translation>
-<translation id="8428213095426709021">Seadistused</translation>
+<translation id="8428213095426709021">Seaded</translation>
 <translation id="8432590265309978927">Algses katsejärgus olev tugi saitidevaheliste iframe'ide renderdamiseks eraldi protsessides.</translation>
 <translation id="8432745813735585631">US Colemaki klaviatuur</translation>
 <translation id="8434177709403049435">&amp;Kodeerimine</translation>

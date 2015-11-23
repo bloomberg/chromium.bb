@@ -571,7 +571,6 @@
 <translation id="1774833706453699074">開いているページをブックマーク...</translation>
 <translation id="1775135663370355363">このデバイスから履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 インポート エラー</translation>
 <translation id="1779652936965200207">「<ph name="DEVICE_NAME" />」でこのパスキーを入力してください:</translation>
 <translation id="1779766957982586368">ウィンドウを閉じる</translation>
 <translation id="1781502536226964113">新しいタブ ページを開く</translation>
@@ -1780,7 +1779,6 @@
 <translation id="347719495489420368">右クリックして <ph name="PLUGIN_NAME" /> を再生します。</translation>
 <translation id="347785443197175480"><ph name="HOST" /> によるカメラとマイクへのアクセスを引き続き許可する</translation>
 <translation id="3478315065074101056">XPS を使用すると、Chrome でクラウド プリントに接続している従来のプリンタに対し、詳細オプションを有効にできます。このフラグの設定を変更した場合は、プリンタを接続し直す必要があります。</translation>
-<translation id="3478477114335130296">設定の一部が、あなたの知らないうちに変更されている可能性があります。</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="3480892288821151001">ウィンドウを左に固定</translation>
 <translation id="3481915276125965083">このページの次のポップアップがブロックされました:</translation>
@@ -1898,7 +1896,6 @@
 <translation id="3612673635130633812">&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt; によりダウンロードされました</translation>
 <translation id="3613134908380545408">「<ph name="FOLDER_NAME" />」を表示</translation>
 <translation id="3613422051106148727">新しいタブで開く(&amp;O)</translation>
-<translation id="3613796918523876348">復元する</translation>
 <translation id="3616741288025931835">閲覧履歴を消去(&amp;C)...</translation>
 <translation id="3618849550573277856">「<ph name="LOOKUP_STRING" />」を検索</translation>
 <translation id="3620292326130836921">すべてバックアップ済みです。</translation>
@@ -2460,7 +2457,6 @@
 <translation id="4439318412377770121"><ph name="DEVICE_NAME" /> を Google クラウド デバイスに登録しますか？</translation>
 <translation id="4441124369922430666">マシンの起動時にこのアプリを自動的に起動しますか？</translation>
 <translation id="444134486829715816">展開...</translation>
-<translation id="4442309605992420742">Weave のペア設定を有効にする</translation>
 <translation id="444267095790823769">保護されたコンテンツの例外</translation>
 <translation id="4443536555189480885">ヘルプ(&amp;H)</translation>
 <translation id="4444304522807523469">USB 接続またはローカル ネットワーク上のドキュメント スキャナーへのアクセス</translation>
@@ -2949,7 +2945,7 @@
 <translation id="5167131699331641907">オランダ語キーボード</translation>
 <translation id="5170477580121653719">Google ドライブの残容量: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
-<translation id="5171045022955879922">検索するか URL を入力してください</translation>
+<translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5175870427301879686"><ph name="URL" /> では、データをローカル コンピュータに永続的に保存することを要求しています。</translation>
 <translation id="5177479852722101802">カメラとマイクへのアクセスを引き続きブロックする</translation>
 <translation id="5177526793333269655">サムネイル ビュー</translation>
@@ -4208,7 +4204,6 @@
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME" /> が <ph name="HOST_NAME" /> に接続しようとしましたが、拒否されました。ウェブサイトがダウンしているか、ネットワークが正しく設定されていない可能性があります。</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
 <translation id="7015226785571892184">このリクエストを承認すると、次のアプリケーションが起動します: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave のペア設定は、Weave App でローカル ネットワーク上のデバイスと安全な通信を行うために使用されます。</translation>
 <translation id="7017004637493394352">もう一度「OK Google」とお話しください</translation>
 <translation id="7017219178341817193">新しいページを追加</translation>
 <translation id="7017354871202642555">ウィンドウが設定されている場合はモードを設定できません。</translation>
@@ -4408,7 +4403,6 @@
 <translation id="733186066867378544">現在地の例外</translation>
 <translation id="7331991248529612614">リーダーモード ボタンのアニメーションを有効にする</translation>
 <translation id="7334190995941642545">Smart Lock は現在ご利用いただけません。しばらくしてからもう一度お試しください。</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />すれば、どのデバイスでもブックマークを利用できます。</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           からネットワークにアクセスできません。
           <ph name="LINE_BREAK" />

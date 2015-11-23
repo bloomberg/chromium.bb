@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">Аутоматски кликови</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Налози</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2204305834655267233">Информације о мрежи</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="3157169093162779309">Омогући закључавање ротације</translation>
 <translation id="3294437725009624529">Гост</translation>
-<translation id="3433830597744061105">Управљај налозима</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">Администратор је онемогућио опцију прављења снимака екрана.</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="4053612967614057854">Онемогући тастатуру на екрану</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (примарни)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> с <ph name="MINUTE" /> м до краја пуњења</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE" />% пуна и још увек се пуни.</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="68610848741840742">ChromeVox (говорне повратне информације)</translation>
-<translation id="6895424601869865703">Додај налог за <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google диск</translation>

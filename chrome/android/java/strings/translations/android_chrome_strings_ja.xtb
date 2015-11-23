@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">等幅</translation>
 <translation id="2646820313617290661">これらの設定はあなたの保護者が管理します。</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
-<translation id="2678212031093903894">ブックマークをバックアップして同期しよう</translation>
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
@@ -259,7 +258,7 @@
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE" />ページの翻訳を表示しますか？</translation>
 <translation id="5168917394043976756">操作パネルを開く</translation>
-<translation id="5171045022955879922">検索するか URL を入力してください</translation>
+<translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
 <translation id="5210714456814679336">他のデバイスの Chrome で開いているタブがここに表示されます。</translation>
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">このサイトへの接続はプライベート接続ではありません。</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
 <translation id="764743049316168389"><ph name="FOLDER_NAME" /> フォルダ</translation>
-<translation id="7648120236428811856">Chrome にログインすると、どのデバイスからでもブックマークにアクセスできます</translation>
 <translation id="7648422057306047504">Google の認証情報でパスワードを暗号化する</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>

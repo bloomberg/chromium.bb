@@ -60,7 +60,7 @@
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
-<translation id="1974060860693918893">Дополнительно</translation>
+<translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
 <translation id="1987317783729300807">Аккаунты</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Моноширинный</translation>
 <translation id="2646820313617290661">Этими настройками управляют родители.</translation>
 <translation id="2677748264148917807">Закрыть</translation>
-<translation id="2678212031093903894">Сохраняйте и синхронизируйте закладки</translation>
 <translation id="2707726405694321444">Обновить страницу</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="271033894570825754">Новый</translation>
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">Подключение к веб-сайту не защищено</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
 <translation id="764743049316168389">Папка "<ph name="FOLDER_NAME" />"</translation>
-<translation id="7648120236428811856">Войдите в Chrome, чтобы получить доступ к своим закладкам с любого устройства</translation>
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>

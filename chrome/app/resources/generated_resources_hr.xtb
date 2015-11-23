@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Označavanje otvorenih stranica...</translation>
 <translation id="1775135663370355363">Prikazuje se povijest s tog uređaja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Pogreška uvoza PKCS #12</translation>
 <translation id="1779652936965200207">Unesite ovu zaporku na uređaju "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Zatvori prozor</translation>
 <translation id="1781502536226964113">Otvori stranicu Nova kartica</translation>
@@ -1773,7 +1772,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="347719495489420368">Kliknite desnom tipkom da biste pokrenuli <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Nastavi dopuštati hostu <ph name="HOST" /> pristup kameri i mikrofonu</translation>
 <translation id="3478315065074101056">XPS omogućuje napredne opcije za klasične pisače povezane s Cloud Printom putem Chromea. Pisači se moraju ponovo povezati nakon promjene te oznake.</translation>
-<translation id="3478477114335130296">Neke su se postavke možda promijenile bez vašeg znanja.</translation>
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3480892288821151001">Usidri prozor ulijevo</translation>
 <translation id="3481915276125965083">Na ovoj su stranici blokirani sljedeći skočni prozori:</translation>
@@ -1892,7 +1890,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3612673635130633812">Datoteku je preuzelo proširenje &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Prikaži <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Otvori u novoj kartici</translation>
-<translation id="3613796918523876348">Svejedno oporavi</translation>
 <translation id="3616741288025931835">&amp;Obriši podatke o pregledavanju...</translation>
 <translation id="3618849550573277856">Potraži "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Sve je sigurnosno kopirano!</translation>
@@ -2454,7 +2451,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4439318412377770121">Želite li registrirati <ph name="DEVICE_NAME" /> u Google Cloud uređajima?</translation>
 <translation id="4441124369922430666">Želite li automatski pokrenuti tu aplikaciju kada se uređaj uključi?</translation>
 <translation id="444134486829715816">Proširi...</translation>
-<translation id="4442309605992420742">Omogući Weave uparivanje</translation>
 <translation id="444267095790823769">Iznimke za zaštićeni sadržaj</translation>
 <translation id="4443536555189480885">&amp;Help (Pomoć)</translation>
 <translation id="4444304522807523469">pristupiti skenerima dokumenata priključenim preko USB-a ili na lokalnu mrežu</translation>
@@ -4190,7 +4186,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7014051144917845222">Pokušaj povezivanja proizvoda <ph name="PRODUCT_NAME" /> s hostom <ph name="HOST_NAME" /> odbijen je. Web-lokacija možda je neaktivna ili vaša mreža nije ispravno konfigurirana.</translation>
 <translation id="7014174261166285193">Instalacija nije uspjela.</translation>
 <translation id="7015226785571892184">Ako prihvatite ovaj zahtjev, pokrenut će se sljedeća aplikacija: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Aplikacija Weave upotrebljava Weave uparivanje za sigurno povezivanje s uređajima na lokalnoj mreži.</translation>
 <translation id="7017004637493394352">Ponovo recite "OK Google"</translation>
 <translation id="7017219178341817193">Dodaj novu stranicu</translation>
 <translation id="7017354871202642555">Nakon postavljanja prozora nije moguće postaviti način.</translation>
@@ -4390,7 +4385,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="733186066867378544">Iznimke za geolokaciju</translation>
 <translation id="7331991248529612614">Omogući animaciju gumba za način čitača</translation>
 <translation id="7334190995941642545">Smart Lock trenutačno nije dostupan. Pokušajte ponovo kasnije.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> kako biste svugdje mogli pristupiti svojim oznakama.</translation>
 <translation id="7337488620968032387">Usluga <ph name="PRODUCT_NAME" /> ima problema s pristupanjem mreži. <ph name="LINE_BREAK" /> Možda vaš vatrozid ili antivirusni softver pogrešno smatraju da je usluga <ph name="PRODUCT_NAME" /> uljez na vašem računalu i blokiraju njeno povezivanje s internetom.</translation>
 <translation id="7339763383339757376">PKCS br. 7, jedan certifikat</translation>
 <translation id="7339785458027436441">Provjeravaj pravopis tijekom pisanja</translation>

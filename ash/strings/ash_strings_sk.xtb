@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">Automatické kliknutia</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Účty</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2204305834655267233">Informácie o sieti</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
@@ -72,7 +71,6 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="3157169093162779309">Zapnúť zámku otáčania</translation>
 <translation id="3294437725009624529">Hosť</translation>
-<translation id="3433830597744061105">Správa účtov</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
@@ -99,7 +97,6 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3967919079500697218">Váš správca zakázal zaznamenávanie snímok obrazovky.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="4053612967614057854">Vypnúť klávesnicu na obrazovke</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (primárny)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />h <ph name="MINUTE" />min do nabitia</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Zrkadlenie</translation>
@@ -166,7 +163,6 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="68610848741840742">ChromeVox (hlasová spätná väzba)</translation>
-<translation id="6895424601869865703">Pridať účet pre používateľa <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Disk Google</translation>

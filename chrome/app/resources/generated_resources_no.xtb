@@ -137,7 +137,7 @@
 <translation id="1179803038870941185"><ph name="URL" /> ønsker full kontroll over MIDI-enhetene dine.</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="11814323404622888">"&gt;
-    USB-C-enhet (den bakerste porten på høyre side)</translation>
+    USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="1183083053288481515">Bruk av et administratorlevert sertifikat</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> kan ikke installeres i lokalbufferen.</translation>
 <translation id="1185924365081634987">Du kan også prøve å <ph name="GUEST_SIGNIN_LINK_START" />surfe som gjest<ph name="GUEST_SIGNIN_LINK_END" /> for å løse denne nettverksfeilen.</translation>
@@ -333,7 +333,7 @@
 <translation id="1468038450257740950">WebGL støttes ikke.</translation>
 <translation id="1470719357688513792">Nye innstillinger for informasjonskapsler trer i kraft etter siden er lastet inn på nytt.</translation>
 <translation id="14720830734893704">Aktiver støtte for virtuelt tastatur.</translation>
-<translation id="1474079335130556426">Slå på bakgrunnsmodusen for Push-API-en. Dette gjør at hvis Push-API-en trenger det, kan Chrome åpnes når OS-et starter, samt fortsette å kjøre selv etter at det siste vinduet er lukket.</translation>
+<translation id="1474079335130556426">Slå på bakgrunnsmodus for Push API. Dette gjør at Chrome kan fortsette å kjøre etter at det siste vinduet er lukket, og starte når OS-et starter, dersom Push API trenger det.</translation>
 <translation id="1474339897586437869">«<ph name="FILENAME" />» ble ikke lastet opp. Det er ikke nok ledig plass på Google Disk.</translation>
 <translation id="1476949146811612304">Angi hvilken søkemotor som brukes når du søker i <ph name="BEGIN_LINK" />søkefeltet<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Tokenbuffer for identitets-API</translation>
@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Bokmerk åpne sider …</translation>
 <translation id="1775135663370355363">Viser loggen fra denne enheten. <ph name="BEGIN_LINK" />Les mer<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Importfeil for PKCS #12</translation>
 <translation id="1779652936965200207">Skriv inn dette passordet på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="1779766957982586368">Lukk vindu</translation>
 <translation id="1781502536226964113">Åpne siden Ny fane</translation>
@@ -1313,7 +1312,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2843055980807544929">Hvis dette er av, håndteres WM_KEY* og WM_CHAR hver for seg i Chrome.</translation>
 <translation id="2843806747483486897">Endre standardhandling</translation>
 <translation id="2844111009524261443">Kjør når brukeren klikker</translation>
-<translation id="2844169650293029770">USB-C-enhet (den fremste porten på venstre side)</translation>
+<translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
 <translation id="2845382757467349449">Vis alltid bokmerkerad</translation>
 <translation id="2846816712032308263">Muliggjør rask lukking av faner og vinduer – kjøres på fanens onunload js-behandler, uavhengig av GUI,</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
@@ -1774,7 +1773,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="347719495489420368">Høyreklikk for å aktivere <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Fortsett å gi <ph name="HOST" /> tillatelse til å bruke kameraet og mikrofonen</translation>
 <translation id="3478315065074101056">XPS aktiverer avanserte alternativer for klassiske skrivere som er tilkoblet Cloud Print med Chrome. Skriverne må kobles til på nytt når dette flagget endres.</translation>
-<translation id="3478477114335130296">Noen av innstillingene dine kan ha blitt endret uten at du vet det.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3480892288821151001">Forankre vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende forgrunnsvinduer er blokkert på siden:</translation>
@@ -1892,7 +1890,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="3612673635130633812">Lastet ned via &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Vis <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Åpne i ny fane</translation>
-<translation id="3613796918523876348">Gjenopprett uansett</translation>
 <translation id="3616741288025931835">&amp;Fjern nettlesingsdata</translation>
 <translation id="3618849550573277856">Slå opp «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="3620292326130836921">Alt er sikkerhetskopiert!</translation>
@@ -2385,7 +2382,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Fortsett nedlastingen}other{Fortsett nedlastingene}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">Lukk andre faner</translation>
-<translation id="4325378361067528777">Slå på bakgrunnsmodusen for Push API</translation>
+<translation id="4325378361067528777">Slå på bakgrunnsmodus for Push API</translation>
 <translation id="4326952458285403282">Deaktiverer bruken av det eksperimentelle DirectWrite-systemet for skrifttypegjengivelse.</translation>
 <translation id="4326999707196471878">Toolkit-Views-baserte nettleser-dialogbokser.</translation>
 <translation id="4330406155931244378">Slå på flerspråklig stavekontroll</translation>
@@ -2452,7 +2449,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4439318412377770121">Ønsker du å registrere <ph name="DEVICE_NAME" /> på Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Vil du starte denne appen automatisk når maskinen slås på?</translation>
 <translation id="444134486829715816">Utvid</translation>
-<translation id="4442309605992420742">Slå på Weave-tilkobling</translation>
 <translation id="444267095790823769">Unntak for beskyttet innhold</translation>
 <translation id="4443536555189480885">&amp;Hjelp</translation>
 <translation id="4444304522807523469">Få tilgang til dokumentskannere som er tilkoblet via USB eller på det lokale nettverket</translation>
@@ -2919,7 +2915,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5148652308299789060">Deaktiver 3D-programvare for rasterisering</translation>
 <translation id="5150254825601720210">Navn på Netscape SSL-tjenersertifikat</translation>
 <translation id="5151639798712723370">"&gt;
-    USB-C-enhet (den fremre porten på høyre side)</translation>
+    USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="5152451685298621771">(Konto for barn)</translation>
 <translation id="5154108062446123722">Avanserte innstillinger for <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
@@ -3061,7 +3057,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5328285148748012771">Du finner alle appene dine i dette startprogrammet. Spill spill, ha videosamtaler, hør på musikk, rediger dokumenter – eller finn flere apper i Chrome Nettmarked.</translation>
 <translation id="5329858601952122676">&amp;Slett</translation>
 <translation id="5330145655348521461">Disse filene ble åpnet på et annet skrivebord. Flytt til <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) for å se dem.</translation>
-<translation id="5331975486040154427">USB-C-enhet (den bakerste porten på venstre side)</translation>
+<translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5332624210073556029">Tidssone:</translation>
 <translation id="5334142896108694079">Skriptbuffer</translation>
 <translation id="533433379391851622">Den forventede versjonen var «<ph name="EXPECTED_VERSION" />», men den faktiske versjonen var «<ph name="NEW_ID" />».</translation>
@@ -4197,7 +4193,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7015226785571892184">Følgende program startes hvis du godtar denne forespørselen:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave-tilkobling brukes av Weave-appen for sikker kommunikasjon med enheter på det lokale nettverket.</translation>
 <translation id="7017004637493394352">Si «Ok Google» igjen</translation>
 <translation id="7017219178341817193">Legg til en ny side</translation>
 <translation id="7017354871202642555">Kan ikke angi modus etter at vinduet er opprettet.</translation>
@@ -4397,7 +4392,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="733186066867378544">Unntak for geografisk posisjonering</translation>
 <translation id="7331991248529612614">Slå på animasjon av knapper i lesermodus</translation>
 <translation id="7334190995941642545">Smart Lock er for øyeblikket utilgjengelig. Prøv igjen senere.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> for å bruke bokmerkene dine overalt.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           har problemer med tilgangen til nettverket.
           <ph name="LINE_BREAK" />
@@ -5147,7 +5141,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8381179624334829711">Administrer kamerainnstillingene</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME" /> ble installert eksternt</translation>
 <translation id="8382913212082956454">Kopier &amp;e-postadresse</translation>
-<translation id="8384113940676655504">Slår på en Smart Lock-innstilling som gjør at Chromebook kan oppdage telefoner over Bluetooth Low Energy for å låse opp Chromebooken når telefonen er i nærheten.</translation>
+<translation id="8384113940676655504">Slår på en Smart Lock-innstilling som gjør at Chromebook kan oppdage telefoner via Bluetooth Low Energy for å låse opp Chromebooken når telefonen er i nærheten.</translation>
 <translation id="8390029840652165810">Påse at nettverkstilkoblingen fungerer. Og hvis problemet vedvarer, må du logge deg av for så å logge deg på igjen, slik at du får lastet inn legitimasjonene dine på nytt.</translation>
 <translation id="8390445751804042000">Aktiverer avslutning av hvilemodus basert på mottak av enkelte nettverkspakker.</translation>
 <translation id="8390449457866780408">Tjeneren er ikke tilgjengelig.</translation>
@@ -5349,7 +5343,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8677039480012021122">Slett data og koble fra</translation>
 <translation id="8677212948402625567">Skjul alle</translation>
 <translation id="8678648549315280022">Administrer nedlastingsinnstillinger</translation>
-<translation id="8680251145628383637">Logg på for å få bokmerkene dine, loggen din, passordene dine og andre innstillinger på alle enhetene du bruker. Du blir dessuten automatisk logget på Google-tjenestene du bruker.</translation>
+<translation id="8680251145628383637">Logg på for å hente bokmerkene dine, loggen din, passordene dine og andre innstillinger på alle enhetene du bruker. Du blir dessuten automatisk logget på Google-tjenestene du bruker.</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
 <translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8684255857039823328">Passordet er lagret. Via <ph name="MANAGEMENT_LINK" /> kan du finne passordene dine fra alle enheter.</translation>

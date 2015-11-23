@@ -28,7 +28,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Contas</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2204305834655267233">Informações da rede</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
@@ -72,7 +71,6 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3147142846278915599">Launcher (a sincronizar aplicações...)</translation>
 <translation id="3157169093162779309">Ativar o bloqueio de rotação</translation>
 <translation id="3294437725009624529">Convidado</translation>
-<translation id="3433830597744061105">Gerir contas</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
@@ -99,7 +97,6 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3967919079500697218">A capacidade de criar capturas de ecrã foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="4053612967614057854">Desativar o teclado no ecrã</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (principal)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />h <ph name="MINUTE" />m até ficar completa</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
@@ -166,7 +163,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="68610848741840742">ChromeVox (respostas faladas)</translation>
-<translation id="6895424601869865703">Adicionar uma conta para <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Ligar-se a outra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

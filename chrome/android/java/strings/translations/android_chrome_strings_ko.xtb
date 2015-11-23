@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">고정 너비</translation>
 <translation id="2646820313617290661">계정 설정 관리는 부모님이 도와줍니다.</translation>
 <translation id="2677748264148917807">나가기</translation>
-<translation id="2678212031093903894">북마크 백업 및 동기화</translation>
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동완성</translation>
 <translation id="271033894570825754">새 파일</translation>
@@ -212,7 +211,7 @@
 <translation id="4532845899244822526">폴더 선택</translation>
 <translation id="4543087392704641517">북마크 제목</translation>
 <translation id="4543661749405994812">이메일 주소 복사</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{주변에 1개의 피지컬 웹 링크가 있습니다.}other{주변에 #개의 피지컬 웹 링크가 있습니다.}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{주변에 피지컬 웹 링크가 1개 있습니다.}other{주변에 피지컬 웹 링크가 #개 있습니다.}}</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 메인 스크린에 추가됨</translation>
@@ -221,7 +220,7 @@
 <translation id="4690286298542128877">탭이 Chrome 내부의 탭 전환으로 이동합니다.</translation>
 <translation id="4698413471314543145">Chrome 실행에 필요한 중요한 기능이 없습니다. Chrome 설치가 제대로 완료되지 않았거나 사용 중인 Android 버전과 호환되지 않습니다.</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />에서 열기</translation>
-<translation id="4726963856048758366">저장 공간 확보됨</translation>
+<translation id="4726963856048758366">저장 공간 확보 완료</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4761374747761474835">계정을 선택하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="4773299976671772492">중지됨</translation>
@@ -234,7 +233,7 @@
 <translation id="4871370605780490696">북마크 추가</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
-<translation id="4927198283430892231">저장된 페이지가 현재 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />을(를) 차지합니다.</translation>
+<translation id="4927198283430892231">현재 저장된 페이지의 크기는 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />입니다.</translation>
 <translation id="494334276486034338">최근 동기화: <ph name="HOURS" />시간 전</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="4970484396410298643">컴퓨터에서 열어 둔 탭을 여기에서 바로 액세스할 수 있습니다.
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">이 사이트에 대한 연결은 비공개가 아닙니다.</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>
 <translation id="764743049316168389"><ph name="FOLDER_NAME" /> 폴더</translation>
-<translation id="7648120236428811856">어느 기기에서나 내 북마크를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="7648422057306047504">비밀번호를 Google 사용자 인증 정보로 암호화</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
@@ -508,7 +506,7 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="8429160401486700187">저장된 페이지 삭제</translation>
 <translation id="8481940801237642152">이 사이트에 대한 연결은 비공개지만 네트워크에 있는 다른 사람은 페이지 디자인을 변경할 수 있습니다.</translation>
-<translation id="8493948351860045254">저장 공간 확보</translation>
+<translation id="8493948351860045254">저장 공간 확보하기</translation>
 <translation id="8497726226069778601">아직 표시할 내용 없음</translation>
 <translation id="8514577642972634246">시크릿 모드로 들어가기</translation>
 <translation id="8515416241041728525"><ph name="ADD_ACCOUNT_USER_NAME" /> 계정 추가</translation>

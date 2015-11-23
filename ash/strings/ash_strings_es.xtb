@@ -28,7 +28,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Cuentas</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
 <translation id="2204305834655267233">Información de red</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
@@ -72,7 +71,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3147142846278915599">Menú de aplicaciones (sincronizando aplicaciones...)</translation>
 <translation id="3157169093162779309">Habilitar bloqueo de rotación</translation>
 <translation id="3294437725009624529">Invitado</translation>
-<translation id="3433830597744061105">Administrar cuentas</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
 <translation id="3595596368722241419">Batería al máximo</translation>
@@ -99,7 +97,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3967919079500697218">Tu administrador ha inhabilitado la función para realizar capturas de pantalla.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="4053612967614057854">Inhabilitar teclado en pantalla</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (principal)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h y <ph name="MINUTE" /> min para completar la carga</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Duplicando</translation>
@@ -166,7 +163,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
 <translation id="68610848741840742">ChromeVox (mensajes de voz)</translation>
-<translation id="6895424601869865703">Añadir una cuenta para <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

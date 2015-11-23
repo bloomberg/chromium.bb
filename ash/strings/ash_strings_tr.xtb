@@ -28,7 +28,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Hesaplar</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="2204305834655267233">Ağ Bilgisi</translation>
 <translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
@@ -72,7 +71,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="3157169093162779309">Döndürme kilidini etkinleştir</translation>
 <translation id="3294437725009624529">Misafir</translation>
-<translation id="3433830597744061105">Hesapları yönet</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
@@ -99,7 +97,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3967919079500697218">Ekran görüntüsü alabilme işlevi yöneticiniz tarafından devre dışı bırakılmıştır.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="4053612967614057854">Ekran klavyesini devre dışı bırak</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (birincil)</translation>
 <translation id="412065659894267608">Tam dolana kadar <ph name="HOUR" /> sa <ph name="MINUTE" /> dk var</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
@@ -167,7 +164,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> için bir hesap ekle</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

@@ -28,7 +28,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Kontod</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="2204305834655267233">Võrguteave</translation>
 <translation id="2208323208084708176">Ühendatud töölaua režiim</translation>
@@ -72,7 +71,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="3157169093162779309">Luba pööramise lukustus</translation>
 <translation id="3294437725009624529">Külaline</translation>
-<translation id="3433830597744061105">Halda kontosid</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
@@ -99,7 +97,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3967919079500697218">Teie administraator on ekraanipiltide tegemise keelanud.</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="4053612967614057854">Keela ekraanil kuvatav klaviatuur</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (peamine)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h <ph name="MINUTE" /> min aku täitumiseni</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
@@ -166,7 +163,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
 <translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>
-<translation id="6895424601869865703">Lisage kasutajale <ph name="GIVEN_NAME" /> konto</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -202,7 +198,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8206859287963243715">Mobiil</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
 <translation id="8356164830168736643">Sule <ph name="WINDOW_TITLE" /></translation>
-<translation id="8428213095426709021">Seadistused</translation>
+<translation id="8428213095426709021">Seaded</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> täislaadimiseni</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8528322925433439945">Mobiil ...</translation>

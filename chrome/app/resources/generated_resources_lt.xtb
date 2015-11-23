@@ -571,7 +571,6 @@
 <translation id="1774833706453699074">Žymėti atidarytus puslapius...</translation>
 <translation id="1775135663370355363">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS Nr. 12 importavimo klaida</translation>
 <translation id="1779652936965200207">„<ph name="DEVICE_NAME" />“ įveskite šį prieigos kodą:</translation>
 <translation id="1779766957982586368">Uždaryti langą</translation>
 <translation id="1781502536226964113">Atidaryti naujo skirtuko puslapį</translation>
@@ -1783,7 +1782,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="347719495489420368">Spustelėkite dešiniuoju pelės klavišu, kad paleistumėte „<ph name="PLUGIN_NAME" />“.</translation>
 <translation id="347785443197175480">Toliau leisti <ph name="HOST" /> pasiekti fotoaparatą ir mikrofoną</translation>
 <translation id="3478315065074101056">XPS įgalina išplėstines parinktis klasikiniuose spausdintuvuose, prijungtuose prie „Chrome“ spausdinimo iš debesies paslaugos. Pakeitus šią žymą būtina iš naujo prijungti spausdintuvus.</translation>
-<translation id="3478477114335130296">Kai kurie nustatymai galėjo būti pakeisti jums nežinant.</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="3480892288821151001">Pritvirtinti langą kairėje</translation>
 <translation id="3481915276125965083">Šiame puslapyje šie iššokantieji langai buvo užblokuoti:</translation>
@@ -1902,7 +1900,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="3612673635130633812">Atsisiuntė &lt;a href="<ph name="URL" />"&gt;„<ph name="EXTENSION" />“&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Rodyti „<ph name="FOLDER_NAME" />“</translation>
 <translation id="3613422051106148727">&amp;Atidaryti naujo skirtuko lape</translation>
-<translation id="3613796918523876348">Vis tiek atkurti</translation>
 <translation id="3616741288025931835">&amp;Išvalyti naršymo duomenis...</translation>
 <translation id="3618849550573277856">Ieškoti „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Atsarginis kopijavimas baigtas!</translation>
@@ -2464,7 +2461,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4439318412377770121">Ar norite registruoti „<ph name="DEVICE_NAME" />“ kaip „Google“ debesies įrenginį?</translation>
 <translation id="4441124369922430666">Norite automatiškai paleisti šią programą, kai įjungiamas įrenginys?</translation>
 <translation id="444134486829715816">Išskleisti...</translation>
-<translation id="4442309605992420742">Įgalinti rangytąjį susiejimą</translation>
 <translation id="444267095790823769">Apsaugoto turinio išimtys</translation>
 <translation id="4443536555189480885">&amp;Pagalba</translation>
 <translation id="4444304522807523469">Pasiekti dokumentų skaitytuvus, prijungtus per USB jungtį ar vietiniame tinkle</translation>
@@ -4225,7 +4221,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7015226785571892184">Nurodyta programa bus paleista, jei priimsite šią užklausą:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Rangytasis susiejimas naudojamas programos „Weave“, siekiant apsaugoti ryšį su įrenginiais vietiniame tinkle.</translation>
 <translation id="7017004637493394352">Dar kartą ištarkite „Ok Google“</translation>
 <translation id="7017219178341817193">Pridėti naują puslapį</translation>
 <translation id="7017354871202642555">Nustačius langą, režimo nustatyti negalima.</translation>
@@ -4425,7 +4420,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="733186066867378544">Geografinių vietų išimtys</translation>
 <translation id="7331991248529612614">Įgalinti skaitymo režimo mygtuko animaciją</translation>
 <translation id="7334190995941642545">Šiuo metu „Smart Lock“ nepasiekiama. Bandykite dar kartą vėliau.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />, kad visur gautumėte žymes.</translation>
 <translation id="7337488620968032387">„<ph name="PRODUCT_NAME" />“
           negali pasiekti tinklo.
           <ph name="LINE_BREAK" />

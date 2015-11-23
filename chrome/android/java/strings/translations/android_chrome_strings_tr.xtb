@@ -19,7 +19,7 @@
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
-<translation id="129553762522093515">Yeni kapatılan</translation>
+<translation id="129553762522093515">Son kapatılan</translation>
 <translation id="1312168552565502328">Çerezler, site verileri</translation>
 <translation id="1346090444609141578">Burada kaydedilmiş sayfa yok</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> sitesi eklendi</translation>
@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Eş aralıklı</translation>
 <translation id="2646820313617290661">Ebeveyniniz bu ayarları yönetmenize yardımcı olabilir.</translation>
 <translation id="2677748264148917807">Çık</translation>
-<translation id="2678212031093903894">Yer işaretlerinizi yedekleyin ve senkronize edin</translation>
 <translation id="2707726405694321444">Sayfayı yenile</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="271033894570825754">Yeni</translation>
@@ -245,7 +244,7 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" /> değil misiniz?</translation>
-<translation id="5026147292873308216">Yakınlarda web sayfası bulunamadı</translation>
+<translation id="5026147292873308216">Yakınlarda hiç web sayfası bulunamadı</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
 <translation id="5063480226653192405">Kullanım</translation>
@@ -448,7 +447,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7634554953375732414">Bu siteye bağlantınız gizli değil.</translation>
 <translation id="7638584964844754484">Yanlış parola</translation>
 <translation id="764743049316168389"><ph name="FOLDER_NAME" /> klasörü</translation>
-<translation id="7648120236428811856">Yer işaretlerinize herhangi bir cihazdan erişmek için Chrome'da oturum açın</translation>
 <translation id="7648422057306047504">Şifreleri Google kimlik bilgileriyle şifrele</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>

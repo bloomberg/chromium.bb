@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">等宽</translation>
 <translation id="2646820313617290661">您的家长会协助管理这些设置。</translation>
 <translation id="2677748264148917807">离开</translation>
-<translation id="2678212031093903894">备份并同步您的书签</translation>
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
@@ -212,7 +211,7 @@
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4543087392704641517">书签标题</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{在附近发现了 1 个播报的实物网链接}other{在附近发现了 # 个播报的实物网链接}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{附近有 1 个播报的实物网链接}other{附近有 # 个播报的实物网链接}}</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -221,7 +220,7 @@
 <translation id="4690286298542128877">标签页将移到 Chrome 内的标签页切换器中。</translation>
 <translation id="4698413471314543145">缺少运行 Chrome 所需的关键功能；您可能未完成 Chrome 安装过程，或者 Chrome 与此版本的 Android 不兼容。</translation>
 <translation id="4720023427747327413">在<ph name="PRODUCT_NAME" />中打开</translation>
-<translation id="4726963856048758366">已清空存储空间中的内容</translation>
+<translation id="4726963856048758366">已清空存储空间</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4761374747761474835">请选择帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="4773299976671772492">已停止</translation>
@@ -448,7 +447,6 @@
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="764743049316168389">“<ph name="FOLDER_NAME" />”文件夹</translation>
-<translation id="7648120236428811856">通过任意设备登录 Chrome 后均可获取您的书签</translation>
 <translation id="7648422057306047504">使用 Google 凭据加密密码</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐户</translation>

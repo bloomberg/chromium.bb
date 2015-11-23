@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2646820313617290661">Vanhempasi auttavat näiden asetusten hallinnassa.</translation>
 <translation id="2677748264148917807">Poistu</translation>
-<translation id="2678212031093903894">Varmuuskopioi ja synkronoi kirjanmerkit</translation>
 <translation id="2707726405694321444">Päivitä sivu</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="271033894570825754">Uusi</translation>
@@ -212,7 +211,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4532845899244822526">Valitse kansio</translation>
 <translation id="4543087392704641517">Kirjanmerkin nimi</translation>
 <translation id="4543661749405994812">Kopioi sähköpostiosoite</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{Yksi linkki Fyysiseen webiin lähistöllä}other{# linkkiä Fyysiseen webiin lähistöllä}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{Lähistöllä on yksi linkki Fyysiseen webiin.}other{Lähistöllä on # linkkiä Fyysiseen webiin.}}</translation>
 <translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> kirjanmerkkiä poistettiin</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> lisättiin aloitusnäytölle.</translation>
@@ -448,7 +447,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="7634554953375732414">Sivustoon ei ole muodostettu salattua yhteyttä.</translation>
 <translation id="7638584964844754484">Väärä tunnuslause.</translation>
 <translation id="764743049316168389">Kansio <ph name="FOLDER_NAME" /></translation>
-<translation id="7648120236428811856">Kirjaudu Chromeen, niin voit käyttää kirjanmerkkejäsi millä tahansa laitteella.</translation>
 <translation id="7648422057306047504">Salaa salasanat Google-kirjautumistiedoilla.</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7665369617277396874">Lisää tili</translation>

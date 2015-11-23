@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Dodaj otwarte strony do zakładek...</translation>
 <translation id="1775135663370355363">Wyświetlanie historii z tego urządzenia. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Błąd importowania PKCS #12</translation>
 <translation id="1779652936965200207">Wpisz ten klucz na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="1779766957982586368">Zamknij okno</translation>
 <translation id="1781502536226964113">Otwórz stronę nowej karty</translation>
@@ -850,7 +849,7 @@
 <translation id="2231990265377706070">Wykrzyknik</translation>
 <translation id="2232876851878324699">Plik zawierał jeden certyfikat, który nie został zaimportowany:</translation>
 <translation id="2233502537820838181">&amp;Więcej informacji</translation>
-<translation id="2233587473672843170">Pokaż popularne witryny na stronie Nowa karta</translation>
+<translation id="2233587473672843170">Pokazuj popularne witryny na stronie Nowa karta</translation>
 <translation id="223714078860837942">Jeśli strona nie ma określonych zasad dotyczących strony odsyłającej, ustawienie tej flagi spowoduje zmniejszenie ilości informacji zawartych w nagłówku „odnośnika” w przypadku żądań z innych witryn.</translation>
 <translation id="2238379619048995541">Dane o stanie częstotliwości</translation>
 <translation id="2239921694246509981">Dodaj nadzorowaną osobę</translation>
@@ -1777,7 +1776,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="347719495489420368">Kliknij prawym przyciskiem myszy, by uruchomić <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do kamery i mikrofonu</translation>
 <translation id="3478315065074101056">XPS włącza zaawansowane opcje w klasycznych drukarkach podłączonych do Cloud Print przy użyciu Chrome. Po zmianie tej flagi drukarki trzeba podłączyć ponownie.</translation>
-<translation id="3478477114335130296">Niektóre ustawienia mogły zostać zmienione bez Twojej wiedzy.</translation>
 <translation id="3479552764303398839">Nie teraz</translation>
 <translation id="3480892288821151001">Umieść okno po lewej</translation>
 <translation id="3481915276125965083">Następujące wyskakujące okienka na tej stronie zostały zablokowane:</translation>
@@ -1896,7 +1894,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3612673635130633812">Pobrane przez &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Pokaż <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Otwórz w nowej karcie</translation>
-<translation id="3613796918523876348">Odzyskaj mimo wszystko</translation>
 <translation id="3616741288025931835">&amp;Wyczyść dane przeglądania...</translation>
 <translation id="3618849550573277856">Sprawdź słowo „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Wszystko ma już kopię zapasową.</translation>
@@ -2458,7 +2455,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4439318412377770121">Czy chcesz zarejestrować urządzenie <ph name="DEVICE_NAME" /> w chmurze Google?</translation>
 <translation id="4441124369922430666">Chcesz, by ta aplikacja była uruchamiana automatycznie po włączeniu urządzenia?</translation>
 <translation id="444134486829715816">Rozwiń...</translation>
-<translation id="4442309605992420742">Włącz parowanie Weave</translation>
 <translation id="444267095790823769">Wyjątki treści chronionej</translation>
 <translation id="4443536555189480885">&amp;Pomoc</translation>
 <translation id="4444304522807523469">Dostęp do skanerów podłączonych przez USB lub do sieci lokalnej</translation>
@@ -3922,7 +3918,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6575251558004911012">Pytaj, gdy strona żąda dostępu do kamery (zalecane)</translation>
 <translation id="6581162200855843583">Link Dysku Google</translation>
 <translation id="6583070985841601920">Zalogowany jako <ph name="USER_EMAIL_ADDRESS" />. Administrator wyłączył synchronizację.</translation>
-<translation id="65832705307647870">Umieszcza popularne witryny na stronie Nowa karta.</translation>
+<translation id="65832705307647870">Wyświetla popularne witryny na stronie Nowa karta.</translation>
 <translation id="6584878029876017575">Podpisywanie dożywotnie firmy Microsoft</translation>
 <translation id="6585234750898046415">Wybierz zdjęcie do Twojego konta, które pojawi się na ekranie logowania.</translation>
 <translation id="6585283250473596934">Uruchamianie sesji publicznej.</translation>
@@ -4199,7 +4195,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7014051144917845222">Próba nawiązania połączenia między przeglądarką <ph name="PRODUCT_NAME" /> a serwerem <ph name="HOST_NAME" /> nie powiodła się. Witryna może być wyłączona lub sieć może być niepoprawnie skonfigurowana.</translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>
 <translation id="7015226785571892184">Gdy zaakceptujesz to żądanie, zostanie uruchomiona następująca aplikacja: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Z parowania Weave korzysta aplikacja Weave, by zapewnić bezpieczną komunikację z urządzeniami w sieci lokalnej.</translation>
 <translation id="7017004637493394352">Powiedz „Ok Google” jeszcze raz</translation>
 <translation id="7017219178341817193">Dodaj nową stronę</translation>
 <translation id="7017354871202642555">Nie można ustawić trybu po ustawieniu okna.</translation>
@@ -4399,7 +4394,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="733186066867378544">Wyjątki dla geolokalizacji</translation>
 <translation id="7331991248529612614">Włącz animację przycisku trybu czytnika</translation>
 <translation id="7334190995941642545">Smart Lock jest obecnie niedostępny. Spróbuj ponownie później.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />, by wszędzie mieć swoje zakładki.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> ma trudności z uzyskaniem dostępu do sieci. <ph name="LINE_BREAK" /> Przyczyną może być błędne zidentyfikowanie <ph name="PRODUCT_NAME" /> przez zaporę sieciową lub oprogramowanie antywirusowe jako programu niepożądanego i blokowanie jego dostępu do internetu.</translation>
 <translation id="7339763383339757376">PKCS #7, jeden certyfikat</translation>
 <translation id="7339785458027436441">Sprawdzaj pisownię w trakcie pisania</translation>

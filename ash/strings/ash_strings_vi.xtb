@@ -28,7 +28,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Tài khoản</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2204305834655267233">Thông tin mạng</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
@@ -72,7 +71,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="3157169093162779309">Bật khóa xoay</translation>
 <translation id="3294437725009624529">Khách</translation>
-<translation id="3433830597744061105">Quản lý tài khoản</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
@@ -99,7 +97,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3967919079500697218">Quản trị viên của bạn đã tắt tính năng chụp ảnh màn hình.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="4053612967614057854">Tắt bàn phím ảo</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (chính)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />g <ph name="MINUTE" />p cho đến khi đầy</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
@@ -166,7 +163,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
 <translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>
-<translation id="6895424601869865703">Thêm một tài khoản cho <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

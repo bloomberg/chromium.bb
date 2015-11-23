@@ -12,11 +12,13 @@
 <translation id="1293235220023151515">በስርዓቱ ላይ የሚጋጭ የChromium ጭነት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="1298199220304005244">Chromium ስርዓተ ክወና መጠቀም ላይ እገዛ ያግኙ</translation>
 <translation id="1396446129537741364">Chromium የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
+<translation id="1403254041219632970">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Mac OS X 10.6፣ 10.7 ወይም 10.8 አይደግፉም።</translation>
 <translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
 <translation id="1444754455097148408">Chromium የክፍት ምንጭ ፈቃዶች</translation>
 <translation id="1461885241643463646">በiframe ላይ የተመሠረቱ የChromium መግቢያ ፍሰቶችን ይፈጥራል። ይህ ዕልባት --enable-web-based-signin ን ይሽራል።</translation>
 <translation id="1480489203462860648">ይሞክሩት፣ አስቀድሞ ተጭኗል</translation>
 <translation id="151962892725702025">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium OS ውሂብዎን ማመሳሰል አይችልም።</translation>
+<translation id="1559451348202814456">Chromium ከአሁን በኋላ በMac OS X 10.6፣ 10.7 ወይም 10.8 ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="1644918877723739397">Chromium ይህን በእርስዎ <ph name="SAVED_PASSWORD_LINK" /> ውስጥ ያከማቸው እና በሚቀጥለው ጊዜ ሲፈልጉት ያስታውሰዋል።</translation>
 <translation id="1668054258064581266">መለያዎን ከChromium ካስወገዱ በኋላ፣ ክፍት ትሮችዎ እንዲሰሩ መልሰው መጫን ሊኖርብዎ ይችላል።</translation>
 <translation id="1688750314291223739">ግላዊነት የተላበሰው የአሳሽ ባህሪዎችዎ ድር ላይ ለማስቀመጥና ከዚያ Chromium ካለው ማንኛውም ኮምፒውተር ለመድረስ አመሳስልን ያዋቅሩ።</translation>
@@ -45,8 +47,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{አንድ ማውረድ አሁን በሂደት ላይ ነው። ማውረዱን መተው እና ከChromium መውጣት ይፈልጋሉ?}one{# ማውረዶች አሁን በሂደት ላይ ናቸው። ማውረዶቹን መተው እና ከChromium መውጣት ይፈልጋሉ?}other{# ማውረዶች አሁን በሂደት ላይ ናቸው። ማውረዶቹን መተው እና ከChromium መውጣት ይፈልጋሉ?}}</translation>
 <translation id="2396765026452590966">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ Chromiumን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
+<translation id="2486653164587200256">Chromium በWindows XP ወይም Windows Vista ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="2535480412977113886">የመለያ መግቢያ ዝርዝሮችዎ ጊዜ ያለፈባቸው ስለሆኑ Chromium OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="2558641060352364164">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉ።</translation>
+<translation id="2565260267992448464">የእርስዎ ኮምፒውተር ከበይነመረቡ ጋር ስላልተገናኘ Chromium ድረ-ገጹን ማሳየት አይችልም።</translation>
 <translation id="2572494885440352020">Chromium አጋዥ</translation>
 <translation id="2602806952220118310">Chromium - ማሳወቂያዎች</translation>
 <translation id="2636877269779209383">Chromium ይህን ለዚህ ጣቢያ ለማጋራት የካሜራ መዳረሻ ያስፈልገዋል።</translation>
@@ -107,6 +111,7 @@
 <translation id="4423735387467980091">Chromiumን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4488676065623537541">የክፍያ መጠየቂያ ዝርዝሮችዎ በChromium ውስጥ ተቀምጠዋል።</translation>
+<translation id="4549794359424059447">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Windows XP ወይም Windows Vistaን አይደግፉም።</translation>
 <translation id="4559775032954821361">ወደ
           የChromium ምናሌ &gt;
           <ph name="SETTINGS_TITLE" />

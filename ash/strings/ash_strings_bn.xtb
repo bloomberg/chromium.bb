@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">অ্যাকাউন্টসমূহ</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2204305834655267233">নেটওয়ার্ক তথ্য</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
@@ -72,7 +71,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
 <translation id="3294437725009624529">অতিথি</translation>
-<translation id="3433830597744061105">অ্যাকাউন্টগুলি পরিচালনা করুন</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
@@ -99,7 +97,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="4053612967614057854">অন-স্ক্রীন কীবোর্ড অক্ষম করুন</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (প্রাথমিক)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ঘন্টা <ph name="MINUTE" /> মিনিট পর্যন্ত পূর্ণ</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
@@ -166,7 +163,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় মিরর প্রদর্শনগুলি করতে পারেনি৷ পরিবর্তে প্রসারিত ডেস্কটপ সক্ষম করা হয়েছে৷</translation>
 <translation id="68610848741840742">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> এর জন্য একটি অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>

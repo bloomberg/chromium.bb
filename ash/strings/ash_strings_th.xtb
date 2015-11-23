@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">บัญชี</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="2204305834655267233">ข้อมูลเครือข่าย</translation>
 <translation id="2208323208084708176">โหมดเดสก์ท็อปแบบรวม</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">Launcher (กำลังซิงค์แอป...)</translation>
 <translation id="3157169093162779309">เปิดใช้ล็อกการหมุน</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
-<translation id="3433830597744061105">จัดการบัญชี</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น "<ph name="FROM_LOCALE" />" (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">ความสามารถในการบันทึกภาพหน้าจอถูกปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="4053612967614057854">ปิดใช้แป้นพิมพ์บนหน้าจอ</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (หลัก)</translation>
 <translation id="412065659894267608">อีก <ph name="HOUR" />ชม. <ph name="MINUTE" />นาทีจึงจะเต็ม</translation>
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
 <translation id="68610848741840742">ChromeVox (การตอบสนองด้วยเสียง)</translation>
-<translation id="6895424601869865703">เพิ่มบัญชีสำหรับ <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>

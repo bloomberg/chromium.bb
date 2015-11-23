@@ -562,7 +562,6 @@
 <translation id="1774833706453699074">Запазване на отметки за отворените страници...</translation>
 <translation id="1775135663370355363">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Грешка при импортиране на PKCS #12</translation>
 <translation id="1779652936965200207">Моля, въведете този ключ за достъп на „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="1779766957982586368">Затваряне на прозореца</translation>
 <translation id="1781502536226964113">Да се отваря нов раздел в браузъра</translation>
@@ -1769,7 +1768,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="347719495489420368">Кликнете с десен бутон, за да стартирате <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Достъпът на <ph name="HOST" /> до камерата и микрофона ви да продължава да е разрешен</translation>
 <translation id="3478315065074101056">XPS активира разширени опции за традиционни принтери, свързани с Отпечатване в облак за Chrome. След като промените този флаг, принтерите трябва да се свържат отново.</translation>
-<translation id="3478477114335130296">Някои от настройките ви може да са променени без ваше знание.</translation>
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3480892288821151001">Закрепване на прозореца отляво</translation>
 <translation id="3481915276125965083">Следните изскачащи прозорци са блокирани на тази страница:</translation>
@@ -1887,7 +1885,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3612673635130633812">Изтеглено от &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Показване на „<ph name="FOLDER_NAME" />“</translation>
 <translation id="3613422051106148727">&amp;Отваряне в нов раздел</translation>
-<translation id="3613796918523876348">Възстановяване въпреки това</translation>
 <translation id="3616741288025931835">&amp;Изчистване на данните за сърфирането...</translation>
 <translation id="3618849550573277856">Търсене на „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">На всичко бе създадено резервно копие!</translation>
@@ -2445,7 +2442,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4439318412377770121">Искате ли да регистрирате „<ph name="DEVICE_NAME" />“ в Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Искате ли това приложение да стартира автоматично при включването на компютъра?</translation>
 <translation id="444134486829715816">Разгъване...</translation>
-<translation id="4442309605992420742">Активиране на сдвояването с Weave</translation>
 <translation id="444267095790823769">Изключения за защитено съдържание</translation>
 <translation id="4443536555189480885">&amp;Помощ</translation>
 <translation id="4444304522807523469">Достъп до скенери на документи, свързани чрез USB или с локалната мрежа</translation>
@@ -4185,7 +4181,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7014051144917845222">Опитът на <ph name="PRODUCT_NAME" /> да се свърже с/ъс <ph name="HOST_NAME" /> бе отхвърлен. Може да няма достъп до уебсайта или мрежата ви да не е конфигурирана правилно.</translation>
 <translation id="7014174261166285193">Инсталацията не бе успешна.</translation>
 <translation id="7015226785571892184">Ако приемете тази заявка, ще се стартира следното приложение: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Сдвояването с Weave се използва от приложението Weave за защитена комуникация с устройства в локалната мрежа.</translation>
 <translation id="7017004637493394352">Кажете „Ok Google“ отново</translation>
 <translation id="7017219178341817193">Добавяне на нова страница</translation>
 <translation id="7017354871202642555">Не може да се зададе режим, след като е настроен прозорец.</translation>
@@ -4385,7 +4380,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="733186066867378544">Изключения за геолокация</translation>
 <translation id="7331991248529612614">Активиране на анимацията за бутона за режима за четене</translation>
 <translation id="7334190995941642545">Функцията Smart Lock не е налице в момента. Моля, опитайте отново по-късно.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />, за да имате достъп до отметките си от всяко място.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> има проблеми с достъпа до мрежата. <ph name="LINE_BREAK" /> Причината може да е в това, че защитната ви стена или антивирусният ви софтуер погрешно смятат, че <ph name="PRODUCT_NAME" /> е нарушител в мобилното ви устройство, и блокират връзката му с интернет.</translation>
 <translation id="7339763383339757376">PKCS 7, единичен сертификат</translation>
 <translation id="7339785458027436441">Проверка на правописа при въвеждане</translation>

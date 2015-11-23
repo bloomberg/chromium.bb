@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">അക്കൗണ്ടുകൾ‌</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
 <translation id="2204305834655267233">നെറ്റ്‌വർക്ക് വിവരം</translation>
 <translation id="2208323208084708176">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡ്</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="3157169093162779309">റൊട്ടേഷൻ ലോക്ക് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
-<translation id="3433830597744061105">അക്കൗണ്ടുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">സ്ക്രീൻഷോട്ടുകൾ എടുക്കാനുള്ള കഴിവ് നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="4053612967614057854">ഓൺ‌ സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കുക</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (പ്രാഥമികം)</translation>
 <translation id="412065659894267608">പൂർണ്ണമായും ചാർജാകുന്നതിന് <ph name="HOUR" />മ <ph name="MINUTE" />മി</translation>
 <translation id="4250680216510889253">ഇല്ല</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
@@ -165,7 +162,6 @@
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="68610848741840742">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> എന്നയാൾക്കായി ഒരു അക്കൗണ്ട് ചേർക്കുക</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>

@@ -664,7 +664,7 @@
 <translation id="8153880621934657047">Mimo tabuľky</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčiarkovník}few{# podčiarkovníky}many{# underscores}other{# podčiarkovníkov}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8186185314313222077">prepnutie režimu na celú obrazovku</translation>
+<translation id="8186185314313222077">prepnutie na celú obrazovku</translation>
 <translation id="81960742267269908">vystrihnúť</translation>
 <translation id="8199231515320852133">Oznámiť hlavičky aktuálnej bunky</translation>
 <translation id="820417203470636242">Prázdna bunka</translation>
@@ -700,7 +700,7 @@
 <translation id="8631359288236106450">Počet vybraných položiek: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Oznámiť aktuálne súradnice bunky</translation>
 <translation id="8650576015643545550">Žiadny predchádzajúci zoznam</translation>
-<translation id="8651481478098336970">vypnutie zvuku</translation>
+<translation id="8651481478098336970">stlmenie hlasitosti</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Zobraziť zoznam odkazov</translation>
 <translation id="8664519043722036194">sekundy</translation>

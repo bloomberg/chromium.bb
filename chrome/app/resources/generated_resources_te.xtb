@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">తెరిచి ఉన్న పేజీలను బుక్‌మార్క్ చేయి...</translation>
 <translation id="1775135663370355363">ఈ పరికరం నుండి చరిత్రను చూపుతోంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 దిగుమతి లోపం</translation>
 <translation id="1779652936965200207">దయచేసి "<ph name="DEVICE_NAME" />"లో ఈ పాస్‌కీని నమోదు చేయండి:</translation>
 <translation id="1779766957982586368">విండోను ముసివేయి</translation>
 <translation id="1781502536226964113">క్రొత్త ట్యాబ్ పేజీని తెరువు</translation>
@@ -1784,7 +1783,6 @@
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" />ని ప్లే చేయడానికి కుడి-క్లిక్ చేయండి.</translation>
 <translation id="347785443197175480">మీ కెమెరా మరియు మైక్రోఫోన్‌ను ప్రాప్యత చేయడానికి <ph name="HOST" />ను అనుమతించడాన్ని కొనసాగించండి</translation>
 <translation id="3478315065074101056">Chromeతో Cloud ముద్రణకి కనెక్ట్ చేయబడిన క్లాసిక్ ప్రింటర్‌ల కోసం XPS అధునాతన ఎంపికలను ప్రారంభిస్తుంది. ఈ ఫ్లాగ్‌ని మార్చిన తర్వాత ప్రింటర్‌లను తప్పనిసరిగా మళ్లీ కనెక్ట్ చేయాలి.</translation>
-<translation id="3478477114335130296">మీ సెట్టింగ్‌ల్లో కొన్ని మీకు తెలియకుండానే మార్చబడి ఉండవచ్చు.</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3480892288821151001">విండోను ఎడమవైపుకు డాక్ చేయి</translation>
 <translation id="3481915276125965083">ఈ పేజీపై క్రింది పాప్-అప్‌లు నిరోధించబడ్డాయి:</translation>
@@ -1903,7 +1901,6 @@
 <translation id="3612673635130633812">&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt; ద్వారా డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" />ని చూపు</translation>
 <translation id="3613422051106148727">&amp;క్రొత్త ట్యాబ్‌లో తెరువు</translation>
-<translation id="3613796918523876348">ఏదేమైన పునరుద్ధరించు</translation>
 <translation id="3616741288025931835">బ్రౌజింగ్ డేటాను &amp;క్లియర్ చెయ్యి...</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="3620292326130836921">అన్నీ బ్యాకప్ చేయబడ్డాయి!</translation>
@@ -2464,7 +2461,6 @@
 <translation id="4439318412377770121">మీరు <ph name="DEVICE_NAME" />ని Google Cloud పరికరాలకు నమోదు చేయాలనుకుంటున్నారా?</translation>
 <translation id="4441124369922430666">మెషీన్ ప్రారంభించబడినప్పుడు స్వయంచాలకంగా ఈ అనువర్తనం ప్రారంభించబడాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="444134486829715816">విస్తరించు...</translation>
-<translation id="4442309605992420742">Weave జత చేయడం ప్రారంభించండి</translation>
 <translation id="444267095790823769">రక్షిత కంటెంట్ మినహాయింపులు</translation>
 <translation id="4443536555189480885">&amp;సహాయం</translation>
 <translation id="4444304522807523469">USB ద్వారా లేదా స్థానిక నెట్‌వర్క్‌లో జోడించిన పత్రం స్కానర్‌లను ప్రాప్యత చేయండి</translation>
@@ -3929,7 +3925,7 @@
 <translation id="6575251558004911012">సైట్ మీ కెమెరాకు ప్రాప్యత కావాలనుకున్నప్పుడు అడగాలి (సిఫార్సు చేయబడింది)</translation>
 <translation id="6581162200855843583">Google డిస్క్ లింక్</translation>
 <translation id="6583070985841601920"><ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. మీ నిర్వాహకుడు సమకాలీకరణను నిలిపివేసారు.</translation>
-<translation id="65832705307647870">కొత్త ట్యాబ్ పేజీని ప్రసిద్ధ సైట్‌లతో ముందే నింపేస్తుంది.</translation>
+<translation id="65832705307647870">కొత్త ట్యాబ్ పేజీని జనాదరణ పొందిన సైట్‌లతో ముందే నింపేస్తుంది.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6585234750898046415">మీ ఖాతా కోసం సైన్-ఇన్ స్క్రీన్‌లో చూపడానికి ఒక చిత్రాన్ని ఎంచుకోండి.</translation>
 <translation id="6585283250473596934">పబ్లిక్ సెషన్‌లోకి ప్రవేశిస్తోంది.</translation>
@@ -4211,7 +4207,6 @@
         సరిగా కాన్ఫిగర్ అయి ఉండకపోవచ్చు.</translation>
 <translation id="7014174261166285193">వ్యవస్థాపన విఫలమైంది.</translation>
 <translation id="7015226785571892184">మీరు ఈ అభ్యర్థనను ఆమోదిస్తే క్రింది అనువర్తనం ప్రారంభించబడుతుంది: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">స్థానిక నెట్‌వర్క్‌లోని పరికరాలతో సురక్షిత కమ్యూనికేషన్ కోసం Weave అనువర్తనం Weave జత చేయడాన్ని ఉపయోగిస్తుంది.</translation>
 <translation id="7017004637493394352">మళ్లీ "Ok Google" చెప్పండి</translation>
 <translation id="7017219178341817193">క్రొత్త పేజీని జోడించండి</translation>
 <translation id="7017354871202642555">విండో సెట్ చెయ్యబడిన తర్వాత మోడ్ సెట్ చెయ్యబడదు.</translation>
@@ -4411,7 +4406,6 @@
 <translation id="733186066867378544">భౌగోళిక స్థానం మినహాయింపులు</translation>
 <translation id="7331991248529612614">రీడర్ మోడ్ బటన్ యానిమేషన్‌ను ప్రారంభించండి</translation>
 <translation id="7334190995941642545">Smart Lock ప్రస్తుతం అందుబాటులో లేదు. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="7336748286991450492">మీ బుక్‌మార్క్‌లను ప్రతిచోటా పొందడానికి <ph name="SIGN_IN_LINK" /> చేయండి.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />కి నెట్‌వర్క్‌ని ప్రాప్యత చేయడంలో సమస్య ఉంది. <ph name="LINE_BREAK" /> మీ ఫైర్‌వాల్ లేదా యాంటీవైరస్ సాఫ్ట్‌వేర్ మీ కంప్యూటర్‌లో <ph name="PRODUCT_NAME" />ని చొరబాటుదారుని తప్పుగా భావించినందున, ఇంటర్నెట్‌కు కనెక్ట్ చేయనీయకుండా దీన్ని బ్లాక్ చేస్తుండవచ్చు.</translation>
 <translation id="7339763383339757376">PKCS #7, ఒకే సర్టిఫికెట్</translation>
 <translation id="7339785458027436441">టైప్ చేసేటప్పుడు అక్షరక్రమాన్ని తనిఖీ చేయి</translation>

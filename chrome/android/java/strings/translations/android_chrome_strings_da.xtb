@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
 <translation id="2646820313617290661">Dine forældre hjælper med at administrere disse indstillinger.</translation>
 <translation id="2677748264148917807">Forlad</translation>
-<translation id="2678212031093903894">Sikkerhedskopiér og synkroniser dine bogmærker</translation>
 <translation id="2707726405694321444">Opdater siden</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="271033894570825754">Nyt</translation>
@@ -212,7 +211,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4543087392704641517">Bogmærkets titel</translation>
 <translation id="4543661749405994812">Kopiér e-mailadresse</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{Der blev registreret 1 link til Fysisk web i nærheden}one{Der blev registreret # links til Fysisk web i nærheden}other{Der blev registreret # links til Fysisk web i nærheden}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{Der blev registreret Fysisk web-link i nærheden}one{Der blev registreret # Fysisk web-link i nærheden}other{Der blev registreret # Fysisk web-links i nærheden}}</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> blev føjet til din startskærm</translation>
@@ -249,7 +248,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind p�
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5063480226653192405">Forbrug</translation>
-<translation id="5074309530946372881">Søger efter websider i nærheden</translation>
+<translation id="5074309530946372881">Leder efter websider i nærheden</translation>
 <translation id="509605886816275399">Vil du gemme denne side offline?</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
@@ -259,7 +258,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind p�
 <translation id="5161254044473106830">Der skal angives en titel</translation>
 <translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE" /> fra dette website næste gang?</translation>
 <translation id="5168917394043976756">Åbn sidemenuen</translation>
-<translation id="5171045022955879922">Søg efter, eller indtast en webadresse</translation>
+<translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
 <translation id="5210714456814679336">Her vises faner, som du har åbnet i Chrome på dine andre enheder.</translation>
@@ -448,7 +447,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="7634554953375732414">Din forbindelse til dette website er ikke privat.</translation>
 <translation id="7638584964844754484">Forkert adgangssætning</translation>
 <translation id="764743049316168389">Mappen <ph name="FOLDER_NAME" /></translation>
-<translation id="7648120236428811856">Log ind på Chrome for at få adgang til dine bogmærker fra enhver enhed</translation>
 <translation id="7648422057306047504">Kryptér adgangskoder med Google-loginoplysninger</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>

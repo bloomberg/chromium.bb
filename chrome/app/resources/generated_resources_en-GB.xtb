@@ -568,7 +568,6 @@
 <translation id="1774833706453699074">Bookmark open pages...</translation>
 <translation id="1775135663370355363">Showing history from this device. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS No.12 Import Error</translation>
 <translation id="1779652936965200207">Please enter this passkey on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Close window</translation>
 <translation id="1781502536226964113">Open the New Tab page</translation>
@@ -1779,7 +1778,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="347719495489420368">Right-click to play <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478315065074101056">XPS enables advanced options for classic printers connected to the Cloud Print with Chrome. Printers must be re-connected after changing this flag.</translation>
-<translation id="3478477114335130296">Some of your settings may have been changed without your knowledge.</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
 <translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
@@ -1898,7 +1896,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3612673635130633812">Downloaded by &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Show <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Open in new tab</translation>
-<translation id="3613796918523876348">Recover anyway</translation>
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
 <translation id="3618849550573277856">Look Up “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">All backed up!</translation>
@@ -2460,7 +2457,6 @@ Press any key to continue exploring.</translation>
 <translation id="4439318412377770121">Do you wish to register <ph name="DEVICE_NAME" /> to Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Do you want to automatically start this app when the machine turns on?</translation>
 <translation id="444134486829715816">Expand...</translation>
-<translation id="4442309605992420742">Enable Weave Pairing</translation>
 <translation id="444267095790823769">Protected content exceptions</translation>
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="4444304522807523469">Access document scanners attached via USB or on the local network</translation>
@@ -4216,7 +4212,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7015226785571892184">The following application will be launched if you accept this request:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave pairing is used by Weave App for secure communication with devices on local network.</translation>
 <translation id="7017004637493394352">Say "OK Google" again</translation>
 <translation id="7017219178341817193">Add a new page</translation>
 <translation id="7017354871202642555">Cannot set mode after window is set.</translation>
@@ -4416,7 +4411,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="733186066867378544">Geolocation exceptions</translation>
 <translation id="7331991248529612614">Enable Reader Mode Button Animation</translation>
 <translation id="7334190995941642545">Smart Lock is currently unavailable. Please try again later.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> to get your bookmarks everywhere.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> is having trouble accessing the network. <ph name="LINE_BREAK" /> This may be because your firewall or anti-virus software wrongly thinks <ph name="PRODUCT_NAME" /> is an intruder on your computer and is blocking it from connecting to the Internet.</translation>
 <translation id="7339763383339757376">PKCS #7, single certificate</translation>
 <translation id="7339785458027436441">Check Spelling While Typing</translation>

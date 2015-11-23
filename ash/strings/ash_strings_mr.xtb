@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">खाती</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="2204305834655267233">नेटवर्क माहिती</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">लाँचर (संकालन अॅप्स...)</translation>
 <translation id="3157169093162779309">फिरविणे लॉक करा सक्षम करा</translation>
 <translation id="3294437725009624529">अतिथी</translation>
-<translation id="3433830597744061105">खाती व्यवस्थापित करा</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">स्क्रीनशॉट घेण्याची क्षमता आपल्या प्रशासकाद्वारे अक्षम केली गेली आहे.</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="4053612967614057854">ऑन-स्क्रीन कीबोर्ड अक्षम करा</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (प्राथमिक)</translation>
 <translation id="412065659894267608">पूर्ण होईपर्यंत  <ph name="HOUR" />ता <ph name="MINUTE" />मि</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप प्रविष्ट केला.</translation>
 <translation id="68610848741840742">ChromeVox (बोललेला अभिप्राय)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> सीठी खाते जोडा</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>

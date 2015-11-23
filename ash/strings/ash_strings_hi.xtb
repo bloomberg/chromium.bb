@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">खाते</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2204305834655267233">नेटवर्क जानकारी</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="3157169093162779309">रोटेशन लॉक को सक्षम करें</translation>
 <translation id="3294437725009624529">अतिथि</translation>
-<translation id="3433830597744061105">खाते प्रबंधित करें</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में पुन: बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
 <translation id="3595596368722241419">बैटरी पूर्ण</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="4053612967614057854">ऑन-स्‍क्रीन कीबोर्ड अक्षम करें</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (प्राथमिक)</translation>
 <translation id="412065659894267608">पूरी तरह से चार्ज होने में <ph name="HOUR" />घं <ph name="MINUTE" />मि शेष</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
 <translation id="68610848741840742">ChromeVox (बोला गया फ़ीडबैक)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" /> के लिए नया खाता जोड़ें</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google डिस्क</translation>

@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Обележи отворене странице...</translation>
 <translation id="1775135663370355363">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Грешка при увозу PKCS #12 стандарда</translation>
 <translation id="1779652936965200207">Унесите овај приступни кôд на уређају „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="1779766957982586368">Затварање прозора</translation>
 <translation id="1781502536226964113">Отвори нову картицу</translation>
@@ -1777,7 +1776,6 @@
 <translation id="347719495489420368">Кликните десним тастером да бисте покренули <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">И даље дозвољавај сајту <ph name="HOST" /> да приступа камери и микрофону</translation>
 <translation id="3478315065074101056">XPS омогућава напредне опције за класичне штампаче повезане са Cloud штампањем помоћу Chrome-а. Морате поново да повежете штампаче када промените ово обележје.</translation>
-<translation id="3478477114335130296">Нека подешавања су можда промењена без вашег знања.</translation>
 <translation id="3479552764303398839">Не сада</translation>
 <translation id="3480892288821151001">Спајање прозора са леве стране</translation>
 <translation id="3481915276125965083">Следећи искачући прозори су блокирани на овој страници:</translation>
@@ -1896,7 +1894,6 @@
 <translation id="3612673635130633812">Додатак &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt; је преузео</translation>
 <translation id="3613134908380545408">Прикажи <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Отвори на новој картици</translation>
-<translation id="3613796918523876348">Ипак задржи</translation>
 <translation id="3616741288025931835">&amp;Обриши податке прегледања...</translation>
 <translation id="3618849550573277856">Потражи „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Направљене су резервне копије свих датотека!</translation>
@@ -2458,7 +2455,6 @@
 <translation id="4439318412377770121">Желите ли да региструјете <ph name="DEVICE_NAME" /> као Google Cloud уређај?</translation>
 <translation id="4441124369922430666">Желите ли да се ова апликација покреће аутоматски када укључите уређај?</translation>
 <translation id="444134486829715816">Прошири...</translation>
-<translation id="4442309605992420742">Омогући Weave упаривање</translation>
 <translation id="444267095790823769">Изузеци за заштићени садржај</translation>
 <translation id="4443536555189480885">&amp;Help (Помоћ)</translation>
 <translation id="4444304522807523469">Приступ скенерима за документе прикљученим преко USB-а или на локалној мрежи</translation>
@@ -4214,7 +4210,6 @@
 <translation id="7015226785571892184">Следећа апликација ће бити покренута ако прихватите овај захтев:
 
  <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Апликација Weave користи Weave упаривање ради безбедне комуникације уређаја на локалној мрежи.</translation>
 <translation id="7017004637493394352">Кажите поново „ОК Google“</translation>
 <translation id="7017219178341817193">Додајте нову страницу</translation>
 <translation id="7017354871202642555">Није могуће подесити режим након подешавања прозора.</translation>
@@ -4414,7 +4409,6 @@
 <translation id="733186066867378544">Изузеци за географску локацију</translation>
 <translation id="7331991248529612614">Омогући анимацију дугмета за режим читаоца</translation>
 <translation id="7334190995941642545">Smart Lock тренутно није доступан. Покушајте поново касније.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> да бисте користили обележиваче на свакој локацији.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           има проблема са приступом мрежи.
           <ph name="LINE_BREAK" />

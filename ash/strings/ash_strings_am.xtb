@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">የግቤት ስልቱ የሚቀየርበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
 <translation id="1270290102613614947">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ተሰናክሏል</translation>
@@ -25,10 +26,11 @@
 <translation id="1812696562331527143">የግብዓት ስልትዎ ወደ <ph name="INPUT_METHOD_ID" /> ተቀይሯል*(<ph name="BEGIN_LINK" />3ኛ ወገን<ph name="END_LINK" />)።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
+<translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">መለያዎች</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
 <translation id="2204305834655267233">የአውታረ መረብ መረጃ</translation>
 <translation id="2208323208084708176">የተዋሃደ የዴስክቶፕ ሁነታ</translation>
@@ -72,7 +74,6 @@
 <translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="3157169093162779309">ተሽከርካሪ መቆለፊያን አንቃ</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
-<translation id="3433830597744061105">መለያዎችን አቀናብር</translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE" />» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="3595596368722241419">ባትሪ ሙሉ ነው</translation>
@@ -99,7 +100,6 @@
 <translation id="3967919079500697218">ቅጽበታዊ-ገጽ እይታዎችን የማንሳት ችሎታ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="4053612967614057854">የማያ ገጽ ላይ ቁልፍ ሰሌዳን አሰናክል</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (ዋና)</translation>
 <translation id="412065659894267608">ሙሉ እስኪሆን ድረስ <ph name="HOUR" />ሰ <ph name="MINUTE" />ደ</translation>
 <translation id="4250680216510889253">አይ</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
@@ -108,6 +108,7 @@
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል።</translation>
+<translation id="4544944664594876241">የመቆለፊያ ገጹ የሚቆለፍበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
@@ -116,6 +117,7 @@
 <translation id="4957722034734105353">ተጨማሪ ለመረዳት...</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">የGoogle Drive ቅንብሮች...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> ቀርቷል</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />፣ <ph name="OVERSCAN" /></translation>
@@ -135,6 +137,7 @@
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="5871632337994001636">መሳሪያዎችን ያስተዳድሩ...</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">ወዳልታወቀ ተቀባይ በመውሰድ ላይ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">አድህር</translation>
@@ -158,6 +161,7 @@
 <translation id="6426039856985689743">የተንቀሳቃሽ ስልክ ውሂብን ያሰናክሉ</translation>
 <translation id="6452181791372256707">አይቀበሉ</translation>
 <translation id="6459472438155181876">ማያ ገጽ ወደ <ph name="DISPLAY_NAME" /> በመቀጠል ላይ</translation>
+<translation id="6501401484702599040">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
 <translation id="6596816719288285829">IP አድራሻ</translation>
@@ -165,14 +169,15 @@
 <translation id="6713285437468012787">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ተጣምሯል፣ እና አሁን ለሁሉም ተጠቃሚዎች ይገኛል። ቅንብሮችን በመጠቀም ይህን ጥምረት ማስወገድ ይችላሉ።</translation>
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
 <translation id="6803622936009808957">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማሳየት አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል።</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (የቃል ግብረመልስ)</translation>
-<translation id="6895424601869865703">ለ<ph name="GIVEN_NAME" /> አንድ መለያ አክል</translation>
 <translation id="6911468394164995108">ሌላ ይቀላቀሉ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
 <translation id="703171847531699602">ምንም የሚወሰዱ መሣሪያዎች የሉም</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" />ን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
 <translation id="7052914147756339792">ልጣፍ አዘጋጅ...</translation>
 <translation id="7097613348211027502">ChromeVox (የቃል ግብረመልስ) ነቅቷል። 
 ለማሰናከል Ctrl+Alt+Z ይጫኑ።</translation>
@@ -184,6 +189,7 @@
 <translation id="737451040872859086">ማይክሮፎን (ውስጣዊ)</translation>
 <translation id="742594950370306541">ካሜራ ስራ ላይ ነው።</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> ተቀይሯል</translation>
 <translation id="7573962313813535744">ትክል ሁነታ</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
@@ -211,6 +217,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">ለማየት ጠቅ ያድርጉ</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>

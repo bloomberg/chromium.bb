@@ -213,7 +213,7 @@
 <translation id="5523118979700054094">Policynamn</translation>
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
 <translation id="5540224163453853">Det gick inte att hitta den önskade artikeln.</translation>
-<translation id="5544037170328430102">En inbäddad sida på <ph name="SITE" /> säger:</translation>
+<translation id="5544037170328430102">På en inbäddad sida på <ph name="SITE" /> står det:</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Hantering stöds inte</translation>
@@ -286,7 +286,7 @@
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7419106976560586862">Profilsökväg</translation>
-<translation id="7424977062513257142">En inbäddad sida på den här webbplatsen säger:</translation>
+<translation id="7424977062513257142">På en inbäddad sida på den här webbplatsen står det:</translation>
 <translation id="7441627299479586546">Felaktigt policyämne</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
@@ -349,7 +349,7 @@
 <translation id="883848425547221593">Övriga bokmärken</translation>
 <translation id="884923133447025588">Ingen återkallningsmekanism har hittats.</translation>
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
-<translation id="8866959479196209191">Den här sidan säger:</translation>
+<translation id="8866959479196209191">På den här sidan står det:</translation>
 <translation id="8876793034577346603">Det gick inte att tolka nätverkskonfigurationen.</translation>
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="889901481107108152">Experimentet finns tyvärr inte på din plattform.</translation>

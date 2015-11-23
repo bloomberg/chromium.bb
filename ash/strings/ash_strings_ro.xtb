@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Conturi</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2204305834655267233">Informații despre rețea</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
@@ -72,7 +71,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="3157169093162779309">Activează blocarea rotirii</translation>
 <translation id="3294437725009624529">Invitat</translation>
-<translation id="3433830597744061105">Gestionați conturile</translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE" />” (este necesară repornirea)</translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
@@ -99,7 +97,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3967919079500697218">Capacitatea de a crea capturi de ecran a fost dezactivată de administrator.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="4053612967614057854">Dezactivează tastatura de pe ecran</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (principal)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h. <ph name="MINUTE" /> min. până la încărcare completă</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4279490309300973883">Oglindire</translation>
@@ -166,7 +163,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="68610848741840742">ChromeVox (feedback rostit)</translation>
-<translation id="6895424601869865703">Adăugați un cont pentru <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

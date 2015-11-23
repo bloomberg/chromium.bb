@@ -129,7 +129,7 @@
 <translation id="2639750663247012216">የChromeVox መቀየሪያ</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2667291555398229137">ከማዞሪያ ቁልፍ ስር ያለውን ንጥል ጠቅ ያድርጉ</translation>
-<translation id="267442004702508783">ዓድስ</translation>
+<translation id="267442004702508783">አድስ</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{ክፍት ቅንፍ}one{# ክፍት ቅንፎች}other{# ክፍት ቅንፎች}}</translation>
 <translation id="2705875883745373140">አልተጫነም</translation>
@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">ቀዳሚ የሠንጠረዥ ረድፍ</translation>
 <translation id="4736221692378411923">ኦገስት</translation>
 <translation id="4740661827607246557">የእገዛ ትዕዛዞች</translation>
+<translation id="4755857887974653209">ChromeVoxን አሰናክል</translation>
 <translation id="4759716709594980008">የChromeOS ቁልፍ ሰሌዳ አሳሽ</translation>
 <translation id="4763296182459741068">ወደ ታች ተጠቅልሏል</translation>
 <translation id="4763480195061959176">ቪዲዮ</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">ምርጫው</translation>
 <translation id="8066678206530322333">ሰንደቅ</translation>
 <translation id="8110647606445335195">ምንም የARIA ምልክቶች የሉም።</translation>
+<translation id="8132379720172247073">የChromeVox ምናሌ</translation>
 <translation id="8153880621934657047">በሠንጠረዥ ውስጥ አይደሉም።</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ሰረዘዘብጥ}one{# ሰረዘዘብጦች}other{# ሰረዘዘብጦች}}</translation>
 <translation id="8179976553408161302">አስገባ</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">የቀጣይ ዝርዝር ንጥል</translation>
 <translation id="860150890330522909"><ph name="NAME" /> አመልካች ሳጥን ላይ ምልክት ተደርጓል</translation>
+<translation id="8603071050456974042">የChromeVox ፓነል</translation>
 <translation id="8606621670302093223">የቀን መቆጣጠሪያ</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> ንጥሎች ተመርጠዋል</translation>
 <translation id="8638532244051952400">የአሁኑ የሕዋስ መገናኛ ነጥቦች አስታውቅ</translation>

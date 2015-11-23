@@ -333,7 +333,7 @@
 <translation id="1468038450257740950">WebGL nu este acceptat.</translation>
 <translation id="1470719357688513792">Noile setări pentru cookie-uri se vor aplica după reîncărcarea paginii.</translation>
 <translation id="14720830734893704">Activați compatibilitatea cu tastatura virtuală.</translation>
-<translation id="1474079335130556426">Activează modul fundal pentru API-ul Push. Astfel, Chrome rulează în continuare după ce ultima fereastră este închisă și se lansează la pornirea sistemului de operare, daca API-ul Push o solicită.</translation>
+<translation id="1474079335130556426">Activează modul fundal pentru API-ul Push. Astfel, Chrome rulează în continuare după ce ultima fereastră este închisă și se lansează la pornirea sistemului de operare, dacă API-ul Push o solicită.</translation>
 <translation id="1474339897586437869">„<ph name="FILENAME" />” nu s-a încărcat. Nu există spațiu liber suficient în Google Drive.</translation>
 <translation id="1476949146811612304">Setați ce motor de căutare este utilizat atunci când se caută din <ph name="BEGIN_LINK" />caseta polivalentă<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Memorie cache pentru indicativele API-ului Identity</translation>
@@ -569,7 +569,6 @@
 <translation id="1774833706453699074">Marcați paginile deschise...</translation>
 <translation id="1775135663370355363">Se afișează istoricul de pe dispozitiv. <ph name="BEGIN_LINK" />Aflați mai multe<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Eroare de import PKCS #12</translation>
 <translation id="1779652936965200207">Introduceți această cheie de acces pe „<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Închide fereastra</translation>
 <translation id="1781502536226964113">Deschideți pagina Filă nouă</translation>
@@ -1787,7 +1786,6 @@ Pentru instrucțiuni suplimentare, verifică e-mailurile la adresa <ph name="ACC
 <translation id="347719495489420368">Clic dreapta pentru a reda <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Permiteți în continuare accesul <ph name="HOST" /> la camera și microfonul dvs.</translation>
 <translation id="3478315065074101056">XPS permite opțiuni avansate pentru imprimantele clasice conectate la Cloud Print prin Chrome. Imprimantele trebuie să fie conectate din nou după modificarea acestui semnalizator.</translation>
-<translation id="3478477114335130296">Este posibil ca unele setări să fi fost modificate fără cunoștința dvs.</translation>
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="3480892288821151001">Andocați fereastra la stânga</translation>
 <translation id="3481915276125965083">Următoarele ferestre pop-up au fost blocate pe această pagină:</translation>
@@ -1906,7 +1904,6 @@ Pentru instrucțiuni suplimentare, verifică e-mailurile la adresa <ph name="ACC
 <translation id="3612673635130633812">Descărcat de &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Vezi <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Deschideți într-o filă nouă</translation>
-<translation id="3613796918523876348">Recuperați oricum</translation>
 <translation id="3616741288025931835">&amp;Șterge datele de navigare...</translation>
 <translation id="3618849550573277856">Caută „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">S-a făcut backup pentru tot!</translation>
@@ -2467,7 +2464,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4439318412377770121">Dorești să înregistrezi dispozitivul <ph name="DEVICE_NAME" /> în Dispozitive Google Cloud?</translation>
 <translation id="4441124369922430666">Doriți ca această aplicație să fie lansată automat la pornirea dispozitivului?</translation>
 <translation id="444134486829715816">Extinde...</translation>
-<translation id="4442309605992420742">Activează asocierea prin Weave</translation>
 <translation id="444267095790823769">Excepții cu privire la conținutul protejat</translation>
 <translation id="4443536555189480885">&amp;Ajutor</translation>
 <translation id="4444304522807523469">Accesează scanerele de documente atașate prin USB sau dintr-o rețea locală</translation>
@@ -4222,7 +4218,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
         funcționeze sau rețeaua să nu fie configurată corect.</translation>
 <translation id="7014174261166285193">Instalarea nu a reușit.</translation>
 <translation id="7015226785571892184">Dacă acceptați această solicitare, va fi lansată următoarea aplicație: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Aplicația Weave folosește asocierea prin Weave pentru comunicarea securizată cu dispozitivele din rețeaua locală.</translation>
 <translation id="7017004637493394352">Rostește din nou „Ok Google”</translation>
 <translation id="7017219178341817193">Adaugă o pagină nouă</translation>
 <translation id="7017354871202642555">Modul nu poate fi setat după setarea ferestrei.</translation>
@@ -4422,7 +4417,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="733186066867378544">Excepții privind localizarea geografică</translation>
 <translation id="7331991248529612614">Activează animația butonului pentru modul cititor</translation>
 <translation id="7334190995941642545">În prezent funcția Smart Lock nu este disponibilă. Încearcă din nou mai târziu.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> pentru a accesa marcajele oriunde mergeți.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           întâmpină probleme la accesarea rețelei.
           <ph name="LINE_BREAK" />

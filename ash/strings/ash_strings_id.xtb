@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1013923882670373915">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan selanjutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
@@ -25,10 +26,11 @@
 <translation id="1812696562331527143">Metode masukan Anda telah berubah menjadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ketiga<ph name="END_LINK" />).
 Tekan Shift + Alt untuk beralih.</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Akun</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="2204305834655267233">Info Jaringan</translation>
 <translation id="2208323208084708176">Mode desktop terpadu</translation>
@@ -72,7 +74,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="3157169093162779309">Aktifkan penguncian rotasi</translation>
 <translation id="3294437725009624529">Tamu</translation>
-<translation id="3433830597744061105">Kelola akun</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -99,7 +100,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3967919079500697218">Kemampuan untuk membuat tangkapan layar telah dinonaktifkan oleh administrator Anda.</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="4053612967614057854">Nonaktifkan keyboard di layar</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (utama)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />j <ph name="MINUTE" />m sampai penuh</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
@@ -108,6 +108,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding.</translation>
+<translation id="4544944664594876241">Pintasan untuk mengunci layar telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai gantinya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
@@ -116,6 +117,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4957722034734105353">Pelajari selengkapnya...</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Spasi</translation>
 <translation id="5045002648206642691">Setelan Google Drive...</translation>
 <translation id="5102001756192215136">Sisa <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
@@ -135,6 +137,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 Tekan Shift + Alt untuk beralih.</translation>
 <translation id="5871632337994001636">Mengelola perangkat...</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Mentransmisi ke penerima tak dikenal</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Kembalikan</translation>
@@ -158,6 +161,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6426039856985689743">Nonaktifkan data seluler</translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6459472438155181876">Memperpanjang layar ke <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Mentransmisi layar ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Alamat IP</translation>
@@ -165,14 +169,15 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (Masukan lisan)</translation>
-<translation id="6895424601869865703">Tambahkan akun untuk <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="703171847531699602">Tidak ada perangkat transmisi</translation>
+<translation id="7034339000180558234">Mentransmisi <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Setel wallpaper...</translation>
 <translation id="7097613348211027502">ChromeVox (masukan lisan) diaktifkan.
 Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
@@ -184,6 +189,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="737451040872859086">Mikrofon (Internal)</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak mendukung <ph name="SPECIFIED_RESOLUTION" />. Resolusi diubah menjadi <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Mode digalangkan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
@@ -211,6 +217,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Klik untuk melihat</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

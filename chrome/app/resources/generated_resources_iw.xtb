@@ -332,7 +332,7 @@
 <translation id="1468038450257740950">‏WebGL אינו נתמך.</translation>
 <translation id="1470719357688513792">‏הגדרות חדשות של קובצי Cookie ייכנסו לתוקף לאחר הטעינה מחדש של הדף.</translation>
 <translation id="14720830734893704">הפעל תמיכה במקלדת וירטואלית.</translation>
-<translation id="1474079335130556426">‏הפעלת מצב רקע עבור Push API. פעולה זו מאפשרת ל-Chrome להמשיך לפעול לאחר סגירת החלון האחרון, ולהתחיל לפעול במהלך אתחול מערכת ההפעלה, אם API Push מחייב זאת.</translation>
+<translation id="1474079335130556426">‏הפעלת מצב רקע עבור Push API. פעולה זו מאפשרת ל-Chrome להמשיך לפעול לאחר סגירת החלון האחרון, ולהתחיל לפעול במהלך אתחול מערכת ההפעלה, אם Push API מחייב זאת.</translation>
 <translation id="1474339897586437869">‏הקובץ "<ph name="FILENAME" />" לא הועלה. אין לך מספיק שטח פנוי ב-Google Drive.</translation>
 <translation id="1476949146811612304">הגדר איזה מנוע חיפוש יופעל בעת חיפוש ב<ph name="BEGIN_LINK" />‏סרגל הכתובות<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">‏קובץ שמור של אסימון ממשק API של זהות</translation>
@@ -562,7 +562,6 @@
 <translation id="1774833706453699074">הוספת דפים פתוחים לסימניות...</translation>
 <translation id="1775135663370355363">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">‏שגיאת ייבוא של PKCS #12</translation>
 <translation id="1779652936965200207">הזן את סיסמה זו ב-"<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
 <translation id="1781502536226964113">פתח את הדף 'כרטיסייה חדשה'</translation>
@@ -647,7 +646,7 @@
 <translation id="1918141783557917887">&amp;קטן יותר</translation>
 <translation id="192144045824434199">‏אפשר הפעלת חלונות מסוג 'חלונית', שנפתחים מחוץ למסגרת הדפדפן. אם לא יופעלו, נסיונות לפתוח 'חלונית' יפתחו חלון מוקפץ במקום. החלוניות תמיד מופעלות בערוצי הפיתוח ו-Canary‏.</translation>
 <translation id="1921584744613111023">‏dpi‏ <ph name="DPI" /></translation>
-<translation id="1921986354447415460">‏מקלדת Turkish-F</translation>
+<translation id="1921986354447415460">‏מקלדת טורקית-F</translation>
 <translation id="1923786009776354244">‏הפעל תמיכה בשביל כותרת מקור של WebRTC Stun.</translation>
 <translation id="1926741348654461781">אפשר דפים במצב לא מקוון</translation>
 <translation id="1929546189971853037">קרא את היסטוריית הגלישה שלך בכל המכשירים שאליהם נכנסת</translation>
@@ -1713,7 +1712,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3396331542604645348">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. בדוק את המדפסת או נסה לבחור מדפסת אחרת.</translation>
 <translation id="3399597614303179694">מקלדת מקדונית</translation>
 <translation id="340013220407300675">ייתכן שתוקפים מנסים לגנוב את המידע שלך מ-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (לדוגמה: סיסמאות, הודעות או כרטיסי אשראי).</translation>
-<translation id="3401130144947259741">‏אם התכונה מופעלת, אירועי מעקב מיוצאים אל ETW, מעקב אירועים ל-Windows, ואז ניתן לתעד אותם באמצעות כלים כמו UIForETW או Xperf.</translation>
+<translation id="3401130144947259741">‏אם התכונה מופעלת, מתבצע יצוא של אירועי מעקב אל 'מעקב אירועים עבור Windows'‏ (ETW). לאחר היצוא ניתן לתעד אותם באמצעות כלים כמו UIForETW או Xperf.</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">&amp;הצג את סרגל הסימניות</translation>
@@ -1766,7 +1765,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="347719495489420368">לחץ לחיצה ימנית כדי להפעיל את <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">המשך לאפשר ל-<ph name="HOST" /> לגשת למצלמה ולמיקרופון</translation>
 <translation id="3478315065074101056">‏XPS מפעיל אפשרויות מתקדמות עבור מדפסות רגילות המחוברות ל-Cloud Print באמצעות Chrome. יש לחבר מחדש מדפסות לאחר שינוי התראה זו.</translation>
-<translation id="3478477114335130296">יתכן שחלק מההגדרות שלך שונו ללא ידיעתך.</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3480892288821151001">עגן חלון לשמאל</translation>
 <translation id="3481915276125965083">ההודעות הקופצות הבאות נחסמו בדף זה:</translation>
@@ -1882,7 +1880,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3612673635130633812">‏ההורדה בוצעה באמצעות &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">הצג את <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;פתח בכרטיסייה חדשה</translation>
-<translation id="3613796918523876348">שחזר בכל זאת</translation>
 <translation id="3616741288025931835">&amp;נקה נתוני גלישה...</translation>
 <translation id="3618849550573277856">חפש “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">הכל מגובה!</translation>
@@ -2446,7 +2443,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4439318412377770121">‏האם ברצונך לרשום את <ph name="DEVICE_NAME" /> ל-Google Cloud Devices?</translation>
 <translation id="4441124369922430666">האם ברצונך להפעיל יישום זה באופן אוטומטי בעת הפעלת המחשב?</translation>
 <translation id="444134486829715816">הרחב...</translation>
-<translation id="4442309605992420742">‏הפעלה של התאמת Weave</translation>
 <translation id="444267095790823769">חריגים בתוכן מוגן</translation>
 <translation id="4443536555189480885">&amp;עזרה</translation>
 <translation id="4444304522807523469">‏גישה לסורקי מסמכים המחוברים באמצעות USB או ברשת המקומית</translation>
@@ -4193,7 +4189,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7014051144917845222">הניסיון של <ph name="PRODUCT_NAME" /> להתחבר אל <ph name="HOST_NAME" /> נדחה. ייתכן שהאתר מושבת או שתצורת הרשת שלך אינה מוגדרת כהלכה.</translation>
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>
 <translation id="7015226785571892184">היישום הבא יופעל אם תאשר בקשה זו: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">‏התאמת Weave משמשת את אפליקציית Weave לתקשורת מאובטחת עם מכשירים ברשת מקומית.</translation>
 <translation id="7017004637493394352">‏אמור שוב "Ok Google"</translation>
 <translation id="7017219178341817193">הוסף דף חדש</translation>
 <translation id="7017354871202642555">לא ניתן להגדיר מצב לאחר שהחלון הוגדר.</translation>
@@ -4393,7 +4388,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="733186066867378544">חריגים של מיקום גיאוגרפי</translation>
 <translation id="7331991248529612614">הפעל הנפשה של הלחצן למצב קורא</translation>
 <translation id="7334190995941642545">‏מערכת Smart Lock אינה זמינה כרגע. נסה שוב מאוחר יותר.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> כדי להעביר את הסימניות שלך לכל מקום שרק תרצה.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" /> נתקל בבעיות בגישה לרשת. <ph name="PRODUCT_NAME" /> הסיבה עשויה להיות שתוכנת חומת האש או האנטי וירוס שלך חושבת בטעות ש-<ph name="LINE_BREAK" /> פורץ למחשב שלך ולכן חוסמת את ההתחברות שלו לאינטרנט.</translation>
 <translation id="7339763383339757376">‏PKCS #7, אישור יחיד</translation>
 <translation id="7339785458027436441">בדוק איות בעת ההקלדה</translation>
@@ -5222,7 +5216,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8509646642152301857">הורדת המילון לבדיקת איות נכשלה.</translation>
 <translation id="8512476990829870887">סיים תהליך</translation>
 <translation id="851263357009351303">אפשר ל-<ph name="HOST" /> להציג תמונות תמיד</translation>
-<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" מנקה את הבאגים בדפדפן זה.</translation>
+<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" מנפה את הבאגים בדפדפן זה.</translation>
 <translation id="8513974249124254369">‏ChromeVox (משוב קולי) מופעל. הקש על Ctrl+Alt+Z כדי להשבית אותו.</translation>
 <translation id="8515737884867295000">אימות המבוסס על אישור נכשל</translation>
 <translation id="8518865679229538285">שיטת קלט טמילית (מכונת כתיבה)</translation>

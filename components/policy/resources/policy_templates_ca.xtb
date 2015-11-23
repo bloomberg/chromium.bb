@@ -931,7 +931,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="467236746355332046">Funcions compatibles:</translation>
 <translation id="4674167212832291997">Personalitza la llista dels patrons d'URL que <ph name="PRODUCT_FRAME_NAME" /> sempre ha de renderitzar.
 
-          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com s'especifica a la política "ChromeFrameRendererSettings".
+          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com es descriu a la política "ChromeFrameRendererSettings".
 
           Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
@@ -1208,11 +1208,11 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
 
       Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
-<translation id="5819660021114910752">Especifica la zona horària que ha d'utilitzar el dispositiu. Els usuaris poden canviar la zona horària especificada a la sessió actual. Tanmateix, en tancar la sessió, la sessió recupera la zona horària especificada. Si es proporciona un valor que no és vàlid, la política fa servir la zona horària "GMT" per activar-se. Si es proporciona una cadena buida, la política s'ignora.
+<translation id="5819660021114910752">Especifica la zona horària que ha d'utilitzar el dispositiu. Els usuaris poden canviar la zona horària de la sessió en curs, però es tornarà a restablir en tancar la sessió. Si no es proporciona un valor vàlid, la política farà servir la zona horària GMT per mantenir-se activa. Si es proporciona una cadena buida, la política s'ignorarà.
 
-      Si no es fa servir aquesta política, es continuarà utilitzant la zona horària activa actualment, tot i que els usuaris podran canviar-la, i el canvi es mantindrà. Els canvis fets pels usuaris afecten la pantalla d'inici de sessió i la resta d'usuaris.
+      Si no es fa servir aquesta política, es continuarà utilitzant la zona horària activa en aquell moment, tot i que els usuaris podran canviar-la de manera permanent. Per tant, els canvis que facin els usuaris afectaran la pantalla d'inici de sessió i la resta d'usuaris.
 
-      Els dispositius nous s'inicien amb la zona horària definida com a "EUA/Pacífic".
+      Els dispositius nous s'inicien amb la zona horària definida com a US/Pacific.
 
       El format del valor es regeix pels noms de les zones horàries, que podeu consultar a la base de dades de zones horàries IANA (vegeu https://en.wikipedia.org/wiki/Tz_database). En concret, la majoria de zones horàries es descriuen amb el format "continent/ciutat_gran" o "oceà/ciutat_gran".</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
@@ -1906,10 +1906,10 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8484458986062090479">Personalitza la llista de patrons d'URL que sempre ha de renderitzar el navegador amfitrió.
+<translation id="8484458986062090479">Personalitza la llista de patrons d'URL que ha de renderitzar sempre el navegador amfitrió.
 
 
-          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com s'especifica a la política "ChromeFrameRendererSettings".
+          Si no es defineix aquesta política, s'utilitzarà el renderitzador predeterminat per a tots els llocs, tal com es descriu a la política "ChromeFrameRendererSettings".
 
 
           Per veure exemples de patrons, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>

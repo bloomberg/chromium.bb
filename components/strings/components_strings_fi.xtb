@@ -9,7 +9,7 @@
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
-<translation id="113188000913989374">Viesti sivustolta <ph name="SITE" />:</translation>
+<translation id="113188000913989374">Viesti osoitteesta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="1146673768181266552">Kaatumistunnus <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -31,7 +31,7 @@
 <translation id="1559528461873125649">Tiedostoa tai hakemistoa ei ole olemassa</translation>
 <translation id="1559572115229829303">&lt;p&gt;Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.&lt;/p&gt;
 
-          &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;-sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;-osiossa.&lt;/p&gt;</translation>
+          &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;‑sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;‑osiossa.&lt;/p&gt;</translation>
 <translation id="1629803312968146339">Haluatko, että Chrome tallentaa tämän kortin?</translation>
 <translation id="1640180200866533862">Käyttäjäkäytännöt</translation>
 <translation id="1644184664548287040">Verkkoasetukset ovat virheelliset eikä niitä voi tuoda.</translation>
@@ -213,7 +213,7 @@
 <translation id="5523118979700054094">Käytännön nimi</translation>
 <translation id="552553974213252141">Noudettiinko teksti oikein?</translation>
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
-<translation id="5544037170328430102">Viesti sivustolle <ph name="SITE" /> upotetulta sivulta:</translation>
+<translation id="5544037170328430102">Viesti upotetulta sivulta osoitteessa <ph name="SITE" />:</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
 <translation id="560412284261940334">Hallintaa ei tueta</translation>

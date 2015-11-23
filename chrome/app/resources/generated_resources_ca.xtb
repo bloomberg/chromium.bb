@@ -334,7 +334,7 @@
 <translation id="1468038450257740950">WebGL no és compatible.</translation>
 <translation id="1470719357688513792">La nova configuració de galetes es farà efectiva quan torneu a carregar la pàgina.</translation>
 <translation id="14720830734893704">Activa la compatibilitat del teclat virtual.</translation>
-<translation id="1474079335130556426">Activa el mode en segon pla per a l'API de tramesa automàtica. D'aquesta manera, Chrome pot continuar executant-se un cop tancada l'última finestra i, si l'API de tramesa automàtica ho requereix, es pot iniciar en arrancar l'SO.</translation>
+<translation id="1474079335130556426">Activa el mode en segon pla per a l'API de tramesa automàtica. D'aquesta manera, Chrome pot continuar executant-se un cop tancada l'última finestra i, si l'API de tramesa automàtica ho requereix, es pot iniciar en arrancar el sistema operatiu.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" no s'ha penjat. No hi ha prou espai lliure al vostre compte de Google Drive.</translation>
 <translation id="1476949146811612304">Definiu el motor de cerca que s'ha de fer servir en fer una cerca des de l'<ph name="BEGIN_LINK" />omnibox<ph name="END_LINK" />.</translation>
 <translation id="1477301030751268706">Memòria cau del testimoni API d'identitat</translation>
@@ -567,7 +567,6 @@
 <translation id="1774833706453699074">Afegeix les pàgines obertes a les adreces d'interès...</translation>
 <translation id="1775135663370355363">S'està mostrant l'historial d'aquest dispositiu. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Error d'importació PKCS #12</translation>
 <translation id="1779652936965200207">Introduïu aquesta contrasenya a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Tanca la finestra</translation>
 <translation id="1781502536226964113">Obre la pàgina Pestanya nova</translation>
@@ -652,7 +651,7 @@
 <translation id="1918141783557917887">&amp;Més petit</translation>
 <translation id="192144045824434199">Activa les finestres del tauler que s'obren fora del marc del navegador. Si es prova d'obrir un tauler i aquesta funció no està activada, s'obrirà una finestra emergent. Els taulers sempre estan activats als canals del dispositiu i de Chrome Canary.</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> ppp</translation>
-<translation id="1921986354447415460">Teclat turc F</translation>
+<translation id="1921986354447415460">Teclat turc-F</translation>
 <translation id="1923786009776354244">Activa la compatibilitat amb la capçalera d'origen Stun de WebRTC.</translation>
 <translation id="1926741348654461781">Activa les pàgines sense connexió</translation>
 <translation id="1929546189971853037">Llegir l'historial de navegació en tots els dispositius on hàgiu iniciar la sessió</translation>
@@ -1724,7 +1723,7 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="3396331542604645348">La impressora seleccionada no està disponible o no s'ha instal·lat correctament. Comproveu la impressora o proveu de seleccionar-ne una altra.</translation>
 <translation id="3399597614303179694">Teclat macedoni</translation>
 <translation id="340013220407300675">És possible que hi hagi atacants que estiguin provant de robar-vos informació de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (per exemple, contrasenyes, missatges o targetes de crèdit).</translation>
-<translation id="3401130144947259741">Si l'opció està activada, els esdeveniments de seguiment s'exporten a Event Tracing for Windows (ETW). A continuació, eines com UIForETW o Xperf els poden capturar.</translation>
+<translation id="3401130144947259741">Si l'opció està activada, els esdeveniments de seguiment s'exporten a Event Tracing for Windows (ETW) i es poden capturar amb eines com UIForETW o Xperf.</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3405763860805964263">…</translation>
 <translation id="3406605057700382950">&amp;Mostra la Barra d'adreces d'interès</translation>
@@ -1777,7 +1776,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="347719495489420368">Feu clic amb el botó dret per reproduir <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continua permetent que <ph name="HOST" /> accedeixi a la càmera i al micròfon</translation>
 <translation id="3478315065074101056">XPS activa les opcions avançades per a les impressores clàssiques connectades a Cloud Print amb Chrome. Les impressores s'han de tornar a connectar després de canviar aquesta marca.</translation>
-<translation id="3478477114335130296">És possible que algunes de les vostres opcions de configuració s'hagin canviat sense cap avís.</translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="3480892288821151001">Redueix la finestra cap a l'esquerra</translation>
 <translation id="3481915276125965083">S'han bloquejat les finestres emergents següents en aquesta pàgina:</translation>
@@ -1893,7 +1891,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="3612673635130633812">Baixat per &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Mostra <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Obre en una pestanya nova</translation>
-<translation id="3613796918523876348">Recupera-ho de tota manera</translation>
 <translation id="3616741288025931835">&amp;Elimina les dades de navegació...</translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Tots els elements tenen una còpia de seguretat.</translation>
@@ -2454,7 +2451,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4439318412377770121">Voleu registrar <ph name="DEVICE_NAME" /> a Dispositius Google Cloud?</translation>
 <translation id="4441124369922430666">Voleu que aquesta aplicació s'iniciï automàticament en engegar l'ordinador?</translation>
 <translation id="444134486829715816">Amplia...</translation>
-<translation id="4442309605992420742">Activa la vinculació de Weave</translation>
 <translation id="444267095790823769">Excepcions de contingut protegit</translation>
 <translation id="4443536555189480885">&amp;Ajuda</translation>
 <translation id="4444304522807523469">Accedir als escàners del document adjunts mitjançant USB o a la xarxa local</translation>
@@ -4193,7 +4189,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7014051144917845222">S'ha rebutjat l'intent de connexió de <ph name="PRODUCT_NAME" /> a <ph name="HOST_NAME" />. Pot ser que el lloc web estigui fora de servei o que la xarxa no estigui configurada correctament.</translation>
 <translation id="7014174261166285193">La instal·lació ha fallat.</translation>
 <translation id="7015226785571892184">S'iniciarà l'aplicació següent si accepteu aquesta sol·licitud: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">L'aplicació Weave utilitza la vinculació de Weave per comunicar-se de manera segura amb els dispositius de la xarxa local.</translation>
 <translation id="7017004637493394352">Torneu a dir "Ok Google"</translation>
 <translation id="7017219178341817193">Afegeix una pàgina nova</translation>
 <translation id="7017354871202642555">No es pot configurar el mode després d'haver configurat la finestra.</translation>
@@ -4393,7 +4388,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="733186066867378544">Excepcions d'ubicació geogràfica</translation>
 <translation id="7331991248529612614">Activa l'animació del botó per al mode de lector</translation>
 <translation id="7334190995941642545">Smart Lock no està disponible actualment. Torneu-ho a provar més tard.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> per poder accedir a les adreces d'interès des de qualsevol lloc.</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           té problemes per accedir a la xarxa.
           <ph name="LINE_BREAK" />
@@ -5143,7 +5137,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8381179624334829711">Gestioneu la configuració de la càmera…</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME" /> s'ha instal·lat remotament</translation>
 <translation id="8382913212082956454">Copia l'&amp;adreça electrònica</translation>
-<translation id="8384113940676655504">Activa l'opció Smart Lock, que permet que Chromebook detecti telèfons mitjançant Bluetooth de baixa energia per desbloquejar-se quan el telèfon estigui a prop seu.</translation>
+<translation id="8384113940676655504">Activa una opció de Smart Lock que permet al dispositiu Chromebook detectar telèfons mitjançant Bluetooth de baixa energia i així poder desbloquejar el dispositiu quan el telèfon estigui a prop.</translation>
 <translation id="8390029840652165810">Assegureu-vos que la vostra connexió a la xarxa funciona i, si el problema persisteix, tanqueu la sessió i torneu a iniciar-la per actualitzar les vostres credencials.</translation>
 <translation id="8390445751804042000">Permet activar el dispositiu en funció de la recepció de determinats paquets de xarxa.</translation>
 <translation id="8390449457866780408">El servidor no està disponible.</translation>
@@ -5231,7 +5225,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8509646642152301857">La baixada del diccionari del corrector ortogràfic ha fallat.</translation>
 <translation id="8512476990829870887">Finalitza el procés</translation>
 <translation id="851263357009351303">Permet sempre que <ph name="HOST" /> mostri imatges</translation>
-<translation id="8513191386157529469"><ph name="CLIENT_NAME" /> està depurant aquest navegador.</translation>
+<translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" està depurant aquest navegador.</translation>
 <translation id="8513974249124254369">ChromeVox (comentaris de veu) està activat. Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="8515737884867295000">S'ha produït un error en l'autenticació basada en certificats</translation>
 <translation id="8518865679229538285">Mètode d'introducció en tàmil (màquina d'escriure)</translation>

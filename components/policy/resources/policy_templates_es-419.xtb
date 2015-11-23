@@ -1201,7 +1201,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Los dispositivos nuevos se inician con el huso horario de "EE. UU./Pacífico".
 
-      El formato del valor sigue los nombres de los husos horarios en la  "Base de datos de husos horarios IANA" (consultar "https://en.wikipedia.org/wiki/Tz_database"). De manera particular, la mayoría de los husos horarios pueden denominarse "océano/ciudad_importante" o "continente/ciudad_importante".</translation>
+      El formato del valor sigue los nombres de los husos horarios en la "Base de datos de husos horarios IANA" (consultar "https://es.wikipedia.org/wiki/Tz_database"). De manera particular, la mayoría de los husos horarios pueden denominarse "océano/ciudad_importante" o "continente/ciudad_importante".</translation>
 <translation id="5826047473100157858">Especifica si el usuario puede abrir páginas en modo incógnito en <ph name="PRODUCT_NAME" />. Si se habilita o si  no se configura la política, las páginas podrán abrirse en modo incógnito. Si se inhabilita, las páginas no podrán abrirse en modo incógnito. Si se fuerza el modo incógnito, las páginas podrán abrirse SOLO en modo incógnito.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5845159892130426052">Habilitar API ShowModalDialog hasta el 30-04-2015</translation>

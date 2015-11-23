@@ -530,7 +530,7 @@
 <translation id="6459511626086141404">플랫 키맵</translation>
 <translation id="6468049171101508116">다음 버튼</translation>
 <translation id="6491972999578897419">아래 목록에서 옵션을 선택하여 현재 음성을 변경합니다.</translation>
-<translation id="6493991254603208962">밝기 낮춤</translation>
+<translation id="6493991254603208962">어둡게</translation>
 <translation id="6508059270146105198">점자 디스플레이를 페이지 하단으로 이동합니다.</translation>
 <translation id="6536864053412760904">Math ML 토큰</translation>
 <translation id="6550720799683018100">아래 목록에서 옵션을 선택하여 현재 키맵을 변경합니다.</translation>
@@ -569,7 +569,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">이전 목록</translation>
 <translation id="7041173719775863268">선택 종료</translation>
-<translation id="7086377898680121060">밝기 높임</translation>
+<translation id="7086377898680121060">밝게</translation>
 <translation id="7095834689119144465">텍스트 숫자만 수정</translation>
 <translation id="7096001299300236431">이전 미디어</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -685,7 +685,7 @@
 <translation id="844681116543532394">이전 체크박스가 없습니다.</translation>
 <translation id="8455868257606149352">최대 <ph name="X" /></translation>
 <translation id="84575901236241018">액세스 키(<ph name="KEY" />) 있음</translation>
-<translation id="8476508772960940536">창 개요</translation>
+<translation id="8476508772960940536">창 전체보기</translation>
 <translation id="8503360654911991865">탐색 세밀도 낮추기</translation>
 <translation id="8520472399088452386">스핀 버튼</translation>
 <translation id="8538744478902126321">현재 셀의 행 헤더 추측</translation>
@@ -700,7 +700,7 @@
 <translation id="8631359288236106450"><ph name="COUNT" />개 항목 선택됨</translation>
 <translation id="8638532244051952400">현재 셀 좌표 알림</translation>
 <translation id="8650576015643545550">이전 목록이 없습니다.</translation>
-<translation id="8651481478098336970">볼륨 음소거</translation>
+<translation id="8651481478098336970">음소거</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">링크 목록 표시</translation>
 <translation id="8664519043722036194">초</translation>

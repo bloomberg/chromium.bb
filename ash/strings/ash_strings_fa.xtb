@@ -27,7 +27,6 @@
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
-<translation id="1987317783729300807">حساب‌ها</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="2204305834655267233">اطلاعات شبکه</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
@@ -71,7 +70,6 @@
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="3157169093162779309">قفل چرخش فعال شود</translation>
 <translation id="3294437725009624529">مهمان</translation>
-<translation id="3433830597744061105">مدیریت حساب‌ها</translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
 <translation id="3573179567135747900">به "<ph name="FROM_LOCALE" />" تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="3595596368722241419">باتری پر است</translation>
@@ -98,7 +96,6 @@
 <translation id="3967919079500697218">سرپرست شما قابلیت عکس گرفتن از صفحه‌نمایش را غیرفعال کرده است.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="4053612967614057854">غیرفعال کردن صفحه‌کلید روی نمایشگر</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (اصلی)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ساعت <ph name="MINUTE" />دقیقه مانده تا باتری شارژ شود</translation>
 <translation id="4250680216510889253">نه</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
@@ -164,7 +161,6 @@
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="68610848741840742">‏ChromeVox (بازخورد گفتاری)</translation>
-<translation id="6895424601869865703">افزودن حسابی برای <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

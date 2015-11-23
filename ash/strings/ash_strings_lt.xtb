@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Paskyros</translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
 <translation id="2204305834655267233">Tinklo informacija</translation>
 <translation id="2208323208084708176">Vieno darbalaukio režimas</translation>
@@ -72,7 +71,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="3157169093162779309">Įgalinti pasukimo užrakinimą</translation>
 <translation id="3294437725009624529">Svečias</translation>
-<translation id="3433830597744061105">Valdyti paskyras</translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
@@ -99,7 +97,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="4053612967614057854">Išjungti ekrano klaviatūrą</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (pagrindinė)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> val. <ph name="MINUTE" /> min. iki visiško įkrovimo</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
@@ -166,7 +163,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="68610848741840742">„ChromeVox“ (žodiniai atsiliepimai)</translation>
-<translation id="6895424601869865703">Pridėti paskyrą, skirtą <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>

@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Аккаунты</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2204305834655267233">Информация о сети</translation>
 <translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="3157169093162779309">Включить автоповорот экрана</translation>
 <translation id="3294437725009624529">Гость</translation>
-<translation id="3433830597744061105">Настроить аккаунты</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">Функция создания скриншотов была отключена администратором.</translation>
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="4053612967614057854">Отключить экранную клавиатуру</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (основной)</translation>
 <translation id="412065659894267608">До полной зарядки: <ph name="HOUR" /> ч <ph name="MINUTE" /> мин</translation>
 <translation id="4250680216510889253">Нет</translation>
 <translation id="4279490309300973883">Отражение</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">Батарея заряжена на <ph name="PERCENTAGE" />% и подключена к источнику питания.</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
 <translation id="68610848741840742">ChromeVox (голосовое сопровождение)</translation>
-<translation id="6895424601869865703">Добавить аккаунт для пользователя <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Диск</translation>

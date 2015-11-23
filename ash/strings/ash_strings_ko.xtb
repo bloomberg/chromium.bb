@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
-<translation id="1987317783729300807">계정</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2204305834655267233">네트워크 정보</translation>
 <translation id="2208323208084708176">통합 바탕화면 모드</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="3157169093162779309">회전 잠금 사용</translation>
 <translation id="3294437725009624529">손님</translation>
-<translation id="3433830597744061105">계정 관리</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="4053612967614057854">터치 키보드 사용 중지</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" />(기본)</translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR" />시간 <ph name="MINUTE" />분 남음</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4279490309300973883">미러링</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
 <translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME" />님의 계정 추가</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>

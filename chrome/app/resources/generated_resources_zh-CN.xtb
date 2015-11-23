@@ -565,7 +565,6 @@
 <translation id="1774833706453699074">为打开的网页添加书签…</translation>
 <translation id="1775135663370355363">目前显示的是通过此设备浏览的内容记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 导入错误</translation>
 <translation id="1779652936965200207">请在“<ph name="DEVICE_NAME" />”上输入此匹配密钥：</translation>
 <translation id="1779766957982586368">关闭窗口</translation>
 <translation id="1781502536226964113">打开新标签页</translation>
@@ -1717,7 +1716,7 @@
 <translation id="3396331542604645348">所选打印机无法使用或未正确安装。请检查打印机，或尝试选择其他打印机。</translation>
 <translation id="3399597614303179694">马其顿语键盘</translation>
 <translation id="340013220407300675">攻击者可能会试图从<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />窃取您的信息（例如：密码、通讯内容或信用卡信息）。</translation>
-<translation id="3401130144947259741">此项处于启用状态时，跟踪事件将被导出到 Event Tracing for Windows (ETW)，然后可被 UIForETW 或 Xperf 等工具捕获。</translation>
+<translation id="3401130144947259741">此项处于启用状态时，跟踪事件将被导出到 Event Tracing for Windows (ETW)，然后可使用 UIForETW 或 Xperf 等工具捕获。</translation>
 <translation id="340282674066624">已下载 <ph name="DOWNLOAD_RECEIVED" />，还需 <ph name="TIME_LEFT" /></translation>
 <translation id="3405763860805964263">…</translation>
 <translation id="3406605057700382950">显示书签栏(&amp;S)</translation>
@@ -1770,7 +1769,6 @@
 <translation id="347719495489420368">右键点击即可播放 <ph name="PLUGIN_NAME" />。</translation>
 <translation id="347785443197175480">继续允许 <ph name="HOST" /> 使用您的摄像头和麦克风</translation>
 <translation id="3478315065074101056">XPS用于在Chrome中为连接到云打印的传统打印机启用高级选项。更改此项后，您必须重新连接打印机。</translation>
-<translation id="3478477114335130296">部分设置可能在您不知情的情况下被更改了。</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3480892288821151001">将窗口固定到左侧</translation>
 <translation id="3481915276125965083">已拦截此网页上的下列弹出式窗口：</translation>
@@ -1886,7 +1884,6 @@
 <translation id="3612673635130633812">由&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;下载</translation>
 <translation id="3613134908380545408">显示“<ph name="FOLDER_NAME" />”</translation>
 <translation id="3613422051106148727">在新标签页中打开(&amp;O)</translation>
-<translation id="3613796918523876348">仍要恢复</translation>
 <translation id="3616741288025931835">清除浏览数据(&amp;C)...</translation>
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">所有文件都已备份！</translation>
@@ -2444,7 +2441,6 @@
 <translation id="4439318412377770121">要将“<ph name="DEVICE_NAME" />”注册到Google Cloud Devices吗？</translation>
 <translation id="4441124369922430666">要在设备开启时自动启动此应用吗？</translation>
 <translation id="444134486829715816">展开...</translation>
-<translation id="4442309605992420742">启用 Weave 配对功能</translation>
 <translation id="444267095790823769">受保护内容例外情况</translation>
 <translation id="4443536555189480885">帮助(&amp;H)</translation>
 <translation id="4444304522807523469">使用通过 USB 连接的或本地网络中的文档扫描仪</translation>
@@ -4174,7 +4170,6 @@
 <translation id="7014051144917845222">“<ph name="PRODUCT_NAME" />”到 <ph name="HOST_NAME" /> 的连接尝试遭到拒绝。原因可能是该网站已崩溃，也可能是您的网络配置不正确。</translation>
 <translation id="7014174261166285193">安装失败。</translation>
 <translation id="7015226785571892184">如果您接受这一请求，就会启动以下应用：<ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave 应用使用 Weave 配对功能与本地网络中的设备进行安全通信。</translation>
 <translation id="7017004637493394352">再说一遍“Ok Google”</translation>
 <translation id="7017219178341817193">添加新网页</translation>
 <translation id="7017354871202642555">无法在创建窗口后设置模式。</translation>
@@ -4374,7 +4369,6 @@
 <translation id="733186066867378544">地理位置信息例外情况</translation>
 <translation id="7331991248529612614">启用阅读器模式按钮动画</translation>
 <translation id="7334190995941642545">目前无法使用 Smart Lock，请稍后重试。</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />即可随时随地访问您的书签。</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           无法访问网络。
           <ph name="LINE_BREAK" />
@@ -5320,7 +5314,7 @@
 <translation id="8677039480012021122">清除数据并取消关联</translation>
 <translation id="8677212948402625567">全部折叠...</translation>
 <translation id="8678648549315280022">管理下载设置…</translation>
-<translation id="8680251145628383637">登录后可获取您所有设备上的书签、历史记录、密码和其他设置。此外，您还会自动登录到 Google 服务。</translation>
+<translation id="8680251145628383637">登录后即可在您的任何设备上获取自己的书签、历史记录、密码和其他设置。此外，您还会自动登录到 Google 服务。</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />，答案，<ph name="ANSWER" /></translation>
 <translation id="8680787084697685621">帐户登录详细信息已过期。</translation>
 <translation id="8684255857039823328">密码已保存。您可以在任意设备上通过 <ph name="MANAGEMENT_LINK" /> 获取自己的密码。</translation>

@@ -31,7 +31,7 @@
 <translation id="1559528461873125649">El archivo o directorio no existe</translation>
 <translation id="1559572115229829303">&lt;p&gt;No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.&lt;/p&gt;
 
-      &lt;p&gt;Ajusta la fecha y la hora desde la sección &lt;strong&gt;General&lt;/strong&gt; de la app &lt;strong&gt;Configuración&lt;/strong&gt; .&lt;/p&gt;</translation>
+      &lt;p&gt;Ajusta la fecha y la hora desde la sección &lt;strong&gt;General&lt;/strong&gt; de la app de &lt;strong&gt;Configuración&lt;/strong&gt; .&lt;/p&gt;</translation>
 <translation id="1629803312968146339">¿Quieres que Chrome guarde esta tarjeta?</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1644184664548287040">La configuración de red no es válida y no se pudo importar.</translation>
@@ -99,7 +99,7 @@
 <translation id="2922350208395188000">No se puede comprobar el certificado del servidor.</translation>
 <translation id="2941952326391522266">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad proviene de <ph name="DOMAIN2" />. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="2958431318199492670">La configuración de red no cumple con el estándar ONC. Es posible que no se importen algunas partes de la configuración.</translation>
-<translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chrome no puede verificar estos certificados.</translation>
+<translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
@@ -213,7 +213,7 @@
 <translation id="5523118979700054094">Nombre de la política</translation>
 <translation id="552553974213252141">¿Se extrajo el texto correctamente?</translation>
 <translation id="5540224163453853">No se pudo encontrar el artículo solicitado.</translation>
-<translation id="5544037170328430102">La página incrustada en <ph name="SITE" /> dice:</translation>
+<translation id="5544037170328430102">Una página incrustada en <ph name="SITE" /> dice:</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565735124758917034">Activo</translation>
 <translation id="560412284261940334">No se admite la administración.</translation>

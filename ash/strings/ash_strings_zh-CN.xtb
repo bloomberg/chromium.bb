@@ -28,7 +28,6 @@
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">帐户</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2204305834655267233">网络信息</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
@@ -72,7 +71,6 @@
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="3157169093162779309">启用旋转锁定</translation>
 <translation id="3294437725009624529">访客</translation>
-<translation id="3433830597744061105">管理帐户</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
 <translation id="3595596368722241419">电池已充满</translation>
@@ -99,7 +97,6 @@
 <translation id="3967919079500697218">您的管理员已停用屏幕截图功能。</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="4053612967614057854">停用屏幕键盘</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" />（主帐户）</translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR" /> 小时 <ph name="MINUTE" /> 分钟才能充满电</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4279490309300973883">正在镜像</translation>
@@ -166,7 +163,6 @@
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
-<translation id="6895424601869865703">为<ph name="GIVEN_NAME" />添加一个帐户</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>

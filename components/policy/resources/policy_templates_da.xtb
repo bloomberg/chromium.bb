@@ -737,7 +737,7 @@ Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME" /> aldrig se
 Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises underretninger til brugeren, når den ikke er det.</translation>
 <translation id="3800626789999016379">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at downloade filer.
 
-      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet en eller aktiveret flaget for at blive bedt om en downloadplacering hver gang.
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet en eller aktiveret flaget for at blive bedt om en downloadplacering hver gang.
 
       Du kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
@@ -857,7 +857,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
 <translation id="4349746760316962317">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at gemme cachelagrede filer på disken.
 
-      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet flaget "--disk-cache-dir" eller ej.
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet flaget "--disk-cache-dir" eller ej.
 
       Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
@@ -1033,7 +1033,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis handlingen er suspendering, kan <ph name="PRODUCT_OS_NAME" /> konfigureres særskilt til enten at låse eller ikke at låse skærmen før suspendering.</translation>
 <translation id="5111712393799006197">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at lagre brugerdata.
-      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den medfølgende mappe, uanset om brugeren har angivet flaget "--user-data-dir" eller ej.
+      Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet flaget "--user-data-dir" eller ej.
 
       Du kan se en liste over variabler, der kan anvendes, på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
@@ -1211,7 +1211,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis du angiver denne politik, vil <ph name="PRODUCT_FRAME_NAME" /> bruge den angivne mappe.
 
-      Se kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+      Du kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
 <translation id="5819660021114910752">Angiver den tidszone, der skal gælde for enheden. Brugerne kan tilsidesætte den angivne tidszone for den aktuelle session, men når der logges ud, anvendes den angivne tidszone igen. Hvis der angives en ugyldig værdi, aktiveres politikken med "GMT" i stedet. Hvis der angives en tom streng, ignoreres politikken.

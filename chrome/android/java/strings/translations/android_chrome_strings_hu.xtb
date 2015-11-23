@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2646820313617290661">Szüleid segítenek ezen beállítások kezelésében.</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
-<translation id="2678212031093903894">Könyvjelzők biztonsági mentése és szinkronizálása</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="271033894570825754">Új</translation>
@@ -245,11 +244,11 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5000922062037820727">Letiltva (ajánlott)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Ön nem <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Nincsenek weboldalak a közelben</translation>
+<translation id="5026147292873308216">Nincsenek weboldalak (URL-ek) a közelben</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5063480226653192405">Használat</translation>
-<translation id="5074309530946372881">Közeli weboldalak keresése</translation>
+<translation id="5074309530946372881">Közeli weboldalak (URL-ek) keresése</translation>
 <translation id="509605886816275399">Menti ezt az oldalt offline használatra?</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
 <translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>
@@ -290,7 +289,7 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5511351932351731210">Mindig küldjön</translation>
 <translation id="5512137114520586844">A fiók kezelője: <ph name="PARENT_NAME" />.</translation>
 <translation id="5530766185686772672">Inkognitólapok bezárása</translation>
-<translation id="554327794654007401">A „Fizikai web”</translation>
+<translation id="554327794654007401">A Fizikai web</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5565871407246142825">Hitelkártyák</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE" /> keresővel</translation>
@@ -448,7 +447,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="7634554953375732414">A webhellyel való kapcsolata nem privát.</translation>
 <translation id="7638584964844754484">Hibás összetett jelszó</translation>
 <translation id="764743049316168389"><ph name="FOLDER_NAME" /> mappa</translation>
-<translation id="7648120236428811856">Jelentkezzen be a Chrome-ba, hogy bármelyik eszközről elérhesse könyvjelzőit</translation>
 <translation id="7648422057306047504">A jelszavak titkosítása a Google hitelesítési adataival</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>

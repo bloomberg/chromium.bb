@@ -569,7 +569,6 @@
 <translation id="1774833706453699074">將開啟的網頁加入書籤...</translation>
 <translation id="1775135663370355363">在這台裝置中顯示紀錄項目。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />：<ph name="INFO" /></translation>
-<translation id="1779392088388639487">PKCS #12 匯入錯誤</translation>
 <translation id="1779652936965200207">請在「<ph name="DEVICE_NAME" />」上輸入以下密碼金鑰：</translation>
 <translation id="1779766957982586368">關閉視窗</translation>
 <translation id="1781502536226964113">開啟新分頁</translation>
@@ -1776,7 +1775,6 @@
 <translation id="347719495489420368">按一下滑鼠右鍵即可播放 <ph name="PLUGIN_NAME" />。</translation>
 <translation id="347785443197175480">繼續允許 <ph name="HOST" /> 存取您的攝影機和麥克風</translation>
 <translation id="3478315065074101056">XPS 會為透過 Chrome 連線至雲端列印的傳統印表機啟用進階選項。如果變更這個標記，必須為印表機重新建立連線。</translation>
-<translation id="3478477114335130296">部分設定可能已經在您不知情的情況下遭到變更。</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="3480892288821151001">靠左固定視窗</translation>
 <translation id="3481915276125965083">系統已封鎖此網頁的下列彈出式視窗：</translation>
@@ -1895,7 +1893,6 @@
 <translation id="3612673635130633812">「&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;」下載了這個檔案</translation>
 <translation id="3613134908380545408">顯示「<ph name="FOLDER_NAME" />」</translation>
 <translation id="3613422051106148727">在新分頁中開啟(&amp;O)</translation>
-<translation id="3613796918523876348">還原</translation>
 <translation id="3616741288025931835">清除瀏覽資料(&amp;C)...</translation>
 <translation id="3618849550573277856">查詢「<ph name="LOOKUP_STRING" />」</translation>
 <translation id="3620292326130836921">所有檔案都已備份！</translation>
@@ -2456,7 +2453,6 @@
 <translation id="4439318412377770121">您要將 <ph name="DEVICE_NAME" /> 註冊到 Google 雲端裝置嗎？</translation>
 <translation id="4441124369922430666">您要在裝置開機時自動啟動這個應用程式嗎？</translation>
 <translation id="444134486829715816">展開...</translation>
-<translation id="4442309605992420742">啟用 Weave 配對功能</translation>
 <translation id="444267095790823769">受保護內容例外情況</translation>
 <translation id="4443536555189480885">說明(&amp;H)</translation>
 <translation id="4444304522807523469">存取透過 USB 附加或是在區域網路上的文件掃描器</translation>
@@ -4183,7 +4179,6 @@
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME" /> 試圖連線至 <ph name="HOST_NAME" /> 的要求遭到拒絕。網站可能無法使用，或是您的網路設定可能有誤。</translation>
 <translation id="7014174261166285193">安裝失敗。</translation>
 <translation id="7015226785571892184">如果您接受這個要求，系統會啟用下列應用程式：<ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">Weave 應用程式會使用 Weave 配對功能，建立安全的區域網路裝置通訊環境。</translation>
 <translation id="7017004637493394352">再說一次「Ok Google」</translation>
 <translation id="7017219178341817193">新增網頁</translation>
 <translation id="7017354871202642555">無法在視窗建立之後再設定模式。</translation>
@@ -4383,7 +4378,6 @@
 <translation id="733186066867378544">地理位置例外情況</translation>
 <translation id="7331991248529612614">啟用閱讀器模式按鈕動畫</translation>
 <translation id="7334190995941642545">目前無法使用 Smart Lock，請稍後再試。</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" />即可隨時隨地使用您的書籤。</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME" />
           存取網路時發生問題。
           <ph name="LINE_BREAK" />

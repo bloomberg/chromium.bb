@@ -28,7 +28,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1923539912171292317">Automatski klikovi</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1987317783729300807">Računi</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="2204305834655267233">Podaci o mreži</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
@@ -72,7 +71,6 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3147142846278915599">Pokretač (sinkronizacija aplikacija...)</translation>
 <translation id="3157169093162779309">Omogući zaključavanje rotacije</translation>
 <translation id="3294437725009624529">Gost</translation>
-<translation id="3433830597744061105">Upravljaj računima</translation>
 <translation id="3473479545200714844">Povećalo</translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
 <translation id="3595596368722241419">Baterija je puna</translation>
@@ -99,7 +97,6 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3967919079500697218">Administrator je onemogućio izradu snimki zaslona.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="4053612967614057854">Onemogući tipkovnicu na zaslonu</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (primarni)</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h <ph name="MINUTE" /> min do završetka punjenja</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
@@ -166,7 +163,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
 <translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>
-<translation id="6895424601869865703">Dodaj račun za korisnika <ph name="GIVEN_NAME" /></translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google disk</translation>

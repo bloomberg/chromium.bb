@@ -104,7 +104,6 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2646820313617290661">Els pares ajuden a gestionar aquesta configuració.</translation>
 <translation id="2677748264148917807">Surt</translation>
-<translation id="2678212031093903894">Feu una còpia de seguretat de les vostres adreces d'interès i sincronitzeu-les</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
 <translation id="271033894570825754">Nou</translation>
@@ -212,7 +211,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4532845899244822526">Trieu la carpeta</translation>
 <translation id="4543087392704641517">Títol de l'adreça d'interès</translation>
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 enllaç web físic a prop}other{# enllaços web físics a prop}}</translation>
+<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 enllaç de web físic a prop}other{# enllaços de web físic a prop}}</translation>
 <translation id="4645575059429386691">Gestionat pels pares</translation>
 <translation id="4663756553811254707">S'han suprimit <ph name="NUMBER_OF_BOOKMARKS" /> adreces d'interès</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> s'ha afegit a la pantalla d'inici</translation>
@@ -448,7 +447,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="7634554953375732414">La vostra connexió amb aquest lloc no és privada.</translation>
 <translation id="7638584964844754484">La frase de contrasenya és incorrecta</translation>
 <translation id="764743049316168389">Carpeta <ph name="FOLDER_NAME" /></translation>
-<translation id="7648120236428811856">Inicieu la sessió a Chrome per accedir a les vostres adreces d'interès des de qualsevol dispositiu</translation>
 <translation id="7648422057306047504">Encripta les contrasenyes amb credencials de Google</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>

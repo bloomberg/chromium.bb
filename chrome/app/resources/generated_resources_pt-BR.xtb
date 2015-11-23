@@ -566,7 +566,6 @@
 <translation id="1774833706453699074">Adicionar páginas abertas aos Favoritos...</translation>
 <translation id="1775135663370355363">Mostrando histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1779392088388639487">Erro de importação do PKCS #12</translation>
 <translation id="1779652936965200207">Insira esta senha em "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
 <translation id="1781502536226964113">Abrir a página Nova guia</translation>
@@ -1777,7 +1776,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="347719495489420368">Clique com o botão direito do mouse para reproduzir <ph name="PLUGIN_NAME" />.</translation>
 <translation id="347785443197175480">Continuar permitindo que <ph name="HOST" /> acesse sua câmera e seu microfone</translation>
 <translation id="3478315065074101056">O XPS ativa opções avançadas para impressoras clássicas ligadas ao Cloud Print com o Chrome. As impressoras precisam ser reconectadas após a alteração dessa sinalização.</translation>
-<translation id="3478477114335130296">Algumas das suas configurações podem ter sido alteradas sem seu conhecimento.</translation>
 <translation id="3479552764303398839">Não agora</translation>
 <translation id="3480892288821151001">Encaixar janela à esquerda</translation>
 <translation id="3481915276125965083">Os seguintes pop-ups foram bloqueados nesta página:</translation>
@@ -1895,7 +1893,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="3612673635130633812">Download feito por &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="3613422051106148727">&amp;Abrir em nova guia</translation>
-<translation id="3613796918523876348">Recuperar mesmo assim</translation>
 <translation id="3616741288025931835">&amp;Limpar dados de navegação...</translation>
 <translation id="3618849550573277856">Pesquisar “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Backup completo.</translation>
@@ -2456,7 +2453,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4439318412377770121">Deseja registrar o dispositivo <ph name="DEVICE_NAME" /> no Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Deseja iniciar automaticamente este aplicativo quando o computador for ligado?</translation>
 <translation id="444134486829715816">Expandir...</translation>
-<translation id="4442309605992420742">Ativar pareamento do Weave</translation>
 <translation id="444267095790823769">Exceções de conteúdo protegido</translation>
 <translation id="4443536555189480885">&amp;Ajuda</translation>
 <translation id="4444304522807523469">Acessar scanners de documentos acoplados via USB ou na rede local</translation>
@@ -4200,7 +4196,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7014051144917845222">A tentativa de conexão do <ph name="PRODUCT_NAME" /> para <ph name="HOST_NAME" /> foi rejeitada. O site está em manutenção ou sua rede não está configurada corretamente.</translation>
 <translation id="7014174261166285193">Falha na instalação.</translation>
 <translation id="7015226785571892184">O seguinte aplicativo será lançado se você aceitar esta solicitação: <ph name="APPLICATION" /></translation>
-<translation id="7016688023264690202">O pareamento do Weave é usado pelo aplicativo Weave para comunicação segura com dispositivos na rede local.</translation>
 <translation id="7017004637493394352">Diga "Ok Google" novamente</translation>
 <translation id="7017219178341817193">Adicionar uma nova página</translation>
 <translation id="7017354871202642555">Não é possível definir o modo após a definição da janela.</translation>
@@ -4400,7 +4395,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="733186066867378544">Exceções de geolocalização</translation>
 <translation id="7331991248529612614">Ativar animação de botão de modo leitor</translation>
 <translation id="7334190995941642545">O Smart Lock está indisponível no momento. Tente novamente mais tarde.</translation>
-<translation id="7336748286991450492"><ph name="SIGN_IN_LINK" /> para acessar seus favoritos em qualquer lugar.</translation>
 <translation id="7337488620968032387">O <ph name="PRODUCT_NAME" /> está com problemas para acessar a rede. <ph name="LINE_BREAK" /> Isso pode estar acontecendo porque seu software de firewall ou antivírus considera erroneamente que <ph name="PRODUCT_NAME" /> é um intruso em seu computador e bloqueia sua conexão de Internet.</translation>
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7339785458027436441">Verificar ortografia ao digitar</translation>
