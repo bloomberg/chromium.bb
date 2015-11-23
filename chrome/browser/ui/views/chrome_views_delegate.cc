@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
+
 // Helpers --------------------------------------------------------------------
 
 namespace {
@@ -353,11 +354,6 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
     }
   }
 #endif  // OS_WIN
-
-  if (!use_non_toplevel_window && !native_widget_factory().is_null()) {
-    params->native_widget = native_widget_factory().Run(*params, delegate);
-    return;
-  }
 #endif  // USE_AURA
 
 #if defined(OS_CHROMEOS)

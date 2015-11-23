@@ -75,10 +75,6 @@ namespace ui {
 class WindowResizeHelperMac;
 }
 
-namespace views {
-class WindowManagerConnection;
-}
-
 namespace base {
 
 namespace android {
@@ -224,7 +220,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ::NativeBackendKWallet;            // http://crbug.com/125331
 #if !defined(OFFICIAL_BUILD)
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
-  friend class views::WindowManagerConnection;
 #endif
 // END USAGE THAT NEEDS TO BE FIXED.
 
