@@ -214,10 +214,6 @@ source_set("audio") {
       "cras/cras_unified.cc",
       "cras/cras_unified.h",
     ]
-
-    pkg_config("libcras") {
-      packages = [ "libcras" ]
-    }
     configs += [ ":libcras" ]
     deps += [ "//chromeos:chromeos" ]
   }
@@ -235,9 +231,6 @@ source_set("audio") {
     ]
 
     if (link_pulseaudio) {
-      pkg_config("libpulse") {
-        packages = [ "libpulse" ]
-      }
       configs += [ ":libpulse" ]
     } else {
       # TODO(ajwong): Technically, this dl should go in the action.
@@ -248,6 +241,18 @@ source_set("audio") {
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+if (use_cras) {
+  pkg_config("libcras") {
+    packages = [ "libcras" ]
+  }
+}
+
+if (use_pulseaudio && link_pulseaudio) {
+  pkg_config("libpulse") {
+    packages = [ "libpulse" ]
+  }
 }
 
 source_set("test_support") {
