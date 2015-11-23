@@ -1304,6 +1304,10 @@ crbug.com/502927 [ XP ] virtual/syncpaint/paint/frames/frameset-with-stacking-co
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
+crbug.com/560503 fast/js/mozilla/strict/12.14.1.html [ NeedsManualRebaseline ]
+crbug.com/560503 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
+crbug.com/560503 fast/js/mozilla/strict/regress-532254.html [ NeedsManualRebaseline ]
+
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
 # This test has different results in Debug and Release.
