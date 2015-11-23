@@ -49,7 +49,8 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
-    DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }
+    explicit DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }
+
     void countUsage() override;
     const AtomicString& formControlType() const override;
     double valueAsDate() const override;

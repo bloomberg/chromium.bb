@@ -47,7 +47,8 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
-    DateInputType(HTMLInputElement&);
+    explicit DateInputType(HTMLInputElement&);
+
     void countUsage() override;
     const AtomicString& formControlType() const override;
     StepRange createStepRange(AnyStepHandling) const override;

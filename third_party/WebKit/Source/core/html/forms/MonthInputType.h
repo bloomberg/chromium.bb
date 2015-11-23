@@ -47,7 +47,8 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
-    MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }
+    explicit MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }
+
     void countUsage() override;
     const AtomicString& formControlType() const override;
     double valueAsDate() const override;

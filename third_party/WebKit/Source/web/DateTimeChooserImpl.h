@@ -65,7 +65,7 @@ private:
     void didClosePopup() override;
 
     RawPtrWillBeMember<ChromeClientImpl> m_chromeClient;
-    DateTimeChooserClient* m_client;
+    RawPtrWillBeMember<DateTimeChooserClient> m_client;
     PagePopup* m_popup;
     DateTimeChooserParameters m_parameters;
     OwnPtr<Locale> m_locale;

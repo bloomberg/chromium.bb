@@ -38,9 +38,27 @@
 
 namespace blink {
 
+BaseChooserOnlyDateAndTimeInputType::BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element)
+    : BaseDateAndTimeInputType(element)
+{
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
+}
+
 BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 {
+#if !ENABLE(OILPAN)
     closeDateTimeChooser();
+#endif
+    ASSERT(!m_dateTimeChooser);
+}
+
+DEFINE_TRACE(BaseChooserOnlyDateAndTimeInputType)
+{
+    visitor->trace(m_dateTimeChooser);
+    BaseDateAndTimeInputType::trace(visitor);
+    DateTimeChooserClient::trace(visitor);
 }
 
 void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)

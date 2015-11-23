@@ -70,6 +70,7 @@ DateTimeChooserImpl::~DateTimeChooserImpl()
 DEFINE_TRACE(DateTimeChooserImpl)
 {
     visitor->trace(m_chromeClient);
+    visitor->trace(m_client);
     DateTimeChooser::trace(visitor);
 }
 
@@ -204,7 +205,7 @@ void DateTimeChooserImpl::closePopup()
 void DateTimeChooserImpl::didClosePopup()
 {
     ASSERT(m_client);
-    m_popup = 0;
+    m_popup = nullptr;
     m_client->didEndChooser();
 }
 

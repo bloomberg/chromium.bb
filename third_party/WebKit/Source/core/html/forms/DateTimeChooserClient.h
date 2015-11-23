@@ -31,15 +31,17 @@
 #ifndef DateTimeChooserClient_h
 #define DateTimeChooserClient_h
 
-#include "wtf/text/WTFString.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
 class Element;
 
-class DateTimeChooserClient {
+class DateTimeChooserClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~DateTimeChooserClient();
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual Element& ownerElement() const = 0;
     // Called when user picked a value.

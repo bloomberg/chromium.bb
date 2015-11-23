@@ -47,7 +47,8 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
 private:
-    TimeInputType(HTMLInputElement&);
+    explicit TimeInputType(HTMLInputElement&);
+
     void countUsage() override;
     const AtomicString& formControlType() const override;
     Decimal defaultValueForStepUp() const override;
@@ -56,8 +57,8 @@ private:
     bool setMillisecondToDateComponents(double, DateComponents*) const override;
     void warnIfValueIsInvalid(const String&) const override;
     String localizeValue(const String&) const override;
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions
     String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
     void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override;

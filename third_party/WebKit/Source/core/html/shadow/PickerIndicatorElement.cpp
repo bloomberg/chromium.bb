@@ -187,8 +187,9 @@ DEFINE_TRACE(PickerIndicatorElement)
     visitor->trace(m_pickerIndicatorOwner);
     visitor->trace(m_chooser);
     HTMLDivElement::trace(visitor);
+    DateTimeChooserClient::trace(visitor);
 }
 
-}
+} // namespace blink
 
-#endif
+#endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)
