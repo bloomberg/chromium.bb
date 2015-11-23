@@ -410,10 +410,10 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // Passing raw pointers to observers_ and embedder_interface_ is safe because
   // the MetricsWebContentsObserver owns them both list and they are torn down
   // after the PageLoadTracker.
-  provisional_loads_.insert(navigation_handle,
-                            make_scoped_ptr(new PageLoadTracker(
-                                in_foreground_, embedder_interface_.get(),
-                                navigation_handle, &observers_)));
+  provisional_loads_.insert(std::make_pair(
+      navigation_handle, make_scoped_ptr(new PageLoadTracker(
+                             in_foreground_, embedder_interface_.get(),
+                             navigation_handle, &observers_))));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
@@ -422,7 +422,9 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     return;
 
   scoped_ptr<PageLoadTracker> finished_nav(
-      provisional_loads_.take_and_erase(navigation_handle));
+      std::move(provisional_loads_[navigation_handle]));
+  provisional_loads_.erase(navigation_handle);
+
   // There's a chance a navigation could have started before we were added to a
   // tab. Bail out early if this is the case.
   if (!finished_nav)

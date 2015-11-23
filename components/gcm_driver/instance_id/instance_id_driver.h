@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_GCM_DRIVER_INSTANCE_ID_INSTANCE_ID_DRIVER_H_
 #define COMPONENTS_GCM_DRIVER_INSTANCE_ID_INSTANCE_ID_DRIVER_H_
 
+#include <map>
 #include <string>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -43,7 +43,7 @@ class InstanceIDDriver {
 
  private:
   gcm::GCMDriver* gcm_driver_;  // Not owned.
-  base::ScopedPtrMap<std::string, scoped_ptr<InstanceID>> instance_id_map_;
+  std::map<std::string, scoped_ptr<InstanceID>> instance_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDDriver);
 };

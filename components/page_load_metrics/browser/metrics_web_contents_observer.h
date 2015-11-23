@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_WEB_CONTENTS_OBSERVER_H_
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_WEB_CONTENTS_OBSERVER_H_
 
-#include "base/containers/scoped_ptr_map.h"
+#include <map>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -290,7 +291,7 @@ class MetricsWebContentsObserver
   // yet. Once a navigation is committed, it moves from the map to
   // committed_load_. Note that a PageLoadTrackers NavigationHandle is only
   // valid until commit time, when we remove it from the map.
-  base::ScopedPtrMap<content::NavigationHandle*, scoped_ptr<PageLoadTracker>>
+  std::map<content::NavigationHandle*, scoped_ptr<PageLoadTracker>>
       provisional_loads_;
   scoped_ptr<PageLoadTracker> committed_load_;
 

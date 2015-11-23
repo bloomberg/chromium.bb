@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -107,9 +107,8 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   // TODO(skym): Switch to use client tag hash instead of cache guid as key.
   // Cache of all syncable and local data, stored by device cache guid.
-  typedef base::ScopedPtrMap<std::string,
-                             scoped_ptr<sync_pb::DeviceInfoSpecifics>>
-      ClientIdToSpecifics;
+  using ClientIdToSpecifics =
+      std::map<std::string, scoped_ptr<sync_pb::DeviceInfoSpecifics>>;
   ClientIdToSpecifics all_data_;
 
   // Registered observers, not owned.

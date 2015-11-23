@@ -95,12 +95,12 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
   for (const WebsiteSettingsInfo* info : *website_settings) {
-    content_settings_prefs_.set(
+    content_settings_prefs_.insert(std::make_pair(
         info->type(),
         make_scoped_ptr(new ContentSettingsPref(
             info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
             is_incognito_,
-            base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
+            base::Bind(&PrefProvider::Notify, base::Unretained(this))))));
   }
 
   if (!is_incognito_) {
@@ -186,7 +186,7 @@ base::Time PrefProvider::GetLastUsage(
 ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
   auto it = content_settings_prefs_.find(type);
   DCHECK(it != content_settings_prefs_.end());
-  return it->second;
+  return it->second.get();
 }
 
 void PrefProvider::SetClockForTesting(scoped_ptr<base::Clock> clock) {

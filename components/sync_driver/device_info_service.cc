@@ -179,8 +179,7 @@ void DeviceInfoService::StoreSpecifics(
     scoped_ptr<DeviceInfoSpecifics> specifics) {
   DVLOG(1) << "Storing DEVICE_INFO for " << specifics->client_name()
            << " with ID " << specifics->cache_guid();
-  const std::string& key = specifics->cache_guid();
-  all_data_.set(key, specifics.Pass());
+  all_data_[specifics->cache_guid()] = std::move(specifics);
 }
 
 void DeviceInfoService::DeleteSpecifics(const std::string& client_id) {

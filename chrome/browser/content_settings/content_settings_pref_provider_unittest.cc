@@ -66,7 +66,7 @@ class DeadlockCheckerObserver {
       notification_received_(false) {
     pref_change_registrar_.Init(prefs);
     for (const auto& pair : provider_->content_settings_prefs_) {
-      const ContentSettingsPref* pref = pair.second;
+      const ContentSettingsPref* pref = pair.second.get();
       pref_change_registrar_.Add(
           pref->pref_name_,
           base::Bind(
