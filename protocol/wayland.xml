@@ -1347,7 +1347,7 @@
 
     <event name="capabilities">
       <description summary="seat capabilities changed">
-        This is emitted whenever a seat gains or loses the pointer,
+	This is emitted whenever a seat gains or loses the pointer,
 	keyboard or touch capabilities.  The argument is a capability
 	enum containing the complete set of capabilities this seat has.
       </description>
@@ -1356,33 +1356,33 @@
 
     <request name="get_pointer">
       <description summary="return pointer object">
-        The ID provided will be initialized to the wl_pointer interface
+	The ID provided will be initialized to the wl_pointer interface
 	for this seat.
 
-        This request only takes effect if the seat has the pointer
-        capability.
+	This request only takes effect if the seat has the pointer
+	capability.
       </description>
       <arg name="id" type="new_id" interface="wl_pointer"/>
     </request>
 
     <request name="get_keyboard">
       <description summary="return keyboard object">
-        The ID provided will be initialized to the wl_keyboard interface
+	The ID provided will be initialized to the wl_keyboard interface
 	for this seat.
 
-        This request only takes effect if the seat has the keyboard
-        capability.
+	This request only takes effect if the seat has the keyboard
+	capability.
       </description>
       <arg name="id" type="new_id" interface="wl_keyboard"/>
     </request>
 
     <request name="get_touch">
       <description summary="return touch object">
-        The ID provided will be initialized to the wl_touch interface
+	The ID provided will be initialized to the wl_touch interface
 	for this seat.
 
-        This request only takes effect if the seat has the touch
-        capability.
+	This request only takes effect if the seat has the touch
+	capability.
       </description>
       <arg name="id" type="new_id" interface="wl_touch"/>
     </request>
@@ -1568,7 +1568,7 @@
 
     <request name="release" type="destructor" since="3">
       <description summary="release the pointer object">
-        Using this request client can tell the server that it is not going to
+	Using this request client can tell the server that it is not going to
 	use the pointer object anymore.
 
 	This request destroys the pointer proxy object, so user must not call
