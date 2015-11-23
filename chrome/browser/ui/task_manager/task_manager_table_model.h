@@ -131,6 +131,9 @@ class TaskManagerTableModel
   // values to string16.
   scoped_ptr<TaskManagerValuesStringifier> stringifier_;
 
+  // The status of the flag #enable-nacl-debug.
+  bool is_nacl_debugging_flag_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTableModel);
 };
 

@@ -51,6 +51,7 @@ class TaskManagerImpl :
   const base::ProcessId& GetProcessId(TaskId task_id) const override;
   Task::Type GetType(TaskId task_id) const override;
   int64 GetNetworkUsage(TaskId task_id) const override;
+  int64 GetProcessTotalNetworkUsage(TaskId task_id) const override;
   int64 GetSqliteMemoryUsed(TaskId task_id) const override;
   bool GetV8Memory(TaskId task_id,
                    int64* allocated,

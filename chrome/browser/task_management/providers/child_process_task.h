@@ -51,6 +51,10 @@ class ChildProcessTask : public Task {
   // |NaClTrustedProcessType|.
   const int process_type_;
 
+  // Depending on the |process_type_|, determines whether this task uses V8
+  // memory or not.
+  const bool uses_v8_memory_;
+
   DISALLOW_COPY_AND_ASSIGN(ChildProcessTask);
 };
 

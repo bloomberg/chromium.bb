@@ -92,7 +92,7 @@ int TaskManagerImpl::GetNaClDebugStubPort(TaskId task_id) const {
 #if !defined(DISABLE_NACL)
   return GetTaskGroupByTaskId(task_id)->nacl_debug_stub_port();
 #else
-  return -1;
+  return -2;
 #endif  // !defined(DISABLE_NACL)
 }
 
@@ -149,6 +149,10 @@ Task::Type TaskManagerImpl::GetType(TaskId task_id) const {
 
 int64 TaskManagerImpl::GetNetworkUsage(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->network_usage();
+}
+
+int64 TaskManagerImpl::GetProcessTotalNetworkUsage(TaskId task_id) const {
+  return GetTaskGroupByTaskId(task_id)->per_process_network_usage();
 }
 
 int64 TaskManagerImpl::GetSqliteMemoryUsed(TaskId task_id) const {

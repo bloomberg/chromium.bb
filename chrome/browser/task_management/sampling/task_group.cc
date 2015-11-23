@@ -63,6 +63,7 @@ TaskGroup::TaskGroup(
       cpu_usage_(0.0),
       memory_usage_(),
       gpu_memory_(-1),
+      per_process_network_usage_(-1),
 #if defined(OS_WIN)
       gdi_current_handles_(-1),
       gdi_peak_handles_(-1),
@@ -112,9 +113,18 @@ void TaskGroup::Refresh(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // First refresh the enabled non-expensive resources usages on the UI thread.
-  // 1- Refresh all the tasks.
-  for (auto& task_pair : tasks_)
-    task_pair.second->Refresh(update_interval, refresh_flags);
+  // 1- Refresh all the tasks as well as the total network usage (if enabled).
+  const bool network_usage_refresh_enabled =
+      IsResourceRefreshEnabled(REFRESH_TYPE_NETWORK_USAGE, refresh_flags);
+  per_process_network_usage_ = network_usage_refresh_enabled ? 0 : -1;
+  for (auto& task_pair : tasks_) {
+    Task* task = task_pair.second;
+    task->Refresh(update_interval, refresh_flags);
+
+    if (network_usage_refresh_enabled && task->ReportsNetworkUsage()) {
+      per_process_network_usage_ += task->network_usage();
+    }
+  }
 
   // 2- Refresh GPU memory (if enabled).
   if (IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY, refresh_flags))

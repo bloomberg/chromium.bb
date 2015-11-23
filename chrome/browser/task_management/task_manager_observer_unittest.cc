@@ -58,6 +58,9 @@ class TestTaskManager : public TaskManagerInterface {
   }
   Task::Type GetType(TaskId task_id) const override { return Task::UNKNOWN; }
   int64 GetNetworkUsage(TaskId task_id) const override { return -1; }
+  int64 GetProcessTotalNetworkUsage(TaskId task_id) const override {
+    return -1;
+  }
   int64 GetSqliteMemoryUsed(TaskId task_id) const override { return -1; }
   bool GetV8Memory(TaskId task_id,
                    int64* allocated,

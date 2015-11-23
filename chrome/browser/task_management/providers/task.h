@@ -12,6 +12,8 @@
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "ui/gfx/image/image_skia.h"
 
+class Profile;
+
 namespace task_management {
 
 // Defines a task that corresponds to a tab, an app, an extension, ... etc. It
@@ -43,6 +45,9 @@ class Task {
        base::ProcessHandle handle);
   virtual ~Task();
 
+  // Gets the name of the given |profile| from the ProfileInfoCache.
+  static base::string16 GetProfileNameFromProfile(Profile* profile);
+
   // Activates this TaskManager's task by bringing its container to the front
   // (if possible).
   virtual void Activate();
@@ -69,8 +74,7 @@ class Task {
   // value is whatever unique IDs of their hosts in the browser process.
   virtual int GetChildProcessUniqueID() const = 0;
 
-  // The name of the profile associated with the browser context of the render
-  // view host that this task represents (if this task represents a renderer).
+  // The name of the profile owning this task.
   virtual base::string16 GetProfileName() const;
 
   // Getting the Sqlite used memory (in bytes). Not all tasks reports Sqlite

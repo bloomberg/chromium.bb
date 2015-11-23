@@ -54,6 +54,7 @@ class TaskGroup {
   int64 physical_bytes() const { return memory_usage_.physical_bytes; }
   int64 gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
+  int64 per_process_network_usage() const { return per_process_network_usage_; }
 
 #if defined(OS_WIN)
   int64 gdi_current_handles() const { return gdi_current_handles_; }
@@ -97,6 +98,9 @@ class TaskGroup {
   double cpu_usage_;
   MemoryUsageStats memory_usage_;
   int64 gpu_memory_;
+  // The network usage in bytes per second as the sum of all network usages of
+  // the individual tasks sharing the same process.
+  int64 per_process_network_usage_;
 #if defined(OS_WIN)
   // Windows GDI and USER Handles.
   int64 gdi_current_handles_;

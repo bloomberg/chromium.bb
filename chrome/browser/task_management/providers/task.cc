@@ -4,6 +4,10 @@
 
 #include "chrome/browser/task_management/providers/task.h"
 
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 
 namespace task_management {
@@ -29,6 +33,19 @@ Task::Task(const base::string16& title,
 }
 
 Task::~Task() {
+}
+
+// static
+base::string16 Task::GetProfileNameFromProfile(Profile* profile) {
+  DCHECK(profile);
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index =
+      cache.GetIndexOfProfileWithPath(profile->GetOriginalProfile()->GetPath());
+  if (index != std::string::npos)
+    return cache.GetNameOfProfileAtIndex(index);
+
+  return base::string16();
 }
 
 void Task::Activate() {

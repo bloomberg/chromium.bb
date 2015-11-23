@@ -6,7 +6,10 @@
 
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/process_resource_usage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -15,6 +18,8 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/service_registry.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_set.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -72,9 +77,26 @@ base::string16 GetLocalizedTitle(const base::string16& title,
                                         result_title);
     case PROCESS_TYPE_NACL_BROKER:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
-    case PROCESS_TYPE_NACL_LOADER:
+    case PROCESS_TYPE_NACL_LOADER: {
+      auto* profile_manager = g_browser_process->profile_manager();
+      if (profile_manager) {
+        // TODO(afakhry): Fix the below looping by plumbing a way to get the
+        // profile or the profile path from the child process host if any.
+        auto loaded_profiles = profile_manager->GetLoadedProfiles();
+        for (auto* profile : loaded_profiles) {
+          auto& enabled_extensions =
+              extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+          auto extension =
+              enabled_extensions.GetExtensionOrAppByURL(GURL(result_title));
+          if (extension) {
+            result_title = base::UTF8ToUTF16(extension->name());
+            break;
+          }
+        }
+      }
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX,
                                         result_title);
+    }
     // These types don't need display names or get them from elsewhere.
     case content::PROCESS_TYPE_BROWSER:
     case content::PROCESS_TYPE_RENDERER:
@@ -127,6 +149,18 @@ ProcessResourceUsage* CreateProcessResourcesSampler(
   return new ProcessResourceUsage(service.Pass());
 }
 
+bool UsesV8Memory(int process_type) {
+  switch (process_type) {
+    case content::PROCESS_TYPE_UTILITY:
+    case content::PROCESS_TYPE_BROWSER:
+    case content::PROCESS_TYPE_RENDERER:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
@@ -137,7 +171,8 @@ ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
       v8_memory_allocated_(-1),
       v8_memory_used_(-1),
       unique_child_process_id_(data.id),
-      process_type_(data.process_type) {
+      process_type_(data.process_type),
+      uses_v8_memory_(UsesV8Memory(process_type_)) {
 }
 
 ChildProcessTask::~ChildProcessTask() {
@@ -148,6 +183,9 @@ void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
   Task::Refresh(update_interval, refresh_flags);
 
   if ((refresh_flags & REFRESH_TYPE_V8_MEMORY) == 0)
+    return;
+
+  if (!uses_v8_memory_)
     return;
 
   // The child process resources refresh is performed asynchronously, we will
@@ -190,7 +228,7 @@ int ChildProcessTask::GetChildProcessUniqueID() const {
 }
 
 bool ChildProcessTask::ReportsV8Memory() const {
-  return process_resources_sampler_->ReportsV8MemoryStats();
+  return uses_v8_memory_ && process_resources_sampler_->ReportsV8MemoryStats();
 }
 
 int64 ChildProcessTask::GetV8MemoryAllocated() const {

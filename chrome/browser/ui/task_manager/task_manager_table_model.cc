@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 
+#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/result_codes.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,6 +49,7 @@ bool IsSharedByGroup(int column_id) {
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
     case IDS_TASK_MANAGER_CPU_COLUMN:
+    case IDS_TASK_MANAGER_NET_COLUMN:
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
     case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
@@ -55,6 +58,7 @@ bool IsSharedByGroup(int column_id) {
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
+    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
       return true;
     default:
       return false;
@@ -87,7 +91,9 @@ class TaskManagerValuesStringifier {
         zero_string_(base::ASCIIToUTF16("0")),
         asterisk_string_(base::ASCIIToUTF16("*")),
         unknown_string_(l10n_util::GetStringUTF16(
-            IDS_TASK_MANAGER_UNKNOWN_VALUE_TEXT)) {
+            IDS_TASK_MANAGER_UNKNOWN_VALUE_TEXT)),
+        disabled_nacl_debugging_string_(l10n_util::GetStringUTF16(
+            IDS_TASK_MANAGER_DISABLED_NACL_DBG_TEXT)) {
   }
 
   ~TaskManagerValuesStringifier() {}
@@ -128,7 +134,7 @@ class TaskManagerValuesStringifier {
   }
 
   base::string16 GetNaClPortText(int nacl_port) {
-    if (nacl_port == nacl::kGdbDebugStubPortUnused)
+    if (nacl_port == nacl::kGdbDebugStubPortUnused || nacl_port == -2)
       return n_a_string_;
 
     if (nacl_port == nacl::kGdbDebugStubPortUnknown)
@@ -175,6 +181,9 @@ class TaskManagerValuesStringifier {
   const base::string16& zero_string() const { return zero_string_; }
   const base::string16& asterisk_string() const { return asterisk_string_; }
   const base::string16& unknown_string() const { return unknown_string_; }
+  const base::string16& disabled_nacl_debugging_string() const {
+    return disabled_nacl_debugging_string_;
+  }
 
  private:
   // The localized string "N/A".
@@ -189,6 +198,10 @@ class TaskManagerValuesStringifier {
 
   // The string "Unknown".
   const base::string16 unknown_string_;
+
+  // The string to show on the NaCl debug port column cells when the flag
+  // #enable-nacl-debug is disabled.
+  const base::string16 disabled_nacl_debugging_string_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerValuesStringifier);
 };
@@ -218,7 +231,13 @@ TaskManagerTableModel::TaskManagerTableModel(int64_t refresh_flags,
       table_view_delegate_(delegate),
       columns_settings_(new base::DictionaryValue),
       table_model_observer_(nullptr),
-      stringifier_(new TaskManagerValuesStringifier) {
+      stringifier_(new TaskManagerValuesStringifier),
+#if !defined(DISABLE_NACL)
+      is_nacl_debugging_flag_enabled_(base::CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableNaClDebug)) {
+#else
+      is_nacl_debugging_flag_enabled_(false) {
+#endif  // !defined(DISABLE_NACL)
   DCHECK(delegate);
 }
 
@@ -242,7 +261,7 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
 
     case IDS_TASK_MANAGER_NET_COLUMN:
       return stringifier_->GetNetworkUsageText(
-          observed_task_manager()->GetNetworkUsage(tasks_[row]));
+          observed_task_manager()->GetProcessTotalNetworkUsage(tasks_[row]));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:
       return stringifier_->GetCpuUsageText(
@@ -325,6 +344,9 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
     }
 
     case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
+      if (!is_nacl_debugging_flag_enabled_)
+        return stringifier_->disabled_nacl_debugging_string();
+
       return stringifier_->GetNaClPortText(
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row]));
 
