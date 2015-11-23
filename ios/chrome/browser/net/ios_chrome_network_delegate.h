@@ -81,9 +81,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
       const GURL& target_url,
       const GURL& referrer_url) const override;
 
-  void AccumulateContentLength(int64 received_payload_byte_count,
-                               int64 original_payload_byte_count);
-
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   // Weak, owned by our owner.
