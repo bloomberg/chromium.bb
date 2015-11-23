@@ -33,7 +33,6 @@
 #ifndef AttributeCollection_h
 #define AttributeCollection_h
 
-#include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
@@ -68,7 +67,6 @@ public:
     iterator find(const AtomicString& name, bool shouldIgnoreCase) const;
     size_t findIndex(const QualifiedName&, bool shouldIgnoreCase = false) const;
     size_t findIndex(const AtomicString& name, bool shouldIgnoreCase) const;
-    size_t findIndex(Attr*) const;
 
 protected:
     size_t findSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
@@ -181,19 +179,6 @@ inline typename AttributeCollectionGeneric<Container, ContainerMemberType>::iter
             return it;
     }
     return nullptr;
-}
-
-template <typename Container, typename ContainerMemberType>
-size_t AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(Attr* attr) const
-{
-    // This relies on the fact that Attr's QualifiedName == the Attribute's name.
-    iterator end = this->end();
-    unsigned index = 0;
-    for (iterator it = begin(); it != end; ++it, ++index) {
-        if (it->name() == attr->qualifiedName())
-            return index;
-    }
-    return kNotFound;
 }
 
 template <typename Container, typename ContainerMemberType>
