@@ -184,7 +184,7 @@ public:
 
     bool consumeNumberRaw(double& result)
     {
-        if (!m_calcValue)
+        if (!m_calcValue || m_calcValue->category() != CalcNumber)
             return false;
         m_sourceRange = m_range;
         result = m_calcValue->doubleValue();
