@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/nfc/NFCMessage.h"
+#include "modules/nfc/NFCPushOptions.h"
 
 namespace blink {
 
@@ -23,13 +25,33 @@ NFC* NFC::create(LocalFrame* frame)
     return nfc;
 }
 
-NFC::~NFC()
+ScriptPromise NFC::push(ScriptState* scriptState, const NFCPushMessage& records, const NFCPushOptions& options)
 {
+    // TODO(shalamov): To be implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 }
 
-ScriptPromise NFC::requestAdapter(ScriptState* scriptState)
+ScriptPromise NFC::cancelPush(ScriptState* scriptState, const String& target)
 {
-    // TODO(riju): To be implemented.
+    // TODO(shalamov): To be implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+}
+
+ScriptPromise NFC::watch(ScriptState* scriptState, MessageCallback* callback, const NFCWatchOptions& options)
+{
+    // TODO(shalamov): To be implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+}
+
+ScriptPromise NFC::cancelWatch(ScriptState* scriptState, long id)
+{
+    // TODO(shalamov): To be implemented.
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+}
+
+ScriptPromise NFC::cancelWatch(ScriptState* scriptState)
+{
+    // TODO(shalamov): To be implemented.
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 }
 

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-nfc/#idl-def-nfcwatchoptions
+// https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
 
 enum NFCWatchMode { "web-nfc-only", "any" };
 
-[
-   RuntimeEnabled=WebNFC,
-] dictionary NFCWatchOptions {
-    USVString    url = "";
-    USVString    kind = "";
-    USVString    type = "";
+dictionary NFCWatchOptions {
+    USVString url = "";
+    NFCRecordType? recordType;
+    USVString mediaType = "";
     NFCWatchMode mode = "web-nfc-only";
 };

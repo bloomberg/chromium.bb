@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-nfc/index.html#the-nfcrecord-dictionary
+// https://w3c.github.io/web-nfc/#the-nfcrecord-dictionary
 
 enum NFCRecordType { "empty", "text", "url", "json", "opaque" };
 
-// typedef (DOMString or unrestricted double or object or ArrayBuffer) NFCRecordData;
+// TODO(shalamov): This is blocked by https://crbug.com/524424
+// typedef (DOMString or unrestricted double or ArrayBuffer or Dictionary) NFCRecordData;
+typedef any NFCRecordData;
 
 dictionary NFCRecord {
-    NFCRecordType kind;
-    USVString type;
-    // NFCRecordData data;
-    // Use ´any´ as Blink IDL compiler complains that Object is not supported as
-    // union member. Tracked in https://crbug.com/537133 .
-    any data;
+    NFCRecordType recordType;
+    USVString mediaType;
+    NFCRecordData data;
 };

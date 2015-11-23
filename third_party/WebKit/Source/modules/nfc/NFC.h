@@ -7,10 +7,16 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/page/PageLifecycleObserver.h"
 
 namespace blink {
+
+class MessageCallback;
+class NFCPushOptions;
+using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
+class NFCWatchOptions;
 
 class NFC final
     : public GarbageCollectedFinalized<NFC>
@@ -22,19 +28,29 @@ class NFC final
 
 public:
     static NFC* create(LocalFrame*);
-#if ENABLE(OILPAN)
-    ~NFC();
-#else
-    ~NFC() override;
+#if !ENABLE(OILPAN)
+    ~NFC() override = default;
 #endif
 
-    // Get an adapter object providing NFC functionality.
-    ScriptPromise requestAdapter(ScriptState*);
+    // Pushes NFCPushMessage asynchronously to NFC tag / peer.
+    ScriptPromise push(ScriptState*, const NFCPushMessage&, const NFCPushOptions&);
+
+    // Cancels ongoing push operation.
+    ScriptPromise cancelPush(ScriptState*, const String&);
+
+    // Starts watching for NFC messages that match NFCWatchOptions criteria.
+    ScriptPromise watch(ScriptState*, MessageCallback*, const NFCWatchOptions&);
+
+    // Cancels watch operation with id.
+    ScriptPromise cancelWatch(ScriptState*, long id);
+
+    // Cancels all watch operations.
+    ScriptPromise cancelWatch(ScriptState*);
 
     // Implementation of LocalFrameLifecycleObserver.
     void willDetachFrameHost() override;
 
-    // Implementation of PageLifecycleObserver
+    // Implementation of PageLifecycleObserver.
     void pageVisibilityChanged() override;
 
     // Interface required by garbage collection.

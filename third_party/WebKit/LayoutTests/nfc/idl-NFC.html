@@ -7,5 +7,14 @@ test(function() {
                 'the constructor should not be callable with "new"');
   assert_throws(null, function() { NFC(); },
                 'the constructor should not be callable');
+
+  // Test that navigator.nfc.push exists
+  assert_true('push' in navigator.nfc);
+  // Test that navigator.nfc.cancelPush exists
+  assert_true('cancelPush' in navigator.nfc);
+  // Test that navigator.nfc.watch exists
+  assert_true('watch' in navigator.nfc);
+  // Test that navigator.nfc.cancelWatch exists
+  assert_true('cancelWatch' in navigator.nfc);
 }, 'NFC IDL test');
 </script>

@@ -3419,8 +3419,11 @@ interface MutationRecord
     getter type
     method constructor
 interface NFC
+    method cancelPush
+    method cancelWatch
     method constructor
-    method requestAdapter
+    method push
+    method watch
 interface NamedNodeMap
     getter length
     method constructor
