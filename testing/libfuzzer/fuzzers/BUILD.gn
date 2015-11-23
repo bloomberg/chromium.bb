@@ -195,3 +195,13 @@ test("v8_json_parser_fuzzer") {
     "$root_out_dir/snapshot_blob.bin",
   ]
 }
+
+test("base_json_reader_fuzzer") {
+  sources = [
+    "base_json_reader_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/libfuzzer:libfuzzer_main",
+  ]
+}
