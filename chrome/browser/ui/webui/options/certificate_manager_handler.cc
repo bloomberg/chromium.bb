@@ -711,8 +711,9 @@ void CertificateManagerHandler::StartImportPersonal(
   }
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("crt"));
   file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
+      l10n_util::GetStringUTF16(IDS_CERT_USAGE_SSL_CLIENT));
   file_type_info.include_all_files = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
@@ -726,8 +727,19 @@ void CertificateManagerHandler::StartImportPersonal(
 void CertificateManagerHandler::ImportPersonalFileSelected(
     const base::FilePath& path) {
   file_path_ = path;
-  web_ui()->CallJavascriptFunction(
-      "CertificateManager.importPersonalAskPassword");
+  if (file_path_.MatchesExtension(FILE_PATH_LITERAL(".p12"))) {
+    web_ui()->CallJavascriptFunction(
+        "CertificateManager.importPersonalAskPassword");
+    return;
+  }
+
+  // Non .p12 files are treated as unencrypted certificates.
+  password_.clear();
+  file_access_provider_->StartRead(
+      file_path_,
+      base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
+                 base::Unretained(this)),
+      &tracker_);
 }
 
 void CertificateManagerHandler::ImportPersonalPasswordSelected(
@@ -750,7 +762,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     ImportExportCleanup();
     web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
                                   UTF8ToUTF16(
                                       base::safe_strerror(*read_errno))));
@@ -759,21 +771,48 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 
   file_data_ = *data;
 
-  if (use_hardware_backed_) {
-    module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
-  } else {
-    module_ = certificate_manager_model_->cert_db()->GetPublicModule();
+  if (file_path_.MatchesExtension(FILE_PATH_LITERAL(".p12"))) {
+    if (use_hardware_backed_) {
+      module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
+    } else {
+      module_ = certificate_manager_model_->cert_db()->GetPublicModule();
+    }
+
+    net::CryptoModuleList modules;
+    modules.push_back(module_);
+    chrome::UnlockSlotsIfNecessary(
+        modules,
+        chrome::kCryptoModulePasswordCertImport,
+        net::HostPortPair(),  // unused.
+        GetParentWindow(),
+        base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
+                   base::Unretained(this)));
+    return;
   }
 
-  net::CryptoModuleList modules;
-  modules.push_back(module_);
-  chrome::UnlockSlotsIfNecessary(
-      modules,
-      chrome::kCryptoModulePasswordCertImport,
-      net::HostPortPair(),  // unused.
-      GetParentWindow(),
-      base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
-                 base::Unretained(this)));
+  // Non .p12 files are assumed to be single/chain certificates without private
+  // key data. The default extension according to spec is '.crt', however other
+  // extensions are also used in some places to represent these certificates.
+  int result = certificate_manager_model_->ImportUserCert(file_data_);
+  ImportExportCleanup();
+  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  int string_id;
+  switch (result) {
+    case net::OK:
+      return;
+    case net::ERR_NO_PRIVATE_KEY_FOR_CERT:
+      string_id = IDS_CERT_MANAGER_IMPORT_MISSING_KEY;
+      break;
+    case net::ERR_CERT_INVALID:
+      string_id = IDS_CERT_MANAGER_READ_ERROR_FORMAT;
+      break;
+    default:
+      string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
+      break;
+  }
+  ShowError(
+      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
+      l10n_util::GetStringUTF8(string_id));
 }
 
 void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
@@ -796,20 +835,20 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
       string_id = IDS_CERT_MANAGER_BAD_PASSWORD;
       break;
     case net::ERR_PKCS12_IMPORT_INVALID_MAC:
-      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC;
+      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_MAC;
       break;
     case net::ERR_PKCS12_IMPORT_INVALID_FILE:
-      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE;
+      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_FILE;
       break;
     case net::ERR_PKCS12_IMPORT_UNSUPPORTED:
-      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED;
+      string_id = IDS_CERT_MANAGER_IMPORT_UNSUPPORTED;
       break;
     default:
       string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
       break;
   }
   ShowError(
-      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
+      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
       l10n_util::GetStringUTF8(string_id));
 }
 

@@ -82,6 +82,10 @@ class CertificateManagerModel {
   int ImportFromPKCS12(net::CryptoModule* module, const std::string& data,
                        const base::string16& password, bool is_extractable);
 
+  // Import user certificate from DER encoded |data|.
+  // Returns a net error code on failure.
+  int ImportUserCert(const std::string& data);
+
   // Import CA certificates.
   // Tries to import all the certificates given.  The root will be trusted
   // according to |trust_bits|.  Any certificates that could not be imported

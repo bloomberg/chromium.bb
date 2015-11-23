@@ -3290,19 +3290,22 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_CERT_MANAGER_POLICY_INSTALLED" desc="The text of the popup bubble shown when the user clicks the controlled setting indicator next to a certificate entry.">
           This certificate has been installed by your system administrator.
         </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
-          PKCS #12 Import Error
+        <message name="IDS_CERT_MANAGER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for certificate file import errors.">
+          Certificate Import Error
         </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC" desc="The message in the error dialog for PKCS #12 files with invalid MAC.">
+        <message name="IDS_CERT_MANAGER_IMPORT_INVALID_MAC" desc="The message in the error dialog for certificate files with invalid MAC.">
           Incorrect password or corrupt file.
         </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt PKCS #12 files.">
+        <message name="IDS_CERT_MANAGER_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt certificate files.">
           Invalid or corrupt file.
         </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported PKCS #12 files.">
+        <message name="IDS_CERT_MANAGER_IMPORT_MISSING_KEY" desc="The message in the error dialog for certificates without a local private key.">
+          The Private Key for this Client Certificate is missing or invalid.
+        </message>
+        <message name="IDS_CERT_MANAGER_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported certificate files.">
           File uses unsupported features.
         </message>
-        <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file read errors.">
+        <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for certificate file read errors.">
           There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
         </message>
         <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">

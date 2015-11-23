@@ -192,6 +192,11 @@ class NET_EXPORT NSSCertDatabase {
   // TODO(mattm): improve this to handle any order.
   X509Certificate* FindRootInList(const CertificateList& certificates) const;
 
+  // Import a user certificate. The private key for the user certificate must
+  // already be installed, otherwise we return ERR_NO_PRIVATE_KEY_FOR_CERT.
+  // Returns OK or a network error code.
+  int ImportUserCert(const std::string& data);
+
   // Import CA certificates.
   // Tries to import all the certificates given.  The root will be trusted
   // according to |trust_bits|.  Any certificates that could not be imported

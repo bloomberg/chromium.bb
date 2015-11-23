@@ -166,6 +166,13 @@ int CertificateManagerModel::ImportFromPKCS12(net::CryptoModule* module,
   return result;
 }
 
+int CertificateManagerModel::ImportUserCert(const std::string& data) {
+  int result = cert_db_->ImportUserCert(data);
+  if (result == net::OK)
+    Refresh();
+  return result;
+}
+
 bool CertificateManagerModel::ImportCACerts(
     const net::CertificateList& certificates,
     net::NSSCertDatabase::TrustBits trust_bits,

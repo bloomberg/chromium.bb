@@ -44,6 +44,7 @@
 #include <secerr.h>
 
 #include "base/logging.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
@@ -204,6 +205,37 @@ bool ImportServerCert(
 
   // Any errors importing individual certs will be in listed in |not_imported|.
   return true;
+}
+
+// Based on nsNSSCertificateDB::ImportUserCertificate.
+int ImportUserCert(const net::CertificateList& certificates) {
+  if (certificates.empty())
+    return net::ERR_CERT_INVALID;
+
+  const scoped_refptr<net::X509Certificate>& cert = certificates[0];
+  CK_OBJECT_HANDLE key;
+  crypto::ScopedPK11Slot slot(
+      PK11_KeyForCertExists(cert->os_cert_handle(), &key, NULL));
+
+  if (!slot.get())
+    return net::ERR_NO_PRIVATE_KEY_FOR_CERT;
+
+  // Mozilla uses CERT_ImportCerts, which doesn't take a slot arg.  We use
+  // PK11_ImportCert instead.
+  SECStatus srv =
+      PK11_ImportCert(slot.get(), cert->os_cert_handle(), key,
+                      net::x509_util::GetUniqueNicknameForSlot(
+                          cert->GetDefaultNickname(net::USER_CERT),
+                          &cert->os_cert_handle()->derSubject, slot.get())
+                          .c_str(),
+                      PR_FALSE /* includeTrust (unused) */);
+
+  if (srv != SECSuccess) {
+    LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();
+    return net::ERR_ADD_USER_CERT_FAILED;
+  }
+
+  return net::OK;
 }
 
 // Based on nsNSSCertificateDB::SetCertTrust.

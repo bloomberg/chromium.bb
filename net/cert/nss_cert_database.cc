@@ -227,6 +227,18 @@ X509Certificate* NSSCertDatabase::FindRootInList(
   return cert0;
 }
 
+int NSSCertDatabase::ImportUserCert(const std::string& data) {
+  CertificateList certificates =
+      X509Certificate::CreateCertificateListFromBytes(
+          data.c_str(), data.size(), net::X509Certificate::FORMAT_AUTO);
+  int result = psm::ImportUserCert(certificates);
+
+  if (result == OK)
+    NotifyObserversOfCertAdded(NULL);
+
+  return result;
+}
+
 bool NSSCertDatabase::ImportCACerts(const CertificateList& certificates,
                                     TrustBits trust_bits,
                                     ImportCertFailureList* not_imported) {
