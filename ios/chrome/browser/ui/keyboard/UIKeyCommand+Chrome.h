@@ -57,7 +57,7 @@ extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 //   ];
 // }
 //
-// Or in a UIViewController:
+// Or in a UIViewController starting in iOS 9:
 //
 // baz_view_controller.mm:
 //
