@@ -184,10 +184,6 @@ int ResourceRequestInfoImpl::GetOriginPID() const {
   return origin_pid_;
 }
 
-int ResourceRequestInfoImpl::GetRequestID() const {
-  return request_id_;
-}
-
 int ResourceRequestInfoImpl::GetRenderFrameID() const {
   return render_frame_id_;
 }
@@ -271,6 +267,10 @@ void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
         URLRequestUserData::kUserDataKey,
         new URLRequestUserData(render_process_id, render_frame_id));
   }
+}
+
+int ResourceRequestInfoImpl::GetRequestID() const {
+  return request_id_;
 }
 
 GlobalRequestID ResourceRequestInfoImpl::GetGlobalRequestID() const {

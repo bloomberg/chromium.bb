@@ -730,8 +730,8 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
   scoped_ptr<ResourceHandler> handler(
       new DownloadResourceHandler(id, request, started_cb, save_info.Pass()));
   if (delegate_) {
-    const ResourceRequestInfo* request_info(
-        ResourceRequestInfo::ForRequest(request));
+    const ResourceRequestInfoImpl* request_info(
+        ResourceRequestInfoImpl::ForRequest(request));
 
     ScopedVector<ResourceThrottle> throttles;
     delegate_->DownloadStarting(
@@ -884,7 +884,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 }
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
-  ResourceRequestInfo* info = loader->GetRequestInfo();
+  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
 
   // Record final result of all resource loads.
   if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {

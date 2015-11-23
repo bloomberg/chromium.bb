@@ -74,7 +74,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetChildID() const override;
   int GetRouteID() const override;
   int GetOriginPID() const override;
-  int GetRequestID() const override;
   int GetRenderFrameID() const override;
   bool IsMainFrame() const override;
   bool ParentIsMainFrame() const override;
@@ -95,6 +94,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
+  CONTENT_EXPORT int GetRequestID() const;
   CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
   GlobalRoutingID GetGlobalRoutingID() const;
 

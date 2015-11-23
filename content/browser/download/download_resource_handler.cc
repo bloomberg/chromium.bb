@@ -499,7 +499,7 @@ void DownloadResourceHandler::ResumeRequest() {
 void DownloadResourceHandler::CancelRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const ResourceRequestInfo* info = GetRequestInfo();
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   ResourceDispatcherHostImpl::Get()->CancelRequest(
       info->GetChildID(),
       info->GetRequestID());
@@ -507,7 +507,7 @@ void DownloadResourceHandler::CancelRequest() {
 }
 
 std::string DownloadResourceHandler::DebugString() const {
-  const ResourceRequestInfo* info = GetRequestInfo();
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   return base::StringPrintf("{"
                             " url_ = " "\"%s\""
                             " info = {"

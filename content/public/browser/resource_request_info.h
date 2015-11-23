@@ -65,9 +65,6 @@ class ResourceRequestInfo {
   // another process.  Otherwise it is 0.
   virtual int GetOriginPID() const = 0;
 
-  // Unique identifier (within the scope of the child process) for this request.
-  virtual int GetRequestID() const = 0;
-
   // The IPC route identifier of the RenderFrame.
   // TODO(jam): once all navigation and resource requests are sent between
   // frames and RenderView/RenderViewHost aren't involved we can remove this and
