@@ -6814,7 +6814,8 @@ bool GLES2DecoderImpl::CheckCurrentProgramForUniform(
   if (!CheckCurrentProgram(function_name)) {
     return false;
   }
-  return location != -1;
+  return !state_.current_program->IsInactiveUniformLocationByFakeLocation(
+      location);
 }
 
 bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {

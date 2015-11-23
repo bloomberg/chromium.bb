@@ -735,53 +735,43 @@ void TestHelper::SetupProgramSuccessExpectations(
       .WillOnce(SetArgumentPointee<2>(num_uniforms))
       .RetiresOnSaturation();
 
-  size_t max_uniform_len = 0;
-  for (size_t ii = 0; ii < num_uniforms; ++ii) {
-    size_t len = strlen(uniforms[ii].name) + 1;
-    max_uniform_len = std::max(max_uniform_len, len);
-  }
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(max_uniform_len))
-      .RetiresOnSaturation();
-  for (size_t ii = 0; ii < num_uniforms; ++ii) {
-    const UniformInfo& info = uniforms[ii];
-    EXPECT_CALL(*gl,
-        GetActiveUniform(service_id, ii,
-                         max_uniform_len, _, _, _, _))
-        .WillOnce(DoAll(
-            SetArgumentPointee<3>(strlen(info.name)),
-            SetArgumentPointee<4>(info.size),
-            SetArgumentPointee<5>(info.type),
-            SetArrayArgument<6>(info.name,
-                                info.name + strlen(info.name) + 1)))
+  if (num_uniforms > 0) {
+    size_t max_uniform_len = 0;
+    for (size_t ii = 0; ii < num_uniforms; ++ii) {
+      size_t len = strlen(uniforms[ii].name) + 1;
+      max_uniform_len = std::max(max_uniform_len, len);
+    }
+    EXPECT_CALL(*gl, GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
+        .WillOnce(SetArgumentPointee<2>(max_uniform_len))
         .RetiresOnSaturation();
-  }
-
-  for (int pass = 0; pass < 2; ++pass) {
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
-      if (pass == 0 && info.real_location != -1) {
+      EXPECT_CALL(*gl,
+                  GetActiveUniform(service_id, ii, max_uniform_len, _, _, _, _))
+          .WillOnce(DoAll(SetArgumentPointee<3>(strlen(info.name)),
+                          SetArgumentPointee<4>(info.size),
+                          SetArgumentPointee<5>(info.type),
+                          SetArrayArgument<6>(
+                              info.name, info.name + strlen(info.name) + 1)))
+          .RetiresOnSaturation();
+
+      if (info.real_location != -1) {
         EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
             .WillOnce(Return(info.real_location))
             .RetiresOnSaturation();
       }
-      if ((pass == 0 && info.desired_location >= 0) ||
-          (pass == 1 && info.desired_location < 0)) {
-        if (info.size > 1) {
-          std::string base_name = info.name;
-          size_t array_pos = base_name.rfind("[0]");
-          if (base_name.size() > 3 && array_pos == base_name.size() - 3) {
-            base_name = base_name.substr(0, base_name.size() - 3);
-          }
-          for (GLsizei jj = 1; jj < info.size; ++jj) {
-            std::string element_name(
-                std::string(base_name) + "[" + base::IntToString(jj) + "]");
-            EXPECT_CALL(*gl, GetUniformLocation(
-                service_id, StrEq(element_name)))
-                .WillOnce(Return(info.real_location + jj * 2))
-                .RetiresOnSaturation();
-          }
+      if (info.size > 1) {
+        std::string base_name = info.name;
+        size_t array_pos = base_name.rfind("[0]");
+        if (base_name.size() > 3 && array_pos == base_name.size() - 3) {
+          base_name = base_name.substr(0, base_name.size() - 3);
+        }
+        for (GLsizei jj = 1; jj < info.size; ++jj) {
+          std::string element_name(std::string(base_name) + "[" +
+                                   base::IntToString(jj) + "]");
+          EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(element_name)))
+              .WillOnce(Return(info.real_location + jj * 2))
+              .RetiresOnSaturation();
         }
       }
     }

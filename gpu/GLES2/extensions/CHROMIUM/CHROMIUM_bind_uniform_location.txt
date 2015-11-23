@@ -104,7 +104,8 @@ New Procedures and Functions
     to a program object.  Hence it is allowed to bind any name (except a name
     starting with "gl_") to an index, including a name that is never used as a
     uniform in any shader object.  Assigned bindings for uniform variables
-    that do not exist or are not active are ignored.
+    that do not exist or are not active are ignored. Using such bindings
+    behaves as if passed location was -1.
 
     It is possible for an application to bind more than one uniform name to
     the same location.  This is referred to as aliasing.  This will only work
@@ -126,4 +127,7 @@ Revision History
     7/20/2012    Documented the extension
     9/8/2015     Require program link to fail if two statically used uniforms
                  are bound to the same location.
+    11/6/2015    Require inactive and non-existing, bound uniform locations
+                 to behave like location -1.
+
 

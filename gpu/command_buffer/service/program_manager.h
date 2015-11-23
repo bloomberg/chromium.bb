@@ -73,15 +73,12 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   struct UniformInfo {
     UniformInfo();
-    UniformInfo(
-        GLsizei _size, GLenum _type, GLint _fake_location_base,
-        const std::string& _name);
+    UniformInfo(const std::string& client_name,
+                GLint client_location_base,
+                GLenum _type,
+                bool _is_array,
+                const std::vector<GLint>& service_locations);
     ~UniformInfo();
-
-    bool IsValid() const {
-      return size != 0;
-    }
-
     bool IsSampler() const {
       return type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||
              type == GL_SAMPLER_CUBE || type == GL_SAMPLER_EXTERNAL_OES;
@@ -110,7 +107,37 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     std::string name;
   };
 
+  class UniformLocationEntry {
+   public:
+    UniformLocationEntry() : uniform_(nullptr), inactive_(false) {}
+    bool IsUnused() const { return !uniform_ && !inactive_; }
+    bool IsInactive() const { return inactive_; }
+    bool IsActive() const { return uniform_ != nullptr; }
+    void SetInactive() {
+      uniform_ = nullptr;
+      inactive_ = true;
+    }
+    void SetActive(UniformInfo* uniform) {
+      DCHECK(uniform);
+      uniform_ = uniform;
+      inactive_ = false;
+    }
+    const UniformInfo* uniform() const {
+      DCHECK(IsActive());
+      return uniform_;
+    }
+    UniformInfo* uniform() {
+      DCHECK(IsActive());
+      return uniform_;
+    }
+
+   private:
+    UniformInfo* uniform_;  // Pointer to uniform_info_ vector entry.
+    bool inactive_;
+  };
+
   typedef std::vector<UniformInfo> UniformInfoVector;
+  typedef std::vector<UniformLocationEntry> UniformLocationVector;
   typedef std::vector<VertexAttrib> AttribInfoVector;
   typedef std::vector<FragmentInputInfo> FragmentInputInfoVector;
   typedef std::vector<int> SamplerIndices;
@@ -171,6 +198,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Gets the UniformInfo of a uniform by location.
   const UniformInfo* GetUniformInfoByFakeLocation(
       GLint fake_location, GLint* real_location, GLint* array_index) const;
+
+  // Returns true if |fake_location| is a location for an inactive uniform,
+  // -1 for bound, non-existing uniform.
+  bool IsInactiveUniformLocationByFakeLocation(GLint fake_location) const;
 
   // Gets all the program info.
   void GetProgramInfo(
@@ -333,6 +364,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Updates the program info after a successful link.
   void Update();
+  void UpdateUniforms();
   void UpdateFragmentInputs();
 
   // Process the program log, replacing the hashed names with original names.
@@ -367,33 +399,20 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Returns false upon failure.
   bool ExecuteTransformFeedbackVaryingsCall();
 
-  void AddUniformInfo(
-      GLsizei size, GLenum type, GLint location, GLint fake_base_location,
-      const std::string& name, const std::string& original_name,
-      size_t* next_available_index);
-
-  // Query uniform data returned by ANGLE translator by the mapped name.
-  // Some drivers incorrectly return an uniform name of size-1 array without
-  // "[0]". In this case, we correct the name by appending "[0]" to it.
-  void GetCorrectedUniformData(
-      const std::string& name,
-      std::string* corrected_name, std::string* original_name,
-      GLsizei* size, GLenum* type) const;
-
   // Query VertexAttrib data returned by ANGLE translator by the mapped name.
   void GetVertexAttribData(
       const std::string& name, std::string* original_name, GLenum* type) const;
 
   void DetachShaders(ShaderManager* manager);
 
-  static inline GLint GetUniformInfoIndexFromFakeLocation(
+  static inline size_t GetUniformLocationIndexFromFakeLocation(
       GLint fake_location) {
-    return fake_location & 0xFFFF;
+    return static_cast<size_t>(fake_location & 0xFFFF);
   }
 
-  static inline GLint GetArrayElementIndexFromFakeLocation(
+  static inline size_t GetArrayElementIndexFromFakeLocation(
       GLint fake_location) {
-    return (fake_location >> 16) & 0xFFFF;
+    return static_cast<size_t>((fake_location >> 16) & 0xFFFF);
   }
 
   const FeatureInfo& feature_info() const;
@@ -414,6 +433,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Uniform info by index.
   UniformInfoVector uniform_infos_;
+  UniformLocationVector uniform_locations_;
 
   // The indices of the uniforms that are samplers.
   SamplerIndices sampler_indices_;
@@ -438,10 +458,6 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // True if the uniforms have been cleared.
   bool uniforms_cleared_;
-
-  // This is different than uniform_infos_.size() because
-  // that is a sparce array.
-  GLint num_uniforms_;
 
   // Log info
   scoped_ptr<std::string> log_info_;

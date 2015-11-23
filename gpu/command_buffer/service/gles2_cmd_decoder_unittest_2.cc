@@ -475,10 +475,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
       .WillOnce(SetArgumentPointee<2>(0));
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORMS, _))
       .WillOnce(SetArgumentPointee<2>(0));
-  EXPECT_CALL(
-      *gl_,
-      GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0));
 
   Program* program = GetProgram(client_program_id_);
   ASSERT_TRUE(program != NULL);
@@ -588,10 +584,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::LinkProgram, 0>(
       GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(0));
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORMS, _))
-      .WillOnce(SetArgumentPointee<2>(0));
-  EXPECT_CALL(
-      *gl_,
-      GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(0));
 
   cmds::AttachShader attach_cmd;

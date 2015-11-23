@@ -119,20 +119,22 @@ uint32 ComputeOffset(const void* start, const void* position) {
 Program::UniformInfo::UniformInfo()
     : size(0),
       type(GL_NONE),
+      accepts_api_type(0),
       fake_location_base(0),
-      is_array(false) {
-}
+      is_array(false) {}
 
-Program::UniformInfo::UniformInfo(GLsizei _size,
+Program::UniformInfo::UniformInfo(const std::string& client_name,
+                                  int client_location_base,
                                   GLenum _type,
-                                  int _fake_location_base,
-                                  const std::string& _name)
-    : size(_size),
+                                  bool _is_array,
+                                  const std::vector<GLint>& service_locations)
+    : size(service_locations.size()),
       type(_type),
       accepts_api_type(0),
-      fake_location_base(_fake_location_base),
-      is_array(false),
-      name(_name) {
+      fake_location_base(client_location_base),
+      is_array(_is_array),
+      name(client_name),
+      element_locations(service_locations) {
   switch (type) {
     case GL_INT:
       accepts_api_type = kUniform1i;
@@ -238,8 +240,13 @@ Program::UniformInfo::UniformInfo(GLsizei _size,
       NOTREACHED() << "Unhandled UniformInfo type " << type;
       break;
   }
-}
+  DCHECK_LT(0, size);
+  DCHECK(is_array || size == 1);
 
+  size_t num_texture_units = IsSampler() ? static_cast<size_t>(size) : 0u;
+  texture_units.clear();
+  texture_units.resize(num_texture_units, 0);
+}
 Program::UniformInfo::~UniformInfo() {}
 
 bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
@@ -258,7 +265,6 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       valid_(false),
       link_status_(false),
       uniforms_cleared_(false),
-      num_uniforms_(0),
       transform_feedback_buffer_mode_(GL_NONE) {
   manager_->StartTracking(this);
 }
@@ -266,11 +272,11 @@ Program::Program(ProgramManager* manager, GLuint service_id)
 void Program::Reset() {
   valid_ = false;
   link_status_ = false;
-  num_uniforms_ = 0;
   max_uniform_name_length_ = 0;
   max_attrib_name_length_ = 0;
   attrib_infos_.clear();
   uniform_infos_.clear();
+  uniform_locations_.clear();
   fragment_input_infos_.clear();
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
@@ -322,11 +328,7 @@ void Program::ClearUniforms(
     return;
   }
   uniforms_cleared_ = true;
-  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
-    const UniformInfo& uniform_info = uniform_infos_[ii];
-    if (!uniform_info.IsValid()) {
-      continue;
-    }
+  for (const UniformInfo& uniform_info : uniform_infos_) {
     GLint location = uniform_info.element_locations[0];
     GLsizei size = uniform_info.size;
     uint32 unit_size =
@@ -444,22 +446,6 @@ void Program::ClearUniforms(
   }
 }
 
-namespace {
-
-struct UniformData {
-  UniformData() : size(-1), type(GL_NONE), location(0), added(false) {
-  }
-  std::string queried_name;
-  std::string corrected_name;
-  std::string original_name;
-  GLsizei size;
-  GLenum type;
-  GLint location;
-  bool added;
-};
-
-}  // anonymous namespace
-
 void Program::Update() {
   Reset();
   UpdateLogInfo();
@@ -515,88 +501,18 @@ void Program::Update() {
     }
   }
 #endif
-
-  max_len = 0;
-  GLint num_uniforms = 0;
-  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
-  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
-  DCHECK(num_uniforms <= 0 || max_len > 0);
-  name_buffer.reset(new char[max_len]);
-
-  // Reads all the names.
-  std::vector<UniformData> uniform_data;
-  for (GLint ii = 0; ii < num_uniforms; ++ii) {
-    GLsizei length = 0;
-    UniformData data;
-    glGetActiveUniform(
-        service_id_, ii, max_len, &length,
-        &data.size, &data.type, name_buffer.get());
-    DCHECK(length < max_len);
-    DCHECK(length == 0 || name_buffer[length] == '\0');
-    data.queried_name = std::string(name_buffer.get());
-    GetCorrectedUniformData(data.queried_name, &data.corrected_name,
-                            &data.original_name, &data.size, &data.type);
-    uniform_data.push_back(data);
-  }
-
-  // NOTE: We don't care if 2 uniforms are bound to the same location.
-  // One of them will take preference. The spec allows this, same as
-  // BindAttribLocation.
-  //
-  // The reason we don't check is if we were to fail we'd have to
-  // restore the previous program but since we've already linked successfully
-  // at this point the previous program is gone.
-
-  // Assigns the uniforms with bindings.
-  size_t next_available_index = 0;
-  for (size_t ii = 0; ii < uniform_data.size(); ++ii) {
-    UniformData& data = uniform_data[ii];
-    // Force builtin uniforms (gl_DepthRange) to have invalid location.
-    if (ProgramManager::IsInvalidPrefix(data.queried_name.c_str(),
-                                        data.queried_name.size())) {
-      data.location = -1;
-    } else {
-      data.location =
-          glGetUniformLocation(service_id_, data.queried_name.c_str());
-    }
-    // remove "[0]"
-    std::string short_name;
-    int element_index = 0;
-    bool good = GetUniformNameSansElement(data.original_name, &element_index,
-                                          &short_name);
-    DCHECK(good);
-    LocationMap::const_iterator it = bind_uniform_location_map_.find(
-        short_name);
-    if (it != bind_uniform_location_map_.end()) {
-      AddUniformInfo(
-          data.size, data.type, data.location, it->second, data.corrected_name,
-          data.original_name, &next_available_index);
-      data.added = true;
-    }
-  }
-
-  // Assigns the uniforms that were not bound.
-  for (size_t ii = 0; ii < uniform_data.size(); ++ii) {
-    const UniformData& data = uniform_data[ii];
-    if (!data.added) {
-      AddUniformInfo(
-          data.size, data.type, data.location, -1, data.corrected_name,
-          data.original_name, &next_available_index);
-    }
-  }
+  UpdateUniforms();
 
 #if !defined(NDEBUG)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGPUServiceLoggingGPU)) {
     DVLOG(1) << "----: uniforms for service_id: " << service_id();
-    for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
-      const UniformInfo& info = uniform_infos_[ii];
-      if (info.IsValid()) {
-        DVLOG(1) << ii << ": loc = " << info.element_locations[0]
-                 << ", size = " << info.size
-                 << ", type = " << GLES2Util::GetStringEnum(info.type)
-                 << ", name = " << info.name;
-      }
+    size_t ii = 0;
+    for (const UniformInfo& info : uniform_infos_) {
+      DVLOG(1) << ii++ << ": loc = " << info.element_locations[0]
+               << ", size = " << info.size
+               << ", type = " << GLES2Util::GetStringEnum(info.type)
+               << ", name = " << info.name;
     }
   }
 #endif
@@ -604,6 +520,144 @@ void Program::Update() {
   UpdateFragmentInputs();
 
   valid_ = true;
+}
+
+void Program::UpdateUniforms() {
+  // Reserve each client-bound uniform location. This way unbound uniforms will
+  // not be allocated to locations that user expects bound uniforms to be, even
+  // if the expected uniforms are optimized away by the driver.
+  for (const auto& binding : bind_uniform_location_map_) {
+    if (binding.second < 0)
+      continue;
+    size_t client_location = static_cast<size_t>(binding.second);
+    if (uniform_locations_.size() <= client_location)
+      uniform_locations_.resize(client_location + 1);
+    uniform_locations_[client_location].SetInactive();
+  }
+
+  GLint num_uniforms = 0;
+  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+  if (num_uniforms <= 0)
+    return;
+
+  uniform_infos_.resize(num_uniforms);
+
+  GLint name_buffer_length = 0;
+  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH,
+                 &name_buffer_length);
+  DCHECK(name_buffer_length > 0);
+  scoped_ptr<char[]> name_buffer(new char[name_buffer_length]);
+
+  size_t unused_client_location_cursor = 0;
+
+  for (GLint uniform_index = 0; uniform_index < num_uniforms; ++uniform_index) {
+    GLsizei name_length = 0;
+    GLsizei size = 0;
+    GLenum type = GL_NONE;
+    glGetActiveUniform(service_id_, uniform_index, name_buffer_length,
+                       &name_length, &size, &type, name_buffer.get());
+    DCHECK(name_length < name_buffer_length);
+    DCHECK(name_length == 0 || name_buffer[name_length] == '\0');
+    std::string service_name(name_buffer.get(), name_length);
+
+    GLint service_location = -1;
+    // Force builtin uniforms (gl_DepthRange) to have invalid location.
+    if (!ProgramManager::IsInvalidPrefix(service_name.c_str(),
+                                         service_name.size())) {
+      service_location =
+          glGetUniformLocation(service_id_, service_name.c_str());
+    }
+
+    // Determine the client name of the uniform and whether it is an array
+    // or not.
+    bool is_array = false;
+    std::string client_name;
+    for (size_t i = 0; i < kMaxAttachedShaders && client_name.empty(); ++i) {
+      const auto& shader = attached_shaders_[i];
+      if (!shader)
+        continue;
+      const sh::ShaderVariable* info = nullptr;
+      const sh::Uniform* uniform = shader->GetUniformInfo(service_name);
+      if (uniform &&
+          uniform->findInfoByMappedName(service_name, &info, &client_name)) {
+        DCHECK(!client_name.empty());
+        is_array = info->arraySize > 0;
+        type = info->type;
+        size = std::max(1u, info->arraySize);
+      }
+    }
+    if (client_name.empty()) {
+      // This happens only in cases where we do not have ANGLE or run unit tests
+      // (or ANGLE has a severe bug).
+      client_name = service_name;
+      GLSLArrayName parsed_service_name(service_name);
+      is_array = size > 1 || parsed_service_name.IsArrayName();
+    }
+
+    std::string service_base_name = service_name;
+    std::string client_base_name = client_name;
+    if (is_array) {
+      // Some drivers incorrectly return an uniform name of size-1 array without
+      // "[0]". In this case, we correct the service name by appending "[0]" to
+      // it.
+      GLSLArrayName parsed_service_name(service_name);
+      if (parsed_service_name.IsArrayName()) {
+        service_base_name = parsed_service_name.base_name();
+        GLSLArrayName parsed_client_name(client_name);
+        client_base_name = parsed_client_name.base_name();
+      } else {
+        service_name += "[0]";
+        client_name += "[0]";
+      }
+    }
+
+    // Assign a location for the uniform: use either client-bound
+    // location or automatically assigned to an unused location.
+    size_t client_location_base = 0;
+    LocationMap::const_iterator it =
+        bind_uniform_location_map_.find(client_base_name);
+    if (it != bind_uniform_location_map_.end()) {
+      client_location_base = it->second;
+    } else {
+      while (unused_client_location_cursor < uniform_locations_.size() &&
+             !uniform_locations_[unused_client_location_cursor].IsUnused())
+        unused_client_location_cursor++;
+      if (unused_client_location_cursor == uniform_locations_.size())
+        uniform_locations_.resize(unused_client_location_cursor + 1);
+      client_location_base = unused_client_location_cursor;
+      unused_client_location_cursor++;
+    }
+
+    // Populate the uniform list entry.
+    std::vector<GLint> service_locations;
+    service_locations.resize(size);
+    service_locations[0] = service_location;
+
+    if (size > 1) {
+      for (GLsizei ii = 1; ii < size; ++ii) {
+        std::string element_name(service_base_name + "[" +
+                                 base::IntToString(ii) + "]");
+        service_locations[ii] =
+            glGetUniformLocation(service_id_, element_name.c_str());
+      }
+    }
+
+    UniformInfo& info = uniform_infos_[uniform_index];
+    info = UniformInfo(client_name, client_location_base, type, is_array,
+                       service_locations);
+    if (info.IsSampler()) {
+      sampler_indices_.push_back(uniform_index);
+    }
+
+    // Populate the uniform location list entry.
+    // Before linking, we already validated that no two statically used uniforms
+    // are bound to the same location.
+    DCHECK(!uniform_locations_[client_location_base].IsActive());
+    uniform_locations_[client_location_base].SetActive(&info);
+
+    max_uniform_name_length_ = std::max(max_uniform_name_length_,
+                                        static_cast<GLsizei>(info.name.size()));
+  }
 }
 
 void Program::UpdateFragmentInputs() {
@@ -921,11 +975,7 @@ GLint Program::GetUniformFakeLocation(
     const std::string& name) const {
   GLSLArrayName parsed_name(name);
 
-  for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
-    const UniformInfo& info = uniform_infos_[ii];
-    if (!info.IsValid()) {
-      continue;
-    }
+  for (const UniformInfo& info : uniform_infos_) {
     if (info.name == name ||
         (info.is_array &&
          info.name.compare(0, info.name.size() - 3, name) == 0)) {
@@ -935,7 +985,6 @@ GLint Program::GetUniformFakeLocation(
       size_t open_pos = info.name.find_last_of('[');
       if (info.name.compare(0, open_pos, parsed_name.base_name()) == 0) {
         int index = parsed_name.element_index();
-        DCHECK(index >= 0);
         if (index < info.size) {
           DCHECK_GT(static_cast<int>(info.element_locations.size()), index);
           if (info.element_locations[index] == -1)
@@ -965,25 +1014,34 @@ const Program::UniformInfo*
         GLint fake_location, GLint* real_location, GLint* array_index) const {
   DCHECK(real_location);
   DCHECK(array_index);
-  if (fake_location < 0) {
-    return NULL;
-  }
+  if (fake_location < 0)
+    return nullptr;
+  size_t location_index =
+      GetUniformLocationIndexFromFakeLocation(fake_location);
+  if (location_index >= uniform_locations_.size())
+    return nullptr;
 
-  GLint uniform_index = GetUniformInfoIndexFromFakeLocation(fake_location);
-  if (uniform_index >= 0 &&
-      static_cast<size_t>(uniform_index) < uniform_infos_.size()) {
-    const UniformInfo& uniform_info = uniform_infos_[uniform_index];
-    if (!uniform_info.IsValid()) {
-      return NULL;
-    }
-    GLint element_index = GetArrayElementIndexFromFakeLocation(fake_location);
-    if (element_index < uniform_info.size) {
-      *real_location = uniform_info.element_locations[element_index];
-      *array_index = element_index;
-      return &uniform_info;
-    }
-  }
-  return NULL;
+  if (!uniform_locations_[location_index].IsActive())
+    return nullptr;
+
+  const UniformInfo* info = uniform_locations_[location_index].uniform();
+  size_t element_index = GetArrayElementIndexFromFakeLocation(fake_location);
+  if (static_cast<GLsizei>(element_index) >= info->size)
+    return nullptr;
+  *real_location = info->element_locations[element_index];
+  *array_index = element_index;
+  return info;
+}
+
+bool Program::IsInactiveUniformLocationByFakeLocation(
+    GLint fake_location) const {
+  if (fake_location < 0)
+    return true;
+  size_t location_index =
+      GetUniformLocationIndexFromFakeLocation(fake_location);
+  if (location_index >= uniform_locations_.size())
+    return false;
+  return uniform_locations_[location_index].IsInactive();
 }
 
 const std::string* Program::GetAttribMappedName(
@@ -1061,41 +1119,6 @@ void Program::SetFragmentInputLocationBinding(const std::string& name,
   // either, both still work correctly.
   bind_fragment_input_location_map_[name] = location;
   bind_fragment_input_location_map_[name + "[0]"] = location;
-}
-
-// Note: This is only valid to call right after a program has been linked
-// successfully.
-void Program::GetCorrectedUniformData(
-    const std::string& name,
-    std::string* corrected_name, std::string* original_name,
-    GLsizei* size, GLenum* type) const {
-  DCHECK(corrected_name && original_name && size && type);
-  for (auto shader : attached_shaders_) {
-    if (!shader)
-      continue;
-    const sh::ShaderVariable* info = NULL;
-    const sh::Uniform* uniform = shader->GetUniformInfo(name);
-    bool found = false;
-    if (uniform)
-      found = uniform->findInfoByMappedName(name, &info, original_name);
-    if (found) {
-      const std::string kArraySpec("[0]");
-      if (info->arraySize > 0 &&
-          !base::EndsWith(name, kArraySpec, base::CompareCase::SENSITIVE)) {
-        *corrected_name = name + kArraySpec;
-        *original_name += kArraySpec;
-      } else {
-        *corrected_name = name;
-      }
-      *type = info->type;
-      *size = std::max(1u, info->arraySize);
-      return;
-    }
-  }
-  // TODO(zmo): this path should never be reached unless there is a serious
-  // bug in the driver or in ANGLE translator.
-  *corrected_name = name;
-  *original_name = name;
 }
 
 void Program::GetVertexAttribData(
@@ -1181,81 +1204,13 @@ void Program::GatherInterfaceBlockInfo() {
   }
 }
 
-void Program::AddUniformInfo(
-    GLsizei size, GLenum type, GLint location, GLint fake_base_location,
-    const std::string& name, const std::string& original_name,
-    size_t* next_available_index) {
-  DCHECK(next_available_index);
-  const char* kArraySpec = "[0]";
-  size_t uniform_index =
-      fake_base_location >= 0 ? fake_base_location : *next_available_index;
-  if (uniform_infos_.size() < uniform_index + 1) {
-    uniform_infos_.resize(uniform_index + 1);
-  }
-
-  // Before linking, we already validated that no two statically used uniforms
-  // are bound to the same location.
-  DCHECK(!uniform_infos_[uniform_index].IsValid());
-
-  uniform_infos_[uniform_index] = UniformInfo(
-      size, type, uniform_index, original_name);
-  ++num_uniforms_;
-
-  UniformInfo& info = uniform_infos_[uniform_index];
-  info.element_locations.resize(size);
-  info.element_locations[0] = location;
-  DCHECK_LE(0, size);
-  size_t num_texture_units = info.IsSampler() ? static_cast<size_t>(size) : 0u;
-  info.texture_units.clear();
-  info.texture_units.resize(num_texture_units, 0);
-
-  if (size > 1) {
-    // Go through the array element locations looking for a match.
-    // We can skip the first element because it's the same as the
-    // the location without the array operators.
-    size_t array_pos = name.rfind(kArraySpec);
-    std::string base_name = name;
-    if (name.size() > 3) {
-      if (array_pos != name.size() - 3) {
-        info.name = name + kArraySpec;
-      } else {
-        base_name = name.substr(0, name.size() - 3);
-      }
-    }
-    for (GLsizei ii = 1; ii < info.size; ++ii) {
-      std::string element_name(base_name + "[" + base::IntToString(ii) + "]");
-      info.element_locations[ii] =
-          glGetUniformLocation(service_id_, element_name.c_str());
-    }
-  }
-
-  info.is_array =
-     (size > 1 ||
-      (info.name.size() > 3 &&
-       info.name.rfind(kArraySpec) == info.name.size() - 3));
-
-  if (info.IsSampler()) {
-    sampler_indices_.push_back(info.fake_location_base);
-  }
-  max_uniform_name_length_ =
-      std::max(max_uniform_name_length_,
-               static_cast<GLsizei>(info.name.size()));
-
-  while (*next_available_index < uniform_infos_.size() &&
-         uniform_infos_[*next_available_index].IsValid()) {
-    *next_available_index = *next_available_index + 1;
-  }
-}
-
 const Program::UniformInfo*
     Program::GetUniformInfo(
         GLint index) const {
   if (static_cast<size_t>(index) >= uniform_infos_.size()) {
     return NULL;
   }
-
-  const UniformInfo& info = uniform_infos_[index];
-  return info.IsValid() ? &info : NULL;
+  return &uniform_infos_[index];
 }
 
 bool Program::SetSamplers(
@@ -1264,27 +1219,29 @@ bool Program::SetSamplers(
   if (fake_location < 0) {
     return true;
   }
-  GLint uniform_index = GetUniformInfoIndexFromFakeLocation(fake_location);
-  if (uniform_index >= 0 &&
-      static_cast<size_t>(uniform_index) < uniform_infos_.size()) {
-    UniformInfo& info = uniform_infos_[uniform_index];
-    if (!info.IsValid()) {
-      return false;
-    }
-    GLint element_index = GetArrayElementIndexFromFakeLocation(fake_location);
-    if (element_index < info.size) {
-      count = std::min(info.size - element_index, count);
-      if (info.IsSampler() && count > 0) {
-        for (GLsizei ii = 0; ii < count; ++ii) {
-          if (value[ii] < 0 || value[ii] >= num_texture_units) {
-            return false;
-          }
-        }
-        std::copy(value, value + count,
-                  info.texture_units.begin() + element_index);
-        return true;
+  size_t location_index =
+      GetUniformLocationIndexFromFakeLocation(fake_location);
+  if (location_index >= uniform_infos_.size())
+    return false;
+
+  if (!uniform_locations_[location_index].IsActive())
+    return false;
+
+  UniformInfo* info = uniform_locations_[location_index].uniform();
+
+  size_t element_index = GetArrayElementIndexFromFakeLocation(fake_location);
+  if (static_cast<GLsizei>(element_index) >= info->size)
+    return true;
+  count = std::min(info->size - static_cast<GLsizei>(element_index), count);
+  if (info->IsSampler() && count > 0) {
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      if (value[ii] < 0 || value[ii] >= num_texture_units) {
+        return false;
       }
     }
+    std::copy(value, value + count,
+              info->texture_units.begin() + element_index);
+    return true;
   }
   return true;
 }
@@ -1299,7 +1256,7 @@ void Program::GetProgramiv(GLenum pname, GLint* params) {
       *params = max_attrib_name_length_ + 1;
       break;
     case GL_ACTIVE_UNIFORMS:
-      *params = num_uniforms_;
+      *params = uniform_infos_.size();
       break;
     case GL_ACTIVE_UNIFORM_MAX_LENGTH:
       // Notice +1 to accomodate NULL terminator.
@@ -1661,15 +1618,12 @@ void Program::GetProgramInfo(
     total_string_size += info.name.size();
   }
 
-  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
-    const UniformInfo& info = uniform_infos_[ii];
-    if (info.IsValid()) {
-      num_locations += info.element_locations.size();
-      total_string_size += info.name.size();
-    }
+  for (const UniformInfo& info : uniform_infos_) {
+    num_locations += info.element_locations.size();
+    total_string_size += info.name.size();
   }
 
-  uint32 num_inputs = attrib_infos_.size() + num_uniforms_;
+  uint32 num_inputs = attrib_infos_.size() + uniform_infos_.size();
   uint32 input_size = num_inputs * sizeof(ProgramInput);
   uint32 location_size = num_locations * sizeof(int32);
   uint32 size = sizeof(ProgramInfoHeader) +
@@ -1691,7 +1645,7 @@ void Program::GetProgramInfo(
 
   header->link_status = link_status_;
   header->num_attribs = attrib_infos_.size();
-  header->num_uniforms = num_uniforms_;
+  header->num_uniforms = uniform_infos_.size();
 
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
@@ -1706,26 +1660,26 @@ void Program::GetProgramInfo(
     ++inputs;
   }
 
-  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
-    const UniformInfo& info = uniform_infos_[ii];
-    if (info.IsValid()) {
-      inputs->size = info.size;
-      inputs->type = info.type;
-      inputs->location_offset = ComputeOffset(header, locations);
-      inputs->name_offset = ComputeOffset(header, strings);
-      inputs->name_length = info.name.size();
-      DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
-      for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-        if (info.element_locations[jj] == -1)
-          *locations++ = -1;
-        else
-          *locations++ = ProgramManager::MakeFakeLocation(ii, jj);
-      }
-      memcpy(strings, info.name.c_str(), info.name.size());
-      strings += info.name.size();
-      ++inputs;
+  for (const UniformInfo& info : uniform_infos_) {
+    inputs->size = info.size;
+    inputs->type = info.type;
+    inputs->location_offset = ComputeOffset(header, locations);
+    inputs->name_offset = ComputeOffset(header, strings);
+    inputs->name_length = info.name.size();
+    DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
+    for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
+      if (info.element_locations[jj] == -1)
+        *locations++ = -1;
+      else
+        *locations++ =
+            ProgramManager::MakeFakeLocation(info.fake_location_base, jj);
     }
+    memcpy(strings, info.name.c_str(), info.name.size());
+    strings += info.name.size();
+    ++inputs;
   }
+  // NOTE: currently we do not pass inactive uniform binding locations
+  // through the program info call.
 
   // NOTE: currently we do not pass fragment input infos through the program
   // info call, because they are not exposed through any getter function.
