@@ -27,8 +27,8 @@ COLORAMA_ROOT = os.path.join(constants.DIR_SOURCE_ROOT,
 # aapt should ignore OWNERS files in addition the default ignore pattern.
 AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
                        '!CVS:!thumbs.db:!picasa.ini:!*~:!*.d.stamp')
-HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
-HERMETIC_FILE_ATTR = (0644 << 16L)
+_HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
+_HERMETIC_FILE_ATTR = (0644 << 16L)
 
 
 @contextlib.contextmanager
@@ -224,12 +224,39 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
       z.extract(name, path)
 
 
-def CreateHermeticZipInfo(zip_path):
-  """Creates a ZipInfo with a zero'ed out timestamp."""
+def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
+                     compress=None):
+  """Adds a file to the given ZipFile with a hard-coded modified time.
+
+  Args:
+    zip_file: ZipFile instance to add the file to.
+    zip_path: Destination path within the zip file.
+    src_path: Path of the source file. Mutually exclusive with |data|.
+    data: File data as a string.
+    compress: Whether to enable compression. Default is take from ZipFile
+        constructor.
+  """
+  assert (src_path is None) != (data is None), (
+      '|src_path| and |data| are mutually exclusive.')
   CheckZipPath(zip_path)
-  zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=HERMETIC_TIMESTAMP)
-  zipinfo.external_attr = HERMETIC_FILE_ATTR
-  return zipinfo
+  zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=_HERMETIC_TIMESTAMP)
+  zipinfo.external_attr = _HERMETIC_FILE_ATTR
+
+  if src_path:
+    with file(src_path) as f:
+      data = f.read()
+
+  # zipfile will deflate even when it makes the file bigger. To avoid
+  # growing files, disable compression at an arbitrary cut off point.
+  if len(data) < 16:
+    compress = False
+
+  # None converts to ZIP_STORED, when passed explicitly rather than the
+  # default passed to the ZipFile constructor.
+  args = []
+  if compress is not None:
+    args.append(zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED)
+  zip_file.writestr(zipinfo, data, *args)
 
 
 def DoZip(inputs, output, base_dir=None):
@@ -250,9 +277,7 @@ def DoZip(inputs, output, base_dir=None):
   input_tuples.sort(key=lambda tup: tup[0])
   with zipfile.ZipFile(output, 'w') as outfile:
     for zip_path, fs_path in input_tuples:
-      with file(fs_path) as f:
-        contents = f.read()
-      outfile.writestr(CreateHermeticZipInfo(zip_path), contents)
+      AddToZipHermetic(outfile, zip_path, src_path=fs_path)
 
 
 def ZipDir(output, base_dir):
@@ -283,7 +308,7 @@ def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
           dst_name = path_transform(name, in_file)
           already_added = dst_name in added_names
           if not already_added and not MatchesGlob(dst_name, exclude_patterns):
-            out_zip.writestr(CreateHermeticZipInfo(dst_name), in_zip.read(name))
+            AddToZipHermetic(out_zip, dst_name, data=in_zip.read(name))
             added_names.add(dst_name)
 
 

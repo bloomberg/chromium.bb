@@ -12,6 +12,8 @@ import string
 import sys
 import zipfile
 
+from util import build_utils
+
 sys.path.append(
     os.path.abspath(os.path.join(sys.path[0], '../../../google_apis')))
 import google_api_keys
@@ -23,8 +25,6 @@ from pylib import constants
 
 PACKAGE = 'org.chromium.chrome'
 CLASSNAME = 'GoogleAPIKeys'
-HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
-HERMETIC_FILE_ATTR = (0644 << 16L)
 
 
 def GetScriptName():
@@ -84,10 +84,8 @@ def _DoWriteJarOutput(output_path, constant_definition):
     os.makedirs(folder)
   with zipfile.ZipFile(output_path, 'w') as srcjar:
     path = '%s/%s' % (PACKAGE.replace('.', '/'), CLASSNAME + '.java')
-    zipinfo = zipfile.ZipInfo(filename=path,
-                              date_time=HERMETIC_TIMESTAMP)
-    zipinfo.external_attr = HERMETIC_FILE_ATTR
-    srcjar.writestr(zipinfo, GenerateOutput(constant_definition))
+    data = GenerateOutput(constant_definition)
+    build_utils.AddToZipHermetic(srcjar, path, data=data)
 
 
 def _DoMain(argv):

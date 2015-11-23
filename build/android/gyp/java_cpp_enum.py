@@ -345,7 +345,7 @@ def DoMain(argv):
 
     with zipfile.ZipFile(options.srcjar, 'w', zipfile.ZIP_STORED) as srcjar:
       for output_path, data in DoGenerate(input_paths):
-        srcjar.writestr(build_utils.CreateHermeticZipInfo(output_path), data)
+        build_utils.AddToZipHermetic(srcjar, output_path, data=data)
   else:
     # TODO(agrieve): Delete this non-srcjar branch once GYP is gone.
     output_paths = []
