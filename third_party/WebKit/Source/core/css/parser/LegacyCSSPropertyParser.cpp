@@ -1153,6 +1153,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
     case CSSPropertyFlexFlow:
+    case CSSPropertyStrokeDasharray:
         validPrimitive = false;
         break;
 
@@ -5441,12 +5442,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyRy:
         validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);
         break;
-    case CSSPropertyStrokeDasharray: // none | <dasharray> | inherit
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseSVGStrokeDasharray();
-        break;
 
     default:
         // If you crash here, it's because you added a css property and are not handling it
@@ -5479,32 +5474,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     addProperty(propId, parsedValue.release(), important);
     return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
-{
-    RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
-    CSSParserValue* value = m_valueList->current();
-    bool validPrimitive = true;
-    while (value) {
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg, SVGAttributeMode);
-        if (!validPrimitive)
-            break;
-        if (value->id)
-            ret->append(CSSPrimitiveValue::createIdentifier(value->id));
-        else if (value->unit() >= CSSPrimitiveValue::UnitType::Number && value->unit() <= CSSPrimitiveValue::UnitType::Kilohertz)
-            ret->append(CSSPrimitiveValue::create(value->fValue, value->unit()));
-        else if (value->unit() == CSSPrimitiveValue::UnitType::Rems || value->unit() == CSSPrimitiveValue::UnitType::Chs)
-            ret->append(CSSPrimitiveValue::create(value->fValue, value->unit()));
-        value = m_valueList->next();
-        bool commaConsumed = consumeComma(m_valueList);
-        value = m_valueList->current();
-        if (commaConsumed && !value)
-            return nullptr;
-    }
-    if (!validPrimitive)
-        return nullptr;
-    return ret.release();
 }
 
 } // namespace blink

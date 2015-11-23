@@ -199,7 +199,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc();
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
     bool parseBorderImageShorthand(CSSPropertyID, bool important);

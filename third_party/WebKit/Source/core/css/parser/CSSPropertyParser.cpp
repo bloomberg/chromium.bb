@@ -280,10 +280,13 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
         case CSSPrimitiveValue::UnitType::Points:
         case CSSPrimitiveValue::UnitType::Picas:
         case CSSPrimitiveValue::UnitType::UserUnits:
+            break;
         case CSSPrimitiveValue::UnitType::ViewportWidth:
         case CSSPrimitiveValue::UnitType::ViewportHeight:
         case CSSPrimitiveValue::UnitType::ViewportMin:
         case CSSPrimitiveValue::UnitType::ViewportMax:
+            if (cssParserMode == SVGAttributeMode)
+                return nullptr;
             break;
         default:
             return nullptr;
@@ -301,6 +304,8 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
             unitType = CSSPrimitiveValue::UnitType::UserUnits;
         return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), unitType);
     }
+    if (cssParserMode == SVGAttributeMode)
+        return nullptr;
     CalcParser calcParser(range, valueRange);
     if (calcParser.value() && calcParser.value()->category() == CalcLength)
         return calcParser.consumeValue();
@@ -1850,6 +1855,22 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFlexBasis(CSSParserTokenRange& ra
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeStrokeDasharray(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNone)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSValueList> dashes = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> dash = consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
+        if (!dash || (consumeCommaIncludingWhitespace(range) && range.atEnd()))
+            return nullptr;
+        dashes->append(dash.release());
+    } while (!range.atEnd());
+    return dashes.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -2025,6 +2046,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
         return consumeNumber(m_range, ValueRangeNonNegative);
+    case CSSPropertyStrokeDasharray:
+        return consumeStrokeDasharray(m_range);
     default:
         return nullptr;
     }

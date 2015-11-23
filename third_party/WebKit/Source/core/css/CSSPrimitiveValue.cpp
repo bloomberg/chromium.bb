@@ -556,6 +556,7 @@ bool CSSPrimitiveValue::unitTypeToLengthUnitType(UnitType unitType, LengthUnitTy
     case CSSPrimitiveValue::UnitType::Inches:
     case CSSPrimitiveValue::UnitType::Points:
     case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::UserUnits:
         lengthType = UnitTypePixels;
         return true;
     case CSSPrimitiveValue::UnitType::Ems:
