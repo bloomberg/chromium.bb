@@ -180,7 +180,7 @@
           ],
           'variables': {
             'filters': [
-              'cast_shell_browser_test --no-sandbox --disable-gpu',
+              'cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast',
             ],
           },
         }],

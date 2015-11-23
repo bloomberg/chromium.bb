@@ -108,7 +108,7 @@ cast_test_group("cast_tests") {
       "//chromecast/media:cast_media_unittests",
     ]
 
-    filters += [ "cast_shell_browser_test --no-sandbox --disable-gpu" ]
+    filters += [ "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast" ]
   }
 
   if (!disable_display) {
