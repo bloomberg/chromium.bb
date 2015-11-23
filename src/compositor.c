@@ -768,7 +768,6 @@ weston_matrix_transform_region(pixman_region32_t *dest,
 			dest_rects[i].x2 = ceil(vec1.f[0]);
 		}
 
-
 		if (vec1.f[1] < vec2.f[1]) {
 			dest_rects[i].y1 = floor(vec1.f[1]);
 			dest_rects[i].y2 = ceil(vec2.f[1]);
