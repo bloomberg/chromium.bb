@@ -227,6 +227,26 @@ class NaClDescWrapper {
   DISALLOW_COPY_AND_ASSIGN(NaClDescWrapper);
 };
 
+scoped_ptr<NaClDescWrapper> MakeShmNaClDesc(
+    const base::SharedMemoryHandle& handle,
+    size_t size) {
+#if defined(OS_MACOSX)
+  if (handle.GetType() == base::SharedMemoryHandle::MACH) {
+    return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(
+        NaClDescImcShmMachMake(handle.GetMemoryObject(), size)));
+  }
+  CHECK_EQ(base::SharedMemoryHandle::POSIX, handle.GetType());
+#endif
+
+  return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(NaClDescImcShmMake(
+#if defined(OS_WIN)
+      handle.GetHandle(),
+#else
+      base::SharedMemory::GetFdFromSharedMemoryHandle(handle),
+#endif
+      size)));
+}
+
 }  // namespace
 
 class NaClIPCAdapter::RewrittenMessage
@@ -541,15 +561,8 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
       scoped_ptr<NaClDescWrapper> nacl_desc;
       switch (iter->type()) {
         case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
-          const base::SharedMemoryHandle& shm_handle = iter->shmem();
-          uint32_t size = iter->size();
-          nacl_desc.reset(new NaClDescWrapper(NaClDescImcShmMake(
-#if defined(OS_WIN)
-              shm_handle.GetHandle(),
-#else
-              base::SharedMemory::GetFdFromSharedMemoryHandle(shm_handle),
-#endif
-              static_cast<size_t>(size))));
+          nacl_desc =
+              MakeShmNaClDesc(iter->shmem(), static_cast<size_t>(iter->size()));
           break;
         }
         case ppapi::proxy::SerializedHandle::SOCKET: {
