@@ -56,6 +56,8 @@
       'public/common/content_constants.cc',
       'public/common/content_constants.h',
       'public/common/content_descriptors.h',
+      'public/common/content_features.cc',
+      'public/common/content_features.h',
       'public/common/content_ipc_logging.h',
       'public/common/content_paths.h',
       'public/common/content_switches.cc',

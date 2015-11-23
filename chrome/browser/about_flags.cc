@@ -45,6 +45,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "grit/components_strings.h"
 #include "media/base/media_switches.h"
@@ -1721,11 +1722,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kDisableCaptivePortalBypassProxy)},
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)
-    {"enable-seccomp-filter-sandbox",
+    {"enable-seccomp-sandbox-android",
      IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME,
      IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION,
      kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableSeccompFilterSandbox)},
+     FEATURE_VALUE_TYPE(content::kSeccompSandboxAndroidFeature)},
 #endif
     {"enable-touch-hover",
      IDS_FLAGS_ENABLE_TOUCH_HOVER_NAME,
