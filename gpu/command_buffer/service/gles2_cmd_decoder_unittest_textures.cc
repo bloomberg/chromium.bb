@@ -2957,7 +2957,8 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   fbtex_cmd.Init(GL_FRAMEBUFFER,
                  GL_COLOR_ATTACHMENT0,
                  GL_TEXTURE_2D,
-                 client_texture_id_);
+                 client_texture_id_,
+                 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 

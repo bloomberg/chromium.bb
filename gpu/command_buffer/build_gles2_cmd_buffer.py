@@ -1998,16 +1998,6 @@ _NAMED_TYPE_INFO = {
       '5',
     ],
   },
-  'ZeroOnly': {
-    'type': 'GLint',
-    'is_complete': True,
-    'valid': [
-      '0',
-    ],
-    'invalid': [
-      '1',
-    ],
-  },
   'FalseOnly': {
     'type': 'GLboolean',
     'is_complete': True,
@@ -2684,6 +2674,7 @@ _FUNCTION_INFO = {
   'FramebufferTexture2D': {
     'decoder_func': 'DoFramebufferTexture2D',
     'gl_test_func': 'glFramebufferTexture2DEXT',
+    'unit_test': False,
     'trace_level': 1,
   },
   'FramebufferTexture2DMultisampleEXT': {

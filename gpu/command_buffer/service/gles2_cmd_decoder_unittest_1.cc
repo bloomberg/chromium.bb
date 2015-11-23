@@ -130,19 +130,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::FramebufferRenderbuffer, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::FramebufferTexture2D, 0>(
-    bool valid) {
-  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
-                    kServiceFramebufferId);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::FramebufferTextureLayer, 0>(
     bool valid) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,

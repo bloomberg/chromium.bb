@@ -6083,7 +6083,8 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     service_id = texture_ref->service_id();
   }
 
-  if (!texture_manager()->ValidForTarget(textarget, level, 0, 0, 1)) {
+  if ((level > 0 && !feature_info_->IsES3Enabled()) ||
+      !texture_manager()->ValidForTarget(textarget, level, 0, 0, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
         name, "level out of range");

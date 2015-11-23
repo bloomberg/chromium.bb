@@ -1254,7 +1254,7 @@ void GLES2DecoderTestBase::DoFramebufferTexture2D(
       .WillOnce(Return(error))
       .RetiresOnSaturation();
   cmds::FramebufferTexture2D cmd;
-  cmd.Init(target, attachment, textarget, texture_client_id);
+  cmd.Init(target, attachment, textarget, texture_client_id, level);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 

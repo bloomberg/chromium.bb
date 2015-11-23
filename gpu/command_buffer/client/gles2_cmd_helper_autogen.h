@@ -669,11 +669,12 @@ void FramebufferRenderbuffer(GLenum target,
 void FramebufferTexture2D(GLenum target,
                           GLenum attachment,
                           GLenum textarget,
-                          GLuint texture) {
+                          GLuint texture,
+                          GLint level) {
   gles2::cmds::FramebufferTexture2D* c =
       GetCmdSpace<gles2::cmds::FramebufferTexture2D>();
   if (c) {
-    c->Init(target, attachment, textarget, texture);
+    c->Init(target, attachment, textarget, texture, level);
   }
 }
 
@@ -2201,11 +2202,12 @@ void FramebufferTexture2DMultisampleEXT(GLenum target,
                                         GLenum attachment,
                                         GLenum textarget,
                                         GLuint texture,
+                                        GLint level,
                                         GLsizei samples) {
   gles2::cmds::FramebufferTexture2DMultisampleEXT* c =
       GetCmdSpace<gles2::cmds::FramebufferTexture2DMultisampleEXT>();
   if (c) {
-    c->Init(target, attachment, textarget, texture, samples);
+    c->Init(target, attachment, textarget, texture, level, samples);
   }
 }
 

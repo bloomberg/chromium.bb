@@ -69,7 +69,7 @@ GL_APICALL GLsync       GL_APIENTRY glFenceSync (GLenumSyncCondition condition, 
 GL_APICALL void         GL_APIENTRY glFinish (void);
 GL_APICALL void         GL_APIENTRY glFlush (void);
 GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumRenderBufferTarget renderbuffertarget, GLidRenderbuffer renderbuffer);
-GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLidTexture texture, GLintZeroOnly level);
+GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLidTexture texture, GLint level);
 GL_APICALL void         GL_APIENTRY glFramebufferTextureLayer (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLidTexture texture, GLint level, GLint layer);
 GL_APICALL void         GL_APIENTRY glFrontFace (GLenumFaceMode mode);
 GL_APICALL void         GL_APIENTRY glGenBuffers (GLsizeiNotNegative n, GLuint* buffers);
@@ -228,7 +228,7 @@ GL_APICALL void         GL_APIENTRY glWaitSync (GLsync sync, GLbitfieldSyncFlush
 GL_APICALL void         GL_APIENTRY glBlitFramebufferCHROMIUM (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleCHROMIUM (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
-GL_APICALL void         GL_APIENTRY glFramebufferTexture2DMultisampleEXT (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLidTexture texture, GLintZeroOnly level, GLsizei samples);
+GL_APICALL void         GL_APIENTRY glFramebufferTexture2DMultisampleEXT (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLidTexture texture, GLint level, GLsizei samples);
 GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureBindTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glGenQueriesEXT (GLsizeiNotNegative n, GLuint* queries);
 GL_APICALL void         GL_APIENTRY glDeleteQueriesEXT (GLsizeiNotNegative n, const GLuint* queries);

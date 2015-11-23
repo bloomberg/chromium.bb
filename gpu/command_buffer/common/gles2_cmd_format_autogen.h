@@ -3229,21 +3229,24 @@ struct FramebufferTexture2D {
   void Init(GLenum _target,
             GLenum _attachment,
             GLenum _textarget,
-            GLuint _texture) {
+            GLuint _texture,
+            GLint _level) {
     SetHeader();
     target = _target;
     attachment = _attachment;
     textarget = _textarget;
     texture = _texture;
+    level = _level;
   }
 
   void* Set(void* cmd,
             GLenum _target,
             GLenum _attachment,
             GLenum _textarget,
-            GLuint _texture) {
+            GLuint _texture,
+            GLint _level) {
     static_cast<ValueType*>(cmd)
-        ->Init(_target, _attachment, _textarget, _texture);
+        ->Init(_target, _attachment, _textarget, _texture, _level);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3252,11 +3255,11 @@ struct FramebufferTexture2D {
   uint32_t attachment;
   uint32_t textarget;
   uint32_t texture;
-  static const int32_t level = 0;
+  int32_t level;
 };
 
-static_assert(sizeof(FramebufferTexture2D) == 20,
-              "size of FramebufferTexture2D should be 20");
+static_assert(sizeof(FramebufferTexture2D) == 24,
+              "size of FramebufferTexture2D should be 24");
 static_assert(offsetof(FramebufferTexture2D, header) == 0,
               "offset of FramebufferTexture2D header should be 0");
 static_assert(offsetof(FramebufferTexture2D, target) == 4,
@@ -3267,6 +3270,8 @@ static_assert(offsetof(FramebufferTexture2D, textarget) == 12,
               "offset of FramebufferTexture2D textarget should be 12");
 static_assert(offsetof(FramebufferTexture2D, texture) == 16,
               "offset of FramebufferTexture2D texture should be 16");
+static_assert(offsetof(FramebufferTexture2D, level) == 20,
+              "offset of FramebufferTexture2D level should be 20");
 
 struct FramebufferTextureLayer {
   typedef FramebufferTextureLayer ValueType;
@@ -10918,12 +10923,14 @@ struct FramebufferTexture2DMultisampleEXT {
             GLenum _attachment,
             GLenum _textarget,
             GLuint _texture,
+            GLint _level,
             GLsizei _samples) {
     SetHeader();
     target = _target;
     attachment = _attachment;
     textarget = _textarget;
     texture = _texture;
+    level = _level;
     samples = _samples;
   }
 
@@ -10932,9 +10939,10 @@ struct FramebufferTexture2DMultisampleEXT {
             GLenum _attachment,
             GLenum _textarget,
             GLuint _texture,
+            GLint _level,
             GLsizei _samples) {
     static_cast<ValueType*>(cmd)
-        ->Init(_target, _attachment, _textarget, _texture, _samples);
+        ->Init(_target, _attachment, _textarget, _texture, _level, _samples);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10943,12 +10951,12 @@ struct FramebufferTexture2DMultisampleEXT {
   uint32_t attachment;
   uint32_t textarget;
   uint32_t texture;
+  int32_t level;
   int32_t samples;
-  static const int32_t level = 0;
 };
 
-static_assert(sizeof(FramebufferTexture2DMultisampleEXT) == 24,
-              "size of FramebufferTexture2DMultisampleEXT should be 24");
+static_assert(sizeof(FramebufferTexture2DMultisampleEXT) == 28,
+              "size of FramebufferTexture2DMultisampleEXT should be 28");
 static_assert(
     offsetof(FramebufferTexture2DMultisampleEXT, header) == 0,
     "offset of FramebufferTexture2DMultisampleEXT header should be 0");
@@ -10965,8 +10973,11 @@ static_assert(
     offsetof(FramebufferTexture2DMultisampleEXT, texture) == 16,
     "offset of FramebufferTexture2DMultisampleEXT texture should be 16");
 static_assert(
-    offsetof(FramebufferTexture2DMultisampleEXT, samples) == 20,
-    "offset of FramebufferTexture2DMultisampleEXT samples should be 20");
+    offsetof(FramebufferTexture2DMultisampleEXT, level) == 20,
+    "offset of FramebufferTexture2DMultisampleEXT level should be 20");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, samples) == 24,
+    "offset of FramebufferTexture2DMultisampleEXT samples should be 24");
 
 struct TexStorage2DEXT {
   typedef TexStorage2DEXT ValueType;

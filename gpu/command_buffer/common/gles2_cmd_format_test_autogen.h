@@ -1018,9 +1018,9 @@ TEST_F(GLES2FormatTest, FramebufferRenderbuffer) {
 
 TEST_F(GLES2FormatTest, FramebufferTexture2D) {
   cmds::FramebufferTexture2D& cmd = *GetBufferAs<cmds::FramebufferTexture2D>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
-              static_cast<GLenum>(13), static_cast<GLuint>(14));
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLenum>(12), static_cast<GLenum>(13),
+                           static_cast<GLuint>(14), static_cast<GLint>(15));
   EXPECT_EQ(static_cast<uint32_t>(cmds::FramebufferTexture2D::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -1028,6 +1028,7 @@ TEST_F(GLES2FormatTest, FramebufferTexture2D) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.attachment);
   EXPECT_EQ(static_cast<GLenum>(13), cmd.textarget);
   EXPECT_EQ(static_cast<GLuint>(14), cmd.texture);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.level);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -3696,9 +3697,10 @@ TEST_F(GLES2FormatTest, RenderbufferStorageMultisampleEXT) {
 TEST_F(GLES2FormatTest, FramebufferTexture2DMultisampleEXT) {
   cmds::FramebufferTexture2DMultisampleEXT& cmd =
       *GetBufferAs<cmds::FramebufferTexture2DMultisampleEXT>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLenum>(12), static_cast<GLenum>(13),
-                           static_cast<GLuint>(14), static_cast<GLsizei>(15));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
+              static_cast<GLenum>(13), static_cast<GLuint>(14),
+              static_cast<GLint>(15), static_cast<GLsizei>(16));
   EXPECT_EQ(
       static_cast<uint32_t>(cmds::FramebufferTexture2DMultisampleEXT::kCmdId),
       cmd.header.command);
@@ -3707,7 +3709,8 @@ TEST_F(GLES2FormatTest, FramebufferTexture2DMultisampleEXT) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.attachment);
   EXPECT_EQ(static_cast<GLenum>(13), cmd.textarget);
   EXPECT_EQ(static_cast<GLuint>(14), cmd.texture);
-  EXPECT_EQ(static_cast<GLsizei>(15), cmd.samples);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.level);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.samples);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

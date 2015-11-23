@@ -827,38 +827,6 @@ TEST_P(GLES2DecoderTest1, FramebufferRenderbufferInvalidArgs2_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, FramebufferTexture2DValidArgs) {
-  EXPECT_CALL(*gl_,
-              FramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                      GL_TEXTURE_2D, kServiceTextureId, 0));
-  SpecializedSetup<cmds::FramebufferTexture2D, 0>(true);
-  cmds::FramebufferTexture2D cmd;
-  cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-           client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _)).Times(0);
-  SpecializedSetup<cmds::FramebufferTexture2D, 0>(false);
-  cmds::FramebufferTexture2D cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-           client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _)).Times(0);
-  SpecializedSetup<cmds::FramebufferTexture2D, 0>(false);
-  cmds::FramebufferTexture2D cmd;
-  cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
-           client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest1, FramebufferTextureLayerValidArgs) {
   EXPECT_CALL(*gl_,
               FramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
