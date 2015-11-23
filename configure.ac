@@ -12,9 +12,6 @@ AC_INIT([wayland-protocols],
         [wayland-protocols],
         [http://wayland.freedesktop.org/])
 
-AC_SUBST([WAYLAND_PROTOCOLS_VERSION_MAJOR], [wayland_protocols_major_version])
-AC_SUBST([WAYLAND_PROTOCOLS_VERSION_MINOR], [wayland_protocols_minor_version])
-AC_SUBST([WAYLAND_PROTOCOLS_VERSION_MICRO], [wayland_protocols_micro_version])
 AC_SUBST([WAYLAND_PROTOCOLS_VERSION], [wayland_protocols_version])
 
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
