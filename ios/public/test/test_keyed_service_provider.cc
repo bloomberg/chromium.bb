@@ -97,17 +97,6 @@ TestKeyedServiceProvider::GetSyncServiceForBrowserStateIfExists(
 }
 
 KeyedServiceBaseFactory*
-TestKeyedServiceProvider::GetProfileInvalidationProviderFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-invalidation::ProfileInvalidationProvider*
-TestKeyedServiceProvider::GetProfileInvalidationProviderForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
-KeyedServiceBaseFactory*
 TestKeyedServiceProvider::GetDataReductionProxySettingsFactory() {
   return MissingServiceKeyedServiceFactory::GetInstance();
 }

@@ -22,10 +22,6 @@ namespace data_reduction_proxy {
 class DataReductionProxySettings;
 }
 
-namespace invalidation {
-class ProfileInvalidationProvider;
-}
-
 namespace sync_driver {
 class SyncService;
 }
@@ -72,16 +68,6 @@ class KeyedServiceProvider {
   // Returns an instance of sync_driver::SyncService tied to |browser_state| if
   // there is one created already.
   virtual sync_driver::SyncService* GetSyncServiceForBrowserStateIfExists(
-      ChromeBrowserState* browser_state) = 0;
-
-  // Returns the invalidation::ProfileInvalidationProvider factory for
-  // dependencies.
-  virtual KeyedServiceBaseFactory* GetProfileInvalidationProviderFactory() = 0;
-
-  // Returns an instance of invalidation::ProfileInvalidationProvider tied to
-  // |browser_state|.
-  virtual invalidation::ProfileInvalidationProvider*
-  GetProfileInvalidationProviderForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
   // Returns the data_reduction_proxy::DataReductionProxySettings factory for

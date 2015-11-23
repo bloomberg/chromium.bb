@@ -26,10 +26,6 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
       ChromeBrowserState* browser_state) override;
   sync_driver::SyncService* GetSyncServiceForBrowserStateIfExists(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetProfileInvalidationProviderFactory() override;
-  invalidation::ProfileInvalidationProvider*
-  GetProfileInvalidationProviderForBrowserState(
-      ios::ChromeBrowserState* browser_state) override;
   KeyedServiceBaseFactory* GetDataReductionProxySettingsFactory() override;
   data_reduction_proxy::DataReductionProxySettings*
   GetDataReductionProxySettingsForBrowserState(
