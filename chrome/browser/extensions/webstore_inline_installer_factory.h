@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 
 namespace content {
-  class WebContents;
+class WebContents;
 }
 
 class GURL;
@@ -28,6 +28,7 @@ class WebstoreInlineInstallerFactory {
   // Create a new WebstoreInlineInstallerInstance to be owned by the caller.
   virtual WebstoreInlineInstaller* CreateInstaller(
       content::WebContents* contents,
+      content::RenderFrameHost* host,
       const std::string& webstore_item_id,
       const GURL& requestor_url,
       const WebstoreStandaloneInstaller::Callback& callback);

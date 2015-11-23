@@ -39,6 +39,7 @@ TestWebstoreInlineInstaller::TestWebstoreInlineInstaller(
     content::WebContents* contents,
     const std::string& requestor_url)
     : WebstoreInlineInstaller(contents,
+                              contents->GetMainFrame(),
                               "",
                               GURL(requestor_url),
                               base::Bind(&TestInstallerCallback)) {

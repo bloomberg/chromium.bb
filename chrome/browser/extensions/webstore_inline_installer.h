@@ -31,6 +31,7 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
   WebstoreInlineInstaller(content::WebContents* web_contents,
+                          content::RenderFrameHost* host,
                           const std::string& webstore_item_id,
                           const GURL& requestor_url,
                           const Callback& callback);
@@ -61,6 +62,9 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
 
  private:
   // content::WebContentsObserver interface implementation.
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams& params) override;
   void WebContentsDestroyed() override;
 
   // Checks whether the install is initiated by a page in a verified site
@@ -68,6 +72,8 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
   static bool IsRequestorURLInVerifiedSite(const GURL& requestor_url,
                                            const std::string& verified_site);
 
+  // This corresponds to the frame that initiated the install request.
+  content::RenderFrameHost* host_;
   GURL requestor_url_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreInlineInstaller);

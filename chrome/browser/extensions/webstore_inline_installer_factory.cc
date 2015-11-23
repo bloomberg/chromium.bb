@@ -10,12 +10,13 @@
 namespace extensions {
 
 WebstoreInlineInstaller* WebstoreInlineInstallerFactory::CreateInstaller(
-      content::WebContents* contents,
-      const std::string& webstore_item_id,
-      const GURL& requestor_url,
-      const WebstoreStandaloneInstaller::Callback& callback) {
-  return new WebstoreInlineInstaller(
-      contents, webstore_item_id, requestor_url, callback);
+    content::WebContents* contents,
+    content::RenderFrameHost* host,
+    const std::string& webstore_item_id,
+    const GURL& requestor_url,
+    const WebstoreStandaloneInstaller::Callback& callback) {
+  return new WebstoreInlineInstaller(contents, host, webstore_item_id,
+                                     requestor_url, callback);
 }
 
 }  // namespace extensions

@@ -395,10 +395,7 @@ void TabHelper::OnInlineWebstoreInstall(content::RenderFrameHost* host,
                    return_route_id);
     scoped_refptr<WebstoreInlineInstaller> installer(
         webstore_inline_installer_factory_->CreateInstaller(
-            web_contents(),
-            webstore_item_id,
-            requestor_url,
-            callback));
+            web_contents(), host, webstore_item_id, requestor_url, callback));
     installer->BeginInstall();
   }
 }

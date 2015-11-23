@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -29,6 +30,7 @@ const char kInitiatedFromPopupError[] =
 
 WebstoreInlineInstaller::WebstoreInlineInstaller(
     content::WebContents* web_contents,
+    content::RenderFrameHost* host,
     const std::string& webstore_item_id,
     const GURL& requestor_url,
     const Callback& callback)
@@ -37,8 +39,8 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           callback),
       content::WebContentsObserver(web_contents),
-      requestor_url_(requestor_url) {
-}
+      host_(host),
+      requestor_url_(requestor_url) {}
 
 WebstoreInlineInstaller::~WebstoreInlineInstaller() {}
 
@@ -91,8 +93,8 @@ bool WebstoreInlineInstaller::IsRequestorPermitted(
 }
 
 bool WebstoreInlineInstaller::CheckRequestorAlive() const {
-  // The tab may have gone away - cancel installation in that case.
-  return web_contents() != NULL;
+  // The frame or tab may have gone away - cancel installation in that case.
+  return host_ != nullptr && web_contents() != nullptr;
 }
 
 const GURL& WebstoreInlineInstaller::GetRequestorURL() const {
@@ -175,6 +177,15 @@ bool WebstoreInlineInstaller::CheckRequestorPermitted(
 //
 // Private implementation.
 //
+
+void WebstoreInlineInstaller::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (!details.is_in_page &&
+      (render_frame_host == host_ || details.is_main_frame))
+    host_ = nullptr;
+}
 
 void WebstoreInlineInstaller::WebContentsDestroyed() {
   AbortInstall();
