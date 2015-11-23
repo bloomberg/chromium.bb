@@ -68,13 +68,25 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
     // balance the preceding rows, and that could potentially lead to an insane number of layout
     // passes as well.
     if (isLastGroup() && m_columnSet.heightIsAuto()) {
-        LayoutUnit newColumnHeight = calculateColumnHeight(calculationMode);
+        LayoutUnit newColumnHeight;
+        if (calculationMode == GuessFromFlowThreadPortion) {
+            // Initial balancing: Start with the lowest imaginable column height. Also calculate the
+            // height of the tallest piece of unbreakable content. Columns should never get any
+            // shorter than that (unless constrained by max-height). Propagate this to our
+            // containing column set, in case there is an outer multicol container that also needs
+            // to balance. After having calculated the initial column height, the multicol container
+            // needs another layout pass with the column height that we just calculated.
+            InitialColumnHeightFinder initialHeightFinder(*this);
+            LayoutUnit tallestUnbreakableLogicalHeight = initialHeightFinder.tallestUnbreakableLogicalHeight();
+            m_columnSet.propagateTallestUnbreakableLogicalHeight(tallestUnbreakableLogicalHeight);
+            newColumnHeight = std::max(initialHeightFinder.initialMinimalBalancedHeight(), tallestUnbreakableLogicalHeight);
+        } else {
+            // Rebalancing: After having laid out again, we'll need to rebalance if the height
+            // wasn't enough and we're allowed to stretch it, and then re-lay out. There are further
+            // details on the column balancing machinery in ColumnBalancer and its derivates.
+            newColumnHeight = rebalanceColumnHeightIfNeeded();
+        }
         setAndConstrainColumnHeight(newColumnHeight);
-        // After having calculated an initial column height, the multicol container typically needs at
-        // least one more layout pass with a new column height, but if a height was specified, we only
-        // need to do this if we think that we need less space than specified. Conversely, if we
-        // determined that the columns need to be as tall as the specified height of the container, we
-        // have already laid it out correctly, and there's no need for another pass.
     } else {
         // The position of the column set may have changed, in which case height available for
         // columns may have changed as well.
@@ -331,16 +343,8 @@ void MultiColumnFragmentainerGroup::setAndConstrainColumnHeight(LayoutUnit newHe
         m_columnHeight = m_maxColumnHeight;
 }
 
-LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHeightCalculation calculationMode) const
+LayoutUnit MultiColumnFragmentainerGroup::rebalanceColumnHeightIfNeeded() const
 {
-    if (calculationMode == GuessFromFlowThreadPortion) {
-        // Initial balancing. Start with the lowest imaginable column height. We use the tallest
-        // content run (after having "inserted" implicit breaks), and find its start offset (by
-        // looking at the previous run's end offset, or, if there's no previous run, the set's start
-        // offset in the flow thread).
-        return InitialColumnHeightFinder::initialMinimalBalancedHeight(*this);
-    }
-
     if (actualColumnCount() <= m_columnSet.usedColumnCount()) {
         // With the current column height, the content fits without creating overflowing columns. We're done.
         return m_columnHeight;

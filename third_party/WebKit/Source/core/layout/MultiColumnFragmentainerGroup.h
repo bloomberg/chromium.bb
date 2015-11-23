@@ -84,7 +84,7 @@ private:
     LayoutUnit calculateMaxColumnHeight() const;
     void setAndConstrainColumnHeight(LayoutUnit);
 
-    LayoutUnit calculateColumnHeight(BalancedColumnHeightCalculation) const;
+    LayoutUnit rebalanceColumnHeightIfNeeded() const;
 
     LayoutRect columnRectAt(unsigned columnIndex) const;
     LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const { return m_logicalTopInFlowThread + columnIndex * m_columnHeight; }

@@ -262,6 +262,13 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy()
     destroy();
 }
 
+LayoutUnit LayoutMultiColumnFlowThread::tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const
+{
+    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offsetInFlowThread))
+        return multicolSet->tallestUnbreakableLogicalHeight();
+    return LayoutUnit();
+}
+
 LayoutSize LayoutMultiColumnFlowThread::columnOffset(const LayoutPoint& point) const
 {
     if (!hasValidColumnSetInfo())

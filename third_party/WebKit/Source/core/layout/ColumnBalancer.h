@@ -62,16 +62,17 @@ private:
 // of this class, named MinimumSpaceShortageFinder.
 class InitialColumnHeightFinder final : public ColumnBalancer {
 public:
-    static LayoutUnit initialMinimalBalancedHeight(const MultiColumnFragmentainerGroup& group)
-    {
-        return InitialColumnHeightFinder(group).initialMinimalBalancedHeight();
-    }
-
-private:
     InitialColumnHeightFinder(const MultiColumnFragmentainerGroup&);
 
     LayoutUnit initialMinimalBalancedHeight() const;
 
+    // Height of the tallest piece of unbreakable content. This is the minimum column logical height
+    // required to avoid fragmentation where it shouldn't occur (inside unbreakable content, between
+    // orphans and widows, etc.). This will be used as a hint to the column balancer to help set a
+    // good initial column height.
+    LayoutUnit tallestUnbreakableLogicalHeight() const { return m_tallestUnbreakableLogicalHeight; }
+
+private:
     void examineBoxAfterEntering(const LayoutBox&);
     void examineBoxBeforeLeaving(const LayoutBox&);
     void examineLine(const RootInlineBox&);
@@ -139,7 +140,7 @@ private:
     // [1] http://www.w3.org/TR/css3-break/#parallel-flows
     Vector<LayoutUnit, 32> m_shortestStruts;
 
-    LayoutUnit m_minimumColumnLogicalHeight;
+    LayoutUnit m_tallestUnbreakableLogicalHeight;
 };
 
 // If we have previously used InitialColumnHeightFinder to estimate an initial column height, and

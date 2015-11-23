@@ -82,6 +82,8 @@ public:
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule) const;
     bool isPageLogicalHeightKnown() const;
+    LayoutUnit tallestUnbreakableLogicalHeight() const { return m_tallestUnbreakableLogicalHeight; }
+    void propagateTallestUnbreakableLogicalHeight(LayoutUnit value) { m_tallestUnbreakableLogicalHeight = std::max(value, m_tallestUnbreakableLogicalHeight); }
 
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
@@ -168,6 +170,14 @@ private:
 
     MultiColumnFragmentainerGroupList m_fragmentainerGroups;
     LayoutFlowThread* m_flowThread;
+
+    // Height of the tallest piece of unbreakable content. This is the minimum column logical height
+    // required to avoid fragmentation where it shouldn't occur (inside unbreakable content, between
+    // orphans and widows, etc.). We only store this so that outer fragmentation contexts (if any)
+    // can query this when calculating their own minimum. Note that we don't store this value in
+    // every fragmentainer group (but rather here, in the column set), since we only need the
+    // largest one among them.
+    LayoutUnit m_tallestUnbreakableLogicalHeight;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSet, isLayoutMultiColumnSet());

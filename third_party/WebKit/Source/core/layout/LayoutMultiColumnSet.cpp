@@ -216,6 +216,8 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) cons
 
 bool LayoutMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
 {
+    if (calculationMode == GuessFromFlowThreadPortion)
+        m_tallestUnbreakableLogicalHeight = LayoutUnit();
     bool changed = false;
     for (auto& group : m_fragmentainerGroups)
         changed = group.recalculateColumnHeight(calculationMode) || changed;

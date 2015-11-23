@@ -162,6 +162,8 @@ public:
     void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
     bool progressionIsInline() const { return m_progressionIsInline; }
 
+    LayoutUnit tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const;
+
     LayoutSize columnOffset(const LayoutPoint&) const final;
 
     // Do we need to set a new width and lay out?

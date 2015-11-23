@@ -92,8 +92,7 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const
 {
     unsigned index = contentRunIndexWithTallestColumns();
     LayoutUnit startOffset = index > 0 ? m_contentRuns[index - 1].breakOffset() : group().logicalTopInFlowThread();
-    LayoutUnit logicalHeightEstimate = m_contentRuns[index].columnLogicalHeight(startOffset);
-    return std::max(logicalHeightEstimate, m_minimumColumnLogicalHeight);
+    return m_contentRuns[index].columnLogicalHeight(startOffset);
 }
 
 void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
@@ -113,8 +112,13 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
         LayoutUnit unsplittableLogicalHeight = box.logicalHeight();
         if (box.isFloating())
             unsplittableLogicalHeight += box.marginBefore() + box.marginAfter();
-        if (m_minimumColumnLogicalHeight < unsplittableLogicalHeight)
-            m_minimumColumnLogicalHeight = unsplittableLogicalHeight;
+        m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, unsplittableLogicalHeight);
+    } else if (box.isLayoutBlockFlow()) {
+        if (LayoutMultiColumnFlowThread* innerFlowThread = toLayoutBlockFlow(box).multiColumnFlowThread()) {
+            LayoutUnit offsetInInnerFlowThread = flowThreadOffset() - innerFlowThread->blockOffsetInEnclosingFlowThread();
+            LayoutUnit innerUnbreakableHeight = innerFlowThread->tallestUnbreakableLogicalHeight(offsetInInnerFlowThread);
+            m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, innerUnbreakableHeight);
+        }
     }
 }
 
@@ -138,8 +142,7 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line)
     LayoutUnit lineTop = line.lineTopWithLeading();
     LayoutUnit lineTopInFlowThread = flowThreadOffset() + lineTop;
     LayoutUnit minimumLogialHeight = columnLogicalHeightRequirementForLine(line.block().styleRef(), line);
-    if (m_minimumColumnLogicalHeight < minimumLogialHeight)
-        m_minimumColumnLogicalHeight = minimumLogialHeight;
+    m_tallestUnbreakableLogicalHeight = std::max(m_tallestUnbreakableLogicalHeight, minimumLogialHeight);
     ASSERT(isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut());
     if (isFirstAfterBreak(lineTopInFlowThread))
         recordStrutBeforeOffset(lineTopInFlowThread, line.paginationStrut());
