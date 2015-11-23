@@ -54,6 +54,14 @@ public final class MockUrlRequestJobFactory {
     }
 
     /**
+     * Constructs a mock URL that will request client certificate and return
+     * the string "data" as the response.
+     */
+    public static String getMockUrlForClientCertificateRequest() {
+        return nativeGetMockUrlForClientCertificateRequest();
+    }
+
+    /**
      * Constructs a mock URL that will fail with an SSL certificate error.
      */
     public static String getMockUrlForSSLCertificateError() {
@@ -66,6 +74,8 @@ public final class MockUrlRequestJobFactory {
 
     private static native String nativeGetMockUrlForData(String data,
             int dataRepeatCount);
+
+    private static native String nativeGetMockUrlForClientCertificateRequest();
 
     private static native String nativeGetMockUrlForSSLCertificateError();
 }

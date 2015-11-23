@@ -257,6 +257,14 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
   *defer_redirect = true;
 }
 
+void CronetURLRequestAdapter::OnCertificateRequested(
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
+  DCHECK(context_->IsOnNetworkThread());
+  // Cronet does not support client certificates.
+  request->ContinueWithCertificate(nullptr, nullptr);
+}
+
 void CronetURLRequestAdapter::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,

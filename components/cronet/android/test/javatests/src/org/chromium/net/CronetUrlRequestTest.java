@@ -554,6 +554,22 @@ public class CronetUrlRequestTest extends CronetTestBase {
     }
 
     /**
+     * Tests that request continues when client certificate is requested.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testMockClientCertificateRequested() throws Exception {
+        TestUrlRequestCallback callback = startAndWaitForComplete(
+                MockUrlRequestJobFactory.getMockUrlForClientCertificateRequest());
+        assertNotNull(callback.mResponseInfo);
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("data", callback.mResponseAsString);
+        assertEquals(0, callback.mRedirectCount);
+        assertNull(callback.mError);
+        assertFalse(callback.mOnErrorCalled);
+    }
+
+    /**
      * Tests that an SSL cert error will be reported via {@link UrlRequest#onFailed}.
      */
     @SmallTest

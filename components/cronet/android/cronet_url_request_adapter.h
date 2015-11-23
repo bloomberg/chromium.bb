@@ -28,6 +28,7 @@ class SingleThreadTaskRunner;
 namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class SSLCertRequestInfo;
 class SSLInfo;
 class UploadDataStream;
 }  // namespace net
@@ -118,6 +119,9 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
+  void OnCertificateRequested(
+      net::URLRequest* request,
+      net::SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;

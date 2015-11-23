@@ -49,6 +49,13 @@ ScopedJavaLocalRef<jstring> GetMockUrlForSSLCertificateError(
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 
+ScopedJavaLocalRef<jstring> GetMockUrlForClientCertificateRequest(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller) {
+  GURL url(net::URLRequestMockDataJob::GetMockUrlForClientCertificateRequest());
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
+}
+
 bool RegisterMockUrlRequestJobFactory(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

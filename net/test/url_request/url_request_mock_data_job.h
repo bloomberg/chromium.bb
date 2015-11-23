@@ -15,18 +15,23 @@ namespace net {
 
 class URLRequest;
 
-// Mock data job, which synchronously returns data repeated multiple times.
+// Mock data job, which synchronously returns data repeated multiple times. If
+// |request_client_certificate| is true, then this job will request client
+// certificate before proceeding.
 class URLRequestMockDataJob : public URLRequestJob {
  public:
   URLRequestMockDataJob(URLRequest* request,
                         NetworkDelegate* network_delegate,
                         const std::string& data,
-                        int data_repeat_count);
+                        int data_repeat_count,
+                        bool request_client_certificate);
 
   void Start() override;
   bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
   int GetResponseCode() const override;
   void GetResponseInfo(HttpResponseInfo* info) override;
+  void ContinueWithCertificate(X509Certificate* client_cert,
+                               SSLPrivateKey* client_private_key) override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();
@@ -37,6 +42,10 @@ class URLRequestMockDataJob : public URLRequestJob {
   // URL.
   static GURL GetMockHttpUrl(const std::string& data, int repeat_count);
   static GURL GetMockHttpsUrl(const std::string& data, int repeat_count);
+
+  // Constructs Mock URL which will request client certificate and return the
+  // word "data" as the response.
+  static GURL GetMockUrlForClientCertificateRequest();
 
   // URLRequestFailedJob must be added as a handler for |hostname| for
   // the returned URL to return |net_error|.
@@ -55,6 +64,7 @@ class URLRequestMockDataJob : public URLRequestJob {
 
   std::string data_;
   size_t data_offset_;
+  bool request_client_certificate_;
   base::WeakPtrFactory<URLRequestMockDataJob> weak_factory_;
 };
 
