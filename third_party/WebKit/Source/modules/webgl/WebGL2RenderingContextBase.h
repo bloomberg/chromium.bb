@@ -239,6 +239,7 @@ protected:
     GLint m_maxArrayTextureLayers;
 
     std::set<GLenum> m_supportedInternalFormatsStorage;
+    std::set<GLenum> m_compressedTextureFormatsETC2EAC;
 
     PersistentWillBeMember<WebGLBuffer> m_boundCopyReadBuffer;
     PersistentWillBeMember<WebGLBuffer> m_boundCopyWriteBuffer;
