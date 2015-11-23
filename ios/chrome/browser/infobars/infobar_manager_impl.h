@@ -46,6 +46,9 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
       const web::LoadCommittedDetails& load_details) override;
   void WebStateDestroyed() override;
 
+  // Opens a URL according to the specified |disposition|.
+  void OpenURL(const GURL& url, WindowOpenDisposition disposition) override;
+
   DISALLOW_COPY_AND_ASSIGN(InfoBarManagerImpl);
 };
 

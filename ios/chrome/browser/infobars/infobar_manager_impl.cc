@@ -78,3 +78,8 @@ void InfoBarManagerImpl::WebStateDestroyed() {
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
 }
+
+void InfoBarManagerImpl::OpenURL(const GURL& url,
+                                 WindowOpenDisposition disposition) {
+  NOTIMPLEMENTED();
+}
