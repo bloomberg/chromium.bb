@@ -918,10 +918,10 @@ crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-co
 crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
 crbug.com/524596 virtual/syncpaint/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
 
-crbug.com/546538 svg/clip-path/clip-path-child-clipped.svg [ NeedsManualRebaseline ]
-crbug.com/546538 svg/clip-path/clip-path-nonzero.svg [ NeedsManualRebaseline ]
-crbug.com/546538 svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsManualRebaseline ]
-crbug.com/546538 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsManualRebaseline ]
+crbug.com/546538 svg/clip-path/clip-path-child-clipped.svg [ NeedsRebaseline ]
+crbug.com/546538 svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
+crbug.com/546538 svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
+crbug.com/546538 svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
