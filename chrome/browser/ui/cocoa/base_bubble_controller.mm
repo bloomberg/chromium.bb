@@ -210,7 +210,7 @@
   base::scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
-  [spacer setAlphaValue:0.2];
+  [spacer setAlphaValue:0.75];
   return [spacer.release() autorelease];
 }
 
@@ -219,7 +219,7 @@
   base::scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
-  [spacer setAlphaValue:0.2];
+  [spacer setAlphaValue:0.75];
   return [spacer.release() autorelease];
 }
 
