@@ -288,6 +288,7 @@ group("both_gn_and_gyp") {
       "//components/user_manager",
       "//components/wallpaper",
       "//content/shell/android:content_shell_apk",
+      "//content/test:video_decode_accelerator_unittest",
 
       # TODO(GYP): Are these needed, or will they be pulled in automatically?
       "//third_party/android_tools:android_gcm_java",

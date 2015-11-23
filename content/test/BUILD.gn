@@ -862,3 +862,46 @@ test("content_gl_benchmark") {
     "//ui/gl:test_support",
   ]
 }
+
+if (is_android) {
+  # TODO(GYP): Port Windows and ChromeOS logic.
+  test("video_decode_accelerator_unittest") {
+    deps = [
+      "//base",
+      "//content",
+      "//media",
+      "//testing/gtest",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+    configs += [ "//third_party/khronos:khronos_headers" ]
+    sources = [
+      "//content/common/gpu/media/video_accelerator_unittest_helpers.h",
+    ]
+    if (is_android) {
+      sources += [ "//content/common/gpu/media/android_video_decode_accelerator_unittest.cc" ]
+    } else {
+      sources += [
+        "//content/common/gpu/media/rendering_helper.cc",
+        "//content/common/gpu/media/rendering_helper.h",
+        "//content/common/gpu/media/video_decode_accelerator_unittest.cc",
+      ]
+    }
+
+    if (is_android) {
+      deps += [
+        "//gpu:test_support",
+        "//media/base/android",
+        "//testing/gmock",
+      ]
+      apk_deps = [
+        "//media/base/android:media_java",
+        "//ui/android:ui_java",
+      ]
+    }
+  }
+}

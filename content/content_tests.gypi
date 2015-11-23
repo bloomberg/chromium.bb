@@ -1658,6 +1658,8 @@
     ['chromeos==1 or OS=="win" or OS=="android"', {
       'targets': [
           {
+            # TODO(GYP): Port Windows and ChromeOS logic.
+            # GN: //content/test:video_decode_accelerator_unittest
             'target_name': 'video_decode_accelerator_unittest',
             'type': '<(gtest_target_type)',
             'dependencies': [
@@ -2057,7 +2059,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //content/test:video_decode_accelerator_unittest_apk
           'target_name': 'video_decode_accelerator_unittest_apk',
           'type': 'none',
           'dependencies': [
