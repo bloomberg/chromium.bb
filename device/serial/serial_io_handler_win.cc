@@ -153,7 +153,8 @@ scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
   return new SerialIoHandlerWin(file_thread_task_runner, ui_thread_task_runner);
 }
 
-class SerialIoHandlerWin::UiThreadHelper : public DeviceMonitorWin::Observer {
+class SerialIoHandlerWin::UiThreadHelper final
+    : public DeviceMonitorWin::Observer {
  public:
   UiThreadHelper(
       base::WeakPtr<SerialIoHandlerWin> io_handler,
@@ -368,6 +369,7 @@ SerialIoHandlerWin::SerialIoHandlerWin(
     : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner),
       event_mask_(0),
       is_comm_pending_(false),
+      helper_(nullptr),
       weak_factory_(this) {}
 
 SerialIoHandlerWin::~SerialIoHandlerWin() {
