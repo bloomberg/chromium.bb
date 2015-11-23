@@ -239,13 +239,6 @@ char kTSanDefaultSuppressions[] =
 // https://code.google.com/p/v8/issues/detail?id=3143
 "race:v8::internal::FLAG_track_double_fields\n"
 
-// https://crbug.com/369257
-// TODO(mtklein): annotate properly and remove suppressions.
-"race:SandboxIPCHandler::HandleFontMatchRequest\n"
-"race:SkFontConfigInterfaceDirect::matchFamilyName\n"
-"race:SkFontConfigInterface::GetSingletonDirectInterface\n"
-"race:FcStrStaticName\n"
-
 // http://crbug.com/374135
 "race:media::AlsaWrapper::PcmWritei\n"
 
