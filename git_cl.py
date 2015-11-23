@@ -2357,7 +2357,8 @@ def CMDupload(parser, args):
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
                     help='add a set of OWNERS to TBR')
-  parser.add_option('--cq-dry-run', dest='cq_dry_run', action='store_true',
+  parser.add_option('-d', '--cq-dry-run', dest='cq_dry_run',
+                    action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
   parser.add_option('--dependencies', action='store_true',
