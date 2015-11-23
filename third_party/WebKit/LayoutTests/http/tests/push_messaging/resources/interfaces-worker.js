@@ -37,9 +37,9 @@ test(function() {
 test(function() {
     assert_own_property(self, 'PushSubscription', 'PushSubscription needs to be exposed as a global.');
 
-    // FIXME: Assert existence of the attributes when they are properly
-    // exposed in the prototype chain. https://crbug.com/43394
+    assert_own_property(PushSubscription.prototype, 'endpoint');
 
+    assert_own_property(PushSubscription.prototype, 'getKey');
     assert_own_property(PushSubscription.prototype, 'unsubscribe');
 
 }, 'PushSubscription should be exposed and have the expected interface.');
