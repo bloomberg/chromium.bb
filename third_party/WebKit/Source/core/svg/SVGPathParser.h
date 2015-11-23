@@ -70,6 +70,28 @@ private:
     SVGPathConsumer* m_consumer;
 };
 
+class SVGPathNormalizer {
+    STACK_ALLOCATED();
+public:
+    SVGPathNormalizer(SVGPathConsumer* consumer)
+        : m_consumer(consumer)
+        , m_lastCommand(PathSegUnknown)
+    {
+        ASSERT(m_consumer);
+    }
+
+    void emitSegment(const PathSegmentData&);
+
+private:
+    bool decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData&);
+
+    SVGPathConsumer* m_consumer;
+    FloatPoint m_controlPoint;
+    FloatPoint m_currentPoint;
+    FloatPoint m_subPathPoint;
+    SVGPathSegType m_lastCommand;
+};
+
 } // namespace blink
 
 #endif // SVGPathParser_h
