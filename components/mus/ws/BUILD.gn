@@ -27,7 +27,7 @@ source_set("lib") {
     "event_dispatcher_delegate.h",
     "focus_controller.cc",
     "focus_controller.h",
-    "focus_controller_delegate.h",
+    "focus_controller_observer.h",
     "forwarding_window_manager.cc",
     "forwarding_window_manager.h",
     "operation.cc",
@@ -64,7 +64,7 @@ source_set("lib") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/mus/common",
-    "//components/mus/gles2:gles2",
+    "//components/mus/gles2",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//mojo/application/public/cpp",
@@ -79,10 +79,10 @@ source_set("lib") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl:gl",
+    "//ui/gl",
     "//ui/mojo/geometry:interfaces",
+    "//ui/platform_window",
     "//ui/platform_window:platform_impls",
-    "//ui/platform_window:platform_window",
   ]
 }
 

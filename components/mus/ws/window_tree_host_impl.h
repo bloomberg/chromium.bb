@@ -12,7 +12,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
-#include "components/mus/ws/focus_controller_delegate.h"
+#include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
 
@@ -31,7 +31,7 @@ class WindowTreeImpl;
 // deleted.
 class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public mojom::WindowTreeHost,
-                           public FocusControllerDelegate,
+                           public FocusControllerObserver,
                            public EventDispatcherDelegate,
                            public ServerWindowObserver {
  public:
@@ -108,8 +108,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
   void OnCompositorFrameDrawn() override;
 
-  // FocusControllerDelegate:
-  void OnFocusChanged(ServerWindow* old_focused_window,
+  // FocusControllerObserver:
+  void OnFocusChanged(FocusControllerChangeSource change_source,
+                      ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
 
   // EventDispatcherDelegate:

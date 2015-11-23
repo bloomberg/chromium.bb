@@ -4,7 +4,7 @@
 
 #include "components/mus/ws/focus_controller.h"
 
-#include "components/mus/ws/focus_controller_delegate.h"
+#include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_server_window_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,9 +14,9 @@ namespace mus {
 namespace ws {
 namespace {
 
-class TestFocusControllerDelegate : public FocusControllerDelegate {
+class TestFocusControllerObserver : public FocusControllerObserver {
  public:
-  TestFocusControllerDelegate()
+  TestFocusControllerObserver()
       : change_count_(0u),
         old_focused_window_(nullptr),
         new_focused_window_(nullptr) {}
@@ -31,9 +31,13 @@ class TestFocusControllerDelegate : public FocusControllerDelegate {
   ServerWindow* new_focused_window() { return new_focused_window_; }
 
  private:
-  // FocusControllerDelegate:
-  void OnFocusChanged(ServerWindow* old_focused_window,
+  // FocusControllerObserver:
+  void OnFocusChanged(FocusControllerChangeSource source,
+                      ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override {
+    if (source == FocusControllerChangeSource::EXPLICIT)
+      return;
+
     change_count_++;
     old_focused_window_ = old_focused_window;
     new_focused_window_ = new_focused_window;
@@ -43,7 +47,7 @@ class TestFocusControllerDelegate : public FocusControllerDelegate {
   ServerWindow* old_focused_window_;
   ServerWindow* new_focused_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestFocusControllerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestFocusControllerObserver);
 };
 
 }  // namespace
@@ -60,50 +64,52 @@ TEST(FocusControllerTest, Basic) {
   child_child.SetVisible(true);
   child.Add(&child_child);
 
-  TestFocusControllerDelegate focus_delegate;
-  FocusController focus_controller(&focus_delegate);
+  TestFocusControllerObserver focus_observer;
+  FocusController focus_controller;
+  focus_controller.AddObserver(&focus_observer);
 
   focus_controller.SetFocusedWindow(&child_child);
-  EXPECT_EQ(0u, focus_delegate.change_count());
+  EXPECT_EQ(0u, focus_observer.change_count());
 
   // Remove the ancestor of the focused window, focus should go to the |root|.
   root.Remove(&child);
-  EXPECT_EQ(1u, focus_delegate.change_count());
-  EXPECT_EQ(&root, focus_delegate.new_focused_window());
-  EXPECT_EQ(&child_child, focus_delegate.old_focused_window());
-  focus_delegate.ClearAll();
+  EXPECT_EQ(1u, focus_observer.change_count());
+  EXPECT_EQ(&root, focus_observer.new_focused_window());
+  EXPECT_EQ(&child_child, focus_observer.old_focused_window());
+  focus_observer.ClearAll();
 
   // Make the focused window invisible. Focus is lost in this case (as no one
   // to give focus to).
   root.SetVisible(false);
-  EXPECT_EQ(1u, focus_delegate.change_count());
-  EXPECT_EQ(nullptr, focus_delegate.new_focused_window());
-  EXPECT_EQ(&root, focus_delegate.old_focused_window());
-  focus_delegate.ClearAll();
+  EXPECT_EQ(1u, focus_observer.change_count());
+  EXPECT_EQ(nullptr, focus_observer.new_focused_window());
+  EXPECT_EQ(&root, focus_observer.old_focused_window());
+  focus_observer.ClearAll();
 
   // Go back to initial state and focus |child_child|.
   root.SetVisible(true);
   root.Add(&child);
   focus_controller.SetFocusedWindow(&child_child);
-  EXPECT_EQ(0u, focus_delegate.change_count());
+  EXPECT_EQ(0u, focus_observer.change_count());
 
   // Hide the focused window, focus should go to parent.
   child_child.SetVisible(false);
-  EXPECT_EQ(1u, focus_delegate.change_count());
-  EXPECT_EQ(&child, focus_delegate.new_focused_window());
-  EXPECT_EQ(&child_child, focus_delegate.old_focused_window());
-  focus_delegate.ClearAll();
+  EXPECT_EQ(1u, focus_observer.change_count());
+  EXPECT_EQ(&child, focus_observer.new_focused_window());
+  EXPECT_EQ(&child_child, focus_observer.old_focused_window());
+  focus_observer.ClearAll();
 
   child_child.SetVisible(true);
   focus_controller.SetFocusedWindow(&child_child);
-  EXPECT_EQ(0u, focus_delegate.change_count());
+  EXPECT_EQ(0u, focus_observer.change_count());
 
   // Hide the parent of the focused window.
   child.SetVisible(false);
-  EXPECT_EQ(1u, focus_delegate.change_count());
-  EXPECT_EQ(&root, focus_delegate.new_focused_window());
-  EXPECT_EQ(&child_child, focus_delegate.old_focused_window());
-  focus_delegate.ClearAll();
+  EXPECT_EQ(1u, focus_observer.change_count());
+  EXPECT_EQ(&root, focus_observer.new_focused_window());
+  EXPECT_EQ(&child_child, focus_observer.old_focused_window());
+  focus_observer.ClearAll();
+  focus_controller.RemoveObserver(&focus_observer);
 }
 
 }  // namespace ws

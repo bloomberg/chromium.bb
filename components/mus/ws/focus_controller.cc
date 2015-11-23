@@ -4,16 +4,14 @@
 
 #include "components/mus/ws/focus_controller.h"
 
-#include "components/mus/ws/focus_controller_delegate.h"
+#include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_drawn_tracker.h"
 
 namespace mus {
-
 namespace ws {
 
-FocusController::FocusController(FocusControllerDelegate* delegate)
-    : delegate_(delegate) {}
+FocusController::FocusController() {}
 
 FocusController::~FocusController() {}
 
@@ -21,11 +19,19 @@ void FocusController::SetFocusedWindow(ServerWindow* window) {
   if (GetFocusedWindow() == window)
     return;
 
-  SetFocusedWindowImpl(window, CHANGE_SOURCE_EXPLICIT);
+  SetFocusedWindowImpl(FocusControllerChangeSource::EXPLICIT, window);
 }
 
 ServerWindow* FocusController::GetFocusedWindow() {
   return drawn_tracker_ ? drawn_tracker_->window() : nullptr;
+}
+
+void FocusController::AddObserver(FocusControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FocusController::RemoveObserver(FocusControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool FocusController::CanBeFocused(ServerWindow* window) const {
@@ -51,8 +57,9 @@ bool FocusController::CanBeActivated(ServerWindow* window) const {
   return true;
 }
 
-void FocusController::SetFocusedWindowImpl(ServerWindow* window,
-                                           ChangeSource change_source) {
+void FocusController::SetFocusedWindowImpl(
+    FocusControllerChangeSource change_source,
+    ServerWindow* window) {
   if (window && !CanBeFocused(window))
     return;
   ServerWindow* old = GetFocusedWindow();
@@ -65,17 +72,17 @@ void FocusController::SetFocusedWindowImpl(ServerWindow* window,
   else
     drawn_tracker_.reset();
 
-  if (change_source == CHANGE_SOURCE_DRAWN_STATE_CHANGED)
-    delegate_->OnFocusChanged(old, window);
+  FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
+                    OnFocusChanged(change_source, old, window));
 }
 
 void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
                                           ServerWindow* window,
                                           bool is_drawn) {
   DCHECK(!is_drawn);  // We only observe when drawn.
-  SetFocusedWindowImpl(ancestor, CHANGE_SOURCE_DRAWN_STATE_CHANGED);
+  SetFocusedWindowImpl(FocusControllerChangeSource::DRAWN_STATE_CHANGED,
+                       ancestor);
 }
 
 }  // namespace ws
-
 }  // namespace mus

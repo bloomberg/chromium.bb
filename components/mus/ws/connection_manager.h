@@ -14,7 +14,6 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window_delegate.h"
@@ -25,7 +24,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
-
 namespace ws {
 
 class ClientConnection;
@@ -265,7 +263,6 @@ class ConnectionManager : public ServerWindowDelegate,
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_

@@ -6,22 +6,22 @@
 #define COMPONENTS_MUS_WS_FOCUS_CONTROLLER_DELEGATE_H_
 
 namespace mus {
-
 namespace ws {
 
+enum class FocusControllerChangeSource;
 class ServerWindow;
 
-class FocusControllerDelegate {
+class FocusControllerObserver {
  public:
-  virtual void OnFocusChanged(ServerWindow* old_focused_window,
+  virtual void OnFocusChanged(FocusControllerChangeSource change_source,
+                              ServerWindow* old_focused_window,
                               ServerWindow* new_focused_window) = 0;
 
  protected:
-  ~FocusControllerDelegate() {}
+  ~FocusControllerObserver() {}
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_FOCUS_CONTROLLER_DELEGATE_H_

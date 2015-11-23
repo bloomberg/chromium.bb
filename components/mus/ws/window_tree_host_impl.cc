@@ -30,8 +30,9 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      focus_controller_(new FocusController(this)),
+      focus_controller_(new FocusController),
       window_manager_(window_manager.Pass()) {
+  focus_controller_->AddObserver(this);
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -40,6 +41,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
 }
 
 WindowTreeHostImpl::~WindowTreeHostImpl() {
+  DestroyFocusController();
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
 }
@@ -89,8 +91,6 @@ void WindowTreeHostImpl::SetFocusedWindow(ServerWindow* new_focused_window) {
     return;
   DCHECK(root_window()->Contains(new_focused_window));
   focus_controller_->SetFocusedWindow(new_focused_window);
-  // TODO(beng): have the FocusController notify us via FocusControllerDelegate.
-  OnFocusChanged(old_focused_window, new_focused_window);
 }
 
 ServerWindow* WindowTreeHostImpl::GetFocusedWindow() {
@@ -98,6 +98,10 @@ ServerWindow* WindowTreeHostImpl::GetFocusedWindow() {
 }
 
 void WindowTreeHostImpl::DestroyFocusController() {
+  if (!focus_controller_)
+    return;
+
+  focus_controller_->RemoveObserver(this);
   focus_controller_.reset();
 }
 
@@ -185,8 +189,10 @@ void WindowTreeHostImpl::OnCompositorFrameDrawn() {
   }
 }
 
-void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
-                                        ServerWindow* new_focused_window) {
+void WindowTreeHostImpl::OnFocusChanged(
+    FocusControllerChangeSource change_source,
+    ServerWindow* old_focused_window,
+    ServerWindow* new_focused_window) {
   // There are up to four connections that need to be notified:
   // . the connection containing |old_focused_window|.
   // . the connection with |old_focused_window| as its root.
