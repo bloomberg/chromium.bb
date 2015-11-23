@@ -1249,16 +1249,12 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& d
         DisableCompositingQueryAsserts disabler;
         if (const PaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient, PaintInvalidationFull, nullptr);
-        enclosingLayer->setNeedsRepaint();
     }
 }
 
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason, paintInvalidationRect);
-
-    if (PaintLayer* enclosingLayer = this->enclosingLayer())
-        enclosingLayer->setNeedsRepaint();
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const

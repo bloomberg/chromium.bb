@@ -405,6 +405,8 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
 
 void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
+    layer()->setNeedsRepaint();
+
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
             // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
