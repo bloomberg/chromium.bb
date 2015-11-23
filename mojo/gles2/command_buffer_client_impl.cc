@@ -56,12 +56,14 @@ class CommandBufferClientImpl::SyncClientImpl
       : initialized_successfully_(false), binding_(this, ptr, async_waiter) {}
 
   bool WaitForInitialization() {
+    base::ThreadRestrictions::ScopedAllowWait wait;
     if (!binding_.WaitForIncomingMethodCall())
       return false;
     return initialized_successfully_;
   }
 
   mus::mojom::CommandBufferStatePtr WaitForProgress() {
+    base::ThreadRestrictions::ScopedAllowWait wait;
     if (!binding_.WaitForIncomingMethodCall())
       return mus::mojom::CommandBufferStatePtr();
     return command_buffer_state_.Pass();
@@ -100,6 +102,7 @@ class CommandBufferClientImpl::SyncPointClientImpl
       : sync_point_(0u), binding_(this, ptr, async_waiter) {}
 
   uint32_t WaitForInsertSyncPoint() {
+    base::ThreadRestrictions::ScopedAllowWait wait;
     if (!binding_.WaitForIncomingMethodCall())
       return 0u;
     uint32_t result = sync_point_;
@@ -142,8 +145,6 @@ CommandBufferClientImpl::CommandBufferClientImpl(
 CommandBufferClientImpl::~CommandBufferClientImpl() {}
 
 bool CommandBufferClientImpl::Initialize() {
-  base::ThreadRestrictions::ScopedAllowWait wait;
-
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
   void* memory = NULL;
   mojo::ScopedSharedBufferHandle duped;
@@ -332,7 +333,6 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
 }
 
 uint32_t CommandBufferClientImpl::InsertSyncPoint() {
-  base::ThreadRestrictions::ScopedAllowWait wait;
   command_buffer_->InsertSyncPoint(true);
   return sync_point_client_impl_->WaitForInsertSyncPoint();
 }
