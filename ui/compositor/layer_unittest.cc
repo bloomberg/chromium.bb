@@ -692,7 +692,7 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   std::string name = "\"\'\\/\b\f\n\r\t\n";
   layer->set_name(name);
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info =
-    layer->TakeDebugInfo();
+    layer->TakeDebugInfo(layer->cc_layer_for_testing());
   EXPECT_TRUE(debug_info.get());
   std::string json;
   debug_info->AppendAsTraceFormat(&json);

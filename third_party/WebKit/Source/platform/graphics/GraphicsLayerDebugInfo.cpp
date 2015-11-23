@@ -20,8 +20,7 @@
 #include "config.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 
-#include "public/platform/WebGraphicsLayerDebugInfo.h"
-#include "wtf/text/CString.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace blink {
 
@@ -33,69 +32,50 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
 
 GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
 
-void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
+scoped_refptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
 {
-    RefPtr<JSONObject> jsonObject = JSONObject::create();
-    appendAnnotatedInvalidateRects(jsonObject.get());
-    appendCompositingReasons(jsonObject.get());
-    appendDebugName(jsonObject.get());
-    appendOwnerNodeId(jsonObject.get());
-    *out = jsonObject->toJSONString();
+    scoped_refptr<base::trace_event::TracedValue> tracedValue = new base::trace_event::TracedValue;
+    appendAnnotatedInvalidateRects(tracedValue.get());
+    appendCompositingReasons(tracedValue.get());
+    appendOwnerNodeId(tracedValue.get());
+    return tracedValue;
 }
 
-GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(base::trace_event::TracedValue* tracedValue) const
 {
-    GraphicsLayerDebugInfo* toReturn = new GraphicsLayerDebugInfo();
-    toReturn->setCompositingReasons(m_compositingReasons);
-    toReturn->setOwnerNodeId(m_ownerNodeId);
-    toReturn->m_invalidations = m_invalidations;
-    toReturn->m_previousInvalidations = m_previousInvalidations;
-    return toReturn;
-}
-
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObject) const
-{
-    RefPtr<JSONArray> jsonArray = JSONArray::create();
+    tracedValue->BeginArray("annotated_invalidation_rects");
     for (const auto& annotatedRect : m_previousInvalidations) {
-        RefPtr<JSONObject> rectContainer = JSONObject::create();
-        RefPtr<JSONArray> rectArray = JSONArray::create();
         const FloatRect& rect = annotatedRect.rect;
-        rectArray->pushNumber(rect.x());
-        rectArray->pushNumber(rect.y());
-        rectArray->pushNumber(rect.width());
-        rectArray->pushNumber(rect.height());
-        rectContainer->setArray("geometry_rect", rectArray);
-        rectContainer->setString("reason", paintInvalidationReasonToString(annotatedRect.reason));
-        jsonArray->pushObject(rectContainer);
+        tracedValue->BeginDictionary();
+        tracedValue->BeginArray("geometry_rect");
+        tracedValue->AppendDouble(rect.x());
+        tracedValue->AppendDouble(rect.y());
+        tracedValue->AppendDouble(rect.width());
+        tracedValue->AppendDouble(rect.height());
+        tracedValue->EndArray();
+        tracedValue->SetString("reason", paintInvalidationReasonToString(annotatedRect.reason));
+        tracedValue->EndDictionary();
     }
-    jsonObject->setArray("annotated_invalidation_rects", jsonArray);
+    tracedValue->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendCompositingReasons(JSONObject* jsonObject) const
+void GraphicsLayerDebugInfo::appendCompositingReasons(base::trace_event::TracedValue* tracedValue) const
 {
-    RefPtr<JSONArray> jsonArray = JSONArray::create();
+    tracedValue->BeginArray("compositing_reasons");
     for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
         if (!(m_compositingReasons & kCompositingReasonStringMap[i].reason))
             continue;
-        jsonArray->pushString(kCompositingReasonStringMap[i].description);
+        tracedValue->AppendString(kCompositingReasonStringMap[i].description);
     }
-    jsonObject->setArray("compositing_reasons", jsonArray);
+    tracedValue->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendDebugName(JSONObject* jsonObject) const
-{
-    if (m_debugName.isEmpty())
-        return;
-
-    jsonObject->setString("layer_name", m_debugName);
-}
-
-void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
+void GraphicsLayerDebugInfo::appendOwnerNodeId(base::trace_event::TracedValue* tracedValue) const
 {
     if (!m_ownerNodeId)
         return;
 
-    jsonObject->setNumber("owner_node", m_ownerNodeId);
+    tracedValue->SetInteger("owner_node", m_ownerNodeId);
 }
 
 void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, PaintInvalidationReason invalidationReason)

@@ -25,8 +25,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebGraphicsLayerDebugInfo.h"
-#include "third_party/WebKit/public/platform/WebLayerClient.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -54,20 +52,15 @@ base::LazyInstance<cc::LayerSettings> g_layer_settings =
 
 WebLayerImpl::WebLayerImpl()
     : layer_(Layer::Create(LayerSettings())), contents_opaque_is_fixed_(false) {
-  web_layer_client_ = nullptr;
-  layer_->SetLayerClient(this);
 }
 
 WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
     : layer_(layer), contents_opaque_is_fixed_(false) {
-  web_layer_client_ = nullptr;
-  layer_->SetLayerClient(this);
 }
 
 WebLayerImpl::~WebLayerImpl() {
   if (animation_delegate_adapter_.get())
     layer_->set_layer_animation_delegate(nullptr);
-  web_layer_client_ = nullptr;
   layer_->SetLayerClient(nullptr);
 }
 
@@ -493,39 +486,12 @@ bool WebLayerImpl::isOrphan() const {
   return !layer_->layer_tree_host();
 }
 
-void WebLayerImpl::setWebLayerClient(blink::WebLayerClient* client) {
-  web_layer_client_ = client;
+void WebLayerImpl::setLayerClient(cc::LayerClient* client) {
+  layer_->SetLayerClient(client);
 }
 
-class TracedDebugInfo : public base::trace_event::ConvertableToTraceFormat {
- public:
-  // This object takes ownership of the debug_info object.
-  explicit TracedDebugInfo(blink::WebGraphicsLayerDebugInfo* debug_info)
-      : debug_info_(debug_info) {}
-  void AppendAsTraceFormat(std::string* out) const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    blink::WebString web_string;
-    debug_info_->appendAsTraceFormat(&web_string);
-    out->append(web_string.utf8());
-  }
-
- private:
-  ~TracedDebugInfo() override {}
-  scoped_ptr<blink::WebGraphicsLayerDebugInfo> debug_info_;
-  base::ThreadChecker thread_checker_;
-};
-
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-WebLayerImpl::TakeDebugInfo() {
-  if (!web_layer_client_)
-    return nullptr;
-  blink::WebGraphicsLayerDebugInfo* debug_info =
-      web_layer_client_->takeDebugInfoFor(this);
-
-  if (debug_info)
-    return new TracedDebugInfo(debug_info);
-  else
-    return nullptr;
+const cc::Layer* WebLayerImpl::ccLayer() const {
+  return layer_.get();
 }
 
 void WebLayerImpl::setScrollParent(blink::WebLayer* parent) {

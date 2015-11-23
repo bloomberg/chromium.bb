@@ -812,8 +812,8 @@ class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
   std::string name_;
 };
 
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-Layer::TakeDebugInfo() {
+scoped_refptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo(
+    cc::Layer* layer) {
   return new LayerDebugInfo(name_);
 }
 

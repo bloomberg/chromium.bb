@@ -196,6 +196,8 @@ component("platform") {
   ]
 
   public_deps = [
+    "//base",
+    "//cc",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
     "//third_party:jpeg",

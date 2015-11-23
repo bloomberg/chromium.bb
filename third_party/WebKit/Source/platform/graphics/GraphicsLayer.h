@@ -27,6 +27,7 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
+#include "cc/layers/layer_client.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -47,7 +48,6 @@
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
-#include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebScrollBlocksOn.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -75,7 +75,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public WebLayerClient {
+class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public cc::LayerClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
 public:
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
@@ -83,9 +83,6 @@ public:
     ~GraphicsLayer() override;
 
     GraphicsLayerClient* client() const { return m_client; }
-
-    // WebLayerClient implementation.
-    WebGraphicsLayerDebugInfo* takeDebugInfoFor(WebLayer*) override;
 
     GraphicsLayerDebugInfo& debugInfo();
 
@@ -255,6 +252,9 @@ public:
     // WebLayerScrollClient implementation.
     void didScroll() override;
 
+    // cc::LayerClient implementation.
+    scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
+
     PaintController* paintController() override;
 
     // Exposed for tests.
@@ -267,7 +267,7 @@ public:
     String debugName() const { return m_client->debugName(this); }
 
 protected:
-    String debugName(WebLayer*) const;
+    String debugName(cc::Layer*) const;
 
     explicit GraphicsLayer(GraphicsLayerClient*);
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.

@@ -1531,7 +1531,7 @@ bool Layer::IsSuitableForGpuRasterization() const {
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 Layer::TakeDebugInfo() {
   if (client_)
-    return client_->TakeDebugInfo();
+    return client_->TakeDebugInfo(this);
   else
     return nullptr;
 }
