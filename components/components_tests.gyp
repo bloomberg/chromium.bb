@@ -360,13 +360,6 @@
       'metrics/stability_metrics_helper_unittest.cc',
       'metrics/ui/screen_info_metrics_provider_unittest.cc',
     ],
-    'metrics_leak_detector_unittest_sources': [
-      'metrics/leak_detector/call_stack_manager_unittest.cc',
-      'metrics/leak_detector/call_stack_table_unittest.cc',
-      'metrics/leak_detector/leak_analyzer_unittest.cc',
-      'metrics/leak_detector/leak_detector_impl_unittest.cc',
-      'metrics/leak_detector/ranked_list_unittest.cc',
-    ],
     'mime_util_unittest_sources': [
       'mime_util/mime_util_unittest.cc',
     ],
@@ -1379,7 +1372,6 @@
             'wifi_sync/wifi_credential_unittest.cc',
             'wifi_sync/wifi_security_class_chromeos_unittest.cc',
             'wifi_sync/wifi_security_class_unittest.cc',
-            '<@(metrics_leak_detector_unittest_sources)',
             '<@(ownership_unittest_sources)',
           ],
           'sources!': [
@@ -1388,7 +1380,6 @@
           ],
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support',
-            'components.gyp:metrics_leak_detector',
             'components.gyp:ownership',
             'components.gyp:pairing',
             'components.gyp:user_manager_test_support',
