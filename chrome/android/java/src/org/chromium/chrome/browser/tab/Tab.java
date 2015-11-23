@@ -1806,7 +1806,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private void notifyFaviconChanged() {
         RewindableIterator<TabObserver> observers = getTabObservers();
         while (observers.hasNext()) {
-            observers.next().onFaviconUpdated(this);
+            observers.next().onFaviconUpdated(this, null);
         }
     }
 
@@ -2088,7 +2088,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     @CalledByNative
     protected void onFaviconAvailable(Bitmap icon) {
-        boolean needUpdate = false;
         String url = getUrl();
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
         // This method will be called multiple times if the page has more than one favicon.
@@ -2097,17 +2096,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (pageUrlChanged || (icon.getWidth() == mIdealFaviconSize
                 && icon.getHeight() == mIdealFaviconSize)) {
             mFavicon = Bitmap.createScaledBitmap(icon, mIdealFaviconSize, mIdealFaviconSize, true);
-            needUpdate = true;
-        }
-
-        if (pageUrlChanged) {
             mFaviconUrl = url;
-            needUpdate = true;
         }
 
-        if (!needUpdate) return;
-
-        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
+        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this, icon);
     }
     /**
      * Called when the navigation entry containing the history item changed,

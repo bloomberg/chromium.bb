@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
-import org.chromium.chrome.browser.document.DocumentTab.DocumentTabObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPrefer
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -87,6 +87,109 @@ public class DocumentActivity extends ChromeActivity {
     // plus add another 20ms for a re-layout.
     private static final int MENU_EXIT_ANIMATION_WAIT_MS = 170;
 
+    private class DocumentTabObserver extends EmptyTabObserver {
+        @Override
+        public void onPageLoadStarted(Tab tab, String url) {
+            // Discard startup navigation measurements when the user interfered and started the
+            // 2nd navigation (in activity lifetime) in parallel.
+            if (!sIsFirstPageLoadStart) {
+                UmaUtils.setRunningApplicationStart(false);
+            } else {
+                sIsFirstPageLoadStart = false;
+            }
+        }
+
+        @Override
+        public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+            if (!didStartLoad) return;
+            resetIcon();
+        }
+
+        @Override
+        public void onFaviconUpdated(Tab tab, Bitmap icon) {
+            if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
+                    || icon.getHeight() > mLargestFavicon.getHeight()) {
+                mLargestFavicon = icon;
+                updateTaskDescription();
+            }
+        }
+
+        @Override
+        public void onUrlUpdated(Tab tab) {
+            assert mDocumentTab == tab;
+
+            updateTaskDescription();
+            mTabModel.updateEntry(getIntent(), mDocumentTab);
+        }
+
+        @Override
+        public void onTitleUpdated(Tab tab) {
+            super.onTitleUpdated(tab);
+            updateTaskDescription();
+        }
+
+        @Override
+        public void onSSLStateUpdated(Tab tab) {
+            if (hasSecurityWarningOrError(tab)) resetIcon();
+        }
+
+        @Override
+        public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
+                int statusCode) {
+            if (!isNavigationToDifferentPage) return;
+            mLargestFavicon = null;
+        }
+
+        @Override
+        public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+            assert mDocumentTab == tab;
+
+            updateTaskDescription();
+            mTabModel.updateEntry(getIntent(), mDocumentTab);
+        }
+
+        @Override
+        public void onDidChangeThemeColor(Tab tab, int color) {
+            updateTaskDescription();
+        }
+
+        @Override
+        public void onDidAttachInterstitialPage(Tab tab) {
+            resetIcon();
+        }
+
+        @Override
+        public void onDidDetachInterstitialPage(Tab tab) {
+            resetIcon();
+        }
+
+        @Override
+        public void onCrash(Tab tab, boolean sadTabShown) {
+            int currentState = ApplicationStatus.getStateForActivity(DocumentActivity.this);
+            if (currentState != ActivityState.STOPPED) return;
+
+            if (!isTaskRoot() || IntentUtils.safeGetBooleanExtra(getIntent(),
+                    IntentHandler.EXTRA_APPEND_TASK, false)) {
+                return;
+            }
+
+            // Finishing backgrounded Activities whose renderers have crashed allows us to
+            // destroy them and return resources sooner than if we wait for Android to destroy
+            // the Activities themselves.  Problematically, this also removes
+            // IncognitoDocumentActivity instances from Android's Recents menu and auto-closes
+            // the tab.  Instead, take a hit and keep the Activities alive -- Android will
+            // eventually destroy the Activities, anyway (crbug.com/450292).
+            if (!isIncognito()) finish();
+        }
+
+        private boolean hasSecurityWarningOrError(Tab tab) {
+            int securityLevel = tab.getSecurityLevel();
+            return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
+        }
+    }
     private DocumentTabModel mTabModel;
     private InitializationObserver mTabInitializationObserver;
 
@@ -531,110 +634,7 @@ public class DocumentActivity extends ChromeActivity {
 
         mDocumentTab.setFullscreenManager(getFullscreenManager());
 
-        mDocumentTab.addObserver(new DocumentTabObserver() {
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                // Discard startup navigation measurements when the user interfered and started the
-                // 2nd navigation (in activity lifetime) in parallel.
-                if (!sIsFirstPageLoadStart) {
-                    UmaUtils.setRunningApplicationStart(false);
-                } else {
-                    sIsFirstPageLoadStart = false;
-                }
-            }
-
-            @Override
-            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                if (!didStartLoad) return;
-                resetIcon();
-            }
-
-            @Override
-            protected void onFaviconReceived(Bitmap image) {
-                super.onFaviconReceived(image);
-                if (mLargestFavicon == null || image.getWidth() > mLargestFavicon.getWidth()
-                        || image.getHeight() > mLargestFavicon.getHeight()) {
-                    mLargestFavicon = image;
-                    updateTaskDescription();
-                }
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                assert mDocumentTab == tab;
-
-                updateTaskDescription();
-                mTabModel.updateEntry(getIntent(), mDocumentTab);
-            }
-
-            @Override
-            public void onTitleUpdated(Tab tab) {
-                super.onTitleUpdated(tab);
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onSSLStateUpdated(Tab tab) {
-                if (hasSecurityWarningOrError(tab)) resetIcon();
-            }
-
-            @Override
-            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                    int statusCode) {
-                if (!isNavigationToDifferentPage) return;
-                mLargestFavicon = null;
-            }
-
-            @Override
-            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
-                assert mDocumentTab == tab;
-
-                updateTaskDescription();
-                mTabModel.updateEntry(getIntent(), mDocumentTab);
-            }
-
-            @Override
-            public void onDidChangeThemeColor(Tab tab, int color) {
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onDidAttachInterstitialPage(Tab tab) {
-                resetIcon();
-            }
-
-            @Override
-            public void onDidDetachInterstitialPage(Tab tab) {
-                resetIcon();
-            }
-
-            @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                int currentState = ApplicationStatus.getStateForActivity(DocumentActivity.this);
-                if (currentState != ActivityState.STOPPED) return;
-
-                if (!isTaskRoot() || IntentUtils.safeGetBooleanExtra(getIntent(),
-                        IntentHandler.EXTRA_APPEND_TASK, false)) {
-                    return;
-                }
-
-                // Finishing backgrounded Activities whose renderers have crashed allows us to
-                // destroy them and return resources sooner than if we wait for Android to destroy
-                // the Activities themselves.  Problematically, this also removes
-                // IncognitoDocumentActivity instances from Android's Recents menu and auto-closes
-                // the tab.  Instead, take a hit and keep the Activities alive -- Android will
-                // eventually destroy the Activities, anyway (crbug.com/450292).
-                if (!isIncognito()) finish();
-            }
-
-            private boolean hasSecurityWarningOrError(Tab tab) {
-                int securityLevel = tab.getSecurityLevel();
-                return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                        || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                        || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
-            }
-        });
+        mDocumentTab.addObserver(new DocumentTabObserver());
 
         removeWindowBackground();
 

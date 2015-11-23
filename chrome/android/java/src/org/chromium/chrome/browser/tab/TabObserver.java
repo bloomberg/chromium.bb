@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -108,8 +109,9 @@ public interface TabObserver {
     /**
      * Called when the favicon of a {@link Tab} has been updated.
      * @param tab The notifying {@link Tab}.
+     * @param icon The favicon that was received.
      */
-    void onFaviconUpdated(Tab tab);
+    void onFaviconUpdated(Tab tab, Bitmap icon);
 
     /**
      * Called when the title of a {@link Tab} changes.

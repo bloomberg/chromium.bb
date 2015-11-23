@@ -63,6 +63,8 @@ public class WebappActivity extends FullScreenActivity {
 
     private WebappUma mWebappUma;
 
+    private Bitmap mLargestFavicon;
+
     /**
      * Construct all the variables that shouldn't change.  We do it here both to clarify when the
      * objects are created and to ensure that they exist throughout the parallelized initialization
@@ -287,6 +289,7 @@ public class WebappActivity extends FullScreenActivity {
 
     protected TabObserver createTabObserver() {
         return new EmptyTabObserver() {
+
             @Override
             public void onSSLStateUpdated(Tab tab) {
                 updateUrlBar();
@@ -313,9 +316,15 @@ public class WebappActivity extends FullScreenActivity {
             }
 
             @Override
-            public void onFaviconUpdated(Tab tab) {
+            public void onFaviconUpdated(Tab tab, Bitmap icon) {
                 if (!isWebappDomain()) return;
-                updateTaskDescription();
+                // No need to cache the favicon if there is an icon declared in app manifest.
+                if (mWebappInfo.icon() != null) return;
+                if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
+                        || icon.getHeight() > mLargestFavicon.getHeight()) {
+                    mLargestFavicon = icon;
+                    updateTaskDescription();
+                }
             }
 
             @Override
@@ -391,7 +400,7 @@ public class WebappActivity extends FullScreenActivity {
         if (mWebappInfo.icon() != null) {
             icon = mWebappInfo.icon();
         } else if (getActivityTab() != null) {
-            icon = getActivityTab().getFavicon();
+            icon = mLargestFavicon;
         }
 
         if (mBrandColor == null && mWebappInfo.hasValidThemeColor()) {

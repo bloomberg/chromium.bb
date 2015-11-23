@@ -345,7 +345,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
-        public void onFaviconUpdated(Tab tab) {
+        public void onFaviconUpdated(Tab tab, Bitmap icon) {
             updateFavicon();
             notifyTabUpdated(tab);
         }

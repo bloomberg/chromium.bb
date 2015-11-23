@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
 import org.chromium.content.browser.ContentViewCore;
@@ -49,7 +50,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onPageLoadFailed(Tab tab, int errorCode) { }
 
     @Override
-    public void onFaviconUpdated(Tab tab) { }
+    public void onFaviconUpdated(Tab tab, Bitmap icon) { }
 
     @Override
     public void onTitleUpdated(Tab tab) { }

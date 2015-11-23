@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.document;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 
-import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -15,10 +13,8 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -32,17 +28,6 @@ import org.chromium.ui.base.WindowAndroid;
  * A Tab child class with Chrome documents specific functionality.
  */
 public class DocumentTab extends Tab {
-    /**
-     * Observer class with extra calls specific to Chrome Documents
-     */
-    public static class DocumentTabObserver extends EmptyTabObserver {
-        /**
-         * Called when a Favicon is received for the current document.
-         * @param image The favicon image that was received.
-         */
-        protected void onFaviconReceived(Bitmap image) { }
-    }
-
     private boolean mDidRestoreState;
 
     /**
@@ -123,19 +108,6 @@ public class DocumentTab extends Tab {
         if (unfreeze) mDidRestoreState = unfreezeContents();
 
         getView().requestFocus();
-    }
-
-    @Override
-    public void onFaviconAvailable(Bitmap image) {
-        super.onFaviconAvailable(image);
-        if (image == null) return;
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            TabObserver observer = observers.next();
-            if (observer instanceof DocumentTabObserver) {
-                ((DocumentTabObserver) observer).onFaviconReceived(image);
-            }
-        }
     }
 
     /**

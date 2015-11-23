@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.text.TextUtils;
@@ -149,7 +150,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
 
         mTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
-            public void onFaviconUpdated(Tab tab) {
+            public void onFaviconUpdated(Tab tab, Bitmap icon) {
                 updateTitle(tab);
             }
 
