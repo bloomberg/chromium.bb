@@ -14,13 +14,6 @@
     ],
   },
   'targets': [
-    # TODO(slan): delete this target once Chromecast M44/earlier is obsolete.
-    # See: b/21639416
-    {
-      'target_name': 'libffmpegsumo',
-      'type': 'loadable_module',
-      'sources': ['empty.cc'],
-    },
     {
       'target_name': 'media_audio',
       'type': '<(component)',

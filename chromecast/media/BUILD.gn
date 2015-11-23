@@ -58,9 +58,3 @@ test("cast_media_unittests") {
     "//ui/gfx/geometry",
   ]
 }
-
-# TODO(slan): delete this target once Chromecast M44/earlier is obsolete.
-# See: b/21639416
-shared_library("libffmpegsumo") {
-  output_name = "libffmpegsumo"
-}
