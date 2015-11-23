@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.IntDef;
 import android.view.View;
 
 import org.chromium.base.ActivityState;
@@ -44,6 +45,24 @@ public class TabWebContentsObserver extends WebContentsObserver {
     private static final int TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_BACKGROUND_APP = 2;
     private static final int TAB_RENDERER_CRASH_STATUS_MAX = 3;
 
+    // TabRendererExitStatus defined in tools/metrics/histograms/histograms.xml.
+    // Designed to replace TabRendererCrashStatus if numbers line up.
+    @IntDef({TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP,
+        TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP,
+        TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP,
+        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP,
+        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP,
+        TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP,
+        TAB_RENDERER_EXIT_STATUS_MAX})
+    private @interface TabRendererExitStatus {}
+    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP = 0;
+    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP = 1;
+    private static final int TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP = 2;
+    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP = 3;
+    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP = 4;
+    private static final int TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP = 5;
+    private static final int TAB_RENDERER_EXIT_STATUS_MAX = 6;
+
     private final Tab mTab;
     private int mThemeColor;
 
@@ -67,6 +86,31 @@ public class TabWebContentsObserver extends WebContentsObserver {
         // potential background tabs that did not reload yet).
         if (mTab.needsReload() || mTab.isShowingSadTab()) return;
 
+        // This will replace TabRendererCrashStatus if numbers line up.
+        int appState = ApplicationStatus.getStateForApplication();
+        boolean applicationRunning = (appState == ApplicationState.HAS_RUNNING_ACTIVITIES);
+        boolean applicationPaused = (appState == ApplicationState.HAS_PAUSED_ACTIVITIES);
+        @TabRendererExitStatus int rendererExitStatus = TAB_RENDERER_EXIT_STATUS_MAX;
+        if (processWasOomProtected) {
+            if (applicationRunning) {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_RUNNING_APP;
+            } else if (applicationPaused) {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_PAUSED_APP;
+            } else {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_OOM_PROTECTED_IN_BACKGROUND_APP;
+            }
+        } else {
+            if (applicationRunning) {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_RUNNING_APP;
+            } else if (applicationPaused) {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_PAUSED_APP;
+            } else {
+                rendererExitStatus = TAB_RENDERER_EXIT_STATUS_NOT_PROTECTED_IN_BACKGROUND_APP;
+            }
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                "Tab.RendererExitStatus", rendererExitStatus, TAB_RENDERER_EXIT_STATUS_MAX);
+
         int activityState = ApplicationStatus.getStateForActivity(
                 mTab.getWindowAndroid().getActivity().get());
         int rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_MAX;
@@ -77,8 +121,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
             // The tab crashed in background or was killed by the OS out-of-memory killer.
             //setNeedsReload(true);
             mTab.setNeedsReload(true);
-            if (ApplicationStatus.getStateForApplication()
-                    == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            if (applicationRunning) {
                 rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_FOREGROUND_APP;
             } else {
                 rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_BACKGROUND_APP;
