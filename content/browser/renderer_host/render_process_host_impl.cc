@@ -1675,13 +1675,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
       tracked_objects::ThreadData::status();
   Send(new ChildProcessMsg_SetProfilerStatus(status));
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  io_surface_manager_token_ =
-      BrowserIOSurfaceManager::GetInstance()->GenerateChildProcessToken(
-          GetID());
-  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
-#endif
-
 #if defined(USE_OZONE)
   Send(new ChildProcessMsg_InitializeClientNativePixmapFactory(
       base::FileDescriptor(
@@ -2426,6 +2419,13 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
     UpdateProcessPriority();
   }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  io_surface_manager_token_ =
+      BrowserIOSurfaceManager::GetInstance()->GenerateChildProcessToken(
+          GetID());
+  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
+#endif
 
   // NOTE: This needs to be before sending queued messages because
   // ExtensionService uses this notification to initialize the renderer process

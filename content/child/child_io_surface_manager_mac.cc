@@ -20,7 +20,7 @@ bool ChildIOSurfaceManager::RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
                                               int client_id,
                                               IOSurfaceRef io_surface) {
   DCHECK(service_port_.is_valid());
-  DCHECK(!token_.IsZero());
+  CHECK(!token_.IsZero());
 
   mach_port_t reply_port;
   kern_return_t kr = mach_port_allocate(mach_task_self(),
@@ -71,7 +71,7 @@ bool ChildIOSurfaceManager::RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
 void ChildIOSurfaceManager::UnregisterIOSurface(gfx::IOSurfaceId io_surface_id,
                                                 int client_id) {
   DCHECK(service_port_.is_valid());
-  DCHECK(!token_.IsZero());
+  CHECK(!token_.IsZero());
 
   IOSurfaceManagerHostMsg_UnregisterIOSurface request = {{0}};
   request.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0);
@@ -94,7 +94,7 @@ void ChildIOSurfaceManager::UnregisterIOSurface(gfx::IOSurfaceId io_surface_id,
 IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
     gfx::IOSurfaceId io_surface_id) {
   DCHECK(service_port_.is_valid());
-  DCHECK(!token_.IsZero());
+  CHECK(!token_.IsZero());
 
   mach_port_t reply_port;
   kern_return_t kr = mach_port_allocate(mach_task_self(),
