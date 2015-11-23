@@ -5,7 +5,6 @@
 #include "net/log/net_log.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/values.h"
@@ -128,17 +127,19 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   }
 
   void OnAddEntry(const NetLog::Entry& entry) override {
-    base::Value* value = entry.ToValue();
-    base::DictionaryValue* dict = NULL;
-    ASSERT_TRUE(value->GetAsDictionary(&dict));
-    values_.push_back(dict);
+    scoped_ptr<base::DictionaryValue> dict =
+        base::DictionaryValue::From(make_scoped_ptr(entry.ToValue()));
+    ASSERT_TRUE(dict);
+    values_.push_back(std::move(dict));
   }
 
   size_t GetNumValues() const { return values_.size(); }
-  base::DictionaryValue* GetValue(size_t index) const { return values_[index]; }
+  base::DictionaryValue* GetValue(size_t index) const {
+    return values_[index].get();
+  }
 
  private:
-  ScopedVector<base::DictionaryValue> values_;
+  std::vector<scoped_ptr<base::DictionaryValue>> values_;
 };
 
 void AddEvent(NetLog* net_log) {
