@@ -268,6 +268,8 @@ class MockNetworkTransaction
   // be initialized.
   unsigned int socket_log_id_;
 
+  bool done_reading_called_;
+
   base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
 
 };

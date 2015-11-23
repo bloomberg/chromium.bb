@@ -210,7 +210,8 @@ void URLRequestTestJob::StartAsync() {
       // unexpected url, return error
       // FIXME(brettw) we may want to use WININET errors or have some more types
       // of errors
-      NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
+      NotifyStartError(
+          URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
       // FIXME(brettw): this should emulate a network error, and not just fail
       // initiating a connection
       return;
@@ -222,22 +223,15 @@ void URLRequestTestJob::StartAsync() {
   this->NotifyHeadersComplete();
 }
 
-bool URLRequestTestJob::ReadRawData(IOBuffer* buf,
-                                    int buf_size,
-                                    int* bytes_read) {
+int URLRequestTestJob::ReadRawData(IOBuffer* buf, int buf_size) {
   if (stage_ == WAITING) {
     async_buf_ = buf;
     async_buf_size_ = buf_size;
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-    return false;
+    return ERR_IO_PENDING;
   }
 
-  DCHECK(bytes_read);
-  *bytes_read = 0;
-
-  if (offset_ >= static_cast<int>(response_data_.length())) {
-    return true;  // done reading
-  }
+  if (offset_ >= static_cast<int>(response_data_.length()))
+    return 0;  // done reading
 
   int to_read = buf_size;
   if (to_read + offset_ > static_cast<int>(response_data_.length()))
@@ -246,8 +240,7 @@ bool URLRequestTestJob::ReadRawData(IOBuffer* buf,
   memcpy(buf->data(), &response_data_.c_str()[offset_], to_read);
   offset_ += to_read;
 
-  *bytes_read = to_read;
-  return true;
+  return to_read;
 }
 
 void URLRequestTestJob::GetResponseInfo(HttpResponseInfo* info) {
@@ -305,16 +298,15 @@ void URLRequestTestJob::ProcessNextOperation() {
       stage_ = DATA_AVAILABLE;
       // OK if ReadRawData wasn't called yet.
       if (async_buf_) {
-        int bytes_read;
-        if (!ReadRawData(async_buf_, async_buf_size_, &bytes_read))
-          NOTREACHED() << "This should not return false in DATA_AVAILABLE.";
-        SetStatus(URLRequestStatus());  // clear the io pending flag
+        int result = ReadRawData(async_buf_, async_buf_size_);
+        if (result < 0)
+          NOTREACHED() << "Reads should not fail in DATA_AVAILABLE.";
         if (NextReadAsync()) {
           // Make all future reads return io pending until the next
           // ProcessNextOperation().
           stage_ = WAITING;
         }
-        NotifyReadComplete(bytes_read);
+        ReadRawDataComplete(result);
       }
       break;
     case DATA_AVAILABLE:

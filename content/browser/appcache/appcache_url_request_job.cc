@@ -341,7 +341,6 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
 void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(is_delivering_appcache_response());
   if (result == 0) {
-    NotifyDone(net::URLRequestStatus());
     AppCacheHistograms::CountResponseRetrieval(
         true, is_main_resource_, manifest_url_.GetOrigin());
   } else if (result < 0) {
@@ -349,13 +348,10 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
     }
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
     AppCacheHistograms::CountResponseRetrieval(
         false, is_main_resource_, manifest_url_.GetOrigin());
-  } else {
-    SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   }
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 // net::URLRequestJob overrides ------------------------------------------------
@@ -424,18 +420,14 @@ int AppCacheURLRequestJob::GetResponseCode() const {
   return http_info()->headers->response_code();
 }
 
-bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf,
-                                        int buf_size,
-                                        int* bytes_read) {
+int AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(is_delivering_appcache_response());
   DCHECK_NE(buf_size, 0);
-  DCHECK(bytes_read);
   DCHECK(!reader_->IsReadPending());
   reader_->ReadData(buf, buf_size,
                     base::Bind(&AppCacheURLRequestJob::OnReadComplete,
                                base::Unretained(this)));
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-  return false;
+  return net::ERR_IO_PENDING;
 }
 
 void AppCacheURLRequestJob::SetExtraRequestHeaders(

@@ -20,12 +20,23 @@ namespace {
 const char kGzipData[] = "\x1f\x08b\x08\0\0\0\0\0\0\3\3\0\0\0\0\0\0\0\0";
 const char kGzipDataWithName[] =
     "\x1f\x08b\x08\x08\0\0\0\0\0\0name\0\3\0\0\0\0\0\0\0\0";
+// Gzip data that contains the word hello with a newline character.
+const char kGzipHelloData[] =
+    "\x1f\x8b\x08\x08\x46\x7d\x4e\x56\x00\x03\x67\x7a\x69\x70\x2e\x74\x78\x74"
+    "\x00\xcb\x48\xcd\xc9\xc9\xe7\x02\x00\x20\x30\x3a\x36\x06\x00\x00\x00";
 
 void GZipServer(const HttpRequestInfo* request,
                 std::string* response_status,
                 std::string* response_headers,
                 std::string* response_data) {
   response_data->assign(kGzipData, sizeof(kGzipData));
+}
+
+void GZipHelloServer(const HttpRequestInfo* request,
+                     std::string* response_status,
+                     std::string* response_headers,
+                     std::string* response_data) {
+  response_data->assign(kGzipHelloData, sizeof(kGzipHelloData));
 }
 
 void BigGZipServer(const HttpRequestInfo* request,
@@ -56,6 +67,14 @@ const MockTransaction kGZip_Transaction = {
     OK,
 };
 
+const MockTransaction kGzip_Slow_Transaction = {
+    "http://www.google.com/gzyp", "GET", base::Time(), "", LOAD_NORMAL,
+    "HTTP/1.1 200 OK",
+    "Cache-Control: max-age=10000\n"
+    "Content-Encoding: gzip\n",
+    base::Time(), "", TEST_MODE_SLOW_READ, &GZipHelloServer, nullptr, 0, 0, OK,
+};
+
 const MockTransaction kRedirect_Transaction = {
     "http://www.google.com/redirect",
     "GET",
@@ -68,6 +87,24 @@ const MockTransaction kRedirect_Transaction = {
     "Content-Length: 5\n",
     base::Time(),
     "hello",
+    TEST_MODE_NORMAL,
+    nullptr,
+    nullptr,
+    0,
+    0,
+    OK,
+};
+
+const MockTransaction kEmptyBodyGzip_Transaction = {
+    "http://www.google.com/empty_body",
+    "GET",
+    base::Time(),
+    "",
+    LOAD_NORMAL,
+    "HTTP/1.1 200 OK",
+    "Content-Encoding: gzip\n",
+    base::Time(),
+    "",
     TEST_MODE_NORMAL,
     nullptr,
     nullptr,
@@ -185,6 +222,56 @@ TEST(URLRequestJob, TransactionNotCachedWhenNetworkDelegateRedirects) {
   EXPECT_TRUE(network_layer.stop_caching_called());
 
   RemoveMockTransaction(&kGZip_Transaction);
+}
+
+// Makes sure that ReadRawDataComplete correctly updates request status before
+// calling ReadFilteredData.
+// Regression test for crbug.com/553300.
+TEST(URLRequestJob, EmptyBodySkipFilter) {
+  MockNetworkLayer network_layer;
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL(kEmptyBodyGzip_Transaction.url), DEFAULT_PRIORITY, &d));
+  AddMockTransaction(&kEmptyBodyGzip_Transaction);
+
+  req->set_method("GET");
+  req->Start();
+
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(d.request_failed());
+  EXPECT_EQ(200, req->GetResponseCode());
+  EXPECT_TRUE(d.data_received().empty());
+  EXPECT_TRUE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kEmptyBodyGzip_Transaction);
+}
+
+// Regression test for crbug.com/553300.
+TEST(URLRequestJob, SlowFilterRead) {
+  MockNetworkLayer network_layer;
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL(kGzip_Slow_Transaction.url), DEFAULT_PRIORITY, &d));
+  AddMockTransaction(&kGzip_Slow_Transaction);
+
+  req->set_method("GET");
+  req->Start();
+
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(d.request_failed());
+  EXPECT_EQ(200, req->GetResponseCode());
+  EXPECT_EQ("hello\n", d.data_received());
+  EXPECT_TRUE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kGzip_Slow_Transaction);
 }
 
 }  // namespace net

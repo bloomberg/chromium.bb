@@ -33,7 +33,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_errors.h"
 #include "net/filter/filter.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_error_job.h"
@@ -63,6 +62,7 @@ URLRequestFileJob::URLRequestFileJob(
       stream_(new FileStream(file_task_runner)),
       file_task_runner_(file_task_runner),
       remaining_bytes_(0),
+      range_parse_result_(OK),
       weak_ptr_factory_(this) {}
 
 void URLRequestFileJob::Start() {
@@ -83,22 +83,17 @@ void URLRequestFileJob::Kill() {
   URLRequestJob::Kill();
 }
 
-bool URLRequestFileJob::ReadRawData(IOBuffer* dest,
-                                    int dest_size,
-                                    int* bytes_read) {
+int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
   DCHECK_NE(dest_size, 0);
-  DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0);
 
   if (remaining_bytes_ < dest_size)
-    dest_size = static_cast<int>(remaining_bytes_);
+    dest_size = remaining_bytes_;
 
   // If we should copy zero bytes because |remaining_bytes_| is zero, short
   // circuit here.
-  if (!dest_size) {
-    *bytes_read = 0;
-    return true;
-  }
+  if (!dest_size)
+    return 0;
 
   int rv = stream_->Read(dest,
                          dest_size,
@@ -106,20 +101,11 @@ bool URLRequestFileJob::ReadRawData(IOBuffer* dest,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     make_scoped_refptr(dest)));
   if (rv >= 0) {
-    // Data is immediately available.
-    *bytes_read = rv;
     remaining_bytes_ -= rv;
     DCHECK_GE(remaining_bytes_, 0);
-    return true;
   }
 
-  // Otherwise, a read error occured.  We may just need to wait...
-  if (rv == ERR_IO_PENDING) {
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-  } else {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
-  }
-  return false;
+  return rv;
 }
 
 bool URLRequestFileJob::IsRedirectResponse(GURL* location,
@@ -179,7 +165,10 @@ void URLRequestFileJob::SetExtraRequestHeaders(
     const HttpRequestHeaders& headers) {
   std::string range_header;
   if (headers.GetHeader(HttpRequestHeaders::kRange, &range_header)) {
-    // We only care about "Range" header here.
+    // This job only cares about the Range header. This method stashes the value
+    // for later use in DidOpen(), which is responsible for some of the range
+    // validation as well. NotifyStartError is not legal to call here since
+    // the job has not started.
     std::vector<HttpByteRange> ranges;
     if (HttpUtil::ParseRangeHeader(range_header, &ranges)) {
       if (ranges.size() == 1) {
@@ -189,8 +178,7 @@ void URLRequestFileJob::SetExtraRequestHeaders(
         // because we need to do multipart encoding here.
         // TODO(hclam): decide whether we want to support multiple range
         // requests.
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                    ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+        range_parse_result_ = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
       }
     }
   }
@@ -251,13 +239,19 @@ void URLRequestFileJob::DidFetchMetaInfo(const FileMetaInfo* meta_info) {
 
 void URLRequestFileJob::DidOpen(int result) {
   if (result != OK) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    return;
+  }
+
+  if (range_parse_result_ != net::OK) {
+    NotifyStartError(
+        URLRequestStatus(URLRequestStatus::FAILED, range_parse_result_));
     return;
   }
 
   if (!byte_range_.ComputeBounds(meta_info_.file_size)) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
+                                      net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -285,8 +279,8 @@ void URLRequestFileJob::DidOpen(int result) {
 void URLRequestFileJob::DidSeek(int64 result) {
   OnSeekComplete(result);
   if (result != byte_range_.first_byte_position()) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
+                                      ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
 
@@ -295,8 +289,7 @@ void URLRequestFileJob::DidSeek(int64 result) {
 }
 
 void URLRequestFileJob::DidRead(scoped_refptr<IOBuffer> buf, int result) {
-  if (result > 0) {
-    SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
+  if (result >= 0) {
     remaining_bytes_ -= result;
     DCHECK_GE(remaining_bytes_, 0);
   }
@@ -304,13 +297,7 @@ void URLRequestFileJob::DidRead(scoped_refptr<IOBuffer> buf, int result) {
   OnReadComplete(buf.get(), result);
   buf = NULL;
 
-  if (result == 0) {
-    NotifyDone(URLRequestStatus());
-  } else if (result < 0) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
-  }
-
-  NotifyReadComplete(result);
+  ReadRawDataComplete(result);
 }
 
 }  // namespace net

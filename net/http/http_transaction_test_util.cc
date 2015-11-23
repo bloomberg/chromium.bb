@@ -244,6 +244,7 @@ MockNetworkTransaction::MockNetworkTransaction(RequestPriority priority,
       received_bytes_(0),
       sent_bytes_(0),
       socket_log_id_(NetLog::Source::kInvalidId),
+      done_reading_called_(false),
       weak_factory_(this) {}
 
 MockNetworkTransaction::~MockNetworkTransaction() {}
@@ -301,6 +302,7 @@ bool MockNetworkTransaction::IsReadyToRestartForAuth() {
 int MockNetworkTransaction::Read(IOBuffer* buf,
                                  int buf_len,
                                  const CompletionCallback& callback) {
+  CHECK(!done_reading_called_);
   int data_len = static_cast<int>(data_.size());
   int num = std::min(buf_len, data_len - data_cursor_);
   if (test_mode_ & TEST_MODE_SLOW_READ)
@@ -335,6 +337,8 @@ int64_t MockNetworkTransaction::GetTotalSentBytes() const {
 }
 
 void MockNetworkTransaction::DoneReading() {
+  CHECK(!done_reading_called_);
+  done_reading_called_ = true;
   if (transaction_factory_.get())
     transaction_factory_->TransactionDoneReading();
 }
@@ -506,6 +510,7 @@ MockNetworkLayer::MockNetworkLayer()
 MockNetworkLayer::~MockNetworkLayer() {}
 
 void MockNetworkLayer::TransactionDoneReading() {
+  CHECK(!done_reading_called_);
   done_reading_called_ = true;
 }
 
