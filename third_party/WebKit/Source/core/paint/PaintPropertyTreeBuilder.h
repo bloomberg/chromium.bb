@@ -8,7 +8,7 @@
 namespace blink {
 
 class FrameView;
-class LayoutBoxModelObject;
+class LayoutObject;
 struct PaintPropertyTreeBuilderContext;
 
 // This class walks the whole layout tree, beginning from the root FrameView, across
@@ -23,7 +23,7 @@ public:
 private:
 
     void walk(FrameView&, const PaintPropertyTreeBuilderContext&);
-    void walk(LayoutBoxModelObject&, const PaintPropertyTreeBuilderContext&);
+    void walk(LayoutObject&, const PaintPropertyTreeBuilderContext&);
 };
 
 } // namespace blink

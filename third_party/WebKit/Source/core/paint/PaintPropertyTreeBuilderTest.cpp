@@ -192,7 +192,7 @@ TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
         "    <div id='grandChildWithoutOpacity'>"
         "      <div id='greatGrandChildWithOpacity' style='opacity: 0.2'/>"
         "    </div>"
-        "  </div"
+        "  </div>"
         "</div>");
 
     LayoutObject& nodeWithoutOpacity = *document().getElementById("nodeWithoutOpacity")->layoutObject();
@@ -220,7 +220,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes)
         "<div id='nodeWithOpacity' style='opacity: 0.6'>"
         "  <div id='childWithTransform' style='transform: translate3d(10px, 10px, 0px);'>"
         "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
-        "  </div"
+        "  </div>"
         "</div>");
 
     LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
@@ -247,7 +247,7 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
         "<div id='nodeWithOpacity' style='opacity: 0.6'>"
         "  <div id='childWithStackingContext' style='position:absolute;'>"
         "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
-        "  </div"
+        "  </div>"
         "</div>");
 
     LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
@@ -264,6 +264,209 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
     EXPECT_EQ(0.4f, grandChildWithOpacityProperties->effect()->opacity());
     EXPECT_EQ(nodeWithOpacityProperties->effect(), grandChildWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, grandChildWithOpacityProperties->transform());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, EffectNodesInSVG)
+{
+    setBodyInnerHTML(
+        "<svg id='svgRoot'>"
+        "  <g id='groupWithOpacity' opacity='0.6'>"
+        "    <rect id='rectWithoutOpacity' />"
+        "    <rect id='rectWithOpacity' opacity='0.4' />"
+        "    <text id='textWithOpacity' opacity='0.2'>"
+        "      <tspan id='tspanWithOpacity' opacity='0.1' />"
+        "    </text>"
+        "  </g>"
+        "</svg>");
+
+    LayoutObject& groupWithOpacity = *document().getElementById("groupWithOpacity")->layoutObject();
+    ObjectPaintProperties* groupWithOpacityProperties = groupWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.6f, groupWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nullptr, groupWithOpacityProperties->effect()->parent());
+
+    LayoutObject& rectWithoutOpacity = *document().getElementById("rectWithoutOpacity")->layoutObject();
+    ObjectPaintProperties* rectWithoutOpacityProperties = rectWithoutOpacity.objectPaintProperties();
+    EXPECT_EQ(nullptr, rectWithoutOpacityProperties);
+
+    LayoutObject& rectWithOpacity = *document().getElementById("rectWithOpacity")->layoutObject();
+    ObjectPaintProperties* rectWithOpacityProperties = rectWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.4f, rectWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(groupWithOpacityProperties->effect(), rectWithOpacityProperties->effect()->parent());
+
+    // Ensure that opacity nodes are created for LayoutSVGText which inherits from LayoutSVGBlock instead of LayoutSVGModelObject.
+    LayoutObject& textWithOpacity = *document().getElementById("textWithOpacity")->layoutObject();
+    ObjectPaintProperties* textWithOpacityProperties = textWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.2f, textWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(groupWithOpacityProperties->effect(), textWithOpacityProperties->effect()->parent());
+
+    // Ensure that opacity nodes are created for LayoutSVGTSpan which inherits from LayoutSVGInline instead of LayoutSVGModelObject.
+    LayoutObject& tspanWithOpacity = *document().getElementById("tspanWithOpacity")->layoutObject();
+    ObjectPaintProperties* tspanWithOpacityProperties = tspanWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.1f, tspanWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(textWithOpacityProperties->effect(), tspanWithOpacityProperties->effect()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary)
+{
+    setBodyInnerHTML(
+        "<div id='divWithOpacity' style='opacity: 0.2;'>"
+        "  <svg id='svgRootWithOpacity' style='opacity: 0.3;'>"
+        "    <rect id='rectWithOpacity' opacity='0.4' />"
+        "  </svg>"
+        "</div>");
+
+    LayoutObject& divWithOpacity = *document().getElementById("divWithOpacity")->layoutObject();
+    ObjectPaintProperties* divWithOpacityProperties = divWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.2f, divWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nullptr, divWithOpacityProperties->effect()->parent());
+
+    LayoutObject& svgRootWithOpacity = *document().getElementById("svgRootWithOpacity")->layoutObject();
+    ObjectPaintProperties* svgRootWithOpacityProperties = svgRootWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.3f, svgRootWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(divWithOpacityProperties->effect(), svgRootWithOpacityProperties->effect()->parent());
+
+    LayoutObject& rectWithOpacity = *document().getElementById("rectWithOpacity")->layoutObject();
+    ObjectPaintProperties* rectWithOpacityProperties = rectWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.4f, rectWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(svgRootWithOpacityProperties->effect(), rectWithOpacityProperties->effect()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary)
+{
+    setBodyInnerHTML(
+        "<svg id='svgRootWithOpacity' style='opacity: 0.3;'>"
+        "  <foreignObject id='foreignObjectWithOpacity' opacity='0.4'>"
+        "    <body>"
+        "      <span id='spanWithOpacity' style='opacity: 0.5'/>"
+        "    </body>"
+        "  </foreignObject>"
+        "</svg>");
+
+    LayoutObject& svgRootWithOpacity = *document().getElementById("svgRootWithOpacity")->layoutObject();
+    ObjectPaintProperties* svgRootWithOpacityProperties = svgRootWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.3f, svgRootWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nullptr, svgRootWithOpacityProperties->effect()->parent());
+
+    LayoutObject& foreignObjectWithOpacity = *document().getElementById("foreignObjectWithOpacity")->layoutObject();
+    ObjectPaintProperties* foreignObjectWithOpacityProperties = foreignObjectWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.4f, foreignObjectWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(svgRootWithOpacityProperties->effect(), foreignObjectWithOpacityProperties->effect()->parent());
+
+    LayoutObject& spanWithOpacity = *document().getElementById("spanWithOpacity")->layoutObject();
+    ObjectPaintProperties* spanWithOpacityProperties = spanWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.5f, spanWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(foreignObjectWithOpacityProperties->effect(), spanWithOpacityProperties->effect()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TransformNodesInSVG)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0px;"
+        "  }"
+        "  svg {"
+        "    margin-left: 50px;"
+        "    transform: translate3d(1px, 2px, 3px);"
+        "    position: absolute;"
+        "    left: 20px;"
+        "    top: 25px;"
+        "  }"
+        "  rect {"
+        "    transform: translate(100px, 100px) rotate(45deg);"
+        "    transform-origin: 50px 25px;"
+        "  }"
+        "</style>"
+        "<svg id='svgRootWith3dTransform' width='100px' height='100px'>"
+        "  <rect id='rectWith2dTransform' width='100px' height='100px' />"
+        "</svg>");
+
+    LayoutObject& svgRootWith3dTransform = *document().getElementById("svgRootWith3dTransform")->layoutObject();
+    ObjectPaintProperties* svgRootWith3dTransformProperties = svgRootWith3dTransform.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), svgRootWith3dTransformProperties->transform()->matrix());
+    EXPECT_EQ(FloatPoint3D(50, 50, 0), svgRootWith3dTransformProperties->transform()->origin());
+    EXPECT_EQ(svgRootWith3dTransformProperties->paintOffsetTranslation(), svgRootWith3dTransformProperties->transform()->parent());
+    EXPECT_EQ(TransformationMatrix().translate(70, 25), svgRootWith3dTransformProperties->paintOffsetTranslation()->matrix());
+    EXPECT_EQ(document().view()->scrollTranslation(), svgRootWith3dTransformProperties->paintOffsetTranslation()->parent());
+
+    LayoutObject& rectWith2dTransform = *document().getElementById("rectWith2dTransform")->layoutObject();
+    ObjectPaintProperties* rectWith2dTransformProperties = rectWith2dTransform.objectPaintProperties();
+    TransformationMatrix matrix;
+    matrix.translate(100, 100);
+    matrix.rotate(45);
+    // SVG's transform origin is baked into the transform.
+    matrix.applyTransformOrigin(50, 25, 0);
+    EXPECT_EQ(matrix, rectWith2dTransformProperties->transform()->matrix());
+    EXPECT_EQ(FloatPoint3D(0, 0, 0), rectWith2dTransformProperties->transform()->origin());
+    // SVG does not use paint offset.
+    EXPECT_EQ(nullptr, rectWith2dTransformProperties->paintOffsetTranslation());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0px; } </style>"
+        "<svg id='svg' style='margin-left: 50px; margin-top: 25px; width: 100px; height: 100px;' />");
+
+    LayoutObject& svg = *document().getElementById("svg")->layoutObject();
+    ObjectPaintProperties* svgProperties = svg.objectPaintProperties();
+    // Ensure that a paint offset transform is emitted for SVG, even without a CSS transform.
+    EXPECT_EQ(nullptr, svgProperties->transform());
+    EXPECT_EQ(TransformationMatrix().translate(50, 25), svgProperties->paintOffsetTranslation()->matrix());
+    EXPECT_EQ(document().view()->scrollTranslation(), svgProperties->paintOffsetTranslation()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary)
+{
+    setBodyInnerHTML(
+        "<style> body { margin: 0px; } </style>"
+        "<svg id='svgWithTransform' style='transform: translate3d(1px, 2px, 3px);'>"
+        "  <foreignObject>"
+        "    <body>"
+        "      <div id='divWithTransform' style='transform: translate3d(3px, 4px, 5px);'></div>"
+        "    </body>"
+        "  </foreignObject>"
+        "</svg>");
+
+    LayoutObject& svgWithTransform = *document().getElementById("svgWithTransform")->layoutObject();
+    ObjectPaintProperties* svgWithTransformProperties = svgWithTransform.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), svgWithTransformProperties->transform()->matrix());
+
+    LayoutObject& divWithTransform = *document().getElementById("divWithTransform")->layoutObject();
+    ObjectPaintProperties* divWithTransformProperties = divWithTransform.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(3, 4, 5), divWithTransformProperties->transform()->matrix());
+    // Ensure the div's transform node is a child of the svg's transform node.
+    EXPECT_EQ(svgWithTransformProperties->transform(), divWithTransformProperties->transform()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, FixedTransformAncestorAcrossSVGHTMLBoundary)
+{
+    setBodyInnerHTML(
+        "<style> body { margin: 0px; } </style>"
+        "<svg id='svg' style='transform: translate3d(1px, 2px, 3px);'>"
+        "  <g id='container' transform='translate(20 30)'>"
+        "    <foreignObject>"
+        "      <body>"
+        "        <div id='fixed' style='position: fixed; left: 200px; top: 150px;'></div>"
+        "      </body>"
+        "    </foreignObject>"
+        "  </g>"
+        "</svg>");
+
+    LayoutObject& svg = *document().getElementById("svg")->layoutObject();
+    ObjectPaintProperties* svgProperties = svg.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), svgProperties->transform()->matrix());
+
+    LayoutObject& container = *document().getElementById("container")->layoutObject();
+    ObjectPaintProperties* containerProperties = container.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(20, 30), containerProperties->transform()->matrix());
+    EXPECT_EQ(svgProperties->transform(), containerProperties->transform()->parent());
+
+    Element* fixed = document().getElementById("fixed");
+    ObjectPaintProperties* fixedProperties = fixed->layoutObject()->objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(200, 150), fixedProperties->paintOffsetTranslation()->matrix());
+    // Ensure the fixed position element is rooted at the nearest transform container.
+    EXPECT_EQ(containerProperties->transform(), fixedProperties->paintOffsetTranslation()->parent());
 }
 
 } // namespace blink
