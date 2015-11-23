@@ -135,6 +135,7 @@ nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 		nvdev->gart_limit_percent = 80;
 	DRMINITLISTHEAD(&nvdev->bo_list);
 	nvdev->base.object.oclass = NOUVEAU_DEVICE_CLASS;
+	nvdev->base.object.length = ~0;
 	nvdev->base.lib_version = 0x01000000;
 	nvdev->base.chipset = chipset;
 	nvdev->base.vram_size = vram;
@@ -251,8 +252,8 @@ nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 		   uint32_t oclass, void *data, uint32_t length,
 		   struct nouveau_object **pobj)
 {
-	struct nouveau_device *dev;
 	struct nouveau_object *obj;
+	int (*func)(struct nouveau_object *);
 	int ret = -EINVAL;
 
 	if (length == 0)
@@ -267,37 +268,9 @@ nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 		memcpy(obj->data, data, length);
 	*(struct nouveau_object **)obj->data = obj;
 
-	dev = nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
-	switch (parent->oclass) {
-	case NOUVEAU_DEVICE_CLASS:
-		switch (obj->oclass) {
-		case NOUVEAU_FIFO_CHANNEL_CLASS:
-		{
-			if (dev->chipset < 0xc0)
-				ret = abi16_chan_nv04(obj);
-			else
-			if (dev->chipset < 0xe0)
-				ret = abi16_chan_nvc0(obj);
-			else
-				ret = abi16_chan_nve0(obj);
-		}
-			break;
-		default:
-			break;
-		}
-		break;
-	case NOUVEAU_FIFO_CHANNEL_CLASS:
-		switch (obj->oclass) {
-		case NOUVEAU_NOTIFIER_CLASS:
-			ret = abi16_ntfy(obj);
-			break;
-		default:
-			ret = abi16_engobj(obj);
-			break;
-		}
-	default:
-		break;
-	}
+	abi16_object(obj, &func);
+	if (func)
+		ret = func(obj);
 
 	if (ret) {
 		free(obj);
@@ -312,24 +285,11 @@ void
 nouveau_object_del(struct nouveau_object **pobj)
 {
 	struct nouveau_object *obj = *pobj;
-	struct nouveau_device *dev;
 	if (obj) {
-		dev = nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
-		if (obj->oclass == NOUVEAU_FIFO_CHANNEL_CLASS) {
-			struct drm_nouveau_channel_free req;
-			req.channel = obj->handle;
-			drmCommandWrite(dev->fd, DRM_NOUVEAU_CHANNEL_FREE,
-					&req, sizeof(req));
-		} else {
-			struct drm_nouveau_gpuobj_free req;
-			req.channel = obj->parent->handle;
-			req.handle  = obj->handle;
-			drmCommandWrite(dev->fd, DRM_NOUVEAU_GPUOBJ_FREE,
-					&req, sizeof(req));
-		}
+		abi16_delete(obj);
+		free(obj);
+		*pobj = NULL;
 	}
-	free(obj);
-	*pobj = NULL;
 }
 
 void *
