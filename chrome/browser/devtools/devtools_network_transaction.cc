@@ -150,8 +150,10 @@ int DevToolsNetworkTransaction::Start(
     return net::ERR_INTERNET_DISCONNECTED;
   }
 
-  if (interceptor_)
-    interceptor_->AddThrottable(this);
+  if (!interceptor_)
+    return network_transaction_->Start(request_, callback, net_log);
+
+  interceptor_->AddThrottable(this);
   int rv = network_transaction_->Start(request_, proxy_callback_, net_log);
   return SetupCallback(callback, rv, START);
 }
@@ -175,6 +177,8 @@ int DevToolsNetworkTransaction::RestartIgnoringLastError(
     const net::CompletionCallback& callback) {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
+  if (!interceptor_)
+    return network_transaction_->RestartIgnoringLastError(callback);
   int rv = network_transaction_->RestartIgnoringLastError(proxy_callback_);
   return SetupCallback(callback, rv, RESTART_IGNORING_LAST_ERROR);
 }
@@ -185,6 +189,10 @@ int DevToolsNetworkTransaction::RestartWithCertificate(
     const net::CompletionCallback& callback) {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
+  if (!interceptor_) {
+    return network_transaction_->RestartWithCertificate(
+        client_cert, client_private_key, callback);
+  }
   int rv = network_transaction_->RestartWithCertificate(
       client_cert, client_private_key, proxy_callback_);
   return SetupCallback(callback, rv, RESTART_WITH_CERTIFICATE);
@@ -195,6 +203,8 @@ int DevToolsNetworkTransaction::RestartWithAuth(
     const net::CompletionCallback& callback) {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
+  if (!interceptor_)
+    return network_transaction_->RestartWithAuth(credentials, callback);
   int rv = network_transaction_->RestartWithAuth(credentials, proxy_callback_);
   return SetupCallback(callback, rv, RESTART_WITH_AUTH);
 }
@@ -209,6 +219,8 @@ int DevToolsNetworkTransaction::Read(
     const net::CompletionCallback& callback) {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
+  if (!interceptor_)
+    return network_transaction_->Read(buf, buf_len, callback);
   int rv = network_transaction_->Read(buf, buf_len, proxy_callback_);
   return SetupCallback(callback, rv, READ);
 }
@@ -284,6 +296,8 @@ void DevToolsNetworkTransaction::SetBeforeProxyHeadersSentCallback(
 int DevToolsNetworkTransaction::ResumeNetworkStart() {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
+  if (!interceptor_)
+    return network_transaction_->ResumeNetworkStart();
   return network_transaction_->ResumeNetworkStart();
 }
 
