@@ -333,6 +333,7 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
 void HttpNetworkSession::GetNpnProtos(NextProtoVector* npn_protos) const {
   if (HttpStreamFactory::spdy_enabled() && params_.enable_npn) {
     *npn_protos = next_protos_;
+    DisableHTTP2(npn_protos);
   } else {
     npn_protos->clear();
   }
