@@ -89,12 +89,12 @@ class PowerSaveBlockerImpl::Delegate
   // Apply or remove the power save block, respectively. These methods should be
   // called once each, on the same thread, per instance. They block waiting for
   // the action to complete (with a timeout); the thread must thus allow I/O.
-  void ApplyBlock(DBusAPI api);
-  void RemoveBlock(DBusAPI api);
+  void ApplyBlock();
+  void RemoveBlock();
 
   // Asynchronous callback functions for ApplyBlock and RemoveBlock.
   // Functions do not receive ownership of |response|.
-  void ApplyBlockFinished(DBusAPI api, dbus::Response* response);
+  void ApplyBlockFinished(dbus::Response* response);
   void RemoveBlockFinished(dbus::Response* response);
 
   // If DPMS (the power saving system in X11) is not enabled, then we don't want
@@ -132,7 +132,7 @@ class PowerSaveBlockerImpl::Delegate
 
   // The cookie that identifies our inhibit request,
   // or 0 if there is no active inhibit request.
-  uint32 inhibit_cookie_;
+  uint32_t inhibit_cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -168,7 +168,7 @@ void PowerSaveBlockerImpl::Delegate::CleanUp() {
     enqueue_apply_ = false;
   } else if (api_ != NO_API) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&Delegate::RemoveBlock, this, api_));
+                            base::Bind(&Delegate::RemoveBlock, this));
   }
 }
 
@@ -181,12 +181,12 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
     // library, so we need to use the same thread above for RemoveBlock(). It
     // must be a thread that allows I/O operations, so we use the FILE thread.
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&Delegate::ApplyBlock, this, api_));
+                            base::Bind(&Delegate::ApplyBlock, this));
   }
   enqueue_apply_ = false;
 }
 
-void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
+void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!bus_);  // ApplyBlock() should only be called once.
   DCHECK(!block_inflight_);
@@ -200,7 +200,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
   scoped_ptr<dbus::MethodCall> method_call;
   scoped_ptr<dbus::MessageWriter> message_writer;
 
-  switch (api) {
+  switch (api_) {
     case NO_API:
       NOTREACHED();  // We should never call this method with this value.
       return;
@@ -221,7 +221,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       message_writer->AppendUint32(0);  // should be toplevel_xid
       message_writer->AppendString(description_);
       {
-        uint32 flags = 0;
+        uint32_t flags = 0;
         switch (type_) {
           case kPowerSaveBlockPreventDisplaySleep:
             flags |= INHIBIT_MARK_SESSION_IDLE;
@@ -253,12 +253,10 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
   block_inflight_ = true;
   object_proxy->CallMethod(
       method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&PowerSaveBlockerImpl::Delegate::ApplyBlockFinished, this,
-                 api));
+      base::Bind(&PowerSaveBlockerImpl::Delegate::ApplyBlockFinished, this));
 }
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
-    DBusAPI api,
     dbus::Response* response) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_);
@@ -281,11 +279,11 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
     // RemoveBlock() was called while the Inhibit operation was in flight,
     // so go ahead and remove the block now.
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&Delegate::RemoveBlock, this, api_));
+                            base::Bind(&Delegate::RemoveBlock, this));
   }
 }
 
-void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
+void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_);  // RemoveBlock() should only be called once.
   DCHECK(!unblock_inflight_);
@@ -301,7 +299,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
   scoped_refptr<dbus::ObjectProxy> object_proxy;
   scoped_ptr<dbus::MethodCall> method_call;
 
-  switch (api) {
+  switch (api_) {
     case NO_API:
       NOTREACHED();  // We should never call this method with this value.
       return;
@@ -342,11 +340,12 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
   inhibit_cookie_ = 0;
 
   bus_->ShutdownAndBlock();
-  bus_ = NULL;
+  bus_ = nullptr;
 }
 
 // static
 bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   XDisplay* display = gfx::GetXDisplay();
   BOOL enabled = false;
   int dummy;
@@ -359,6 +358,7 @@ bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
 
 // static
 DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
