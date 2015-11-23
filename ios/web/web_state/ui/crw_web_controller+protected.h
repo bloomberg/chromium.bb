@@ -410,6 +410,9 @@ struct NewWindowInfo {
 // Resets pending external request information.
 - (void)resetExternalRequest;
 
+// Converts MIME type string to WebViewDocumentType.
+- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WEB_CONTROLLER_PROTECTED_H_

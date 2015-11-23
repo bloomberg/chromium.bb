@@ -3858,4 +3858,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _externalRequest.reset();
 }
 
+- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType {
+  if (!MIMEType.length) {
+    return web::WEB_VIEW_DOCUMENT_TYPE_UNKNOWN;
+  }
+
+  if ([MIMEType isEqualToString:@"text/html"] ||
+      [MIMEType isEqualToString:@"application/xhtml+xml"] ||
+      [MIMEType isEqualToString:@"application/xml"]) {
+    return web::WEB_VIEW_DOCUMENT_TYPE_HTML;
+  }
+
+  return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
+}
+
 @end
