@@ -1053,6 +1053,7 @@
                 'installer/mac/dirpatcher.sh',
                 'installer/mac/dmgdiffer.sh',
                 'installer/mac/pkg-dmg',
+                'installer/mac/sign_installer_tools.sh',
               ],
               'conditions': [
                 ['mac_keystone==1', {
