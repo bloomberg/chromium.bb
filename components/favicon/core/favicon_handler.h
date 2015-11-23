@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "ui/gfx/favicon_size.h"
@@ -78,29 +79,14 @@ class TestFaviconHandler;
 
 class FaviconHandler {
  public:
-  enum Type {
-    // Selects the icon URL of type favicon_base::FAVICON with bitmaps whose
-    // edge sizes most closely match "16 * favicon_base::GetFaviconScales()".
-    // When favicon_base::GetFaviconScales() returns multiple scales, the ideal
-    // match is a .ico file.
-    FAVICON,
-
-    // Selects the icon URL of type favicon_base::FAVICON with the largest
-    // bitmap.
-    LARGEST_FAVICON,
-
-    // Selects the icon URL of type favicon_base::TOUCH_ICON or
-    // favicon_base::TOUCH_PRECOMPOSED_ICON with the largest bitmap.
-    LARGEST_TOUCH
-  };
-
   FaviconHandler(FaviconService* service,
                  FaviconDriver* driver,
-                 Type handler_type);
+                 FaviconDriverObserver::NotificationIconType handler_type);
   virtual ~FaviconHandler();
 
   // Returns the bit mask of favicon_base::IconType based on the handler's type.
-  static int GetIconTypesFromHandlerType(Type icon_type);
+  static int GetIconTypesFromHandlerType(
+      FaviconDriverObserver::NotificationIconType handler_type);
 
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
@@ -234,14 +220,17 @@ class FaviconHandler {
                   const gfx::Image& image,
                   favicon_base::IconType icon_type);
 
-  // Notifies |driver_| favicon available. See
-  // FaviconDriver::NotifyFaviconAvailable() for |is_active_favicon| in detail.
-  void NotifyFaviconAvailable(
+  // Notifies |driver_| that FaviconHandler found an icon which matches the
+  // |handler_type_| criteria. NotifyFaviconUpdated() can be called multiple
+  // times for the same page if:
+  // - a better match is found for |handler_type_| (e.g. newer bitmap data)
+  // - Javascript changes the page's icon URLs.
+  void NotifyFaviconUpdated(
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
-  void NotifyFaviconAvailable(const GURL& icon_url,
-                              favicon_base::IconType icon_type,
-                              const gfx::Image& image);
+  void NotifyFaviconUpdated(const GURL& icon_url,
+                            favicon_base::IconType icon_type,
+                            const gfx::Image& image);
 
   // Return the current candidate if any.
   favicon::FaviconURL* current_candidate() {
@@ -258,6 +247,8 @@ class FaviconHandler {
 
   // Used for FaviconService requests.
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+  FaviconDriverObserver::NotificationIconType handler_type_;
 
   // URL of the page we're requesting the favicon for.
   GURL url_;

@@ -35,10 +35,12 @@ class WebFaviconDriver : public web::WebStateObserver,
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  void SetActiveFaviconValidity(bool valid) override;
-  GURL GetActiveFaviconURL() override;
-  void SetActiveFaviconURL(const GURL& url) override;
-  void SetActiveFaviconImage(const gfx::Image& image) override;
+  void OnFaviconUpdated(
+      const GURL& page_url,
+      FaviconDriverObserver::NotificationIconType notification_icon_type,
+      const GURL& icon_url,
+      bool icon_url_changed,
+      const gfx::Image& image) override;
 
  private:
   friend class web::WebStateUserData<WebFaviconDriver>;
@@ -52,9 +54,6 @@ class WebFaviconDriver : public web::WebStateObserver,
   // web::WebStateObserver implementation.
   void FaviconUrlUpdated(
       const std::vector<web::FaviconURL>& candidates) override;
-
-  // Returns the active navigation entry's favicon.
-  web::FaviconStatus& GetFaviconStatus();
 
   // The URL passed to FetchFavicon().
   GURL fetch_favicon_url_;

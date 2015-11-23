@@ -47,10 +47,6 @@ class ContentFaviconDriver
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  void SetActiveFaviconValidity(bool valid) override;
-  GURL GetActiveFaviconURL() override;
-  void SetActiveFaviconURL(const GURL& url) override;
-  void SetActiveFaviconImage(const gfx::Image& image) override;
 
  protected:
   ContentFaviconDriver(content::WebContents* web_contents,
@@ -63,7 +59,12 @@ class ContentFaviconDriver
   friend class content::WebContentsUserData<ContentFaviconDriver>;
 
   // FaviconDriver implementation.
-  void NotifyFaviconUpdated(bool icon_url_changed) override;
+  void OnFaviconUpdated(
+      const GURL& page_url,
+      FaviconDriverObserver::NotificationIconType icon_type,
+      const GURL& icon_url,
+      bool icon_url_changed,
+      const gfx::Image& image) override;
 
   // content::WebContentsObserver implementation.
   void DidUpdateFaviconURL(
@@ -74,9 +75,6 @@ class ContentFaviconDriver
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-
-  // Returns the active navigation entry's favicon.
-  content::FaviconStatus& GetFaviconStatus();
 
   GURL bypass_cache_page_url_;
   std::vector<content::FaviconURL> favicon_urls_;

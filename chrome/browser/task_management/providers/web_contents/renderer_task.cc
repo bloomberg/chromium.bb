@@ -146,12 +146,13 @@ blink::WebCache::ResourceTypeStats RendererTask::GetWebCacheStats() const {
   return webcache_stats_;
 }
 
-void RendererTask::OnFaviconAvailable(const gfx::Image& image) {
-}
-
 void RendererTask::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                                    bool icon_url_changed) {
-  UpdateFavicon();
+                                    NotificationIconType notification_icon_type,
+                                    const GURL& icon_url,
+                                    bool icon_url_changed,
+                                    const gfx::Image& image) {
+  if (notification_icon_type == NON_TOUCH_16_DIP)
+    UpdateFavicon();
 }
 
 // static

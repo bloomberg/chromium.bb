@@ -4,8 +4,6 @@
 
 #include "components/favicon/core/favicon_driver.h"
 
-#include "components/favicon/core/favicon_driver_observer.h"
-
 namespace favicon {
 
 void FaviconDriver::AddObserver(FaviconDriverObserver* observer) {
@@ -22,14 +20,14 @@ FaviconDriver::FaviconDriver() {
 FaviconDriver::~FaviconDriver() {
 }
 
-void FaviconDriver::NotifyFaviconAvailable(const gfx::Image& image) {
+void FaviconDriver::NotifyFaviconUpdatedObservers(
+    FaviconDriverObserver::NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
   FOR_EACH_OBSERVER(FaviconDriverObserver, observer_list_,
-                    OnFaviconAvailable(image));
-}
-
-void FaviconDriver::NotifyFaviconUpdated(bool icon_url_changed) {
-  FOR_EACH_OBSERVER(FaviconDriverObserver, observer_list_,
-                    OnFaviconUpdated(this, icon_url_changed));
+                    OnFaviconUpdated(this, notification_icon_type, icon_url,
+                                     icon_url_changed, image));
 }
 
 }  // namespace favicon

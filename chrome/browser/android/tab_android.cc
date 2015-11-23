@@ -388,7 +388,16 @@ void TabAndroid::Observe(int type,
   }
 }
 
-void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
+void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                                  NotificationIconType notification_icon_type,
+                                  const GURL& icon_url,
+                                  bool icon_url_changed,
+                                  const gfx::Image& image) {
+  if (notification_icon_type != NON_TOUCH_LARGEST &&
+      notification_icon_type != TOUCH_LARGEST) {
+    return;
+  }
+
   SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
   if (favicon.empty())
     return;
@@ -396,10 +405,6 @@ void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(),
                               gfx::ConvertToJavaBitmap(&favicon).obj());
-}
-
-void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                                  bool icon_url_changed) {
 }
 
 void TabAndroid::Destroy(JNIEnv* env, jobject obj) {

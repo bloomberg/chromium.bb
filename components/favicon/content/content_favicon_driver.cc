@@ -113,27 +113,6 @@ GURL ContentFaviconDriver::GetActiveURL() {
   return entry ? entry->GetURL() : GURL();
 }
 
-void ContentFaviconDriver::SetActiveFaviconValidity(bool valid) {
-  GetFaviconStatus().valid = valid;
-}
-
-GURL ContentFaviconDriver::GetActiveFaviconURL() {
-  return GetFaviconStatus().url;
-}
-
-void ContentFaviconDriver::SetActiveFaviconURL(const GURL& url) {
-  GetFaviconStatus().url = url;
-}
-
-void ContentFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {
-  GetFaviconStatus().image = image;
-}
-
-content::FaviconStatus& ContentFaviconDriver::GetFaviconStatus() {
-  DCHECK(web_contents()->GetController().GetLastCommittedEntry());
-  return web_contents()->GetController().GetLastCommittedEntry()->GetFavicon();
-}
-
 ContentFaviconDriver::ContentFaviconDriver(
     content::WebContents* web_contents,
     FaviconService* favicon_service,
@@ -146,9 +125,25 @@ ContentFaviconDriver::ContentFaviconDriver(
 ContentFaviconDriver::~ContentFaviconDriver() {
 }
 
-void ContentFaviconDriver::NotifyFaviconUpdated(bool icon_url_changed) {
-  FaviconDriverImpl::NotifyFaviconUpdated(icon_url_changed);
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+void ContentFaviconDriver::OnFaviconUpdated(
+    const GURL& page_url,
+    FaviconDriverObserver::NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  DCHECK(entry && entry->GetURL() == page_url);
+
+  if (notification_icon_type == FaviconDriverObserver::NON_TOUCH_16_DIP) {
+    entry->GetFavicon().valid = true;
+    entry->GetFavicon().url = icon_url;
+    entry->GetFavicon().image = image;
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  }
+
+  NotifyFaviconUpdatedObservers(notification_icon_type, icon_url,
+                                icon_url_changed, image);
 }
 
 void ContentFaviconDriver::DidUpdateFaviconURL(

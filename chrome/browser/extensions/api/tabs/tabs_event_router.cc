@@ -546,12 +546,13 @@ void TabsEventRouter::OnZoomChanged(
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
-void TabsEventRouter::OnFaviconAvailable(const gfx::Image& image) {
-}
-
-void TabsEventRouter::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                                       bool icon_url_changed) {
-  if (icon_url_changed) {
+void TabsEventRouter::OnFaviconUpdated(
+    favicon::FaviconDriver* favicon_driver,
+    NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  if (notification_icon_type == NON_TOUCH_16_DIP && icon_url_changed) {
     favicon::ContentFaviconDriver* content_favicon_driver =
         static_cast<favicon::ContentFaviconDriver*>(favicon_driver);
     FaviconUrlUpdated(content_favicon_driver->web_contents());

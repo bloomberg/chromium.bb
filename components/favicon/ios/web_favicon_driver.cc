@@ -72,25 +72,23 @@ GURL WebFaviconDriver::GetActiveURL() {
   return item ? item->GetURL() : GURL();
 }
 
-void WebFaviconDriver::SetActiveFaviconValidity(bool validity) {
-  GetFaviconStatus().valid = validity;
-}
+void WebFaviconDriver::OnFaviconUpdated(
+    const GURL& page_url,
+    FaviconDriverObserver::NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  // Check whether the active URL has changed since FetchFavicon() was called.
+  // On iOS, the active URL can change between calls to FetchFavicon(). For
+  // instance, FetchFavicon() is not synchronously called when the active URL
+  // changes as a result of CRWSessionController::goToEntry().
+  web::NavigationItem* item =
+      web_state()->GetNavigationManager()->GetVisibleItem();
+  if (!item || item->GetURL() != page_url)
+    return;
 
-GURL WebFaviconDriver::GetActiveFaviconURL() {
-  return GetFaviconStatus().url;
-}
-
-void WebFaviconDriver::SetActiveFaviconURL(const GURL& url) {
-  GetFaviconStatus().url = url;
-}
-
-void WebFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {
-  GetFaviconStatus().image = image;
-}
-
-web::FaviconStatus& WebFaviconDriver::GetFaviconStatus() {
-  DCHECK(web_state()->GetNavigationManager()->GetVisibleItem());
-  return web_state()->GetNavigationManager()->GetVisibleItem()->GetFavicon();
+  NotifyFaviconUpdatedObservers(notification_icon_type, icon_url,
+                                icon_url_changed, image);
 }
 
 WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,

@@ -48,11 +48,12 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
       history_service_(history_service),
       bookmark_model_(bookmark_model) {
   favicon_handler_.reset(new FaviconHandler(
-      favicon_service_, this, kEnableTouchIcon ? FaviconHandler::LARGEST_FAVICON
-                                               : FaviconHandler::FAVICON));
+      favicon_service_, this, kEnableTouchIcon
+                                  ? FaviconDriverObserver::NON_TOUCH_LARGEST
+                                  : FaviconDriverObserver::NON_TOUCH_16_DIP));
   if (kEnableTouchIcon || IsIconNTPEnabled()) {
     touch_icon_handler_.reset(new FaviconHandler(
-        favicon_service_, this, FaviconHandler::LARGEST_TOUCH));
+        favicon_service_, this, FaviconDriverObserver::TOUCH_LARGEST));
   }
 }
 
@@ -87,33 +88,6 @@ void FaviconDriverImpl::DidDownloadFavicon(
 
 bool FaviconDriverImpl::IsBookmarked(const GURL& url) {
   return bookmark_model_ && bookmark_model_->IsBookmarked(url);
-}
-
-void FaviconDriverImpl::OnFaviconAvailable(const GURL& page_url,
-                                           const GURL& icon_url,
-                                           const gfx::Image& image,
-                                           bool is_active_favicon) {
-  // Check whether the active URL has changed since FetchFavicon() was called.
-  // On iOS only, the active URL can change between calls to FetchFavicon().
-  // For instance, FetchFavicon() is not synchronously called when the active
-  // URL changes as a result of CRWSessionController::goToEntry().
-  if (page_url != GetActiveURL())
-    return;
-
-  if (is_active_favicon) {
-    bool icon_url_changed = GetActiveFaviconURL() != icon_url;
-    // No matter what happens, we need to mark the favicon as being set.
-    SetActiveFaviconValidity(true);
-    SetActiveFaviconURL(icon_url);
-
-    if (image.IsEmpty())
-      return;
-
-    SetActiveFaviconImage(image);
-    NotifyFaviconUpdated(icon_url_changed);
-  }
-  if (!image.IsEmpty())
-    NotifyFaviconAvailable(image);
 }
 
 bool FaviconDriverImpl::HasPendingTasksForTest() {

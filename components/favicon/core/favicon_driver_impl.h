@@ -53,10 +53,6 @@ class FaviconDriverImpl : public FaviconDriver {
   // FaviconDriver implementation.
   void FetchFavicon(const GURL& url) override;
   bool IsBookmarked(const GURL& url) override;
-  void OnFaviconAvailable(const GURL& page_url,
-                          const GURL& icon_url,
-                          const gfx::Image& image,
-                          bool is_active_favicon) override;
   bool HasPendingTasksForTest() override;
 
  protected:

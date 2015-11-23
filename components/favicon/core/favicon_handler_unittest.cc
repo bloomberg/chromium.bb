@@ -186,10 +186,7 @@ class HistoryRequestHandler {
 class TestFaviconDriver : public FaviconDriver {
  public:
   TestFaviconDriver()
-      : favicon_validity_(false),
-        num_active_favicon_(0),
-        num_favicon_available_(0),
-        update_active_favicon_(false) {}
+      : num_notifications_(0u) {}
 
   ~TestFaviconDriver() override {}
 
@@ -227,70 +224,34 @@ class TestFaviconDriver : public FaviconDriver {
 
   bool IsBookmarked(const GURL& url) override { return false; }
 
-  GURL GetActiveURL() override { return url_; }
-
-  bool GetActiveFaviconValidity() { return favicon_validity_; }
-
-  void SetActiveFaviconValidity(bool favicon_validity) override {
-    favicon_validity_ = favicon_validity;
+  GURL GetActiveURL() override {
+    ADD_FAILURE() << "TestFaviconDriver::GetActiveURL() "
+                  << "should never be called in tests.";
+    return GURL();
   }
 
-  GURL GetActiveFaviconURL() override { return favicon_url_; }
-
-  void SetActiveFaviconURL(const GURL& favicon_url) override {
-    favicon_url_ = favicon_url;
-  }
-
-  gfx::Image GetActiveFaviconImage() { return image_; }
-
-  void SetActiveFaviconImage(const gfx::Image& image) override {
+  void OnFaviconUpdated(
+      const GURL& page_url,
+      FaviconDriverObserver::NotificationIconType notification_icon_type,
+      const GURL& icon_url,
+      bool icon_url_changed,
+      const gfx::Image& image) override {
+    ++num_notifications_;
+    icon_url_ = icon_url;
     image_ = image;
   }
 
-  void OnFaviconAvailable(const GURL& page_url,
-                          const GURL& icon_url,
-                          const gfx::Image& image,
-                          bool update_active_favicon) override {
-    ++num_favicon_available_;
-    available_image_ = image;
-    available_icon_url_ = icon_url;
-    update_active_favicon_ = update_active_favicon;
-    if (!update_active_favicon)
-      return;
+  const GURL& icon_url() const { return icon_url_; }
 
-    ++num_active_favicon_;
-    SetActiveFaviconURL(icon_url);
-    SetActiveFaviconValidity(true);
-    SetActiveFaviconImage(image);
-  }
+  const gfx::Image& image() const { return image_; }
 
-  size_t num_active_favicon() const { return num_active_favicon_; }
-  size_t num_favicon_available() const { return num_favicon_available_; }
-  void ResetNumActiveFavicon() { num_active_favicon_ = 0; }
-  void ResetNumFaviconAvailable() { num_favicon_available_ = 0; }
-
-  void SetActiveURL(GURL url) { url_ = url; }
-
-  const gfx::Image& available_favicon() { return available_image_; }
-
-  const GURL& available_icon_url() { return available_icon_url_; }
-
-  bool update_active_favicon() { return update_active_favicon_; }
+  size_t num_notifications() const { return num_notifications_; }
+  void ResetNumNotifications() { num_notifications_ = 0; }
 
  private:
-  GURL favicon_url_;
-  GURL url_;
+  GURL icon_url_;
   gfx::Image image_;
-  bool favicon_validity_;
-
-  // The number of times that NotifyFaviconAvailable() has been called with
-  // |is_active_favicon| is true.
-  size_t num_active_favicon_;
-  // The number of times that NotifyFaviconAvailable() has been called.
-  size_t num_favicon_available_;
-  gfx::Image available_image_;
-  GURL available_icon_url_;
-  bool update_active_favicon_;
+  size_t num_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFaviconDriver);
 };
@@ -304,12 +265,10 @@ class TestFaviconHandler : public FaviconHandler {
     return FaviconHandler::GetMaximalIconSize(icon_type);
   }
 
-  TestFaviconHandler(const GURL& page_url,
-                     TestFaviconDriver* driver,
-                     Type type)
-      : FaviconHandler(nullptr, driver, type),
+  TestFaviconHandler(TestFaviconDriver* driver,
+                     FaviconDriverObserver::NotificationIconType handler_type)
+      : FaviconHandler(nullptr, driver, handler_type),
         download_id_(0) {
-    driver->SetActiveURL(page_url);
     download_handler_.reset(new DownloadHandler(this));
   }
 
@@ -469,6 +428,8 @@ class FaviconHandlerTest : public testing::Test {
       const GURL& page_url,
       const std::vector<FaviconURL>& candidate_icons,
       const int* candidate_icon_sizes) {
+    size_t old_num_notifications = favicon_driver->num_notifications();
+
     UpdateFaviconURL(
         favicon_driver, favicon_handler, page_url, candidate_icons);
     EXPECT_EQ(candidate_icons.size(), favicon_handler->image_urls().size());
@@ -487,7 +448,7 @@ class FaviconHandlerTest : public testing::Test {
 
       download_handler->Reset();
 
-      if (favicon_driver->num_active_favicon())
+      if (favicon_driver->num_notifications() > old_num_notifications)
         return;
     }
   }
@@ -496,7 +457,7 @@ class FaviconHandlerTest : public testing::Test {
                         TestFaviconHandler* favicon_handler,
                         const GURL& page_url,
                         const std::vector<FaviconURL>& candidate_icons) {
-    favicon_driver->ResetNumActiveFavicon();
+    favicon_driver->ResetNumNotifications();
 
     favicon_handler->FetchFavicon(page_url);
     favicon_handler->history_handler()->InvokeCallback();
@@ -528,7 +489,7 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -543,8 +504,8 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
 
   // Simulates update favicon url.
   std::vector<FaviconURL> urls;
@@ -567,7 +528,7 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -585,8 +546,8 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
 
   // Simulates update favicon url.
   std::vector<FaviconURL> urls;
@@ -622,10 +583,10 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 
   // Verify NavigationEntry.
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
-  EXPECT_EQ(gfx::kFaviconSize, driver.GetActiveFaviconImage().Width());
+  EXPECT_EQ(2u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
+  EXPECT_FALSE(driver.image().IsEmpty());
+  EXPECT_EQ(gfx::kFaviconSize, driver.image().Width());
 }
 
 TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
@@ -634,7 +595,7 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -650,8 +611,8 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -702,10 +663,10 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 
   // Verify NavigationEntry.
-  EXPECT_EQ(new_icon_url, driver.GetActiveFaviconURL());
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
-  EXPECT_EQ(gfx::kFaviconSize, driver.GetActiveFaviconImage().Width());
+  EXPECT_EQ(2u, driver.num_notifications());
+  EXPECT_EQ(new_icon_url, driver.icon_url());
+  EXPECT_FALSE(driver.image().IsEmpty());
+  EXPECT_EQ(gfx::kFaviconSize, driver.image().Width());
 }
 
 TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
@@ -713,7 +674,7 @@ TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -737,8 +698,8 @@ TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
   // Send history response.
   history_handler->InvokeCallback();
   // The NavigationEntry should not be set yet as the history data is invalid.
-  EXPECT_FALSE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(GURL(), driver.GetActiveFaviconURL());
+  EXPECT_EQ(0u, driver.num_notifications());
+  EXPECT_EQ(GURL(), driver.icon_url());
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -771,10 +732,10 @@ TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 
   // Verify NavigationEntry.
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
-  EXPECT_EQ(gfx::kFaviconSize, driver.GetActiveFaviconImage().Width());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
+  EXPECT_FALSE(driver.image().IsEmpty());
+  EXPECT_EQ(gfx::kFaviconSize, driver.image().Width());
 }
 
 TEST_F(FaviconHandlerTest, UpdateFavicon) {
@@ -783,7 +744,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -798,8 +759,8 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(icon_url, driver.GetActiveFaviconURL());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_EQ(icon_url, driver.icon_url());
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -832,9 +793,9 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   EXPECT_FALSE(helper.download_handler()->HasDownload());
 
   // Verify the favicon status.
-  EXPECT_EQ(new_icon_url, driver.GetActiveFaviconURL());
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
+  EXPECT_EQ(2u, driver.num_notifications());
+  EXPECT_EQ(new_icon_url, driver.icon_url());
+  EXPECT_FALSE(driver.image().IsEmpty());
 }
 
 TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
@@ -843,7 +804,7 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::LARGEST_TOUCH);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::TOUCH_LARGEST);
   std::set<GURL> fail_downloads;
   fail_downloads.insert(icon_url);
   helper.download_handler()->FailDownloadForIconURLs(fail_downloads);
@@ -862,8 +823,8 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_FALSE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(GURL(), driver.GetActiveFaviconURL());
+  EXPECT_EQ(0u, driver.num_notifications());
+  EXPECT_EQ(GURL(), driver.icon_url());
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -958,7 +919,7 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::LARGEST_TOUCH);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::TOUCH_LARGEST);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -974,8 +935,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_FALSE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(GURL(), driver.GetActiveFaviconURL());
+  EXPECT_EQ(0u, driver.num_notifications());
+  EXPECT_EQ(GURL(), driver.icon_url());
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -1080,7 +1041,7 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLs) {
                                     std::vector<gfx::Size>()));
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(page_url, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   // Initiate a request for favicon data for |page_url|. History does not know
   // about the page URL or the icon URLs.
@@ -1126,7 +1087,7 @@ TEST_F(FaviconHandlerTest,
   const GURL kIconURL2("http://wwww.page_which_animates_favicon.com/frame2.png");
 
   TestFaviconDriver driver;
-  TestFaviconHandler helper(kPageURL, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   // Initial state:
   // - The database does not know about |kPageURL|.
@@ -1147,13 +1108,9 @@ TEST_F(FaviconHandlerTest,
 
   // FaviconHandler should request from history and download |kIconURL1| and
   // |kIconURL2|. |kIconURL1| is the better match. A
-  // FaviconDriver::OnFaviconAvailable() notification should be sent for
+  // FaviconDriver::OnFaviconUpdated() notification should be sent for
   // |kIconURL1|.
-
-  // Clear the favicon validity so that we can use it to detect whether
-  // OnFaviconAvailable() is invoked.
-  driver.SetActiveFaviconValidity(false);
-
+  ASSERT_EQ(0u, driver.num_notifications());
   ASSERT_TRUE(helper.history_handler());
   SetFaviconRawBitmapResult(kIconURL1,
                             favicon_base::FAVICON,
@@ -1179,8 +1136,8 @@ TEST_F(FaviconHandlerTest,
   helper.download_handler()->InvokeCallback();
   helper.download_handler()->Reset();
 
-  ASSERT_TRUE(driver.GetActiveFaviconValidity());
-  ASSERT_EQ(kIconURL1, driver.GetActiveFaviconURL());
+  ASSERT_LT(0u, driver.num_notifications());
+  ASSERT_EQ(kIconURL1, driver.icon_url());
 
   // Clear the history handler because SetHistoryFavicons() sets it.
   helper.set_history_handler(nullptr);
@@ -1193,10 +1150,9 @@ TEST_F(FaviconHandlerTest,
                                              std::vector<gfx::Size>())));
 
   // FaviconHandler should request from history and download |kIconURL2|. A
-  // FaviconDriver::OnFaviconAvailable() notification should be sent for
+  // FaviconDriver::OnFaviconUpdated() notification should be sent for
   // |kIconURL2|.
-  driver.SetActiveFaviconValidity(false);
-
+  driver.ResetNumNotifications();
   ASSERT_TRUE(helper.history_handler());
   SetFaviconRawBitmapResult(kIconURL2,
                             favicon_base::FAVICON,
@@ -1207,8 +1163,8 @@ TEST_F(FaviconHandlerTest,
   ASSERT_TRUE(helper.download_handler()->HasDownload());
   helper.download_handler()->InvokeCallback();
   helper.download_handler()->Reset();
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_EQ(kIconURL2, driver.GetActiveFaviconURL());
+  ASSERT_LT(0u, driver.num_notifications());
+  EXPECT_EQ(kIconURL2, driver.icon_url());
 }
 
 // Test the favicon which is selected when the web page provides several
@@ -1244,7 +1200,8 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // 1) Test that if there are several single resolution favicons to choose from
   // that the largest exact match is chosen.
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1, FaviconHandler::FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   const int kSizes1[] = { 16, 24, 32, 48, 256 };
   std::vector<FaviconURL> urls1(kSourceIconURLs,
@@ -1253,60 +1210,59 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
       &driver1, &handler1, kPageURL, urls1, kSizes1);
 
   EXPECT_EQ(nullptr, handler1.current_candidate());
-  EXPECT_TRUE(driver1.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver1.GetActiveFaviconImage().IsEmpty());
-  EXPECT_EQ(gfx::kFaviconSize, driver1.GetActiveFaviconImage().Width());
+  EXPECT_EQ(1u, driver1.num_notifications());
+  EXPECT_FALSE(driver1.image().IsEmpty());
+  EXPECT_EQ(gfx::kFaviconSize, driver1.image().Width());
 
   size_t expected_index = 2u;
   EXPECT_EQ(32, kSizes1[expected_index]);
-  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url,
-            driver1.GetActiveFaviconURL());
+  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url, driver1.icon_url());
 
   // 2) Test that if there are several single resolution favicons to choose
   // from, the exact match is preferred even if it results in upsampling.
   TestFaviconDriver driver2;
-  TestFaviconHandler handler2(kPageURL, &driver2, FaviconHandler::FAVICON);
+  TestFaviconHandler handler2(&driver2,
+                              FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   const int kSizes2[] = { 16, 24, 48, 256 };
   std::vector<FaviconURL> urls2(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes2));
   DownloadTillDoneIgnoringHistory(
       &driver2, &handler2, kPageURL, urls2, kSizes2);
-  EXPECT_TRUE(driver2.GetActiveFaviconValidity());
+  EXPECT_EQ(1u, driver2.num_notifications());
   expected_index = 0u;
   EXPECT_EQ(16, kSizes2[expected_index]);
-  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url,
-            driver2.GetActiveFaviconURL());
+  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url, driver2.icon_url());
 
   // 3) Test that favicons which need to be upsampled a little or downsampled
   // a little are preferred over huge favicons.
   TestFaviconDriver driver3;
-  TestFaviconHandler handler3(kPageURL, &driver3, FaviconHandler::FAVICON);
+  TestFaviconHandler handler3(&driver3,
+                              FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   const int kSizes3[] = { 256, 48 };
   std::vector<FaviconURL> urls3(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes3));
   DownloadTillDoneIgnoringHistory(
       &driver3, &handler3, kPageURL, urls3, kSizes3);
-  EXPECT_TRUE(driver3.GetActiveFaviconValidity());
+  EXPECT_EQ(1u, driver3.num_notifications());
   expected_index = 1u;
   EXPECT_EQ(48, kSizes3[expected_index]);
-  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url,
-            driver3.GetActiveFaviconURL());
+  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url, driver3.icon_url());
 
   TestFaviconDriver driver4;
-  TestFaviconHandler handler4(kPageURL, &driver4, FaviconHandler::FAVICON);
+  TestFaviconHandler handler4(&driver4,
+                              FaviconDriverObserver::NON_TOUCH_16_DIP);
 
   const int kSizes4[] = { 17, 256 };
   std::vector<FaviconURL> urls4(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes4));
   DownloadTillDoneIgnoringHistory(
       &driver4, &handler4, kPageURL, urls4, kSizes4);
-  EXPECT_TRUE(driver4.GetActiveFaviconValidity());
+  EXPECT_EQ(1u, driver4.num_notifications());
   expected_index = 0u;
   EXPECT_EQ(17, kSizes4[expected_index]);
-  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url,
-            driver4.GetActiveFaviconURL());
+  EXPECT_EQ(kSourceIconURLs[expected_index].icon_url, driver4.icon_url());
 }
 
 // Test that the best favicon is selected when:
@@ -1329,7 +1285,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons404) {
   };
 
   TestFaviconDriver driver;
-  TestFaviconHandler handler(kPageURL, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler handler(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
   DownloadHandler* download_handler = handler.download_handler();
 
   std::set<GURL> k404URLs;
@@ -1353,12 +1309,11 @@ TEST_F(FaviconHandlerTest, MultipleFavicons404) {
       &driver, &handler, kPageURL, urls2, kSizes2);
 
   EXPECT_EQ(nullptr, handler.current_candidate());
-  EXPECT_TRUE(driver.GetActiveFaviconValidity());
-  EXPECT_FALSE(driver.GetActiveFaviconImage().IsEmpty());
+  EXPECT_EQ(1u, driver.num_notifications());
+  EXPECT_FALSE(driver.image().IsEmpty());
   int expected_index = 2u;
   EXPECT_EQ(16, kSizes2[expected_index]);
-  EXPECT_EQ(kFaviconURLs[expected_index].icon_url,
-            driver.GetActiveFaviconURL());
+  EXPECT_EQ(kFaviconURLs[expected_index].icon_url, driver.icon_url());
 }
 
 // Test that no favicon is selected when:
@@ -1379,7 +1334,7 @@ TEST_F(FaviconHandlerTest, MultipleFaviconsAll404) {
   };
 
   TestFaviconDriver driver;
-  TestFaviconHandler handler(kPageURL, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler handler(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
   DownloadHandler* download_handler = handler.download_handler();
 
   std::set<GURL> k404URLs;
@@ -1405,8 +1360,8 @@ TEST_F(FaviconHandlerTest, MultipleFaviconsAll404) {
   DownloadTillDoneIgnoringHistory(&driver, &handler, kPageURL, urls, kSizes);
 
   EXPECT_EQ(nullptr, handler.current_candidate());
-  EXPECT_FALSE(driver.GetActiveFaviconValidity());
-  EXPECT_TRUE(driver.GetActiveFaviconImage().IsEmpty());
+  EXPECT_EQ(0u, driver.num_notifications());
+  EXPECT_TRUE(driver.image().IsEmpty());
 }
 
 // Test that no favicon is selected when the page's only icon uses an invalid
@@ -1420,7 +1375,7 @@ TEST_F(FaviconHandlerTest, FaviconInvalidURL) {
                          std::vector<gfx::Size>());
 
   TestFaviconDriver driver;
-  TestFaviconHandler handler(kPageURL, &driver, FaviconHandler::FAVICON);
+  TestFaviconHandler handler(&driver, FaviconDriverObserver::NON_TOUCH_16_DIP);
   UpdateFaviconURL(&driver, &handler, kPageURL,
                    std::vector<FaviconURL>(1u, favicon_url));
   EXPECT_EQ(0u, handler.image_urls().size());
@@ -1452,8 +1407,8 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
                  std::vector<gfx::Size>())};
 
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_LARGEST);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
@@ -1515,8 +1470,8 @@ TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
                  std::vector<gfx::Size>())};
 
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_LARGEST);
 
   std::set<GURL> fail_icon_urls;
   for (size_t i = 0; i < arraysize(kSourceIconURLs); ++i) {
@@ -1583,8 +1538,8 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
           GURL("http://www.google.com/c"), favicon_base::FAVICON, two_icons)};
 
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_LARGEST);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
@@ -1626,10 +1581,9 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
   EXPECT_EQ(kSourceIconURLs[i].icon_sizes[b],
             handler1.history_handler()->size_);
   // Verify NotifyFaviconAvailable().
-  EXPECT_FALSE(driver1.update_active_favicon());
-  EXPECT_EQ(kSourceIconURLs[i].icon_url, driver1.available_icon_url());
-  EXPECT_EQ(kSourceIconURLs[i].icon_sizes[b],
-            driver1.available_favicon().Size());
+  EXPECT_EQ(1u, driver1.num_notifications());
+  EXPECT_EQ(kSourceIconURLs[i].icon_url, driver1.icon_url());
+  EXPECT_EQ(kSourceIconURLs[i].icon_sizes[b], driver1.image().Size());
 }
 
 TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
@@ -1650,8 +1604,8 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
           GURL("http://www.google.com/c"), favicon_base::FAVICON, icon2)};
 
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_LARGEST);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
@@ -1711,8 +1665,8 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
                  std::vector<gfx::Size>())};
 
   TestFaviconDriver driver1;
-  TestFaviconHandler handler1(kPageURL, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
+  TestFaviconHandler handler1(&driver1,
+                              FaviconDriverObserver::NON_TOUCH_LARGEST);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&driver1, &handler1, kPageURL, urls1);
@@ -1761,87 +1715,6 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
   EXPECT_EQ(gfx::Size(actual_size2, actual_size2),
             handler1.history_handler()->size_);
 }
-
-class FaviconHandlerActiveFaviconValidityParamTest :
-      public FaviconHandlerTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  FaviconHandlerActiveFaviconValidityParamTest() {}
-
-  ~FaviconHandlerActiveFaviconValidityParamTest() override {}
-
-  bool GetActiveFaviconValiditySetting() {
-    return GetParam();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FaviconHandlerActiveFaviconValidityParamTest);
-};
-
-TEST_P(FaviconHandlerActiveFaviconValidityParamTest,
-       TestDownloadLargestIconDoesNotImpactActiveFaviconValidity) {
-  const GURL page_url("http://www.google.com");
-
-  std::vector<gfx::Size> one_icon;
-  one_icon.push_back(gfx::Size(15, 15));
-
-  const GURL old_favicon_url("http://www.google.com/old");
-  const GURL new_favicon_url("http://www.google.com/b");
-  const FaviconURL source_icon_urls[] = {
-      FaviconURL(new_favicon_url, favicon_base::FAVICON, one_icon)};
-  TestFaviconDriver driver1;
-  TestFaviconHandler handler1(page_url, &driver1,
-                              FaviconHandler::LARGEST_FAVICON);
-  std::vector<FaviconURL> urls1(source_icon_urls,
-                                source_icon_urls + arraysize(source_icon_urls));
-  UpdateFaviconURL(&driver1, &handler1, page_url, urls1);
-
-  HistoryRequestHandler* history_handler = handler1.history_handler();
-
-  // Simulate the active favicon is updated, this shouldn't happen in real
-  // use case, but we want to verify the behavior below is not impacted by
-  // accident.
-  driver1.SetActiveFaviconValidity(GetActiveFaviconValiditySetting());
-  // Simulate the get favicon from history, but favicon URL didn't match.
-  SetFaviconRawBitmapResult(old_favicon_url,
-                            &history_handler->history_results_);
-  history_handler->InvokeCallback();
-  // Since we downloaded largest icon, and don't want to set active favicon
-  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
-  EXPECT_EQ(old_favicon_url, driver1.available_icon_url());
-  EXPECT_FALSE(driver1.update_active_favicon());
-  EXPECT_EQ(1u, driver1.num_favicon_available());
-
-  // We are trying to get favicon from history again.
-  history_handler = handler1.history_handler();
-  EXPECT_EQ(new_favicon_url, history_handler->icon_url_);
-  // Simulate the get expired favicon from history.
-  history_handler->history_results_.clear();
-  SetFaviconRawBitmapResult(new_favicon_url, favicon_base::FAVICON, true,
-                            &history_handler->history_results_);
-  history_handler->InvokeCallback();
-  // Since we downloaded largest icon, and don't want to set active favicon
-  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
-  EXPECT_EQ(new_favicon_url, driver1.available_icon_url());
-  EXPECT_FALSE(driver1.update_active_favicon());
-  EXPECT_EQ(2u, driver1.num_favicon_available());
-
-  // We are trying to download favicon.
-  DownloadHandler* download_handler = handler1.download_handler();
-  EXPECT_TRUE(download_handler->HasDownload());
-  EXPECT_EQ(new_favicon_url, download_handler->GetImageUrl());
-  // Simulate the download succeed.
-  download_handler->InvokeCallback();
-  // Since we downloaded largest icon, and don't want to set active favicon
-  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
-  EXPECT_EQ(new_favicon_url, driver1.available_icon_url());
-  EXPECT_FALSE(driver1.update_active_favicon());
-  EXPECT_EQ(3u, driver1.num_favicon_available());
-}
-
-INSTANTIATE_TEST_CASE_P(FaviconHandlerTestActiveFaviconValidityTrueOrFalse,
-                        FaviconHandlerActiveFaviconValidityParamTest,
-                        ::testing::Bool());
 
 }  // namespace
 }  // namespace favicon

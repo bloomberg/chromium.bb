@@ -81,9 +81,11 @@ class TabsEventRouter : public TabStripModelObserver,
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // favicon::FaviconDriverObserver:
-  void OnFaviconAvailable(const gfx::Image& image) override;
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                        bool icon_url_changed) override;
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override;
 
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.

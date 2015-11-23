@@ -15,6 +15,8 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -72,7 +74,7 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
   }
 
   void WaitForFaviconWithURL(const GURL& url) {
-    if (driver_->GetActiveFaviconURL() == url) {
+    if (GetCurrentFaviconURL() == url) {
       driver_->RemoveObserver(this);
       return;
     }
@@ -84,11 +86,20 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
   }
 
  private:
-  void OnFaviconAvailable(const gfx::Image& image) override {}
+  GURL GetCurrentFaviconURL() {
+    const content::NavigationController& controller =
+        driver_->web_contents()->GetController();
+    content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+    return entry ? entry->GetFavicon().url : GURL();
+  }
 
-  void OnFaviconUpdated(favicon::FaviconDriver* driver,
-                        bool icon_url_changed) override {
-    if (driver_->GetActiveFaviconURL() == target_favicon_url_) {
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override {
+    if (notification_icon_type == NON_TOUCH_16_DIP &&
+        icon_url == target_favicon_url_) {
       driver_->RemoveObserver(this);
 
       if (!quit_closure_.is_null())

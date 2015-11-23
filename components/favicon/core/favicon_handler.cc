@@ -210,15 +210,18 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-FaviconHandler::FaviconHandler(FaviconService* service,
-                               FaviconDriver* driver,
-                               Type handler_type)
-    : got_favicon_from_history_(false),
+FaviconHandler::FaviconHandler(
+    FaviconService* service,
+    FaviconDriver* driver,
+    FaviconDriverObserver::NotificationIconType handler_type)
+    : handler_type_(handler_type),
+      got_favicon_from_history_(false),
       initial_history_result_expired_or_incomplete_(false),
       redownload_icons_(false),
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
-      download_largest_icon_(handler_type == LARGEST_FAVICON ||
-                             handler_type == LARGEST_TOUCH),
+      download_largest_icon_(
+          handler_type == FaviconDriverObserver::NON_TOUCH_LARGEST ||
+          handler_type == FaviconDriverObserver::TOUCH_LARGEST),
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       driver_(driver),
@@ -231,12 +234,12 @@ FaviconHandler::~FaviconHandler() {
 
 // static
 int FaviconHandler::GetIconTypesFromHandlerType(
-    FaviconHandler::Type handler_type) {
+    FaviconDriverObserver::NotificationIconType handler_type) {
   switch (handler_type) {
-    case FAVICON:
-    case LARGEST_FAVICON:
+    case FaviconDriverObserver::NON_TOUCH_16_DIP:
+    case FaviconDriverObserver::NON_TOUCH_LARGEST:
       return favicon_base::FAVICON;
-    case LARGEST_TOUCH:
+    case FaviconDriverObserver::TOUCH_LARGEST:
       return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON;
   }
   return 0;
@@ -320,10 +323,10 @@ void FaviconHandler::SetFavicon(const GURL& icon_url,
   if (ShouldSaveFavicon())
     SetHistoryFavicons(url_, icon_url, icon_type, image);
 
-  NotifyFaviconAvailable(icon_url, icon_type, image);
+  NotifyFaviconUpdated(icon_url, icon_type, image);
 }
 
-void FaviconHandler::NotifyFaviconAvailable(
+void FaviconHandler::NotifyFaviconUpdated(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   if (favicon_bitmap_results.empty())
@@ -338,19 +341,21 @@ void FaviconHandler::NotifyFaviconAvailable(
   // from.
   const GURL icon_url = favicon_bitmap_results[0].icon_url;
   favicon_base::IconType icon_type = favicon_bitmap_results[0].icon_type;
-  NotifyFaviconAvailable(icon_url, icon_type, resized_image);
+  NotifyFaviconUpdated(icon_url, icon_type, resized_image);
 }
 
-void FaviconHandler::NotifyFaviconAvailable(const GURL& icon_url,
-                                            favicon_base::IconType icon_type,
-                                            const gfx::Image& image) {
+void FaviconHandler::NotifyFaviconUpdated(const GURL& icon_url,
+                                          favicon_base::IconType icon_type,
+                                          const gfx::Image& image) {
+  if (image.IsEmpty())
+    return;
+
   gfx::Image image_with_adjusted_colorspace = image;
   favicon_base::SetFaviconColorSpace(&image_with_adjusted_colorspace);
 
-  bool is_active_favicon = !download_largest_icon_;
-
-  driver_->OnFaviconAvailable(
-      url_, icon_url, image_with_adjusted_colorspace, is_active_favicon);
+  driver_->OnFaviconUpdated(url_, handler_type_, icon_url,
+                            icon_url != notification_icon_url_,
+                            image_with_adjusted_colorspace);
 
   notification_icon_url_ = icon_url;
   notification_icon_type_ = icon_type;
@@ -589,8 +594,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     // doesn't have an icon. Set the favicon now, and if the favicon turns out
     // to be expired (or the wrong url) we'll fetch later on. This way the
     // user doesn't see a flash of the default favicon.
-
-    NotifyFaviconAvailable(favicon_bitmap_results);
+    NotifyFaviconUpdated(favicon_bitmap_results);
   }
 
   if (current_candidate())
@@ -640,7 +644,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
     // the observers even if the favicon is expired or incomplete (incorrect
     // size) because temporarily showing the user an expired favicon or
     // streched favicon is preferable to showing the user the default favicon.
-    NotifyFaviconAvailable(favicon_bitmap_results);
+    NotifyFaviconUpdated(favicon_bitmap_results);
   }
 
   if (!current_candidate() ||

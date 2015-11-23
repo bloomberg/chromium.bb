@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 
 class GURL;
 
@@ -16,8 +17,6 @@ class Image;
 }
 
 namespace favicon {
-
-class FaviconDriverObserver;
 
 // Interface that allows favicon core code to obtain information about the
 // current page. This is partially implemented by FaviconDriverImpl, and
@@ -61,27 +60,14 @@ class FaviconDriver {
   // otherwise.
   virtual GURL GetActiveURL() = 0;
 
-  // Sets whether the page's favicon is valid (if false, the default favicon is
-  // being used).
-  virtual void SetActiveFaviconValidity(bool valid) = 0;
-
-  // Returns the URL of the current page's favicon.
-  virtual GURL GetActiveFaviconURL() = 0;
-
-  // Sets the URL of the favicon's bitmap.
-  virtual void SetActiveFaviconURL(const GURL& url) = 0;
-
-  // Sets the bitmap of the current page's favicon.
-  virtual void SetActiveFaviconImage(const gfx::Image& image) = 0;
-
-  // Notifies the driver a favicon image is available. |image| is not
-  // necessarily 16x16. |icon_url| is the url the image is from. If
-  // |is_active_favicon| is true the image corresponds to the favicon
-  // (possibly empty) of the page.
-  virtual void OnFaviconAvailable(const GURL& page_url,
-                                  const GURL& icon_url,
-                                  const gfx::Image& image,
-                                  bool is_active_favicon) = 0;
+  // Notifies the driver that the favicon image has been updated.
+  // See comment for FaviconDriverObserver::OnFaviconUpdated() for more details.
+  virtual void OnFaviconUpdated(
+      const GURL& page_url,
+      FaviconDriverObserver::NotificationIconType notification_icon_type,
+      const GURL& icon_url,
+      bool icon_url_changed,
+      const gfx::Image& image) = 0;
 
   // Returns whether the driver is waiting for a download to complete or for
   // data from the FaviconService. Reserved for testing.
@@ -91,14 +77,13 @@ class FaviconDriver {
   FaviconDriver();
   virtual ~FaviconDriver();
 
-  // Informs FaviconDriverObservers that favicon |image| has been retrieved from
-  // either website or cached storage.
-  void NotifyFaviconAvailable(const gfx::Image& image);
+  // Notifies FaviconDriverObservers that the favicon image has been updated.
+  void NotifyFaviconUpdatedObservers(
+    FaviconDriverObserver::NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image);
 
-  // Informs FaviconDriverObservers that favicon has changed for the current
-  // page. |icon_url_changed| is true if the favicon URL has also changed since
-  // the last call.
-  virtual void NotifyFaviconUpdated(bool icon_url_changed);
 
  private:
   base::ObserverList<FaviconDriverObserver> observer_list_;
