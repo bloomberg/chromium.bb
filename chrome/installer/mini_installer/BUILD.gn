@@ -162,6 +162,10 @@ action("archive") {
 
     #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
   ]
+
+  if (enable_nacl) {
+    deps += [ "//ppapi/native_client:irt" ]
+  }
 }
 
 # TODO(GYP) bug 521052: This target needs to be checked to make sure its the
