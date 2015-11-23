@@ -617,8 +617,11 @@ bool MemoryDumpManager::MemoryDumpProviderInfo::operator<(
     const MemoryDumpProviderInfo& other) const {
   if (task_runner == other.task_runner)
     return dump_provider < other.dump_provider;
-  // Ensure that unbound providers (task_runner == nullptr) always run last.
-  return !(task_runner < other.task_runner);
+  // TODO(ssid): Ensure that unbound providers (task_runner == nullptr)
+  // always run last. Currently it runs first so that it doesn't cause
+  // regression in perf bots due to change in measurement time.
+  // crbug.com/555584.
+  return task_runner < other.task_runner;
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
