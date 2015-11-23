@@ -206,6 +206,7 @@ var testSocketListening = function() {
         setTimeout(function() {
           socket.getInfo(acceptedSocketId, function(info) {
             chrome.test.assertFalse(info.connected);
+            socket.destroy(socketId);
             chrome.test.succeed();
           });
         }, 500);
@@ -245,6 +246,46 @@ var testSocketListening = function() {
   }
 
   socket.create('tcp', {}, onServerSocketCreate);
+};
+
+// Tests creation of a TCP listening socket on a port that is already in use.
+var testSocketListenInUse = function() {
+  var tmpSocketId;
+
+  function onAccept(result) {
+    chrome.test.assertNoLastError();
+    chrome.test.assertEq(-2, result.resultCode);
+    socket.destroy(socketId);
+    socket.destroy(tmpSocketId);
+    chrome.test.succeed();
+  }
+
+  function onSecondSocketListen(result) {
+    chrome.test.assertLastError("Could not listen on the specified port.");
+    chrome.test.assertEq(-147, result);
+    // Calling accept on this socket should fail since it isn't listening.
+    socket.accept(tmpSocketId, onAccept);
+  }
+
+  function onSecondSocketCreate(socketInfo) {
+    chrome.test.assertNoLastError();
+    tmpSocketId = socketInfo.socketId;
+    socket.listen(tmpSocketId, address, port, onSecondSocketListen);
+  }
+
+  function onFirstSocketListen(result) {
+    chrome.test.assertNoLastError();
+    chrome.test.assertEq(0, result);
+    socket.create('tcp', {}, onSecondSocketCreate);
+  }
+
+  function onFirstSocketCreate(socketInfo) {
+    chrome.test.assertNoLastError();
+    socketId = socketInfo.socketId;
+    socket.listen(socketId, address, port, onFirstSocketListen);
+  }
+
+  socket.create('tcp', {}, onFirstSocketCreate);
 };
 
 var testPendingCallback = function() {
@@ -374,7 +415,10 @@ var onMessageReply = function(message) {
   console.log("Running tests, protocol " + protocol + ", echo server " +
               address + ":" + port);
   if (test_type == 'tcp_server') {
-    chrome.test.runTests([ testSocketListening ]);
+    chrome.test.runTests([
+        testSocketListening,
+        testSocketListenInUse
+    ]);
   } else if (test_type == 'multicast') {
     console.log("Running multicast tests");
     chrome.test.runTests([ testMulticast ]);

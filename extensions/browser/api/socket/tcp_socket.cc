@@ -196,8 +196,10 @@ int TCPSocket::Listen(const std::string& address,
   }
 
   int result = server_socket_->ListenWithAddressAndPort(address, port, backlog);
-  if (result)
+  if (result) {
+    server_socket_.reset();
     *error_msg = kSocketListenError;
+  }
   return result;
 }
 
