@@ -48,6 +48,7 @@ include_rules = [
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/signin/ios/browser",
+  "+components/ssl_config",
   "+components/suggestions",
   "+components/sync_driver",
   "+components/sync_sessions",
