@@ -82,8 +82,8 @@ public:
     FloatRect strokeBoundingRect(const StrokeData&) const;
 
     float length() const;
-    FloatPoint pointAtLength(float length, bool& ok) const;
-    bool pointAndNormalAtLength(float length, FloatPoint&, float&) const;
+    FloatPoint pointAtLength(float length) const;
+    void pointAndNormalAtLength(float length, FloatPoint&, float&) const;
 
     // Helper for computing a sequence of positions and normals (normal angles) on a path.
     // The best possible access pattern will be one where the |length| value is
@@ -96,7 +96,7 @@ public:
     public:
         explicit PositionCalculator(const Path&);
 
-        bool pointAndNormalAtLength(float length, FloatPoint&, float&);
+        void pointAndNormalAtLength(float length, FloatPoint&, float&);
 
     private:
         SkPath m_path;

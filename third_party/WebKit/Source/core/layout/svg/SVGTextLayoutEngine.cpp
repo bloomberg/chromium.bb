@@ -450,8 +450,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
                 break;
 
             FloatPoint point;
-            bool ok = m_textPathCalculator->pointAndNormalAtLength(textPathOffset, point, angle);
-            ASSERT_UNUSED(ok, ok);
+            m_textPathCalculator->pointAndNormalAtLength(textPathOffset, point, angle);
             x = point.x();
             y = point.y();
 

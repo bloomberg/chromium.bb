@@ -172,11 +172,11 @@ float Path::length() const
     return SkScalarToFloat(length);
 }
 
-FloatPoint Path::pointAtLength(float length, bool& ok) const
+FloatPoint Path::pointAtLength(float length) const
 {
     FloatPoint point;
     float normal;
-    ok = pointAndNormalAtLength(length, point, normal);
+    pointAndNormalAtLength(length, point, normal);
     return point;
 }
 
@@ -201,16 +201,15 @@ static bool calculatePointAndNormalOnPath(SkPathMeasure& measure, SkScalar lengt
     return false;
 }
 
-bool Path::pointAndNormalAtLength(float length, FloatPoint& point, float& normal) const
+void Path::pointAndNormalAtLength(float length, FloatPoint& point, float& normal) const
 {
     SkPathMeasure measure(m_path, false);
-
     if (calculatePointAndNormalOnPath(measure, WebCoreFloatToSkScalar(length), point, normal))
-        return true;
+        return;
 
+    SkPoint position = m_path.getPoint(0);
+    point = FloatPoint(SkScalarToFloat(position.fX), SkScalarToFloat(position.fY));
     normal = 0;
-    point = FloatPoint(0, 0);
-    return false;
 }
 
 Path::PositionCalculator::PositionCalculator(const Path& path)
@@ -220,7 +219,7 @@ Path::PositionCalculator::PositionCalculator(const Path& path)
 {
 }
 
-bool Path::PositionCalculator::pointAndNormalAtLength(float length, FloatPoint& point, float& normalAngle)
+void Path::PositionCalculator::pointAndNormalAtLength(float length, FloatPoint& point, float& normalAngle)
 {
     SkScalar skLength = WebCoreFloatToSkScalar(length);
     if (skLength >= 0) {
@@ -233,12 +232,13 @@ bool Path::PositionCalculator::pointAndNormalAtLength(float length, FloatPoint& 
         }
 
         if (calculatePointAndNormalOnPath(m_pathMeasure, skLength, point, normalAngle, &m_accumulatedLength))
-            return true;
+            return;
     }
 
+    SkPoint position = m_path.getPoint(0);
+    point = FloatPoint(SkScalarToFloat(position.fX), SkScalarToFloat(position.fY));
     normalAngle = 0;
-    point = FloatPoint(0, 0);
-    return false;
+    return;
 }
 
 void Path::clear()

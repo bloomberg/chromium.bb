@@ -1004,8 +1004,8 @@ void ComputedStyle::applyMotionPathTransform(float originX, float originY, Trans
 
     FloatPoint point;
     float angle;
-    if (!motionPath.path().pointAndNormalAtLength(computedDistance, point, angle))
-        return;
+    motionPath.path().pointAndNormalAtLength(computedDistance, point, angle);
+
     if (motionData.m_rotationType == MotionRotationFixed)
         angle = 0;
 

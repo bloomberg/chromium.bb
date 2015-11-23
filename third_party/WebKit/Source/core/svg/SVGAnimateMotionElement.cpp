@@ -253,15 +253,12 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
     float positionOnPath = m_animationPath.length() * percentage;
     FloatPoint position;
     float angle;
-    bool ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
-    if (!ok)
-        return;
+    m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
 
     // Handle accumulate="sum".
     if (isAccumulated() && repeatCount) {
-        FloatPoint positionAtEndOfDuration = m_animationPath.pointAtLength(m_animationPath.length(), ok);
-        if (ok)
-            position.move(positionAtEndOfDuration.x() * repeatCount, positionAtEndOfDuration.y() * repeatCount);
+        FloatPoint positionAtEndOfDuration = m_animationPath.pointAtLength(m_animationPath.length());
+        position.move(positionAtEndOfDuration.x() * repeatCount, positionAtEndOfDuration.y() * repeatCount);
     }
 
     transform->translate(position.x(), position.y());
