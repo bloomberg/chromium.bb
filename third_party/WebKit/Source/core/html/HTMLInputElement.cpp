@@ -1703,7 +1703,6 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
     m_maxLength = maxLength;
     if (oldMaxLength != maxLength)
         updateValueIfNeeded();
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(maxlengthAttr));
     setNeedsValidityCheck();
 }
 
@@ -1715,7 +1714,6 @@ void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value)
     if (minLength < 0)
         minLength = 0;
     m_minLength = minLength;
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(minlengthAttr));
     setNeedsValidityCheck();
 }
 

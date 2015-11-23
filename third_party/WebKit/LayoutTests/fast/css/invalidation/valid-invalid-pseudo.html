@@ -5,7 +5,9 @@ input { background-color: transparent }
 #inputValid:valid,
 #inputInvalid:invalid,
 #formValid:valid,
-#formInvalid:invalid {
+#formInvalid:invalid,
+#maxlengthInvalid:invalid,
+#minlengthInvalid:invalid {
     background-color: green
 }
 
@@ -38,6 +40,16 @@ input + div {
     <input type="text"></input>
     <input type="text"></input>
 </form>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<input id="maxlengthInvalid" type="text"></input>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<input id="minlengthInvalid" type="text"></input>
 <div>
     <div></div>
     <div></div>
@@ -77,4 +89,27 @@ if (window.internals)
     shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 shouldBe("getComputedStyle(formInvalid, '').backgroundColor", "green");
 
+// Make sure the value is user input, otherwise setting maxlength/minlength
+// won't cause a validation.
+if (window.eventSender) {
+    maxlengthInvalid.focus();
+    eventSender.keyDown("x");
+    eventSender.keyDown("x");
+    minlengthInvalid.focus();
+    eventSender.keyDown("x");
+}
+
+shouldBe("getComputedStyle(maxlengthInvalid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+maxlengthInvalid.setAttribute("maxlength", "1");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+shouldBe("getComputedStyle(maxlengthInvalid, '').backgroundColor", "green");
+
+shouldBe("getComputedStyle(minlengthInvalid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+minlengthInvalid.setAttribute("minlength", "2");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+shouldBe("getComputedStyle(minlengthInvalid, '').backgroundColor", "green");
 </script>
