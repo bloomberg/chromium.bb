@@ -79,14 +79,11 @@
             'fdatasync=fdatasync',
           ],
         }],
-        # SQLite wants to track malloc sizes.  On OSX it uses malloc_size(), on
-        # Windows _msize(), elsewhere it handles it manually by enlarging the
-        # malloc and injecting a field.  Enable malloc_usable_size() for Linux.
-        # NOTE(shess): Android does _not_ export malloc_usable_size().
+        # Pull in config.h on Linux.  This allows use of preprocessor macros
+        # which are not available to the build config.
         ['OS == "linux"', {
           'defines': [
-            'HAVE_MALLOC_H',
-            'HAVE_MALLOC_USABLE_SIZE',
+            '_HAVE_SQLITE_CONFIG_H',
           ],
         }],
         ['use_system_sqlite', {
@@ -136,6 +133,7 @@
           'product_name': 'chromium_sqlite3',
           'type': '<(component)',
           'sources': [
+            'amalgamation/config.h',
             'amalgamation/sqlite3.h',
             'amalgamation/sqlite3.c',
           ],
