@@ -202,7 +202,7 @@ def main():
   try:
     roll(
         os.getcwd(),
-        args.dep_path,
+        args.dep_path.rstrip('/').rstrip('\\'),
         args.roll_to,
         args.key,
         reviewers,
