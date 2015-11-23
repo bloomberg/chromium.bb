@@ -2605,8 +2605,28 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   form_structure->DetermineHeuristicTypes();
   autofill_manager_->AddSeenForm(form_structure);
 
+  // Similarly, a second form.
+  FormData form2;
+  form2.name = ASCIIToUTF16("MyForm");
+  form2.origin = GURL("http://myform.com/form.html");
+  form2.action = GURL("http://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form2.fields.push_back(field);
+
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form2.fields.push_back(field);
+
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  form2.fields.push_back(field);
+
+  TestFormStructure* form_structure2 = new TestFormStructure(form2);
+  form_structure2->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenForm(form_structure2);
+
   std::string xml = "<autofillqueryresponse>"
-                    "<field autofilltype=\"3\" />"  // This is tested below.
+                    "<field autofilltype=\"3\" />"  // First test form.
                     "<field autofilltype=\"0\" />"
                     "<field autofilltype=\"0\" />"
                     "<field autofilltype=\"0\" />"
@@ -2617,9 +2637,13 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
                     "<field autofilltype=\"3\" />"
                     "<field autofilltype=\"2\" />"
                     "<field autofilltype=\"61\"/>"
+                    "<field autofilltype=\"5\" />"  // Second form.
+                    "<field autofilltype=\"4\" />"
+                    "<field autofilltype=\"35\"/>"
                     "</autofillqueryresponse>";
   std::vector<std::string> signatures;
   signatures.push_back(form_structure->FormSignature());
+  signatures.push_back(form_structure2->FormSignature());
 
   base::HistogramTester histogram_tester;
   autofill_manager_->OnLoadedServerPredictions(xml, signatures);
@@ -2630,8 +2654,15 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
                                      AutofillMetrics::QUERY_RESPONSE_PARSED,
                                      1);
-  // We expect the server type to have been applied to the first field.
+  // We expect the server type to have been applied to the first field of the
+  // first form.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->Type().GetStorableType());
+
+  // We expect the server types to have been applied to the second form.
+  EXPECT_EQ(NAME_LAST, form_structure2->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_MIDDLE, form_structure2->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure2->field(2)->Type().GetStorableType());
 }
 
 // Test that OnLoadedServerPredictions does not call ParseQueryResponse if the

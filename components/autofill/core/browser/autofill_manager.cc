@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <limits>
 #include <map>
 #include <set>
@@ -745,16 +746,18 @@ void AutofillManager::OnLoadedServerPredictions(
     const std::vector<std::string>& form_signatures) {
   // We obtain the current valid FormStructures represented by
   // |form_signatures|. We invert both lists because most recent forms are at
-  // the end of the list.
+  // the end of the list (and reverse the resulting pointer vector).
   std::vector<FormStructure*> queried_forms;
   for (const std::string& signature : base::Reversed(form_signatures)) {
     for (FormStructure* cur_form : base::Reversed(form_structures_)) {
       if (cur_form->FormSignature() == signature) {
         queried_forms.push_back(cur_form);
-        continue;
+        break;
       }
     }
   }
+  std::reverse(queried_forms.begin(), queried_forms.end());
+
   // If there are no current forms corresponding to the queried signatures, drop
   // the query response.
   if (queried_forms.empty())
