@@ -10,6 +10,8 @@ option optimize_for = LITE_RUNTIME;
 
 message ControlMessage {
   enum Type {
+    UNKNOWN = 0;
+
     // Client <=> Server types.
     CREATE_TAB = 1;
     CLOSE_TAB = 2;

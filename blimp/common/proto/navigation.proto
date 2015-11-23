@@ -34,6 +34,8 @@ message NavigationStateChangeMessage {
 
 message NavigationMessage {
   enum Type {
+    UNKNOWN = 0;
+
     // Server => Client types.
     NAVIGATION_STATE_CHANGED = 1;
 

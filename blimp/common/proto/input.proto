@@ -27,6 +27,7 @@ message DragArgs {
 
 message InputMessage {
   enum Type {
+    UNKNOWN = 0;
     CLICK = 1;
     DRAG = 2;
   }
