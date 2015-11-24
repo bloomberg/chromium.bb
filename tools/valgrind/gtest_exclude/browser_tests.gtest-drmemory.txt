@@ -79,5 +79,14 @@ PDFExtensionTest.WhitespaceTitle
 # https://crbug.com/530729
 SiteDetailsBrowserTest.ManyCrossSiteIframes
 
+# https://crbug.com/534718
+CrSettingsBrowserTest.CrSettingsTest
+
 # https://crbug.com/550653
 CrashRecoveryBrowserTest.LoadInNewTab
+
+# https://crbug.com/561085
+DistillablePageUtilsBrowserTestAdaboost.TestDelegate
+
+# https://crbug.com/561088
+CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerSplitSectionsTest
