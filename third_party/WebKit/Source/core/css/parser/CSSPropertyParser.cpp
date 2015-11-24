@@ -45,10 +45,23 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList, const CSSPar
     m_range.consumeWhitespace();
 }
 
+static bool hasInvalidNumericValues(const CSSParserTokenRange& range)
+{
+    for (const CSSParserToken& token : range) {
+        CSSParserTokenType type = token.type();
+        if ((type == NumberToken || type == DimensionToken || type == PercentageToken)
+            && !CSSPropertyParser::isValidNumericValue(token.numericValue()))
+            return true;
+    }
+    return false;
+}
+
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
     const CSSParserTokenRange& range, const CSSParserContext& context,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::Type ruleType)
 {
+    if (hasInvalidNumericValues(range))
+        return false;
     int parsedPropertiesSize = parsedProperties.size();
 
     CSSParserValueList valueList(range);
@@ -75,6 +88,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parser.rollbackLastProperties(parsedProperties.size() - parsedPropertiesSize);
 
     return parseSuccess;
+}
+
+bool CSSPropertyParser::isValidNumericValue(double value)
+{
+    return std::isfinite(value)
+        && value >= -std::numeric_limits<float>::max()
+        && value <= std::numeric_limits<float>::max();
 }
 
 // Helper methods for consuming tokens starts here.

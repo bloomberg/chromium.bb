@@ -122,10 +122,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case DimensionToken:
-            if (!CSSPropertyParser::isValidNumericValue(token.numericValue())) {
-                destroyAndClear();
-                return;
-            }
             if (token.unitType() == CSSPrimitiveValue::UnitType::Unknown) {
                 // Unknown dimensions are handled as a list of two values
                 value.m_unit = CSSParserValue::DimensionList;
@@ -148,10 +144,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             // fallthrough
         case NumberToken:
         case PercentageToken:
-            if (!CSSPropertyParser::isValidNumericValue(token.numericValue())) {
-                destroyAndClear();
-                return;
-            }
             value.setFromNumber(token.numericValue(), token.unitType());
             value.isInt = (token.numericValueType() == IntegerValueType);
             break;

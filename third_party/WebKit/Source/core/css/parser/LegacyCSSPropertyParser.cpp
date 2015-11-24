@@ -1636,13 +1636,6 @@ bool CSSPropertyParser::isColorKeyword(CSSValueID id)
         || id == CSSValueMenu;
 }
 
-bool CSSPropertyParser::isValidNumericValue(double value)
-{
-    return std::isfinite(value)
-        && value >= -std::numeric_limits<float>::max()
-        && value <= std::numeric_limits<float>::max();
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
 {
     CSSValueID id = value->id;
