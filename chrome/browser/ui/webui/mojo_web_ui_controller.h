@@ -30,10 +30,6 @@ class MojoWebUIControllerBase : public content::WebUIController {
   // WebUIController overrides:
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
- protected:
-  // Invoke to register mapping between binding file and resource id (IDR_...).
-  void AddMojoResourcePath(const std::string& path, int resource_id);
-
  private:
   // Bindings files are registered here.
   content::WebUIDataSource* mojo_data_source_;

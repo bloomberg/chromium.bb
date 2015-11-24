@@ -24,31 +24,6 @@ WebUIDataSource* WebUIDataSource::Create(const std::string& source_name) {
 }
 
 // static
-WebUIDataSource* WebUIDataSource::AddMojoDataSource(
-    BrowserContext* browser_context) {
-  WebUIDataSource* mojo_source = Create("mojo");
-
-  static const struct {
-    const char* path;
-    int id;
-  } resources[] = {
-    { mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS },
-    { mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS },
-    { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
-    { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
-    { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
-    { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
-    { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
-    { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },
-  };
-  for (size_t i = 0; i < arraysize(resources); ++i)
-    mojo_source->AddResourcePath(resources[i].path, resources[i].id);
-
-  URLDataManager::AddWebUIDataSource(browser_context, mojo_source);
-  return mojo_source;
-}
-
-// static
 void WebUIDataSource::Add(BrowserContext* browser_context,
                           WebUIDataSource* source) {
   URLDataManager::AddWebUIDataSource(browser_context, source);
@@ -159,6 +134,24 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 void WebUIDataSourceImpl::SetRequestFilter(
     const WebUIDataSource::HandleRequestCallback& callback) {
   filter_callback_ = callback;
+}
+
+void WebUIDataSourceImpl::AddMojoResources() {
+  static const struct {
+    const char* path;
+    int id;
+  } resources[] = {
+      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
+      {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
+      {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
+      {mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS},
+      {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
+      {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
+      {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
+      {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
+  };
+  for (size_t i = 0; i < arraysize(resources); ++i)
+    AddResourcePath(resources[i].path, resources[i].id);
 }
 
 void WebUIDataSourceImpl::DisableReplaceExistingSource() {
