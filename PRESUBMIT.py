@@ -64,8 +64,8 @@ _TEST_ONLY_WARNING = (
 
 _INCLUDE_ORDER_WARNING = (
     'Your #include order seems to be broken. Remember to use the right '
-    'collation (LC_COLLATE=C) and check\nhttps://google-styleguide.googlecode'
-    '.com/svn/trunk/cppguide.html#Names_and_Order_of_Includes')
+    'collation (LC_COLLATE=C) and check\nhttps://google.github.io/styleguide/'
+    'cppguide.html#Names_and_Order_of_Includes')
 
 _BANNED_OBJC_FUNCTIONS = (
     (
