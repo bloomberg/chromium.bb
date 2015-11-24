@@ -7,8 +7,8 @@
 update.sh. This script should replace update.sh on all platforms eventually."""
 
 import argparse
-import contextlib
 import cStringIO
+import distutils.spawn
 import glob
 import os
 import pipes
@@ -18,6 +18,7 @@ import subprocess
 import stat
 import sys
 import tarfile
+import tempfile
 import time
 import urllib2
 import zipfile
@@ -91,6 +92,18 @@ def DownloadUrl(url, output_file):
     sys.stdout.flush()
     dots_printed = num_dots
   print ' Done.'
+
+
+def DownloadAndUnpack(url, output_dir):
+  with tempfile.TemporaryFile() as f:
+    DownloadUrl(url, f)
+    f.seek(0)
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    if url.endswith('.zip'):
+      zipfile.ZipFile(f).extractall(path=output_dir)
+    else:
+      tarfile.open(mode='r:gz', fileobj=f).extractall(path=output_dir)
 
 
 def ReadStampFile():
@@ -227,6 +240,24 @@ def CreateChromeToolsShim():
     f.write('endif (CHROMIUM_TOOLS_SRC)\n')
 
 
+def MaybeDownloadHostGcc(args):
+  """Downloads gcc 4.8.2 if needed and makes sure args.gcc_toolchain is set."""
+  if not sys.platform.startswith('linux') or args.gcc_toolchain:
+    return
+
+  if subprocess.check_output(['gcc', '-dumpversion']).rstrip() < '4.7.0':
+    # We need a newer gcc version.
+    gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482')
+    if not os.path.exists(gcc_dir):
+      print 'Downloading pre-built GCC 4.8.2...'
+      DownloadAndUnpack(CDS_URL + '/tools/gcc482.tgz', LLVM_BUILD_TOOLS_DIR)
+    args.gcc_toolchain = gcc_dir
+  else:
+    # Always set gcc_toolchain; llvm-symbolizer needs the bundled libstdc++.
+    args.gcc_toolchain = \
+        os.path.dirname(os.path.dirname(distutils.spawn.find_executable('gcc')))
+
+
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
   if sys.platform == 'win32':
@@ -238,17 +269,7 @@ def AddCMakeToPath():
     zip_name = 'cmake310_%s.tgz' % suffix
     cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake310', 'bin')
   if not os.path.exists(cmake_dir):
-    if not os.path.exists(LLVM_BUILD_TOOLS_DIR):
-      os.makedirs(LLVM_BUILD_TOOLS_DIR)
-    # The cmake archive is smaller than 20 MB, small enough to keep in memory:
-    with contextlib.closing(cStringIO.StringIO()) as f:
-      DownloadUrl(CDS_URL + '/tools/' + zip_name, f)
-      f.seek(0)
-      if zip_name.endswith('.zip'):
-        zipfile.ZipFile(f).extractall(path=LLVM_BUILD_TOOLS_DIR)
-      else:
-        tarfile.open(mode='r:gz', fileobj=f).extractall(path=
-            LLVM_BUILD_TOOLS_DIR)
+    DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 vs_version = None
@@ -295,23 +316,20 @@ def UpdateClang(args):
     # server too.
     print 'Trying to download prebuilt clang'
 
-    # clang packages are smaller than 50 MB, small enough to keep in memory.
-    with contextlib.closing(cStringIO.StringIO()) as f:
-      try:
-        DownloadUrl(cds_full_url, f)
-        f.seek(0)
-        # TODO(thakis): Delete LLVM_BUILD_DIR before extracting.
-        tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
-        print 'clang %s unpacked' % PACKAGE_VERSION
-        # Download the gold plugin if requested to by an environment variable.
-        # This is used by the CFI ClusterFuzz bot.
-        if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ:
-          RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
-        WriteStampFile(PACKAGE_VERSION)
-        return 0
-      except urllib2.HTTPError:
-        print 'Did not find prebuilt clang %s, building locally' % cds_file
+    try:
+      DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR)
+      # TODO(thakis): Delete LLVM_BUILD_DIR before extracting.
+      print 'clang %s unpacked' % PACKAGE_VERSION
+      # Download the gold plugin if requested to by an environment variable.
+      # This is used by the CFI ClusterFuzz bot.
+      if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ:
+        RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
+      WriteStampFile(PACKAGE_VERSION)
+      return 0
+    except urllib2.HTTPError:
+      print 'Did not find prebuilt clang %s, building locally' % cds_file
 
+  MaybeDownloadHostGcc(args)
   AddCMakeToPath()
 
   DeleteChromeToolsShim()
