@@ -191,9 +191,15 @@ int ScrollbarThemeMacOverlayAPI::scrollbarThickness(ScrollbarControlSize control
 {
     NSControlSize nsControlSize = static_cast<NSControlSize>(controlSize);
     ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:nsControlSize horizontal:NO replacingScrollerImp:nil];
-    if (supportsExpandedScrollbars())
+    BOOL wasExpanded = NO;
+    if (supportsExpandedScrollbars()) {
+        wasExpanded = [scrollbarPainter isExpanded];
         [scrollbarPainter setExpanded:YES];
-    return [scrollbarPainter trackBoxWidth];
+    }
+    int thickness = [scrollbarPainter trackBoxWidth];
+    if (supportsExpandedScrollbars())
+        [scrollbarPainter setExpanded:wasExpanded];
+    return thickness;
 }
 
 bool ScrollbarThemeMacOverlayAPI::usesOverlayScrollbars() const
