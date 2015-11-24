@@ -28,6 +28,9 @@ public class TelemetryActivity extends Activity {
         CookieManager.setAcceptFileSchemeCookies(true);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setDomStorageEnabled(true);
 
         Intent intent = getIntent();
         String userAgentString = intent.getStringExtra("userAgent");
