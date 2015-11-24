@@ -3,10 +3,10 @@ Test addEventListener() and removeEventListener() fail silently if arguments are
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS window.addEventListener("foo") is undefined
-PASS window.removeEventListener("bar") is undefined
-PASS window.addEventListener() is undefined
-PASS window.removeEventListener() is undefined
+PASS window.addEventListener("foo") threw exception TypeError: Failed to execute 'addEventListener' on 'EventTarget': 2 arguments required, but only 1 present..
+PASS window.removeEventListener("bar") threw exception TypeError: Failed to execute 'removeEventListener' on 'EventTarget': 2 arguments required, but only 1 present..
+PASS window.addEventListener() threw exception TypeError: Failed to execute 'addEventListener' on 'EventTarget': 2 arguments required, but only 0 present..
+PASS window.removeEventListener() threw exception TypeError: Failed to execute 'removeEventListener' on 'EventTarget': 2 arguments required, but only 0 present..
 PASS successfullyParsed is true
 
 TEST COMPLETE

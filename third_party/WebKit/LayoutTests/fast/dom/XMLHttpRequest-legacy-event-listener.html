@@ -7,11 +7,11 @@
 <script>
 description("Test addEventListener() and removeEventListener() fail silently if arguments are missing.");
 
-shouldBe('new XMLHttpRequest().addEventListener("foo")', 'undefined');
-shouldBe('new XMLHttpRequest().removeEventListener("bar")', 'undefined');
+shouldThrow('new XMLHttpRequest().addEventListener("foo")');
+shouldThrow('new XMLHttpRequest().removeEventListener("bar")');
 
-shouldBe('new XMLHttpRequest().addEventListener()', 'undefined');
-shouldBe('new XMLHttpRequest().removeEventListener()', 'undefined');
+shouldThrow('new XMLHttpRequest().addEventListener()');
+shouldThrow('new XMLHttpRequest().removeEventListener()');
 </script>
 </body>
 </html>

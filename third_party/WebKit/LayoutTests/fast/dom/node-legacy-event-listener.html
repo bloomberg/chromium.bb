@@ -7,11 +7,11 @@
 <script>
 description("Test addEventListener() and removeEventListener() fail silently if arguments are missing.");
 
-shouldBe('document.addEventListener("foo")', 'undefined');
-shouldBe('document.removeEventListener("bar")', 'undefined');
+shouldThrow('document.addEventListener("foo")');
+shouldThrow('document.removeEventListener("bar")');
 
-shouldBe('document.addEventListener()', 'undefined');
-shouldBe('document.removeEventListener()', 'undefined');
+shouldThrow('document.addEventListener()');
+shouldThrow('document.removeEventListener()');
 </script>
 </body>
 </html>

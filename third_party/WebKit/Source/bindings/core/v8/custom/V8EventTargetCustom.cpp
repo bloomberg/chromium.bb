@@ -41,10 +41,6 @@ namespace {
 
 void addEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
-    if (info.Length() < 2) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
-            info.Length() == 0 ? UseCounter::AddEventListenerNoArguments : UseCounter::AddEventListenerOneArgument);
-    }
     if (info.Length() >= 3 && info[2]->IsObject()) {
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
             UseCounter::AddEventListenerThirdArgumentIsObject);
@@ -59,10 +55,6 @@ void addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Val
 
 void removeEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
-    if (info.Length() < 2) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
-            info.Length() == 0 ? UseCounter::RemoveEventListenerNoArguments : UseCounter::RemoveEventListenerOneArgument);
-    }
     if (info.Length() >= 3 && info[2]->IsObject()) {
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
             UseCounter::RemoveEventListenerThirdArgumentIsObject);
@@ -80,6 +72,11 @@ void removeEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::
 void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "EventTarget", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
@@ -89,22 +86,14 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
         if (!window->document())
             return;
     }
-    V8StringResource<TreatNullAsNullString> type;
+    V8StringResource<> type;
     RefPtrWillBeRawPtr<EventListener> listener;
     EventListenerOptionsOrBoolean options;
     {
-        if (!info[0]->IsUndefined()) {
-            type = info[0];
-            if (!type.prepare())
-                return;
-        } else {
-            type = nullptr;
-        }
-        if (!info[1]->IsUndefined()) {
-            listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
-        } else {
-            listener = nullptr;
-        }
+        type = info[0];
+        if (!type.prepare())
+            return;
+        listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
         // TODO(dtapuska): This custom binding code can be eliminated once
         // EventListenerOptions runtime enabled feature is removed.
         // http://crbug.com/545163
@@ -126,6 +115,11 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
 void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "EventTarget", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
@@ -135,22 +129,14 @@ void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackIn
         if (!window->document())
             return;
     }
-    V8StringResource<TreatNullAsNullString> type;
+    V8StringResource<> type;
     RefPtrWillBeRawPtr<EventListener> listener;
     EventListenerOptionsOrBoolean options;
     {
-        if (!info[0]->IsUndefined()) {
-            type = info[0];
-            if (!type.prepare())
-                return;
-        } else {
-            type = nullptr;
-        }
-        if (!info[1]->IsUndefined()) {
-            listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOnly);
-        } else {
-            listener = nullptr;
-        }
+        type = info[0];
+        if (!type.prepare())
+            return;
+        listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOnly);
         // TODO(dtapuska): This custom binding code can be eliminated once
         // EventListenerOptions runtime enabled feature is removed.
         // http://crbug.com/545163
