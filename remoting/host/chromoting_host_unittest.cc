@@ -270,11 +270,6 @@ class ChromotingHostTest : public testing::Test {
     NotifyClientSessionClosed(0);
   }
 
-  // Notify |host_| that the authenticating client has been rejected.
-  void RejectAuthenticatingClient() {
-    host_->RejectAuthenticatingClient();
-  }
-
   // Notify |host_| that a client session has closed.
   void NotifyClientSessionClosed(int connection_index) {
     get_client(connection_index)->OnConnectionClosed(
@@ -465,21 +460,6 @@ TEST_F(ChromotingHostTest, Connect) {
 
   host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
-  message_loop_.Run();
-}
-
-TEST_F(ChromotingHostTest, RejectAuthenticatingClient) {
-  Expectation start = ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid1_))
-      .WillOnce(InvokeWithoutArgs(
-      this, &ChromotingHostTest::RejectAuthenticatingClient));
-  ExpectClientDisconnected(
-      0, true, start,
-      InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
-  EXPECT_CALL(host_status_observer_, OnShutdown());
-
-  host_->Start(xmpp_login_);
-  SimulateClientConnection(0, true, true);
   message_loop_.Run();
 }
 

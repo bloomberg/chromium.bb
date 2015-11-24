@@ -82,43 +82,33 @@ void It2MeHost::Connect() {
 }
 
 void It2MeHost::Disconnect() {
-  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(task_runner_->BelongsToCurrentThread());
-    host_context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::Disconnect, this));
-    return;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  host_context_->network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Shutdown, this));
+}
+
+void It2MeHost::Shutdown() {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  confirmation_dialog_proxy_.reset();
+
+  host_event_logger_.reset();
+  if (host_) {
+    host_->RemoveStatusObserver(this);
+    host_.reset();
   }
 
-  switch (state_) {
-    case kDisconnected:
-      ShutdownOnNetworkThread();
-      return;
+  register_request_.reset();
+  host_status_logger_.reset();
+  signal_strategy_.reset();
 
-    case kStarting:
-      SetState(kDisconnecting, "");
-      SetState(kDisconnected, "");
-      ShutdownOnNetworkThread();
-      return;
+  // Post tasks to delete UI objects on the UI thread.
+  host_context_->ui_task_runner()->DeleteSoon(
+      FROM_HERE, desktop_environment_factory_.release());
+  host_context_->ui_task_runner()->DeleteSoon(FROM_HERE,
+                                              policy_watcher_.release());
 
-    case kDisconnecting:
-      return;
-
-    default:
-      SetState(kDisconnecting, "");
-
-      if (!host_) {
-        SetState(kDisconnected, "");
-        ShutdownOnNetworkThread();
-        return;
-      }
-
-      // Deleting the host destroys SignalStrategy synchronously, but
-      // SignalStrategy::Listener handlers are not allowed to destroy
-      // SignalStrategy, so post task to destroy the host later.
-      host_context_->network_task_runner()->PostTask(
-          FROM_HERE, base::Bind(&It2MeHost::ShutdownOnNetworkThread, this));
-      return;
-  }
+  SetState(kDisconnected, "");
 }
 
 void It2MeHost::RequestNatPolicy() {
@@ -162,7 +152,7 @@ void It2MeHost::OnConfirmationResult(It2MeConfirmationDialog::Result result) {
       break;
 
     case It2MeConfirmationDialog::Result::CANCEL:
-      Disconnect();
+      Shutdown();
       break;
 
     default:
@@ -272,61 +262,21 @@ void It2MeHost::FinishConnect() {
   return;
 }
 
-void It2MeHost::ShutdownOnNetworkThread() {
-  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(state_ == kDisconnecting || state_ == kDisconnected);
-
-  confirmation_dialog_proxy_.reset();
-
-  if (state_ == kDisconnecting) {
-    host_event_logger_.reset();
-    host_->RemoveStatusObserver(this);
-    host_.reset();
-
-    register_request_.reset();
-    host_status_logger_.reset();
-    signal_strategy_.reset();
-    SetState(kDisconnected, "");
-  }
-
-  host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ShutdownOnUiThread, this));
-}
-
-void It2MeHost::ShutdownOnUiThread() {
-  DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
-
-  // Destroy the DesktopEnvironmentFactory, to free thread references.
-  desktop_environment_factory_.reset();
-
-  // Stop listening for policy updates.
-  policy_watcher_.reset();
-}
-
 void It2MeHost::OnAccessDenied(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
-    Disconnect();
+    Shutdown();
   }
 }
 
-void It2MeHost::OnClientAuthenticated(const std::string& jid) {
+void It2MeHost::OnClientConnected(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (state_ == kDisconnecting) {
-    // Ignore the new connection if we are disconnecting.
-    return;
-  }
-  if (state_ == kConnected) {
-    // If we already connected another client then one of the connections may be
-    // an attacker, so both are suspect and we have to reject the second
-    // connection and shutdown the host.
-    host_->RejectAuthenticatingClient();
-    Disconnect();
-    return;
-  }
+  // ChromotingHost doesn't allow multiple concurrent connection and the
+  // host is destroyed in OnClientDisconnected() after the first connection.
+  CHECK_NE(state_, kConnected);
 
   std::string client_username = jid;
   size_t pos = client_username.find('/');
@@ -346,7 +296,7 @@ void It2MeHost::OnClientAuthenticated(const std::string& jid) {
 void It2MeHost::OnClientDisconnected(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  Disconnect();
+  Shutdown();
 }
 
 void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
@@ -388,7 +338,7 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
   // When transitioning from enabled to disabled, force disconnect any
   // existing session.
   if (nat_traversal_enabled_ && !nat_traversal_enabled && IsConnected()) {
-    Disconnect();
+    Shutdown();
   }
 
   nat_traversal_enabled_ = nat_traversal_enabled;
@@ -406,7 +356,7 @@ void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
 
   // When setting a host domain policy, force disconnect any existing session.
   if (!host_domain.empty() && IsConnected()) {
-    Disconnect();
+    Shutdown();
   }
 
   required_host_domain_ = host_domain;
@@ -429,33 +379,29 @@ void It2MeHost::SetState(It2MeHostState state,
       break;
     case kStarting:
       DCHECK(state == kRequestedAccessCode ||
-             state == kDisconnecting ||
+             state == kDisconnected ||
              state == kError ||
              state == kInvalidDomainError) << state;
       break;
     case kRequestedAccessCode:
       DCHECK(state == kReceivedAccessCode ||
-             state == kDisconnecting ||
+             state == kDisconnected ||
              state == kError) << state;
       break;
     case kReceivedAccessCode:
       DCHECK(state == kConnected ||
-             state == kDisconnecting ||
-             state == kError) << state;
-      break;
-    case kConnected:
-      DCHECK(state == kDisconnecting ||
              state == kDisconnected ||
              state == kError) << state;
       break;
-    case kDisconnecting:
-      DCHECK(state == kDisconnected) << state;
+    case kConnected:
+      DCHECK(state == kDisconnected ||
+             state == kError) << state;
       break;
     case kError:
-      DCHECK(state == kDisconnecting) << state;
+      DCHECK(state == kDisconnected) << state;
       break;
     case kInvalidDomainError:
-      DCHECK(state == kDisconnecting) << state;
+      DCHECK(state == kDisconnected) << state;
       break;
   };
 
@@ -480,7 +426,7 @@ void It2MeHost::OnReceivedSupportID(
 
   if (!error_message.empty()) {
     SetState(kError, error_message);
-    Disconnect();
+    Shutdown();
     return;
   }
 
@@ -492,7 +438,7 @@ void It2MeHost::OnReceivedSupportID(
     std::string error_message = "Failed to generate host certificate.";
     LOG(ERROR) << error_message;
     SetState(kError, error_message);
-    Disconnect();
+    Shutdown();
     return;
   }
 

@@ -79,8 +79,6 @@ ChromotingHost::ChromotingHost(
       signal_strategy_(signal_strategy),
       started_(false),
       login_backoff_(&kDefaultBackoffPolicy),
-      authenticating_client_(false),
-      reject_authenticating_client_(false),
       enable_curtaining_(false),
       weak_factory_(this) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
@@ -133,11 +131,6 @@ void ChromotingHost::AddExtension(scoped_ptr<HostExtension> extension) {
   extensions_.push_back(extension.release());
 }
 
-void ChromotingHost::RejectAuthenticatingClient() {
-  DCHECK(authenticating_client_);
-  reject_authenticating_client_ = true;
-}
-
 void ChromotingHost::SetAuthenticatorFactory(
     scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
@@ -183,7 +176,7 @@ void ChromotingHost::OnSessionAuthenticating(ClientSession* client) {
   login_backoff_.InformOfRequest(false);
 }
 
-bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
+void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
   login_backoff_.Reset();
@@ -192,10 +185,16 @@ bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   // is called to avoid it becoming invalid when the client is removed from
   // the list.
   ClientList::iterator it = clients_.begin();
+  base::WeakPtr<ChromotingHost> self = weak_factory_.GetWeakPtr();
   while (it != clients_.end()) {
     ClientSession* other_client = *it++;
-    if (other_client != client)
+    if (other_client != client) {
       other_client->DisconnectSession(protocol::OK);
+
+      // Quit if the host was destroyed.
+      if (!self)
+        return;
+    }
   }
 
   // Disconnects above must have destroyed all other clients.
@@ -204,14 +203,8 @@ bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->client_jid();
 
-  reject_authenticating_client_ = false;
-
-  authenticating_client_ = true;
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientAuthenticated(jid));
-  authenticating_client_ = false;
-
-  return !reject_authenticating_client_;
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
@@ -236,13 +229,15 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
   ClientList::iterator it = std::find(clients_.begin(), clients_.end(), client);
   CHECK(it != clients_.end());
 
-  if (client->is_authenticated()) {
-    FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                      OnClientDisconnected(client->client_jid()));
-  }
-
+  bool was_authenticated = client->is_authenticated();
+  std::string jid = client->client_jid();
   clients_.erase(it);
   delete client;
+
+  if (was_authenticated) {
+    FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                      OnClientDisconnected(jid));
+  }
 }
 
 void ChromotingHost::OnSessionRouteChange(

@@ -330,8 +330,7 @@ void ClientSessionTest::SetSendMessageAndDisconnectExpectation(
   message.set_data("data");
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
       .WillOnce(DoAll(
@@ -343,8 +342,7 @@ void ClientSessionTest::SetSendMessageAndDisconnectExpectation(
 TEST_F(ClientSessionTest, ClipboardStubFilter) {
   CreateClientSession();
 
-  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
 
@@ -449,8 +447,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   mouse_event3.set_y(301);
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
@@ -506,8 +503,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   mousedown.set_button_down(true);
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated);
@@ -547,8 +543,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   CreateClientSession();
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated);
@@ -609,8 +604,7 @@ TEST_F(ClientSessionTest, NoGnubbyAuth) {
   message.set_data("test");
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
@@ -634,8 +628,7 @@ TEST_F(ClientSessionTest, EnableGnubbyAuth) {
   message.set_data("test");
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
@@ -655,8 +648,7 @@ TEST_F(ClientSessionTest, EnableGnubbyAuth) {
 TEST_F(ClientSessionTest, ResetVideoPipeline) {
   CreateClientSession();
 
-  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
 
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
@@ -687,8 +679,7 @@ TEST_F(ClientSessionTest, Extensions) {
   CreateClientSession();
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-          .WillOnce(Return(true));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
 
   // Verify that the ClientSession reports the correct capabilities, and mimic
   // the client reporting an overlapping set of capabilities.
@@ -743,8 +734,7 @@ TEST_F(ClientSessionTest, StealVideoCapturer) {
 
   SetMatchCapabilitiesExpectation();
 
-  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
 
   ConnectClientSession();
 

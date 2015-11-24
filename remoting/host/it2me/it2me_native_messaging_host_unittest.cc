@@ -134,7 +134,6 @@ void MockIt2MeHost::Disconnect() {
     return;
   }
 
-  RunSetState(kDisconnecting);
   RunSetState(kDisconnected);
 }
 
@@ -379,11 +378,10 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
 
 void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
   bool disconnect_response_received = false;
-  bool disconnecting_received = false;
   bool disconnected_received = false;
 
-  // We expect a total of 3 messages: 1 connectResponse and 2 hostStateChanged.
-  for (int i = 0; i < 3; ++i) {
+  // We expect a total of 3 messages: 1 connectResponse and 1 hostStateChanged.
+  for (int i = 0; i < 2; ++i) {
     scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
 
@@ -397,12 +395,7 @@ void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
     } else if (type == "hostStateChanged") {
       std::string state;
       ASSERT_TRUE(response->GetString("state", &state));
-      if (state ==
-          It2MeNativeMessagingHost::HostStateToString(kDisconnecting)) {
-        EXPECT_FALSE(disconnecting_received);
-        disconnecting_received = true;
-      } else if (state ==
-                 It2MeNativeMessagingHost::HostStateToString(kDisconnected)) {
+      if (state == It2MeNativeMessagingHost::HostStateToString(kDisconnected)) {
         EXPECT_FALSE(disconnected_received);
         disconnected_received = true;
       } else {

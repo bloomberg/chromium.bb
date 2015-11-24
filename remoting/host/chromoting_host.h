@@ -94,11 +94,6 @@ class ChromotingHost : public base::NonThreadSafe,
   // Registers a host extension.
   void AddExtension(scoped_ptr<HostExtension> extension);
 
-  // This method may be called only from
-  // HostStatusObserver::OnClientAuthenticated() to reject the new
-  // client.
-  void RejectAuthenticatingClient();
-
   // Sets the authenticator factory to use for incoming
   // connections. Incoming connections are rejected until
   // authenticator factory is set. Must be called on the network
@@ -119,7 +114,7 @@ class ChromotingHost : public base::NonThreadSafe,
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
   void OnSessionAuthenticating(ClientSession* client) override;
-  bool OnSessionAuthenticated(ClientSession* client) override;
+  void OnSessionAuthenticated(ClientSession* client) override;
   void OnSessionChannelsConnected(ClientSession* client) override;
   void OnSessionAuthenticationFailed(ClientSession* client) override;
   void OnSessionClosed(ClientSession* session) override;
@@ -185,10 +180,6 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // Login backoff state.
   net::BackoffEntry login_backoff_;
-
-  // Flags used for RejectAuthenticatingClient().
-  bool authenticating_client_;
-  bool reject_authenticating_client_;
 
   // True if the curtain mode is enabled.
   bool enable_curtaining_;

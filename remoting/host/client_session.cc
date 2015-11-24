@@ -296,11 +296,8 @@ void ClientSession::OnConnectionAuthenticated(
                    protocol::MAX_SESSION_LENGTH));
   }
 
-  // Disconnect the session if the connection was rejected by the host.
-  if (!event_handler_->OnSessionAuthenticated(this)) {
-    DisconnectSession(protocol::SESSION_REJECTED);
-    return;
-  }
+  // Notify EventHandler.
+  event_handler_->OnSessionAuthenticated(this);
 
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).

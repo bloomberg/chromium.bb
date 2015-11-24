@@ -33,7 +33,6 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
     {kRequestedAccessCode, "REQUESTED_ACCESS_CODE"},
     {kReceivedAccessCode, "RECEIVED_ACCESS_CODE"},
     {kConnected, "CONNECTED"},
-    {kDisconnecting, "DISCONNECTING"},
     {kError, "ERROR"},
     {kInvalidDomainError, "INVALID_DOMAIN_ERROR"},
 };
@@ -255,8 +254,7 @@ void It2MeNativeMessagingHost::OnStateChanged(
   scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString("type", "hostStateChanged");
-  message->SetString("state",
-                     It2MeNativeMessagingHost::HostStateToString(state));
+  message->SetString("state", HostStateToString(state));
 
   switch (state_) {
     case kReceivedAccessCode:

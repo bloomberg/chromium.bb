@@ -60,9 +60,8 @@ class ClientSession
     // Called after authentication has started.
     virtual void OnSessionAuthenticating(ClientSession* client) = 0;
 
-    // Called after authentication has finished successfully. Returns true if
-    // the connection is allowed, or false otherwise.
-    virtual bool OnSessionAuthenticated(ClientSession* client) = 0;
+    // Called after authentication has finished successfully.
+    virtual void OnSessionAuthenticated(ClientSession* client) = 0;
 
     // Called after we've finished connecting all channels.
     virtual void OnSessionChannelsConnected(ClientSession* client) = 0;

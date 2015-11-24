@@ -42,7 +42,6 @@ enum It2MeHostState {
   kRequestedAccessCode,
   kReceivedAccessCode,
   kConnected,
-  kDisconnecting,
   kError,
   kInvalidDomainError
 };
@@ -74,8 +73,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Creates It2Me host structures and starts the host.
   virtual void Connect();
 
-  // Disconnects the host, ready for tear-down.
-  // Also called internally, from the network thread.
+  // Disconnects and shuts down the host.
   virtual void Disconnect();
 
   // TODO (weitaosu): Remove RequestNatPolicy from It2MeHost.
@@ -84,7 +82,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // remoting::HostStatusObserver implementation.
   void OnAccessDenied(const std::string& jid) override;
-  void OnClientAuthenticated(const std::string& jid) override;
+  void OnClientConnected(const std::string& jid) override;
   void OnClientDisconnected(const std::string& jid) override;
 
   void SetStateForTesting(It2MeHostState state,
@@ -128,14 +126,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                            const base::TimeDelta& lifetime,
                            const std::string& error_message);
 
-  // Shuts down |host_| on the network thread and posts ShutdownOnUiThread()
-  // to shut down UI thread resources.
-  void ShutdownOnNetworkThread();
-
-  // Shuts down |desktop_environment_factory_| and |policy_watcher_| on
-  // the UI thread.
-  void ShutdownOnUiThread();
-
   // Called when initial policies are read, and when they change.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
 
@@ -145,6 +135,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Handlers for NAT traversal and host domain policies.
   void UpdateNatPolicy(bool nat_traversal_enabled);
   void UpdateHostDomainPolicy(const std::string& host_domain);
+
+  void Shutdown();
 
   // Caller supplied fields.
   scoped_ptr<ChromotingHostContext> host_context_;

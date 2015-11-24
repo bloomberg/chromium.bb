@@ -23,6 +23,8 @@
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
 #include <X11/Xlib.h>
+
+#include "base/linux_util.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
@@ -73,6 +75,10 @@ int StartIt2MeNativeMessagingHost() {
   // Continue windows. Calling with nullptr arguments because we don't have
   // any command line arguments for gtk to consume.
   gtk_init(nullptr, nullptr);
+
+  // Need to prime the host OS version value for linux to prevent IO on the
+  // network thread. base::GetLinuxDistro() caches the result.
+  base::GetLinuxDistro();
 #endif  // OS_LINUX
 
   // Enable support for SSL server sockets, which must be done while still
