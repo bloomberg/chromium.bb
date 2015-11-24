@@ -51,6 +51,9 @@ class CONTENT_EXPORT HostSharedBitmapManagerClient {
 
  private:
   HostSharedBitmapManager* manager_;
+
+  // Lock must be held around access to owned_bitmaps_.
+  base::Lock lock_;
   base::hash_set<cc::SharedBitmapId> owned_bitmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManagerClient);
@@ -88,7 +91,7 @@ class CONTENT_EXPORT HostSharedBitmapManager
       size_t buffer_size,
       const cc::SharedBitmapId& id,
       base::SharedMemoryHandle* shared_memory_handle);
-  void ChildAllocatedSharedBitmap(size_t buffer_size,
+  bool ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
                                   base::ProcessHandle process_handle,
                                   const cc::SharedBitmapId& id);
