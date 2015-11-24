@@ -8,29 +8,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
-#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
-#include "extensions/common/extension.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-
-using extensions::BundleInstaller;
-
-namespace chrome {
-
-void ShowExtensionInstalledBubble(const extensions::Extension* extension,
-                                  Browser* browser,
-                                  const SkBitmap& icon) {
-  // The controller is deallocated when the window is closed, so no need to
-  // worry about it here.
-  [[ExtensionInstalledBubbleController alloc]
-      initWithParentWindow:browser->window()->GetNativeWindow()
-           extensionBubble:new ExtensionInstalledBubble(extension, browser,
-                                                        icon)];
-}
-
-}  // namespace chrome
 
 void extensions::BundleInstaller::ShowInstalledBubble(
-    const BundleInstaller* bundle, Browser* browser) {
+    const extensions::BundleInstaller* bundle,
+    Browser* browser) {
   // The controller is deallocated when the window is closed, so no need to
   // worry about it here.
   [[ExtensionInstalledBubbleController alloc]

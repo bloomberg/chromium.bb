@@ -8,13 +8,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
 class ExtensionInstalledBubble;
-class ExtensionInstalledBubbleBridge;
 @class HyperlinkTextView;
 @class HoverCloseButton;
 
@@ -69,11 +66,8 @@ typedef enum {
   // doesn't overlap browser destruction.
   BOOL pageActionPreviewShowing_;
 
-  // The bridge to the C++ object that performs shared logic across platforms,
-  // like listening for the notification that the extension is loaded. This
-  // tells us when to show the bubble.
-  scoped_ptr<ExtensionInstalledBubbleBridge> installedBubbleBridge_;
-  scoped_ptr<ExtensionInstalledBubble> installedBubble_;
+  // A weak reference to the bubble. It's owned by the BubbleManager.
+  ExtensionInstalledBubble* installedBubble_;
 
   // References below are weak, being obtained from the nib.
   IBOutlet HoverCloseButton* closeButton_;
@@ -103,14 +97,12 @@ typedef enum {
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic) BOOL pageActionPreviewShowing;
 
-// Initialize the window, and then create observers to wait for the extension
-// to complete loading, or the browser window to close.
-// Takes ownership of |extensionBubble|.
+// Initialize the window. It will be shown by the BubbleManager.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
            extensionBubble:(ExtensionInstalledBubble*)extensionBubble;
 
-// Initialize the window, and then create observers to wait for the extension
-// to complete loading, or the browser window to close.
+// Initialize the window, and show it. BubbleManager is not currently used for
+// displaying the "Bundle Installed" bubble.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                     bundle:(const extensions::BundleInstaller*)bundle
                    browser:(Browser*)browser;
@@ -133,6 +125,9 @@ typedef enum {
 // Shows the new app installed animation.
 - (IBAction)onAppShortcutClicked:(id)sender;
 
+// Should be called by the extension bridge to close this window.
+- (void)doClose;
+
 @end
 
 @interface ExtensionInstalledBubbleController (ExposedForTesting)
@@ -147,6 +142,7 @@ typedef enum {
 - (NSRect)frameOfSigninPromo;
 - (BOOL)showSyncPromo;
 - (NSButton*)appInstalledShortcutLink;
+- (void)updateAnchorPosition;
 
 @end  // ExtensionInstalledBubbleController(ExposedForTesting)
 
