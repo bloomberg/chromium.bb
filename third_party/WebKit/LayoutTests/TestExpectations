@@ -1320,6 +1320,9 @@ crbug.com/521730 [ Win10 ] svg/text/text-selection-intro-05-t.svg [ Failure ]
 
 crbug.com/550285 [ XP ] virtual/syncpaint/inspector/tracing/decode-resize.html [ Slow Pass Failure ]
 
+crbug.com/560652 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ Failure ]
+crbug.com/560652 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-br.html [ Failure ]
+
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
