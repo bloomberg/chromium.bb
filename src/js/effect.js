@@ -50,6 +50,14 @@ camera.Effect.prototype.isSlow = function() {
 };
 
 /**
+ * Returns true if the effect uses multiple frames to render the result.
+ * @return {boolean} True if using multiple frames, false otherwise.
+ */
+camera.Effect.prototype.isMultiframe = function() {
+  return false;
+};
+
+/**
  * Returns true if the effect uses head tracker, and false otherwise. By default
  * false.
  * @return {boolean} True if uses, false otherwise.

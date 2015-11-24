@@ -65,3 +65,10 @@ camera.effects.Ghost.prototype.getTitle = function() {
   return chrome.i18n.getMessage('ghostEffect');
 };
 
+/**
+ * @override
+ */
+camera.effects.Ghost.prototype.isMultiframe = function() {
+  return true;
+};
+
