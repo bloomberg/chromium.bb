@@ -164,7 +164,8 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
     const mojom::ViewportMetrics& new_metrics) {
   if (!root_) {
     root_.reset(connection_manager_->CreateServerWindow(
-        RootWindowId(connection_manager_->GetAndAdvanceNextHostId())));
+        RootWindowId(connection_manager_->GetAndAdvanceNextHostId()),
+        ServerWindow::Properties()));
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
     root_->SetVisible(true);
     if (delegate_)

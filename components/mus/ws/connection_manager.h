@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,7 +47,9 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before ConnectionManager.
-  ServerWindow* CreateServerWindow(const WindowId& id);
+  ServerWindow* CreateServerWindow(
+      const WindowId& id,
+      const std::map<std::string, std::vector<uint8_t>>& properties);
 
   // Returns the id for the next WindowTreeImpl.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();

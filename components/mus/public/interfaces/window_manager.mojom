@@ -16,9 +16,6 @@ struct WindowManagerConfig {
 
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.
-// For security reasons, methods that take window_ids can only pass window ids
-// created by calls to OpenWindow() from the *same connection* to the window
-// manager. The callback indicates success or failure.
 interface WindowManager {
   // The window's preferred size as defined by its content. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
@@ -26,6 +23,8 @@ interface WindowManager {
   const string kResizeBehavior_Property = "prop:resize-behavior";
   // Bounds the window is restored to. Type: gfx::Rect.
   const string kRestoreBounds_Property = "prop:restore-bounds";
+  // Shadow style for the window. Type mojom::ShadowStyle.
+  const string kShadowStyle_Property = "prop:shadow-style";
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.

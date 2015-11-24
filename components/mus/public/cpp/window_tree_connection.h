@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CONNECTION_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CONNECTION_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -56,7 +58,9 @@ class WindowTreeConnection {
 
   // Creates and returns a new Window (which is owned by the window server).
   // Windows are initially hidden, use SetVisible(true) to show.
-  virtual Window* NewWindow() = 0;
+  Window* NewWindow() { return NewWindow(nullptr); }
+  virtual Window* NewWindow(
+      const std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
   // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
   virtual bool IsEmbedRoot() = 0;

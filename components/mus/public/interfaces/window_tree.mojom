@@ -86,10 +86,9 @@ interface WindowTree {
   //   ERROR_CODE_VALUE_IN_USE: a window already exists with the specified id.
   //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |window_id| does not
   //     match the connection id of the client.
-  //
-  // TODO(erg): Once we have default values in mojo, make this take a map of
-  // properties.
-  NewWindow(uint32 change_id, uint32 window_id);
+  NewWindow(uint32 change_id,
+            uint32 window_id,
+            map<string, array<uint8>>? properties);
 
   // Deletes a window. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the window

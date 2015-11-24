@@ -26,9 +26,9 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   gfx::Rect GetMaximizedWindowBounds() const;
 
   // mus::mojom::WindowManager:
-  void OpenWindow(
-      mus::mojom::WindowTreeClientPtr client,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+  void OpenWindow(mus::mojom::WindowTreeClientPtr client,
+                  mojo::Map<mojo::String, mojo::Array<uint8_t>>
+                      transport_properties) override;
   void GetConfig(const GetConfigCallback& callback) override;
 
   mus::Window* GetContainerForChild(mus::Window* child);

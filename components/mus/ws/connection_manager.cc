@@ -58,8 +58,10 @@ void ConnectionManager::AddHost(WindowTreeHostConnection* host_connection) {
     delegate_->OnFirstRootConnectionCreated();
 }
 
-ServerWindow* ConnectionManager::CreateServerWindow(const WindowId& id) {
-  ServerWindow* window = new ServerWindow(this, id);
+ServerWindow* ConnectionManager::CreateServerWindow(
+    const WindowId& id,
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
+  ServerWindow* window = new ServerWindow(this, id, properties);
   window->AddObserver(this);
   return window;
 }

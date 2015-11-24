@@ -20,7 +20,10 @@ bool TestWindowTree::GetAndClearChangeId(uint32_t* change_id) {
   return true;
 }
 
-void TestWindowTree::NewWindow(uint32_t change_id, uint32_t window_id) {}
+void TestWindowTree::NewWindow(
+    uint32_t change_id,
+    uint32_t window_id,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {}
 
 void TestWindowTree::DeleteWindow(uint32_t window_id,
                                   const DeleteWindowCallback& callback) {}

@@ -119,13 +119,15 @@ void WindowTreeImpl::NotifyChangeCompleted(
       change_id, error_code == mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
-bool WindowTreeImpl::NewWindow(const WindowId& window_id) {
+bool WindowTreeImpl::NewWindow(
+    const WindowId& window_id,
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
   if (window_id.connection_id != id_)
     return false;
   if (window_map_.find(window_id.window_id) != window_map_.end())
     return false;
   window_map_[window_id.window_id] =
-      connection_manager_->CreateServerWindow(window_id);
+      connection_manager_->CreateServerWindow(window_id, properties);
   known_windows_.insert(WindowIdToTransportId(window_id));
   return true;
 }
@@ -605,9 +607,18 @@ void WindowTreeImpl::RemoveChildrenAsPartOfEmbed(const WindowId& window_id) {
     window->Remove(children[i]);
 }
 
-void WindowTreeImpl::NewWindow(uint32_t change_id, Id transport_window_id) {
+void WindowTreeImpl::NewWindow(
+    uint32_t change_id,
+    Id transport_window_id,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+  std::map<std::string, std::vector<uint8_t>> properties;
+  if (!transport_properties.is_null()) {
+    properties =
+        transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+  }
   client_->OnChangeCompleted(
-      change_id, NewWindow(WindowIdFromTransportId(transport_window_id)));
+      change_id,
+      NewWindow(WindowIdFromTransportId(transport_window_id), properties));
 }
 
 void WindowTreeImpl::DeleteWindow(Id transport_window_id,

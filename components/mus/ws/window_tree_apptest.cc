@@ -241,8 +241,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   // Generally you want NewWindow(), but use this if you need to test given
   // a complete window id (NewWindow() ors with the connection id).
   Id NewWindowWithCompleteId(Id id) {
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
     const uint32_t change_id = GetAndAdvanceChangeId();
-    tree()->NewWindow(change_id, id);
+    tree()->NewWindow(change_id, id, properties.Pass());
     return WaitForChangeCompleted(change_id) ? id : 0;
   }
 

@@ -367,15 +367,23 @@ Window* WindowTreeClientImpl::GetFocusedWindow() {
   return focused_window_;
 }
 
-Window* WindowTreeClientImpl::NewWindow() {
+Window* WindowTreeClientImpl::NewWindow(
+    const Window::SharedProperties* properties) {
   DCHECK(tree_);
   Window* window =
       new Window(this, MakeTransportId(connection_id_, next_window_id_++));
+  if (properties)
+    window->properties_ = *properties;
   AddWindow(window);
 
   const uint32_t change_id = ScheduleInFlightChange(
       make_scoped_ptr(new CrashInFlightChange(window, ChangeType::NEW_WINDOW)));
-  tree_->NewWindow(change_id, window->id());
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties;
+  if (properties) {
+    transport_properties =
+        mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
+  }
+  tree_->NewWindow(change_id, window->id(), transport_properties.Pass());
   return window;
 }
 

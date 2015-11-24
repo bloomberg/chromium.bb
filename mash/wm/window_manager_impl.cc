@@ -64,16 +64,14 @@ gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
 
 void WindowManagerImpl::OpenWindow(
     mus::mojom::WindowTreeClientPtr client,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   mus::Window* root = state_->root();
   DCHECK(root);
 
-  mus::Window* child_window = root->connection()->NewWindow();
-  // TODO(beng): mus::Window should have a "SetSharedProperties" method that
-  //             joins the supplied map onto the internal one.
-  for (auto prop : properties)
-    child_window->SetSharedProperty(prop.GetKey(), prop.GetValue());
-
+  mus::Window::SharedProperties properties =
+      transport_properties.To<mus::Window::SharedProperties>();
+  // TODO(sky): constrain to valid properties here.
+  mus::Window* child_window = root->connection()->NewWindow(&properties);
   child_window->SetBounds(CalculateDefaultBounds(child_window));
   GetContainerForChild(child_window)->AddChild(child_window);
   child_window->Embed(client.Pass());

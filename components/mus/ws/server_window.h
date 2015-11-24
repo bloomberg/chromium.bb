@@ -40,9 +40,13 @@ class ServerWindowSurfaceManager;
 // from the parent.
 class ServerWindow {
  public:
+  using Properties = std::map<std::string, std::vector<uint8_t>>;
   using Windows = std::vector<ServerWindow*>;
 
   ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);
+  ServerWindow(ServerWindowDelegate* delegate,
+               const WindowId& id,
+               const Properties& properties);
   ~ServerWindow();
 
   void AddObserver(ServerWindowObserver* observer);
@@ -177,7 +181,7 @@ class ServerWindow {
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
 
-  std::map<std::string, std::vector<uint8_t>> properties_;
+  Properties properties_;
 
   base::ObserverList<ServerWindowObserver> observers_;
 

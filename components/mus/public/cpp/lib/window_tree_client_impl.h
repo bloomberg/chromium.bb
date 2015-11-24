@@ -130,7 +130,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* GetRoot() override;
   Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
-  Window* NewWindow() override;
+  Window* NewWindow(const Window::SharedProperties* properties) override;
   bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
 
