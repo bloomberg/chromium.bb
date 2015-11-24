@@ -244,39 +244,36 @@ nouveau_device_open_existing(struct nouveau_device **pdev, int close, int fd,
 int
 nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 {
-	struct nouveau_device_priv *nvdev = calloc(1, sizeof(*nvdev));
-	struct nouveau_device *dev = &nvdev->base;
+	struct nouveau_drm *drm;
+	struct nouveau_device_priv *nvdev;
+	struct nouveau_device *dev;
 	uint64_t chipset, vram, gart, bousage;
-	drmVersionPtr ver;
 	int ret;
 	char *tmp;
 
-#ifdef DEBUG
-	debug_init(getenv("NOUVEAU_LIBDRM_DEBUG"));
-#endif
-
-	if (!nvdev)
+	if (!(nvdev = calloc(1, sizeof(*nvdev))))
 		return -ENOMEM;
+	dev = &nvdev->base;
+
 	ret = pthread_mutex_init(&nvdev->lock, NULL);
 	if (ret) {
 		free(nvdev);
 		return ret;
 	}
 
-	nvdev->base.fd = fd;
-
-	ver = drmGetVersion(fd);
-	if (ver) dev->drm_version = (ver->version_major << 24) |
-				    (ver->version_minor << 8) |
-				     ver->version_patchlevel;
-	drmFreeVersion(ver);
-
-	if ( dev->drm_version != 0x00000010 &&
-	    (dev->drm_version <  0x01000000 ||
-	     dev->drm_version >= 0x02000000)) {
+	ret = nouveau_drm_new(fd, &drm);
+	if (ret) {
 		nouveau_device_del(&dev);
-		return -EINVAL;
+		return ret;
 	}
+	drm->nvif = false;
+
+	nvdev->base.object.parent = &drm->client;
+	nvdev->base.object.oclass = NOUVEAU_DEVICE_CLASS;
+	nvdev->base.object.length = ~0;
+	nvdev->base.fd = drm->fd;
+	nvdev->base.drm_version = drm->drm_version;
+	nvdev->base.lib_version = drm->lib_version;
 
 	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_CHIPSET_ID, &chipset);
 	if (ret == 0)
@@ -305,9 +302,6 @@ nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 	else
 		nvdev->gart_limit_percent = 80;
 	DRMINITLISTHEAD(&nvdev->bo_list);
-	nvdev->base.object.oclass = NOUVEAU_DEVICE_CLASS;
-	nvdev->base.object.length = ~0;
-	nvdev->base.lib_version = 0x01000000;
 	nvdev->base.chipset = chipset;
 	nvdev->base.vram_size = vram;
 	nvdev->base.gart_size = gart;
@@ -337,10 +331,12 @@ nouveau_device_del(struct nouveau_device **pdev)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(*pdev);
 	if (nvdev) {
+		struct nouveau_drm *drm = nouveau_drm(&nvdev->base.object);
+		free(nvdev->client);
+		nouveau_drm_del(&drm);
+		pthread_mutex_destroy(&nvdev->lock);
 		if (nvdev->close)
 			drmClose(nvdev->base.fd);
-		free(nvdev->client);
-		pthread_mutex_destroy(&nvdev->lock);
 		free(nvdev);
 		*pdev = NULL;
 	}
