@@ -99,7 +99,7 @@ with a destructor.
 A pre-finalizer must have the following function signature: `void preFinalizer()`. You can change the function name.
 
 A pre-finalizer must be registered in the constructor by using the following statement:
-"`ThreadState::current()->registerPreFinalizer(this, preFinalizerName);`".
+"`ThreadState::current()->registerPreFinalizer(preFinalizerName);`".
 
 ```c++
 class YourClass : public GarbageCollectedFinalized<YourClass> {
@@ -107,7 +107,7 @@ class YourClass : public GarbageCollectedFinalized<YourClass> {
 public:
     YourClass()
     {
-        ThreadState::current()->registerPreFinalizer(this, dispose);
+        ThreadState::current()->registerPreFinalizer(dispose);
     }
     void dispose()
     {
