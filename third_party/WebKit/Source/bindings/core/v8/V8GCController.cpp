@@ -112,6 +112,13 @@ public:
             return;
         }
 
+        // MinorGC does not collect objects because it may be expensive to
+        // update references during minorGC
+        if (classId == WrapperTypeInfo::ObjectClassId) {
+            v8::Persistent<v8::Object>::Cast(*value).MarkActive();
+            return;
+        }
+
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
