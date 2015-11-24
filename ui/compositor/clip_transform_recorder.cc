@@ -20,8 +20,8 @@ ClipTransformRecorder::ClipTransformRecorder(const PaintContext& context)
 }
 
 ClipTransformRecorder::~ClipTransformRecorder() {
-  for (size_t i = 0; i < num_closers_; ++i) {
-    switch (closers_[i]) {
+  for (size_t i = num_closers_; i > 0; --i) {
+    switch (closers_[i - 1]) {
       case CLIP_RECT:
         context_.list_->CreateAndAppendItem<cc::EndClipDisplayItem>();
         break;
