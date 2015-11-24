@@ -29,8 +29,8 @@
         'callback_layer_animation_observer.h',
         'canvas_painter.cc',
         'canvas_painter.h',
-        'clip_transform_recorder.cc',
-        'clip_transform_recorder.h',
+        'clip_recorder.cc',
+        'clip_recorder.h',
         'closure_animation_observer.cc',
         'closure_animation_observer.h',
         'compositing_recorder.cc',
@@ -83,6 +83,8 @@
         'scoped_layer_animation_settings.h',
         'transform_animation_curve_adapter.cc',
         'transform_animation_curve_adapter.h',
+        'transform_recorder.cc',
+        'transform_recorder.h',
       ],
       'conditions': [
         ['OS == "win" and use_aura == 1', {

@@ -15,8 +15,6 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/compositor/clip_transform_recorder.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/mus/platform_window_mus.h"

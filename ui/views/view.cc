@@ -20,13 +20,14 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/compositor/clip_transform_recorder.h"
+#include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/transform_recorder.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -778,8 +779,10 @@ void View::Paint(const ui::PaintContext& parent_context) {
 
   // If the view is backed by a layer, it should paint with itself as the origin
   // rather than relative to its parent.
-  ui::ClipTransformRecorder clip_transform_recorder(context);
-  if (!layer()) {
+  bool paint_relative_to_parent = !layer();
+
+  ui::ClipRecorder clip_recorder(context);
+  if (paint_relative_to_parent) {
     // Set the clip rect to the bounds of this View. Note that the X (or left)
     // position we pass to ClipRect takes into consideration whether or not the
     // View uses a right-to-left layout so that we paint the View in its
@@ -789,8 +792,11 @@ void View::Paint(const ui::PaintContext& parent_context) {
     if (parent_)
       clip_rect_in_parent.set_x(
           parent_->GetMirroredXForRect(clip_rect_in_parent));
-    clip_transform_recorder.ClipRect(clip_rect_in_parent);
+    clip_recorder.ClipRect(clip_rect_in_parent);
+  }
 
+  ui::TransformRecorder transform_recorder(context);
+  if (paint_relative_to_parent) {
     // Translate the graphics such that 0,0 corresponds to where
     // this View is located relative to its parent.
     gfx::Transform transform_from_parent;
@@ -798,7 +804,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     transform_from_parent.Translate(offset_from_parent.x(),
                                     offset_from_parent.y());
     transform_from_parent.PreconcatTransform(GetTransform());
-    clip_transform_recorder.Transform(transform_from_parent);
+    transform_recorder.Transform(transform_from_parent);
   }
 
   if (is_invalidated || !paint_cache_.UseCache(context)) {

@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/clip_transform_recorder.h"
+#include "ui/compositor/clip_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -276,9 +276,8 @@ void InfoBarView::PaintChildren(const ui::PaintContext& context) {
   // canvas->sk_canvas()->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  ui::ClipTransformRecorder clip_transform_recorder(context);
-  clip_transform_recorder.ClipRect(
-      gfx::Rect(0, arrow_height(), width(), bar_height()));
+  ui::ClipRecorder clip_recorder(context);
+  clip_recorder.ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
   views::View::PaintChildren(context);
 }
 
