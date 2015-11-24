@@ -68,6 +68,7 @@
 #include "net/base/keygen_handler.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
@@ -1137,6 +1138,12 @@ void ProfileIOData::Init(
     request_interceptors.push_back(
         profile_params_->new_tab_page_interceptor.release());
   }
+
+  scoped_ptr<net::MultiLogCTVerifier> ct_verifier(
+      new net::MultiLogCTVerifier());
+  ct_verifier->AddLogs(io_thread_globals->ct_logs);
+  main_request_context_->set_cert_transparency_verifier(ct_verifier.get());
+  cert_transparency_verifier_ = ct_verifier.Pass();
 
   InitializeInternal(
       network_delegate.Pass(), profile_params_.get(),

@@ -23,15 +23,14 @@ class CTLogVerifier;
 
 // A Certificate Transparency verifier that can verify Signed Certificate
 // Timestamps from multiple logs.
-// There should be a global instance of this class and for all known logs,
-// AddLog should be called with a CTLogVerifier (which is created from the
-// log's public key).
+// It must be initialized with a list of logs by calling AddLogs.
 class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
  public:
   MultiLogCTVerifier();
   ~MultiLogCTVerifier() override;
 
-  void AddLogs(const std::vector<scoped_refptr<CTLogVerifier>>& log_verifiers);
+  void AddLogs(
+      const std::vector<scoped_refptr<const CTLogVerifier>>& log_verifiers);
 
   // CTVerifier implementation:
   int Verify(X509Certificate* cert,
@@ -61,7 +60,7 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
   // Mapping from a log's ID to the verifier for this log.
   // A log's ID is the SHA-256 of the log's key, as defined in section 3.2.
   // of RFC6962.
-  std::map<std::string, scoped_refptr<CTLogVerifier>> logs_;
+  std::map<std::string, scoped_refptr<const CTLogVerifier>> logs_;
 
   Observer* observer_;
 

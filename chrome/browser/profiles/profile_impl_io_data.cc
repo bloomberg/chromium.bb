@@ -476,8 +476,7 @@ void ProfileImplIOData::InitializeInternal(
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
-  main_context->set_cert_transparency_verifier(
-      io_thread_globals->cert_transparency_verifier.get());
+
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 

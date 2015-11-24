@@ -62,7 +62,7 @@ MultiLogCTVerifier::MultiLogCTVerifier() : observer_(nullptr) {
 MultiLogCTVerifier::~MultiLogCTVerifier() { }
 
 void MultiLogCTVerifier::AddLogs(
-    const std::vector<scoped_refptr<CTLogVerifier>>& log_verifiers) {
+    const std::vector<scoped_refptr<const CTLogVerifier>>& log_verifiers) {
   for (const auto& log_verifier : log_verifiers) {
     VLOG(1) << "Adding CT log: " << log_verifier->description();
     logs_[log_verifier->key_id()] = log_verifier;

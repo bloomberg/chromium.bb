@@ -117,7 +117,7 @@ bool CTLogVerifier::Init(const base::StringPiece& public_key) {
 }
 
 bool CTLogVerifier::VerifySignature(const base::StringPiece& data_to_sign,
-                                    const base::StringPiece& signature) {
+                                    const base::StringPiece& signature) const {
   SECItem sig_data;
   sig_data.data = reinterpret_cast<unsigned char*>(const_cast<char*>(
       signature.data()));

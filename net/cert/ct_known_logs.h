@@ -21,7 +21,7 @@ namespace ct {
 #if !defined(OS_NACL)
 // CreateLogVerifiersForKnownLogs returns a vector of CT logs for all the known
 // and trusted logs.
-NET_EXPORT std::vector<scoped_refptr<CTLogVerifier>>
+NET_EXPORT std::vector<scoped_refptr<const CTLogVerifier>>
 CreateLogVerifiersForKnownLogs();
 #endif
 

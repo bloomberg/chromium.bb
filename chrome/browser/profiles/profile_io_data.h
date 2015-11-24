@@ -25,6 +25,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -542,6 +543,7 @@ class ProfileIOData {
 
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
+  mutable scoped_ptr<net::CTVerifier> cert_transparency_verifier_;
   mutable scoped_ptr<net::HttpServerProperties>
       http_server_properties_;
 #if defined(OS_CHROMEOS)

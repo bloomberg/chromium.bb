@@ -60,7 +60,7 @@ class CertPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
-class CTVerifier;
+class CTLogVerifier;
 class FtpTransactionFactory;
 class HostMappingRules;
 class HostResolver;
@@ -153,6 +153,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // used to enforce pinning for system requests and will only use built-in
     // pins.
     scoped_ptr<net::TransportSecurityState> transport_security_state;
+    std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     scoped_ptr<net::CTVerifier> cert_transparency_verifier;
     scoped_ptr<net::CertPolicyEnforcer> cert_policy_enforcer;
     scoped_refptr<net::SSLConfigService> ssl_config_service;

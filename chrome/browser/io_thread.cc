@@ -689,7 +689,7 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile8(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::CreateLogVerifiers::Start"));
-  std::vector<scoped_refptr<net::CTLogVerifier>> ct_logs(
+  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
       net::ct::CreateLogVerifiersForKnownLogs());
 
   // Add logs from command line
@@ -708,7 +708,7 @@ void IOThread::Init() {
       std::string ct_public_key_data;
       CHECK(base::Base64Decode(log_metadata[1], &ct_public_key_data))
           << "Unable to decode CT public key.";
-      scoped_refptr<net::CTLogVerifier> external_log_verifier(
+      scoped_refptr<const net::CTLogVerifier> external_log_verifier(
           net::CTLogVerifier::Create(ct_public_key_data, log_description,
                                      log_url));
       CHECK(external_log_verifier) << "Unable to parse CT public key.";
@@ -716,6 +716,8 @@ void IOThread::Init() {
       ct_logs.push_back(external_log_verifier);
     }
   }
+
+  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -730,7 +732,7 @@ void IOThread::Init() {
   net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
   globals_->cert_transparency_verifier.reset(ct_verifier);
   // Add built-in logs
-  ct_verifier->AddLogs(ct_logs);
+  ct_verifier->AddLogs(globals_->ct_logs);
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.

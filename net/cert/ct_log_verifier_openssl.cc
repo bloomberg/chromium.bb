@@ -86,7 +86,7 @@ bool CTLogVerifier::Init(const base::StringPiece& public_key) {
 }
 
 bool CTLogVerifier::VerifySignature(const base::StringPiece& data_to_sign,
-                                    const base::StringPiece& signature) {
+                                    const base::StringPiece& signature) const {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   const EVP_MD* hash_alg = GetEvpAlg(hash_algorithm_);

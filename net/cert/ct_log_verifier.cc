@@ -11,7 +11,7 @@
 namespace net {
 
 // static
-scoped_refptr<CTLogVerifier> CTLogVerifier::Create(
+scoped_refptr<const CTLogVerifier> CTLogVerifier::Create(
     const base::StringPiece& public_key,
     const base::StringPiece& description,
     const base::StringPiece& url) {
@@ -35,7 +35,7 @@ CTLogVerifier::CTLogVerifier(const base::StringPiece& description,
 }
 
 bool CTLogVerifier::Verify(const ct::LogEntry& entry,
-                           const ct::SignedCertificateTimestamp& sct) {
+                           const ct::SignedCertificateTimestamp& sct) const {
   if (sct.log_id != key_id()) {
     DVLOG(1) << "SCT is not signed by this log.";
     return false;
@@ -60,7 +60,7 @@ bool CTLogVerifier::Verify(const ct::LogEntry& entry,
 }
 
 bool CTLogVerifier::VerifySignedTreeHead(
-    const ct::SignedTreeHead& signed_tree_head) {
+    const ct::SignedTreeHead& signed_tree_head) const {
   if (!SignatureParametersMatch(signed_tree_head.signature))
     return false;
 
@@ -74,7 +74,7 @@ bool CTLogVerifier::VerifySignedTreeHead(
 }
 
 bool CTLogVerifier::SignatureParametersMatch(
-    const ct::DigitallySigned& signature) {
+    const ct::DigitallySigned& signature) const {
   if (!signature.SignatureParametersMatch(hash_algorithm_,
                                           signature_algorithm_)) {
     DVLOG(1) << "Mismatched hash or signature algorithm. Hash: "
