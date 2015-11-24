@@ -1,21 +1,23 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
-<style> .selected { color: blue; } </style>
-</head>
-<body>
+<meta charset="utf-8">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <p>This tests horizontal caret movement in vertical writing mode. "ある。" and "名前はまだ" must be selected.</p>
-<div id="test" style="height: 30ex; -webkit-writing-mode: vertical-rl; outline: none;" contenteditable>
-<p>吾輩は猫である。<br>名前はまだ無い。</p>
+<div style="height: 30ex; -webkit-writing-mode: vertical-rl; outline: none;" contenteditable>
+<p id="p1">吾輩は猫である。<br>名前はまだ無い。</p>
 </div>
-<pre id="log"></pre>
+<div id="log"></div>
 <script>
+test(function() {
+    var selection = window.getSelection();
+    var p1 = document.getElementById('p1');
+    selection.collapse(p1.lastChild, 5);
+    selection.modify('Extend', 'Backward', 'Line');
 
-var test = document.getElementById('test');
-window.getSelection().collapse(test.getElementsByTagName('p')[0].lastChild, 5);
-window.getSelection().modify('Extend', 'Backward', 'Line');
-
+    assert_false(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, p1.lastChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 5, 'anchorOffset');
+    assert_equals(selection.focusNode, p1.firstChild, 'focusNode');
+    assert_equals(selection.focusOffset, 5, 'focusOffset');
+});
 </script>
-</body>
-</html>
