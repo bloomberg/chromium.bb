@@ -43,6 +43,8 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 + (NSString*)tooltipForNode:(const BookmarkNode*)node {
   NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+  if (node->is_folder())
+    return title;
   std::string urlString = node->url().possibly_invalid_spec();
   NSString* url = base::SysUTF8ToNSString(urlString);
   return cocoa_l10n_util::TooltipForURLAndTitle(url, title);

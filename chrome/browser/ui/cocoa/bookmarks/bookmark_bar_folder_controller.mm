@@ -418,10 +418,10 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
       // Make the button do something.
       [button setTarget:barController_];
       [button setAction:@selector(openBookmark:)];
-      // Add a tooltip.
-      [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
       [button setAcceptsTrackIn:YES];
     }
+    // Add a tooltip.
+    [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
   } else {
     [button setEnabled:NO];
     [button setBordered:NO];

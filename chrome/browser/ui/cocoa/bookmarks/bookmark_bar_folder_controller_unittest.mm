@@ -241,16 +241,6 @@ TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
     EXPECT_TRUE(NSContainsRect(bigger, r));
     EXPECT_TRUE([[button cell] isKindOfClass:cellClass]);
   }
-
-  // Confirm folder buttons have no tooltip.  The important thing
-  // really is that we insure folders and non-folders are treated
-  // differently; not sure of any other generic way to do this.
-  for (BookmarkButton* button in buttons) {
-    if ([button isFolder])
-      EXPECT_FALSE([button toolTip]);
-    else
-      EXPECT_TRUE([button toolTip]);
-  }
 }
 
 // Make sure closing of the window releases the controller.
