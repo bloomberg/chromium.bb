@@ -316,7 +316,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParseMultipleHashes(
         "sha384-XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr sha512-tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         kValidSha384AndSha512,
-        ARRAY_SIZE(kValidSha384AndSha512));
+        WTF_ARRAY_LENGTH(kValidSha384AndSha512));
 
     const IntegrityMetadata kValidSha256AndSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256},
@@ -325,7 +325,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParseMultipleHashes(
         "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha256-deadbeef",
         kValidSha256AndSha256,
-        ARRAY_SIZE(kValidSha256AndSha256));
+        WTF_ARRAY_LENGTH(kValidSha256AndSha256));
 
     const IntegrityMetadata kValidSha256AndInvalidSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256}
@@ -333,7 +333,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParseMultipleHashes(
         "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha256-!!!!",
         kValidSha256AndInvalidSha256,
-        ARRAY_SIZE(kValidSha256AndInvalidSha256));
+        WTF_ARRAY_LENGTH(kValidSha256AndInvalidSha256));
 
     const IntegrityMetadata kInvalidSha256AndValidSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256}
@@ -341,7 +341,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParseMultipleHashes(
         "sha256-!!! sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         kInvalidSha256AndValidSha256,
-        ARRAY_SIZE(kInvalidSha256AndValidSha256));
+        WTF_ARRAY_LENGTH(kInvalidSha256AndValidSha256));
 
     expectParse(
         "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=?foo=bar",

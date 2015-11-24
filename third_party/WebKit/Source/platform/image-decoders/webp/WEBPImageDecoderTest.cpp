@@ -297,7 +297,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
         { 2, 2, 7, 16, ImageFrame::DisposeKeep, ImageFrame::BlendAtopPreviousFrame, 1000u, true },
     };
 
-    for (size_t i = 0; i < ARRAY_SIZE(frameParameters); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
         EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
@@ -312,7 +312,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
 
-    EXPECT_EQ(ARRAY_SIZE(frameParameters), decoder->frameCount());
+    EXPECT_EQ(WTF_ARRAY_LENGTH(frameParameters), decoder->frameCount());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
@@ -340,7 +340,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackgrou
         { 10, 54, 32, 33, ImageFrame::DisposeOverwriteBgcolor, ImageFrame::BlendAtopPreviousFrame, 1000u, true },
     };
 
-    for (size_t i = 0; i < ARRAY_SIZE(frameParameters); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
         EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
@@ -355,7 +355,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackgrou
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
 
-    EXPECT_EQ(ARRAY_SIZE(frameParameters), decoder->frameCount());
+    EXPECT_EQ(WTF_ARRAY_LENGTH(frameParameters), decoder->frameCount());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
@@ -383,7 +383,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
         { 10, 54, 32, 33, ImageFrame::DisposeOverwriteBgcolor, ImageFrame::BlendAtopBgcolor, 1000u, true },
     };
 
-    for (size_t i = 0; i < ARRAY_SIZE(frameParameters); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(frameParameters); ++i) {
         const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
         EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
         EXPECT_EQ(canvasWidth, frame->getSkBitmap().width());
@@ -398,7 +398,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
         EXPECT_EQ(frameParameters[i].hasAlpha, frame->hasAlpha());
     }
 
-    EXPECT_EQ(ARRAY_SIZE(frameParameters), decoder->frameCount());
+    EXPECT_EQ(WTF_ARRAY_LENGTH(frameParameters), decoder->frameCount());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 

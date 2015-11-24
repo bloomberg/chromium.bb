@@ -1394,7 +1394,7 @@ TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbere
         "viewport-target-densitydpi-device-and-fixed-width.html"
     };
     float pageScaleFactors[] = { 0.5f, 1.0f };
-    for (size_t i = 0; i < ARRAY_SIZE(pages); ++i)
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(pages); ++i)
         registerMockedHttpURLLoad(pages[i]);
 
     FixedLayoutTestWebViewClient client;
@@ -1403,7 +1403,7 @@ TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbere
     int viewportHeight = 300;
     float enforcedPageScaleFactor = 0.75f;
 
-    for (size_t i = 0; i < ARRAY_SIZE(pages); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(pages); ++i) {
         for (int quirkEnabled = 0; quirkEnabled <= 1; ++quirkEnabled) {
             FrameTestHelpers::WebViewHelper webViewHelper(this);
             webViewHelper.initializeAndLoad(m_baseURL + pages[i], true, 0, &client, enableViewportSettings);
@@ -1412,7 +1412,7 @@ TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbere
             webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
             webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
-            float expectedPageScaleFactor = quirkEnabled && i < ARRAY_SIZE(pageScaleFactors) ? pageScaleFactors[i] : enforcedPageScaleFactor;
+            float expectedPageScaleFactor = quirkEnabled && i < WTF_ARRAY_LENGTH(pageScaleFactors) ? pageScaleFactors[i] : enforcedPageScaleFactor;
             EXPECT_EQ(expectedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
         }
     }
@@ -2049,7 +2049,7 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(deviceScaleFactors); ++i) {
         float deviceScaleFactor = deviceScaleFactors[i];
         float deviceDpi = deviceScaleFactor * 160.0f;
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactor;
@@ -2079,7 +2079,7 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(deviceScaleFactors); ++i) {
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
         FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -2104,7 +2104,7 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(deviceScaleFactors); ++i) {
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
         FrameTestHelpers::WebViewHelper webViewHelper(this);
