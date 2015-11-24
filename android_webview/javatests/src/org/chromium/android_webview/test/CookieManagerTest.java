@@ -466,7 +466,7 @@ public class CookieManagerTest extends AwTestBase {
         TestWebServer webServer = TestWebServer.start();
         try {
             mCookieManager.setAcceptCookie(true);
-            mCookieManager.removeAllCookie();
+            mCookieManager.removeAllCookies();
             assertTrue(mCookieManager.acceptCookie());
             assertFalse(mCookieManager.hasCookies());
 

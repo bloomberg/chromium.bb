@@ -19,21 +19,6 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("android_webview")
 public final class AwCookieManager {
 
-    // TODO(hjd): remove after landing android update to use new calls.
-    public void removeExpiredCookie() {
-        removeExpiredCookies();
-    }
-
-    // TODO(hjd): remove after landing android update to use new calls.
-    public void removeAllCookie() {
-        removeAllCookies();
-    }
-
-    // TODO(hjd): remove after landing android update to use new calls.
-    public void removeSessionCookie() {
-        removeSessionCookies();
-    }
-
     /**
      * Control whether cookie is enabled or disabled
      * @param accept TRUE if accept cookie

@@ -125,7 +125,7 @@ public class CookieManagerAdapter extends CookieManager {
 
     @Override
     public void removeExpiredCookie() {
-        mChromeCookieManager.removeExpiredCookie();
+        mChromeCookieManager.removeExpiredCookies();
     }
 
     @Override
