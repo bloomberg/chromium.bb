@@ -56,6 +56,48 @@ class RetryOnServerErrorHttpRequest(HttpRequest):
         http=http, num_retries=num_retries or self.num_retries)
 
 
+def _GetMetdataValue(metadata, key):
+  """Finds a value corresponding to a given metadata key.
+
+  Args:
+    metadata: metadata object, i.e. a dict containing containing 'items'
+      - a list of key-value pairs.
+    key: name of the key.
+
+  Returns:
+    Corresponding value or None if it was not found.
+  """
+  for item in metadata['items']:
+    if item['key'] == key:
+      return item['value']
+  return None
+
+
+def _UpdateMetadataValue(metadata, key, value):
+  """Updates a single key-value pair in a metadata object.
+
+  Args:
+    metadata: metadata object, i.e. a dict containing containing 'items'
+      - a list of key-value pairs.
+    key: name of the key.
+    value: new value for the key, or None if it should be removed.
+  """
+  items = metadata.setdefault('items', [])
+  for item in items:
+    if item['key'] == key:
+      if value is None:
+        items.remove(item)
+      else:
+        item['value'] = value
+      return
+
+  if value is not None:
+    items.append({
+        'key': key,
+        'value': value,
+    })
+
+
 class GceContext(object):
   """A convinient wrapper around the GCE Python API."""
 
@@ -384,6 +426,68 @@ class GceContext(object):
       return self.GetImage(image) is not None
     except ResourceNotFoundError:
       return False
+
+  def GetCommonInstanceMetadata(self, key):
+    """Looks up a single project metadata value.
+
+    Args:
+      key: Metadata key name.
+
+    Returns:
+      Metadata value corresponding to the key, or None if it was not found.
+    """
+    projects_data = self.gce_client.projects().get(
+        project=self.project).execute()
+    metadata = projects_data['commonInstanceMetadata']
+    return _GetMetdataValue(metadata, key)
+
+  def SetCommonInstanceMetadata(self, key, value):
+    """Sets a single project metadata value.
+
+    Args:
+      key: Metadata key to be set.
+      value: New value, or None if the given key should be removed.
+    """
+    projects_data = self.gce_client.projects().get(
+        project=self.project).execute()
+    metadata = projects_data['commonInstanceMetadata']
+    _UpdateMetadataValue(metadata, key, value)
+    operation = self.gce_client.projects().setCommonInstanceMetadata(
+        project=self.project,
+        body=metadata).execute()
+    self._WaitForGlobalOperation(operation['name'])
+
+  def GetInstanceMetadata(self, instance, key):
+    """Looks up instance's metadata value.
+
+    Args:
+      instance: Name of the instance.
+      key: Metadata key name.
+
+    Returns:
+      Metadata value corresponding to the key, or None if it was not found.
+    """
+    instance_data = self.GetInstance(instance)
+    metadata = instance_data['metadata']
+    return self._GetMetdataValue(metadata, key)
+
+  def SetInstanceMetadata(self, instance, key, value):
+    """Sets a single instance metadata value.
+
+    Args:
+      instance: Name of the instance.
+      key: Metadata key to be set.
+      value: New value, or None if the given key should be removed.
+    """
+    instance_data = self.GetInstance(instance)
+    metadata = instance_data['metadata']
+    _UpdateMetadataValue(metadata, key, value)
+    operation = self.gce_client.instances().setMetadata(
+        project=self.project,
+        zone=self.zone,
+        instance=instance,
+        body=metadata).execute()
+    self._WaitForZoneOperation(operation['name'])
 
   def _WaitForZoneOperation(self, operation, zone=None, timeout_sec=None,
                             timeout_handler=None):
