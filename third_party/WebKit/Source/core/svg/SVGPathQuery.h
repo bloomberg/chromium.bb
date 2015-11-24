@@ -18,34 +18,26 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathTraversalStateBuilder_h
-#define SVGPathTraversalStateBuilder_h
-
-#include "core/svg/SVGPathConsumer.h"
-#include "platform/graphics/PathTraversalState.h"
+#ifndef SVGPathQuery_h
+#define SVGPathQuery_h
 
 namespace blink {
 
 class FloatPoint;
+class SVGPathByteStream;
 
-class SVGPathTraversalStateBuilder final : public SVGPathConsumer {
+class SVGPathQuery {
 public:
-    SVGPathTraversalStateBuilder(PathTraversalState::PathTraversalAction, float desiredLength = 0);
+    explicit SVGPathQuery(const SVGPathByteStream&);
 
-    unsigned pathSegmentIndex() const { return m_segmentIndex; }
-    float totalLength();
-    FloatPoint currentPoint();
-
-    void incrementPathSegmentCount() override;
-    bool continueConsuming() override;
+    float getTotalLength() const;
+    FloatPoint getPointAtLength(float length) const;
+    unsigned getPathSegIndexAtLength(float length) const;
 
 private:
-    void emitSegment(const PathSegmentData&) override;
-
-    PathTraversalState m_traversalState;
-    unsigned m_segmentIndex;
+    const SVGPathByteStream& m_pathByteStream;
 };
 
 } // namespace blink
 
-#endif // SVGPathTraversalStateBuilder_h
+#endif // SVGPathQuery_h

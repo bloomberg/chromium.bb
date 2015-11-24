@@ -24,7 +24,7 @@
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGMPathElement.h"
-#include "core/svg/SVGPathUtilities.h"
+#include "core/svg/SVGPathQuery.h"
 #include "core/svg/SVGPointTearOff.h"
 
 namespace blink {
@@ -81,18 +81,18 @@ Path SVGPathElement::asPath() const
 
 float SVGPathElement::getTotalLength()
 {
-    return getTotalLengthOfSVGPathByteStream(pathByteStream());
+    return SVGPathQuery(pathByteStream()).getTotalLength();
 }
 
 PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
-    FloatPoint point = getPointAtLengthOfSVGPathByteStream(pathByteStream(), length);
+    FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)
 {
-    return getSVGPathSegAtLengthFromSVGPathByteStream(pathByteStream(), length);
+    return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
 }
 
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)

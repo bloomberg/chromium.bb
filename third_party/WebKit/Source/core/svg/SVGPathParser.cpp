@@ -50,12 +50,6 @@ bool SVGPathParser::parsePath()
             return false;
 
         m_consumer->emitSegment(segment);
-
-        if (!m_consumer->continueConsuming())
-            return true;
-
-        if (m_source->hasMoreData())
-            m_consumer->incrementPathSegmentCount();
     }
     return true;
 }
@@ -314,12 +308,6 @@ bool SVGPathParser::parseAndNormalizePath()
             return false;
 
         normalizer.emitSegment(segment);
-
-        if (!m_consumer->continueConsuming())
-            return true;
-
-        if (m_source->hasMoreData())
-            m_consumer->incrementPathSegmentCount();
     }
     return true;
 }

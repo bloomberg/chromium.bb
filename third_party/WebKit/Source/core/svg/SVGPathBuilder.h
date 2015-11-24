@@ -35,9 +35,6 @@ public:
     SVGPathBuilder(Path& path) : m_path(path), m_closed(true) { }
 
 private:
-    void incrementPathSegmentCount() override { }
-    bool continueConsuming() override { return true; }
-
     void emitSegment(const PathSegmentData&) override;
 
     Path& m_path;

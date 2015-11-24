@@ -39,9 +39,6 @@ public:
     SVGPathConsumer() { }
     virtual ~SVGPathConsumer() { }
 
-    virtual void incrementPathSegmentCount() = 0;
-    virtual bool continueConsuming() = 0;
-
     virtual void emitSegment(const PathSegmentData&) = 0;
 };
 

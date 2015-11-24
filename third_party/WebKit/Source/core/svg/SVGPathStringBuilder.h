@@ -31,9 +31,6 @@ public:
     String result();
 
 private:
-    void incrementPathSegmentCount() override { }
-    bool continueConsuming() override { return true; }
-
     void emitSegment(const PathSegmentData&) override;
 
     StringBuilder m_stringBuilder;

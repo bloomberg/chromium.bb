@@ -22,7 +22,6 @@
 
 #include "core/CoreExport.h"
 #include "core/svg/SVGPathParser.h"
-#include "platform/geometry/FloatPoint.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -39,10 +38,6 @@ bool buildByteStreamFromString(const String&, SVGPathByteStream&);
 
 // SVGPathByteStream -> String
 String buildStringFromByteStream(const SVGPathByteStream&, PathParsingMode);
-
-unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream&, float length);
-float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream&);
-FloatPoint getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream&, float length);
 
 } // namespace blink
 
