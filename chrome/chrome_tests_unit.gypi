@@ -1587,6 +1587,7 @@
       'browser/ui/webui/options/sync_setup_handler_unittest.cc',
       'browser/ui/webui/settings/sync_handler_unittest.cc',
       'browser/ui/webui/signin/login_ui_service_unittest.cc',
+      'browser/ui/webui/sync_internals_message_handler_unittest.cc',
       'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
       'browser/ui/window_sizer/window_sizer_common_unittest.cc',
       'browser/ui/window_sizer/window_sizer_unittest.cc',

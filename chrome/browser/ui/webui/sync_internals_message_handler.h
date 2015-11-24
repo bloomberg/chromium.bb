@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -20,6 +21,22 @@
 #include "sync/js/js_event_handler.h"
 
 class ProfileSyncService;
+class SigninManagerBase;
+
+namespace sync_driver {
+class SyncService;
+}  //  namespace sync_driver
+
+// Interface to abstract away the creation of the about-sync value dictionary.
+class AboutSyncDataExtractor {
+ public:
+  // Given state about sync, extracts various interesting fields and populates
+  // a tree of base::Value objects.
+  virtual scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
+      sync_driver::SyncService* service,
+      SigninManagerBase* signin) = 0;
+  virtual ~AboutSyncDataExtractor() {}
+};
 
 // The implementation for the chrome://sync-internals page.
 class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
@@ -78,6 +95,11 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
                          const std::string& counter_type,
                          scoped_ptr<base::DictionaryValue> value);
 
+ protected:
+  // Constructor used for unit testing to override the about sync info.
+  SyncInternalsMessageHandler(
+      scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor);
+
  private:
   // Fetches updated aboutInfo and sends it to the page in the form of an
   // onAboutInfoUpdated event.
@@ -88,11 +110,14 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   base::WeakPtr<syncer::JsController> js_controller_;
 
   // A flag used to prevent double-registration with ProfileSyncService.
-  bool is_registered_;
+  bool is_registered_ = false;
 
   // A flag used to prevent double-registration as TypeDebugInfoObserver with
   // ProfileSyncService.
-  bool is_registered_for_counters_;
+  bool is_registered_for_counters_ = false;
+
+  // An abstraction of who creates the about sync info value map.
+  scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor_;
 
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
 
