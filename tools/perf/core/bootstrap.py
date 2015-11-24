@@ -25,6 +25,7 @@ import urlparse
 davclient = None
 
 
+# TODO(eakuefner): Switch this link to tools/perf version after verifying.
 # Link to file containing the 'davclient' WebDAV client library.
 _DAVCLIENT_URL = ('https://src.chromium.org/chrome/trunk/src/tools/'
                   'telemetry/third_party/davclient/davclient.py')

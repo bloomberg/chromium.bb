@@ -12,13 +12,14 @@ import zipfile
 
 from telemetry import benchmark
 from telemetry.core import discover
-from telemetry.internal.util import bootstrap
 from telemetry.internal.util import command_line
 from telemetry.internal.util import path
 from telemetry.internal.util import path_set
 
-from modulegraph import modulegraph
+from modulegraph import modulegraph  # pylint: disable=import-error
 
+from core import bootstrap
+from core import path_util
 
 DEPS_FILE = 'bootstrap_deps'
 
@@ -29,7 +30,7 @@ def FindBootstrapDependencies(base_dir):
     return []
   deps_paths = bootstrap.ListAllDepsPaths(deps_file)
   return set(os.path.realpath(os.path.join(
-      path.GetChromiumSrcDir(), '..', deps_path))
+      path_util.GetChromiumSrcDir(), '..', deps_path))
       for deps_path in deps_paths)
 
 
@@ -64,7 +65,7 @@ def FindPythonDependencies(module_path):
       # This check is done after the logging/printing above to make sure that
       # we also print out the dependency edges that include python packages
       # that are not in chromium.
-      if not path.IsSubpath(module_path, path.GetChromiumSrcDir()):
+      if not path.IsSubpath(module_path, path_util.GetChromiumSrcDir()):
         continue
 
       yield module_path
@@ -149,9 +150,10 @@ def FindDependencies(target_paths, options):
   # and all its dependencies. If the user doesn't pass any arguments, we just
   # have Telemetry.
   dependencies |= FindPythonDependencies(os.path.realpath(
-    os.path.join(path.GetTelemetryDir(), 'telemetry', 'benchmark_runner.py')))
+    os.path.join(path_util.GetTelemetryDir(),
+                 'telemetry', 'benchmark_runner.py')))
   dependencies |= FindPythonDependencies(os.path.realpath(
-    os.path.join(path.GetTelemetryDir(),
+    os.path.join(path_util.GetTelemetryDir(),
                  'telemetry', 'testing', 'run_tests.py')))
 
   # Add dependencies.
@@ -171,7 +173,7 @@ def FindDependencies(target_paths, options):
 
 
 def ZipDependencies(target_paths, dependencies, options):
-  base_dir = os.path.dirname(os.path.realpath(path.GetChromiumSrcDir()))
+  base_dir = os.path.dirname(os.path.realpath(path_util.GetChromiumSrcDir()))
 
   with zipfile.ZipFile(options.zip, 'w', zipfile.ZIP_DEFLATED) as zip_file:
     # Add dependencies to archive.

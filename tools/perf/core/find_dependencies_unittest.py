@@ -6,7 +6,8 @@ import os
 import unittest
 
 from telemetry.core import util
-from telemetry.internal.util import find_dependencies
+
+from core import find_dependencies
 
 
 class FindDependenciesTest(unittest.TestCase):

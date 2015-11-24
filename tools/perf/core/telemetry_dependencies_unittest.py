@@ -2,18 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
+# TODO(eakuefner): Remove this test once Telemetry lives in Catapult.
 import os
 import platform
 import sys
 import unittest
 
-from telemetry.internal.util import find_dependencies
 from telemetry.internal.util import path
 
+from core import find_dependencies
+from core import path_util
 
-_TELEMETRY_DEPS_PATH = os.path.join(
-    path.GetTelemetryDir(), 'telemetry', 'TELEMETRY_DEPS')
+_TELEMETRY_DEPS = [
+    'build/android/devil/',
+    'build/android/pylib/',
+    'third_party/catapult/',
+    'tools/telemetry/']
 
 
 def _GetCurrentTelemetryDependencies():
@@ -25,20 +29,13 @@ def _GetCurrentTelemetryDependencies():
 
 
 def _GetRestrictedTelemetryDeps():
-  with open(_TELEMETRY_DEPS_PATH, 'r') as f:
-    telemetry_deps = json.load(f)
-
   # Normalize paths in telemetry_deps since TELEMETRY_DEPS file only contain
   # the relative path in chromium/src/.
   def NormalizePath(p):
     p = p.replace('/', os.path.sep)
-    return os.path.realpath(os.path.join(path.GetChromiumSrcDir(), p))
+    return os.path.realpath(os.path.join(path_util.GetChromiumSrcDir(), p))
 
-  telemetry_deps['file_deps'] = [
-      NormalizePath(p) for p in telemetry_deps['file_deps']]
-  telemetry_deps['directory_deps'] = [
-      NormalizePath(p) for p in telemetry_deps['directory_deps']]
-  return telemetry_deps
+  return map(NormalizePath, _TELEMETRY_DEPS)
 
 
 class TelemetryDependenciesTest(unittest.TestCase):
@@ -48,9 +45,7 @@ class TelemetryDependenciesTest(unittest.TestCase):
     current_dependencies = _GetCurrentTelemetryDependencies()
     extra_dep_paths = []
     for dep_path in current_dependencies:
-      if not (dep_path in telemetry_deps['file_deps'] or
-              any(path.IsSubpath(dep_path, d)
-                  for d in telemetry_deps['directory_deps'])):
+      if not any(path.IsSubpath(dep_path, d) for d in telemetry_deps):
         extra_dep_paths.append(dep_path)
     # Temporarily ignore failure on Mac because test is failing on Mac 10.8 bot.
     # crbug.com/522335
