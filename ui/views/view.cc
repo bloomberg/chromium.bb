@@ -846,12 +846,12 @@ const ui::NativeTheme* View::GetNativeTheme() const {
     return widget->GetNativeTheme();
 
 #if defined(OS_WIN)
-  // On Windows, ui::NativeTheme::instance() returns NativeThemeWinAura because
-  // that's what the renderer wants, but Views should default to NativeThemeWin.
-  // TODO(estade): clean this up, see http://crbug.com/558029
+  // On Windows, ui::NativeTheme::GetInstanceForWeb() returns NativeThemeWinAura
+  // because that's what the renderer wants, but Views should default to
+  // NativeThemeWin. TODO(estade): clean this up, see http://crbug.com/558029
   return ui::NativeThemeWin::instance();
 #else
-  return ui::NativeTheme::instance();
+  return ui::NativeTheme::GetInstanceForWeb();
 #endif
 }
 

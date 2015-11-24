@@ -16,9 +16,6 @@ void NativeTheme::SetScrollbarColors(unsigned inactive_color,
   track_color_ = track_color;
 }
 
-// NativeTheme::instance() is implemented in the platform specific source files,
-// such as native_theme_win.cc or native_theme_linux.cc
-
 void NativeTheme::AddObserver(NativeThemeObserver* observer) {
   native_theme_observers_.AddObserver(observer);
 }

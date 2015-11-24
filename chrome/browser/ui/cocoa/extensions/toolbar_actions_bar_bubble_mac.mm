@@ -16,6 +16,7 @@
 #import "ui/base/cocoa/hover_button.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 BOOL g_animations_enabled = false;
@@ -74,7 +75,7 @@ CGFloat kMinWidth = 320.0;
     acknowledged_ = NO;
     delegate_ = delegate.Pass();
 
-    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [[self bubble] setBackgroundColor:

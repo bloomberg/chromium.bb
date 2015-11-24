@@ -11,7 +11,7 @@
 namespace ui {
 
 // Mac implementation of native theme support.
-class NativeThemeMac : public NativeThemeBase {
+class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
  public:
   static NativeThemeMac* instance();
 

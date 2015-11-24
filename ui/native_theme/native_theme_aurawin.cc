@@ -34,7 +34,7 @@ bool IsScrollbarPart(NativeTheme::Part part) {
 }  // namespace
 
 // static
-NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAuraWin::instance();
 }
 

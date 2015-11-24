@@ -336,7 +336,7 @@ TEST_F(StyledLabelTest, Color) {
   container->AddChildView(label);
   const SkColor kDefaultTextColor = label->enabled_color();
 
-  // Obtain the default text color for a link;
+  // Obtain the default text color for a link.
   Link* link = new Link(ASCIIToUTF16(text_link));
   container->AddChildView(link);
   const SkColor kDefaultLinkColor = link->enabled_color();

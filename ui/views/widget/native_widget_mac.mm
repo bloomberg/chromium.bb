@@ -15,6 +15,7 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
@@ -551,7 +552,7 @@ void NativeWidgetMac::SetVisibilityAnimationTransition(
 }
 
 ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
-  return ui::NativeTheme::instance();
+  return ui::NativeThemeMac::instance();
 }
 
 void NativeWidgetMac::OnRootViewLayout() {

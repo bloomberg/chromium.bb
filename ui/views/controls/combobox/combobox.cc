@@ -18,6 +18,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -890,9 +891,9 @@ gfx::Size Combobox::ArrowSize() const {
   // TODO(estade): hack alert! This should always use GetNativeTheme(). For now
   // STYLE_ACTION isn't properly themed so we have to override the NativeTheme
   // behavior. See crbug.com/384071
-  const ui::NativeTheme* native_theme_for_arrow = style_ == STYLE_ACTION ?
-      ui::NativeTheme::instance() :
-      GetNativeTheme();
+  const ui::NativeTheme* native_theme_for_arrow =
+      style_ == STYLE_ACTION ? ui::NativeThemeAura::instance()
+                             : GetNativeTheme();
 #else
   const ui::NativeTheme* native_theme_for_arrow = GetNativeTheme();
 #endif

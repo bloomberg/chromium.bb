@@ -213,7 +213,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
     shadow_type = views::BubbleBorder::NO_ASSETS;
 
-  ui::NativeTheme* theme = ui::NativeTheme::instance();
+  // TODO(estade): don't use this static instance. See http://crbug.com/558162
+  ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForWeb();
   SkColor background_color =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
           ? SkColorSetA(SK_ColorBLACK, kBackgroundOpacity)

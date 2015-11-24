@@ -82,6 +82,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // views::BubbleDelegateView:
   void Init() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void WindowClosing() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   views::View* GetInitiallyFocusedView() override;

@@ -203,9 +203,8 @@ blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
       break;
   }
 #endif
-  return ui::NativeTheme::instance()->GetPartSize(native_theme_part,
-                                                  ui::NativeTheme::kNormal,
-                                                  extra);
+  return ui::NativeTheme::GetInstanceForWeb()->GetPartSize(
+      native_theme_part, ui::NativeTheme::kNormal, extra);
 }
 
 void WebThemeEngineImpl::paint(
@@ -217,11 +216,8 @@ void WebThemeEngineImpl::paint(
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
-  ui::NativeTheme::instance()->Paint(
-      canvas,
-      NativeThemePart(part),
-      NativeThemeState(state),
-      gfx::Rect(rect),
+  ui::NativeTheme::GetInstanceForWeb()->Paint(
+      canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
       native_theme_extra_params);
 }
 
@@ -231,13 +227,9 @@ void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
                                               WebThemeEngine::State endState,
                                               double progress,
                                               const blink::WebRect& rect) {
-  ui::NativeTheme::instance()->PaintStateTransition(
-      canvas,
-      NativeThemePart(part),
-      NativeThemeState(startState),
-      NativeThemeState(endState),
-      progress,
-      gfx::Rect(rect));
+  ui::NativeTheme::GetInstanceForWeb()->PaintStateTransition(
+      canvas, NativeThemePart(part), NativeThemeState(startState),
+      NativeThemeState(endState), progress, gfx::Rect(rect));
 }
 
 #if defined(OS_WIN)

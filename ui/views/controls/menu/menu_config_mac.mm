@@ -13,6 +13,7 @@
 namespace views {
 
 void MenuConfig::Init(const ui::NativeTheme* theme) {
+  DCHECK_EQ(theme, ui::NativeThemeMac::instance());
   font_list = gfx::FontList(gfx::Font([NSFont menuFontOfSize:0.0]));
   menu_vertical_border_size = 4;
   item_top_margin = item_no_icon_top_margin = 1;
@@ -34,8 +35,7 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
 
 // static
 const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
-  CR_DEFINE_STATIC_LOCAL(MenuConfig, mac_instance,
-                         (theme ? theme : ui::NativeTheme::instance()));
+  CR_DEFINE_STATIC_LOCAL(MenuConfig, mac_instance, (theme));
   return mac_instance;
 }
 

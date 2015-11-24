@@ -42,6 +42,7 @@
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
@@ -2056,7 +2057,7 @@ ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
       return native_theme;
   }
 
-  return ui::NativeTheme::instance();
+  return ui::NativeThemeAura::instance();
 }
 
 }  // namespace views

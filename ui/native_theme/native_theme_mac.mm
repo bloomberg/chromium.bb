@@ -126,7 +126,7 @@ SkColor NSSystemColorToSkColor(NSColor* color) {
 namespace ui {
 
 // static
-NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeMac::instance();
 }
 

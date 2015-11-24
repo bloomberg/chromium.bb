@@ -17,6 +17,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 @interface ZoomBubbleController (Private)
 - (void)performLayout;
@@ -90,7 +91,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     [window setInfoBubbleCanBecomeKeyWindow:NO];
     delegate_ = delegate;
 
-    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:
@@ -230,7 +231,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   base::scoped_nsobject<NSBox> separatorView(
       [[NSBox alloc] initWithFrame:rect]);
   [separatorView setBoxType:NSBoxCustom];
-  ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+  ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
   [separatorView setBorderColor:
       gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
           ui::NativeTheme::kColorId_MenuSeparatorColor))];
@@ -334,7 +335,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   NSRect bounds = [self bounds];
   NSAttributedString* title = [self attributedTitle];
   if ([self hoverState] != kHoverStateNone) {
-    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor)) set];
     NSRectFillUsingOperation(bounds, NSCompositeSourceOver);

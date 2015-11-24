@@ -55,11 +55,9 @@ void MenuConfig::InitAura(const ui::NativeTheme* theme) {
 #if !defined(OS_WIN)
 // static
 const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
-  static MenuConfig* views_instance = NULL;
-  if (!views_instance)
-    views_instance = new MenuConfig(theme ?
-        theme : ui::NativeTheme::instance());
-  return *views_instance;
+  CR_DEFINE_STATIC_LOCAL(MenuConfig, instance,
+                         (theme ? theme : ui::NativeThemeAura::instance()));
+  return instance;
 }
 #endif
 

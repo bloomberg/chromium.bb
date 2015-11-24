@@ -43,10 +43,10 @@ bool HasBookmarks(Profile* profile) {
 
 namespace ui {
 
-SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha) {
+SkColor GetSigninConfirmationPromptBarColor(ui::NativeTheme* theme,
+                                            SkAlpha alpha) {
   static const SkColor kBackgroundColor =
-      ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   return color_utils::BlendTowardOppositeLuminance(kBackgroundColor, alpha);
 }
 

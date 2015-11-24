@@ -404,7 +404,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   subpixel_rendering_enabled_ = true;
   auto_color_readability_ = true;
   multi_line_ = false;
-  UpdateColorsFromTheme(ui::NativeTheme::instance());
+  UpdateColorsFromTheme(GetNativeTheme());
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
   max_width_ = 0;

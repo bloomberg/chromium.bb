@@ -513,8 +513,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   ui::ThemeProvider* GetThemeProvider() const;
 
   // Returns the NativeTheme to use for this View. This calls through to
-  // GetNativeTheme() on the Widget this View is in. If this View is not in a
-  // Widget this returns ui::NativeTheme::instance().
+  // GetNativeTheme() on the Widget this View is in, or provides a default
+  // theme if there's no widget. Warning: the default theme might not be
+  // correct; you should probably override OnNativeThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         const_cast<const View*>(this)->GetNativeTheme());

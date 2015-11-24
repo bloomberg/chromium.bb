@@ -656,9 +656,6 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   // Reset the default margins inherited from the BubbleDelegateView.
   // Add a small bottom inset so that the bubble's rounded corners show up.
   set_margins(gfx::Insets(0, 0, 1, 0));
-  set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
   ResetView();
 
   avatar_menu_.reset(new AvatarMenu(
@@ -723,6 +720,19 @@ void ProfileChooserView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 
   ShowView(view_mode_, avatar_menu_.get());
+}
+
+void ProfileChooserView::OnNativeThemeChanged(
+    const ui::NativeTheme* native_theme) {
+  views::BubbleDelegateView::OnNativeThemeChanged(native_theme);
+  set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+  if (auth_error_email_button_) {
+    auth_error_email_button_->SetTextColor(
+        views::LabelButton::STATE_NORMAL,
+        native_theme->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled));
+  }
 }
 
 void ProfileChooserView::OnAvatarMenuChanged(
@@ -1357,10 +1367,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18,
                                   gfx::kChromeIconGrey));
 
-        auth_error_email_button_->SetTextColor(
-            views::LabelButton::STATE_NORMAL,
-            ui::NativeTheme::instance()->GetSystemColor(
-                ui::NativeTheme::kColorId_LinkEnabled));
         auth_error_email_button_->SetFocusable(true);
         gfx::Insets insets =
             views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(

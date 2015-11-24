@@ -14,6 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
@@ -24,20 +25,13 @@ namespace views {
 
 const char Link::kViewClassName[] = "Link";
 
-Link::Link()
-    : Label(base::string16()),
-      requested_enabled_color_(SK_ColorBLACK),
-      requested_enabled_color_set_(false),
-      requested_pressed_color_(SK_ColorBLACK),
-      requested_pressed_color_set_(false) {
-  Init();
-}
+Link::Link() : Link(base::string16()) {}
 
 Link::Link(const base::string16& title)
     : Label(title),
-      requested_enabled_color_(SK_ColorBLACK),
+      requested_enabled_color_(gfx::kPlaceholderColor),
       requested_enabled_color_set_(false),
-      requested_pressed_color_(SK_ColorBLACK),
+      requested_pressed_color_(gfx::kPlaceholderColor),
       requested_pressed_color_set_(false) {
   Init();
 }

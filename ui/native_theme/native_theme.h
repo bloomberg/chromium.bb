@@ -344,12 +344,13 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Return a color from the system theme.
   virtual SkColor GetSystemColor(ColorId color_id) const = 0;
 
-  // Returns a shared instance of the native theme.
-  // The returned object should not be deleted by the caller.  This function
-  // is not thread safe and should only be called from the UI thread.
-  // Each port of NativeTheme should provide its own implementation of this
-  // function, returning the port's subclass.
-  static NativeTheme* instance();
+  // Returns a shared instance of the native theme that should be used for web
+  // rendering. Do not use it in a normal application context (i.e. browser).
+  // The returned object should not be deleted by the caller. This function is
+  // not thread safe and should only be called from the UI thread. Each port of
+  // NativeTheme should provide its own implementation of this function,
+  // returning the port's subclass.
+  static NativeTheme* GetInstanceForWeb();
 
   // Add or remove observers to be notified when the native theme changes.
   void AddObserver(NativeThemeObserver* observer);

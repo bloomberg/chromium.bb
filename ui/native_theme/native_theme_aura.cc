@@ -70,7 +70,7 @@ const int kScrollbarTrackImages[9] = IMAGE_GRID(IDR_SCROLLBAR_BASE);
 
 #if !defined(OS_WIN)
 // static
-NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAura::instance();
 }
 

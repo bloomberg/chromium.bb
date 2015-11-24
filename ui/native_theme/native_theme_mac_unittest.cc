@@ -13,7 +13,7 @@ namespace ui {
 // platforms Chrome supports, and that their colorspace and component count is
 // sane.
 TEST(NativeThemeMacTest, SystemColorsExist) {
-  NativeTheme* native_theme = NativeTheme::instance();
+  NativeTheme* native_theme = NativeThemeMac::instance();
   ASSERT_TRUE(native_theme);
   for (int i = 0; i < NativeTheme::kColorId_NumColors; ++i) {
     // While 0 is a valid color, no system color should be fully transparent.
@@ -28,7 +28,7 @@ TEST(NativeThemeMacTest, SystemColorsExist) {
 // Spot-check some system colours that can't be changed through System
 // Preferences.
 TEST(NativeThemeMacTest, SystemColorSpotChecks) {
-  NativeTheme* native_theme = NativeTheme::instance();
+  NativeTheme* native_theme = NativeThemeMac::instance();
   const SkColor kWindowColorCatsMavericks = SkColorSetARGB(255, 232, 232, 232);
   const SkColor kWindowColorYosemite = SkColorSetARGB(255, 236, 236, 236);
   SkColor dialogColor =

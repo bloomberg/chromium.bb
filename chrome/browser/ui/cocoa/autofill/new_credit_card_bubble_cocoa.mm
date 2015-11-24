@@ -20,6 +20,7 @@
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -85,7 +86,7 @@ const CGFloat kAnchorlessTopPadding = 10;
     controller_ = controller;
     [window setInfoBubbleCanBecomeKeyWindow:NO];
 
-    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [[self bubble] setBackgroundColor:
         gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];

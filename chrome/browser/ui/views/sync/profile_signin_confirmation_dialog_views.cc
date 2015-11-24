@@ -148,7 +148,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   const SkColor kPromptBarBackgroundColor =
       ui::GetSigninConfirmationPromptBarColor(
-          ui::kSigninConfirmationPromptBarBackgroundAlpha);
+          GetNativeTheme(), ui::kSigninConfirmationPromptBarBackgroundAlpha);
 
   // Create the prompt label.
   size_t offset;
@@ -170,12 +170,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   // Create the prompt bar.
   views::View* prompt_bar = new views::View;
   prompt_bar->SetBorder(views::Border::CreateSolidSidedBorder(
-      1,
-      0,
-      1,
-      0,
+      1, 0, 1, 0,
       ui::GetSigninConfirmationPromptBarColor(
-          ui::kSigninConfirmationPromptBarBorderAlpha)));
+          GetNativeTheme(), ui::kSigninConfirmationPromptBarBorderAlpha)));
   prompt_bar->set_background(views::Background::CreateSolidBackground(
       kPromptBarBackgroundColor));
 

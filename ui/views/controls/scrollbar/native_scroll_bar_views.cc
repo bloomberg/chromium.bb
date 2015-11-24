@@ -376,8 +376,6 @@ NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
 // static
 int NativeScrollBarWrapper::GetHorizontalScrollBarHeight(
     const ui::NativeTheme* theme) {
-  if (!theme)
-    theme = ui::NativeTheme::instance();
   ui::NativeTheme::ExtraParams button_params;
   button_params.scrollbar_arrow.is_hovering = false;
   gfx::Size button_size = theme->GetPartSize(
@@ -398,8 +396,6 @@ int NativeScrollBarWrapper::GetHorizontalScrollBarHeight(
 // static
 int NativeScrollBarWrapper::GetVerticalScrollBarWidth(
     const ui::NativeTheme* theme) {
-  if (!theme)
-    theme = ui::NativeTheme::instance();
   ui::NativeTheme::ExtraParams button_params;
   button_params.scrollbar_arrow.is_hovering = false;
   gfx::Size button_size = theme->GetPartSize(

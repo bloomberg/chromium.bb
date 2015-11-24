@@ -12,12 +12,14 @@ class Profile;
 
 namespace ui {
 
+class NativeTheme;
+
 // Blend parameters for the dialog prompt bar.
 const SkAlpha kSigninConfirmationPromptBarBackgroundAlpha = 0x0A;
 const SkAlpha kSigninConfirmationPromptBarBorderAlpha = 0x1F;
 
 // Create slightly different colors for the dialog prompt bar.
-SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha);
+SkColor GetSigninConfirmationPromptBarColor(NativeTheme* theme, SkAlpha alpha);
 
 // Determines whether the browser has ever been shutdown since the
 // profile was created.

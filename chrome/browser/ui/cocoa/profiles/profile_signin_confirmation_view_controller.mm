@@ -28,6 +28,7 @@
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -244,13 +245,17 @@ NSTextField* AddTextField(
   // Now setup the prompt and explanation text using the computed width.
 
   // Prompt box.
-  [promptBox_ setBorderColor:gfx::SkColorToCalibratedNSColor(
-      ui::GetSigninConfirmationPromptBarColor(
-          ui::kSigninConfirmationPromptBarBorderAlpha))];
+  [promptBox_
+      setBorderColor:gfx::SkColorToCalibratedNSColor(
+                         ui::GetSigninConfirmationPromptBarColor(
+                             ui::NativeThemeMac::instance(),
+                             ui::kSigninConfirmationPromptBarBorderAlpha))];
   [promptBox_ setBorderWidth:kDialogAlertBarBorderWidth];
-  [promptBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
-      ui::GetSigninConfirmationPromptBarColor(
-          ui::kSigninConfirmationPromptBarBackgroundAlpha))];
+  [promptBox_
+      setFillColor:gfx::SkColorToCalibratedNSColor(
+                       ui::GetSigninConfirmationPromptBarColor(
+                           ui::NativeThemeMac::instance(),
+                           ui::kSigninConfirmationPromptBarBackgroundAlpha))];
   [promptBox_ setBoxType:NSBoxCustom];
   [promptBox_ setTitlePosition:NSNoTitle];
   [[self view] addSubview:promptBox_];

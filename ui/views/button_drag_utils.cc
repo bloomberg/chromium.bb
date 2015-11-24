@@ -47,8 +47,7 @@ void SetDragImage(const GURL& url,
                             title.empty() ? base::UTF8ToUTF16(url.spec())
                                           : title);
   button.SetTextSubpixelRenderingEnabled(false);
-  const ui::NativeTheme* theme =
-      widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
+  const ui::NativeTheme* theme = widget->GetNativeTheme();
   button.SetTextColor(views::Button::STATE_NORMAL,
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor));
   gfx::ShadowValues shadows(
