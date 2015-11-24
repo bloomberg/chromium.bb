@@ -129,8 +129,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SetKnownUserIntegerPref(const AccountId& account_id,
                                const std::string& path,
                                int in_value) override;
-  bool GetKnownUserAccountId(const AccountId& authenticated_account_id,
-                             AccountId* out_account_id) override;
+  AccountId GetKnownUserAccountIdImpl(const std::string& user_email,
+                                      const std::string& gaia_id) override;
   void UpdateGaiaID(const AccountId& account_id,
                     const std::string& gaia_id) override;
   bool FindGaiaID(const AccountId& account_id, std::string* out_value) override;

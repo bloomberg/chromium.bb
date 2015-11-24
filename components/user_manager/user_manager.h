@@ -363,10 +363,16 @@ class USER_MANAGER_EXPORT UserManager {
                                        const std::string& path,
                                        const int in_value) = 0;
 
-  // Returns true if user's AccountId was found.
-  // Returns it in |out_account_id|.
-  virtual bool GetKnownUserAccountId(const AccountId& authenticated_account_id,
-                                     AccountId* out_account_id) = 0;
+  // This call forms full account id of a known user by email and (optionally)
+  // gaia_id.
+  // This is a temporary call while migrating to AccountId.
+  virtual AccountId GetKnownUserAccountIdImpl(const std::string& user_email,
+                                              const std::string& gaia_id) = 0;
+
+  // The same as above, but doesn't crash in unit_tests when Usermanager
+  // doesn't exist.
+  static AccountId GetKnownUserAccountId(const std::string& user_email,
+                                         const std::string& gaia_id);
 
   // Updates |gaia_id| for user with |account_id|.
   // TODO(alemate): Update this once AccountId contains GAIA ID

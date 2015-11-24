@@ -246,26 +246,6 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
          (token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 }
 
-// static
-AccountId UserSelectionScreen::GetAccountIdOfKnownUser(
-    const std::string& user_id) {
-  if (user_id.empty())
-    return EmptyAccountId();
-
-  const AccountId initial_account_id = AccountId::FromUserEmail(user_id);
-
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager)
-    return initial_account_id;
-
-  AccountId known_account_id(EmptyAccountId());
-  if (user_manager->GetKnownUserAccountId(initial_account_id,
-                                          &known_account_id))
-    return known_account_id;
-
-  return initial_account_id;
-}
-
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
   handler_ = handler;
 }
@@ -369,7 +349,8 @@ void UserSelectionScreen::SendUserList() {
   std::string owner_email;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
                                            &owner_email);
-  const AccountId owner(GetAccountIdOfKnownUser(owner_email));
+  const AccountId owner = user_manager::UserManager::GetKnownUserAccountId(
+      owner_email, std::string());
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -457,7 +438,8 @@ void UserSelectionScreen::OnUserStatusChecked(
 void UserSelectionScreen::SetAuthType(const std::string& user_id,
                                       AuthType auth_type,
                                       const base::string16& initial_value) {
-  const AccountId& account_id = GetAccountIdOfKnownUser(user_id);
+  const AccountId& account_id =
+      user_manager::UserManager::GetKnownUserAccountId(user_id, std::string());
   if (GetAuthType(account_id.GetUserEmail()) == FORCE_OFFLINE_PASSWORD)
     return;
   DCHECK(GetAuthType(account_id.GetUserEmail()) != FORCE_OFFLINE_PASSWORD ||
@@ -468,7 +450,8 @@ void UserSelectionScreen::SetAuthType(const std::string& user_id,
 
 proximity_auth::ScreenlockBridge::LockHandler::AuthType
 UserSelectionScreen::GetAuthType(const std::string& username) const {
-  const AccountId& account_id = GetAccountIdOfKnownUser(username);
+  const AccountId& account_id =
+      user_manager::UserManager::GetKnownUserAccountId(username, std::string());
   if (user_auth_type_map_.find(account_id) == user_auth_type_map_.end())
     return OFFLINE_PASSWORD;
   return user_auth_type_map_.find(account_id)->second;
@@ -496,12 +479,14 @@ void UserSelectionScreen::ShowUserPodCustomIcon(
   scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
-  const AccountId account_id = GetAccountIdOfKnownUser(user_id);
+  const AccountId account_id =
+      user_manager::UserManager::GetKnownUserAccountId(user_id, std::string());
   view_->ShowUserPodCustomIcon(account_id, *icon);
 }
 
 void UserSelectionScreen::HideUserPodCustomIcon(const std::string& user_id) {
-  const AccountId account_id = GetAccountIdOfKnownUser(user_id);
+  const AccountId account_id =
+      user_manager::UserManager::GetKnownUserAccountId(user_id, std::string());
   view_->HideUserPodCustomIcon(account_id);
 }
 
@@ -523,7 +508,8 @@ void UserSelectionScreen::AttemptEasySignin(const std::string& user_id,
                                             const std::string& key_label) {
   DCHECK_EQ(GetScreenType(), SIGNIN_SCREEN);
 
-  UserContext user_context(GetAccountIdOfKnownUser(user_id));
+  UserContext user_context(
+      user_manager::UserManager::GetKnownUserAccountId(user_id, std::string()));
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);

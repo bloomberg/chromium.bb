@@ -595,19 +595,7 @@ void UserManagerBase::ParseUserList(const base::ListValue& users_list,
       continue;
     }
 
-    const AccountId partial_account_id = AccountId::FromUserEmail(email);
-    AccountId account_id = EmptyAccountId();
-
-    const bool lookup_result =
-        GetKnownUserAccountId(partial_account_id, &account_id);
-    // TODO(alemate):
-    // DCHECK(lookup_result) << "KnownUser lookup falied for '" << email << "'";
-    // (tests do not initialize KnownUserData)
-
-    if (!lookup_result) {
-      account_id = partial_account_id;
-      LOG(WARNING) << "KnownUser lookup falied for '" << email << "'";
-    }
+    const AccountId account_id = GetKnownUserAccountId(email, std::string());
 
     if (existing_users.find(account_id) != existing_users.end() ||
         !users_set->insert(account_id).second) {
@@ -1042,6 +1030,7 @@ bool UserManagerBase::FindKnownUserPrefs(
   // Local State may not be initialized in tests.
   if (!local_state)
     return false;
+
   if (IsUserNonCryptohomeDataEphemeral(account_id))
     return false;
 
@@ -1163,29 +1152,38 @@ void UserManagerBase::SetKnownUserIntegerPref(const AccountId& account_id,
   UpdateKnownUserPrefs(account_id, dict, false);
 }
 
-bool UserManagerBase::GetKnownUserAccountId(
-    const AccountId& authenticated_account_id,
-    AccountId* out_account_id) {
-  if (!authenticated_account_id.GetGaiaId().empty()) {
-    std::string canonical_email;
-    if (!GetKnownUserStringPref(
-            AccountId::FromGaiaId(authenticated_account_id.GetGaiaId()),
-            kCanonicalEmail, &canonical_email)) {
-      return false;
-    }
+AccountId UserManagerBase::GetKnownUserAccountIdImpl(
+    const std::string& user_email,
+    const std::string& gaia_id) {
+  DCHECK(!(user_email.empty() && gaia_id.empty()));
 
-    *out_account_id = AccountId::FromUserEmailGaiaId(
-        canonical_email, authenticated_account_id.GetGaiaId());
-    return true;
+  // We can have several users with the same gaia_id but different e-mails.
+  // The opposite case is not possible.
+  std::string stored_gaia_id;
+  const std::string sanitized_email =
+      user_email.empty()
+          ? std::string()
+          : gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
+  if (!sanitized_email.empty() &&
+      GetKnownUserStringPref(AccountId::FromUserEmail(sanitized_email),
+                             kGAIAIdKey, &stored_gaia_id)) {
+    if (!gaia_id.empty() && gaia_id != stored_gaia_id)
+      LOG(ERROR) << "User gaia id has changed. Sync will not work.";
+
+    // gaia_id is associated with cryptohome.
+    return AccountId::FromUserEmailGaiaId(sanitized_email, stored_gaia_id);
   }
-  DCHECK(!authenticated_account_id.GetUserEmail().empty());
-  std::string gaia_id;
-  if (!GetKnownUserStringPref(authenticated_account_id, kGAIAIdKey, &gaia_id))
-    return false;
 
-  *out_account_id = AccountId::FromUserEmailGaiaId(
-      authenticated_account_id.GetUserEmail(), gaia_id);
-  return true;
+  std::string stored_email;
+  // GetKnownUserStringPref() returns the first user record that matches
+  // given ID. So we will get the first one if there are multiples.
+  if (!gaia_id.empty() &&
+      GetKnownUserStringPref(AccountId::FromGaiaId(gaia_id), kCanonicalEmail,
+                             &stored_email)) {
+    return AccountId::FromUserEmailGaiaId(stored_email, gaia_id);
+  }
+
+  return AccountId::FromUserEmailGaiaId(sanitized_email, gaia_id);
 }
 
 void UserManagerBase::UpdateGaiaID(const AccountId& account_id,

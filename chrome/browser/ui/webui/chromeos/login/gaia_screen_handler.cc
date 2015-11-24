@@ -449,30 +449,16 @@ AccountId GaiaScreenHandler::GetAccountId(
     const std::string& gaia_id) const {
   const std::string canonicalized_email =
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(authenticated_email));
-  const AccountId authenticated_account_id(
-      AccountId::FromUserEmailGaiaId(canonicalized_email, gaia_id));
 
-  // If we don't have UserManager instance (i.e. we are in unit test),
-  // or a known user has authenticated, just log in.
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager || user_manager->IsKnownUser(authenticated_account_id))
-    return authenticated_account_id;
+  const AccountId account_id = user_manager::UserManager::GetKnownUserAccountId(
+      authenticated_email, gaia_id);
 
-  // If [part of] user id has changed, update stored data and connect user
-  // to existing home directory.
-  AccountId old_account_id(EmptyAccountId());
-  if (!user_manager->GetKnownUserAccountId(authenticated_account_id,
-                                           &old_account_id)) {
-    return authenticated_account_id;
-  }
-
-  if (old_account_id.GetUserEmail() != canonicalized_email) {
-    LOG(WARNING) << "Existing user '" << old_account_id.GetUserEmail()
+  if (account_id.GetUserEmail() != canonicalized_email) {
+    LOG(WARNING) << "Existing user '" << account_id.GetUserEmail()
                  << "' authenticated by alias '" << canonicalized_email << "'.";
-    return old_account_id;
   }
 
-  return authenticated_account_id;
+  return account_id;
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(
