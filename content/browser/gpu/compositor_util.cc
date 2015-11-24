@@ -240,9 +240,7 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
     return false;
 
 #if defined(OS_MACOSX)
-  // Disabled due to increased crash rates.
-  // http://crbug.com/554541
-  return false;
+  return true;
 #else
   return false;
 #endif
