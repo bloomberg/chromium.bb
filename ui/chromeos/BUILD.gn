@@ -49,6 +49,7 @@ component("ui_chromeos") {
     "//chromeos:chromeos",
     "//chromeos:power_manager_proto",
     "//components/device_event_log",
+    "//components/onc",
     "//skia",
     "//ui/aura",
     "//ui/base",

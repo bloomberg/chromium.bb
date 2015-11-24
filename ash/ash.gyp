@@ -945,6 +945,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../cc/cc.gyp:cc',
         '../components/components.gyp:device_event_log_component',
+        '../components/components.gyp:onc_component',
         '../components/components.gyp:signin_core_account_id',
         '../components/components.gyp:user_manager',
         '../components/components.gyp:wallpaper',

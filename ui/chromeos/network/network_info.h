@@ -26,6 +26,7 @@ struct UI_CHROMEOS_EXPORT NetworkInfo {
 
   std::string service_path;
   base::string16 label;
+  base::string16 tooltip;
   gfx::ImageSkia image;
   bool disable;
   bool highlight;

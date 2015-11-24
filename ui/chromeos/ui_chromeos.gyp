@@ -50,6 +50,7 @@
         '../../chromeos/chromeos.gyp:chromeos',
         '../../chromeos/chromeos.gyp:power_manager_proto',
         '../../components/components.gyp:device_event_log_component',
+        '../../components/components.gyp:onc_component',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../base/ime/ui_base_ime.gyp:ui_base_ime',

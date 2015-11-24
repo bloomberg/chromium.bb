@@ -7,11 +7,14 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "grit/ui_chromeos_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
@@ -21,11 +24,39 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
+using chromeos::LoginState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
+using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ui {
+
+namespace {
+
+bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
+  if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
+    return false;
+  if (!LoginState::IsInitialized() || !LoginState::Get()->IsUserLoggedIn())
+    return false;
+  ManagedNetworkConfigurationHandler* managed_configuration_handler =
+      NetworkHandler::Get()->managed_network_configuration_handler();
+  const base::DictionaryValue* global_network_config =
+      managed_configuration_handler->GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  bool policy_prohibites_unmanaged = false;
+  if (global_network_config) {
+    global_network_config->GetBooleanWithoutPathExpansion(
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+        &policy_prohibites_unmanaged);
+  }
+  if (!policy_prohibites_unmanaged)
+    return false;
+  return !managed_configuration_handler->FindPolicyByGuidAndProfile(
+      network->guid(), network->profile_path());
+}
+
+}  // namespace
 
 // NetworkListView:
 
@@ -83,12 +114,14 @@ void NetworkListView::UpdateNetworkIcons() {
 
   // First, update state for all networks
   bool animating = false;
+
   for (size_t i = 0; i < network_list_.size(); ++i) {
     NetworkInfo* info = network_list_[i];
     const chromeos::NetworkState* network =
         handler->GetNetworkState(info->service_path);
     if (!network)
       continue;
+    bool prohibited_by_policy = IsProhibitedByPolicy(network);
     info->image =
         network_icon::GetImageForNetwork(network, network_icon::ICON_TYPE_LIST);
     info->label =
@@ -96,7 +129,12 @@ void NetworkListView::UpdateNetworkIcons() {
     info->highlight =
         network->IsConnectedState() || network->IsConnectingState();
     info->disable =
-        network->activation_state() == shill::kActivationStateActivating;
+        (network->activation_state() == shill::kActivationStateActivating) ||
+        prohibited_by_policy;
+    if (prohibited_by_policy) {
+      info->tooltip =
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);
+    }
     if (!animating && network->IsConnectingState())
       animating = true;
   }

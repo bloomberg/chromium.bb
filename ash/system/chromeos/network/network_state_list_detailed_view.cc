@@ -31,7 +31,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -59,6 +61,7 @@
 #include "ui/views/widget/widget.h"
 
 using chromeos::DeviceState;
+using chromeos::LoginState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -91,6 +94,23 @@ views::View* CreateInfoBubbleLine(const base::string16& text_label,
   view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(": ")));
   view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(text_string)));
   return view;
+}
+
+bool PolicyProhibitsUnmanaged() {
+  if (!LoginState::IsInitialized() || !LoginState::Get()->IsUserLoggedIn())
+    return false;
+  bool policy_prohibites_unmanaged = false;
+  const base::DictionaryValue* global_network_config =
+      NetworkHandler::Get()
+          ->managed_network_configuration_handler()
+          ->GetGlobalConfigFromPolicy(
+              std::string() /* no username hash, device policy */);
+  if (global_network_config) {
+    global_network_config->GetBooleanWithoutPathExpansion(
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+        &policy_prohibites_unmanaged);
+  }
+  return policy_prohibites_unmanaged;
 }
 
 }  // namespace
@@ -459,6 +479,11 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
     other_wifi_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
     bottom_row->AddChildView(other_wifi_);
+    if (PolicyProhibitsUnmanaged()) {
+      other_wifi_->SetEnabled(false);
+      other_wifi_->SetTooltipText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED_OTHER));
+    }
 
     turn_on_wifi_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
@@ -785,6 +810,7 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
   view->SetBorder(
       views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   views::View* controlled_icon = CreateControlledByExtensionView(info);
+  view->set_tooltip(info.tooltip);
   if (controlled_icon)
     view->AddChildView(controlled_icon);
   return view;
@@ -805,6 +831,7 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
   HoverHighlightView* highlight = static_cast<HoverHighlightView*>(view);
   highlight->AddIconAndLabel(info.image, info.label, info.highlight);
   views::View* controlled_icon = CreateControlledByExtensionView(info);
+  highlight->set_tooltip(info.tooltip);
   if (controlled_icon)
     view->AddChildView(controlled_icon);
 }
