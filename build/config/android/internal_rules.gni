@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/zip.gni")
 import("//third_party/ijar/ijar.gni")
 
@@ -1970,6 +1971,9 @@ template("test_runner_script") {
         "--enable-device-cache",
         "--num_retries=0",
       ]
+    }
+    if (is_asan) {
+      test_runner_args += [ "--tool=asan" ]
     }
 
     generated_script = "$root_build_dir/bin/run_${_test_name}"

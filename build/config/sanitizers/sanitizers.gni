@@ -85,3 +85,6 @@ assert(!using_sanitizer || is_clang,
 assert(
     !is_debug || !(is_msan || is_lsan || is_tsan || is_ubsan || is_ubsan_vptr),
     "Sanitizers should generally be used in release (set is_debug=false).")
+
+assert(!(is_android && is_asan && !is_component_build),
+       "is_asan on Android requires is_component_build to be set")
