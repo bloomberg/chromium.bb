@@ -15,6 +15,7 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/web_application_info.h"
+#include "components/error_page/common/offline_page_types.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/top_controls_state.h"
@@ -75,6 +76,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
                           blink::WebConsoleMessage::LevelLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TopControlsState,
                           content::TOP_CONTROLS_STATE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    error_page::OfflinePageStatus,
+    error_page::OfflinePageStatus::OFFLINE_PAGE_STATUS_LAST)
 
 // Output parameters for ChromeViewHostMsg_GetPluginInfo message.
 IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
@@ -323,11 +327,11 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog,
                     bool /* can_show_network_diagnostics_dialog */)
 
 #if defined(OS_ANDROID)
-// Tells the renderer whether or not an offline page exists. This is used to
-// decide if "show saved pages" button will be provided on certain error page.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetHasOfflinePages,
-                    bool /* has_offline_pages */)
-#endif
+// Tells the renderer about the status of the offline pages. This is used to
+// decide if offline related button will be provided on certain error page.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetOfflinePageInfo,
+                    error_page::OfflinePageStatus /* offline_page_status */)
+#endif  // defined(OS_ANDROID)
 
 // Provides the information needed by the renderer process to contact a
 // navigation correction service.  Handled by the NetErrorHelper.
@@ -345,7 +349,11 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RunNetworkDiagnostics,
 // Message sent from the renderer to the browser to show the UI for offline
 // pages.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowOfflinePages)
-#endif
+
+// Message sent from the renderer to the browser to load the offline copy of
+// the page that fails to load due to no network connectivity.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_LoadOfflineCopy, GURL /* url */)
+#endif  // defined(OS_ANDROID)
 
 //-----------------------------------------------------------------------------
 // Misc messages

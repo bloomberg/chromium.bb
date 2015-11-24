@@ -8,6 +8,7 @@ static_library("common") {
     "error_page_params.h",
     "net_error_info.cc",
     "net_error_info.h",
+    "offline_page_types.h",
   ]
 
   deps = [

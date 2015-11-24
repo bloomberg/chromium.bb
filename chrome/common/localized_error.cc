@@ -38,6 +38,7 @@
 #endif
 
 using blink::WebURLError;
+using error_page::OfflinePageStatus;
 
 // Some error pages have no details.
 const unsigned int kErrorPagesNoDetails = 0;
@@ -554,7 +555,7 @@ void LocalizedError::GetStrings(int error_code,
                                 bool is_post,
                                 bool stale_copy_in_cache,
                                 bool can_show_network_diagnostics_dialog,
-                                bool has_offline_pages,
+                                OfflinePageStatus offline_page_status,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
@@ -768,17 +769,29 @@ void LocalizedError::GetStrings(int error_code,
   }
 
 #if defined(OS_ANDROID)
-  if (has_offline_pages) {
-    base::DictionaryValue* show_saved_pages_button = new base::DictionaryValue;
-    show_saved_pages_button->SetString(
-        "msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_PAGES));
-    show_saved_pages_button->SetString(
-        "title",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_PAGES));
-    error_strings->Set("showSavedPagesButton", show_saved_pages_button);
+  // Offline button will not be provided when we want to show something in the
+  // cache.
+  if (!show_saved_copy_visible) {
+    if (offline_page_status == OfflinePageStatus::HAS_OFFLINE_PAGE) {
+      base::DictionaryValue* show_offline_copy_button =
+          new base::DictionaryValue;
+      base::string16 button_text =
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_COPY);
+      show_offline_copy_button->SetString("msg", button_text);
+      show_offline_copy_button->SetString("title", button_text);
+      error_strings->Set("showOfflineCopyButton", show_offline_copy_button);
+    } else if (offline_page_status ==
+               OfflinePageStatus::HAS_OTHER_OFFLINE_PAGES) {
+      base::DictionaryValue* show_offline_pages_button =
+          new base::DictionaryValue;
+      base::string16 button_text =
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES);
+      show_offline_pages_button->SetString("msg", button_text);
+      show_offline_pages_button->SetString("title", button_text);
+      error_strings->Set("showOfflinePagesButton", show_offline_pages_button);
+    }
   }
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has its own diagnostics extension, which doesn't rely on a

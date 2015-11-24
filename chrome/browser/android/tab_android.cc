@@ -287,20 +287,6 @@ void TabAndroid::MakeLoadURLParams(
   }
 }
 
-bool TabAndroid::HasOfflinePages() const {
-   if (!offline_pages::IsOfflinePagesEnabled())
-    return false;
-  offline_pages::OfflinePageModel* offline_page_model =
-      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
-          GetProfile());
-  return !offline_page_model->GetAllPages().empty();
-}
-
-void TabAndroid::ShowOfflinePages() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
-}
-
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents,
                                  bool did_start_load,
@@ -774,6 +760,10 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env, jobject obj) {
 jlong TabAndroid::GetBookmarkId(JNIEnv* env,
                                jobject obj,
                                jboolean only_editable) {
+  return GetBookmarkIdHelper(only_editable);
+}
+
+int64_t TabAndroid::GetBookmarkIdHelper(bool only_editable) const {
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents()->GetURL());
   Profile* profile = GetProfile();
@@ -802,9 +792,51 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   return -1;
 }
 
+bool TabAndroid::HasOfflinePages() const {
+  if (!offline_pages::IsOfflinePagesEnabled())
+    return false;
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+          GetProfile());
+  return !offline_page_model->GetAllPages().empty();
+}
+
+void TabAndroid::ShowOfflinePages() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
+}
+
+void TabAndroid::LoadOfflineCopy(const GURL& url) {
+  if (!offline_pages::IsOfflinePagesEnabled())
+    return;
+
+  // Offline copy is only saved for a bookmarked page.
+  int64_t bookmark_id = GetBookmarkIdHelper(true);
+  if (bookmark_id == -1)
+    return;
+
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+          GetProfile());
+  if (!offline_page_model)
+    return;
+
+  const offline_pages::OfflinePageItem* offline_page =
+      offline_page_model->GetPageByBookmarkId(bookmark_id);
+  if (!offline_page || offline_page->url != url)
+    return;
+
+  GURL offline_url = offline_page->GetOfflineURL();
+  if (!offline_url.is_valid())
+    return;
+
+  content::NavigationController::LoadURLParams load_params(offline_url);
+  web_contents()->GetController().LoadURLWithParams(load_params);
+}
+
 jboolean TabAndroid::HasOfflineCopy(JNIEnv* env, jobject obj) {
   // Offline copy is only saved for a bookmarked page.
-  jlong bookmark_id = GetBookmarkId(env, obj, true);
+  int64_t bookmark_id = GetBookmarkIdHelper(true);
   if (bookmark_id == -1)
     return false;
 

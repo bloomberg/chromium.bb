@@ -128,6 +128,7 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasOfflinePages() const;
   void ShowOfflinePages();
+  void LoadOfflineCopy(const GURL& url);
 
   // Overridden from CoreTabHelperDelegate:
   void SwapTabContents(content::WebContents* old_contents,
@@ -241,6 +242,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
  private:
   prerender::PrerenderManager* GetPrerenderManager() const;
+
+  int64_t GetBookmarkIdHelper(bool only_editable) const;
 
   const offline_pages::OfflinePageItem* GetOfflinePage(const GURL& url) const;
 

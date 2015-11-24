@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/error_page/common/offline_page_types.h"
 #include "components/error_page/renderer/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -83,19 +84,21 @@ class NetErrorHelper
       const blink::WebURLError& error,
       bool is_failed_post,
       bool can_use_local_diagnostics_service,
-      bool has_offline_pages,
+      error_page::OfflinePageStatus offline_page_status,
       scoped_ptr<error_page::ErrorPageParams> params,
       bool* reload_button_shown,
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
-      bool* show_saved_pages_button_shown,
+      bool* show_offline_pages_button_shown,
+      bool* show_offline_copy_button_shown,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
   void EnablePageHelperFunctions() override;
-  void UpdateErrorPage(const blink::WebURLError& error,
-                       bool is_failed_post,
-                       bool can_use_local_diagnostics_service,
-                       bool has_offline_pages) override;
+  void UpdateErrorPage(
+      const blink::WebURLError& error,
+      bool is_failed_post,
+      bool can_use_local_diagnostics_service,
+      error_page::OfflinePageStatus offline_page_status) override;
   void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override;
@@ -106,6 +109,7 @@ class NetErrorHelper
   void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
   void ShowOfflinePages() override;
+  void LoadOfflineCopy(const GURL& page_url) override;
 
   void OnNetErrorInfo(int status);
   void OnSetCanShowNetworkDiagnosticsDialog(
@@ -121,8 +125,11 @@ class NetErrorHelper
 
   void OnTrackingRequestComplete(const blink::WebURLResponse& response,
                                  const std::string& data);
+
 #if defined(OS_ANDROID)
-  void OnSetHasOfflinePages(bool has_offline_pages);
+  // Called to set the status of the offline pages that will be used to decide
+  // if offline related button will be provided in the error page.
+  void OnSetOfflinePageInfo(error_page::OfflinePageStatus offline_page_status);
 #endif
 
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;

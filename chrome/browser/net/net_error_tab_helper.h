@@ -104,9 +104,12 @@ class NetErrorTabHelper
 
   // Relates to offline pages handling.
 #if defined(OS_ANDROID)
-  void SetHasOfflinePages(content::RenderFrameHost* render_frame_host);
+  void SetOfflinePageInfo(content::RenderFrameHost* render_frame_host,
+                          const GURL& url);
   void ShowOfflinePages();
-#endif
+  void LoadOfflineCopy(const GURL& url);
+  bool IsFromErrorPage() const;
+#endif  // defined(OS_ANDROID)
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;

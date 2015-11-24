@@ -251,6 +251,11 @@ void OfflinePageModel::ClearAll(const base::Closure& callback) {
                  callback));
 }
 
+bool OfflinePageModel::HasOfflinePages() const {
+  DCHECK(is_loaded_);
+  return !offline_pages_.empty();
+}
+
 const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
   DCHECK(is_loaded_);
   std::vector<OfflinePageItem> offline_pages;
@@ -287,6 +292,16 @@ const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
        iter != offline_pages_.end();
        ++iter) {
     if (iter->second.GetOfflineURL() == offline_url)
+      return &(iter->second);
+  }
+  return nullptr;
+}
+
+const OfflinePageItem* OfflinePageModel::GetPageByOnlineURL(
+    const GURL& online_url) const {
+  for (auto iter = offline_pages_.begin(); iter != offline_pages_.end();
+       ++iter) {
+    if (iter->second.url == online_url)
       return &(iter->second);
   }
   return nullptr;

@@ -114,9 +114,15 @@ function showSavedCopyButtonClick() {
   }
 }
 
-function showSavedPagesButtonClick() {
+function showOfflinePagesButtonClick() {
   if (window.errorPageController) {
-    errorPageController.showSavedPagesButtonClick();
+    errorPageController.showOfflinePagesButtonClick();
+  }
+}
+
+function showOfflineCopyButtonClick() {
+  if (window.errorPageController) {
+    errorPageController.showOfflineCopyButtonClick();
   }
 }
 
@@ -156,27 +162,29 @@ function onDocumentLoad() {
   var reloadButton = document.getElementById('reload-button');
   var detailsButton = document.getElementById('details-button');
   var showSavedCopyButton = document.getElementById('show-saved-copy-button');
-  var showSavedPagesButton = document.getElementById('show-saved-pages-button');
+  var showOfflinePagesButton =
+      document.getElementById('show-offline-pages-button');
+  var showOfflineCopyButton =
+      document.getElementById('show-offline-copy-button');
 
-  // "Show save pages" button will only be provided in ERR_INTERNET_DISCONNECTED
-  // page where "Reload" button will not be provided.
   var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
       loadTimeData.getValue('reloadButton').msg;
   var showSavedCopyButtonVisible =
       loadTimeData.valueExists('showSavedCopyButton') &&
       loadTimeData.getValue('showSavedCopyButton').msg;
-  var showSavedPagesButtonVisible =
-      loadTimeData.valueExists('showSavedPagesButton') &&
-      loadTimeData.getValue('showSavedPagesButton').msg;
+  var showOfflinePagesButtonVisible =
+      loadTimeData.valueExists('showOfflinePagesButton') &&
+      loadTimeData.getValue('showOfflinePagesButton').msg;
+  var showOfflineCopyButtonVisible =
+      loadTimeData.valueExists('showOfflineCopyButton') &&
+      loadTimeData.getValue('showOfflineCopyButton').msg;
 
   var primaryButton, secondaryButton;
   if (showSavedCopyButton.primary) {
     primaryButton = showSavedCopyButton;
-    secondaryButton =
-        showSavedPagesButtonVisible ? showSavedPagesButton : reloadButton;
+    secondaryButton = reloadButton;
   } else {
-    primaryButton =
-        showSavedPagesButtonVisible ? showSavedPagesButton : reloadButton;
+    primaryButton = reloadButton;
     secondaryButton = showSavedCopyButton;
   }
 
@@ -196,7 +204,8 @@ function onDocumentLoad() {
 
   if (reloadButton.style.display == 'none' &&
       showSavedCopyButton.style.display == 'none' &&
-      showSavedPagesButton.style.display == 'none') {
+      showOfflinePagesButton.style.display == 'none' &&
+      showOfflineCopyButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
 
@@ -210,11 +219,12 @@ function onDocumentLoad() {
 
   // Show control buttons.
   if (reloadButtonVisible || showSavedCopyButtonVisible ||
-      showSavedPagesButtonVisible) {
+      showOfflinePagesButtonVisible || showOfflineCopyButton) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.
-    if ((reloadButtonVisible || showSavedPagesButtonVisible) &&
+    if ((reloadButtonVisible || showOfflinePagesButtonVisible ||
+         showOfflineCopyButton) &&
         showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }

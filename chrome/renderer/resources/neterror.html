@@ -37,10 +37,16 @@
             jsselect="showSavedCopyButton"
             jscontent="msg" jsvalues="title:title; .primary:primary">
         </button>
-        <button id="show-saved-pages-button"
+        <button id="show-offline-pages-button"
+            class="gray-button text-button"
+            onclick="showOfflinePagesButtonClick()"
+            jsselect="showOfflinePagesButton"
+            jscontent="msg" jsvalues="title:title">
+        </button>
+        <button id="show-offline-copy-button"
             class="blue-button text-button"
-            onclick="showSavedPagesButtonClick()"
-            jsselect="showSavedPagesButton"
+            onclick="showOfflineCopyButtonClick()"
+            jsselect="showOfflineCopyButton"
             jscontent="msg" jsvalues="title:title; .primary:primary">
         </button>
       </div>
