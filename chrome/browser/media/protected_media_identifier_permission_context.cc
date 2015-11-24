@@ -6,10 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #if defined(OS_CHROMEOS)
@@ -52,6 +55,26 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // First check if this permission has been disabled. This check occurs before
+  // the call to GetPermissionStatus, which will return CONTENT_SETTING_BLOCK
+  // if the kill switch is on.
+  //
+  // TODO(xhwang): Remove this kill switch block when crbug.com/454847 is fixed
+  // and we no longer call GetPermissionStatus before
+  // PermissionContextBase::RequestPermission.
+  if (IsPermissionKillSwitchOn()) {
+    // Log to the developer console.
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        base::StringPrintf("%s permission has been blocked.",
+            PermissionUtil::GetPermissionString(
+                CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER).c_str()));
+    // The kill switch is enabled for this permission; Block all requests and
+    // run the callback immediately.
+    callback.Run(CONTENT_SETTING_BLOCK);
+    return;
+  }
 
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
