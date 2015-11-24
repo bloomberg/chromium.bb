@@ -75,6 +75,10 @@ namespace ui {
 class WindowResizeHelperMac;
 }
 
+namespace views {
+class WindowManagerConnection;
+}
+
 namespace base {
 
 namespace android {
@@ -221,6 +225,7 @@ class BASE_EXPORT ThreadRestrictions {
 #if !defined(OFFICIAL_BUILD)
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
 #endif
+  friend class views::WindowManagerConnection;
 // END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_THREAD_RESTRICTIONS

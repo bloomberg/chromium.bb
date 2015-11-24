@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -111,6 +112,8 @@ mus::Window* WindowManagerConnection::NewWindow(
   window_manager_->OpenWindow(
       window_tree_client.Pass(),
       mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(properties));
+
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   mus::WindowTreeConnection* window_tree_connection =
       mus::WindowTreeConnection::Create(
           this, window_tree_client_request.Pass(),
