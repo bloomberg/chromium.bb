@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.SystemClock;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.WindowManager;
@@ -28,7 +29,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -2716,13 +2716,9 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(defaultScale, getPixelScaleOnUiThread(awContents), .01f);
     }
 
-    /*
     @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
-    http://crbug.com/304549
-    */
-    @DisabledTest
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
         assertTrue(VideoTestUtil.runVideoTest(this, false, false, WAIT_TIMEOUT_MS));
     }
