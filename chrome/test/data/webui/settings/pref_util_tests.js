@@ -12,6 +12,26 @@ cr.define('settings_prefUtil', function() {
             'chrome://md-settings/prefs/pref_util.html');
       });
 
+      var global = function() { return this; }();
+      var origTraceAssertionsForTesting = global.traceAssertionsForTesting;
+
+      /**
+       * @param {function()} fn Function that should throw.
+       * @param {string} message Message to log if function does not throw.
+       */
+      var expectThrows = function(fn, message) {
+        // Temporarily disable printing of stack traces on assert failures.
+        global.traceAssertionsForTesting = false;
+
+        try {
+          fn();
+          // Must be expect, because assert would get caught.
+          expectNotReached(message);
+        } catch (e) {}
+
+        global.traceAssertionsForTesting = origTraceAssertionsForTesting;
+      };
+
       // Tests that the given value is converted to the expected value, for a
       // given prefType.
       var expectStringToPrefValue = function(value, prefType, expectedValue) {
@@ -36,17 +56,15 @@ cr.define('settings_prefUtil', function() {
         var url = 'http://example.com';
         expectStringToPrefValue(url, chrome.settingsPrivate.PrefType.URL, url);
 
-        try {
+        expectThrows(function() {
           expectStringToPrefValue(
               '[1, 2]', chrome.settingsPrivate.PrefType.LIST, '');
-          expectNotReached('List prefs should not be converted.');
-        } catch (e) {}
+        }, 'List prefs should not be converted.');
 
-        try {
+        expectThrows(function() {
           expectStringToPrefValue(
               '{foo: 1}', chrome.settingsPrivate.PrefType.DICTIONARY, '');
-          expectNotReached('Dictionary prefs should not be converted.');
-        } catch (e) {}
+        }, 'Dictionary prefs should not be converted.');
       });
 
       // Tests that the pref value is converted to the expected string, for a
@@ -71,17 +89,15 @@ cr.define('settings_prefUtil', function() {
         var url = 'http://example.com';
         expectPrefToString(chrome.settingsPrivate.PrefType.URL, url, url);
 
-        try {
+        expectThrows(function() {
           expectPrefToString(chrome.settingsPrivate.PrefType.LIST,
                              [1, 2], null);
-          expectNotReached('List prefs should not be handled.');
-        } catch (e) {}
+        }, 'List prefs should not be handled.');
 
-        try {
+        expectThrows(function() {
           expectPrefToString(chrome.settingsPrivate.PrefType.DICTIONARY,
                              {foo: 1}, null);
-          expectNotReached('Dictionary prefs should not be handled.');
-        } catch (e) {}
+        }, 'Dictionary prefs should not be handled.');
       });
     });
   }
