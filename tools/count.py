@@ -105,27 +105,36 @@ def fetch_data(swarming, start, end, state, tags):
   return dict(data)
 
 
-def present(items):
-  # Calculate months.
+def present(items, daily_count):
   months = {}
   for day, count in sorted(items.iteritems()):
     month = day.rsplit('-', 1)[0]
     months.setdefault(month, 0)
     months[month] += count
-  for month, count in sorted(months.iteritems()):
-    print('%s: %d' % (month, count))
+
   years = {}
-  if len(months) > 1:
-    # Also print the total per year.
-    for month, count in months.iteritems():
-      year = month.rsplit('-', 1)[0]
-      years.setdefault(year, 0)
-      years[year] += count
+  for month, count in months.iteritems():
+    year = month.rsplit('-', 1)[0]
+    years.setdefault(year, 0)
+    years[year] += count
+  total = sum(months.itervalues())
+  maxlen = len(str(total))
+
+  if daily_count:
+    for day, count in sorted(items.iteritems()):
+      print('%s: %*d' % (day, maxlen, count))
+
+  if len(items) > 1:
+    for month, count in sorted(months.iteritems()):
+      print('%s   : %*d' % (month, maxlen, count))
+  if len(month) > 1:
     for year, count in sorted(years.iteritems()):
-      print('%s   : %d' % (year, count))
-  print('Total  : %d' % sum(months.itervalues()))
-  print('')
-  graph.print_histogram(items)
+      print('%s      : %*d' % (year, maxlen, count))
+  if len(years) > 1:
+    print('Total     : %*d' % (maxlen, total))
+  if not daily_count:
+    print('')
+    graph.print_histogram(items)
 
 
 STATES = (
@@ -144,8 +153,8 @@ STATES = (
 
 def main():
   parser = optparse.OptionParser(description=sys.modules['__main__'].__doc__)
-  today = datetime.datetime.utcnow().date()
-  year = datetime.datetime(today.year, 1, 1)
+  tomorrow = datetime.datetime.utcnow().date() + datetime.timedelta(days=1)
+  year = datetime.datetime(tomorrow.year, 1, 1)
   parser.add_option(
       '-S', '--swarming',
       metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
@@ -154,13 +163,16 @@ def main():
       '--start', default=year.strftime('%Y-%m-%d'),
       help='Starting date in UTC; defaults to start of year: %default')
   parser.add_option(
-      '--end', default=today.strftime('%Y-%m-%d'),
-      help='End date in UTC; defaults to yesterday: %default')
+      '--end', default=tomorrow.strftime('%Y-%m-%d'),
+      help='End date in UTC; defaults to tomorrow: %default')
   parser.add_option(
       '--state', default='ALL', type='choice', choices=STATES,
       help='State to filter on')
   parser.add_option(
       '--tags', action='append', default=[], help='Tags to filter on')
+  parser.add_option(
+      '--daily-count', action='store_true',
+      help='Show the daily count in raw number instead of histogram')
   parser.add_option(
       '--json', default='counts.json',
       help='File containing raw data; default: %default')
@@ -184,7 +196,7 @@ def main():
       data = json.load(f)
 
   print('')
-  present(data)
+  present(data, options.daily_count)
   return 0
 
 
