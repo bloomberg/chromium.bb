@@ -78,11 +78,9 @@ class PwsClient {
     private static Collection<PwsResult> parseResolveScanResponse(JSONObject result) {
         // Get the metadata array.
         Collection<PwsResult> pwsResults = new ArrayList<>();
-        JSONArray metadata;
-        try {
-            metadata = result.getJSONArray("results");
-        } catch (JSONException e) {
-            Log.e(TAG, "PWS returned invalid data", e);
+        JSONArray metadata = result.optJSONArray("results");
+        if (metadata == null) {
+            // There are no valid results.
             return pwsResults;
         }
 
