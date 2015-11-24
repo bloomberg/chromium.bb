@@ -28,7 +28,7 @@
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "سیاه و سفید",
+    "message": "طیف خاکستری",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "عادی",
+    "message": "معمولی",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -44,7 +44,7 @@
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "فک بزرگ",
+    "message": "دهان بزرگ",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
@@ -80,11 +80,11 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "تغییر عمق",
+    "message": "تغییر شیب",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "سینما",
+    "message": "سینمایی",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "در حال حاضر دوربین شما در دسترس نیست.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ممکن است برنامه دیگری در حال استفاده از آن باشد.",
+    "message": "ببینید دوربین درست وصل شده باشد.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -172,11 +172,11 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "فعال یا غیرفعال کردن ویژگی گرفتن چند عکس",
+    "message": "روشن یا خاموش کردن ویژگی چند عکس",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "فعال یا غیرفعال کردن نمایش صفحه نمایش روی دستگاه دیگر",
+    "message": "روشن یا خاموش کردن نمایش صفحه نمایش روی دستگاه دیگر",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -188,11 +188,11 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "ویژگی چند عکس فعال",
+    "message": "ویژگی چند عکس، فعال",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "ویژگی چند عکس غیرفعال",
+    "message": "ویژگی چند عکس، غیرفعال",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {

@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "30 年代懷舊",
+    "message": "30 年代懷舊風",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "50 年代懷舊",
+    "message": "50 年代懷舊風",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "60 年代懷舊",
+    "message": "60 年代懷舊風",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "您的相機目前無法使用。",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "另一個應用程式正在使用。",
+    "message": "請檢查相機是否妥善連接。",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {

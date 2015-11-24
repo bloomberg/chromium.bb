@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "La tua fotocamera non è attualmente disponibile.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Potrebbe essere utilizzata da un'altra app.",
+    "message": "Controlla se la fotocamera è collegata correttamente.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {

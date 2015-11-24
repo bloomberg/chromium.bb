@@ -1,222 +1,222 @@
 {
   "name": {
-    "message": "Camera",
+    "message": "ካሜራ",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Take crazy pictures with your web camera.",
+    "message": "በድር ካሜራዎ የለየላቸው ምስሎችን ያንሱ።",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "አንዲ",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "Big Eyes",
+    "message": "ትልቅ አይኖች",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Beauty",
+    "message": "ውበት",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Colourise",
+    "message": "አቅልም",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Funky",
+    "message": "ፋንኪ",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Greyscale",
+    "message": "ግራጫ",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "Newspaper",
+    "message": "ጋዜጣ",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Normal",
+    "message": "መደበኛ",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "Big Head",
+    "message": "ትልቅ ራስ",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "Big Jaw",
+    "message": "ትልቅ መንጋጋ",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "Bunny Head",
+    "message": "የጥንቸል ራስ",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "Sepia",
+    "message": "ሴፒያ",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Retro '30",
+    "message": "ሬትሮ '30",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Retro '50",
+    "message": "ሬትሮ '50",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Retro '60",
+    "message": "ሬትሮ '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Photo Lab",
+    "message": "የፎቶ ቤተ-ሙከራ",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Modern",
+    "message": "ዘመናዊ",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "Swirl",
+    "message": "አዙሪት",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt Shift",
+    "message": "የማጋደል ቅያሬ",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Cinema",
+    "message": "ሲኒማ",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "ቪንቴጅ",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Ghost",
+    "message": "መንፈስ",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Your camera is currently unavailable.",
+    "message": "የእርስዎ ካሜራ በአሁኑ ጊዜ  አይገኝም።",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Check if the camera is properly connected.",
+    "message": "ካሜራው በትክክል ተገናኝቶ ከሆነ ይፈትሹ።",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Unable to save the picture to the gallery.",
+    "message": "ምስሉን ወደ ማዕከለ-ስዕላት ውስጥ ማስቀመጥ አልተቻለም።",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Unable to load the gallery.",
+    "message": "ማዕከለ-ስዕላቱን መጫን አልተቻለም።",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Unable to delete the selected picture.",
+    "message": "የተመረጠውን ምስል መሰረዝ አልተቻለም።",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Unable to save the selected picture.",
+    "message": "የተመረጠውን ምስል መሰረዝ አልተቻለም።",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
-    "message": "Hardware acceleration is not available.",
+    "message": "ሃርድዌር ማፍጠኛ አይገኝም።",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Your computer may have an incompatible graphics card or old drivers.",
+    "message": "ኮምፒውተርዎ ተኳኋኝ ያልሆነ ግራፊክስ ካርድ ወይም የቆዩ ነጂዎች ሊኖረው ይችላል።",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Go to gallery",
+    "message": "ወደ ማዕከለ-ስዕላት ይሂዱ",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Toggle filters",
+    "message": "ማጣሪያዎችን ቀያይር",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "Delete",
+    "message": "ሰርዝ",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Save to disk",
+    "message": "ወደ ዲስክ አስቀምጥ",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "Print",
+    "message": "አትም",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Go back",
+    "message": "ተመለስ",
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Maximise",
+    "message": "አስፋ",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "Close",
+    "message": "ዝጋ",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Gallery images",
+    "message": "የማዕከለ-ስዕላት ምስሎች",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Take a picture",
+    "message": "ፎቶ ያንሱ",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Toggle timer",
+    "message": "ሰዓት ቆጣሪ ቀያይር",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Toggle multi-shot",
+    "message": "ብዙ-ማንሳት ቀያይር",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "Toggle mirroring",
+    "message": "የመቀያየሪያ ነጸብራቅ",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Timer active",
+    "message": "ሰዓት ቆጣሪ ገቢር ነው",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Timer inactive",
+    "message": "ሰዓት ቆጣሪ ቦዝኗል",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Multi-shot active",
+    "message": "ብዙ-ማንሳት ገቢር ነው",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Multi-shot inactive",
+    "message": "ብዙ-ማንሳት ቦዝኗል",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Mirroring active",
+    "message": "ማንጸባረቅ ገቢር ነው",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Mirroring inactive",
+    "message": "ማንጸባረቅ ቦዝኗል",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
-    "message": "Yes",
+    "message": "አዎ",
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
-    "message": "No",
+    "message": "አይ",
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "እሺ",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Do you really want to remove this picture from the gallery?",
+    "message": "እርግጠኛ ነዎት ይህን ምስል ከማዕከለ-ስዕላት ማስወገድ ይፈልጋሉ?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

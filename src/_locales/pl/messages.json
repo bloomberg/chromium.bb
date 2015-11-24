@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Retro – lata 30-te",
+    "message": "Retro – lata 30.",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Retro – lata 50-te",
+    "message": "Retro – lata 50.",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Retro – lata 60-te",
+    "message": "Retro – lata 60.",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -72,7 +72,7 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Nowoczesność",
+    "message": "Nowoczesny",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "Stara klisza",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Aparat jest obecnie niedostępny.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Kamera jest obecnie niedostępna.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Może go używać inna aplikacja.",
+    "message": "Sprawdź, czy jest prawidłowo podłączona.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -112,11 +112,11 @@
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Wybranego zdjęcia nie udało się usunąć.",
+    "message": "Nie udało się usunąć wybranego zdjęcia.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Wybranego zdjęcia nie udało się zapisać.",
+    "message": "Nie udało się zapisać wybranego zdjęcia.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Komputer może zawierać niezgodną kartę graficzną lub stare sterowniki.",
+    "message": "Komputer może mieć niezgodną kartę graficzną lub stare sterowniki.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -168,7 +168,7 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Przełącz licznik",
+    "message": "Przełącz samowyzwalacz",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -180,11 +180,11 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Licznik włączony",
+    "message": "Samowyzwalacz włączony",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Licznik wyłączony",
+    "message": "Samowyzwalacz wyłączony",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {

@@ -97,14 +97,14 @@
   },
   "errorMsgNoCamera": {
     "message": "మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "మరో అనువర్తనం దీన్ని ఉపయోగిస్తుండవచ్చు.",
+    "message": "కెమెరా సరిగ్గా కనెక్ట్ అయ్యిందో లేదో తనిఖీ చేయండి.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "గ్యాలరీలో చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు.",
+    "message": "చిత్రాన్ని గ్యాలరీకి సేవ్ చేయడం సాధ్యపడలేదు.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -175,6 +175,10 @@
     "message": "బహుళ-షాట్‌ను టోగుల్ చేయి",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "మిర్రరింగ్‌ను టోగుల్ చేయి",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "టైమర్ సక్రియంగా ఉంది",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "బహుళ-షాట్ నిష్క్రియంగా ఉంది",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "మిర్రరింగ్ సక్రియంగా ఉంది",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "మిర్రరింగ్ నిష్క్రియంగా ఉంది",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "అవును",

@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Posnemite nore slike s spletno kamero.",
+    "message": "Posnemite nore slike s spletnim fotoaparatom.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Fotoaparat trenutno ni na voljo.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Morda ga uporablja druga aplikacija.",
+    "message": "Preverite, ali je fotoaparat ustrezno povezan.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -172,7 +172,7 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Preklop načina več posnetkov",
+    "message": "Preklop načina za več posnetkov",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
@@ -188,11 +188,11 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Način več posnetkov dejaven",
+    "message": "Način za več posnetkov dejaven",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Način več posnetkov nedejaven",
+    "message": "Način za več posnetkov nedejaven",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {

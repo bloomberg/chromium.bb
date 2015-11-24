@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Cinema ",
+    "message": "Cinema",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Camera foto este indisponibilă momentan.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Este posibil să fie utilizată de altă aplicație.",
+    "message": "Verificați dacă ați conectat corect camera foto.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -164,7 +164,7 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Faceți o fotografie",
+    "message": "Fotografiați",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {

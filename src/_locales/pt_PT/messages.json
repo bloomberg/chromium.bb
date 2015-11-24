@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "A câmara está atualmente indisponível.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Poderá estar a ser utilizado(a) por outra aplicação.",
+    "message": "Verifique se a câmara está ligada corretamente.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -164,7 +164,7 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Tirar uma fotografia",
+    "message": "Tirar uma foto",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
@@ -172,7 +172,7 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Ativar/desativar múltiplas fotografias",
+    "message": "Ativar/desativar múltiplas fotos",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
@@ -188,11 +188,11 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Modo de múltiplas fotografias ativo",
+    "message": "Modo de múltiplas fotos ativo",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Modo de múltiplas fotografias inativo",
+    "message": "Modo de múltiplas fotos inativo",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {

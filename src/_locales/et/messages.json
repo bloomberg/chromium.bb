@@ -16,11 +16,11 @@
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Ilu",
+    "message": "Ilustatud",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Toonimine",
+    "message": "Toonitud",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Kaldnihe",
+    "message": "Makett",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vana",
+    "message": "Klassikaline vana",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Teie kaamera pole praegu saadaval.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Võimalik, et seda kasutab teine rakendus.",
+    "message": "Kontrollige, kas kaamera on korralikult ühendatud.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {

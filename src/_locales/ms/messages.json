@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Kamera anda tidak tersedia pada masa ini.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Apl lain mungkin menggunakannya.",
+    "message": "Periksa sama ada kamera telah disambungkan dengan betul.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -108,7 +108,7 @@
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Tidak dapat memuatkan galeri",
+    "message": "Tidak dapat memuatkan galeri.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {

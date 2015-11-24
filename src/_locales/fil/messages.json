@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Photo L",
+    "message": "Photo Lab",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Pelikula",
+    "message": "Cinema",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Kasalukuyang hindi available ang iyong camera.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Maaaring ginagamit ito ng isa pang app.",
+    "message": "Tingnan kung maayos na nakakonekta ang camera.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -172,7 +172,7 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "I-toggle ang maramihang pagkuha",
+    "message": "I-toggle ang multi-shot",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
@@ -192,7 +192,7 @@
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Di-aktibo ang maramihang pagkuha",
+    "message": "Di-aktibo ang multi-shot",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {

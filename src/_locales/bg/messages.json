@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Понастоящем няма достъп до камерата ви.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Възможно е да се използва от друго приложение.",
+    "message": "Проверете дали камерата е свързана правилно.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -212,7 +212,7 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "ОK",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {

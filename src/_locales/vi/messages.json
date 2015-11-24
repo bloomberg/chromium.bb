@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Máy ảnh của bạn hiện không khả dụng.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Máy ảnh của bạn không khả dụng.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Một ứng dụng khác có thể đang sử dụng máy ảnh của bạn.",
+    "message": "Kiểm tra xem máy ảnh có được kết nối đúng cách không.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -152,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Phóng to",
+    "message": "Phóng đại",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -168,7 +168,7 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Chuyển đổi bộ tính giờ",
+    "message": "Chuyển đổi bộ hẹn giờ",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -180,11 +180,11 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Bộ tính giờ đang hoạt động",
+    "message": "Bộ hẹn giờ đang hoạt động",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Bộ tính giờ không hoạt động",
+    "message": "Bộ hẹn giờ không hoạt động",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {

@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "તમારો કેમેરો હાલમાં અનુપલબ્ધ છે.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "તમારો કૅમેરો હાલમાં અનુપલબ્ધ છે.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "અન્ય એપ્લિકેશન તેનો ઉપયોગ કરી રહી હોઈ શકે છે.",
+    "message": "કૅમેરો ઠીકથી કનેક્ટ છે તે તપાસો.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "ફિલ્ટર્સ ટોગલ કરો ",
+    "message": "ફિલ્ટર્સ ટોગલ કરો",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -175,6 +175,10 @@
     "message": "મલ્ટિ-શૉટને ટોગલ કરો",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "મિરરિંગને ટોગલ કરો",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "ટાઇમર સક્રિય",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "મલ્ટિ-શૉટ નિષ્ક્રિય",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "મિરરિંગ સક્રિય",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "મિરરિંગ નિષ્ક્રિય",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "હા",

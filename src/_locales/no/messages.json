@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Retro – 30-talls",
+    "message": "30-talls retro",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Retro – 50-talls",
+    "message": "50-talls retro",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Retro – 60-talls",
+    "message": "60-talls retro",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Vippet til siden",
+    "message": "Selektivt fokus",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Klassisk",
+    "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kameraet ditt er for øyeblikket utilgjengelig.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Kameraet ditt er utilgjengelig akkurat nå.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Det kan hende en annen app bruker det.",
+    "message": "Sjekk om kameraet er koblet til riktig.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -180,27 +180,27 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Tidtakeren er aktiv",
+    "message": "Tidtakeren er på",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Tidtakeren er inaktiv",
+    "message": "Tidtakeren er av",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Flerbildefunksjonen er aktiv",
+    "message": "Flerbildefunksjonen er på",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Flerbildefunksjonen er inaktiv",
+    "message": "Flerbildefunksjonen er av",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Speiling er aktiv",
+    "message": "Speiling er på",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Speiling er inaktiv",
+    "message": "Speiling er av",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {

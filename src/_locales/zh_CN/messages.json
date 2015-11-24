@@ -1,14 +1,14 @@
 {
   "name": {
-    "message": "相机",
+    "message": "摄像头",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用您的相机拍摄绝佳的照片。",
+    "message": "使用您的网络摄像头拍摄绝佳的照片。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy效果",
+    "message": "安迪肖像",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "30年代复古",
+    "message": "30 年代复古",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "50年代复古",
+    "message": "50 年代复古",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "60年代复古",
+    "message": "60 年代复古",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "您的相机目前不可用。",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "您的摄像头目前不可用。",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "可能有其他应用正在使用它。",
+    "message": "请检查此摄像头是否连接正确。",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "切换过滤条件",
+    "message": "切换滤镜",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
