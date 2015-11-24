@@ -27,10 +27,12 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AbstractAudioContext.h"
+#include "wtf/HashMap.h"
 
 namespace blink {
 
 class ExceptionState;
+class OfflineAudioDestinationHandler;
 
 class MODULES_EXPORT OfflineAudioContext final : public AbstractAudioContext {
     DEFINE_WRAPPERTYPEINFO();
@@ -39,16 +41,76 @@ public:
 
     ~OfflineAudioContext() override;
 
+    DECLARE_VIRTUAL_TRACE();
+
     ScriptPromise startOfflineRendering(ScriptState*);
 
     ScriptPromise closeContext(ScriptState*) final;
-    ScriptPromise suspendContext(ScriptState*) final;
+    ScriptPromise suspendContext(ScriptState*, double);
     ScriptPromise resumeContext(ScriptState*) final;
+
+    // This is to implement the pure virtual method from AbstractAudioContext.
+    // CANNOT be called from an OfflineAudioContext.
+    ScriptPromise suspendContext(ScriptState*) final;
 
     bool hasRealtimeConstraint() final { return false; }
 
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
+
+    // Fire completion event when the rendering is finished.
+    void fireCompletionEvent();
+
+    // This is same with the online version in AbstractAudioContext class except
+    // for returning a boolean value after checking the scheduled suspends.
+    bool handlePreOfflineRenderTasks();
+
+    void handlePostOfflineRenderTasks();
+
+    // Resolve a suspend scheduled at the specified frame. With this specified
+    // frame as a unique key, the associated promise resolver can be retrieved
+    // from the map (m_scheduledSuspends) and resolved.
+    void resolveSuspendOnMainThread(size_t);
+
+    // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
+    // zero.
+    using SuspendMap = HeapHashMap<size_t, Member<ScriptPromiseResolver>, DefaultHash<size_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
+
+    using OfflineGraphAutoLocker = DeferredTaskHandler::OfflineGraphAutoLocker;
+
 private:
-    OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
+    OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+
+    // Fetch directly the destination handler.
+    OfflineAudioDestinationHandler& destinationHandler();
+
+    AudioBuffer* renderTarget() const { return m_renderTarget.get(); }
+
+    // Check if the rendering needs to be suspended.
+    bool shouldSuspend();
+
+    Member<AudioBuffer> m_renderTarget;
+
+    // This map is to store the timing of scheduled suspends (frame) and the
+    // associated promise resolver. This storage can only be modified by the
+    // main thread and accessed by the audio thread with the graph lock.
+    //
+    // The map consists of key-value pairs of:
+    // { size_t quantizedFrame: ScriptPromiseResolver resolver }
+    //
+    // Note that |quantizedFrame| is a unique key, since you can have only one
+    // suspend scheduled for a certain frame. Accessing to this must be
+    // protected by the offline context lock.
+    SuspendMap m_scheduledSuspends;
+
+    Member<ScriptPromiseResolver> m_completeResolver;
+
+    // This flag is necessary to indicate the rendering has actually started.
+    // Note that initial state of context is 'Suspended', which is the same
+    // state when the context is suspended.
+    bool m_isRenderingStarted;
+
+    // Total render sample length.
+    size_t m_totalRenderFrames;
 };
 
 } // namespace blink

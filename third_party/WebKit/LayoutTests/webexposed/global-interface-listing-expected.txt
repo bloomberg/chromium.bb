@@ -3606,7 +3606,9 @@ interface OfflineAudioCompletionEvent : Event
 interface OfflineAudioContext : AudioContext
     getter oncomplete
     method constructor
+    method resume
     method startRendering
+    method suspend
     setter oncomplete
 interface Option
     method constructor
@@ -6382,7 +6384,9 @@ interface webkitMediaStream : EventTarget
 interface webkitOfflineAudioContext : AudioContext
     getter oncomplete
     method constructor
+    method resume
     method startRendering
+    method suspend
     setter oncomplete
 interface webkitRTCPeerConnection : EventTarget
     static method generateCertificate

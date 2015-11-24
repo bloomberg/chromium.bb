@@ -57,12 +57,12 @@
       p1.then(
         handlePromise(testFailed, "offlineContext.suspend() should have been rejected for an offline context"),
         function (e) {
-          if (e.name === "InvalidAccessError") {
+          if (e.name === "TypeError") {
             testPassed(
               "offlineContext.suspend() was correctly rejected: " + e);
           } else {
             testFailed(
-              "offlineContext.suspend() was correctly rejected but expected InvalidAccessError, not: " + e);
+              "offlineContext.suspend() was correctly rejected but expected TypeError, not: " + e);
           }
         }
       ).then(done);
@@ -83,7 +83,7 @@
       p2.then(
         handlePromise(testFailed, "offlineContext.resume() should have been rejected for an offline context"),
         function (e) {
-          if (e.name === "InvalidAccessError") {
+          if (e.name === "InvalidStateError") {
             testPassed(
               "offlineContext.resume() was correctly rejected: " + e);
           } else {
@@ -110,10 +110,10 @@
         offlineContext.suspend().then(
           handlePromise(testFailed, "offlineContext.suspend() on a closed context not rejected"),
           function (e) {
-            if (e.name === "InvalidAccessError") {
+            if (e.name === "TypeError") {
               testPassed("offlineContext.suspend() on a closed context rejected: " + e);
             } else {
-              testFailed("offlineContext.suspend() on a closed context rejected but expected InvalidAccessError, not: " + e);
+              testFailed("offlineContext.suspend() on a closed context rejected but expected TypeError, not: " + e);
             }
           }
         ).then(function () {
@@ -121,10 +121,10 @@
           offlineContext.resume().then(
             handlePromise(testFailed, "offlineContext.resume() on a closed context not rejected"),
             function (e) {
-              if (e.name === "InvalidAccessError") {
+              if (e.name === "InvalidStateError") {
                 testPassed("offlineContext.resume() on a closed context rejected: " + e);
               } else {
-                testFailed("offlineContext.resume() on a closed context rejected but expected InvalidAccessError, not: " + e);
+                testFailed("offlineContext.resume() on a closed context rejected but expected InvalidStateError, not: " + e);
               }
             }
           ).then(done);

@@ -1,0 +1,16 @@
+Test synchronous graph manipulation with OfflineAudioContext.suspend() and OfflineAudioContext.resume().
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Context is suspended at 12800 frame as expected.
+PASS A constant buffer is connected to destination and started at 12800 frame.
+PASS Context is suspended at 25600 frame as expected.
+PASS A constant buffer is disconnected at 25600 frame.
+PASS Buffer frame [0, 12800) contains only the constant 0.
+PASS Buffer frame [12800, 25600) contains only the constant 1.
+PASS Buffer frame [25600, 38400) contains only the constant 0.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

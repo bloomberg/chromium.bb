@@ -1,0 +1,27 @@
+Test promise resolution of OfflineAudioContext.resume() and OfflineAudioContext.suspend().
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS A new suspend has been scheduled at 0 second(s).
+PASS suspend promise resolved: context is suspended at 0 second(s).
+PASS A new suspend has been scheduled at 0.25 second(s).
+PASS suspend promise resolved: context is suspended at 0.25 second(s).
+PASS A new suspend has been scheduled at 0.5 second(s).
+PASS suspend promise resolved: context is suspended at 0.5 second(s).
+PASS A new suspend has been scheduled at 0.75 second(s).
+PASS suspend promise resolved: context is suspended at 0.75 second(s).
+PASS A new suspend has been scheduled at 1 second(s).
+PASS suspend promise resolved: context is suspended at 1 second(s).
+PASS A new suspend has been scheduled at 1.25 second(s).
+PASS suspend promise resolved: context is suspended at 1.25 second(s).
+PASS A new suspend has been scheduled at 1.5 second(s).
+PASS suspend promise resolved: context is suspended at 1.5 second(s).
+PASS A new suspend has been scheduled at 1.75 second(s).
+PASS suspend promise resolved: context is suspended at 1.75 second(s).
+PASS Scheduling at 2 seconds rejected correctly (with InvalidStateError: cannot schedule a suspend at frame 25600 (2 seconds) because it is greater than or equal to the total render duration of 25600 frames).
+PASS Promise context.state is equal to closed.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

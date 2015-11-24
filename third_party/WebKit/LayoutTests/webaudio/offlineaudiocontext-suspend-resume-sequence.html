@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description('Test OfflineAudioContext.resume() and OfflineAudioContext.suspend() with the timed sequence.');
+      window.jsTestIsAsync = true;
+
+      var context;
+
+      // The sample rate is multiple of the rendering quantum, so suspension
+      // times fall in to the render quantum boundary.
+      var renderQuantum = 128;
+
+      var sampleRate = renderQuantum * 100;
+      var renderDuration = 2;
+
+      // These numbers are in an arbitrary order, but not randomly generated in
+      // runtime to avoid moving pieces. However, it is safe to arrange them
+      // in a random order in runtime.
+      //
+      // Also these numbers are multiple of 0.25, so they are supposed to fall
+      // in the render quantum boundary for easier and more intuitive
+      // verification.
+      var suspendTimes = [0.25, 0.75, 1.0, 0.5, 1.25, 0.0, 1.75];
+
+      // Sorted ascending suspend time is our expected result.
+      var expectedSuspendTimes = suspendTimes.slice(0).sort(function (a, b) {
+        return a - b;
+      });
+
+      var actualSuspendTimes = [];
+
+      context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+      for (var i = 0; i < suspendTimes.length; i++) {
+
+        // Schedule suspends in a random time order, but the actual suspend
+        // must happen in ascending time order.
+        scheduleSuspend(i, suspendTimes[i]);
+
+      }
+
+      function scheduleSuspend(index, suspendTime) {
+        testPassed('Scheduling suspend #' + index + ' at ' + suspendTime + ' second(s).');
+        context.suspend(suspendTime).then(function () {
+          actualSuspendTimes.push(suspendTime);
+          context.resume();
+        })
+      }
+
+      function verifyResult() {
+
+        for (var i = 0; i < actualSuspendTimes.length; i++) {
+          var scheduledOrder = suspendTimes.indexOf(actualSuspendTimes[i]);
+          var expectedOrder = expectedSuspendTimes.indexOf(actualSuspendTimes[i]);
+
+          if (i === expectedOrder) {
+            testPassed('The resolution order of suspend #' + scheduledOrder +
+              ' is ' + i + ' at ' + suspendTimes[scheduledOrder].toFixed(2) +
+              ' second(s).');
+          }
+        }
+      }
+
+      context.startRendering().then(verifyResult).then(finishJSTest);
+
+      successfullyParsed = true;
+    </script>
+
+  </body>
+</html>

@@ -28,22 +28,31 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "public/platform/Platform.h"
 #include <algorithm>
 
 namespace blink {
 
-const size_t renderQuantumSize = 128;
+const size_t OfflineAudioDestinationHandler::renderQuantumSize = 128;
 
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, AudioBuffer* renderTarget)
     : AudioDestinationHandler(node, renderTarget->sampleRate())
     , m_renderTarget(renderTarget)
-    , m_startedRendering(false)
+    , m_renderThread(adoptPtr(Platform::current()->createThread("offline audio renderer")))
+    , m_framesProcessed(0)
+    , m_framesToProcess(0)
+    , m_isRenderingStarted(false)
+    , m_shouldSuspend(false)
 {
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
+    m_framesToProcess = m_renderTarget->length();
 }
 
 PassRefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::create(AudioNode& node, AudioBuffer* renderTarget)
@@ -81,34 +90,51 @@ void OfflineAudioDestinationHandler::uninitialize()
     AudioHandler::uninitialize();
 }
 
+OfflineAudioContext* OfflineAudioDestinationHandler::context() const
+{
+    return static_cast<OfflineAudioContext*>(m_context);
+}
+
 void OfflineAudioDestinationHandler::startRendering()
 {
     ASSERT(isMainThread());
+    ASSERT(m_renderThread);
     ASSERT(m_renderTarget);
+
     if (!m_renderTarget)
         return;
 
-    if (!m_startedRendering) {
-        m_startedRendering = true;
-        m_renderThread = adoptPtr(Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
+    // Rendering was not started. Starting now.
+    if (!m_isRenderingStarted) {
+        m_isRenderingStarted = true;
+        m_renderThread->taskRunner()->postTask(BLINK_FROM_HERE,
+            new Task(threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, this)));
+        return;
     }
+
+    // Rendering is already started, which implicitly means we resume the
+    // rendering by calling |doOfflineRendering| on the render thread.
+    m_renderThread->taskRunner()->postTask(BLINK_FROM_HERE,
+        threadSafeBind(&OfflineAudioDestinationHandler::doOfflineRendering, this));
 }
 
 void OfflineAudioDestinationHandler::stopRendering()
 {
+    // offline audio rendering CANNOT BE stopped by JavaScript.
     ASSERT_NOT_REACHED();
 }
 
-void OfflineAudioDestinationHandler::offlineRender()
+WebThread* OfflineAudioDestinationHandler::offlineRenderThread()
 {
-    offlineRenderInternal();
-    context()->handlePostRenderTasks();
+    ASSERT(m_renderThread);
+
+    return m_renderThread.get();
 }
 
-void OfflineAudioDestinationHandler::offlineRenderInternal()
+void OfflineAudioDestinationHandler::startOfflineRendering()
 {
     ASSERT(!isMainThread());
+
     ASSERT(m_renderBus);
     if (!m_renderBus)
         return;
@@ -128,38 +154,139 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
     if (!isRenderBusAllocated)
         return;
 
-    // Break up the render target into smaller "render quantize" sized pieces.
-    // Render until we're finished.
-    size_t framesToProcess = m_renderTarget->length();
+    // Start rendering.
+    doOfflineRendering();
+}
+
+void OfflineAudioDestinationHandler::doOfflineRendering()
+{
+    ASSERT(!isMainThread());
+
     unsigned numberOfChannels = m_renderTarget->numberOfChannels();
 
-    unsigned n = 0;
-    while (framesToProcess > 0) {
-        // Render one render quantum.
-        render(0, m_renderBus.get(), renderQuantumSize);
+    // Reset the suspend flag.
+    m_shouldSuspend = false;
 
-        size_t framesAvailableToCopy = std::min(framesToProcess, renderQuantumSize);
+    // If there is more to process and there is no suspension at the moment,
+    // do continue to render quanta. Then calling OfflineAudioContext.resume() will pick up
+    // the render loop again from where it was suspended.
+    while (m_framesToProcess > 0 && !m_shouldSuspend) {
+
+        // Suspend the rendering and update m_shouldSuspend if a scheduled
+        // suspend found at the current sample frame. Otherwise render one
+        // quantum and return false.
+        m_shouldSuspend = renderIfNotSuspended(0, m_renderBus.get(), renderQuantumSize);
+
+        if (m_shouldSuspend)
+            return;
+
+        size_t framesAvailableToCopy = std::min(m_framesToProcess, renderQuantumSize);
 
         for (unsigned channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex) {
             const float* source = m_renderBus->channel(channelIndex)->data();
             float* destination = m_renderTarget->getChannelData(channelIndex)->data();
-            memcpy(destination + n, source, sizeof(float) * framesAvailableToCopy);
+            memcpy(destination + m_framesProcessed, source, sizeof(float) * framesAvailableToCopy);
         }
 
-        n += framesAvailableToCopy;
-        framesToProcess -= framesAvailableToCopy;
+        m_framesProcessed += framesAvailableToCopy;
+
+        ASSERT(m_framesToProcess >= framesAvailableToCopy);
+        m_framesToProcess -= framesAvailableToCopy;
     }
 
-    // Our work is done. Let the AbstractAudioContext know.
-    if (context()->executionContext())
-        context()->executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
+    // Finish up the rendering loop if there is no more to process.
+    if (!m_framesToProcess)
+        finishOfflineRendering();
+}
+
+void OfflineAudioDestinationHandler::suspendOfflineRendering()
+{
+    ASSERT(!isMainThread());
+
+    // The actual rendering has been suspended. Notify the context.
+    if (context()->executionContext()) {
+        context()->executionContext()->postTask(BLINK_FROM_HERE,
+            createCrossThreadTask(&OfflineAudioDestinationHandler::notifySuspend, this));
+    }
+}
+
+void OfflineAudioDestinationHandler::finishOfflineRendering()
+{
+    ASSERT(!isMainThread());
+
+    // The actual rendering has been completed. Notify the context.
+    if (context()->executionContext()) {
+        context()->executionContext()->postTask(BLINK_FROM_HERE,
+            createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, this));
+    }
+}
+
+void OfflineAudioDestinationHandler::notifySuspend()
+{
+    if (context())
+        context()->resolveSuspendOnMainThread(context()->currentSampleFrame());
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()
 {
-    // The AbstractAudioContext might be gone.
+    // The OfflineAudioContext might be gone.
     if (context())
         context()->fireCompletionEvent();
+}
+
+bool OfflineAudioDestinationHandler::renderIfNotSuspended(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
+{
+    // We don't want denormals slowing down any of the audio processing
+    // since they can very seriously hurt performance.
+    // This will take care of all AudioNodes because they all process within this scope.
+    DenormalDisabler denormalDisabler;
+
+    context()->deferredTaskHandler().setAudioThread(currentThread());
+
+    if (!context()->isDestinationInitialized()) {
+        destinationBus->zero();
+        return false;
+    }
+
+    // Take care pre-render tasks at the beginning of each render quantum. Then
+    // it will stop the rendering loop if the context needs to be suspended
+    // at the beginning of the next render quantum.
+    if (context()->handlePreOfflineRenderTasks()) {
+        suspendOfflineRendering();
+        return true;
+    }
+
+    // Prepare the local audio input provider for this render quantum.
+    if (sourceBus)
+        m_localAudioInputProvider.set(sourceBus);
+
+    ASSERT(numberOfInputs() >= 1);
+    if (numberOfInputs() < 1) {
+        destinationBus->zero();
+        return false;
+    }
+    // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
+    // all the way backwards through the rendering graph.
+    AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
+
+    if (!renderedBus) {
+        destinationBus->zero();
+    } else if (renderedBus != destinationBus) {
+        // in-place processing was not possible - so copy
+        destinationBus->copyFrom(*renderedBus);
+    }
+
+    // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
+    context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
+
+    // Let the context take care of any business at the end of each render quantum.
+    context()->handlePostOfflineRenderTasks();
+
+    // Advance current sample-frame.
+    size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
+    releaseStore(&m_currentSampleFrame, newSampleFrame);
+
+    return false;
 }
 
 // ----------------------------------------------------------------

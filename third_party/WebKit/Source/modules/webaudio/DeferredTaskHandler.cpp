@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
@@ -58,6 +59,17 @@ bool DeferredTaskHandler::tryLock()
 void DeferredTaskHandler::unlock()
 {
     m_contextGraphMutex.unlock();
+}
+
+void DeferredTaskHandler::offlineLock()
+{
+    // RELEASE_ASSERT is here to make sure to explicitly crash if this is called
+    // from other than the offline render thread, which is considered as the
+    // audio thread in OfflineAudioContext.
+    RELEASE_ASSERT_WITH_MESSAGE(isAudioThread(),
+        "DeferredTaskHandler::offlineLock() must be called within the offline audio thread.");
+
+    m_contextGraphMutex.lock();
 }
 
 #if ENABLE(ASSERT)
@@ -230,6 +242,12 @@ DeferredTaskHandler::AutoLocker::AutoLocker(AbstractAudioContext* context)
     : m_handler(context->deferredTaskHandler())
 {
     m_handler.lock();
+}
+
+DeferredTaskHandler::OfflineGraphAutoLocker::OfflineGraphAutoLocker(OfflineAudioContext* context)
+    : m_handler(context->deferredTaskHandler())
+{
+    m_handler.offlineLock();
 }
 
 void DeferredTaskHandler::addRenderingOrphanHandler(PassRefPtr<AudioHandler> handler)

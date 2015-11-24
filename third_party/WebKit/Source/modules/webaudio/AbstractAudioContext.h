@@ -167,8 +167,10 @@ public:
     // Close
     virtual ScriptPromise closeContext(ScriptState*) = 0;
 
-    // Suspend/Resume
+    // Suspend
     virtual ScriptPromise suspendContext(ScriptState*) = 0;
+
+    // Resume
     virtual ScriptPromise resumeContext(ScriptState*) = 0;
 
     // When a source node has started processing and needs to be protected,
@@ -227,11 +229,9 @@ public:
     const AtomicString& interfaceName() const final;
     ExecutionContext* executionContext() const final;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     void startRendering();
-    void fireCompletionEvent();
     void notifyStateChange();
 
     // A context is considered closed if:
@@ -246,20 +246,27 @@ protected:
     explicit AbstractAudioContext(Document*);
     AbstractAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 
-    void setContextState(AudioContextState);
-    virtual void didClose() {}
+    void initialize();
     void uninitialize();
 
-    Member<ScriptPromiseResolver> m_offlineResolver;
+    void setContextState(AudioContextState);
+
+    virtual void didClose() {}
+
+    // Tries to handle AudioBufferSourceNodes that were started but became disconnected or was never
+    // connected. Because these never get pulled anymore, they will stay around forever. So if we
+    // can, try to stop them so they can be collected.
+    void handleStoppableSourceNodes();
+
+    Member<AudioDestinationNode> m_destinationNode;
 
     // FIXME(dominicc): Move m_resumeResolvers to AudioContext, because only
     // it creates these Promises.
     // Vector of promises created by resume(). It takes time to handle them, so we collect all of
     // the promises here until they can be resolved or rejected.
     HeapVector<Member<ScriptPromiseResolver>> m_resumeResolvers;
-private:
-    void initialize();
 
+private:
     bool m_isCleared;
     void clear();
 
@@ -269,7 +276,6 @@ private:
     // haven't finished playing.  Make sure to release them here.
     void releaseActiveSourceNodes();
 
-    Member<AudioDestinationNode> m_destinationNode;
     Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
@@ -304,17 +310,10 @@ private:
     bool m_didInitializeContextGraphMutex;
     RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
-    Member<AudioBuffer> m_renderTarget;
-
     // The state of the AbstractAudioContext.
     AudioContextState m_contextState;
 
     AsyncAudioDecoder m_audioDecoder;
-
-    // Tries to handle AudioBufferSourceNodes that were started but became disconnected or was never
-    // connected. Because these never get pulled anymore, they will stay around forever. So if we
-    // can, try to stop them so they can be collected.
-    void handleStoppableSourceNodes();
 
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.

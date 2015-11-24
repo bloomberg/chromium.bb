@@ -38,6 +38,7 @@
 namespace blink {
 
 class AbstractAudioContext;
+class OfflineAudioContext;
 class AudioHandler;
 class AudioNodeOutput;
 class AudioSummingJunction;
@@ -110,6 +111,11 @@ public:
     void lock();
     bool tryLock();
     void unlock();
+
+    // This locks the audio render thread for OfflineAudioContext rendering.
+    // MUST NOT be used in the real-time audio context.
+    void offlineLock();
+
 #if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
     bool isGraphOwner();
@@ -126,6 +132,21 @@ public:
         explicit AutoLocker(AbstractAudioContext*);
 
         ~AutoLocker() { m_handler.unlock(); }
+
+    private:
+        DeferredTaskHandler& m_handler;
+    };
+
+    // This is for locking offline render thread (which is considered as the
+    // audio thread) with unlocking on self-destruction at the end of the scope.
+    // Also note that it uses lock() rather than tryLock() because the timing
+    // MUST be accurate on offline rendering.
+    class MODULES_EXPORT OfflineGraphAutoLocker {
+        STACK_ALLOCATED();
+    public:
+        explicit OfflineGraphAutoLocker(OfflineAudioContext*);
+
+        ~OfflineGraphAutoLocker() { m_handler.unlock(); }
 
     private:
         DeferredTaskHandler& m_handler;

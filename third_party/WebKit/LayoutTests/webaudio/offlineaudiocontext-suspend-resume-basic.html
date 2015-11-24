@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description('Basic test for OfflineAudioContext.suspend() and OfflineAudioContext.resume().');
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 44100;
+      var renderDuration = 1;
+      var renderQuantum = 128;
+
+      var audit = Audit.createTaskRunner();
+
+      // Task: Calling suspend with no argument, negative time or the time
+      // beyond the maximum render duration reject the promise.
+      audit.defineTask('suspend-invalid-argument', function (done) {
+        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+        Should('context.suspend()', context.suspend()).beRejected();
+        Should('context.suspend(-1.0)', context.suspend(-1.0)).beRejected();
+        Should('context.suspend(2.0)', context.suspend(2.0)).beRejected();
+
+        context.startRendering().then(done);
+      });
+
+      // Task: Scheduling a suspend in the past should be rejected.
+      audit.defineTask('suspend-in-the-past', function (done) {
+        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+        context.suspend(0.5).then(function () {
+
+          Should('Scheduling a suspend in the past',
+            context.suspend(context.currentTime - 0.1)).beRejected();
+
+          Should('Scheduling a suspend in the future',
+            context.suspend(context.currentTime + 0.1).then(function () {
+              context.resume();
+            })).beResolved();
+
+          context.resume();
+        });
+
+        context.startRendering().then(done);
+      });
+
+      // Task: Calling multiple suspends at the same rendering quantum should
+      // reject the promise.
+      audit.defineTask('identical-suspend-time', function (done) {
+        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+        // |suspendTime1| and |suspendTime2| are identical when quantized to
+        // the render quantum size.
+        var suspendTime1 = renderQuantum / sampleRate;
+        var suspendTime2 = 1.5 * renderQuantum / sampleRate;
+
+        context.suspend(suspendTime1).then(function () {
+          context.resume();
+        });
+
+        // Printing out the pass message to be more informative here.
+        testPassed('Scheduling a suspend at frame ' + suspendTime1 * sampleRate + ' was successful.');
+
+        Should('Scheduling another suspend at the same rendering quantum',
+          context.suspend(suspendTime2)).beRejected();
+
+        context.startRendering().then(done);
+      });
+
+      // Task: Resuming a running context should be resolved.
+      audit.defineTask('resume-before-suspend', function (done) {
+
+        // Make the render length 5 times longer to minimize the flakiness.
+        var longRenderDuration = renderDuration * 5;
+        var context = new OfflineAudioContext(1, sampleRate * longRenderDuration, sampleRate);
+
+        // Create dummy audio graph to slow the rendering.
+        var osc = context.createOscillator();
+        var lpf = context.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(0.1, 0.0);
+        osc.frequency.linearRampToValueAtTime(1000, longRenderDuration * 0.5);
+        osc.frequency.linearRampToValueAtTime(0.1, longRenderDuration);
+        lpf.frequency.setValueAtTime(0.1, 0.0);
+        lpf.frequency.linearRampToValueAtTime(1000, longRenderDuration * 0.5);
+        lpf.frequency.linearRampToValueAtTime(0.1, longRenderDuration);
+        osc.connect(lpf);
+        lpf.connect(context.destination);
+        osc.start();
+
+        // A suspend is scheduled at the 90% of the render duration.
+        context.suspend(longRenderDuration * 0.9).then(done);
+
+        testPassed('Scheduling a suspend at ' + longRenderDuration * 0.9 + ' seconds.');
+
+        // We have to start rendering to get the time running.
+        context.startRendering();
+
+        // Then call resume() immediately after the rendering starts. Resuming
+        // a context that is already running should be resolved.
+        Should('Resuming a running context', context.resume())
+        .beResolved();
+      });
+
+      // Task: Calling resume on a context that is not started should reject the promise.
+      audit.defineTask('resume-without-suspend', function (done) {
+        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+        Should('Resuming a context without starting it', context.resume())
+          .beRejected().then(done);
+      });
+
+      audit.defineTask('finish', function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks(
+        'suspend-invalid-argument',
+        'suspend-in-the-past',
+        'identical-suspend-time',
+        'resume-before-suspend',
+        'resume-without-suspend',
+        'finish'
+      );
+
+      successfullyParsed = true;
+    </script>
+
+  </body>
+</html>

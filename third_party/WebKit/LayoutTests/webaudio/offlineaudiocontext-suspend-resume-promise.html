@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description('Test promise resolution of OfflineAudioContext.resume() and OfflineAudioContext.suspend().');
+      window.jsTestIsAsync = true;
+
+      var context;
+
+      // The sample rate is multiple of the rendering quantum, so suspension
+      // times fall in to the render quantum boundary.
+      var renderQuantum = 128;
+
+      var sampleRate = renderQuantum * 100;
+      var renderDuration = 2;
+      var scheduledSuspendTime = 0;
+
+      // With the sample rate setting above, this ensures suspension time fall
+      // in to the render quantum boundary.
+      var suspendInterval = 0.25;
+
+      context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+      function onSuspended() {
+        if (context.state === 'suspended' && context.currentTime === scheduledSuspendTime) {
+
+          testPassed('suspend promise resolved: context is suspended at ' +
+            scheduledSuspendTime + ' second(s).');
+
+          scheduledSuspendTime = context.currentTime + suspendInterval;
+
+          // Scheduling a suspend before the render duration should pass.
+          if (scheduledSuspendTime < renderDuration) {
+            context.suspend(scheduledSuspendTime).then(onSuspended);
+            testPassed('A new suspend has been scheduled at ' +
+              scheduledSuspendTime + ' second(s).');
+          }
+
+          // Scheduling a suspend exactly at the render duration should be
+          // rejected.
+          if (scheduledSuspendTime === renderDuration) {
+            Should('Scheduling at ' + renderDuration + ' seconds',
+              context.suspend(scheduledSuspendTime)).beRejected();
+          }
+
+         context.resume();
+        }
+      }
+
+      // Schedule the first suspension.
+      context.suspend(scheduledSuspendTime).then(onSuspended);
+      testPassed('A new suspend has been scheduled at ' + scheduledSuspendTime + ' second(s).');
+
+      context.startRendering().then(function () {
+        Should('Promise context.state', context.state).beEqualTo('closed');
+      }).then(finishJSTest);
+
+      successfullyParsed = true;
+    </script>
+
+  </body>
+</html>

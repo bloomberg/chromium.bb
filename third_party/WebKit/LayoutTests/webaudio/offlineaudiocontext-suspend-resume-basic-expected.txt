@@ -1,0 +1,19 @@
+Basic test for OfflineAudioContext.suspend() and OfflineAudioContext.resume().
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context.suspend() rejected correctly (with TypeError: Failed to execute 'suspend' on 'OfflineAudioContext': 1 argument required, but only 0 present.).
+PASS context.suspend(-1.0) rejected correctly (with InvalidStateError: negative suspend time (-1) is not allowed).
+PASS context.suspend(2.0) rejected correctly (with InvalidStateError: cannot schedule a suspend at frame 88192 (2 seconds) because it is greater than or equal to the total render duration of 44100 frames).
+PASS Scheduling a suspend in the past rejected correctly (with InvalidStateError: cannot schedule a suspend at frame 17536 (0.399229 seconds) because it is earlier than the current frame of 22016 (0.499229 seconds)).
+PASS Scheduling a suspend in the future resolved correctly.
+PASS Scheduling a suspend at frame 128 was successful.
+PASS Scheduling another suspend at the same rendering quantum rejected correctly (with InvalidStateError: cannot schedule more than one suspend at frame 128 (0.00435374 seconds)).
+PASS Scheduling a suspend at 4.5 seconds.
+PASS Resuming a running context resolved correctly.
+PASS Resuming a context without starting it rejected correctly (with InvalidStateError: cannot resume an offline context that has not started).
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -7,15 +7,15 @@ PASS offlineContext = new OfflineAudioContext(1, durationInSeconds * sampleRate,
 PASS offlineContext.state is "suspended"
 PASS p1 = offlineContext.suspend() did not throw exception.
 PASS p1 is an instance of Promise
-PASS offlineContext.suspend() was correctly rejected: InvalidAccessError: cannot suspend an OfflineAudioContext
+PASS offlineContext.suspend() was correctly rejected: TypeError: Failed to execute 'suspend' on 'OfflineAudioContext': 1 argument required, but only 0 present.
 PASS p2 = offlineContext.resume() did not throw exception.
 PASS p2 is an instance of Promise
 PASS offlineContext.state is "suspended"
-PASS offlineContext.resume() was correctly rejected: InvalidAccessError: cannot resume an OfflineAudioContext
+PASS offlineContext.resume() was correctly rejected: InvalidStateError: cannot resume an offline context that has not started
 PASS p3 = offlineContext.startRendering() did not throw exception.
 PASS offlineContext.state is "closed"
-PASS offlineContext.suspend() on a closed context rejected: InvalidAccessError: cannot suspend an OfflineAudioContext
-PASS offlineContext.resume() on a closed context rejected: InvalidAccessError: cannot resume an OfflineAudioContext
+PASS offlineContext.suspend() on a closed context rejected: TypeError: Failed to execute 'suspend' on 'OfflineAudioContext': 1 argument required, but only 0 present.
+PASS offlineContext.resume() on a closed context rejected: InvalidStateError: cannot resume a closed offline context
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -886,6 +886,9 @@ public:
         V8History_ScrollRestoration_AttributeGetter = 1028,
         V8History_ScrollRestoration_AttributeSetter = 1029,
         SVG1DOMFilter = 1030,
+        OfflineAudioContextStartRendering = 1031,
+        OfflineAudioContextSuspend = 1032,
+        OfflineAudioContextResume = 1033,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

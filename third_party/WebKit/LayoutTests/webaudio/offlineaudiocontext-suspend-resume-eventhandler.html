@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description('Test event handler callback from OfflineAudioContext.resume() and OfflineAudioContext.suspend().');
+      window.jsTestIsAsync = true;
+
+      var context;
+      var renderQuantum = 128;
+
+      // The sample rate is multiple of the rendering quantum, so suspension
+      // times in the test will fall on the render quantum boundary. Although
+      // this is not necessary, it is easier to understand the test.
+      var sampleRate = renderQuantum * 100;
+
+      var renderDuration = 2;
+      var scheduledSuspendTime = 0;
+
+      // With the sample rate setting above, this ensures suspension time fall
+      // in to the render quantum boundary.
+      var suspendInterval = 0.25;
+
+      function runTest() {
+        context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+
+        context.onstatechange = function () {
+          if (context.state === 'suspended' && context.currentTime === scheduledSuspendTime) {
+
+            testPassed('onstatechange event handler: context is suspended at ' +
+              scheduledSuspendTime + ' second(s).');
+
+            scheduledSuspendTime = context.currentTime + suspendInterval;
+
+            // Scheduling a suspend before the render duration should pass.
+            if (scheduledSuspendTime < renderDuration) {
+              context.suspend(scheduledSuspendTime);
+              testPassed('A new suspend has been scheduled at ' +
+                scheduledSuspendTime + ' second(s).');
+            }
+
+            // Scheduling a suspend exactly at the render duration should be
+            // rejected.
+            if (scheduledSuspendTime === renderDuration) {
+              Should('Scheduling at ' + renderDuration + ' seconds',
+                context.suspend(scheduledSuspendTime)).beRejected();
+            }
+
+            context.resume();
+          }
+        };
+
+        // This test is for verifying all the event handlers on OAC and that is
+        // why 'oncomplete' is used here.
+        context.oncomplete = function () {
+          Should('oncomplete event handler: context.state', context.state).beEqualTo('closed');
+          finishJSTest();
+        };
+
+        // Schedule the first suspension.
+        context.suspend(scheduledSuspendTime);
+        testPassed('A new suspend has been scheduled at ' + scheduledSuspendTime + ' second(s).');
+
+        context.startRendering();
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+
+  </body>
+</html>
