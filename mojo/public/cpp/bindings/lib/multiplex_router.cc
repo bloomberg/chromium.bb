@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 
 namespace mojo {
@@ -282,6 +283,17 @@ void MultiplexRouter::RaiseError() {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&MultiplexRouter::RaiseError, this));
   }
+}
+
+scoped_ptr<AssociatedGroup> MultiplexRouter::CreateAssociatedGroup() {
+  scoped_ptr<AssociatedGroup> group(new AssociatedGroup);
+  group->router_ = this;
+  return group.Pass();
+}
+
+// static
+MultiplexRouter* MultiplexRouter::GetRouter(AssociatedGroup* associated_group) {
+  return associated_group->router_.get();
 }
 
 ScopedMessagePipeHandle MultiplexRouter::PassMessagePipe() {

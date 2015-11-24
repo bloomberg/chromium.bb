@@ -27,6 +27,9 @@
 #include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
+
+class AssociatedGroup;
+
 namespace internal {
 
 class InterfaceEndpointClient;
@@ -84,6 +87,10 @@ class MultiplexRouter
   // Raises an error on the underlying message pipe. It disconnects the pipe
   // and notifies all interfaces running on this pipe.
   void RaiseError();
+
+  scoped_ptr<AssociatedGroup> CreateAssociatedGroup();
+
+  static MultiplexRouter* GetRouter(AssociatedGroup* associated_group);
 
   // ---------------------------------------------------------------------------
   // The following public methods are called on the creating thread.

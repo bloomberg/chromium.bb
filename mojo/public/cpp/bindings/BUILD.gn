@@ -5,6 +5,9 @@
 source_set("bindings") {
   sources = [
     "array.h",
+    "associated_binding.h",
+    "associated_group.h",
+    "associated_interface_ptr.h",
     "associated_interface_ptr_info.h",
     "associated_interface_request.h",
     "binding.h",
@@ -14,6 +17,8 @@ source_set("bindings") {
     "lib/array_internal.cc",
     "lib/array_internal.h",
     "lib/array_serialization.h",
+    "lib/associated_group.cc",
+    "lib/associated_interface_ptr_internal.h",
     "lib/bindings_internal.h",
     "lib/bindings_serialization.cc",
     "lib/bindings_serialization.h",

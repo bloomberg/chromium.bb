@@ -9,6 +9,7 @@ source_set("tests") {
 
   sources = [
     "array_unittest.cc",
+    "associated_interface_unittest.cc",
     "binding_callback_unittest.cc",
     "binding_unittest.cc",
     "bounds_checker_unittest.cc",

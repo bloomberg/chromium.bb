@@ -97,6 +97,11 @@
       ],
       'sources': [
         '../../mojo/public/cpp/bindings/array.h',
+        '../../mojo/public/cpp/bindings/associated_binding.h',
+        '../../mojo/public/cpp/bindings/associated_group.h',
+        '../../mojo/public/cpp/bindings/associated_interface_ptr.h',
+        '../../mojo/public/cpp/bindings/associated_interface_ptr_info.h',
+        '../../mojo/public/cpp/bindings/associated_interface_request.h',
         '../../mojo/public/cpp/bindings/binding.h',
         '../../mojo/public/cpp/bindings/callback.h',
         '../../mojo/public/cpp/bindings/interface_ptr.h',
@@ -104,6 +109,8 @@
         '../../mojo/public/cpp/bindings/lib/array_internal.cc',
         '../../mojo/public/cpp/bindings/lib/array_internal.h',
         '../../mojo/public/cpp/bindings/lib/array_serialization.h',
+        '../../mojo/public/cpp/bindings/lib/associated_group.cc',
+        '../../mojo/public/cpp/bindings/lib/associated_interface_ptr_internal.h',
         '../../mojo/public/cpp/bindings/lib/bindings_internal.h',
         '../../mojo/public/cpp/bindings/lib/bindings_serialization.cc',
         '../../mojo/public/cpp/bindings/lib/bindings_serialization.h',
@@ -366,6 +373,31 @@
       ],
       'dependencies': [
         'mojo_public_test_interfaces_mojom',
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_public_test_associated_interfaces_mojom',
+      'type': 'none',
+      'variables': {
+        # These files are not included in the mojo_public_test_interfaces_mojom
+        # target because associated interfaces are not supported by all bindings
+        # languages yet.
+        'mojom_files': [
+          '../../mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom',
+        ],
+      },
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      # GN version: //mojo/public/interfaces/bindings/tests:test_associated_interfaces
+      'target_name': 'mojo_public_test_associated_interfaces',
+      'type': 'static_library',
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_public_test_associated_interfaces_mojom',
         'mojo_cpp_bindings',
       ],
     },

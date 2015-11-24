@@ -35,12 +35,7 @@ ScopedInterfaceEndpointHandle::~ScopedInterfaceEndpointHandle() {
 ScopedInterfaceEndpointHandle& ScopedInterfaceEndpointHandle::operator=(
     ScopedInterfaceEndpointHandle&& other) {
   reset();
-
-  id_ = other.id_;
-  is_local_ = other.is_local_;
-  router_.swap(other.router_);
-
-  other.id_ = kInvalidInterfaceId;
+  swap(other);
 
   return *this;
 }
@@ -52,6 +47,7 @@ void ScopedInterfaceEndpointHandle::reset() {
   router_->CloseEndpointHandle(id_, is_local_);
 
   id_ = kInvalidInterfaceId;
+  is_local_ = true;
   router_ = nullptr;
 }
 
@@ -66,6 +62,7 @@ InterfaceId ScopedInterfaceEndpointHandle::release() {
   InterfaceId result = id_;
 
   id_ = kInvalidInterfaceId;
+  is_local_ = true;
   router_ = nullptr;
 
   return result;

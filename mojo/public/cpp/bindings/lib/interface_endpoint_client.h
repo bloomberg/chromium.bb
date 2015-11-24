@@ -18,7 +18,12 @@
 #include "mojo/public/cpp/bindings/message_filter.h"
 
 namespace mojo {
+
+class AssociatedGroup;
+
 namespace internal {
+
+class MultiplexRouter;
 
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
@@ -52,6 +57,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   }
 
   MultiplexRouter* router() const { return handle_.router(); }
+  AssociatedGroup* associated_group();
 
   // After this call the object is in an invalid state and shouldn't be reused.
   ScopedInterfaceEndpointHandle PassHandle();
@@ -94,6 +100,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   bool HandleValidatedMessage(Message* message);
 
   ScopedInterfaceEndpointHandle handle_;
+  scoped_ptr<AssociatedGroup> associated_group_;
 
   MessageReceiverWithResponderStatus* const incoming_receiver_;
   scoped_ptr<MessageFilter> payload_validator_;

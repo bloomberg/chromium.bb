@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 
 namespace mojo {
@@ -115,6 +116,12 @@ InterfaceEndpointClient::~InterfaceEndpointClient() {
   STLDeleteValues(&responders_);
 
   handle_.router()->DetachEndpointClient(handle_);
+}
+
+AssociatedGroup* InterfaceEndpointClient::associated_group() {
+  if (!associated_group_)
+    associated_group_ = handle_.router()->CreateAssociatedGroup();
+  return associated_group_.get();
 }
 
 ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
