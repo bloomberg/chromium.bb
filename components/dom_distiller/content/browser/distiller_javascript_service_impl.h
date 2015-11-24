@@ -31,7 +31,7 @@ class DistillerJavaScriptServiceImpl : public DistillerJavaScriptService {
   void HandleDistillerFeedbackCall(bool good) override;
 
   // Make a call into Android to close the overlay panel containing reader mode.
-  void HandleDistillerClosePanelCall() override;
+  void HandleDistillerClosePanelCall(bool animate) override;
 
   // Show the Android view containing Reader Mode settings.
   void HandleDistillerOpenSettingsCall() override;

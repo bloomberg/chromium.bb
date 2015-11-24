@@ -41,6 +41,12 @@ void DistillerUIHandleAndroid::OpenSettings(
 }
 
 // static
+void DistillerUIHandleAndroid::ClosePanel(bool animate) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DomDistillerUIUtils_closePanel(env, animate);
+}
+
+// static
 bool RegisterUIHandle(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

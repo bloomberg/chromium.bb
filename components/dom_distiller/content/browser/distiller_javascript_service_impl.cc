@@ -41,8 +41,13 @@ void DistillerJavaScriptServiceImpl::HandleDistillerFeedbackCall(
   return;
 }
 
-void DistillerJavaScriptServiceImpl::HandleDistillerClosePanelCall() {
+void DistillerJavaScriptServiceImpl::HandleDistillerClosePanelCall(
+    bool animate) {
   content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
+  if (!distiller_ui_handle_) {
+    return;
+  }
+  distiller_ui_handle_->ClosePanel(animate);
 }
 
 void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {

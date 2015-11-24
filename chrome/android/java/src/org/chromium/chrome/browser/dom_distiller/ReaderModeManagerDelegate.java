@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.content_public.browser.WebContents;
 
@@ -43,6 +44,13 @@ public interface ReaderModeManagerDelegate {
      * @return The WebContents for the currently visible tab.
      */
     WebContents getBasePageWebContents();
+
+    /**
+     * Close the Reader Mode panel.
+     * @param reason The reason the panel is being closed.
+     * @param animate If the panel should animate as it closes.
+     */
+    void closePanel(StateChangeReason reason, boolean animate);
 
     /**
      * @return The ChromeActivity that owns the manager.

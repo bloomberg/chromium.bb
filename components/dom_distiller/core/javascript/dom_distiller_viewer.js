@@ -141,7 +141,7 @@ function showFeedbackForm(questionText, yesText, noText) {
 document.getElementById('closeReaderView').addEventListener('click',
     function(e) {
       if (distiller) {
-        distiller.closePanel();
+        distiller.closePanel(true);
       }
     }, true);
 

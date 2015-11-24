@@ -93,6 +93,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 ? ApiCompatibilityUtils.getColor(
                         activity.getResources(), R.color.reader_mode_header_bg)
                 : 0;
+        DomDistillerUIUtils.setReaderModeManagerDelegate(this);
     }
 
     /**
@@ -105,6 +106,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
             }
         }
         mTabStatusMap.clear();
+
+        DomDistillerUIUtils.destroy();
+
         mChromeActivity = null;
         mReaderModePanel = null;
         mTabModelSelector = null;
@@ -287,6 +291,16 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         if (tab == null) return null;
 
         return tab.getWebContents();
+    }
+
+    /**
+     * This is a proxy method for those with access to the ReaderModeManagerDelegate to close the
+     * panel.
+     */
+    @Override
+    public void closePanel(StateChangeReason reason, boolean animate) {
+        if (mReaderModePanel == null) return;
+        mReaderModePanel.closePanel(reason, animate);
     }
 
     protected WebContentsObserver createWebContentsObserver(WebContents webContents) {
