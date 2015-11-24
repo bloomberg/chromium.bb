@@ -53,6 +53,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(MOJO_RUNNER_CLIENT)
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#endif
+
 #if defined(OS_WIN)
 #include "content/browser/compositor/software_output_device_win.h"
 #elif defined(USE_OZONE)
@@ -150,8 +154,7 @@ scoped_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(MOJO_RUNNER_CLIENT)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "mojo-platform-channel-handle")) {
+  if (IsRunningInMojoShell()) {
     return scoped_ptr<cc::SoftwareOutputDevice>(
         new SoftwareOutputDeviceMus(compositor));
   }
@@ -204,9 +207,7 @@ static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
 #if defined(MOJO_RUNNER_CLIENT)
   // Chrome running as a mojo app currently can only use software compositing.
   // TODO(rjkroege): http://crbug.com/548451
-  // TODO(rjkroege): Make IsRunningInMojoRunner callable from content.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "mojo-platform-channel-handle")) {
+  if (IsRunningInMojoShell()) {
     return false;
   }
 #endif
