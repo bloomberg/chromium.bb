@@ -14113,9 +14113,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether the GCM connection was made via a proxy or not.</summary>
 </histogram>
 
-<histogram name="GCM.ConnectionDisconnectErrorCode" enum="NetErrorCodes">
+<histogram name="GCM.ConnectionDisconnectErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
   <owner>zea@chromium.org</owner>
-  <summary>Net error results from GCM disconnect events.</summary>
+  <summary>URL response and error codes from GCM disconnect events.</summary>
 </histogram>
 
 <histogram name="GCM.ConnectionEndpoint" enum="GCMEndpoints">
@@ -14123,9 +14124,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of connections made to each specific MCS endpoint.</summary>
 </histogram>
 
-<histogram name="GCM.ConnectionFailureErrorCode" enum="NetErrorCodes">
+<histogram name="GCM.ConnectionFailureErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
   <owner>zea@chromium.org</owner>
-  <summary>Net error results from GCM connection attempts.</summary>
+  <summary>URL response and error codes from GCM connection attempts.</summary>
 </histogram>
 
 <histogram name="GCM.ConnectionLatency" units="milliseconds">
@@ -48236,6 +48238,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Enumeration of the different reasons for unrecoverable errors and how often
     they have occurred.
+  </summary>
+</histogram>
+
+<histogram name="Sync.URLFetchResponse"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Counts of responses (both http code and net error code) for Sync URL
+    fetches.
   </summary>
 </histogram>
 
