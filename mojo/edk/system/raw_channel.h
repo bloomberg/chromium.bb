@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -35,7 +36,8 @@ namespace edk {
 // With the exception of |WriteMessage()|, this class is thread-unsafe (and in
 // general its methods should only be used on the I/O thread, i.e., the thread
 // on which |Init()| is called).
-class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
+class MOJO_SYSTEM_IMPL_EXPORT RawChannel :
+    public base::MessageLoop::DestructionObserver {
  public:
 
   // The |Delegate| is only accessed on the same thread as the message loop
@@ -239,11 +241,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Shutdown must be called on the IO thread. This object deletes itself once
   // it's flushed all pending writes and insured that the other side of the pipe
   // read them.
-  virtual ~RawChannel();
+  ~RawChannel() override;
 
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
   // |write_lock_| held. This object may be destroyed by this call. This
-  // acquires |read_lock_| inside of it. The caller needs to acquire read_lock_
+  // acquires |write_lock_| inside of it. The caller needs to acquire read_lock_
   // first.
   void OnReadCompletedNoLock(IOResult io_result, size_t bytes_read);
   // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
@@ -413,6 +415,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Connects to the OS pipe.
   void LazyInitialize();
+
+  // base::MessageLoop::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override;
 
 
 

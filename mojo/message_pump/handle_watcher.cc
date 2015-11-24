@@ -223,13 +223,7 @@ WatcherThreadManager::~WatcherThreadManager() {
 }
 
 WatcherThreadManager* WatcherThreadManager::GetInstance() {
-  // We need to leak this because otherwise when the process dies, AtExitManager
-  // waits for destruction which waits till the handle watcher thread is joined.
-  // But that can't happen since the pump uses mojo message pipes to wake up the
-  // pump. Since mojo EDK has been shutdown already, this never completes.
-  return base::Singleton<WatcherThreadManager,
-                         base::LeakySingletonTraits<WatcherThreadManager>>::
-      get();
+  return base::Singleton<WatcherThreadManager>::get();
 }
 
 WatcherID WatcherThreadManager::StartWatching(

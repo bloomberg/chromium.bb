@@ -222,6 +222,7 @@ void RawChannel::LazyInitialize() {
     return;
   initialized_ = true;
   internal::ChannelStarted();
+  base::MessageLoop::current()->AddDestructionObserver(this);
 
   OnInit();
 
@@ -286,8 +287,10 @@ void RawChannel::Shutdown() {
       OnShutdownNoLock(read_buffer_.Pass(), write_buffer_.Pass());
     }
 
-    if (initialized_)
+    if (initialized_) {
       internal::ChannelShutdown();
+      base::MessageLoop::current()->RemoveDestructionObserver(this);
+    }
     delete this;
     return;
   }
@@ -715,8 +718,13 @@ void RawChannel::UpdateWriteBuffer(size_t platform_handles_written,
 }
 
 void RawChannel::CallOnReadCompleted(IOResult io_result, size_t bytes_read) {
-  base::AutoLock locker(read_lock());
+  base::AutoLock locker(read_lock_);
   OnReadCompletedNoLock(io_result, bytes_read);
+}
+
+void RawChannel::WillDestroyCurrentMessageLoop() {
+  base::AutoLock locker(read_lock_);
+  OnReadCompletedNoLock(IO_FAILED_SHUTDOWN, 0);
 }
 
 }  // namespace edk

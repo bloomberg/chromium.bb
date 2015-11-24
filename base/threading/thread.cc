@@ -262,8 +262,12 @@ void Thread::ThreadMain() {
   com_initializer.reset();
 #endif
 
-  // Assert that MessageLoop::QuitWhenIdle was called by ThreadQuitHelper.
-  DCHECK(GetThreadWasQuitProperly());
+  if (message_loop->type() != MessageLoop::TYPE_CUSTOM) {
+    // Assert that MessageLoop::QuitWhenIdle was called by ThreadQuitHelper.
+    // Don't check for custom message pumps, because their shutdown might not
+    // allow this.
+    DCHECK(GetThreadWasQuitProperly());
+  }
 
   // We can't receive messages anymore.
   // (The message loop is destructed at the end of this block)

@@ -168,15 +168,23 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   const MojoDeadline deadline = block ? GetDeadlineForWait(run_state) : 0;
   const WaitState wait_state = GetWaitState();
 
+  std::vector<MojoHandleSignalsState> states(wait_state.handles.size());
   const WaitManyResult wait_many_result =
-      WaitMany(wait_state.handles, wait_state.wait_signals, deadline, nullptr);
+      WaitMany(wait_state.handles, wait_state.wait_signals, deadline, &states);
   const MojoResult result = wait_many_result.result;
   bool did_work = true;
   if (result == MOJO_RESULT_OK) {
     if (wait_many_result.index == 0) {
-      // Control pipe was written to.
-      ReadMessageRaw(read_handle_.get(), NULL, NULL, NULL, NULL,
-                     MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+      if (states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_CLOSED) {
+        // The Mojo EDK is shutting down. The ThreadQuitHelper task in
+        // base::Thread won't get run since the control pipe depends on the EDK
+        // staying alive. So quit manually to avoid this thread hanging.
+        Quit();
+      } else {
+        // Control pipe was written to.
+        ReadMessageRaw(read_handle_.get(), NULL, NULL, NULL, NULL,
+                       MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+      }
     } else {
       DCHECK(handlers_.find(wait_state.handles[wait_many_result.index]) !=
              handlers_.end());
@@ -245,6 +253,11 @@ void MessagePumpMojo::SignalControlPipe() {
   const MojoResult result =
       WriteMessageRaw(write_handle_.get(), NULL, 0, NULL, 0,
                       MOJO_WRITE_MESSAGE_FLAG_NONE);
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // Mojo EDK is shutting down.
+    return;
+  }
+
   // If we can't write we likely won't wake up the thread and there is a strong
   // chance we'll deadlock.
   CHECK_EQ(MOJO_RESULT_OK, result);
@@ -253,7 +266,8 @@ void MessagePumpMojo::SignalControlPipe() {
 MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
   WaitState wait_state;
   wait_state.handles.push_back(read_handle_.get());
-  wait_state.wait_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
+  wait_state.wait_signals.push_back(
+      MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
        i != handlers_.end(); ++i) {
