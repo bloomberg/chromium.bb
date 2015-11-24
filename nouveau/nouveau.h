@@ -63,12 +63,34 @@ struct nv04_notify {
 	uint32_t length;
 };
 
+/* Supported class information, provided by the kernel */
+struct nouveau_sclass {
+	int32_t oclass;
+	int minver;
+	int maxver;
+};
+
+/* Client-provided array describing class versions that are desired.
+ *
+ * These are used to match against the kernel's list of supported classes.
+ */
+struct nouveau_mclass {
+	int32_t oclass; /* 0 == EOL */
+	int version;
+	void *data;
+};
+
 int  nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 			uint32_t oclass, void *data, uint32_t length,
 			struct nouveau_object **);
 void nouveau_object_del(struct nouveau_object **);
 int  nouveau_object_mthd(struct nouveau_object *, uint32_t mthd,
 			 void *data, uint32_t size);
+int  nouveau_object_sclass_get(struct nouveau_object *,
+			       struct nouveau_sclass **);
+void nouveau_object_sclass_put(struct nouveau_sclass **);
+int  nouveau_object_mclass(struct nouveau_object *,
+			   const struct nouveau_mclass *);
 void *nouveau_object_find(struct nouveau_object *, uint32_t parent_class);
 
 struct nouveau_device {

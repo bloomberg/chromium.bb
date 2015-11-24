@@ -66,6 +66,47 @@ nouveau_object_mthd(struct nouveau_object *obj,
 	return -ENODEV;
 }
 
+void
+nouveau_object_sclass_put(struct nouveau_sclass **psclass)
+{
+	free(*psclass);
+	*psclass = NULL;
+}
+
+int
+nouveau_object_sclass_get(struct nouveau_object *obj,
+			  struct nouveau_sclass **psclass)
+{
+	return abi16_sclass(obj, psclass);
+}
+
+int
+nouveau_object_mclass(struct nouveau_object *obj,
+		      const struct nouveau_mclass *mclass)
+{
+	struct nouveau_sclass *sclass;
+	int ret = -ENODEV;
+	int cnt, i, j;
+
+	cnt = nouveau_object_sclass_get(obj, &sclass);
+	if (cnt < 0)
+		return cnt;
+
+	for (i = 0; ret < 0 && mclass[i].oclass; i++) {
+		for (j = 0; j < cnt; j++) {
+			if (mclass[i].oclass  == sclass[j].oclass &&
+			    mclass[i].version >= sclass[j].minver &&
+			    mclass[i].version <= sclass[j].maxver) {
+				ret = i;
+				break;
+			}
+		}
+	}
+
+	nouveau_object_sclass_put(&sclass);
+	return ret;
+}
+
 static void
 nouveau_object_fini(struct nouveau_object *obj)
 {

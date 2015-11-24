@@ -29,11 +29,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <errno.h>
 
 #include "private.h"
 
 #include "nvif/class.h"
-
 
 static int
 abi16_chan_nv04(struct nouveau_object *obj)
@@ -169,6 +169,55 @@ abi16_ntfy(struct nouveau_object *obj)
 	ntfy->offset = req.offset;
 	ntfy->object->length = sizeof(*ntfy);
 	return 0;
+}
+
+drm_private int
+abi16_sclass(struct nouveau_object *obj, struct nouveau_sclass **psclass)
+{
+	struct nouveau_sclass *sclass;
+	struct nouveau_device *dev;
+
+	if (!(sclass = calloc(8, sizeof(*sclass))))
+		return -ENOMEM;
+	*psclass = sclass;
+
+	switch (obj->oclass) {
+	case NOUVEAU_FIFO_CHANNEL_CLASS:
+		/* Older kernel versions were exposing the wrong video engine
+		 * classes on certain G98:GF100 boards.  This has since been
+		 * corrected, but ABI16 has compatibility in place to avoid
+		 * breaking older userspace.
+		 *
+		 * Clients that have been updated to use NVIF are required to
+		 * use the correct classes, which means that they'll break if
+		 * running on an older kernel.
+		 *
+		 * To handle this issue, if using the older kernel interfaces,
+		 * we'll magic up a list containing the vdec classes that the
+		 * kernel will accept for these boards.  Clients should make
+		 * use of this information instead of hardcoding classes for
+		 * specific chipsets.
+		 */
+		dev = (struct nouveau_device *)obj->parent;
+		if (dev->chipset >= 0x98 &&
+		    dev->chipset != 0xa0 &&
+		    dev->chipset <  0xc0) {
+			*sclass++ = (struct nouveau_sclass){
+				GT212_MSVLD, -1, -1
+			};
+			*sclass++ = (struct nouveau_sclass){
+				GT212_MSPDEC, -1, -1
+			};
+			*sclass++ = (struct nouveau_sclass){
+				GT212_MSPPP, -1, -1
+			};
+		}
+		break;
+	default:
+		break;
+	}
+
+	return sclass - *psclass;
 }
 
 drm_private void

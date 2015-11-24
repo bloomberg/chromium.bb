@@ -33,8 +33,11 @@ nouveau_device_wrap
 nouveau_getparam
 nouveau_object_del
 nouveau_object_find
+nouveau_object_mclass
 nouveau_object_mthd
 nouveau_object_new
+nouveau_object_sclass_get
+nouveau_object_sclass_put
 nouveau_pushbuf_bufctx
 nouveau_pushbuf_data
 nouveau_pushbuf_del
