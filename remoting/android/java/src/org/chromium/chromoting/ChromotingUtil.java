@@ -5,13 +5,13 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.Menu;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 
 /** Utility methods for chromoting code. */
 public abstract class ChromotingUtil {
@@ -24,32 +24,38 @@ public abstract class ChromotingUtil {
      * @param menu Menu with icons to be tinted.
      */
     public static void tintMenuIcons(Context context, Menu menu) {
-        TypedValue typedValue = new TypedValue();
-        if (!context.getTheme().resolveAttribute(R.attr.colorControlNormal, typedValue, true)) {
-            Log.e(TAG, "Failed to resolve colorControlNormal attribute.");
-            return;
-        }
-
-        int color;
-        if (typedValue.resourceId != 0) {
-            // Attribute is a resource.
-            color = ApiCompatibilityUtils.getColor(context.getResources(), typedValue.resourceId);
-        } else if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT
-                && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-            // Attribute is a raw color value.
-            color = typedValue.data;
-        } else {
-            // The resource compiler should prevent this from happening.
-            Log.e(TAG, "Invalid colorControlNormal attribute: %s", typedValue);
-            return;
-        }
-
+        int color = getColorAttribute(context, R.attr.colorControlNormal);
         int items = menu.size();
         for (int i = 0; i < items; i++) {
             Drawable icon = menu.getItem(i).getIcon();
             if (icon != null) {
                 icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             }
+        }
+    }
+
+    /**
+     * Returns a color from a theme attribute.
+     * @param context Context with resources to look up.
+     * @param attribute Attribute such as R.attr.colorControlNormal.
+     * @return Color value.
+     * @throws Resources.NotFoundException
+     */
+    public static int getColorAttribute(Context context, int attribute) {
+        TypedValue typedValue = new TypedValue();
+        if (!context.getTheme().resolveAttribute(attribute, typedValue, true)) {
+            throw new Resources.NotFoundException("Attribute not found.");
+        }
+
+        if (typedValue.resourceId != 0) {
+            // Attribute is a resource.
+            return ApiCompatibilityUtils.getColor(context.getResources(), typedValue.resourceId);
+        } else if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            // Attribute is a raw color value.
+            return typedValue.data;
+        } else {
+            throw new Resources.NotFoundException("Attribute not a color.");
         }
     }
 }

@@ -11,12 +11,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
@@ -185,9 +189,43 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
         findViewById(R.id.host_setup_link_android).setOnClickListener(this);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
                 R.string.open_navigation_drawer, R.string.close_navigation_drawer);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        // Disable the hamburger icon animation. This is more complex than it ought to be.
+        // The animation can be customized by tweaking some style parameters - see
+        // http://developer.android.com/reference/android/support/v7/appcompat/R.styleable.html#DrawerArrowToggle .
+        // But these can't disable the animation completely.
+        // The icon can only be changed by disabling the drawer indicator, which has side-effects
+        // that must be worked around. It disables the built-in click listener, so this has to be
+        // implemented and added. This also requires that the toolbar be passed to the
+        // ActionBarDrawerToggle ctor above (otherwise the listener is ignored and warnings are
+        // logged).
+        // Also, the animation itself is a private implementation detail - it is not possible to
+        // simply access the first frame of the animation. And the hamburger menu icon doesn't
+        // exist as a builtin Android resource, so it has to be provided as an application
+        // resource instead (R.drawable.ic_menu). And, on Lollipop devices and above, it should be
+        // tinted to match the colorControlNormal theme attribute.
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
+        mDrawerToggle.setToolbarNavigationClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
+                            mDrawerLayout.closeDrawer(Gravity.START);
+                        } else {
+                            mDrawerLayout.openDrawer(Gravity.START);
+                        }
+                    }
+                });
+
+        // Set the three-line icon instead of the default which is a tinted arrow icon.
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Drawable menuIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.ic_menu);
+        DrawableCompat.setTint(menuIcon.mutate(),
+                ChromotingUtil.getColorAttribute(this, R.attr.colorControlNormal));
+        getSupportActionBar().setHomeAsUpIndicator(menuIcon);
 
         ListView navigationMenu = new ListView(this);
         navigationMenu.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -210,9 +248,6 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
                                 HelpContext.HOST_LIST);
                     }
                 });
-
-        // Make the navigation drawer icon visible in the ActionBar.
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mAccountSwitcher = AccountSwitcherFactory.getInstance().createAccountSwitcher(this, this);
         mAccountSwitcher.setNavigation(navigationMenu);
