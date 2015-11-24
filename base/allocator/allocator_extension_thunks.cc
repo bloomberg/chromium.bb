@@ -17,19 +17,9 @@ namespace thunks {
 // can depend on it. This file can't depend on anything else in base, including
 // logging.
 
-static GetAllocatorWasteSizeFunction g_get_allocator_waste_size_function = NULL;
 static GetStatsFunction g_get_stats_function = NULL;
 static ReleaseFreeMemoryFunction g_release_free_memory_function = NULL;
 static GetNumericPropertyFunction g_get_numeric_property_function = NULL;
-
-void SetGetAllocatorWasteSizeFunction(
-    GetAllocatorWasteSizeFunction get_allocator_waste_size_function) {
-  g_get_allocator_waste_size_function = get_allocator_waste_size_function;
-}
-
-GetAllocatorWasteSizeFunction GetGetAllocatorWasteSizeFunction() {
-  return g_get_allocator_waste_size_function;
-}
 
 void SetGetStatsFunction(GetStatsFunction get_stats_function) {
   g_get_stats_function = get_stats_function;

@@ -975,17 +975,6 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 
 //------------------------------------------------------------------------------
 
-bool RendererBlinkPlatformImpl::processMemorySizesInBytes(
-    size_t* private_bytes,
-    size_t* shared_bytes) {
-  content::RenderThread::Get()->Send(
-      new RenderProcessHostMsg_GetProcessMemorySizes(
-          private_bytes, shared_bytes));
-  return true;
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebGraphicsContext3D*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {

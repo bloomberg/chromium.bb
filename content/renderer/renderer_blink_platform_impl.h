@@ -141,8 +141,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebMediaRecorderHandler* createMediaRecorderHandler() override;
   blink::WebMediaStreamCenter* createMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
-  bool processMemorySizesInBytes(size_t* private_bytes,
-                                 size_t* shared_bytes) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(

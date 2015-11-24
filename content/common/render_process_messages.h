@@ -55,11 +55,6 @@ IPC_MESSAGE_CONTROL3(RenderProcessHostMsg_DidGenerateCacheableMetadata,
 IPC_MESSAGE_CONTROL1(RenderProcessHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
 
-// Asks the browser for the renderer process memory size stats.
-IPC_SYNC_MESSAGE_CONTROL0_2(RenderProcessHostMsg_GetProcessMemorySizes,
-                            size_t /* private_bytes */,
-                            size_t /* shared_bytes */)
-
 #if defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(RenderProcessHostMsg_LoadFont,

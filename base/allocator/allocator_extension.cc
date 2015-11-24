@@ -9,13 +9,6 @@
 namespace base {
 namespace allocator {
 
-bool GetAllocatorWasteSize(size_t* size) {
-  thunks::GetAllocatorWasteSizeFunction get_allocator_waste_size_function =
-      thunks::GetGetAllocatorWasteSizeFunction();
-  return get_allocator_waste_size_function != NULL &&
-         get_allocator_waste_size_function(size);
-}
-
 void GetStats(char* buffer, int buffer_length) {
   DCHECK_GT(buffer_length, 0);
   thunks::GetStatsFunction get_stats_function = thunks::GetGetStatsFunction();
@@ -30,13 +23,6 @@ void ReleaseFreeMemory() {
       thunks::GetReleaseFreeMemoryFunction();
   if (release_free_memory_function)
     release_free_memory_function();
-}
-
-void SetGetAllocatorWasteSizeFunction(
-    thunks::GetAllocatorWasteSizeFunction get_allocator_waste_size_function) {
-  DCHECK_EQ(thunks::GetGetAllocatorWasteSizeFunction(),
-            reinterpret_cast<thunks::GetAllocatorWasteSizeFunction>(NULL));
-  thunks::SetGetAllocatorWasteSizeFunction(get_allocator_waste_size_function);
 }
 
 void SetGetStatsFunction(thunks::GetStatsFunction get_stats_function) {

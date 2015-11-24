@@ -149,8 +149,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_GetProcessMemorySizes,
-                        OnGetProcessMemorySizes)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
@@ -290,24 +288,6 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
                                                    int* route_id) {
   render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
 }
-
-void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
-                                                  size_t* shared_bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  using base::ProcessMetrics;
-#if !defined(OS_MACOSX) || defined(OS_IOS)
-  scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      PeerHandle()));
-#else
-  scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      PeerHandle(), BrowserChildProcessHost::GetPortProvider()));
-#endif
-  if (!metrics->GetMemoryBytes(private_bytes, shared_bytes)) {
-    *private_bytes = 0;
-    *shared_bytes = 0;
-  }
-}
-
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();

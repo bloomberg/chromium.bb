@@ -14,15 +14,6 @@
 namespace base {
 namespace allocator {
 
-// Request the allocator to report value of its waste memory size.
-// Waste size corresponds to memory that has been allocated from the OS but
-// not passed up to the application. It e.g. includes memory retained by free
-// lists, internal data, chunks padding, etc.
-//
-// |size| pointer to the returned value, must be not NULL.
-// Returns true if the value has been returned, false otherwise.
-BASE_EXPORT bool GetAllocatorWasteSize(size_t* size);
-
 // Request that the allocator print a human-readable description of the current
 // state of the allocator into a null-terminated string in the memory segment
 // buffer[0,buffer_length-1].
@@ -44,8 +35,6 @@ BASE_EXPORT void ReleaseFreeMemory();
 // No threading promises are made.  The caller is responsible for making sure
 // these pointers are set before any other threads attempt to call the above
 // functions.
-BASE_EXPORT void SetGetAllocatorWasteSizeFunction(
-    thunks::GetAllocatorWasteSizeFunction get_allocator_waste_size_function);
 
 BASE_EXPORT void SetGetStatsFunction(
     thunks::GetStatsFunction get_stats_function);

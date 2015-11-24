@@ -77,9 +77,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   bool isLowEndDeviceMode() override;
   size_t numberOfProcessors() override;
 
-  bool processMemorySizesInBytes(size_t* private_bytes,
-                                 size_t* shared_bytes) override;
-  bool memoryAllocatorWasteInBytes(size_t* size) override;
   blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes) override;
   size_t maxDecodedImageBytes() override;

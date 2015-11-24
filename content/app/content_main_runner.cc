@@ -414,21 +414,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   }
 
 #if defined(USE_TCMALLOC)
-  static bool GetAllocatorWasteSizeThunk(size_t* size) {
-    size_t heap_size, allocated_bytes, unmapped_bytes;
-    MallocExtension* ext = MallocExtension::instance();
-    if (ext->GetNumericProperty("generic.heap_size", &heap_size) &&
-        ext->GetNumericProperty("generic.current_allocated_bytes",
-                                &allocated_bytes) &&
-        ext->GetNumericProperty("tcmalloc.pageheap_unmapped_bytes",
-                                &unmapped_bytes)) {
-      *size = heap_size - allocated_bytes - unmapped_bytes;
-      return true;
-    }
-    DCHECK(false);
-    return false;
-  }
-
   static void GetStatsThunk(char* buffer, int buffer_length) {
     MallocExtension::instance()->GetStats(buffer, buffer_length);
   }
@@ -471,8 +456,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     tc_set_new_mode(1);
 
     // On windows, we've already set these thunks up in _heap_init()
-    base::allocator::SetGetAllocatorWasteSizeFunction(
-        GetAllocatorWasteSizeThunk);
     base::allocator::SetGetStatsFunction(GetStatsThunk);
     base::allocator::SetGetNumericPropertyFunction(GetNumericPropertyThunk);
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);

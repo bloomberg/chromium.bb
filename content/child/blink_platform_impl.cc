@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -16,7 +15,6 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -1249,18 +1247,6 @@ bool BlinkPlatformImpl::isLowEndDeviceMode() {
 
 size_t BlinkPlatformImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
-}
-
-bool BlinkPlatformImpl::processMemorySizesInBytes(
-    size_t* private_bytes,
-    size_t* shared_bytes) {
-  scoped_ptr<base::ProcessMetrics> current_process_metrics(
-      base::ProcessMetrics::CreateCurrentProcessMetrics());
-  return current_process_metrics->GetMemoryBytes(private_bytes, shared_bytes);
-}
-
-bool BlinkPlatformImpl::memoryAllocatorWasteInBytes(size_t* size) {
-  return base::allocator::GetAllocatorWasteSize(size);
 }
 
 blink::WebDiscardableMemory*
