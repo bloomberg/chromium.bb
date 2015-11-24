@@ -91,7 +91,7 @@ class CONTENT_EXPORT CacheStorageManager {
   friend class CacheStorageMigrationTest;
   friend class CacheStorageQuotaClient;
 
-  typedef std::map<GURL, CacheStorage*> CacheStorageMap;
+  typedef std::map<GURL, scoped_ptr<CacheStorage>> CacheStorageMap;
 
   CacheStorageManager(
       const base::FilePath& path,
