@@ -103,28 +103,3 @@ class TabSwitchingToughImageCases(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'tab_switching.tough_image_cases'
-
-
-@benchmark.Disabled('all')
-class TabSwitchingFlashEnergyCases(perf_benchmark.PerfBenchmark):
-  test = tab_switching.TabSwitching
-  page_set = page_sets.FlashEnergyCasesPageSet
-  options = {'pageset_repeat': 10}
-
-  @classmethod
-  def Name(cls):
-    return 'tab_switching.flash_energy_cases'
-
-
-@benchmark.Disabled('all')
-class TabSwitchingPluginPowerSaver(perf_benchmark.PerfBenchmark):
-  test = tab_switching.TabSwitching
-  page_set = page_sets.FlashEnergyCasesPageSet
-  options = {'pageset_repeat': 10}
-
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
-
-  @classmethod
-  def Name(cls):
-    return 'tab_switching.plugin_power_saver'
