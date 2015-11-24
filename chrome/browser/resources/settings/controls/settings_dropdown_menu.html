@@ -15,7 +15,7 @@
       <paper-menu class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">
         <template is="dom-repeat" items="[[menuOptions]]">
-          <paper-item data-value$="[[item.0]]">[[item.1]]</paper-item>
+          <paper-item data-value$="[[item.value]]">[[item.name]]</paper-item>
         </template>
         <paper-item data-value$="[[notFoundValue_]]"
             hidden$="[[!isSelectedNotFound_(selected_)]]">

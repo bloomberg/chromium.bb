@@ -185,11 +185,20 @@ Polymer({
    * @private
    */
   setFontsData_: function(fontList, encodingList) {
-    this.$.standardFont.menuOptions = fontList;
-    this.$.serifFont.menuOptions = fontList;
-    this.$.sansSerifFont.menuOptions = fontList;
-    this.$.fixedFont.menuOptions = fontList;
-    this.$.encoding.menuOptions = encodingList;
+    var fontMenuOptions = [];
+    for (var i = 0; i < fontList.length; ++i)
+      fontMenuOptions.push({value: fontList[i][0], name: fontList[i][1]});
+    this.$.standardFont.menuOptions = fontMenuOptions;
+    this.$.serifFont.menuOptions = fontMenuOptions;
+    this.$.sansSerifFont.menuOptions = fontMenuOptions;
+    this.$.fixedFont.menuOptions = fontMenuOptions;
+
+    var encodingMenuOptions = [];
+    for (var i = 0; i < encodingList.length; ++i) {
+      encodingMenuOptions.push({
+          value: encodingList[i][0], name: encodingList[i][1]});
+    }
+    this.$.encoding.menuOptions = encodingMenuOptions;
   },
 
   /**

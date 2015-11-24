@@ -37,8 +37,10 @@ cr.define('settings_dropdown_menu', function() {
           type: chrome.settingsPrivate.PrefType.NUMBER,
           value: 100,
         };
-        dropdown.menuOptions = [[100, 'Option 100'], [200, 'Option 200'],
-                                [300, 'Option 300'], [400, 'Option 400']];
+        dropdown.menuOptions = [{value: 100, name: 'Option 100'},
+                                {value: 200, name: 'Option 200'},
+                                {value: 300, name: 'Option 300'},
+                                {value: 400, name: 'Option 400'}];
 
         // IronSelectable uses a DOM observer, which uses a debouncer.
         Polymer.dom.flush();
@@ -62,7 +64,10 @@ cr.define('settings_dropdown_menu', function() {
           value: 'c',
         };
         dropdown.menuOptions =
-            [['a', 'AAA'], ['b', 'BBB'], ['c', 'CCC'], ['d', 'DDD']];
+            [{value: 'a', name: 'AAA'},
+             {value: 'b', name: 'BBB'},
+             {value: 'c', name: 'CCC'},
+             {value: 'd', name: 'DDD'}];
         Polymer.dom.flush();
 
         // Initially selected item.
@@ -84,7 +89,10 @@ cr.define('settings_dropdown_menu', function() {
           value: 'f',
         };
         dropdown.menuOptions =
-            [['a', 'AAA'], ['b', 'BBB'], ['c', 'CCC'], ['d', 'DDD']];
+            [{value: 'a', name: 'AAA'},
+             {value: 'b', name: 'BBB'},
+             {value: 'c', name: 'CCC'},
+             {value: 'd', name: 'DDD'}];
         Polymer.dom.flush();
 
         // "Custom" initially selected.

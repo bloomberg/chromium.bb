@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
- /**
- * This tuple is made up of a (value, name, attribute). The value and name are
- * used by the dropdown menu. The attribute is optional 'user data' that is
- * ignored by the dropdown menu.
+/**
+ * The |name| is shown in the gui.  The |value| us use to set or compare with
+ * the preference value.
  * @typedef {{
- *   0: (number|string),
- *   1: string,
- *   2: (string|undefined)
+ *   name: string,
+ *   value: (number|string)
  * }}
  */
 var DropdownMenuOption;
@@ -40,7 +38,6 @@ Polymer({
 
     /**
      * List of options for the drop-down menu.
-     * TODO(michaelpg): use named properties instead of indices.
      * @type {DropdownMenuOptionList}
      */
     menuOptions: {
@@ -139,7 +136,7 @@ Polymer({
       return;
     var prefValue = this.pref.value;
     var option = this.menuOptions.find(function(menuItem) {
-      return menuItem[0] == prefValue;
+      return menuItem.value == prefValue;
     });
     if (option == undefined)
       this.selected_ = this.notFoundValue_;

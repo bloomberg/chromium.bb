@@ -20,6 +20,8 @@
           '../../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior-extracted.js',
           '../../../../../third_party/polymer/v1_0/components-chromium/paper-ripple/paper-ripple-extracted.js',
           '../../../../../third_party/polymer/v1_0/components-chromium/paper-slider/paper-slider-extracted.js',
+          '../controls/settings_dropdown_menu.js',
+          '../prefs/pref_util.js'
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
@@ -35,6 +37,8 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../../ui/webui/resources/js/cr.js',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
+          '../controls/settings_dropdown_menu.js',
+          '../prefs/pref_util.js',
           '../settings_page/settings_animated_pages.js'
         ],
         'externs': [
