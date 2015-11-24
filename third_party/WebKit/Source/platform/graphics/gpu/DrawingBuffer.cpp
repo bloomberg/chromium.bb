@@ -151,6 +151,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
     , m_discardFramebufferSupported(discardFramebufferSupported)
+    , m_storageTextureSupported(false)
     , m_fbo(0)
     , m_depthStencilBuffer(0)
     , m_depthBuffer(0)
@@ -305,7 +306,8 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
             m_context->discardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
-        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_FALSE);
+        m_context->copySubTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId,
+            0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
     }
 
     restoreFramebufferBindings();
@@ -449,6 +451,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
         }
     }
     m_sampleCount = std::min(4, maxSampleCount);
+    m_storageTextureSupported = m_extensionsUtil->supportsExtension("GL_EXT_texture_storage");
 
     m_fbo = m_context->createFramebuffer();
 
@@ -959,12 +962,6 @@ void DrawingBuffer::flipVertically(uint8_t* framebuffer, int width, int height)
     }
 }
 
-void DrawingBuffer::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
-{
-    ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
-    m_context->texImage2D(target, level, internalformat, width, height, border, format, type, 0);
-}
-
 void DrawingBuffer::allocateTextureMemory(TextureInfo* info, const IntSize& size)
 {
     if (RuntimeEnabledFeatures::webGLImageChromiumEnabled()) {
@@ -977,7 +974,18 @@ void DrawingBuffer::allocateTextureMemory(TextureInfo* info, const IntSize& size
         }
     }
 
-    texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+    if (m_storageTextureSupported) {
+        if (info->immutable) {
+            m_context->deleteTexture(info->textureId);
+            info->textureId = createColorTexture();
+        }
+
+        // TODO(dshwang): GL_BGRA8_EXT can be better in some platforms. crbug.com/557848
+        m_context->texStorage2DEXT(GL_TEXTURE_2D, 1, m_internalRenderbufferFormat, size.width(), size.height());
+        info->immutable = true;
+        return;
+    }
+    m_context->texImage2D(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE, 0);
 }
 
 void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
