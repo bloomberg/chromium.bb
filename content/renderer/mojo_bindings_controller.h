@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEB_UI_MOJO_H_
-#define CONTENT_RENDERER_WEB_UI_MOJO_H_
+#ifndef CONTENT_RENDERER_MOJO_BINDINGS_CONTROLLER_H_
+#define CONTENT_RENDERER_MOJO_BINDINGS_CONTROLLER_H_
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
@@ -18,50 +19,50 @@ class PerContextData;
 
 namespace content {
 
-class WebUIMojoContextState;
+class MojoContextState;
 
-// WebUIMojo is responsible for enabling the renderer side of mojo bindings.
-// It creates (and destroys) a WebUIMojoContextState at the appropriate times
-// and handles the necessary browser messages. WebUIMojo destroys itself when
-// the RendererView it is created with is destroyed.
-class WebUIMojo
+// MojoBindingsController is responsible for enabling the renderer side of mojo
+// bindings. It creates (and destroys) a MojoContextState at the appropriate
+// times and handles the necessary browser messages. MojoBindingsController
+// destroys itself when the RendererView it is created with is destroyed.
+class MojoBindingsController
     : public RenderViewObserver,
-      public RenderViewObserverTracker<WebUIMojo> {
+      public RenderViewObserverTracker<MojoBindingsController> {
  public:
-  explicit WebUIMojo(RenderView* render_view);
+  explicit MojoBindingsController(RenderView* render_view);
 
  private:
   class MainFrameObserver : public RenderFrameObserver {
    public:
-    explicit MainFrameObserver(WebUIMojo* web_ui_mojo);
+    explicit MainFrameObserver(MojoBindingsController* web_ui_mojo);
     ~MainFrameObserver() override;
 
     // RenderFrameObserver overrides:
     void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                   int world_id) override;
     void DidFinishDocumentLoad() override;
-    // MainFrameObserver is inline owned by WebUIMojo and should not be
-    // destroyed when the main RenderFrame is deleted. Overriding the
+    // MainFrameObserver is inline owned by MojoBindingsController and should
+    // not be destroyed when the main RenderFrame is deleted. Overriding the
     // OnDestruct method allows this object to remain alive and be cleaned
-    // up as part of WebUIMojo deletion.
+    // up as part of MojoBindingsController deletion.
     void OnDestruct() override;
 
    private:
-    WebUIMojo* web_ui_mojo_;
+    MojoBindingsController* mojo_bindings_controller_;
 
     DISALLOW_COPY_AND_ASSIGN(MainFrameObserver);
   };
 
-  ~WebUIMojo() override;
+  ~MojoBindingsController() override;
 
   void CreateContextState();
   void DestroyContextState(v8::Local<v8::Context> context);
 
   // Invoked when the frame finishes loading. Invokes Run() on the
-  // WebUIMojoContextState.
+  // MojoContextState.
   void OnDidFinishDocumentLoad();
 
-  WebUIMojoContextState* GetContextState();
+  MojoContextState* GetContextState();
 
   // RenderViewObserver overrides:
   void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
@@ -69,9 +70,9 @@ class WebUIMojo
 
   MainFrameObserver main_frame_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIMojo);
+  DISALLOW_COPY_AND_ASSIGN(MojoBindingsController);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEB_UI_MOJO_H_
+#endif  // CONTENT_RENDERER_MOJO_BINDINGS_CONTROLLER_H_

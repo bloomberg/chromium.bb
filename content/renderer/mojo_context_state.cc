@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/web_ui_mojo_context_state.h"
+#include "content/renderer/mojo_context_state.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
-#include "content/renderer/web_ui_runner.h"
+#include "content/renderer/mojo_main_runner.h"
 #include "gin/converter.h"
 #include "gin/modules/module_registry.h"
 #include "gin/per_context_data.h"
@@ -43,15 +43,13 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
 
 }  // namespace
 
-// WebUIMojo -------------------------------------------------------------------
-
-WebUIMojoContextState::WebUIMojoContextState(blink::WebFrame* frame,
-                                             v8::Local<v8::Context> context)
+MojoContextState::MojoContextState(blink::WebFrame* frame,
+                                   v8::Local<v8::Context> context)
     : frame_(frame),
       module_added_(false) {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   gin::ContextHolder* context_holder = context_data->context_holder();
-  runner_.reset(new WebUIRunner(frame_, context_holder));
+  runner_.reset(new MojoMainRunner(frame_, context_holder));
   gin::Runner::Scope scoper(runner_.get());
   gin::ModuleRegistry::From(context)->AddObserver(this);
   content::RenderFrame::FromWebFrame(frame)
@@ -61,13 +59,13 @@ WebUIMojoContextState::WebUIMojoContextState(blink::WebFrame* frame,
   // TODO(sky): add test for this.
 }
 
-WebUIMojoContextState::~WebUIMojoContextState() {
+MojoContextState::~MojoContextState() {
   gin::Runner::Scope scoper(runner_.get());
   gin::ModuleRegistry::From(
       runner_->GetContextHolder()->context())->RemoveObserver(this);
 }
 
-void WebUIMojoContextState::Run() {
+void MojoContextState::Run() {
   gin::ContextHolder* context_holder = runner_->GetContextHolder();
   gin::ModuleRegistry::From(context_holder->context())->LoadModule(
       context_holder->isolate(),
@@ -75,7 +73,7 @@ void WebUIMojoContextState::Run() {
       base::Bind(RunMain, runner_->GetWeakPtr()));
 }
 
-void WebUIMojoContextState::FetchModules(const std::vector<std::string>& ids) {
+void MojoContextState::FetchModules(const std::vector<std::string>& ids) {
   gin::Runner::Scope scoper(runner_.get());
   gin::ContextHolder* context_holder = runner_->GetContextHolder();
   gin::ModuleRegistry* registry = gin::ModuleRegistry::From(
@@ -88,7 +86,7 @@ void WebUIMojoContextState::FetchModules(const std::vector<std::string>& ids) {
   }
 }
 
-void WebUIMojoContextState::FetchModule(const std::string& id) {
+void MojoContextState::FetchModule(const std::string& id) {
   const GURL url(kModulePrefix + id);
   // TODO(sky): better error checks here?
   DCHECK(url.is_valid() && !url.is_empty());
@@ -100,12 +98,11 @@ void WebUIMojoContextState::FetchModule(const std::string& id) {
                  blink::WebURLRequest::RequestContextScript,
                  blink::WebURLRequest::FrameTypeNone,
                  ResourceFetcher::PLATFORM_LOADER,
-                 base::Bind(&WebUIMojoContextState::OnFetchModuleComplete,
-                            base::Unretained(this),
-                            fetcher));
+                 base::Bind(&MojoContextState::OnFetchModuleComplete,
+                            base::Unretained(this), fetcher));
 }
 
-void WebUIMojoContextState::OnFetchModuleComplete(
+void MojoContextState::OnFetchModuleComplete(
     ResourceFetcher* fetcher,
     const blink::WebURLResponse& response,
     const std::string& data) {
@@ -126,7 +123,7 @@ void WebUIMojoContextState::OnFetchModuleComplete(
   runner_->Run(data, module);
 }
 
-void WebUIMojoContextState::OnDidAddPendingModule(
+void MojoContextState::OnDidAddPendingModule(
     const std::string& id,
     const std::vector<std::string>& dependencies) {
   FetchModules(dependencies);

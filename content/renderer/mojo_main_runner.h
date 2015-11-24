@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEB_UI_RUNNER_H_
-#define CONTENT_RENDERER_WEB_UI_RUNNER_H_
+#ifndef CONTENT_RENDERER_MOJO_MAIN_RUNNER_H_
+#define CONTENT_RENDERER_MOJO_MAIN_RUNNER_H_
 
+#include "base/macros.h"
 #include "gin/runner.h"
 
 namespace blink {
@@ -14,11 +15,11 @@ class WebFrame;
 namespace content {
 
 // Implementation of gin::Runner that forwards Runner functions to WebFrame.
-class WebUIRunner : public gin::Runner {
+class MojoMainRunner : public gin::Runner {
  public:
   // Does not take ownership of ContextHolder.
-  WebUIRunner(blink::WebFrame* frame, gin::ContextHolder* context_holder);
-  ~WebUIRunner() override;
+  MojoMainRunner(blink::WebFrame* frame, gin::ContextHolder* context_holder);
+  ~MojoMainRunner() override;
 
   // Runner overrides:
   void Run(const std::string& source,
@@ -36,9 +37,9 @@ class WebUIRunner : public gin::Runner {
   // Created by blink bindings to V8.
   gin::ContextHolder* context_holder_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIRunner);
+  DISALLOW_COPY_AND_ASSIGN(MojoMainRunner);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEB_UI_RUNNER_H_
+#endif  // CONTENT_RENDERER_MOJO_MAIN_RUNNER_H_

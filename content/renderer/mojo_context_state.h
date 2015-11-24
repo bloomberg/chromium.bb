@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEB_UI_MOJO_CONTEXT_STATE_H_
-#define CONTENT_RENDERER_WEB_UI_MOJO_CONTEXT_STATE_H_
+#ifndef CONTENT_RENDERER_MOJO_CONTEXT_STATE_H_
+#define CONTENT_RENDERER_MOJO_CONTEXT_STATE_H_
 
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "gin/modules/module_registry_observer.h"
@@ -26,16 +27,14 @@ struct PendingModule;
 namespace content {
 
 class ResourceFetcher;
-class WebUIRunner;
+class MojoMainRunner;
 
-// WebUIMojoContextState manages the modules needed for mojo bindings. It does
-// this by way of gin. Non-builtin modules are downloaded by way of
-// ResourceFetchers.
-class WebUIMojoContextState : public gin::ModuleRegistryObserver {
+// MojoContextState manages the modules needed for mojo bindings. It does this
+// by way of gin. Non-builtin modules are downloaded by way of ResourceFetchers.
+class MojoContextState : public gin::ModuleRegistryObserver {
  public:
-  WebUIMojoContextState(blink::WebFrame* frame,
-                        v8::Local<v8::Context> context);
-  ~WebUIMojoContextState() override;
+  MojoContextState(blink::WebFrame* frame, v8::Local<v8::Context> context);
+  ~MojoContextState() override;
 
   void Run();
 
@@ -69,7 +68,7 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
   bool module_added_;
 
   // Executes the script from gin.
-  scoped_ptr<WebUIRunner> runner_;
+  scoped_ptr<MojoMainRunner> runner_;
 
   // Set of fetchers we're waiting on to download script.
   ScopedVector<ResourceFetcher> module_fetchers_;
@@ -77,9 +76,9 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
   // Set of modules we've fetched script from.
   std::set<std::string> fetched_modules_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIMojoContextState);
+  DISALLOW_COPY_AND_ASSIGN(MojoContextState);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEB_UI_MOJO_CONTEXT_STATE_H_
+#endif  // CONTENT_RENDERER_MOJO_CONTEXT_STATE_H_

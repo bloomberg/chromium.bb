@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/web_ui_mojo.h"
+#include "content/renderer/mojo_bindings_controller.h"
 
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/web_ui_mojo_context_state.h"
+#include "content/renderer/mojo_context_state.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -18,72 +18,74 @@ namespace content {
 
 namespace {
 
-const char kWebUIMojoContextStateKey[] = "WebUIMojoContextState";
+const char kMojoContextStateKey[] = "MojoContextState";
 
-struct WebUIMojoContextStateData : public base::SupportsUserData::Data {
-  scoped_ptr<WebUIMojoContextState> state;
+struct MojoContextStateData : public base::SupportsUserData::Data {
+  scoped_ptr<MojoContextState> state;
 };
 
 }  // namespace
 
-WebUIMojo::MainFrameObserver::MainFrameObserver(WebUIMojo* web_ui_mojo)
+MojoBindingsController::MainFrameObserver::MainFrameObserver(
+    MojoBindingsController* mojo_bindings_controller)
     : RenderFrameObserver(RenderFrame::FromWebFrame(
-          web_ui_mojo->render_view()->GetWebView()->mainFrame())),
-      web_ui_mojo_(web_ui_mojo) {
+          mojo_bindings_controller->render_view()->GetWebView()->mainFrame())),
+      mojo_bindings_controller_(mojo_bindings_controller) {
 }
 
-WebUIMojo::MainFrameObserver::~MainFrameObserver() {
+MojoBindingsController::MainFrameObserver::~MainFrameObserver() {
 }
 
-void WebUIMojo::MainFrameObserver::WillReleaseScriptContext(
+void MojoBindingsController::MainFrameObserver::WillReleaseScriptContext(
     v8::Local<v8::Context> context,
     int world_id) {
-  web_ui_mojo_->DestroyContextState(context);
+  mojo_bindings_controller_->DestroyContextState(context);
 }
 
-void WebUIMojo::MainFrameObserver::DidFinishDocumentLoad() {
-  web_ui_mojo_->OnDidFinishDocumentLoad();
+void MojoBindingsController::MainFrameObserver::DidFinishDocumentLoad() {
+  mojo_bindings_controller_->OnDidFinishDocumentLoad();
 }
 
-void WebUIMojo::MainFrameObserver::OnDestruct() {
+void MojoBindingsController::MainFrameObserver::OnDestruct() {
 }
 
-WebUIMojo::WebUIMojo(RenderView* render_view)
+MojoBindingsController::MojoBindingsController(RenderView* render_view)
     : RenderViewObserver(render_view),
-      RenderViewObserverTracker<WebUIMojo>(render_view),
+      RenderViewObserverTracker<MojoBindingsController>(render_view),
       main_frame_observer_(this) {
 }
 
-WebUIMojo::~WebUIMojo() {
+MojoBindingsController::~MojoBindingsController() {
 }
 
-void WebUIMojo::CreateContextState() {
+void MojoBindingsController::CreateContextState() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   blink::WebLocalFrame* frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
-  WebUIMojoContextStateData* data = new WebUIMojoContextStateData;
-  data->state.reset(new WebUIMojoContextState(
-                        render_view()->GetWebView()->mainFrame(), context));
-  context_data->SetUserData(kWebUIMojoContextStateKey, data);
+  MojoContextStateData* data = new MojoContextStateData;
+  data->state.reset(
+      new MojoContextState(render_view()->GetWebView()->mainFrame(), context));
+  context_data->SetUserData(kMojoContextStateKey, data);
 }
 
-void WebUIMojo::DestroyContextState(v8::Local<v8::Context> context) {
+void MojoBindingsController::DestroyContextState(
+    v8::Local<v8::Context> context) {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   if (!context_data)
     return;
-  context_data->RemoveUserData(kWebUIMojoContextStateKey);
+  context_data->RemoveUserData(kMojoContextStateKey);
 }
 
-void WebUIMojo::OnDidFinishDocumentLoad() {
+void MojoBindingsController::OnDidFinishDocumentLoad() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  WebUIMojoContextState* state = GetContextState();
+  MojoContextState* state = GetContextState();
   if (state)
     state->Run();
 }
 
-WebUIMojoContextState* WebUIMojo::GetContextState() {
+MojoContextState* MojoBindingsController::GetContextState() {
   blink::WebLocalFrame* frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
@@ -91,17 +93,17 @@ WebUIMojoContextState* WebUIMojo::GetContextState() {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   if (!context_data)
     return NULL;
-  WebUIMojoContextStateData* context_state =
-      static_cast<WebUIMojoContextStateData*>(
-          context_data->GetUserData(kWebUIMojoContextStateKey));
+  MojoContextStateData* context_state = static_cast<MojoContextStateData*>(
+      context_data->GetUserData(kMojoContextStateKey));
   return context_state ? context_state->state.get() : NULL;
 }
 
-void WebUIMojo::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
+void MojoBindingsController::DidCreateDocumentElement(
+    blink::WebLocalFrame* frame) {
   CreateContextState();
 }
 
-void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame) {
+void MojoBindingsController::DidClearWindowObject(blink::WebLocalFrame* frame) {
   if (frame != render_view()->GetWebView()->mainFrame())
     return;
 
@@ -112,7 +114,7 @@ void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame) {
   // handle to the context state so that if we destroy now the handle is
   // lost. If this is the result of the first load then the contextstate should
   // be empty and we don't need to destroy it.
-  WebUIMojoContextState* state = GetContextState();
+  MojoContextState* state = GetContextState();
   if (state && !state->module_added())
     return;
 

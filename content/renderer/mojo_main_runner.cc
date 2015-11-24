@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/web_ui_runner.h"
+#include "content/renderer/mojo_main_runner.h"
 
 #include "content/public/renderer/render_frame.h"
 #include "gin/modules/module_registry.h"
@@ -20,8 +20,8 @@ using v8::Script;
 
 namespace content {
 
-WebUIRunner::WebUIRunner(blink::WebFrame* frame,
-                         gin::ContextHolder* context_holder)
+MojoMainRunner::MojoMainRunner(blink::WebFrame* frame,
+                               gin::ContextHolder* context_holder)
     : frame_(frame),
       context_holder_(context_holder) {
   DCHECK(frame_);
@@ -32,24 +32,24 @@ WebUIRunner::WebUIRunner(blink::WebFrame* frame,
   gin::PerContextData::From(context_holder->context())->set_runner(this);
 }
 
-WebUIRunner::~WebUIRunner() {
+MojoMainRunner::~MojoMainRunner() {
 }
 
-void WebUIRunner::Run(const std::string& source,
-                      const std::string& resource_name) {
+void MojoMainRunner::Run(const std::string& source,
+                         const std::string& resource_name) {
   frame_->executeScript(
       blink::WebScriptSource(blink::WebString::fromUTF8(source)));
 }
 
-v8::Local<v8::Value> WebUIRunner::Call(v8::Local<v8::Function> function,
-                                        v8::Local<v8::Value> receiver,
-                                        int argc,
-                                        v8::Local<v8::Value> argv[]) {
+v8::Local<v8::Value> MojoMainRunner::Call(v8::Local<v8::Function> function,
+                                          v8::Local<v8::Value> receiver,
+                                          int argc,
+                                          v8::Local<v8::Value> argv[]) {
   return frame_->callFunctionEvenIfScriptDisabled(function, receiver, argc,
                                                   argv);
 }
 
-gin::ContextHolder* WebUIRunner::GetContextHolder() {
+gin::ContextHolder* MojoMainRunner::GetContextHolder() {
   return context_holder_;
 }
 

@@ -86,6 +86,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/mhtml_generator.h"
+#include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_impl.h"
@@ -100,7 +101,6 @@
 #include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/web_ui_extension_data.h"
-#include "content/renderer/web_ui_mojo.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/media_switches.h"
@@ -2534,8 +2534,8 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
     // WebUIExtensionData deletes itself when we're destroyed.
     new WebUIExtensionData(this);
-    // WebUIMojo deletes itself when we're destroyed.
-    new WebUIMojo(this);
+    // MojoBindingsController deletes itself when we're destroyed.
+    new MojoBindingsController(this);
   }
 
   enabled_bindings_ |= enabled_bindings_flags;
