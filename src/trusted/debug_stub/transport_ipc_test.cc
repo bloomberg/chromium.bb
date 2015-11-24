@@ -30,7 +30,7 @@ class TransportIPCTests : public ::testing::Test {
 
   void SetUp() {
 #if NACL_WINDOWS
-    const char* PIPENAME = "\\\\.\\pipe\\TestTransportIPC";
+    const char *PIPENAME = "\\\\.\\pipe\\TestTransportIPC";
 
     // Windows named pipes act more like a server-client than pipes or
     // socket pairs on POSIX, therefore the server end of the pipe needs to

@@ -61,7 +61,7 @@ static const uint64_t kGdbEBADF = 9;
 static const size_t kGdbPreadChunkSize = 4096;
 
 
-Target::Target(struct NaClApp *nap, const Abi* abi)
+Target::Target(struct NaClApp *nap, const Abi *abi)
   : nap_(nap),
     abi_(abi),
     session_(NULL),
@@ -645,7 +645,7 @@ void Target::ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err) {
   *err = BAD_FORMAT;
 }
 
-bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
+bool Target::ProcessPacket(Packet *pktIn, Packet *pktOut) {
   char cmd;
   int32_t seq = -1;
   ErrDef  err = NONE;
@@ -1121,7 +1121,7 @@ void Target::Kill() {
   should_exit_ = true;
 }
 
-Thread* Target::GetRegThread() {
+Thread *Target::GetRegThread() {
   ThreadMap_t::const_iterator itr;
 
   switch (reg_thread_) {
@@ -1141,7 +1141,7 @@ Thread* Target::GetRegThread() {
   return itr->second;
 }
 
-Thread* Target::GetRunThread() {
+Thread *Target::GetRunThread() {
   // This is used to select a thread for "s" (step) command only.
   // For multi-threaded targets, "s" is deprecated in favor of "vCont", which
   // always specifies the thread explicitly when needed. However, we want
@@ -1153,7 +1153,7 @@ Thread* Target::GetRunThread() {
   return NULL;
 }
 
-Thread* Target::GetThread(uint32_t id) {
+Thread *Target::GetThread(uint32_t id) {
   ThreadMap_t::const_iterator itr;
   itr = threads_.find(id);
   if (itr != threads_.end()) return itr->second;

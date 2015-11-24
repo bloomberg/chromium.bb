@@ -347,7 +347,7 @@ void Abi::Register(const char *name, RegDef *regs,
   (*abis)[name] = abi;
 }
 
-const Abi* Abi::Find(const char *name) {
+const Abi *Abi::Find(const char *name) {
   if (!AbiIsAvailable()) {
     NaClLog(LOG_ERROR, "Failed to initalize ABIs.");
     return NULL;
@@ -359,8 +359,8 @@ const Abi* Abi::Find(const char *name) {
   return itr->second;
 }
 
-const Abi* Abi::Get() {
-  static const Abi* abi = NULL;
+const Abi *Abi::Get() {
+  static const Abi *abi = NULL;
 
   if ((NULL == abi) && AbiIsAvailable()) {
     if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
@@ -381,7 +381,7 @@ const Abi* Abi::Get() {
   return abi;
 }
 
-const char* Abi::GetName() const {
+const char *Abi::GetName() const {
   return name_;
 }
 

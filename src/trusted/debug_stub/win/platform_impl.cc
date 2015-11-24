@@ -27,7 +27,7 @@
   * breakpoints.
   */
 
-static bool UnmapFiles(struct NaClApp* nap, void *ptr, uint32_t len) {
+static bool UnmapFiles(struct NaClApp *nap, void *ptr, uint32_t len) {
   DWORD old_flags;
   uintptr_t max_step;
   uintptr_t user_ptr = NaClSysToUser(nap, reinterpret_cast<uintptr_t>(ptr));

@@ -18,7 +18,7 @@ int VerifyAbi(const char *name, uint32_t regs) {
   const Abi *abi = Abi::Find(name);
   if (NULL != abi) {
     uint32_t regCnt = abi->GetRegisterCount();
-    uint32_t byteCnt= abi->GetContextSize();
+    uint32_t byteCnt = abi->GetContextSize();
     uint32_t bytes = 0;
     uint32_t loop = 0;
 
@@ -104,7 +104,7 @@ int TestAbi() {
   errs += VerifyAbi("mips", 33);
 
   // Get the default ABI
-  const Abi* abi = Abi::Get();
+  const Abi *abi = Abi::Get();
   if (NULL == abi) {
     printf("Failed to get default ABI.\n");
     errs++;

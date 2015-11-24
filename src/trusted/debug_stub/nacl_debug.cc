@@ -44,7 +44,7 @@ using gdb_rsp::Target;
 
 static Target *g_target = NULL;
 static SocketBinding *g_socket_binding = NULL;
-static ITransport* g_transport = NULL;
+static ITransport *g_transport = NULL;
 
 int NaClDebugBindSocket() {
   if (g_transport == NULL) {

@@ -366,7 +366,7 @@ bool Packet::GetWord64(uint64_t *ptr) {
 }
 
 
-bool Packet::GetString(string* str) {
+bool Packet::GetString(string *str) {
   if (EndOfPacket()) {
     return false;
   }
@@ -376,7 +376,7 @@ bool Packet::GetString(string* str) {
   return true;
 }
 
-bool Packet::GetHexString(string* str) {
+bool Packet::GetHexString(string *str) {
   // Decode a string encoded as a series of 2-hex digit pairs.
 
   char ch1;
