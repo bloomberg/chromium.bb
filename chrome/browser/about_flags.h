@@ -15,8 +15,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/strings/string16.h"
 #include "components/flags_ui/feature_entry.h"
-
-class PrefService;
+#include "components/flags_ui/flags_state.h"
 
 namespace base {
 class ListValue;
@@ -28,15 +27,11 @@ class FlagsStorage;
 
 namespace about_flags {
 
-// A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
-// whether it should add the sentinel switches around flags.
-enum SentinelsMode { kNoSentinels, kAddSentinels };
-
 // Reads the state from |flags_storage| and adds the command line flags
 // belonging to the active feature entries to |command_line|.
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line,
-                            SentinelsMode sentinels);
+                            flags_ui::SentinelsMode sentinels);
 
 // Compares a set of switches of the two provided command line objects and
 // returns true if they are the same and false otherwise.
@@ -47,17 +42,11 @@ bool AreSwitchesIdenticalToCurrentCommandLine(
     const base::CommandLine& active_cmdline,
     std::set<base::CommandLine::StringType>* out_difference);
 
-// Differentiate between generic flags available on a per session base and flags
-// that influence the whole machine and can be said by the admin only. This flag
-// is relevant for ChromeOS for now only and dictates whether entries marked
-// with the |kOsCrOSOwnerOnly| label should be enabled in the UI or not.
-enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
-
 // Gets the list of feature entries. Entries that are available for the current
 // platform are appended to |supported_entries|; all other entries are appended
 // to |unsupported_entries|.
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
-                           FlagAccess access,
+                           flags_ui::FlagAccess access,
                            base::ListValue* supported_entries,
                            base::ListValue* unsupported_entries);
 
@@ -78,11 +67,6 @@ void RemoveFlagsSwitches(
 // Reset all flags to the default state by clearing all flags.
 void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);
 
-// Returns the value for the current platform. This is one of the values defined
-// by the OS enum above.
-// This is exposed only for testing.
-int GetCurrentPlatform();
-
 // Sends UMA stats about experimental flag usage. This should be called once per
 // startup.
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage);
@@ -99,14 +83,7 @@ void ReportCustomFlags(const std::string& uma_histogram_hame,
 
 namespace testing {
 
-// Clears internal global state, for unit tests.
-void ClearState();
-
-// Sets the list of feature entries. Pass in null to use the default set. This
-// does NOT take ownership of the supplied |entries|.
-void SetFeatureEntries(const flags_ui::FeatureEntry* entries, size_t count);
-
-// Returns the current set of feature entries.
+// Returns the global set of feature entries.
 const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count);
 
 // This value is reported as switch histogram ID if switch name has unknown

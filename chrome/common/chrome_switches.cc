@@ -572,12 +572,6 @@ const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 // loaded. It is useful to tell the difference for tracking purposes.
 const char kFastStart[]            = "fast-start";
 
-// These two flags are added around the switches about:flags adds to the
-// command line. This is useful to see which switches were added by about:flags
-// on about:version. They don't have any effect.
-const char kFlagSwitchesBegin[]             = "flag-switches-begin";
-const char kFlagSwitchesEnd[]               = "flag-switches-end";
-
 // Forces application mode. This hides certain system UI elements and forces
 // the app to be installed if it hasn't been already.
 const char kForceAppMode[]                  = "force-app-mode";

@@ -914,7 +914,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         g_browser_process->local_state());
     about_flags::ConvertFlagsToSwitches(&flags_storage_,
                                         base::CommandLine::ForCurrentProcess(),
-                                        about_flags::kAddSentinels);
+                                        flags_ui::kAddSentinels);
   }
 #endif  // !defined(OS_CHROMEOS)
 

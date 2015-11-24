@@ -112,7 +112,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
-  FlagsDOMHandler() : access_(about_flags::kGeneralAccessFlagsOnly),
+  FlagsDOMHandler() : access_(flags_ui::kGeneralAccessFlagsOnly),
                       experimental_features_requested_(false) {
   }
   ~FlagsDOMHandler() override {}
@@ -121,7 +121,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   // access. If there were flags experiments requested from javascript before
   // this was called, it calls |HandleRequestExperimentalFeatures| again.
   void Init(flags_ui::FlagsStorage* flags_storage,
-            about_flags::FlagAccess access);
+            flags_ui::FlagAccess access);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -140,7 +140,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 
  private:
   scoped_ptr<flags_ui::FlagsStorage> flags_storage_;
-  about_flags::FlagAccess access_;
+  flags_ui::FlagAccess access_;
   bool experimental_features_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
@@ -166,7 +166,7 @@ void FlagsDOMHandler::RegisterMessages() {
 }
 
 void FlagsDOMHandler::Init(flags_ui::FlagsStorage* flags_storage,
-                           about_flags::FlagAccess access) {
+                           flags_ui::FlagAccess access) {
   flags_storage_.reset(flags_storage);
   access_ = access;
 
@@ -195,7 +195,7 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
   results.SetBoolean(flags_ui::kNeedsRestart,
                      about_flags::IsRestartNeededToCommitChanges());
   results.SetBoolean(flags_ui::kShowOwnerWarning,
-                     access_ == about_flags::kGeneralAccessFlagsOnly);
+                     access_ == flags_ui::kGeneralAccessFlagsOnly);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   version_info::Channel channel = chrome::GetChannel();
@@ -236,7 +236,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   about_flags::ConvertFlagsToSwitches(flags_storage_.get(),
                                       &user_flags,
-                                      about_flags::kAddSentinels);
+                                      flags_ui::kAddSentinels);
   base::CommandLine::StringVector flags;
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
@@ -278,11 +278,11 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
             profile);
     dom_handler->Init(new chromeos::about_flags::OwnerFlagsStorage(
                           profile->GetPrefs(), service),
-                      about_flags::kOwnerAccessToFlags);
+                      flags_ui::kOwnerAccessToFlags);
   } else {
     dom_handler->Init(
         new flags_ui::PrefServiceFlagsStorage(profile->GetPrefs()),
-        about_flags::kGeneralAccessFlagsOnly);
+        flags_ui::kGeneralAccessFlagsOnly);
   }
 }
 #endif
@@ -319,7 +319,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
 #else
   handler->Init(
       new flags_ui::PrefServiceFlagsStorage(g_browser_process->local_state()),
-      about_flags::kOwnerAccessToFlags);
+      flags_ui::kOwnerAccessToFlags);
 #endif
 
   // Set up the about:flags source.

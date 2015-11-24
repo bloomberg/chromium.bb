@@ -18,7 +18,7 @@
   <message name="IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL" desc="Shown on the about:flags page when we want to promote the Chrome developer channel">
     Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.
   </message>
-        <message name="IDS_FLAGS_UI_DISABLE" desc="The link for disabling a labs experiment.">
+  <message name="IDS_FLAGS_UI_DISABLE" desc="The link for disabling a labs experiment.">
     Disable
   </message>
   <message name="IDS_FLAGS_UI_ENABLE" desc="The link for enabling a labs experiment.">

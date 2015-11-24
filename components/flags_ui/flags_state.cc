@@ -1,0 +1,632 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/flags_ui/flags_state.h"
+
+#include "base/callback.h"
+#include "base/feature_list.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
+#include "build/build_config.h"
+#include "components/flags_ui/feature_entry.h"
+#include "components/flags_ui/flags_storage.h"
+#include "components/flags_ui/flags_ui_switches.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace flags_ui {
+
+namespace {
+
+// Convert switch constants to proper CommandLine::StringType strings.
+base::CommandLine::StringType GetSwitchString(const std::string& flag) {
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
+  cmd_line.AppendSwitch(flag);
+  DCHECK_EQ(2U, cmd_line.argv().size());
+  return cmd_line.argv()[1];
+}
+
+// Scoops flags from a command line.
+// Only switches between --flag-switches-begin and --flag-switches-end are
+// compared. The embedder may use |extra_flag_sentinel_begin_flag_name| and
+// |extra_sentinel_end_flag_name| to specify other delimiters, if supported.
+std::set<base::CommandLine::StringType> ExtractFlagsFromCommandLine(
+    const base::CommandLine& cmdline,
+    const char* extra_flag_sentinel_begin_flag_name,
+    const char* extra_flag_sentinel_end_flag_name) {
+  DCHECK_EQ(!!extra_flag_sentinel_begin_flag_name,
+            !!extra_flag_sentinel_end_flag_name);
+  std::set<base::CommandLine::StringType> flags;
+  // First do the ones between --flag-switches-begin and --flag-switches-end.
+  base::CommandLine::StringVector::const_iterator first =
+      std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                GetSwitchString(switches::kFlagSwitchesBegin));
+  base::CommandLine::StringVector::const_iterator last =
+      std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                GetSwitchString(switches::kFlagSwitchesEnd));
+  if (first != cmdline.argv().end() && last != cmdline.argv().end())
+    flags.insert(first + 1, last);
+
+  // Then add those between the extra sentinels.
+  if (extra_flag_sentinel_begin_flag_name &&
+      extra_flag_sentinel_end_flag_name) {
+    first = std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                      GetSwitchString(extra_flag_sentinel_begin_flag_name));
+    last = std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                     GetSwitchString(extra_flag_sentinel_end_flag_name));
+    if (first != cmdline.argv().end() && last != cmdline.argv().end())
+      flags.insert(first + 1, last);
+  }
+  return flags;
+}
+
+const struct {
+  unsigned bit;
+  const char* const name;
+} kBitsToOs[] = {
+    {kOsMac, "Mac"},
+    {kOsWin, "Windows"},
+    {kOsLinux, "Linux"},
+    {kOsCrOS, "Chrome OS"},
+    {kOsAndroid, "Android"},
+    {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
+};
+
+// Adds a |StringValue| to |list| for each platform where |bitmask| indicates
+// whether the entry is available on that platform.
+void AddOsStrings(unsigned bitmask, base::ListValue* list) {
+  for (size_t i = 0; i < arraysize(kBitsToOs); ++i) {
+    if (bitmask & kBitsToOs[i].bit)
+      list->Append(new base::StringValue(kBitsToOs[i].name));
+  }
+}
+
+// Adds the internal names for the specified entry to |names|.
+void AddInternalName(const FeatureEntry& e, std::set<std::string>* names) {
+  switch (e.type) {
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
+      names->insert(e.internal_name);
+      break;
+    case FeatureEntry::MULTI_VALUE:
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
+    case FeatureEntry::FEATURE_VALUE:
+      for (int i = 0; i < e.num_choices; ++i)
+        names->insert(e.NameForChoice(i));
+      break;
+  }
+}
+
+// Confirms that an entry is valid, used in a DCHECK in
+// SanitizeList below.
+bool ValidateFeatureEntry(const FeatureEntry& e) {
+  switch (e.type) {
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
+      DCHECK_EQ(0, e.num_choices);
+      DCHECK(!e.choices);
+      return true;
+    case FeatureEntry::MULTI_VALUE:
+      DCHECK_GT(e.num_choices, 0);
+      DCHECK(e.choices);
+      DCHECK(e.choices[0].command_line_switch);
+      DCHECK_EQ('\0', e.choices[0].command_line_switch[0]);
+      return true;
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
+      DCHECK_EQ(3, e.num_choices);
+      DCHECK(!e.choices);
+      DCHECK(e.command_line_switch);
+      DCHECK(e.command_line_value);
+      DCHECK(e.disable_command_line_switch);
+      DCHECK(e.disable_command_line_value);
+      return true;
+    case FeatureEntry::FEATURE_VALUE:
+      DCHECK_EQ(3, e.num_choices);
+      DCHECK(!e.choices);
+      DCHECK(e.feature);
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// Returns true if none of this entry's options have been enabled.
+bool IsDefaultValue(const FeatureEntry& entry,
+                    const std::set<std::string>& enabled_entries) {
+  switch (entry.type) {
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
+      return enabled_entries.count(entry.internal_name) == 0;
+    case FeatureEntry::MULTI_VALUE:
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
+    case FeatureEntry::FEATURE_VALUE:
+      for (int i = 0; i < entry.num_choices; ++i) {
+        if (enabled_entries.count(entry.NameForChoice(i)) > 0)
+          return false;
+      }
+      return true;
+  }
+  NOTREACHED();
+  return true;
+}
+
+// Returns the Value representing the choice data in the specified entry.
+base::Value* CreateChoiceData(const FeatureEntry& entry,
+                              const std::set<std::string>& enabled_entries) {
+  DCHECK(entry.type == FeatureEntry::MULTI_VALUE ||
+         entry.type == FeatureEntry::ENABLE_DISABLE_VALUE ||
+         entry.type == FeatureEntry::FEATURE_VALUE);
+  base::ListValue* result = new base::ListValue;
+  for (int i = 0; i < entry.num_choices; ++i) {
+    base::DictionaryValue* value = new base::DictionaryValue;
+    const std::string name = entry.NameForChoice(i);
+    value->SetString("internal_name", name);
+    value->SetString("description", entry.DescriptionForChoice(i));
+    value->SetBoolean("selected", enabled_entries.count(name) > 0);
+    result->Append(value);
+  }
+  return result;
+}
+
+}  // namespace
+
+// Keeps track of affected switches for each FeatureEntry, based on which
+// choice is selected for it.
+struct SwitchEntry {
+  // Corresponding base::Feature to toggle.
+  std::string feature_name;
+
+  // If |feature_name| is not empty, the state (enable/disabled) to set.
+  bool feature_state;
+
+  // The name of the switch to add.
+  std::string switch_name;
+
+  // If |switch_name| is not empty, the value of the switch to set.
+  std::string switch_value;
+
+  SwitchEntry() : feature_state(false) {}
+};
+
+FlagsState::FlagsState(const FeatureEntry* feature_entries,
+                       size_t num_feature_entries)
+    : feature_entries_(feature_entries),
+      num_feature_entries_(num_feature_entries),
+      needs_restart_(false) {}
+
+FlagsState::~FlagsState() {}
+
+void FlagsState::ConvertFlagsToSwitches(
+    FlagsStorage* flags_storage,
+    base::CommandLine* command_line,
+    SentinelsMode sentinels,
+    const char* enable_features_flag_name,
+    const char* disable_features_flag_name) {
+  std::set<std::string> enabled_entries;
+
+  GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, &enabled_entries);
+
+  std::map<std::string, SwitchEntry> name_to_switch_map;
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    const FeatureEntry& e = feature_entries_[i];
+    switch (e.type) {
+      case FeatureEntry::SINGLE_VALUE:
+      case FeatureEntry::SINGLE_DISABLE_VALUE:
+        AddSwitchMapping(e.internal_name, e.command_line_switch,
+                         e.command_line_value, &name_to_switch_map);
+        break;
+      case FeatureEntry::MULTI_VALUE:
+        for (int j = 0; j < e.num_choices; ++j) {
+          AddSwitchMapping(e.NameForChoice(j), e.choices[j].command_line_switch,
+                           e.choices[j].command_line_value,
+                           &name_to_switch_map);
+        }
+        break;
+      case FeatureEntry::ENABLE_DISABLE_VALUE:
+        AddSwitchMapping(e.NameForChoice(0), std::string(), std::string(),
+                         &name_to_switch_map);
+        AddSwitchMapping(e.NameForChoice(1), e.command_line_switch,
+                         e.command_line_value, &name_to_switch_map);
+        AddSwitchMapping(e.NameForChoice(2), e.disable_command_line_switch,
+                         e.disable_command_line_value, &name_to_switch_map);
+        break;
+      case FeatureEntry::FEATURE_VALUE:
+        AddFeatureMapping(e.NameForChoice(0), std::string(), false,
+                          &name_to_switch_map);
+        AddFeatureMapping(e.NameForChoice(1), e.feature->name, true,
+                          &name_to_switch_map);
+        AddFeatureMapping(e.NameForChoice(2), e.feature->name, false,
+                          &name_to_switch_map);
+        break;
+    }
+  }
+
+  AddSwitchesToCommandLine(enabled_entries, name_to_switch_map, sentinels,
+                           command_line, enable_features_flag_name,
+                           disable_features_flag_name);
+}
+
+bool FlagsState::IsRestartNeededToCommitChanges() {
+  return needs_restart_;
+}
+
+void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
+                                        const std::string& internal_name,
+                                        bool enable) {
+  size_t at_index = internal_name.find(testing::kMultiSeparator);
+  if (at_index != std::string::npos) {
+    DCHECK(enable);
+    // We're being asked to enable a multi-choice entry. Disable the
+    // currently selected choice.
+    DCHECK_NE(at_index, 0u);
+    const std::string entry_name = internal_name.substr(0, at_index);
+    SetFeatureEntryEnabled(flags_storage, entry_name, false);
+
+    // And enable the new choice, if it is not the default first choice.
+    if (internal_name != entry_name + "@0") {
+      std::set<std::string> enabled_entries;
+      GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
+      flags_storage->SetFlags(enabled_entries);
+    }
+    return;
+  }
+
+  std::set<std::string> enabled_entries;
+  GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
+
+  const FeatureEntry* e = nullptr;
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    if (feature_entries_[i].internal_name == internal_name) {
+      e = feature_entries_ + i;
+      break;
+    }
+  }
+  DCHECK(e);
+
+  if (e->type == FeatureEntry::SINGLE_VALUE) {
+    if (enable)
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
+    else
+      needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
+  } else if (e->type == FeatureEntry::SINGLE_DISABLE_VALUE) {
+    if (!enable)
+      needs_restart_ |= enabled_entries.insert(internal_name).second;
+    else
+      needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
+  } else {
+    if (enable) {
+      // Enable the first choice.
+      needs_restart_ |= enabled_entries.insert(e->NameForChoice(0)).second;
+    } else {
+      // Find the currently enabled choice and disable it.
+      for (int i = 0; i < e->num_choices; ++i) {
+        std::string choice_name = e->NameForChoice(i);
+        if (enabled_entries.find(choice_name) != enabled_entries.end()) {
+          needs_restart_ = true;
+          enabled_entries.erase(choice_name);
+          // Continue on just in case there's a bug and more than one
+          // entry for this choice was enabled.
+        }
+      }
+    }
+  }
+
+  flags_storage->SetFlags(enabled_entries);
+}
+
+void FlagsState::RemoveFlagsSwitches(
+    std::map<std::string, base::CommandLine::StringType>* switch_list) {
+  for (const auto& entry : flags_switches_)
+    switch_list->erase(entry.first);
+
+  // If feature entries were added to --enable-features= or --disable-features=
+  // lists, remove them here while preserving existing values.
+  for (const auto& entry : appended_switches_) {
+    const auto& switch_name = entry.first;
+    const auto& switch_added_values = entry.second;
+
+    // The below is either a std::string or a base::string16 based on platform.
+    const auto& existing_value = (*switch_list)[switch_name];
+#if defined(OS_WIN)
+    const std::string existing_value_utf8 = base::UTF16ToUTF8(existing_value);
+#else
+    const std::string& existing_value_utf8 = existing_value;
+#endif
+
+    std::vector<std::string> features =
+        base::FeatureList::SplitFeatureListString(existing_value_utf8);
+    std::vector<std::string> remaining_features;
+    // For any featrue name in |features| that is not in |switch_added_values| -
+    // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
+    for (const std::string& feature : features) {
+      if (!ContainsKey(switch_added_values, feature))
+        remaining_features.push_back(feature);
+    }
+
+    // Either remove the flag entirely if |remaining_features| is empty, or set
+    // the new list.
+    if (remaining_features.empty()) {
+      switch_list->erase(switch_name);
+    } else {
+      std::string switch_value = base::JoinString(remaining_features, ",");
+#if defined(OS_WIN)
+      (*switch_list)[switch_name] = base::UTF8ToUTF16(switch_value);
+#else
+      (*switch_list)[switch_name] = switch_value;
+#endif
+    }
+  }
+}
+
+void FlagsState::ResetAllFlags(FlagsStorage* flags_storage) {
+  needs_restart_ = true;
+
+  std::set<std::string> no_entries;
+  flags_storage->SetFlags(no_entries);
+}
+
+void FlagsState::Reset() {
+  needs_restart_ = false;
+  flags_switches_.clear();
+  appended_switches_.clear();
+}
+
+void FlagsState::GetFlagFeatureEntries(
+    FlagsStorage* flags_storage,
+    FlagAccess access,
+    base::ListValue* supported_entries,
+    base::ListValue* unsupported_entries,
+    base::Callback<bool(const FeatureEntry&)> skip_feature_entry) {
+  std::set<std::string> enabled_entries;
+  GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
+
+  int current_platform = GetCurrentPlatform();
+
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    const FeatureEntry& entry = feature_entries_[i];
+    if (skip_feature_entry.Run(entry))
+      continue;
+
+    base::DictionaryValue* data = new base::DictionaryValue();
+    data->SetString("internal_name", entry.internal_name);
+    data->SetString("name", l10n_util::GetStringUTF16(entry.visible_name_id));
+    data->SetString("description",
+                    l10n_util::GetStringUTF16(entry.visible_description_id));
+
+    base::ListValue* supported_platforms = new base::ListValue();
+    AddOsStrings(entry.supported_platforms, supported_platforms);
+    data->Set("supported_platforms", supported_platforms);
+    // True if the switch is not currently passed.
+    bool is_default_value = IsDefaultValue(entry, enabled_entries);
+    data->SetBoolean("is_default", is_default_value);
+
+    switch (entry.type) {
+      case FeatureEntry::SINGLE_VALUE:
+      case FeatureEntry::SINGLE_DISABLE_VALUE:
+        data->SetBoolean(
+            "enabled",
+            (!is_default_value && entry.type == FeatureEntry::SINGLE_VALUE) ||
+                (is_default_value &&
+                 entry.type == FeatureEntry::SINGLE_DISABLE_VALUE));
+        break;
+      case FeatureEntry::MULTI_VALUE:
+      case FeatureEntry::ENABLE_DISABLE_VALUE:
+      case FeatureEntry::FEATURE_VALUE:
+        data->Set("choices", CreateChoiceData(entry, enabled_entries));
+        break;
+    }
+
+    bool supported = (entry.supported_platforms & current_platform) != 0;
+#if defined(OS_CHROMEOS)
+    if (access == kOwnerAccessToFlags &&
+        (entry.supported_platforms & kOsCrOSOwnerOnly) != 0) {
+      supported = true;
+    }
+#endif
+    if (supported)
+      supported_entries->Append(data);
+    else
+      unsupported_entries->Append(data);
+  }
+}
+
+// static
+int FlagsState::GetCurrentPlatform() {
+#if defined(OS_MACOSX)
+  return kOsMac;
+#elif defined(OS_WIN)
+  return kOsWin;
+#elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
+  return kOsCrOS;
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+  return kOsLinux;
+#elif defined(OS_ANDROID)
+  return kOsAndroid;
+#else
+#error Unknown platform
+#endif
+}
+
+// static
+bool FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
+    const base::CommandLine& new_cmdline,
+    const base::CommandLine& active_cmdline,
+    std::set<base::CommandLine::StringType>* out_difference,
+    const char* extra_flag_sentinel_begin_flag_name,
+    const char* extra_flag_sentinel_end_flag_name) {
+  std::set<base::CommandLine::StringType> new_flags =
+      ExtractFlagsFromCommandLine(new_cmdline,
+                                  extra_flag_sentinel_begin_flag_name,
+                                  extra_flag_sentinel_end_flag_name);
+  std::set<base::CommandLine::StringType> active_flags =
+      ExtractFlagsFromCommandLine(active_cmdline,
+                                  extra_flag_sentinel_begin_flag_name,
+                                  extra_flag_sentinel_end_flag_name);
+
+  bool result = false;
+  // Needed because std::equal doesn't check if the 2nd set is empty.
+  if (new_flags.size() == active_flags.size()) {
+    result =
+        std::equal(new_flags.begin(), new_flags.end(), active_flags.begin());
+  }
+
+  if (out_difference && !result) {
+    std::set_symmetric_difference(
+        new_flags.begin(), new_flags.end(), active_flags.begin(),
+        active_flags.end(),
+        std::inserter(*out_difference, out_difference->begin()));
+  }
+
+  return result;
+}
+
+void FlagsState::AddSwitchMapping(
+    const std::string& key,
+    const std::string& switch_name,
+    const std::string& switch_value,
+    std::map<std::string, SwitchEntry>* name_to_switch_map) {
+  DCHECK(!ContainsKey(*name_to_switch_map, key));
+
+  SwitchEntry* entry = &(*name_to_switch_map)[key];
+  entry->switch_name = switch_name;
+  entry->switch_value = switch_value;
+}
+
+void FlagsState::AddFeatureMapping(
+    const std::string& key,
+    const std::string& feature_name,
+    bool feature_state,
+    std::map<std::string, SwitchEntry>* name_to_switch_map) {
+  DCHECK(!ContainsKey(*name_to_switch_map, key));
+
+  SwitchEntry* entry = &(*name_to_switch_map)[key];
+  entry->feature_name = feature_name;
+  entry->feature_state = feature_state;
+}
+
+void FlagsState::AddSwitchesToCommandLine(
+    const std::set<std::string>& enabled_entries,
+    const std::map<std::string, SwitchEntry>& name_to_switch_map,
+    SentinelsMode sentinels,
+    base::CommandLine* command_line,
+    const char* enable_features_flag_name,
+    const char* disable_features_flag_name) {
+  std::map<std::string, bool> feature_switches;
+  if (sentinels == kAddSentinels) {
+    command_line->AppendSwitch(switches::kFlagSwitchesBegin);
+    flags_switches_[switches::kFlagSwitchesBegin] = std::string();
+  }
+
+  for (const std::string& entry_name : enabled_entries) {
+    const auto& entry_it = name_to_switch_map.find(entry_name);
+    if (entry_it == name_to_switch_map.end()) {
+      NOTREACHED();
+      continue;
+    }
+
+    const SwitchEntry& entry = entry_it->second;
+    if (!entry.feature_name.empty()) {
+      feature_switches[entry.feature_name] = entry.feature_state;
+    } else if (!entry.switch_name.empty()) {
+      command_line->AppendSwitchASCII(entry.switch_name, entry.switch_value);
+      flags_switches_[entry.switch_name] = entry.switch_value;
+    }
+    // If an entry doesn't match either of the above, then it is likely the
+    // default entry for a FEATURE_VALUE entry. Safe to ignore.
+  }
+
+  if (!feature_switches.empty()) {
+    MergeFeatureCommandLineSwitch(feature_switches, enable_features_flag_name,
+                                  true, command_line);
+    MergeFeatureCommandLineSwitch(feature_switches, disable_features_flag_name,
+                                  false, command_line);
+  }
+
+  if (sentinels == kAddSentinels) {
+    command_line->AppendSwitch(switches::kFlagSwitchesEnd);
+    flags_switches_[switches::kFlagSwitchesEnd] = std::string();
+  }
+}
+
+void FlagsState::MergeFeatureCommandLineSwitch(
+    const std::map<std::string, bool>& feature_switches,
+    const char* switch_name,
+    bool feature_state,
+    base::CommandLine* command_line) {
+  std::string original_switch_value =
+      command_line->GetSwitchValueASCII(switch_name);
+  std::vector<std::string> features =
+      base::FeatureList::SplitFeatureListString(original_switch_value);
+  // Only add features that don't already exist in the lists.
+  // Note: The ContainsValue() call results in O(n^2) performance, but in
+  // practice n should be very small.
+  for (const auto& entry : feature_switches) {
+    if (entry.second == feature_state &&
+        !ContainsValue(features, entry.first)) {
+      features.push_back(entry.first);
+      appended_switches_[switch_name].insert(entry.first);
+    }
+  }
+  // Update the switch value only if it didn't change. This avoids setting an
+  // empty list or duplicating the same list (since AppendSwitch() adds the
+  // switch to the end but doesn't remove previous ones).
+  std::string switch_value = base::JoinString(features, ",");
+  if (switch_value != original_switch_value)
+    command_line->AppendSwitchASCII(switch_name, switch_value);
+}
+
+void FlagsState::SanitizeList(FlagsStorage* flags_storage) {
+  std::set<std::string> known_entries;
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    DCHECK(ValidateFeatureEntry(feature_entries_[i]));
+    AddInternalName(feature_entries_[i], &known_entries);
+  }
+
+  std::set<std::string> enabled_entries = flags_storage->GetFlags();
+
+  std::set<std::string> new_enabled_entries =
+      base::STLSetIntersection<std::set<std::string>>(known_entries,
+                                                      enabled_entries);
+
+  if (new_enabled_entries != enabled_entries)
+    flags_storage->SetFlags(new_enabled_entries);
+}
+
+void FlagsState::GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
+                                          std::set<std::string>* result) {
+  SanitizeList(flags_storage);
+  *result = flags_storage->GetFlags();
+}
+
+void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
+    FlagsStorage* flags_storage,
+    std::set<std::string>* result) {
+  GetSanitizedEnabledFlags(flags_storage, result);
+
+  // Filter out any entries that aren't enabled on the current platform.  We
+  // don't remove these from prefs else syncing to a platform with a different
+  // set of entries would be lossy.
+  std::set<std::string> platform_entries;
+  int current_platform = GetCurrentPlatform();
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    const FeatureEntry& entry = feature_entries_[i];
+    if (entry.supported_platforms & current_platform)
+      AddInternalName(entry, &platform_entries);
+#if defined(OS_CHROMEOS)
+    if (feature_entries_[i].supported_platforms & kOsCrOSOwnerOnly)
+      AddInternalName(entry, &platform_entries);
+#endif
+  }
+
+  std::set<std::string> new_enabled_entries =
+      base::STLSetIntersection<std::set<std::string>>(platform_entries,
+                                                      *result);
+
+  result->swap(new_enabled_entries);
+}
+
+}  // namespace flags_ui

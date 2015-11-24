@@ -206,6 +206,9 @@
       'favicon/core/favicon_handler_unittest.cc',
       'favicon/core/large_icon_service_unittest.cc',
     ],
+    'flags_ui_unittest_sources': [
+      'flags_ui/flags_state_unittest.cc',
+    ],
     'undo_unittest_sources': [
       'undo/bookmark_undo_service_test.cc',
       'undo/undo_manager_test.cc',
@@ -880,6 +883,7 @@
         '<@(enhanced_bookmarks_unittest_sources)',
         '<@(favicon_base_unittest_sources)',
         '<@(favicon_unittest_sources)',
+        '<@(flags_ui_unittest_sources)',
         '<@(gcm_driver_crypto_unittest_sources)',
         '<@(gcm_driver_unittest_sources)',
         '<@(google_unittest_sources)',
@@ -989,6 +993,7 @@
         'components.gyp:enhanced_bookmarks_test_support',
         'components.gyp:favicon_base',
         'components.gyp:favicon_core',
+        'components.gyp:flags_ui',
         'components.gyp:gcm_driver',
         'components.gyp:gcm_driver_test_support',
         'components.gyp:google_core_browser',

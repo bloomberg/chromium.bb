@@ -66,6 +66,7 @@ static_library("common") {
     "//components/dom_distiller/core",
     "//components/error_page/common",
     "//components/favicon_base",
+    "//components/flags_ui:switches",
     "//components/gcm_driver/common",
     "//components/json_schema",
     "//components/metrics",

@@ -153,6 +153,7 @@ if (!is_android) {
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//components/crash/core/common",
+        "//components/flags_ui:switches",
         "//content:sandbox_helper_win",
         "//content/public/common:static_switches",
         "//crypto",

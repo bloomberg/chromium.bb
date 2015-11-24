@@ -242,7 +242,7 @@ base::CommandLine CreatePerSessionCommandLine(Profile* profile) {
   base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   flags_ui::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
-                                      about_flags::kAddSentinels);
+                                      flags_ui::kAddSentinels);
   return user_flags;
 }
 

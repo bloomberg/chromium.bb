@@ -2814,6 +2814,7 @@
         '<@(chromium_browser_dependencies)',
         '<@(chromium_child_dependencies)',
         '../components/components.gyp:crash_core_common',
+        '../components/components.gyp:flags_ui_switches',
         '../content/content.gyp:content_app_both',
         # 2) test-specific support libraries:
         '../base/base.gyp:run_all_unittests',

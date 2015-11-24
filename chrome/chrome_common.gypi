@@ -330,6 +330,7 @@
         '<(DEPTH)/components/components.gyp:content_settings_core_common',
         '<(DEPTH)/components/components.gyp:crash_core_common',
         '<(DEPTH)/components/components.gyp:favicon_base',
+        '<(DEPTH)/components/components.gyp:flags_ui_switches',
         '<(DEPTH)/components/components.gyp:gcm_driver_common',
         '<(DEPTH)/components/components.gyp:json_schema',
         '<(DEPTH)/components/components.gyp:metrics',

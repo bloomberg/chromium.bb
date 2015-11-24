@@ -7,6 +7,8 @@ source_set("flags_ui") {
     "feature_entry.cc",
     "feature_entry.h",
     "feature_entry_macros.h",
+    "flags_state.cc",
+    "flags_state.h",
     "flags_storage.h",
     "flags_ui_constants.cc",
     "flags_ui_constants.h",
@@ -17,9 +19,36 @@ source_set("flags_ui") {
   ]
 
   deps = [
+    ":switches",
     "//base",
     "//base:prefs",
     "//components/strings",
     "//ui/base",
+  ]
+}
+
+# This is a separate target so that the dependencies of
+# //chrome/common can be kept minimal.
+source_set("switches") {
+  sources = [
+    "flags_ui_switches.cc",
+    "flags_ui_switches.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "flags_state_unittest.cc",
+  ]
+
+  deps = [
+    ":flags_ui",
+    ":switches",
+    "//base",
+    "//base:prefs",
+    "//base:prefs_test_support",
+    "//components/strings",
+    "//testing/gtest",
   ]
 }

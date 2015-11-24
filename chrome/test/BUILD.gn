@@ -2109,6 +2109,7 @@ if (is_win || (is_linux && !is_chromeos)) {
       "//chrome/browser",
       "//chrome/child",
       "//components/crash/core/common",
+      "//components/flags_ui:switches",
     ]
     if (cld_version == 2) {
       # Use whatever CLD2 data access mode that the

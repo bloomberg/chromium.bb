@@ -11,6 +11,7 @@ include_rules = [
   "+components/data_reduction_proxy/content/common",
   "+components/data_reduction_proxy/core/common",
   "+components/dom_distiller/core",
+  "+components/flags_ui/flags_ui_switches.h",
   "+components/gcm_driver",
   "+components/metrics/client_info.h",
   "+components/metrics/metrics_pref_names.h",

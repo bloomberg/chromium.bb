@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 
