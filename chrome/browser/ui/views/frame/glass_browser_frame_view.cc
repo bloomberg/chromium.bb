@@ -366,14 +366,12 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
         GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
     int w = toolbar_bounds.width();
 
-    //  Background. The top stroke is drawn using the IDR_CONTENT_TOP_XXX
+    // Background.  The top stroke is drawn using the IDR_CONTENT_TOP_XXX
     // images, which overlay the toolbar.  The top 2 px of these images is the
     // actual top stroke + shadow, and is partly transparent, so the toolbar
     // background shouldn't be drawn over it.
     const int split_point = std::min(kContentEdgeShadowThickness, h);
     if (h > split_point) {
-      // Tile the toolbar image starting at the frame edge on the left and where
-      // the tabstrip is on the top.
       const int split_y = y + split_point;
       canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y,
                            x, split_y, w, h - split_point);
