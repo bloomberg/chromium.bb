@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.HistoryUtils;
@@ -228,12 +227,10 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
                 getInstrumentation(), mWebContents));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    http://crbug.com/173274
-    */
-    @DisabledTest
+    // Run in single-process mode only. Blocked by multiple RVHs crbug.com/533516.
+    @ParameterizedTest.Set
     public void testHistoryUrlNavigation() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
