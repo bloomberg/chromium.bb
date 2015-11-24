@@ -558,11 +558,17 @@ cr.define('options.network', function() {
       menu.menuItemSelector = '.network-menu-item';
       var addendum = [];
       if (this.data_.key == 'WiFi') {
-        addendum.push({
+        var item = {
           label: loadTimeData.getString('joinOtherNetwork'),
-          command: createAddNonVPNConnectionCallback_('WiFi'),
           data: {}
-        });
+        };
+        if (allowUnmanagedNetworks_()) {
+          item.command = createAddNonVPNConnectionCallback_('WiFi');
+        } else {
+          item.command = null;
+          item.tooltip = loadTimeData.getString('prohibitedNetworkOther');
+        }
+        addendum.push(item);
       } else if (this.data_.key == 'Cellular') {
         if (cellularDevice_.State == 'Enabled' &&
             cellularNetwork_ && cellularNetwork_.Cellular &&
@@ -774,10 +780,20 @@ cr.define('options.network', function() {
      * @private
      */
     createNetworkOptionsCallback_: function(parent, data) {
-      var menuItem = createCallback_(parent,
-                                     data,
-                                     getNetworkName(data),
-                                     showDetails.bind(null, data.GUID));
+      var menuItem = null;
+      if (data.Type == 'WiFi' && !allowUnmanagedNetworks_() &&
+          !isManaged(data.Source)) {
+        menuItem = createCallback_(parent,
+                                   data,
+                                   getNetworkName(data),
+                                   null);
+        menuItem.title = loadTimeData.getString('prohibitedNetwork');
+      } else {
+        menuItem = createCallback_(parent,
+                                   data,
+                                   getNetworkName(data),
+                                   showDetails.bind(null, data.GUID));
+      }
       if (isManaged(data.Source))
         menuItem.appendChild(new ManagedNetworkIndicator());
       if (data.ConnectionState == 'Connected' ||
@@ -1539,6 +1555,18 @@ cr.define('options.network', function() {
       data: {}
     });
     return entries;
+  }
+
+  /**
+   * Return whether connecting to or viewing unmanaged networks is allowed.
+   * @private
+   */
+  function allowUnmanagedNetworks_(item) {
+    if (loadTimeData.valueExists('allowOnlyPolicyNetworksToConnect') &&
+        loadTimeData.getBoolean('allowOnlyPolicyNetworksToConnect')) {
+      return false;
+    }
+    return true;
   }
 
   /**

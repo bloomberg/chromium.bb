@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
@@ -43,6 +44,9 @@ namespace chromeos {
 namespace options {
 
 namespace {
+
+const char kAllowOnlyPolicyNetworksToConnect[] =
+    "allowOnlyPolicyNetworksToConnect";
 
 // Keys for the initial "localized" dictionary values.
 const char kLoggedInAsOwnerKey[] = "loggedInAsOwner";
@@ -100,6 +104,21 @@ void InternetOptionsHandler::GetLocalizedValues(
   bool logged_in_as_owner = LoginState::Get()->GetLoggedInUserType() ==
                             LoginState::LOGGED_IN_USER_OWNER;
   localized_strings->SetBoolean(kLoggedInAsOwnerKey, logged_in_as_owner);
+
+  // TODO(fqj/stevenjb): Make this a property of networkingPrivate
+  const base::DictionaryValue* global_network_config =
+      NetworkHandler::Get()
+          ->managed_network_configuration_handler()
+          ->GetGlobalConfigFromPolicy(
+              std::string() /* no user hash, device policy*/);
+  if (global_network_config) {
+    bool only_policy_connect = false;
+    global_network_config->GetBooleanWithoutPathExpansion(
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+        &only_policy_connect);
+    localized_strings->SetBoolean(kAllowOnlyPolicyNetworksToConnect,
+                                  only_policy_connect);
+  }
 }
 
 void InternetOptionsHandler::RegisterMessages() {

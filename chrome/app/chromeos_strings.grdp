@@ -1945,6 +1945,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
     Join other...
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK" desc="Message displayed when a specific network is prohibited">
+    Connecting to this network is disabled by your administrator.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK_OTHER" desc="Message displayed when a connecting to other networks is prohibited">
+    Connecting to other networks is disabled by your administrator.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
     Disable Wi-Fi
   </message>

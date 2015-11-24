@@ -726,6 +726,14 @@ cr.define('options.internet', function() {
      */
     updateConnectionButtonVisibility_: function() {
       var onc = this.onc_;
+
+      var prohibitedByPolicy =
+          this.type_ == 'WiFi' &&
+          loadTimeData.valueExists('allowOnlyPolicyNetworksToConnect') &&
+          loadTimeData.getBoolean('allowOnlyPolicyNetworksToConnect') &&
+          (onc.data_.Source != 'DevicePolicy' &&
+           onc.data_.Source != 'UserPolicy');
+
       if (this.type_ == 'Ethernet') {
         // Ethernet can never be connected or disconnected and can always be
         // configured (e.g. to set security).
@@ -743,9 +751,15 @@ cr.define('options.internet', function() {
         // Connecting to an unconfigured network might trigger certificate
         // installation UI. Until that gets handled here, always enable the
         // Connect button for built-in networks.
-        var enabled = (this.type_ != 'VPN') ||
+        var enabled = ((this.type_ != 'VPN') ||
                       (onc.getActiveValue('VPN.Type') != 'ThirdPartyVPN') ||
-                      connectable;
+                      connectable) && !prohibitedByPolicy;
+        if (prohibitedByPolicy) {
+          $('details-internet-login').setAttribute(
+              'title', loadTimeData.getString('prohibitedNetwork'));
+        } else {
+          $('details-internet-login').removeAttribute('title');
+        }
         $('details-internet-login').disabled = !enabled;
       } else {
         $('details-internet-login').hidden = true;
@@ -759,7 +773,8 @@ cr.define('options.internet', function() {
         showConfigure = true;
       } else if (this.type_ == 'WiFi') {
         showConfigure = (connectState == 'NotConnected' &&
-                         (!connectable || onc.getWiFiSecurity() != 'None'));
+                         (!connectable || onc.getWiFiSecurity() != 'None') &&
+                         !prohibitedByPolicy);
       }
       $('details-internet-configure').hidden = !showConfigure;
     },

@@ -51,6 +51,8 @@ StringResource kStringResources[] = {
     {"disableDataRoaming", IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING},
     {"dataRoamingDisableToggleTooltip",
      IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION},
+    {"prohibitedNetwork", IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK},
+    {"prohibitedNetworkOther", IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK_OTHER},
 
     // ONC network states. Format is 'Onc' + key + value.
     // Note: '.' must be replaced with '-', e.g. VPN.Type -> OncVPN-Type
