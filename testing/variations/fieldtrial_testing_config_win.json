@@ -217,6 +217,11 @@
             "group_name": "Enabled"
         }
     ],
+    "TriggeredResetFieldTrial": [
+        {
+            "group_name": "On"
+        }
+    ],
     "UseDelayAgnosticAEC": [
         {
             "group_name": "DefaultEnabled"
