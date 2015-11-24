@@ -125,6 +125,7 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
 // Add any new data reduction proxy prefs to the |pref_map_| or the
 // |list_pref_map_| in Init() of DataReductionProxyCompressionStats.
 void RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kDataReductionProxy, std::string());
   registry->RegisterInt64Pref(
       prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(

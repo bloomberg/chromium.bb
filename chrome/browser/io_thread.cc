@@ -42,7 +42,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
@@ -1013,8 +1012,6 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
   registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                std::string());
-  registry->RegisterStringPref(
-      data_reduction_proxy::prefs::kDataReductionProxy, std::string());
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   data_reduction_proxy::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
