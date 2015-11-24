@@ -56,6 +56,7 @@ class DiscardableImageMapTest : public testing::Test {
 TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   gfx::Rect visible_rect(2048, 2048);
   FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
 
   // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -132,6 +133,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   // Make sure visible rect fits into the layer size.
   gfx::Size layer_size(visible_rect.right(), visible_rect.bottom());
   FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(layer_size);
 
   // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -158,7 +160,6 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
 
   FakeDisplayListRecordingSource recording_source;
   Region invalidation(visible_rect);
-  recording_source.set_pixel_record_distance(0);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, layer_size, visible_rect, 1,
@@ -232,6 +233,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
 TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   gfx::Rect visible_rect(2048, 2048);
   FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
 
   // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
@@ -291,6 +293,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
 TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   gfx::Rect visible_rect(2048, 2048);
   FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
 
   skia::RefPtr<SkImage> discardable_image;
   discardable_image = CreateDiscardableImage(gfx::Size(1 << 25, 1 << 25));

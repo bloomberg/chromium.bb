@@ -49,6 +49,10 @@ void PictureImageLayer::SetImage(skia::RefPtr<const SkImage> image) {
   SetNeedsDisplay();
 }
 
+gfx::Rect PictureImageLayer::PaintableRegion() {
+  return gfx::Rect(bounds());
+}
+
 scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {

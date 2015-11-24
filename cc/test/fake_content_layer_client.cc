@@ -35,6 +35,11 @@ FakeContentLayerClient::FakeContentLayerClient()
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
+gfx::Rect FakeContentLayerClient::PaintableRegion() {
+  CHECK(bounds_set_);
+  return gfx::Rect(bounds_);
+}
+
 scoped_refptr<DisplayItemList>
 FakeContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,

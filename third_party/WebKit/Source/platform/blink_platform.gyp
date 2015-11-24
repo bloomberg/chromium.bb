@@ -197,6 +197,7 @@
       'platform_generated.gyp:make_platform_generated',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(libjpeg_gyp_path):libjpeg',
+      '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry'
     ],
     'export_dependent_settings': [
       '<(DEPTH)/base/base.gyp:base',

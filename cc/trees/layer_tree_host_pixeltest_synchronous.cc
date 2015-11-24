@@ -34,6 +34,7 @@ TEST_F(LayerTreeHostSynchronousPixelTest, OneContentLayer) {
   gfx::Size bounds(200, 200);
 
   FakeContentLayerClient client;
+  client.set_bounds(bounds);
   SkPaint green_paint;
   green_paint.setColor(SkColorSetARGB(255, 0, 255, 0));
   client.add_draw_rect(gfx::Rect(bounds), green_paint);
@@ -65,12 +66,14 @@ TEST_F(LayerTreeHostSynchronousGPUPixelTest, OneContentLayer) {
   gfx::Size bounds(200, 200);
 
   FakeContentLayerClient client;
+  client.set_bounds(bounds);
   SkPaint green_paint;
   green_paint.setColor(SkColorSetARGB(255, 0, 255, 0));
   client.add_draw_rect(gfx::Rect(bounds), green_paint);
   scoped_refptr<PictureLayer> root =
       PictureLayer::Create(layer_settings(), &client);
   root->SetBounds(bounds);
+  client.set_bounds(bounds);
   root->SetIsDrawable(true);
 
   RunSingleThreadedPixelTest(PIXEL_TEST_GL, root,

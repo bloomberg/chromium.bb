@@ -159,6 +159,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -231,6 +232,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

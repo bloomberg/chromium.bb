@@ -23,6 +23,8 @@ class CC_EXPORT ContentLayerClient {
     DISPLAY_LIST_PAINTING_DISABLED
   };
 
+  virtual gfx::Rect PaintableRegion() = 0;
+
   virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_status) = 0;

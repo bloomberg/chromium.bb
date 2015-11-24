@@ -33,6 +33,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override {
@@ -95,6 +96,7 @@ class LayerTreeHostDamageTestSetViewportSize
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override {
@@ -167,6 +169,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostDamageTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -251,6 +254,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     root_->AddChild(child_);
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostDamageTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -363,6 +367,7 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     EXPECT_FALSE(content_rect.Intersects(scrollbar_rect));
 
     LayerTreeHostDamageTest::SetupTree();
+    client_.set_bounds(root_layer->bounds());
   }
 
  private:

@@ -53,6 +53,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/gfx/geometry/rect.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
@@ -258,6 +259,11 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxMode
     m_contentLayer->layer()->setPosition(boundingRect.location());
 
     return pathHasChanged;
+}
+
+gfx::Rect LinkHighlightImpl::paintableRegion()
+{
+    return gfx::Rect(0, 0, contentLayer()->layer()->bounds().width, contentLayer()->layer()->bounds().height);
 }
 
 void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)

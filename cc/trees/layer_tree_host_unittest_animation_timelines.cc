@@ -204,6 +204,7 @@ class LayerTreeHostTimelinesTestAddAnimationWithTimingFunction
     LayerTreeHostTimelinesTest::SetupTree();
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(picture_->bounds());
     layer_tree_host()->root_layer()->AddChild(picture_);
 
     AttachPlayersToTimeline();
@@ -266,6 +267,7 @@ class LayerTreeHostTimelinesTestSynchronizeAnimationStartTimes
     LayerTreeHostTimelinesTest::SetupTree();
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(picture_->bounds());
 
     layer_tree_host()->root_layer()->AddChild(picture_);
 
@@ -363,6 +365,7 @@ class LayerTreeHostTimelinesTestDoNotSkipLayersWithAnimatedOpacity
   void SetupTree() override {
     update_check_layer_->SetOpacity(0.f);
     layer_tree_host()->SetRootLayer(update_check_layer_);
+    client_.set_bounds(update_check_layer_->bounds());
     LayerTreeHostTimelinesTest::SetupTree();
 
     AttachPlayersToTimeline();
@@ -453,6 +456,7 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
     LayerTreeHostTimelinesTest::SetupTree();
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(picture_->bounds());
     layer_tree_host()->root_layer()->AddChild(picture_);
 
     AttachPlayersToTimeline();
@@ -543,6 +547,7 @@ class LayerTreeHostTimelinesTestScrollOffsetChangesArePropagated
     scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
     scroll_layer_->SetBounds(gfx::Size(1000, 1000));
+    client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
@@ -604,6 +609,7 @@ class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
     scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
+    client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(100.0, 200.0));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
@@ -877,6 +883,7 @@ class LayerTreeHostTimelinesTestRemoveAnimation
     LayerTreeHostTimelinesTest::SetupTree();
     layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
 
     AttachPlayersToTimeline();
@@ -935,6 +942,7 @@ class LayerTreeHostTimelinesTestAnimationFinishesDuringCommit
     LayerTreeHostTimelinesTest::SetupTree();
     layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
 
     AttachPlayersToTimeline();
@@ -1088,6 +1096,7 @@ class LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit
     LayerTreeHostTimelinesTest::SetupTree();
     layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
 
     AttachPlayersToTimeline();

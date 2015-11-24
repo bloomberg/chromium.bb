@@ -295,6 +295,13 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
         setNeedsDisplay();
 }
 
+IntRect GraphicsLayer::interestRect()
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        m_previousInterestRect = m_client->computeInterestRect(this, m_previousInterestRect);
+    return m_previousInterestRect;
+}
+
 void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
 {
     ASSERT(interestRect || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
@@ -327,9 +334,9 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
         }
     }
 
+    m_previousInterestRect = *interestRect;
     m_client->paintContents(this, context, m_paintingPhase, *interestRect);
     notifyFirstPaintToClient();
-    m_previousInterestRect = *interestRect;
 }
 
 void GraphicsLayer::notifyFirstPaintToClient()

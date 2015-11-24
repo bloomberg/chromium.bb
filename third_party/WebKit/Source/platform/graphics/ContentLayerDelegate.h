@@ -33,6 +33,10 @@
 
 class SkCanvas;
 
+namespace gfx {
+class Rect;
+}
+
 namespace blink {
 
 class GraphicsContext;
@@ -41,6 +45,7 @@ class PaintController;
 
 class PLATFORM_EXPORT GraphicsContextPainter {
 public:
+    virtual IntRect interestRect() = 0;
     virtual void paint(GraphicsContext&, const IntRect* interestRect) = 0;
     virtual PaintController* paintController() = 0;
 
@@ -54,6 +59,8 @@ class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
 public:
     explicit ContentLayerDelegate(GraphicsContextPainter*);
     ~ContentLayerDelegate() override;
+
+    gfx::Rect paintableRegion() override;
 
     // WebContentLayerClient implementation.
     void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;

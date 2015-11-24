@@ -636,6 +636,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostContextTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void InvalidateAndSetNeedsCommit() override {
@@ -709,6 +710,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
     scoped_refptr<FakePictureLayer> picture_layer =
         FakePictureLayer::Create(layer_settings(), &client_);
     picture_layer->SetBounds(gfx::Size(10, 20));
+    client_.set_bounds(picture_layer->bounds());
     layer_tree_host()->SetRootLayer(picture_layer);
 
     LayerTreeHostContextTest::SetupTree();
@@ -843,6 +845,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostContextTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -983,6 +986,7 @@ class LayerTreeHostContextTestDontUseLostResources
     scoped_refptr<PictureLayer> mask =
         PictureLayer::Create(layer_settings_, &client_);
     mask->SetBounds(gfx::Size(10, 10));
+    client_.set_bounds(mask->bounds());
 
     scoped_refptr<PictureLayer> layer_with_mask =
         PictureLayer::Create(layer_settings_, &client_);
@@ -1135,6 +1139,7 @@ class LayerTreeHostContextTestImplSidePainting
     scoped_refptr<PictureLayer> picture =
         PictureLayer::Create(layer_settings(), &client_);
     picture->SetBounds(gfx::Size(10, 10));
+    client_.set_bounds(picture->bounds());
     picture->SetIsDrawable(true);
     root->AddChild(picture);
 

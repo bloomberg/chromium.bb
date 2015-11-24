@@ -52,13 +52,6 @@ class CC_EXPORT DisplayListRecordingSource {
       bool can_use_lcd_text) const;
   virtual bool IsSuitableForGpuRasterization() const;
 
-  // Returns true if the new recorded viewport exposes enough new area to be
-  // worth re-recording.
-  static bool ExposesEnoughNewArea(
-      const gfx::Rect& current_recorded_viewport,
-      const gfx::Rect& potential_new_recorded_viewport,
-      const gfx::Size& layer_size);
-
   gfx::Rect recorded_viewport() const { return recorded_viewport_; }
 
  protected:
@@ -73,12 +66,15 @@ class CC_EXPORT DisplayListRecordingSource {
   bool clear_canvas_with_debug_color_;
   SkColor solid_color_;
   SkColor background_color_;
-  int pixel_record_distance_;
 
   scoped_refptr<DisplayItemList> display_list_;
   size_t painter_reported_memory_usage_;
 
  private:
+  void UpdateInvalidationForNewViewport(const gfx::Rect& old_recorded_viewport,
+                                        const gfx::Rect& new_recorded_viewport,
+                                        Region* invalidation);
+
   friend class DisplayListRasterSource;
 
   void DetermineIfSolidColor();

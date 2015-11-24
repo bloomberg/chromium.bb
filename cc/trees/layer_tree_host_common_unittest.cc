@@ -61,6 +61,7 @@ class MockContentLayerClient : public ContentLayerClient {
  public:
   MockContentLayerClient() {}
   ~MockContentLayerClient() override {}
+  gfx::Rect PaintableRegion() override { return gfx::Rect(); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -8360,8 +8361,9 @@ static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
 
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   gfx::Transform identity;
-  FakeContentLayerClient client;
   scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  FakeContentLayerClient client;
+  client.set_bounds(root->bounds());
   scoped_refptr<LayerWithForcedDrawsContent> child =
       make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grandchild =
@@ -8534,8 +8536,9 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   gfx::Transform identity;
-  FakeContentLayerClient client;
   scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  FakeContentLayerClient client;
+  client.set_bounds(root->bounds());
   scoped_refptr<LayerWithForcedDrawsContent> child =
       make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),

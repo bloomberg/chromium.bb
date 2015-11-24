@@ -32,6 +32,8 @@ class MaskContentLayerClient : public ContentLayerClient {
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
+  gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
+
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -311,6 +313,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
   ~CheckerContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+  gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
@@ -358,6 +361,7 @@ class CircleContentLayerClient : public ContentLayerClient {
   ~CircleContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+  gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {

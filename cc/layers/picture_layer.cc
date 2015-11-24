@@ -132,11 +132,14 @@ bool PictureLayer::Update() {
   devtools_instrumentation::ScopedLayerTreeTask update_layer(
       devtools_instrumentation::kUpdateLayer, id(), layer_tree_host()->id());
 
-  // Calling paint in WebKit can sometimes cause invalidations, so save
+  // Calling paint in Blink can sometimes cause invalidations, so save
   // off the invalidation prior to calling update.
+  // TODO(chrishtr): Blink should no longer be invalidating during paint.
+  // Try to remove this code.
   pending_invalidation_.Swap(&recording_invalidation_);
   pending_invalidation_.Clear();
 
+  // TODO(chrishtr): implement this for synchronized paint.
   if (layer_tree_host()->settings().record_full_layer) {
     // Workaround for http://crbug.com/235910 - to retain backwards compat
     // the full page content must always be provided in the picture layer.

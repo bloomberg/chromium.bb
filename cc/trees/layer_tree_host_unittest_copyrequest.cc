@@ -36,6 +36,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -191,6 +192,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -289,6 +291,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void AddCopyRequest(Layer* layer) {
@@ -389,6 +392,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -462,6 +466,7 @@ class LayerTreeHostCopyRequestTestClippedOut
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -504,6 +509,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void AddCopyRequest(Layer* layer) {
@@ -599,6 +605,7 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -723,6 +730,7 @@ class LayerTreeHostCopyRequestTestCountTextures
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -877,6 +885,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -954,6 +963,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override {
@@ -1027,6 +1037,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root->bounds());
   }
 
   void BeginTest() override {

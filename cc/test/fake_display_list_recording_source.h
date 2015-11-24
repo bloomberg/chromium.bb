@@ -21,9 +21,7 @@ namespace cc {
 // display list.
 class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
  public:
-  FakeDisplayListRecordingSource()
-      : force_unsuitable_for_gpu_rasterization_(false),
-        playback_allowed_event_(nullptr) {}
+  FakeDisplayListRecordingSource();
   ~FakeDisplayListRecordingSource() override {}
 
   static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
@@ -54,7 +52,10 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     recorded_viewport_ = recorded_viewport;
   }
 
-  void SetLayerBounds(const gfx::Size& layer_bounds) { size_ = layer_bounds; }
+  void SetLayerBounds(const gfx::Size& layer_bounds) {
+    size_ = layer_bounds;
+    client_.set_bounds(layer_bounds);
+  }
 
   void SetClearCanvasWithDebugColor(bool clear) {
     clear_canvas_with_debug_color_ = clear;
@@ -103,7 +104,10 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     client_.set_reported_memory_usage(reported_memory_usage);
   }
 
-  void reset_draws() { client_ = FakeContentLayerClient(); }
+  void reset_draws() {
+    client_ = FakeContentLayerClient();
+    client_.set_bounds(size_);
+  }
 
   void SetUnsuitableForGpuRasterization() {
     force_unsuitable_for_gpu_rasterization_ = true;
@@ -114,9 +118,6 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   }
 
   DisplayItemList* display_list() const { return display_list_.get(); }
-  void set_pixel_record_distance(int distance) {
-    pixel_record_distance_ = distance;
-  }
 
  private:
   FakeContentLayerClient client_;

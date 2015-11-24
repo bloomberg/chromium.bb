@@ -81,6 +81,7 @@ class ThreadProxyTest : public ProxyTest {
   void SetupTree() override {
     layer_tree_host()->SetRootLayer(update_check_layer_);
     ProxyTest::SetupTree();
+    client_.set_bounds(update_check_layer_->bounds());
   }
 
   const ThreadProxy::MainThreadOnly& ThreadProxyMainOnly() const {

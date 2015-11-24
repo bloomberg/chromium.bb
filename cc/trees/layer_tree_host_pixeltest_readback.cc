@@ -459,9 +459,9 @@ class LayerTreeHostReadbackDeviceScalePixelTest
  protected:
   LayerTreeHostReadbackDeviceScalePixelTest()
       : device_scale_factor_(1.f),
-        white_client_(SK_ColorWHITE),
-        green_client_(SK_ColorGREEN),
-        blue_client_(SK_ColorBLUE) {}
+        white_client_(SK_ColorWHITE, gfx::Size(200, 200)),
+        green_client_(SK_ColorGREEN, gfx::Size(200, 200)),
+        blue_client_(SK_ColorBLUE, gfx::Size(200, 200)) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     // Cause the device scale factor to be inherited by contents scales.

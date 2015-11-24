@@ -38,6 +38,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   FakeContentLayerClient();
   ~FakeContentLayerClient() override;
 
+  gfx::Rect PaintableRegion() override;
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;
@@ -80,6 +81,11 @@ class FakeContentLayerClient : public ContentLayerClient {
     reported_memory_usage_ = reported_memory_usage;
   }
 
+  void set_bounds(gfx::Size bounds) {
+    bounds_ = bounds;
+    bounds_set_ = true;
+  }
+
  private:
   typedef std::vector<std::pair<gfx::RectF, SkPaint>> RectPaintVector;
   typedef std::vector<ImageData> ImageVector;
@@ -90,6 +96,8 @@ class FakeContentLayerClient : public ContentLayerClient {
   SkCanvas* last_canvas_;
   PaintingControlSetting last_painting_control_;
   size_t reported_memory_usage_;
+  gfx::Size bounds_;
+  bool bounds_set_;
 };
 
 }  // namespace cc

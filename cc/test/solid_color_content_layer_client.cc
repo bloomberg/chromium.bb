@@ -15,6 +15,10 @@
 
 namespace cc {
 
+gfx::Rect SolidColorContentLayerClient::PaintableRegion() {
+  return gfx::Rect(size_);
+}
+
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,

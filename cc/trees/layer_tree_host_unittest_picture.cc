@@ -25,6 +25,7 @@ class LayerTreeHostPictureTest : public LayerTreeTest {
     root->AddChild(root_picture_layer_);
 
     layer_tree_host()->SetRootLayer(root);
+    client_.set_bounds(size);
   }
 
   scoped_refptr<FakePictureLayer> root_picture_layer_;
@@ -142,7 +143,7 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(768, 960));
-
+    client_.set_bounds(root->bounds());
     client_.set_fill_with_nonsolid_color(true);
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(768, 960));
@@ -205,7 +206,6 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
 
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
-
     // The layer is big enough that the live tiles rect won't cover the full
     // layer.
     client_.set_fill_with_nonsolid_color(true);
@@ -219,6 +219,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostPictureTest::SetupTree();
+    client_.set_bounds(picture_->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -311,6 +312,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
+    client_.set_bounds(root->bounds());
 
     child_ = Layer::Create(layer_settings());
     root->AddChild(child_);
@@ -417,6 +419,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostPictureTest::SetupTree();
+    client_.set_bounds(picture_->bounds());
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {

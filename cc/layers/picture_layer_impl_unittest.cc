@@ -415,6 +415,7 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
   // Create an active recording source, but make sure it's not solid.
   scoped_ptr<FakeDisplayListRecordingSource> active_recording_source =
       FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_size);
+  active_recording_source->SetLayerBounds(layer_size);
   active_recording_source->add_draw_rect(gfx::Rect(layer_size));
   active_recording_source->add_draw_rect(
       gfx::Rect(0, 0, layer_size.width() - 1, layer_size.height() - 1));
@@ -4495,6 +4496,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   gfx::Rect layer_rect(layer_bounds);
 
   FakeContentLayerClient client;
+  client.set_bounds(layer_bounds);
   scoped_refptr<PictureLayer> layer =
       PictureLayer::Create(layer_settings_, &client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
@@ -4559,6 +4561,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   gfx::Rect layer_rect(layer_bounds);
 
   FakeContentLayerClient client;
+  client.set_bounds(layer_bounds);
   scoped_refptr<PictureLayer> layer =
       PictureLayer::Create(layer_settings_, &client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);

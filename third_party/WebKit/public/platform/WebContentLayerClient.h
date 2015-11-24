@@ -28,10 +28,14 @@
 
 #include "WebCommon.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace blink {
 
-class WebDisplayItemList;
 struct WebRect;
+class WebDisplayItemList;
 
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:
@@ -41,6 +45,8 @@ public:
         DisplayListCachingDisabled,
         DisplayListPaintingDisabled
     };
+
+    virtual gfx::Rect paintableRegion() = 0;
 
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands

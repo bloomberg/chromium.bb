@@ -510,6 +510,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
     layer_tree_host()->SetRootLayer(root_layer);
     LayerTreeTest::SetupTree();
+    fake_content_layer_client_.set_bounds(root_layer->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -1150,6 +1151,7 @@ class LayerTreeHostScrollTestLayerStructureChange
         CreateScrollLayer(outer_scroll_layer, &root_scroll_layer_client_);
     CreateScrollLayer(outer_scroll_layer, &sibling_scroll_layer_client_);
     CreateScrollLayer(root_scroll_layer, &child_scroll_layer_client_);
+    fake_content_layer_client_.set_bounds(root_layer->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

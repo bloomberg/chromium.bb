@@ -8,6 +8,10 @@
 
 namespace cc {
 
+FakeDisplayListRecordingSource::FakeDisplayListRecordingSource()
+    : force_unsuitable_for_gpu_rasterization_(false),
+      playback_allowed_event_(nullptr) {}
+
 bool FakeDisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   if (force_unsuitable_for_gpu_rasterization_)
     return false;

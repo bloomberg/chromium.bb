@@ -750,6 +750,10 @@ void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(request.Pass());
 }
 
+gfx::Rect Layer::PaintableRegion() {
+  return gfx::Rect(size());
+}
+
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {

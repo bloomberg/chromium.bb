@@ -347,6 +347,7 @@ class COMPOSITOR_EXPORT Layer
   void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
 
   // ContentLayerClient
+  gfx::Rect PaintableRegion() override;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;

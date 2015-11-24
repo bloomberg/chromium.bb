@@ -55,6 +55,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
         ParseTreeFromJson(json_, &content_layer_client_);
     ASSERT_TRUE(root.get());
     layer_tree_host()->SetRootLayer(root);
+    content_layer_client_.set_bounds(viewport);
   }
 
   void SetTestName(const std::string& name) { test_name_ = name; }

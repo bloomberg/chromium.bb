@@ -58,6 +58,10 @@ blink::WebLayer* WebContentLayerImpl::layer() {
   return layer_.get();
 }
 
+gfx::Rect WebContentLayerImpl::PaintableRegion() {
+  return client_->paintableRegion();
+}
+
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,

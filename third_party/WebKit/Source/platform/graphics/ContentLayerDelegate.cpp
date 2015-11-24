@@ -41,6 +41,7 @@
 #include "public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -79,6 +80,12 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
         return;
     }
     artifact.appendToWebDisplayItemList(list);
+}
+
+gfx::Rect ContentLayerDelegate::paintableRegion()
+{
+    IntRect interestRect = m_painter->interestRect();
+    return gfx::Rect(interestRect.x(), interestRect.y(), interestRect.width(), interestRect.height());
 }
 
 void ContentLayerDelegate::paintContents(

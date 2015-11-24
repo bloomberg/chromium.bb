@@ -243,6 +243,7 @@ public:
     static void unregisterContentsLayer(WebLayer*);
 
     // GraphicsContextPainter implementation.
+    IntRect interestRect();
     void paint(GraphicsContext&, const IntRect* interestRect) override;
 
     // WebCompositorAnimationDelegate implementation.

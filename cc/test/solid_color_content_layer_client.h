@@ -13,7 +13,10 @@ namespace cc {
 
 class SolidColorContentLayerClient : public ContentLayerClient {
  public:
-  explicit SolidColorContentLayerClient(SkColor color) : color_(color) {}
+  explicit SolidColorContentLayerClient(SkColor color, gfx::Size size)
+      : color_(color), size_(size) {}
+
+  gfx::Rect PaintableRegion() override;
 
   // ContentLayerClient implementation.
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
@@ -24,6 +27,7 @@ class SolidColorContentLayerClient : public ContentLayerClient {
 
  private:
   SkColor color_;
+  gfx::Size size_;
 };
 
 }  // namespace cc

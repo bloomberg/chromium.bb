@@ -795,7 +795,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
 
 IntRect PaintLayerCompositor::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect&) const
 {
-    return IntRect(IntPoint(), m_layoutView.layoutSize(IncludeScrollbars));
+    return enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
 }
 
 void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& interestRect) const

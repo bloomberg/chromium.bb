@@ -24,6 +24,8 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   // Layer implementation.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
+  gfx::Rect PaintableRegion() override;
+
   // ContentLayerClient implementation.
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
