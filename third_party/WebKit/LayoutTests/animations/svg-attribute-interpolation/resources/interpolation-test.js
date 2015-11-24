@@ -410,8 +410,8 @@
         assertionCode += `\n}, [\n`;
 
         rebaseline.appendChild(document.createTextNode(assertionCode));
-        var rebaselineExpectation;
-        rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
+        var rebaselineExpectation = document.createTextNode('');
+        rebaseline.appendChild(rebaselineExpectation);
         rebaseline.appendChild(document.createTextNode(']);\n\n'));
       }
 

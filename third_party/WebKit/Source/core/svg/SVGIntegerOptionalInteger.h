@@ -59,8 +59,8 @@ public:
 
     static AnimatedPropertyType classType() { return AnimatedIntegerOptionalInteger; }
 
-    PassRefPtrWillBeRawPtr<SVGInteger> firstInteger() { return m_firstInteger; }
-    PassRefPtrWillBeRawPtr<SVGInteger> secondInteger() { return m_secondInteger; }
+    PassRefPtrWillBeRawPtr<SVGInteger> firstInteger() const { return m_firstInteger; }
+    PassRefPtrWillBeRawPtr<SVGInteger> secondInteger() const { return m_secondInteger; }
 
     DECLARE_VIRTUAL_TRACE();
 

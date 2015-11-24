@@ -21,7 +21,6 @@
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/FilterStyleInterpolation.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
-#include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/InterpolationType.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
@@ -36,6 +35,7 @@
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
+#include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
@@ -272,6 +272,8 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             || attribute == SVGNames::targetXAttr
             || attribute == SVGNames::targetYAttr) {
             applicableTypes->append(adoptPtr(new SVGIntegerInterpolationType(attribute)));
+        } else if (attribute == SVGNames::orderAttr) {
+            applicableTypes->append(adoptPtr(new SVGIntegerOptionalIntegerInterpolationType(attribute)));
         } else if (attribute == SVGNames::amplitudeAttr
             || attribute == SVGNames::azimuthAttr
             || attribute == SVGNames::biasAttr
@@ -564,10 +566,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     RefPtr<Interpolation> interpolation = nullptr;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
-    case AnimatedIntegerOptionalInteger: {
-        int min = &attribute->attributeName() == &SVGNames::orderAttr ? 1 : 0;
-        return IntegerOptionalIntegerSVGInterpolation::create(fromValue, toValue, attribute, min);
-    }
     case AnimatedLength:
         return LengthSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedLengthList:
@@ -588,6 +586,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     // Handled by SVGInterpolationTypes.
     case AnimatedAngle:
     case AnimatedInteger:
+    case AnimatedIntegerOptionalInteger:
     case AnimatedNumber:
     case AnimatedNumberOptionalNumber:
     case AnimatedPoints:
