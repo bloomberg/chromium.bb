@@ -244,7 +244,8 @@ abi16_object(struct nouveau_object *obj, int (**func)(struct nouveau_object *))
 	/* nouveau_object::length is (ab)used to determine whether the
 	 * object is a legacy object (!=0), or a real NVIF object.
 	 */
-	if ((parent->length != 0 && parent->oclass == NOUVEAU_DEVICE_CLASS)) {
+	if ((parent->length != 0 && parent->oclass == NOUVEAU_DEVICE_CLASS) ||
+	    (parent->length == 0 && parent->oclass == NV_DEVICE)) {
 		if (obj->oclass == NOUVEAU_FIFO_CHANNEL_CLASS) {
 			struct nouveau_device *dev = (void *)parent;
 			if (dev->chipset < 0xc0)

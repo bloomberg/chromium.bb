@@ -47,6 +47,7 @@
 
 #include "nvif/class.h"
 #include "nvif/cl0080.h"
+#include "nvif/ioctl.h"
 #include "nvif/unpack.h"
 
 #ifdef DEBUG
@@ -63,11 +64,67 @@ debug_init(char *args)
 }
 #endif
 
+static int
+nouveau_object_ioctl(struct nouveau_object *obj, void *data, uint32_t size)
+{
+	struct nouveau_drm *drm = nouveau_drm(obj);
+	union {
+		struct nvif_ioctl_v0 v0;
+	} *args = data;
+	uint32_t argc = size;
+	int ret = -ENOSYS;
+
+	if (!(ret = nvif_unpack(ret, &data, &size, args->v0, 0, 0, true))) {
+		if (!obj->length) {
+			if (obj != &drm->client)
+				args->v0.object = (unsigned long)(void *)obj;
+			else
+				args->v0.object = 0;
+			args->v0.owner = NVIF_IOCTL_V0_OWNER_ANY;
+			args->v0.route = 0x00;
+		} else {
+			args->v0.route = 0xff;
+			args->v0.token = obj->handle;
+		}
+	} else
+		return ret;
+
+	return drmCommandWriteRead(drm->fd, DRM_NOUVEAU_NVIF, args, argc);
+}
+
 int
 nouveau_object_mthd(struct nouveau_object *obj,
 		    uint32_t mthd, void *data, uint32_t size)
 {
-	return -ENODEV;
+	struct nouveau_drm *drm = nouveau_drm(obj);
+	struct {
+		struct nvif_ioctl_v0 ioctl;
+		struct nvif_ioctl_mthd_v0 mthd;
+	} *args;
+	uint32_t argc = sizeof(*args) + size;
+	uint8_t stack[128];
+	int ret;
+
+	if (!drm->nvif)
+		return -ENOSYS;
+
+	if (argc > sizeof(stack)) {
+		if (!(args = malloc(argc)))
+			return -ENOMEM;
+	} else {
+		args = (void *)stack;
+	}
+	args->ioctl.version = 0;
+	args->ioctl.type = NVIF_IOCTL_V0_MTHD;
+	args->mthd.version = 0;
+	args->mthd.method = mthd;
+
+	memcpy(args->mthd.data, data, size);
+	ret = nouveau_object_ioctl(obj, args, argc);
+	memcpy(data, args->mthd.data, size);
+	if (args != (void *)stack)
+		free(args);
+	return ret;
 }
 
 void
@@ -81,7 +138,50 @@ int
 nouveau_object_sclass_get(struct nouveau_object *obj,
 			  struct nouveau_sclass **psclass)
 {
-	return abi16_sclass(obj, psclass);
+	struct nouveau_drm *drm = nouveau_drm(obj);
+	struct {
+		struct nvif_ioctl_v0 ioctl;
+		struct nvif_ioctl_sclass_v0 sclass;
+	} *args = NULL;
+	struct nouveau_sclass *sclass;
+	int ret, cnt = 0, i;
+	uint32_t size;
+
+	if (!drm->nvif)
+		return abi16_sclass(obj, psclass);
+
+	while (1) {
+		size = sizeof(*args) + cnt * sizeof(args->sclass.oclass[0]);
+		if (!(args = malloc(size)))
+			return -ENOMEM;
+		args->ioctl.version = 0;
+		args->ioctl.type = NVIF_IOCTL_V0_SCLASS;
+		args->sclass.version = 0;
+		args->sclass.count = cnt;
+
+		ret = nouveau_object_ioctl(obj, args, size);
+		if (ret == 0 && args->sclass.count <= cnt)
+			break;
+		cnt = args->sclass.count;
+		free(args);
+		if (ret != 0)
+			return ret;
+	}
+
+	if ((sclass = calloc(args->sclass.count, sizeof(*sclass)))) {
+		for (i = 0; i < args->sclass.count; i++) {
+			sclass[i].oclass = args->sclass.oclass[i].oclass;
+			sclass[i].minver = args->sclass.oclass[i].minver;
+			sclass[i].maxver = args->sclass.oclass[i].maxver;
+		}
+		*psclass = sclass;
+		ret = args->sclass.count;
+	} else {
+		ret = -ENOMEM;
+	}
+
+	free(args);
+	return ret;
 }
 
 int
@@ -114,12 +214,21 @@ nouveau_object_mclass(struct nouveau_object *obj,
 static void
 nouveau_object_fini(struct nouveau_object *obj)
 {
+	struct {
+		struct nvif_ioctl_v0 ioctl;
+		struct nvif_ioctl_del del;
+	} args = {
+		.ioctl.type = NVIF_IOCTL_V0_DEL,
+	};
+
 	if (obj->data) {
 		abi16_delete(obj);
 		free(obj->data);
 		obj->data = NULL;
 		return;
 	}
+
+	nouveau_object_ioctl(obj, &args, sizeof(args));
 }
 
 static int
@@ -127,6 +236,12 @@ nouveau_object_init(struct nouveau_object *parent, uint32_t handle,
 		    int32_t oclass, void *data, uint32_t size,
 		    struct nouveau_object *obj)
 {
+	struct nouveau_drm *drm = nouveau_drm(parent);
+	struct {
+		struct nvif_ioctl_v0 ioctl;
+		struct nvif_ioctl_new_v0 new;
+	} *args;
+	uint32_t argc = sizeof(*args) + size;
 	int (*func)(struct nouveau_object *);
 	int ret = -ENOSYS;
 
@@ -136,7 +251,22 @@ nouveau_object_init(struct nouveau_object *parent, uint32_t handle,
 	obj->length = 0;
 	obj->data = NULL;
 
-	abi16_object(obj, &func);
+	if (!abi16_object(obj, &func) && drm->nvif) {
+		if (!(args = malloc(argc)))
+			return -ENOMEM;
+		args->ioctl.version = 0;
+		args->ioctl.type = NVIF_IOCTL_V0_NEW;
+		args->new.version = 0;
+		args->new.route = NVIF_IOCTL_V0_ROUTE_NVIF;
+		args->new.token = (unsigned long)(void *)obj;
+		args->new.object = (unsigned long)(void *)obj;
+		args->new.handle = handle;
+		args->new.oclass = oclass;
+		memcpy(args->new.data, data, size);
+		ret = nouveau_object_ioctl(parent, args, argc);
+		memcpy(data, args->new.data, size);
+		free(args);
+	} else
 	if (func) {
 		obj->length = size ? size : sizeof(struct nouveau_object *);
 		if (!(obj->data = malloc(obj->length)))
@@ -218,7 +348,7 @@ nouveau_drm_new(int fd, struct nouveau_drm **pdrm)
 	drm->version = (ver->version_major << 24) |
 		       (ver->version_minor << 8) |
 		        ver->version_patchlevel;
-	drm->nvif = false;
+	drm->nvif = (drm->version >= 0x01000301);
 	drmFreeVersion(ver);
 	return 0;
 }
@@ -238,9 +368,11 @@ int
 nouveau_device_new(struct nouveau_object *parent, int32_t oclass,
 		   void *data, uint32_t size, struct nouveau_device **pdev)
 {
+	struct nv_device_info_v0 info = {};
 	union {
 		struct nv_device_v0 v0;
 	} *args = data;
+	uint32_t argc = size;
 	struct nouveau_drm *drm = nouveau_drm(parent);
 	struct nouveau_device_priv *nvdev;
 	struct nouveau_device *dev;
@@ -257,6 +389,22 @@ nouveau_device_new(struct nouveau_object *parent, int32_t oclass,
 	dev = *pdev = &nvdev->base;
 	dev->fd = -1;
 
+	if (drm->nvif) {
+		ret = nouveau_object_init(parent, 0, oclass, args, argc,
+					  &dev->object);
+		if (ret)
+			goto done;
+
+		info.version = 0;
+
+		ret = nouveau_object_mthd(&dev->object, NV_DEVICE_V0_INFO,
+					  &info, sizeof(info));
+		if (ret)
+			goto done;
+
+		nvdev->base.chipset = info.chipset;
+		nvdev->have_bo_usage = true;
+	} else
 	if (args->v0.device == ~0ULL) {
 		nvdev->base.object.parent = &drm->client;
 		nvdev->base.object.handle = ~0ULL;
@@ -333,8 +481,7 @@ nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 
 	nvdev = nouveau_device(*pdev);
 	nvdev->base.fd = drm->fd;
-	nvdev->base.drm_version = drm->drm_version;
-	nvdev->base.lib_version = drm->lib_version;
+	nvdev->base.drm_version = drm->version;
 	nvdev->close = close;
 	return 0;
 }
