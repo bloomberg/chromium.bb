@@ -931,11 +931,11 @@ SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
 
   const chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
+  SkAlpha base_alpha = kInactiveTabAlphaOpaque;
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    return kInactiveTabAlphaAsh;
-  if (!GetWidget()->ShouldWindowContentsBeTransparent())
-    return kInactiveTabAlphaOpaque;
-  SkAlpha base_alpha = kInactiveTabAlphaGlass;
+    base_alpha = kInactiveTabAlphaAsh;
+  else if (GetWidget()->ShouldWindowContentsBeTransparent())
+    base_alpha = kInactiveTabAlphaGlass;
   return (for_new_tab_button || (GetSelectionModel().size() <= 1)) ?
       base_alpha : static_cast<SkAlpha>(kMultiSelectionMultiplier * base_alpha);
 }
