@@ -139,7 +139,7 @@
   }
 
   function serializeSVGRect(rect) {
-    return String([rect.x, rect.y, rect.width, rect.height]);
+    return [rect.x, rect.y, rect.width, rect.height].join(', ');
   }
 
   function serializeSVGTransformList(transformList) {

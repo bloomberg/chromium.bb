@@ -32,13 +32,13 @@
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
 #include "core/animation/PathSVGInterpolation.h"
-#include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
+#include "core/animation/SVGRectInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/SVGValueInterpolationType.h"
 #include "core/animation/TransformSVGInterpolation.h"
@@ -307,6 +307,8 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             applicableTypes->append(adoptPtr(new SVGNumberOptionalNumberInterpolationType(attribute)));
         } else if (attribute == SVGNames::pointsAttr) {
             applicableTypes->append(adoptPtr(new SVGPointListInterpolationType(attribute)));
+        } else if (attribute == SVGNames::viewBoxAttr) {
+            applicableTypes->append(adoptPtr(new SVGRectInterpolationType(attribute)));
         } else if (attribute == HTMLNames::classAttr
             || attribute == SVGNames::clipPathUnitsAttr
             || attribute == SVGNames::edgeModeAttr
@@ -577,8 +579,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedPath:
         interpolation = PathSVGInterpolation::maybeCreate(fromValue, toValue, attribute);
         break;
-    case AnimatedRect:
-        return RectSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedTransformList:
         interpolation = ListSVGInterpolation<TransformSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
@@ -590,6 +590,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedNumber:
     case AnimatedNumberOptionalNumber:
     case AnimatedPoints:
+    case AnimatedRect:
         ASSERT_NOT_REACHED();
         // Fallthrough.
 
