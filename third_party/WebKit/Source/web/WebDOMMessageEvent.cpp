@@ -49,7 +49,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(const WebSerializedScriptValue& messageDa
 {
     DOMWindow* window = nullptr;
     if (sourceFrame)
-        window = toCoreFrame(sourceFrame)->domWindow();
+        window = sourceFrame->toImplBase()->frame()->domWindow();
     MessagePortArray* ports = nullptr;
     if (!targetDocument.isNull()) {
         RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(targetDocument);

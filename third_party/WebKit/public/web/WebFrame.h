@@ -63,6 +63,7 @@ class WebData;
 class WebDataSource;
 class WebDocument;
 class WebElement;
+class WebFrameImplBase;
 class WebLayer;
 class WebLocalFrame;
 class WebPerformance;
@@ -678,6 +679,13 @@ public:
     // Dumps the layer tree, used by the accelerated compositor, in
     // text form. This is used only by layout tests.
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
+
+    virtual WebFrameImplBase* toImplBase() = 0;
+    // TODO(dcheng): Fix const-correctness issues and remove this overload.
+    virtual const WebFrameImplBase* toImplBase() const
+    {
+        return const_cast<WebFrame*>(this)->toImplBase();
+    }
 
     // Returns the frame inside a given frame or iframe element. Returns 0 if
     // the given element is not a frame, iframe or if the frame is empty.

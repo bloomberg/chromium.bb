@@ -1016,7 +1016,7 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
 
 PaintLayerCompositor* WebFrameWidgetImpl::compositor() const
 {
-    LocalFrame* frame = toLocalFrame(toCoreFrame(m_localRoot));
+    LocalFrame* frame = m_localRoot->frame();
     if (!frame || !frame->document() || !frame->document()->layoutView())
         return nullptr;
 

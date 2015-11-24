@@ -21,6 +21,21 @@
 
 namespace blink {
 
+namespace {
+
+// Convenience helper for frame tree helpers in FrameClient to reduce the amount
+// of null-checking boilerplate code. Since the frame tree is maintained in the
+// web/ layer, the frame tree helpers often have to deal with null WebFrames:
+// for example, a frame with no parent will return null for WebFrame::parent().
+// TODO(dcheng): Remove duplication between FrameLoaderClientImpl and
+// RemoteFrameClientImpl somehow...
+Frame* toCoreFrame(WebFrame* frame)
+{
+    return frame ? frame->toImplBase()->frame() : nullptr;
+}
+
+} // namespace
+
 RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
     : m_webFrame(webFrame)
 {
@@ -147,7 +162,7 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event)
     // implemented, since this code path will need to be removed or refactored
     // anyway.
     // See https://crbug.com/520705.
-    if (!toCoreFrame(m_webFrame)->ownerLayoutObject())
+    if (!m_webFrame->toImplBase()->frame()->ownerLayoutObject())
         return;
 
     // This is only called when we have out-of-process iframes, which
@@ -157,9 +172,9 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event)
     if (event->isKeyboardEvent())
         webEvent = adoptPtr(new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
     else if (event->isMouseEvent())
-        webEvent = adoptPtr(new WebMouseEventBuilder(m_webFrame->frame()->view(), toCoreFrame(m_webFrame)->ownerLayoutObject(), *static_cast<MouseEvent*>(event)));
+        webEvent = adoptPtr(new WebMouseEventBuilder(m_webFrame->frame()->view(), m_webFrame->toImplBase()->frame()->ownerLayoutObject(), *static_cast<MouseEvent*>(event)));
     else if (event->isWheelEvent())
-        webEvent = adoptPtr(new WebMouseWheelEventBuilder(m_webFrame->frame()->view(), toCoreFrame(m_webFrame)->ownerLayoutObject(), *static_cast<WheelEvent*>(event)));
+        webEvent = adoptPtr(new WebMouseWheelEventBuilder(m_webFrame->frame()->view(), m_webFrame->toImplBase()->frame()->ownerLayoutObject(), *static_cast<WheelEvent*>(event)));
 
     // Other or internal Blink events should not be forwarded.
     if (!webEvent || webEvent->type == WebInputEvent::Undefined)

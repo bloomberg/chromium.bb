@@ -944,7 +944,7 @@ v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 
 bool WebFrame::scriptCanAccess(WebFrame* target)
 {
-    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), callingDOMWindow(mainThreadIsolate()), toCoreFrame(target), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), callingDOMWindow(mainThreadIsolate()), target->toImplBase()->frame(), DoNotReportSecurityError);
 }
 
 void WebLocalFrameImpl::reload(bool ignoreCache)
@@ -1682,6 +1682,7 @@ DEFINE_TRACE(WebLocalFrameImpl)
     visitor->trace(m_geolocationClientProxy);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
+    WebFrameImplBase::trace(visitor);
 }
 #endif
 
@@ -1721,16 +1722,14 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
     }
 }
 
-PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
-    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner);
-    setCoreFrame(frame);
-    frame->tree().setName(name, fallbackName);
+    setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner));
+    frame()->tree().setName(name, fallbackName);
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
-    frame->init();
-    return frame;
+    frame()->init();
 }
 
 PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
@@ -1742,7 +1741,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
         ? WebTreeScopeType::Document
         : WebTreeScopeType::Shadow;
     WebFrameOwnerProperties ownerProperties(ownerElement->scrollingMode(), ownerElement->marginWidth(), ownerElement->marginHeight());
-    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags()), ownerProperties));
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags()), ownerProperties));
     if (!webframeChild)
         return nullptr;
 
@@ -1750,17 +1749,17 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    RefPtrWillBeRawPtr<LocalFrame> child = webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
     // Initializing the core frame may cause the new child to be detached, since
     // it may dispatch a load event in the parent.
-    if (!child->tree().parent())
+    if (!webframeChild->parent())
         return nullptr;
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
     RefPtrWillBeRawPtr<HistoryItem> childItem = nullptr;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = PassRefPtrWillBeRawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
+        childItem = PassRefPtrWillBeRawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild.get()));
 
     FrameLoadRequest newRequest = request;
     FrameLoadType loadType = FrameLoadTypeStandard;
@@ -1769,14 +1768,14 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
             FrameLoader::resourceRequestFromHistoryItem(childItem.get(), UseProtocolCachePolicy));
         loadType = FrameLoadTypeInitialHistoryLoad;
     }
-    child->loader().load(newRequest, loadType, childItem.get());
+    webframeChild->frame()->loader().load(newRequest, loadType, childItem.get());
 
     // Note a synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the child frame to have already been
     // detached by script in the page.
-    if (!child->tree().parent())
+    if (!webframeChild->parent())
         return nullptr;
-    return child;
+    return webframeChild->frame();
 }
 
 void WebLocalFrameImpl::didChangeContentsSize(const IntSize& size)
@@ -1984,7 +1983,7 @@ static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
 
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
-    Frame* oldFrame = toCoreFrame(oldWebFrame);
+    Frame* oldFrame = oldWebFrame->toImplBase()->frame();
     // Note: this *always* temporarily sets a frame owner, even for main frames!
     // When a core Frame is created with no owner, it attempts to set itself as
     // the main frame of the Page. However, this is a provisional frame, and may
@@ -2040,7 +2039,7 @@ void WebLocalFrameImpl::setFrameOwnerProperties(const WebFrameOwnerProperties& f
 {
     // At the moment, this is only used to replicate frame owner properties
     // for frames with a remote owner.
-    FrameOwner* owner = toCoreFrame(this)->owner();
+    FrameOwner* owner = frame()->owner();
     ASSERT(owner);
     toRemoteBridgeFrameOwner(owner)->setScrollingMode(frameOwnerProperties.scrollingMode);
     toRemoteBridgeFrameOwner(owner)->setMarginWidth(frameOwnerProperties.marginWidth);

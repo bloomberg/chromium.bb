@@ -6,10 +6,11 @@
 #define WebRemoteFrameImpl_h
 
 #include "core/frame/FrameOwner.h"
-#include "platform/heap/Handle.h"
+#include "core/frame/RemoteFrame.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"
+#include "web/WebFrameImplBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -20,12 +21,12 @@ class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 
-class WebRemoteFrameImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {
+class WebRemoteFrameImpl final : public WebFrameImplBase, public WebRemoteFrame {
 public:
-    static WebRemoteFrame* create(WebTreeScopeType, WebRemoteFrameClient*);
+    static WebRemoteFrameImpl* create(WebTreeScopeType, WebRemoteFrameClient*);
     ~WebRemoteFrameImpl() override;
 
-    // WebRemoteFrame methods.
+    // WebFrame methods:
     bool isWebLocalFrame() const override;
     WebLocalFrame* toWebLocalFrame() override;
     bool isWebRemoteFrame() const override;
@@ -165,17 +166,21 @@ public:
     bool selectionStartHasSpellingMarkerFor(int from, int length) const override;
     WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
-    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&) override;
-    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
+    WebFrameImplBase* toImplBase() { return this; }
 
-    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
+    // WebFrameImplBase methods:
+    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName) override;
+    RemoteFrame* frame() const override { return m_frame.get(); }
 
     void setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame>);
-    RemoteFrame* frame() const { return m_frame.get(); }
 
     WebRemoteFrameClient* client() const { return m_client; }
 
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
+
+    // WebRemoteFrame methods:
+    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&) override;
+    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
 
     void initializeFromFrame(WebLocalFrame*) const override;
 

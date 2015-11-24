@@ -367,12 +367,7 @@ void WebView::didExitModalLoop()
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    if (frame->isWebLocalFrame()) {
-        WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
-        localFrame->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
-    } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
-    }
+    frame->toImplBase()->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
 }
 
 void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCredentialManagerClient)
@@ -2810,7 +2805,7 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
 
 void WebViewImpl::focusDocumentView(WebFrame* frame)
 {
-    page()->focusController().focusDocumentView(toCoreFrame(frame));
+    page()->focusController().focusDocumentView(frame->toImplBase()->frame());
 }
 
 void WebViewImpl::setInitialFocus(bool reverse)

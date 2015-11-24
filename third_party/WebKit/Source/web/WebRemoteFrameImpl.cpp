@@ -6,7 +6,6 @@
 #include "web/WebRemoteFrameImpl.h"
 
 #include "core/frame/FrameView.h"
-#include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
@@ -28,7 +27,7 @@ WebRemoteFrame* WebRemoteFrame::create(WebTreeScopeType scope, WebRemoteFrameCli
     return WebRemoteFrameImpl::create(scope, client);
 }
 
-WebRemoteFrame* WebRemoteFrameImpl::create(WebTreeScopeType scope, WebRemoteFrameClient* client)
+WebRemoteFrameImpl* WebRemoteFrameImpl::create(WebTreeScopeType scope, WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(scope, client);
 #if ENABLE(OILPAN)
@@ -50,6 +49,7 @@ DEFINE_TRACE(WebRemoteFrameImpl)
     visitor->trace(m_ownersForChildren);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
+    WebFrameImplBase::trace(visitor);
 }
 #endif
 
@@ -717,11 +717,11 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, cons
 }
 
 
-void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
+void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
     setCoreFrame(RemoteFrame::create(m_frameClient.get(), host, owner));
     frame()->createView();
-    m_frame->tree().setName(name, nullAtom);
+    m_frame->tree().setName(name, fallbackName);
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
@@ -730,7 +730,7 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, co
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(nullptr, static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties()));
     appendChild(child);
-    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name);
+    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
     return child;
 }
 

@@ -6984,7 +6984,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
-    RefPtrWillBePersistent<Frame> childCoreFrame = toCoreFrame(childFrame);
+    RefPtrWillBePersistent<Frame> childCoreFrame = childFrame->toImplBase()->frame();
     view->close();
     childCoreFrame.clear();
 }
@@ -7526,7 +7526,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
     // the frame's window without navigating it.
     RefPtrWillBeRawPtr<DOMWindow> result = mainWindow->open("", "frame1", "", mainWindow, mainWindow);
     EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
-    EXPECT_EQ(result, toCoreFrame(remoteFrame)->domWindow());
+    EXPECT_EQ(result, remoteFrame->toImplBase()->frame()->domWindow());
 
     reset();
 }
@@ -7557,15 +7557,15 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose)
     // Create a remote window that will be closed later in the test.
     RemoteWindowCloseClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient frameClient;
-    WebRemoteFrame* webRemoteFrame = frameClient.frame();
+    WebRemoteFrameImpl* webRemoteFrame = frameClient.frame();
 
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(webRemoteFrame);
     view->mainFrame()->setOpener(mainWebView.webView()->mainFrame());
     webRemoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
 
-    LocalFrame* localFrame = toLocalFrame(toCoreFrame(mainWebView.webView()->mainFrame()));
-    RemoteFrame* remoteFrame = toRemoteFrame(toCoreFrame(frameClient.frame()));
+    LocalFrame* localFrame = toLocalFrame(mainWebView.webView()->mainFrame()->toImplBase()->frame());
+    RemoteFrame* remoteFrame = webRemoteFrame->frame();
 
     // Attempt to close the window, which should fail as it isn't opened
     // by a script.
@@ -7655,7 +7655,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
-    toRemoteFrame(toCoreFrame(view->mainFrame()))->securityContext()->setReplicatedOrigin(SecurityOrigin::create(toKURL(m_baseURL)));
+    remoteClient.frame()->setReplicatedOrigin(WebSecurityOrigin::createFromString(WebString::fromUTF8(m_baseURL)));
 
     // If an iframe has a remote main frame, ensure the inital commit is correctly identified as WebInitialCommitInChildFrame.
     CommitTypeWebFrameClient childFrameClient;

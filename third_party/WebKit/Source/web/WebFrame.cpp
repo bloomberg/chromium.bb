@@ -26,23 +26,12 @@
 
 namespace blink {
 
-Frame* toCoreFrame(const WebFrame* frame)
-{
-    if (!frame)
-        return 0;
-
-    return frame->isWebLocalFrame()
-        ? static_cast<Frame*>(toWebLocalFrameImpl(frame)->frame())
-        : toWebRemoteFrameImpl(frame)->frame();
-}
-
 bool WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
-    RefPtrWillBeRawPtr<Frame> oldFrame = toCoreFrame(this);
+    RefPtrWillBeRawPtr<Frame> oldFrame = toImplBase()->frame();
 #if !ENABLE(OILPAN)
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> protectWebLocalFrame = isWebLocalFrame() ? toWebLocalFrameImpl(this) : nullptr;
-    RefPtrWillBeRawPtr<WebRemoteFrameImpl> protectWebRemoteFrame = isWebRemoteFrame() ? toWebRemoteFrameImpl(this) : nullptr;
+    RefPtr<WebFrameImplBase> protectThis = toImplBase();
 #endif
 
     // Unload the current Document in this frame: this calls unload handlers,
@@ -113,10 +102,10 @@ bool WebFrame::swap(WebFrame* frame)
             localFrame.page()->setMainFrame(&localFrame);
         }
     } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name);
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name, nullAtom);
     }
 
-    toCoreFrame(frame)->windowProxyManager()->setGlobals(globals);
+    frame->toImplBase()->frame()->windowProxyManager()->setGlobals(globals);
 
     m_parent = nullptr;
 
@@ -125,12 +114,12 @@ bool WebFrame::swap(WebFrame* frame)
 
 void WebFrame::detach()
 {
-    toCoreFrame(this)->detach(FrameDetachType::Remove);
+    toImplBase()->frame()->detach(FrameDetachType::Remove);
 }
 
 WebSecurityOrigin WebFrame::securityOrigin() const
 {
-    return WebSecurityOrigin(toCoreFrame(this)->securityContext()->securityOrigin());
+    return WebSecurityOrigin(toImplBase()->frame()->securityContext()->securityOrigin());
 }
 
 
@@ -138,7 +127,7 @@ void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
 {
     // At the moment, this is only used to replicate sandbox flags
     // for frames with a remote owner.
-    FrameOwner* owner = toCoreFrame(this)->owner();
+    FrameOwner* owner = toImplBase()->frame()->owner();
     ASSERT(owner);
     toRemoteBridgeFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
@@ -180,8 +169,8 @@ void WebFrame::insertAfter(WebFrame* newChild, WebFrame* previousSibling)
         m_lastChild = newChild;
     }
 
-    toCoreFrame(this)->tree().invalidateScopedChildCount();
-    toCoreFrame(this)->host()->incrementSubframeCount();
+    toImplBase()->frame()->tree().invalidateScopedChildCount();
+    toImplBase()->frame()->host()->incrementSubframeCount();
 }
 
 void WebFrame::appendChild(WebFrame* child)
@@ -207,8 +196,8 @@ void WebFrame::removeChild(WebFrame* child)
 
     child->m_previousSibling = child->m_nextSibling = 0;
 
-    toCoreFrame(this)->tree().invalidateScopedChildCount();
-    toCoreFrame(this)->host()->decrementSubframeCount();
+    toImplBase()->frame()->tree().invalidateScopedChildCount();
+    toImplBase()->frame()->host()->decrementSubframeCount();
 }
 
 void WebFrame::setParent(WebFrame* parent)
@@ -251,21 +240,21 @@ WebFrame* WebFrame::nextSibling() const
 
 WebFrame* WebFrame::traversePrevious(bool wrap) const
 {
-    if (Frame* frame = toCoreFrame(this))
+    if (Frame* frame = toImplBase()->frame())
         return fromFrame(frame->tree().traversePreviousWithWrap(wrap));
     return 0;
 }
 
 WebFrame* WebFrame::traverseNext(bool wrap) const
 {
-    if (Frame* frame = toCoreFrame(this))
+    if (Frame* frame = toImplBase()->frame())
         return fromFrame(frame->tree().traverseNextWithWrap(wrap));
     return 0;
 }
 
 WebFrame* WebFrame::findChildByName(const WebString& name) const
 {
-    Frame* frame = toCoreFrame(this);
+    Frame* frame = toImplBase()->frame();
     if (!frame)
         return 0;
     // FIXME: It's not clear this should ever be called to find a remote frame.
@@ -284,7 +273,7 @@ WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
 
 bool WebFrame::isLoading() const
 {
-    if (Frame* frame = toCoreFrame(this))
+    if (Frame* frame = toImplBase()->frame())
         return frame->isLoading();
     return false;
 }

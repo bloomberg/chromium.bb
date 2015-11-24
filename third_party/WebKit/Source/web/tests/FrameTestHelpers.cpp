@@ -40,11 +40,11 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -333,7 +333,7 @@ void TestWebFrameClient::waitForLoadToComplete()
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : m_frame(WebRemoteFrame::create(WebTreeScopeType::Document, this))
+    : m_frame(WebRemoteFrameImpl::create(WebTreeScopeType::Document, this))
 {
 }
 

@@ -47,6 +47,8 @@
 
 namespace blink {
 
+class WebRemoteFrameImpl;
+
 namespace FrameTestHelpers {
 
 class TestWebFrameClient;
@@ -150,7 +152,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 public:
     TestWebRemoteFrameClient();
 
-    WebRemoteFrame* frame() const { return m_frame; }
+    WebRemoteFrameImpl* frame() const { return m_frame; }
 
     // WebRemoteFrameClient overrides:
     void frameDetached(DetachType) override;
@@ -161,7 +163,7 @@ public:
         WebDOMMessageEvent) override { }
 
 private:
-    WebRemoteFrame* const m_frame;
+    WebRemoteFrameImpl* const m_frame;
 };
 
 class TestWebViewClient : public WebViewClient {

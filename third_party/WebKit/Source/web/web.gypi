@@ -145,6 +145,8 @@
       'WebFontImpl.h',
       'WebFormControlElement.cpp',
       'WebFormElement.cpp',
+      'WebFrameImplBase.cpp',
+      'WebFrameImplBase.h',
       'WebFrame.cpp',
       'WebFrameWidgetImpl.cpp',
       'WebFrameWidgetImpl.h',
