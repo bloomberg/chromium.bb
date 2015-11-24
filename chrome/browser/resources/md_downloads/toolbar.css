@@ -26,7 +26,7 @@
   width: var(--downloads-item-width);
 }
 
-:host-context(.loading) #actions {
+:host-context([loading]) #actions {
   visibility: hidden;
 }
 

@@ -6,6 +6,10 @@
   --downloads-item-width: 622px;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 paper-button {
   font-weight: 500;
   margin: 0;

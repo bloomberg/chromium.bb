@@ -17,6 +17,10 @@ cr.define('downloads', function() {
       },
     },
 
+    hostAttributes: {
+      loading: true,
+    },
+
     /**
      * @param {Event} e
      * @private
@@ -99,7 +103,7 @@ cr.define('downloads', function() {
       if (loadTimeData.getBoolean('allowDeletingHistory'))
         this.$.toolbar.downloadsShowing = this.hasDownloads_;
 
-      this.$.panel.classList.remove('loading');
+      this.removeAttribute('loading');
     },
 
     /**
