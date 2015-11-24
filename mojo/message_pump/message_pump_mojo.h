@@ -6,6 +6,7 @@
 #define MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
 
 #include <map>
+#include <set>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -117,6 +118,10 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   base::Lock run_state_lock_;
 
   HandleToHandler handlers_;
+  // Set of handles that have a deadline set. Avoids iterating over all elements
+  // in |handles_| in the common case (no deadline set).
+  // TODO(amistry): Make this better and avoid special-casing deadlines.
+  std::set<Handle> deadline_handles_;
 
   // An ever increasing value assigned to each Handler::id. Used to detect
   // uniqueness while notifying. That is, while notifying expired timers we copy

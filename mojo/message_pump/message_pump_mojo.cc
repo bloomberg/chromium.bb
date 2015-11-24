@@ -90,10 +90,15 @@ void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
   handler_data.deadline = deadline;
   handler_data.id = next_handler_id_++;
   handlers_[handle] = handler_data;
+  if (!deadline.is_null()) {
+    bool inserted = deadline_handles_.insert(handle).second;
+    DCHECK(inserted);
+  }
 }
 
 void MessagePumpMojo::RemoveHandler(const Handle& handle) {
   handlers_.erase(handle);
+  deadline_handles_.erase(handle);
 }
 
 void MessagePumpMojo::AddObserver(Observer* observer) {
@@ -209,21 +214,31 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
     }
   }
 
-  // Notify and remove any handlers whose time has expired. Make a copy in case
-  // someone tries to add/remove new handlers from notification.
-  const HandleToHandler cloned_handlers(handlers_);
+  // Notify and remove any handlers whose time has expired. First, iterate over
+  // the set of handles that have a deadline, and add the expired handles to a
+  // map of <Handle, id>. Then, iterate over those expired handles and remove
+  // them. The two-step process is because a handler can add/remove new
+  // handlers.
+  std::map<Handle, int> expired_handles;
   const base::TimeTicks now(internal::NowTicks());
-  for (HandleToHandler::const_iterator i = cloned_handlers.begin();
-       i != cloned_handlers.end(); ++i) {
-    // Since we're iterating over a clone of the handlers, verify the handler is
-    // still valid before notifying.
-    if (!i->second.deadline.is_null() && i->second.deadline < now &&
-        handlers_.find(i->first) != handlers_.end() &&
-        handlers_[i->first].id == i->second.id) {
+  for (const Handle handle : deadline_handles_) {
+    const auto it = handlers_.find(handle);
+    // Expect any handle in |deadline_handles_| to also be in |handlers_| since
+    // the two are modified in lock-step.
+    DCHECK(it != handlers_.end());
+    if (!it->second.deadline.is_null() && it->second.deadline < now)
+      expired_handles[handle] = it->second.id;
+  }
+  for (auto& pair : expired_handles) {
+    auto it = handlers_.find(pair.first);
+    // Don't need to check deadline again since it can't change if id hasn't
+    // changed.
+    if (it != handlers_.end() && it->second.id == pair.second) {
+      MessagePumpMojoHandler* handler = handlers_[pair.first].handler;
+      RemoveHandler(pair.first);
       WillSignalHandler();
-      i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
+      handler->OnHandleError(pair.first, MOJO_RESULT_DEADLINE_EXCEEDED);
       DidSignalHandler();
-      handlers_.erase(i->first);
       did_work = true;
     }
   }
@@ -240,12 +255,12 @@ void MessagePumpMojo::RemoveInvalidHandle(const WaitState& wait_state,
 
   // Remove the handle first, this way if OnHandleError() tries to remove the
   // handle our iterator isn't invalidated.
-  CHECK(handlers_.find(wait_state.handles[index]) != handlers_.end());
-  MessagePumpMojoHandler* handler =
-      handlers_[wait_state.handles[index]].handler;
-  handlers_.erase(wait_state.handles[index]);
+  Handle handle = wait_state.handles[index];
+  CHECK(handlers_.find(handle) != handlers_.end());
+  MessagePumpMojoHandler* handler = handlers_[handle].handler;
+  RemoveHandler(handle);
   WillSignalHandler();
-  handler->OnHandleError(wait_state.handles[index], result);
+  handler->OnHandleError(handle, result);
   DidSignalHandler();
 }
 
@@ -282,10 +297,11 @@ MojoDeadline MessagePumpMojo::GetDeadlineForWait(
   const base::TimeTicks now(internal::NowTicks());
   MojoDeadline deadline = TimeTicksToMojoDeadline(run_state.delayed_work_time,
                                                   now);
-  for (HandleToHandler::const_iterator i = handlers_.begin();
-       i != handlers_.end(); ++i) {
+  for (const Handle handle : deadline_handles_) {
+    auto it = handlers_.find(handle);
+    DCHECK(it != handlers_.end());
     deadline = std::min(
-        TimeTicksToMojoDeadline(i->second.deadline, now), deadline);
+        TimeTicksToMojoDeadline(it->second.deadline, now), deadline);
   }
   return deadline;
 }
