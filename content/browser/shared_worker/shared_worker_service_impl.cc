@@ -447,9 +447,8 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
   }
 
   std::vector<int> remove_pending_instance_list;
-  for (PendingInstaneMap::iterator iter = pending_instances_.begin();
-       iter != pending_instances_.end();
-       ++iter) {
+  for (PendingInstanceMap::iterator iter = pending_instances_.begin();
+       iter != pending_instances_.end(); ++iter) {
     iter->second->RemoveRequest(filter->render_process_id());
     if (!iter->second->requests()->size())
       remove_pending_instance_list.push_back(iter->first);
@@ -616,9 +615,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
 SharedWorkerServiceImpl::SharedWorkerPendingInstance*
 SharedWorkerServiceImpl::FindPendingInstance(
     const SharedWorkerInstance& instance) {
-  for (PendingInstaneMap::iterator iter = pending_instances_.begin();
-       iter != pending_instances_.end();
-       ++iter) {
+  for (PendingInstanceMap::iterator iter = pending_instances_.begin();
+       iter != pending_instances_.end(); ++iter) {
     if (iter->second->instance()->Matches(instance))
       return iter->second;
   }

@@ -110,7 +110,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   typedef base::ScopedPtrHashMap<ProcessRouteIdPair,
                                  scoped_ptr<SharedWorkerHost>> WorkerHostMap;
   typedef base::ScopedPtrHashMap<int, scoped_ptr<SharedWorkerPendingInstance>>
-      PendingInstaneMap;
+      PendingInstanceMap;
 
   SharedWorkerServiceImpl();
   ~SharedWorkerServiceImpl() override;
@@ -163,7 +163,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   static bool (*s_try_increment_worker_ref_count_)(int);
 
   WorkerHostMap worker_hosts_;
-  PendingInstaneMap pending_instances_;
+  PendingInstanceMap pending_instances_;
   int next_pending_instance_id_;
 
   base::ObserverList<WorkerServiceObserver> observers_;
