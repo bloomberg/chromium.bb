@@ -50,6 +50,14 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
 HoverHighlightView::~HoverHighlightView() {
 }
 
+bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
+                                        base::string16* tooltip) const {
+  if (tooltip_.empty())
+    return false;
+  *tooltip = tooltip_;
+  return true;
+}
+
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text,
                                          bool highlight) {
