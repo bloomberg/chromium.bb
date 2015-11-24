@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
-#include <vector>
-
-#include "base/memory/scoped_vector.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
+#include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -34,50 +31,29 @@ class ManagePasswordsUIController
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ManagePasswordsUIController>,
       public password_manager::PasswordStore::Observer,
-      public PasswordsModelDelegate {
+      public PasswordsModelDelegate,
+      public PasswordsClientUIDelegate {
  public:
   ~ManagePasswordsUIController() override;
 
-  // Called when the user submits a form containing login information, so we
-  // can handle later requests to save or blacklist that login information.
-  // This stores the provided object and triggers the UI to prompt the user
-  // about whether they would like to save the password.
+  // PasswordsClientUIDelegate:
   void OnPasswordSubmitted(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager);
-
-  // Called when the user submits a change password form, so we can handle
-  // later requests to update stored credentials in the PasswordManager.
-  // This stores the provided object and triggers the UI to prompt the user
-  // about whether they would like to update the password.
+      scoped_ptr<password_manager::PasswordFormManager> form_manager) override;
   void OnUpdatePasswordSubmitted(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager);
-
-  // Called when the site asks user to choose from credentials. This triggers
-  // the UI to prompt the user. |local_credentials| and |federated_credentials|
-  // shouldn't both be empty.
+      scoped_ptr<password_manager::PasswordFormManager> form_manager) override;
   bool OnChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_credentials,
       ScopedVector<autofill::PasswordForm> federated_credentials,
       const GURL& origin,
-      base::Callback<void(const password_manager::CredentialInfo&)> callback);
-
-  // Called when user is auto signed in to the site. |local_forms[0]| contains
-  // the credential returned to the site.
-  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms);
-
-  // Called when the password will be saved automatically, but we still wish to
-  // visually inform the user that the save has occured.
+      base::Callback<void(const password_manager::CredentialInfo&)> callback)
+      override;
+  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms) override;
   void OnAutomaticPasswordSave(
-      scoped_ptr<password_manager::PasswordFormManager> form_manager);
-
-  // Called when a form is autofilled with login information, so we can manage
-  // password credentials for the current site which are stored in
-  // |password_form_map|. This stores a copy of |password_form_map| and shows
-  // the manage password icon.
+      scoped_ptr<password_manager::PasswordFormManager> form_manager) override;
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
-                            const GURL& origin);
+                            const GURL& origin) override;
 
-  // PasswordStore::Observer implementation.
+  // PasswordStore::Observer:
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 

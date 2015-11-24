@@ -19,7 +19,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -218,8 +218,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   }
 
   if (IsTheHotNewBubbleUIEnabled()) {
-    ManagePasswordsUIController* manage_passwords_ui_controller =
-        ManagePasswordsUIController::FromWebContents(web_contents());
+    PasswordsClientUIDelegate* manage_passwords_ui_controller =
+        PasswordsClientUIDelegateFromWebContents(web_contents());
     if (update_password && IsUpdatePasswordUIEnabled()) {
       manage_passwords_ui_controller->OnUpdatePasswordSubmitted(
           form_to_save.Pass());
@@ -248,9 +248,9 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_forms,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
-  return ManagePasswordsUIController::FromWebContents(web_contents())->
-      OnChooseCredentials(local_forms.Pass(), federated_forms.Pass(), origin,
-                          callback);
+  return PasswordsClientUIDelegateFromWebContents(web_contents())
+      ->OnChooseCredentials(local_forms.Pass(), federated_forms.Pass(), origin,
+                            callback);
 }
 
 void ChromePasswordManagerClient::ForceSavePassword() {
@@ -265,8 +265,8 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
 #if defined(OS_ANDROID)
   ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
-  ManagePasswordsUIController::FromWebContents(web_contents())->
-      OnAutoSignin(local_forms.Pass());
+  PasswordsClientUIDelegateFromWebContents(web_contents())
+      ->OnAutoSignin(local_forms.Pass());
 
 #endif
 }
@@ -277,8 +277,8 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
   GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
 #else
   if (IsTheHotNewBubbleUIEnabled()) {
-    ManagePasswordsUIController* manage_passwords_ui_controller =
-        ManagePasswordsUIController::FromWebContents(web_contents());
+    PasswordsClientUIDelegate* manage_passwords_ui_controller =
+        PasswordsClientUIDelegateFromWebContents(web_contents());
     manage_passwords_ui_controller->OnAutomaticPasswordSave(
         saved_form.Pass());
   }
@@ -288,8 +288,8 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin) const {
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
+  PasswordsClientUIDelegate* manage_passwords_ui_controller =
+      PasswordsClientUIDelegateFromWebContents(web_contents());
   if (manage_passwords_ui_controller && IsTheHotNewBubbleUIEnabled())
     manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin);
 }

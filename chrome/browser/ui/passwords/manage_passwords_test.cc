@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -19,7 +19,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 ManagePasswordsTest::ManagePasswordsTest() {
 }
@@ -101,7 +100,7 @@ scoped_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(
   return histogram_tester_.GetHistogramSamplesSinceCreation(histogram).Pass();
 }
 
-ManagePasswordsUIController* ManagePasswordsTest::GetController() {
-  return ManagePasswordsUIController::FromWebContents(
+PasswordsClientUIDelegate* ManagePasswordsTest::GetController() {
+  return PasswordsClientUIDelegateFromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 }

@@ -13,11 +13,10 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-class ManagePasswordsUIController;
-class ManagePasswordsIconView;
 class GURL;
+class ManagePasswordsIconView;
+class PasswordsClientUIDelegate;
 
 // Test class for the various password management view bits and pieces. Sets
 // up a ManagePasswordsUIControllerMock, and provides some helper methods
@@ -61,7 +60,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   autofill::PasswordForm* test_form() { return &test_form_; }
 
   // Get the UI controller for the current WebContents.
-  ManagePasswordsUIController* GetController();
+  PasswordsClientUIDelegate* GetController();
 
   MOCK_METHOD1(OnChooseCredential,
                void(const password_manager::CredentialInfo&));
