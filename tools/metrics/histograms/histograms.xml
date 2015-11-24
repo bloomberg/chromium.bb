@@ -20129,6 +20129,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MemoryPurgeController.ReclaimedPartitionAllocInactiveTab"
+    units="KB">
+  <owner>bashi@chromium.org</owner>
+  <summary>The amount of reclaimed memory after a tab became inactive.</summary>
+</histogram>
+
 <histogram name="MemoryWarning.EvictedTabTimeSinceActive" units="ms">
   <owner>lliabraa@chromium.org</owner>
   <summary>

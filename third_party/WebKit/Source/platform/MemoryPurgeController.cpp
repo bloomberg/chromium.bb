@@ -45,7 +45,17 @@ void MemoryPurgeController::pageBecameInactive()
 
 void MemoryPurgeController::pageInactiveTask(Timer<MemoryPurgeController>*)
 {
+    static const size_t maxSizeInKB = 10 * 1024;
+
+    size_t totalSizeBefore = WTF::Partitions::totalSizeOfCommittedPages();
     purgeMemory(MemoryPurgeMode::InactiveTab);
+    size_t totalSizeAfter = WTF::Partitions::totalSizeOfCommittedPages();
+    if (totalSizeAfter >= totalSizeBefore)
+        return;
+    size_t reclaimedInKB = (totalSizeBefore - totalSizeAfter) / 1024 + 1;
+    if (reclaimedInKB >= maxSizeInKB)
+        reclaimedInKB = maxSizeInKB - 1;
+    Platform::current()->histogramCustomCounts("MemoryPurgeController.ReclaimedPartitionAllocInactiveTab", reclaimedInKB, 1, maxSizeInKB, 50);
 }
 
 void MemoryPurgeController::purgeMemory(MemoryPurgeMode purgeMode)
