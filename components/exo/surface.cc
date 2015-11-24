@@ -41,8 +41,9 @@ bool ListContainsEntry(T& list, U key) {
 // Surface, public:
 
 Surface::Surface()
-    : needs_commit_surface_hierarchy_(false),
-      has_contents_(false),
+    : has_pending_contents_(false),
+      needs_commit_surface_hierarchy_(false),
+      update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
       delegate_(nullptr) {
   SetLayer(new ui::Layer(ui::LAYER_SOLID_COLOR));
@@ -71,6 +72,7 @@ Surface::~Surface() {
 void Surface::Attach(Buffer* buffer) {
   TRACE_EVENT1("exo", "Surface::Attach", "buffer", buffer->AsTracedValue());
 
+  has_pending_contents_ = true;
   pending_buffer_ = buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>();
   PreferredSizeChanged();
 }
@@ -197,34 +199,41 @@ void Surface::CommitSurfaceHierarchy() {
   DCHECK(needs_commit_surface_hierarchy_);
   needs_commit_surface_hierarchy_ = false;
 
-  cc::TextureMailbox texture_mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
-  if (pending_buffer_) {
-    texture_mailbox_release_callback =
-        pending_buffer_->AcquireTextureMailbox(&texture_mailbox);
+  // We update contents if Attach() has been called since last commit.
+  if (has_pending_contents_) {
+    has_pending_contents_ = false;
+
+    current_buffer_ = pending_buffer_;
     pending_buffer_.reset();
-    has_contents_ = true;
-  } else {
-    // Show solid color content if there is no pending buffer.
-    layer()->SetShowSolidColorContent();
-    has_contents_ = false;
-  }
 
-  if (texture_mailbox_release_callback) {
-    // Update layer with the new contents.
-    layer()->SetTextureMailbox(texture_mailbox,
-                               texture_mailbox_release_callback.Pass(),
-                               texture_mailbox.size_in_pixels());
-    layer()->SetTextureFlipped(false);
-    layer()->SetBounds(gfx::Rect(layer()->bounds().origin(),
-                                 texture_mailbox.size_in_pixels()));
-    layer()->SetFillsBoundsOpaquely(pending_opaque_region_.contains(
-        gfx::RectToSkIRect(gfx::Rect(texture_mailbox.size_in_pixels()))));
-  }
+    cc::TextureMailbox texture_mailbox;
+    scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
+    if (current_buffer_) {
+      texture_mailbox_release_callback =
+          current_buffer_->ProduceTextureMailbox(&texture_mailbox);
+    }
 
-  // Schedule redraw of the damage region.
-  layer()->SchedulePaint(pending_damage_);
-  pending_damage_ = gfx::Rect();
+    if (texture_mailbox_release_callback) {
+      // Update layer with the new contents.
+      layer()->SetTextureMailbox(texture_mailbox,
+                                 texture_mailbox_release_callback.Pass(),
+                                 texture_mailbox.size_in_pixels());
+      layer()->SetTextureFlipped(false);
+      layer()->SetBounds(gfx::Rect(layer()->bounds().origin(),
+                                   texture_mailbox.size_in_pixels()));
+      layer()->SetFillsBoundsOpaquely(pending_opaque_region_.contains(
+          gfx::RectToSkIRect(gfx::Rect(texture_mailbox.size_in_pixels()))));
+    } else {
+      // Show solid color content if no buffer is attached or we failed
+      // to produce a texture mailbox for the currently attached buffer.
+      layer()->SetShowSolidColorContent();
+      layer()->SetColor(SK_ColorBLACK);
+    }
+
+    // Schedule redraw of the damage region.
+    layer()->SchedulePaint(pending_damage_);
+    pending_damage_ = gfx::Rect();
+  }
 
   ui::Compositor* compositor = layer()->GetCompositor();
   if (compositor && !pending_frame_callbacks_.empty()) {
@@ -320,6 +329,37 @@ void Surface::OnCompositingStarted(ui::Compositor* compositor,
     active_frame_callbacks_.front().Run(start_time);
     active_frame_callbacks_.pop_front();
   }
+}
+
+void Surface::OnCompositingEnded(ui::Compositor* compositor) {
+  // Nothing to do in here unless this has been set.
+  if (!update_contents_after_successful_compositing_)
+    return;
+
+  update_contents_after_successful_compositing_ = false;
+
+  // Early out if no contents is currently assigned to the surface.
+  if (!current_buffer_)
+    return;
+
+  // Update contents by producing a new texture mailbox for the current buffer.
+  cc::TextureMailbox texture_mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
+      current_buffer_->ProduceTextureMailbox(&texture_mailbox);
+  if (texture_mailbox_release_callback) {
+    layer()->SetTextureMailbox(texture_mailbox,
+                               texture_mailbox_release_callback.Pass(),
+                               texture_mailbox.size_in_pixels());
+    layer()->SetTextureFlipped(false);
+    layer()->SchedulePaint(gfx::Rect(texture_mailbox.size_in_pixels()));
+  }
+}
+
+void Surface::OnCompositingAborted(ui::Compositor* compositor) {
+  // The contents of this surface might be lost if compositing aborted because
+  // of a lost graphics context. We recover from this by updating the contents
+  // of the surface next time the compositor successfully ends compositing.
+  update_contents_after_successful_compositing_ = true;
 }
 
 void Surface::OnCompositingShuttingDown(ui::Compositor* compositor) {

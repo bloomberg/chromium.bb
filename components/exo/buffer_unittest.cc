@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2extchromium.h>
+
 #include "base/bind.h"
+#include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/aura/env.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
@@ -32,20 +38,51 @@ TEST_F(BufferTest, ReleaseCallback) {
   buffer->set_release_callback(
       base::Bind(&Release, base::Unretained(&release_call_count)));
 
-  // Acquire a texture mailbox for the contents of the buffer.
+  // Produce a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
-      buffer->AcquireTextureMailbox(&texture_mailbox);
+      buffer->ProduceTextureMailbox(&texture_mailbox);
   ASSERT_TRUE(buffer_release_callback);
-
-  // Trying to acquire an already in-use buffer should fail.
-  EXPECT_FALSE(buffer->AcquireTextureMailbox(&texture_mailbox));
 
   // Release buffer.
   buffer_release_callback->Run(gpu::SyncToken(), false);
 
   // Release() should have been called exactly once.
   ASSERT_EQ(release_call_count, 1);
+}
+
+TEST_F(BufferTest, IsLost) {
+  gfx::Size buffer_size(256, 256);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
+                 GL_TEXTURE_2D));
+
+  // Acquire a texture mailbox for the contents of the buffer.
+  cc::TextureMailbox texture_mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
+      buffer->ProduceTextureMailbox(&texture_mailbox);
+  ASSERT_TRUE(buffer_release_callback);
+
+  scoped_refptr<cc::ContextProvider> context_provider =
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->SharedMainThreadContextProvider();
+  if (context_provider) {
+    gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
+    gles2->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                               GL_INNOCENT_CONTEXT_RESET_ARB);
+  }
+
+  // Release buffer.
+  bool is_lost = true;
+  buffer_release_callback->Run(gpu::SyncToken(), is_lost);
+
+  // Producing a new texture mailbox for the contents of the buffer.
+  buffer_release_callback = buffer->ProduceTextureMailbox(&texture_mailbox);
+  ASSERT_TRUE(buffer_release_callback);
+
+  // Release buffer.
+  buffer_release_callback->Run(gpu::SyncToken(), false);
 }
 
 }  // namespace

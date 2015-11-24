@@ -32,23 +32,21 @@ TEST_F(SurfaceTest, Attach) {
   buffer->set_release_callback(
       base::Bind(&ReleaseBuffer, base::Unretained(&release_buffer_call_count)));
 
-  scoped_ptr<Surface> surface1(new Surface);
-  scoped_ptr<Surface> surface2(new Surface);
+  scoped_ptr<Surface> surface(new Surface);
 
   // Attach the buffer to surface1.
-  surface1->Attach(buffer.get());
-  surface1->Commit();
+  surface->Attach(buffer.get());
+  surface->Commit();
 
-  // Attaching buffer to surface2 when it is already attached to surface1
-  // should fail and buffer should remain attached to surface1.
-  surface2->Attach(buffer.get());
-  surface2->Commit();
+  // Commit without calling Attach() should have no effect.
+  surface->Commit();
+  EXPECT_EQ(0, release_buffer_call_count);
 
-  // Attach a null buffer to surface1, this should release the previously
+  // Attach a null buffer to surface, this should release the previously
   // attached buffer.
-  surface1->Attach(nullptr);
-  surface1->Commit();
-  ASSERT_EQ(release_buffer_call_count, 1);
+  surface->Attach(nullptr);
+  surface->Commit();
+  ASSERT_EQ(1, release_buffer_call_count);
 }
 
 TEST_F(SurfaceTest, Damage) {

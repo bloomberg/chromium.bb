@@ -98,8 +98,8 @@ class Surface : public views::View, public ui::CompositorObserver {
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
   void OnCompositingStarted(ui::Compositor* compositor,
                             base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingAborted(ui::Compositor* compositor) override;
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
@@ -108,7 +108,12 @@ class Surface : public views::View, public ui::CompositorObserver {
     return needs_commit_surface_hierarchy_;
   }
 
-  bool has_contents() const { return has_contents_; }
+  // This returns true when the surface has some contents assigned to it.
+  bool has_contents() const { return !!current_buffer_; }
+
+  // This is true when Attach() has been called and new contents should take
+  // effect next time Commit() is called.
+  bool has_pending_contents_;
 
   // The buffer that will become the content of surface when Commit() is called.
   base::WeakPtr<Buffer> pending_buffer_;
@@ -138,12 +143,16 @@ class Surface : public views::View, public ui::CompositorObserver {
   using SubSurfaceEntryList = std::list<SubSurfaceEntry>;
   SubSurfaceEntryList pending_sub_surfaces_;
 
+  // The buffer that is currently set as content of surface.
+  base::WeakPtr<Buffer> current_buffer_;
+
   // This is true if a call to Commit() as been made but
   // CommitSurfaceHierarchy() has not yet been called.
   bool needs_commit_surface_hierarchy_;
 
-  // This is true when surface has some contents assigned to it.
-  bool has_contents_;
+  // This is true when the contents of the surface should be updated next time
+  // the compositor successfully ends compositing.
+  bool update_contents_after_successful_compositing_;
 
   // The compsitor being observer or null if not observing a compositor.
   ui::Compositor* compositor_;
