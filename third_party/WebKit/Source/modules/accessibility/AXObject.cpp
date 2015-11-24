@@ -723,6 +723,7 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
     visited.add(this);
 
     // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
+    // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
     if (!recursive && layoutObject()
         && layoutObject()->style()->visibility() != VISIBLE
         && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
@@ -730,6 +731,7 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
     }
 
     // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
+    // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
     if (!inAriaLabelledByTraversal && !alreadyVisited) {
         const QualifiedName& attr = hasAttribute(aria_labeledbyAttr) && !hasAttribute(aria_labelledbyAttr) ? aria_labeledbyAttr : aria_labelledbyAttr;
         nameFrom = AXNameFromRelatedElement;
@@ -763,6 +765,7 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
     }
 
     // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
+    // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
     nameFrom = AXNameFromAttribute;
     if (nameSources) {
         nameSources->append(NameSource(*foundTextAlternative, aria_labelAttr));

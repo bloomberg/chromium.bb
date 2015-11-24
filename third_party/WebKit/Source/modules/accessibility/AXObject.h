@@ -704,6 +704,11 @@ public:
     // This is a simpler high-level interface to |name| used by Inspector.
     String computedName() const;
 
+    // Internal function used to determine whether the result of calling |name| on this object would
+    // return text that came from the an HTML label element or not. This is intended to be faster than calling
+    // |name| or |textAlternative|, and without side effects (it won't call axObjectCache->getOrCreate).
+    virtual bool nameFromLabelElement() const { return false; }
+
     //
     // Properties of static elements.
     //

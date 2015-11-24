@@ -595,22 +595,17 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     // find out if this element is inside of a label element.
     // if so, it may be ignored because it's the label for a checkbox or radio button
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && controlObject->isCheckboxOrRadio()) {
-        AXNameFrom controlNameFrom;
-        AXObject::AXObjectVector controlNameObjects;
-        controlObject->name(controlNameFrom, &controlNameObjects);
-        if (controlNameFrom == AXNameFromRelatedElement) {
-            if (ignoredReasons) {
-                HTMLLabelElement* label = labelElementContainer();
-                if (label && !label->isSameNode(node())) {
-                    AXObject* labelAXObject = axObjectCache().getOrCreate(label);
-                    ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
-                }
-
-                ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+    if (controlObject && controlObject->isCheckboxOrRadio() && controlObject->nameFromLabelElement()) {
+        if (ignoredReasons) {
+            HTMLLabelElement* label = labelElementContainer();
+            if (label && !label->isSameNode(node())) {
+                AXObject* labelAXObject = axObjectCache().getOrCreate(label);
+                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
             }
-            return true;
+
+            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
         }
+        return true;
     }
 
     if (m_layoutObject->isBR())
@@ -1501,13 +1496,8 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
         // If this element is the label of a control, a hit test should return the control.
         if (result->isAXLayoutObject()) {
             AXObject* controlObject = toAXLayoutObject(result)->correspondingControlForLabelElement();
-            if (controlObject) {
-                AXNameFrom controlNameFrom;
-                AXObject::AXObjectVector controlNameObjects;
-                controlObject->name(controlNameFrom, &controlNameObjects);
-                if (controlObject && controlNameFrom == AXNameFromRelatedElement)
-                    return controlObject;
-            }
+            if (controlObject && controlObject->nameFromLabelElement())
+                return controlObject;
         }
 
         result = result->parentObjectUnignored();

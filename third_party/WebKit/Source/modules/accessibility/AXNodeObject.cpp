@@ -173,22 +173,17 @@ bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
 
     // Ignore labels that are already referenced by a control.
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && controlObject->isCheckboxOrRadio()) {
-        AXNameFrom controlNameFrom;
-        AXObject::AXObjectVector controlNameObjects;
-        controlObject->name(controlNameFrom, &controlNameObjects);
-        if (controlNameFrom == AXNameFromRelatedElement) {
-            if (ignoredReasons) {
-                HTMLLabelElement* label = labelElementContainer();
-                if (label && !label->isSameNode(node())) {
-                    AXObject* labelAXObject = axObjectCache().getOrCreate(label);
-                    ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
-                }
-
-                ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+    if (controlObject && controlObject->isCheckboxOrRadio() && controlObject->nameFromLabelElement()) {
+        if (ignoredReasons) {
+            HTMLLabelElement* label = labelElementContainer();
+            if (label && !label->isSameNode(node())) {
+                AXObject* labelAXObject = axObjectCache().getOrCreate(label);
+                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
             }
-            return true;
+
+            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
         }
+        return true;
     }
 
     Element* element = node()->isElementNode() ? toElement(node()) : node()->parentElement();
@@ -1616,6 +1611,47 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
     return accumulatedText.toString();
 }
 
+bool AXNodeObject::nameFromLabelElement() const
+{
+    // This unfortunately duplicates a bit of logic from textAlternative and nativeTextAlternative,
+    // but it's necessary because nameFromLabelElement needs to be called from
+    // computeAccessibilityIsIgnored, which isn't allowed to call axObjectCache->getOrCreate.
+
+    if (!node() && !layoutObject())
+        return false;
+
+    // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
+    if (layoutObject()
+        && layoutObject()->style()->visibility() != VISIBLE
+        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+        return false;
+    }
+
+    // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    ariaLabelledbyElementVector(elements);
+    if (elements.size() > 0)
+        return false;
+
+    // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
+    const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
+    if (!ariaLabel.isEmpty())
+        return false;
+
+    // Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+    // 5.1/5.5 Text inputs, Other labelable Elements
+    HTMLElement* htmlElement = nullptr;
+    if (node()->isHTMLElement())
+        htmlElement = toHTMLElement(node());
+    if (htmlElement && htmlElement->isLabelable()) {
+        HTMLLabelElement* label = labelForElement(htmlElement);
+        if (label)
+            return true;
+    }
+
+    return false;
+}
+
 LayoutRect AXNodeObject::elementRect() const
 {
     // First check if it has a custom rect, for example if this element is tied to a canvas path.
@@ -2065,6 +2101,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         inputElement = toHTMLInputElement(node());
 
     // 5.1/5.5 Text inputs, Other labelable Elements
+    // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
     HTMLElement* htmlElement = nullptr;
     if (node()->isHTMLElement())
         htmlElement = toHTMLElement(node());

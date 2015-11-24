@@ -161,6 +161,7 @@ protected:
     String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
     String description(AXNameFrom, AXDescriptionFrom&, DescriptionSources*, AXRelatedObjectVector*) const override;
     String placeholder(AXNameFrom, AXDescriptionFrom) const override;
+    bool nameFromLabelElement() const override;
 
     // Location and click point in frame-relative coordinates.
     LayoutRect elementRect() const override;
