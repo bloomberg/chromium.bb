@@ -32,6 +32,7 @@ if env.Bit('nacl_clang') and env['TOOLCHAIN_FEATURE_VERSION'] < 11:
 if env.Bit('bitcode'):
   env.AddBiasForPNaCl()
   env.PNaClForceNative()
+  env.Append(CCFLAGS=['-fgnu-inline-asm'])
 
 # Newlib + PIC doesn't provide native ___tls_get_addr, so gold complains.
 if env.Bit('bitcode') and env.Bit('nacl_pic'):
