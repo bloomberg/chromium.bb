@@ -299,9 +299,8 @@ public class WebappModeTest extends MultiActivityTestBase {
         assertTrue(isNumberOfRunningActivitiesCorrect(1));
 
         // Load up the test page.
-        assertTrue(CriteriaHelper.pollForCriteria(
-                new TabLoadObserver(webappActivity.getActivityTab(), linkHtml),
-                DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL));
+        new TabLoadObserver(webappActivity.getActivityTab(), linkHtml).assertLoaded(
+                DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS);
 
         // Do a plain click to make the link open in the main browser via a window.open().
         // If the window is opened successfully, javascript on the first page triggers and changes

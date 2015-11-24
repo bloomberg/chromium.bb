@@ -409,9 +409,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         toggleTabSwitcher(false);
 
         // Load another URL.
-        final TabLoadObserver observer =
-                new TabLoadObserver(getActivity().getActivityTab(), PAGE_2_HTML);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
+        new TabLoadObserver(getActivity().getActivityTab(), PAGE_2_HTML).assertLoaded();
 
         // Bring the tab switcher forward and check the title.
         toggleTabSwitcher(true);

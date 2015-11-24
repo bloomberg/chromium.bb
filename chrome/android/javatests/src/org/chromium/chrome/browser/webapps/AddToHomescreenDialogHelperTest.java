@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -219,16 +218,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
     private void addShortcutToURL(String url, final String expectedPageTitle, final String title)
             throws InterruptedException {
         final Tab activeTab = mActivity.getActivityTab();
-        TabLoadObserver observer = new TabLoadObserver(activeTab, url) {
-            @Override
-            public boolean isSatisfied() {
-                // The page title is often updated over several iterations.  Wait until the right
-                // one appears.
-                return super.isSatisfied()
-                        && TextUtils.equals(activeTab.getTitle(), expectedPageTitle);
-            }
-        };
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
+        new TabLoadObserver(activeTab, url, expectedPageTitle, null).assertLoaded();
 
         // Add the shortcut.
         Callable<AddToHomescreenDialogHelper> callable =

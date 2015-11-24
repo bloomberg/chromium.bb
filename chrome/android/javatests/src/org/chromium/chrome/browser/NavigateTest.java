@@ -57,8 +57,8 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
 
     private void navigateAndObserve(final String startUrl, final String endUrl)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
-                new TabLoadObserver(getActivity().getActivityTab(), startUrl)));
+        new TabLoadObserver(getActivity().getActivityTab(), startUrl).assertLoaded();
+
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
