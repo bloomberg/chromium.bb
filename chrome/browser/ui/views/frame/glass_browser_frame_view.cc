@@ -416,7 +416,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                         kClientEdgeThickness, 0);
   if (md) {
     BrowserView::Paint1pxHorizontalLine(canvas, separator_color,
-                                        toolbar_bounds);
+                                        toolbar_bounds, true);
   } else {
     canvas->FillRect(toolbar_bounds, separator_color);
   }

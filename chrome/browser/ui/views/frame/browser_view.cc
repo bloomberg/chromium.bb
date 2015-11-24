@@ -223,7 +223,8 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
     BrowserView::Paint1pxHorizontalLine(
         canvas, separator_color,
         gfx::Rect(0, 0, view->width(),
-                  views::NonClientFrameView::kClientEdgeThickness));
+                  views::NonClientFrameView::kClientEdgeThickness),
+        true);
   } else {
     PaintHorizontalBorder(canvas, view, true, separator_color);
   }
@@ -231,7 +232,7 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   BrowserView::Paint1pxHorizontalLine(
       canvas,
       SkColorSetA(separator_color, SkColorGetA(separator_color) / 2),
-      view->GetLocalBounds());
+      view->GetLocalBounds(), true);
 }
 
 // Paints the background (including the theme image behind content area) for
@@ -294,7 +295,7 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
           canvas,
           ThemeProperties::GetDefaultColor(
               ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
-          view->GetLocalBounds());
+          view->GetLocalBounds(), true);
     } else {
       PaintHorizontalBorder(canvas,
                             view,
@@ -557,11 +558,13 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 // static
 void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
                                          SkColor color,
-                                         const gfx::Rect& bounds) {
+                                         const gfx::Rect& bounds,
+                                         bool at_bottom) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
-  rect.Inset(0, rect.height() - 1, 0, 0);
+  const int inset = rect.height() - 1;
+  rect.Inset(0, at_bottom ? inset : 0, 0, at_bottom ? 0 : inset);
   SkPaint paint;
   paint.setColor(color);
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
