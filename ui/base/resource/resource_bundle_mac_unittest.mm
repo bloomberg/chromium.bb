@@ -4,7 +4,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#import <Appkit/Appkit.h>
+#import <AppKit/AppKit.h>
 
 #include "base/base_paths.h"
 #include "base/big_endian.h"
