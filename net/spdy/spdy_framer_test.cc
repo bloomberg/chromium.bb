@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
+using base::StringPiece;
 using std::string;
 using testing::_;
 
@@ -611,8 +612,8 @@ class SpdyFramerPeer {
 };
 
 // Retrieves serialized headers from a HEADERS or SYN_STREAM frame.
-base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
-                                       const SpdyFramer& framer) {
+StringPiece GetSerializedHeaders(const SpdyFrame* frame,
+                                 const SpdyFramer& framer) {
   SpdyFrameReader reader(frame->data(), frame->size());
   if (framer.protocol_version() > SPDY3) {
     reader.Seek(3);  // Seek past the frame length.
@@ -931,7 +932,7 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
   SpdyHeaderBlock new_headers;
   framer.set_enable_compression(false);
   scoped_ptr<SpdyFrame> control_frame(frame.take());
-  base::StringPiece serialized_headers =
+  StringPiece serialized_headers =
       GetSerializedHeaders(control_frame.get(), framer);
   // This should fail because duplicate headers are verboten by the spec.
   EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
@@ -1276,7 +1277,7 @@ TEST_P(SpdyFramerTest, Basic) {
   if (IsHttp2()) {
     EXPECT_EQ(3, visitor.headers_frame_count_);
     EXPECT_EQ(0, visitor.syn_frame_count_);
-    base::StringPiece reset_stream = "RESETSTREAM";
+    StringPiece reset_stream = "RESETSTREAM";
     EXPECT_EQ(reset_stream, visitor.fin_opaque_data_);
   } else {
     EXPECT_EQ(1, visitor.headers_frame_count_);
@@ -1516,7 +1517,7 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   // Now start decompressing
   scoped_ptr<SpdyFrame> decompressed;
   scoped_ptr<SpdyFrame> uncompressed;
-  base::StringPiece serialized_headers;
+  StringPiece serialized_headers;
   SpdyHeaderBlock decompressed_headers;
 
   // Decompress SYN_STREAM #1

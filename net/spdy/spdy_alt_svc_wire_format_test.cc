@@ -9,6 +9,7 @@
 #include "testing/platform_test.h"
 
 using ::testing::_;
+using base::StringPiece;
 
 namespace net {
 

@@ -19,7 +19,8 @@ using ::testing::ElementsAre;
 
 namespace net {
 
-std::pair<StringPiece, StringPiece> Pair(StringPiece k, StringPiece v) {
+std::pair<base::StringPiece, base::StringPiece> Pair(base::StringPiece k,
+                                                     base::StringPiece v) {
   return make_pair(k, v);
 }
 

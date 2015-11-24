@@ -17,9 +17,9 @@ namespace net {
 class HashValue;
 class TransportSecurityState;
 
-inline bool operator==(StringPiece x,
+inline bool operator==(base::StringPiece x,
                        const SpdyHeaderBlock::StringPieceProxy& y) {
-  return x == y.operator StringPiece();
+  return x == y.operator base::StringPiece();
 }
 
 namespace test {

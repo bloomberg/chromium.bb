@@ -831,7 +831,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyGoAwayStatus status,
-                StringPiece debug_data) override;
+                base::StringPiece debug_data) override;
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override;
