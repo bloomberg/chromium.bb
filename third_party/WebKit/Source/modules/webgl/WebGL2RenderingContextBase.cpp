@@ -1012,6 +1012,9 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
     if (!tex)
         return;
 
+    if (!validateTexFuncLevel("compressedTexImage3D", target, level))
+        return;
+
     if (tex->isImmutable()) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage3D", "attempted to modify immutable texture");
         return;
