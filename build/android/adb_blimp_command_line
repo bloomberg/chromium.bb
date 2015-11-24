@@ -13,7 +13,5 @@
 # To remove all Blimp flags, pass an empty string for the flags:
 #   adb_blimp_command_line ""
 
-. $(dirname $0)/adb_command_line_functions.sh
-CMD_LINE_FILE=/data/local/blimp-command-line
-REQUIRES_SU=1
-set_command_line "$@"
+exec $(dirname $0)/adb_command_line.py --device-path \
+    /data/local/blimp-command-line "$@"
