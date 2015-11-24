@@ -1377,9 +1377,9 @@ bool Document::hidden() const
 
 void Document::didChangeVisibilityState()
 {
-    dispatchEvent(Event::create(EventTypeNames::visibilitychange));
+    dispatchEvent(Event::createBubble(EventTypeNames::visibilitychange));
     // Also send out the deprecated version until it can be removed.
-    dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
+    dispatchEvent(Event::createBubble(EventTypeNames::webkitvisibilitychange));
 
     PageVisibilityState state = pageVisibilityState();
     for (DocumentVisibilityObserver* observer : m_visibilityObservers)
