@@ -45,6 +45,10 @@
 #include "nouveau.h"
 #include "private.h"
 
+#include "nvif/class.h"
+#include "nvif/cl0080.h"
+#include "nvif/unpack.h"
+
 #ifdef DEBUG
 drm_private uint32_t nouveau_debug = 0;
 
@@ -231,75 +235,107 @@ nouveau_device_open_existing(struct nouveau_device **pdev, int close, int fd,
 }
 
 int
-nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
+nouveau_device_new(struct nouveau_object *parent, int32_t oclass,
+		   void *data, uint32_t size, struct nouveau_device **pdev)
 {
-	struct nouveau_drm *drm;
+	union {
+		struct nv_device_v0 v0;
+	} *args = data;
+	struct nouveau_drm *drm = nouveau_drm(parent);
 	struct nouveau_device_priv *nvdev;
 	struct nouveau_device *dev;
-	uint64_t chipset, vram, gart, bousage;
-	int ret;
+	uint64_t v;
 	char *tmp;
+	int ret = -ENOSYS;
+
+	if (oclass != NV_DEVICE ||
+	    nvif_unpack(ret, &data, &size, args->v0, 0, 0, false))
+		return ret;
 
 	if (!(nvdev = calloc(1, sizeof(*nvdev))))
 		return -ENOMEM;
-	dev = &nvdev->base;
+	dev = *pdev = &nvdev->base;
+	dev->fd = -1;
 
-	ret = pthread_mutex_init(&nvdev->lock, NULL);
-	if (ret) {
-		free(nvdev);
-		return ret;
-	}
+	if (args->v0.device == ~0ULL) {
+		nvdev->base.object.parent = &drm->client;
+		nvdev->base.object.handle = ~0ULL;
+		nvdev->base.object.oclass = NOUVEAU_DEVICE_CLASS;
+		nvdev->base.object.length = ~0;
 
-	ret = nouveau_drm_new(fd, &drm);
-	if (ret) {
-		nouveau_device_del(&dev);
-		return ret;
-	}
-	drm->nvif = false;
+		ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_CHIPSET_ID, &v);
+		if (ret)
+			goto done;
+		nvdev->base.chipset = v;
 
-	nvdev->base.object.parent = &drm->client;
-	nvdev->base.object.oclass = NOUVEAU_DEVICE_CLASS;
-	nvdev->base.object.length = ~0;
-	nvdev->base.fd = drm->fd;
-	nvdev->base.drm_version = drm->drm_version;
-	nvdev->base.lib_version = drm->lib_version;
+		ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_HAS_BO_USAGE, &v);
+		if (ret == 0)
+			nvdev->have_bo_usage = (v != 0);
+	} else
+		return -ENOSYS;
 
-	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_CHIPSET_ID, &chipset);
-	if (ret == 0)
-	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_FB_SIZE, &vram);
-	if (ret == 0)
-	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_AGP_SIZE, &gart);
-	if (ret) {
-		nouveau_device_del(&dev);
-		return ret;
-	}
+	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_FB_SIZE, &v);
+	if (ret)
+		goto done;
+	nvdev->base.vram_size = v;
 
-	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_HAS_BO_USAGE, &bousage);
-	if (ret == 0)
-		nvdev->have_bo_usage = (bousage != 0);
-
-	nvdev->close = close;
+	ret = nouveau_getparam(dev, NOUVEAU_GETPARAM_AGP_SIZE, &v);
+	if (ret)
+		goto done;
+	nvdev->base.gart_size = v;
 
 	tmp = getenv("NOUVEAU_LIBDRM_VRAM_LIMIT_PERCENT");
 	if (tmp)
 		nvdev->vram_limit_percent = atoi(tmp);
 	else
 		nvdev->vram_limit_percent = 80;
+
+	nvdev->base.vram_limit =
+		(nvdev->base.vram_size * nvdev->vram_limit_percent) / 100;
+
 	tmp = getenv("NOUVEAU_LIBDRM_GART_LIMIT_PERCENT");
 	if (tmp)
 		nvdev->gart_limit_percent = atoi(tmp);
 	else
 		nvdev->gart_limit_percent = 80;
-	DRMINITLISTHEAD(&nvdev->bo_list);
-	nvdev->base.chipset = chipset;
-	nvdev->base.vram_size = vram;
-	nvdev->base.gart_size = gart;
-	nvdev->base.vram_limit =
-		(nvdev->base.vram_size * nvdev->vram_limit_percent) / 100;
+
 	nvdev->base.gart_limit =
 		(nvdev->base.gart_size * nvdev->gart_limit_percent) / 100;
 
-	*pdev = &nvdev->base;
+	ret = pthread_mutex_init(&nvdev->lock, NULL);
+	DRMINITLISTHEAD(&nvdev->bo_list);
+done:
+	if (ret)
+		nouveau_device_del(pdev);
+	return ret;
+}
+
+int
+nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
+{
+	struct nouveau_drm *drm;
+	struct nouveau_device_priv *nvdev;
+	int ret;
+
+	ret = nouveau_drm_new(fd, &drm);
+	if (ret)
+		return ret;
+	drm->nvif = false;
+
+	ret = nouveau_device_new(&drm->client, NV_DEVICE,
+				 &(struct nv_device_v0) {
+					.device = ~0ULL,
+				 }, sizeof(struct nv_device_v0), pdev);
+	if (ret) {
+		nouveau_drm_del(&drm);
+		return ret;
+	}
+
+	nvdev = nouveau_device(*pdev);
+	nvdev->base.fd = drm->fd;
+	nvdev->base.drm_version = drm->drm_version;
+	nvdev->base.lib_version = drm->lib_version;
+	nvdev->close = close;
 	return 0;
 }
 
@@ -320,12 +356,15 @@ nouveau_device_del(struct nouveau_device **pdev)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(*pdev);
 	if (nvdev) {
-		struct nouveau_drm *drm = nouveau_drm(&nvdev->base.object);
 		free(nvdev->client);
-		nouveau_drm_del(&drm);
 		pthread_mutex_destroy(&nvdev->lock);
-		if (nvdev->close)
-			drmClose(nvdev->base.fd);
+		if (nvdev->base.fd >= 0) {
+			struct nouveau_drm *drm =
+				nouveau_drm(&nvdev->base.object);
+			nouveau_drm_del(&drm);
+			if (nvdev->close)
+				drmClose(nvdev->base.fd);
+		}
 		free(nvdev);
 		*pdev = NULL;
 	}

@@ -122,6 +122,8 @@ struct nouveau_device {
 	uint64_t gart_limit;
 };
 
+int  nouveau_device_new(struct nouveau_object *parent, int32_t oclass,
+			void *data, uint32_t size, struct nouveau_device **);
 int  nouveau_device_wrap(int fd, int close, struct nouveau_device **);
 int  nouveau_device_open(const char *busid, struct nouveau_device **);
 void nouveau_device_del(struct nouveau_device **);

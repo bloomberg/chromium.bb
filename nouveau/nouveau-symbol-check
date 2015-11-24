@@ -27,6 +27,7 @@ nouveau_bufctx_reset
 nouveau_client_del
 nouveau_client_new
 nouveau_device_del
+nouveau_device_new
 nouveau_device_open
 nouveau_device_open_existing
 nouveau_device_wrap
