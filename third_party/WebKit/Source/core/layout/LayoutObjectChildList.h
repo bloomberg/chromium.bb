@@ -45,11 +45,6 @@ public:
     LayoutObject* firstChild() const { return m_firstChild; }
     LayoutObject* lastChild() const { return m_lastChild; }
 
-    // FIXME: Temporary while LayoutBox still exists. Eventually this will just happen during insert/append/remove methods on the child list, and nobody
-    // will need to manipulate firstChild or lastChild directly.
-    void setFirstChild(LayoutObject* child) { m_firstChild = child; }
-    void setLastChild(LayoutObject* child) { m_lastChild = child; }
-
     void destroyLeftoverChildren();
 
     LayoutObject* removeChildNode(LayoutObject* owner, LayoutObject*, bool notifyLayoutObject = true);

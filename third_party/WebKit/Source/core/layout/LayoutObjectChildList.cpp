@@ -99,9 +99,9 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
         oldChild->nextSibling()->setPreviousSibling(oldChild->previousSibling());
 
     if (firstChild() == oldChild)
-        setFirstChild(oldChild->nextSibling());
+        m_firstChild = oldChild->nextSibling();
     if (lastChild() == oldChild)
-        setLastChild(oldChild->previousSibling());
+        m_lastChild = oldChild->previousSibling();
 
     oldChild->setPreviousSibling(nullptr);
     oldChild->setNextSibling(nullptr);
@@ -135,7 +135,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
     newChild->setParent(owner);
 
     if (firstChild() == beforeChild)
-        setFirstChild(newChild);
+        m_firstChild = newChild;
 
     if (beforeChild) {
         LayoutObject* previousSibling = beforeChild->previousSibling();
@@ -148,7 +148,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         if (lastChild())
             lastChild()->setNextSibling(newChild);
         newChild->setPreviousSibling(lastChild());
-        setLastChild(newChild);
+        m_lastChild = newChild;
     }
 
     if (!owner->documentBeingDestroyed() && notifyLayoutObject) {
