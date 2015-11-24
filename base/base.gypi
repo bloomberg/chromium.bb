@@ -34,6 +34,8 @@
           'android/command_line_android.h',
           'android/content_uri_utils.cc',
           'android/content_uri_utils.h',
+          'android/context_utils.cc',
+          'android/context_utils.h',
           'android/cpu_features.cc',
           'android/cxa_demangle_stub.cc',
           'android/event_log.cc',

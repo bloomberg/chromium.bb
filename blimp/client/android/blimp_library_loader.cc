@@ -60,10 +60,7 @@ bool RegisterJni(JNIEnv* env) {
 namespace blimp {
 
 static jboolean InitializeBlimp(JNIEnv* env,
-                                const JavaParamRef<jclass>& clazz,
-                                const JavaParamRef<jobject>& jcontext) {
-  base::android::InitApplicationContext(env, jcontext);
-
+                                const JavaParamRef<jclass>& clazz) {
   // TODO(dtrainor): Start the runner?
   return true;
 }

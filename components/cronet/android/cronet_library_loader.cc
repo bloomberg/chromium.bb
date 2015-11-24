@@ -86,13 +86,6 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
   base::android::LibraryLoaderExitHook();
 }
 
-void CronetInitApplicationContext(JNIEnv* env,
-                                  const JavaParamRef<jclass>& jcaller,
-                                  const JavaParamRef<jobject>& japp_context) {
-  // Set application context.
-  base::android::InitApplicationContext(env, japp_context);
-}
-
 void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
 #if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
   base::i18n::InitializeICU();

@@ -28,12 +28,6 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
 
 }  // namespace
 
-static void InitApplicationContext(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   const JavaParamRef<jobject>& context) {
-  base::android::InitApplicationContext(env, context);
-}
-
 static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   TRACE_EVENT0("startup", "content::Start");
 

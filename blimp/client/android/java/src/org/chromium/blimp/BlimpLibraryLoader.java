@@ -7,6 +7,7 @@ package org.chromium.blimp;
 import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -90,7 +91,8 @@ public final class BlimpLibraryLoader {
         extractor.addCompletionCallback(new Runnable() {
             @Override
             public void run() {
-                final boolean initResult = nativeInitializeBlimp(context.getApplicationContext());
+                ContextUtils.initApplicationContext(context.getApplicationContext());
+                final boolean initResult = nativeInitializeBlimp();
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
@@ -126,6 +128,6 @@ public final class BlimpLibraryLoader {
     }
 
     // Native methods.
-    private static native boolean nativeInitializeBlimp(Context context);
+    private static native boolean nativeInitializeBlimp();
     private static native boolean nativeStartBlimp();
 }

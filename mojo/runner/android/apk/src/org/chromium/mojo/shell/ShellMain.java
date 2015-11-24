@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -38,24 +39,22 @@ public class ShellMain {
     /**
      * Initializes the native system.
      **/
-    public static void ensureInitialized(Context applicationContext, String[] parameters) {
+    public static void ensureInitialized(Context context, String[] parameters) {
         if (sInitialized) return;
-        File cachedAppsDir = getCachedAppsDir(applicationContext);
+        File cachedAppsDir = getCachedAppsDir(context);
         try {
-            final File timestamp =
-                    FileHelper.prepareDirectoryForAssets(applicationContext, cachedAppsDir);
-            for (String assetPath : FileHelper.getAssetsList(applicationContext)) {
-                FileHelper.extractFromAssets(applicationContext, assetPath, cachedAppsDir,
-                        FileHelper.FileType.PERMANENT);
+            final File timestamp = FileHelper.prepareDirectoryForAssets(context, cachedAppsDir);
+            for (String assetPath : FileHelper.getAssetsList(context)) {
+                FileHelper.extractFromAssets(
+                        context, assetPath, cachedAppsDir, FileHelper.FileType.PERMANENT);
             }
-            ApplicationInfo ai = applicationContext.getPackageManager().getApplicationInfo(
-                    applicationContext.getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = ai.metaData;
             String mojo_lib = bundle.getString(MOJO_LIB_KEY);
 
             FileHelper.createTimestampIfNecessary(timestamp);
-            File mojoShell =
-                    new File(applicationContext.getApplicationInfo().nativeLibraryDir, mojo_lib);
+            File mojoShell = new File(context.getApplicationInfo().nativeLibraryDir, mojo_lib);
 
             List<String> parametersList = new ArrayList<String>();
             // Program name.
@@ -63,10 +62,10 @@ public class ShellMain {
                 parametersList.addAll(Arrays.asList(parameters));
             }
 
-            nativeInit(applicationContext, mojoShell.getAbsolutePath(),
+            ContextUtils.initApplicationContext(context.getApplicationContext());
+            nativeInit(context, mojoShell.getAbsolutePath(),
                     parametersList.toArray(new String[parametersList.size()]),
-                    cachedAppsDir.getAbsolutePath(),
-                    getTmpDir(applicationContext).getAbsolutePath());
+                    cachedAppsDir.getAbsolutePath(), getTmpDir(context).getAbsolutePath());
             sInitialized = true;
         } catch (Exception e) {
             Log.e(TAG, "ShellMain initialization failed.", e);

@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Looper;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -141,21 +142,21 @@ public class JniInterface {
     private static CapabilityManager sCapabilityManager = CapabilityManager.getInstance();
 
     /**
-     * To be called once from the main Activity. Any subsequent calls will update the application
-     * context, but not reload the library. This is useful e.g. when the activity is closed and the
-     * user later wants to return to the application. Called on the UI thread.
+     * To be called once from the main Activity. Loads and initializes the native code.
+     * Called on the UI thread.
      */
     public static void loadLibrary(Context context) {
         if (sLoaded) return;
 
         System.loadLibrary("remoting_client_jni");
 
-        nativeLoadNative(context);
+        ContextUtils.initApplicationContext(context.getApplicationContext());
+        nativeLoadNative();
         sLoaded = true;
     }
 
     /** Performs the native portion of the initialization. */
-    private static native void nativeLoadNative(Context context);
+    private static native void nativeLoadNative();
 
     /*
      * API/OAuth2 keys access.

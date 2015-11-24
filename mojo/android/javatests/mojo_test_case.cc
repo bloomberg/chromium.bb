@@ -30,10 +30,7 @@ struct TestEnvironment {
 namespace mojo {
 namespace android {
 
-static void InitApplicationContext(JNIEnv* env,
-                                   const JavaParamRef<jobject>& jcaller,
-                                   const JavaParamRef<jobject>& context) {
-  base::android::InitApplicationContext(env, context);
+static void Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller) {
   base::InitAndroidTestMessageLoop();
 }
 

@@ -20,10 +20,6 @@ using base::android::ScopedJavaLocalRef;
 bool g_disable_manual_jni_registration = false;
 
 JavaVM* g_jvm = NULL;
-// Leak the global app context, as it is used from a non-joinable worker thread
-// that may still be running at shutdown. There is no harm in doing this.
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
-    g_application_context = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
     g_class_loader = LAZY_INSTANCE_INITIALIZER;
 jmethodID g_class_loader_load_class_method_id = 0;
@@ -78,15 +74,6 @@ bool IsVMInitialized() {
   return g_jvm != NULL;
 }
 
-void InitApplicationContext(JNIEnv* env, const JavaRef<jobject>& context) {
-  if (env->IsSameObject(g_application_context.Get().obj(), context.obj())) {
-    // It's safe to set the context more than once if it's the same context.
-    return;
-  }
-  DCHECK(g_application_context.Get().is_null());
-  g_application_context.Get().Reset(context);
-}
-
 void InitReplacementClassLoader(JNIEnv* env,
                                 const JavaRef<jobject>& class_loader) {
   DCHECK(g_class_loader.Get().is_null());
@@ -103,11 +90,6 @@ void InitReplacementClassLoader(JNIEnv* env,
 
   DCHECK(env->IsInstanceOf(class_loader.obj(), class_loader_clazz.obj()));
   g_class_loader.Get().Reset(class_loader);
-}
-
-const jobject GetApplicationContext() {
-  DCHECK(!g_application_context.Get().is_null());
-  return g_application_context.Get().obj();
 }
 
 ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {

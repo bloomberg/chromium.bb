@@ -38,11 +38,7 @@ bool RegisterChromotingJniRuntime(JNIEnv* env) {
 // Implementation of stubs defined in JniInterface_jni.h. These are the entry
 // points for JNI calls from Java into C++.
 
-static void LoadNative(JNIEnv* env,
-                       const JavaParamRef<jclass>& clazz,
-                       const JavaParamRef<jobject>& context) {
-  base::android::InitApplicationContext(env, context);
-
+static void LoadNative(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   // The google_apis functions check the command-line arguments to make sure no
   // runtime API keys have been specified by the environment. Unfortunately, we
   // neither launch Chromium nor have a command line, so we need to prevent
