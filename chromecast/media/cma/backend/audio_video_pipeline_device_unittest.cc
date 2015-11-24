@@ -376,6 +376,10 @@ void AudioVideoPipelineDeviceTest::OnPushBufferComplete(
 }
 
 void AudioVideoPipelineDeviceTest::MonitorLoop() {
+  // Backend is stopped, no need to monitor the loop any more.
+  if (audio_decoder_ == nullptr && video_decoder_ == nullptr)
+    return;
+
   base::TimeDelta media_time =
       base::TimeDelta::FromMicroseconds(backend_->GetCurrentPts());
 
