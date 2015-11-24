@@ -2,6 +2,10 @@
 per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
 
-# DirectWrite specific changes
+# DirectWrite specific changes.
 per-file renderer_font_platform_win.*=scottmg@chromium.org
 per-file renderer_font_platform_win.*=cpu@chromium.org
+
+# Web Notifications.
+per-file notification_permission_dispatcher.*=mvanouwerkerk@chromium.org
+per-file notification_permission_dispatcher.*=peter@chromium.org
