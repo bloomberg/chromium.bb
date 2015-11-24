@@ -234,9 +234,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
 
 DOMWebSocket::~DOMWebSocket()
 {
-    WebSocketChannel* channel = m_channel;
-    // TODO(yhirano): Use ASSERT instead when crbug.com/550632 is fixed.
-    RELEASE_ASSERT(!channel);
+    ASSERT(!m_channel);
 }
 
 void DOMWebSocket::logError(const String& message)
@@ -573,8 +571,7 @@ ExecutionContext* DOMWebSocket::executionContext() const
 void DOMWebSocket::contextDestroyed()
 {
     WTF_LOG(Network, "WebSocket %p contextDestroyed()", this);
-    // TODO(yhirano): Use ASSERT instead when crbug.com/550632 is fixed.
-    RELEASE_ASSERT(!m_channel);
+    ASSERT(!m_channel);
     ASSERT(m_state == CLOSED);
     ActiveDOMObject::contextDestroyed();
 }
