@@ -15,6 +15,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
@@ -382,6 +383,13 @@ class Command;
 // Executes the command registered by the extension that has the given id.
 - (void)executeExtensionCommand:(const std::string&)extension_id
                         command:(const extensions::Command&)command;
+
+// To set whether the window has a tab playing audio or muted audio playing.
+- (void)setMediaState:(TabMediaState)mediaState;
+
+// Returns current media state, determined by the media state of tabs, set by
+// UpdateMediaState.
+- (TabMediaState)mediaState;
 
 @end  // @interface BrowserWindowController
 

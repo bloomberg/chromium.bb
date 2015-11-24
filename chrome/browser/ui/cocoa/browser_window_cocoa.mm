@@ -297,13 +297,25 @@ StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
 }
 
 void BrowserWindowCocoa::UpdateTitleBar() {
-  NSString* newTitle =
-      base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
+  NSString* newTitle = WindowTitle();
 
-  pending_window_title_.reset(
-      [BrowserWindowUtils scheduleReplaceOldTitle:pending_window_title_.get()
-                                     withNewTitle:newTitle
-                                        forWindow:window()]);
+  pending_window_title_.reset([BrowserWindowUtils
+      scheduleReplaceOldTitle:pending_window_title_.get()
+                 withNewTitle:newTitle
+                    forWindow:window()]);
+}
+
+NSString* BrowserWindowCocoa::WindowTitle() {
+  if (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING) {
+    return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_PLAYING_MAC,
+                                   browser_->GetWindowTitleForCurrentTab(),
+                                   base::SysNSStringToUTF16(@"🔊"));
+  } else if (media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING) {
+    return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_MUTING_MAC,
+                                   browser_->GetWindowTitleForCurrentTab(),
+                                   base::SysNSStringToUTF16(@"🔇"));
+  }
+  return base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
 }
 
 void BrowserWindowCocoa::BookmarkBarStateChanged(
@@ -548,6 +560,11 @@ gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
 void BrowserWindowCocoa::AddFindBar(
     FindBarCocoaController* find_bar_cocoa_controller) {
   [controller_ addFindBar:find_bar_cocoa_controller];
+}
+
+void BrowserWindowCocoa::UpdateMediaState(TabMediaState media_state) {
+  media_state_ = media_state;
+  UpdateTitleBar();
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {
