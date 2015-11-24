@@ -77,9 +77,6 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
   // Set of modules we've fetched script from.
   std::set<std::string> fetched_modules_;
 
-  // The prefix to use for all module requests.
-  const std::string module_prefix_;
-
   DISALLOW_COPY_AND_ASSIGN(WebUIMojoContextState);
 };
 

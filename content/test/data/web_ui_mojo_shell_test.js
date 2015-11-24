@@ -35,8 +35,9 @@ define('main', [
         function (services) {
           var test = connectToService(services, testMojom.TestMojoService);
           test.getRequestorURL().then(function(response) {
-            domAutomationController.send(
-                response.url == 'chrome://mojo-web-ui/');
+            // The requestor URL seen by the app should be localhost because the
+            // connection comes from this script hosted on the test server.
+            domAutomationController.send(response.url == 'http://127.0.0.1/');
           });
         },
         function (exposedServices) {});
