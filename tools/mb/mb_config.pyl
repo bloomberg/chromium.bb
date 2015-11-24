@@ -31,6 +31,14 @@
     'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gyp_release': ['gyp', 'release', 'shared'],
     'embedded_gyp_debug_bot': ['embedded', 'gyp', 'debug_bot'],
+
+    # This is the "deployment" config for the blimp builds. Currently
+    # we want them to be debug, non-optimized builds (and we don't need any
+    # chrome branding), so we don't use the "official" mixin.
+    # We need chromeos and ozone to eliminate any dependencies on X11. We
+    # dont need aura as it is implied by chromeos and ozone.
+    'gn_blimp_debug': ['gn', 'chromeos', 'ozone', 'debug'],
+
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
@@ -459,6 +467,7 @@
     },
     'official.desktop': {
       'precise64': 'gn_official',
+      'blimp-engine': 'gn_blimp_debug',
     },
     'official.desktop.continuous': {
       'precise64 trunk': 'gn_official',
