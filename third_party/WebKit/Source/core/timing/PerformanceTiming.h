@@ -42,6 +42,7 @@ class DocumentLoadTiming;
 class DocumentLoader;
 class DocumentTiming;
 class LocalFrame;
+class PaintTiming;
 class ResourceLoadTiming;
 class ScriptState;
 class ScriptValue;
@@ -99,6 +100,7 @@ private:
     explicit PerformanceTiming(LocalFrame*);
 
     const DocumentTiming* documentTiming() const;
+    const PaintTiming* paintTiming() const;
     DocumentLoader* documentLoader() const;
     DocumentLoadTiming* documentLoadTiming() const;
     ResourceLoadTiming* resourceLoadTiming() const;

@@ -75,25 +75,4 @@ void DocumentTiming::markFirstLayout()
     notifyDocumentTimingChanged();
 }
 
-void DocumentTiming::markFirstPaint()
-{
-    m_firstPaint = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstPaint", m_firstPaint, "frame", frame());
-    notifyDocumentTimingChanged();
-}
-
-void DocumentTiming::markFirstTextPaint()
-{
-    m_firstTextPaint = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstTextPaint", m_firstTextPaint, "frame", frame());
-    notifyDocumentTimingChanged();
-}
-
-void DocumentTiming::markFirstImagePaint()
-{
-    m_firstImagePaint = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstImagePaint", m_firstImagePaint, "frame", frame());
-    notifyDocumentTimingChanged();
-}
-
 } // namespace blink

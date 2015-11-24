@@ -39,6 +39,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/paint/PaintTiming.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceResponse.h"
@@ -326,7 +327,7 @@ unsigned long long PerformanceTiming::firstLayout() const
 
 unsigned long long PerformanceTiming::firstPaint() const
 {
-    const DocumentTiming* timing = documentTiming();
+    const PaintTiming* timing = paintTiming();
     if (!timing)
         return 0;
 
@@ -335,7 +336,7 @@ unsigned long long PerformanceTiming::firstPaint() const
 
 unsigned long long PerformanceTiming::firstTextPaint() const
 {
-    const DocumentTiming* timing = documentTiming();
+    const PaintTiming* timing = paintTiming();
     if (!timing)
         return 0;
 
@@ -344,7 +345,7 @@ unsigned long long PerformanceTiming::firstTextPaint() const
 
 unsigned long long PerformanceTiming::firstImagePaint() const
 {
-    const DocumentTiming* timing = documentTiming();
+    const PaintTiming* timing = paintTiming();
     if (!timing)
         return 0;
 
@@ -369,6 +370,18 @@ const DocumentTiming* PerformanceTiming::documentTiming() const
         return nullptr;
 
     return &document->timing();
+}
+
+const PaintTiming* PerformanceTiming::paintTiming() const
+{
+    if (!m_frame)
+        return nullptr;
+
+    Document* document = m_frame->document();
+    if (!document)
+        return nullptr;
+
+    return &PaintTiming::from(*document);
 }
 
 DocumentLoadTiming* PerformanceTiming::documentLoadTiming() const

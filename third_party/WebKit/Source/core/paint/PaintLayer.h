@@ -61,14 +61,15 @@
 
 namespace blink {
 
+class CompositedLayerMapping;
+class ComputedStyle;
 class FilterEffectBuilder;
 class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
 class PaintLayerCompositor;
-class CompositedLayerMapping;
-class ComputedStyle;
+class PaintTiming;
 class TransformationMatrix;
 
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
@@ -618,6 +619,8 @@ public:
 
     // For subsequence display items.
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+
+    PaintTiming* paintTiming();
 
 private:
     // Bounding box in the coordinates of this layer.

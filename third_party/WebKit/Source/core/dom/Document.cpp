@@ -1953,24 +1953,6 @@ void Document::layoutUpdated()
     }
 }
 
-void Document::markFirstPaint()
-{
-    if (m_documentTiming.firstPaint() == 0)
-        m_documentTiming.markFirstPaint();
-}
-
-void Document::markFirstTextPaint()
-{
-    if (m_documentTiming.firstTextPaint() == 0)
-        m_documentTiming.markFirstTextPaint();
-}
-
-void Document::markFirstImagePaint()
-{
-    if (m_documentTiming.firstImagePaint() == 0)
-        m_documentTiming.markFirstImagePaint();
-}
-
 void Document::setNeedsFocusedElementCheck()
 {
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));

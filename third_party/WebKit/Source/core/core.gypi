@@ -2014,6 +2014,8 @@
             'paint/PaintPhase.h',
             'paint/PaintPropertyTreeBuilder.cpp',
             'paint/PaintPropertyTreeBuilder.h',
+            'paint/PaintTiming.cpp',
+            'paint/PaintTiming.h',
             'paint/PartPainter.cpp',
             'paint/PartPainter.h',
             'paint/ReplacedPainter.cpp',

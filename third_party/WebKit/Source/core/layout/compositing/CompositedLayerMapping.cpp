@@ -53,6 +53,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
+#include "core/paint/PaintTiming.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
@@ -2402,21 +2403,26 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
 
 void CompositedLayerMapping::notifyFirstPaint()
 {
-    // TODO(ksakamoto): This shouldn't be reported to Document. crbug.com/544811
-    if (Node* node = layoutObject()->node())
-        node->document().markFirstPaint();
+    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
+        if (timing->firstPaint() == 0)
+            timing->markFirstPaint();
+    }
 }
 
 void CompositedLayerMapping::notifyFirstTextPaint()
 {
-    if (Node* node = layoutObject()->node())
-        node->document().markFirstTextPaint();
+    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
+        if (timing->firstTextPaint() == 0)
+            timing->markFirstTextPaint();
+    }
 }
 
 void CompositedLayerMapping::notifyFirstImagePaint()
 {
-    if (Node* node = layoutObject()->node())
-        node->document().markFirstImagePaint();
+    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
+        if (timing->firstImagePaint() == 0)
+            timing->markFirstImagePaint();
+    }
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
