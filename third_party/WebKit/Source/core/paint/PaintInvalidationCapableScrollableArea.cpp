@@ -54,6 +54,7 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
         return;
 
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*scrollbar, PaintInvalidationScroll, &previousPaintInvalidationRect);
+    box.enclosingLayer()->setNeedsRepaint();
     if (scrollbar->isCustomScrollbar())
         toLayoutScrollbar(scrollbar)->invalidateDisplayItemClientsOfScrollbarParts(paintInvalidationContainer, previousPaintInvalidationRect);
 }
