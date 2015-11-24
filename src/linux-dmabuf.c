@@ -35,12 +35,12 @@ linux_dmabuf_buffer_destroy(struct linux_dmabuf_buffer *buffer)
 {
 	int i;
 
-	for (i = 0; i < buffer->n_planes; i++) {
-		close(buffer->dmabuf_fd[i]);
-		buffer->dmabuf_fd[i] = -1;
+	for (i = 0; i < buffer->attributes.n_planes; i++) {
+		close(buffer->attributes.fd[i]);
+		buffer->attributes.fd[i] = -1;
 	}
 
-	buffer->n_planes = 0;
+	buffer->attributes.n_planes = 0;
 	free(buffer);
 }
 
@@ -95,7 +95,7 @@ params_add(struct wl_client *client,
 		return;
 	}
 
-	if (buffer->dmabuf_fd[plane_idx] != -1) {
+	if (buffer->attributes.fd[plane_idx] != -1) {
 		wl_resource_post_error(params_resource,
 			ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET,
 			"a dmabuf has already been added for plane %u",
@@ -104,12 +104,12 @@ params_add(struct wl_client *client,
 		return;
 	}
 
-	buffer->dmabuf_fd[plane_idx] = name_fd;
-	buffer->offset[plane_idx] = offset;
-	buffer->stride[plane_idx] = stride;
-	buffer->modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
-				      modifier_lo;
-	buffer->n_planes++;
+	buffer->attributes.fd[plane_idx] = name_fd;
+	buffer->attributes.offset[plane_idx] = offset;
+	buffer->attributes.stride[plane_idx] = stride;
+	buffer->attributes.modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
+	                                         modifier_lo;
+	buffer->attributes.n_planes++;
 }
 
 static void
@@ -167,7 +167,7 @@ params_create(struct wl_client *client,
 	wl_resource_set_user_data(buffer->params_resource, NULL);
 	buffer->params_resource = NULL;
 
-	if (!buffer->n_planes) {
+	if (!buffer->attributes.n_planes) {
 		wl_resource_post_error(params_resource,
 			ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
 			"no dmabuf has been added to the params");
@@ -175,8 +175,8 @@ params_create(struct wl_client *client,
 	}
 
 	/* Check for holes in the dmabufs set (e.g. [0, 1, 3]) */
-	for (i = 0; i < buffer->n_planes; i++) {
-		if (buffer->dmabuf_fd[i] == -1) {
+	for (i = 0; i < buffer->attributes.n_planes; i++) {
+		if (buffer->attributes.fd[i] == -1) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
 				"no dmabuf has been added for plane %i", i);
@@ -184,10 +184,10 @@ params_create(struct wl_client *client,
 		}
 	}
 
-	buffer->width = width;
-	buffer->height = height;
-	buffer->format = format;
-	buffer->flags = flags;
+	buffer->attributes.width = width;
+	buffer->attributes.height = height;
+	buffer->attributes.format = format;
+	buffer->attributes.flags = flags;
 
 	if (width < 1 || height < 1) {
 		wl_resource_post_error(params_resource,
@@ -196,10 +196,10 @@ params_create(struct wl_client *client,
 		goto err_out;
 	}
 
-	for (i = 0; i < buffer->n_planes; i++) {
+	for (i = 0; i < buffer->attributes.n_planes; i++) {
 		off_t size;
 
-		if ((uint64_t) buffer->offset[i] + buffer->stride[i] > UINT32_MAX) {
+		if ((uint64_t) buffer->attributes.offset[i] + buffer->attributes.stride[i] > UINT32_MAX) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
 				"size overflow for plane %i", i);
@@ -207,8 +207,8 @@ params_create(struct wl_client *client,
 		}
 
 		if (i == 0 &&
-		   (uint64_t) buffer->offset[i] +
-		   (uint64_t) buffer->stride[i] * height > UINT32_MAX) {
+		   (uint64_t) buffer->attributes.offset[i] +
+		   (uint64_t) buffer->attributes.stride[i] * height > UINT32_MAX) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
 				"size overflow for plane %i", i);
@@ -217,30 +217,30 @@ params_create(struct wl_client *client,
 
 		/* Don't report an error as it might be caused
 		 * by the kernel not supporting seeking on dmabuf */
-		size = lseek(buffer->dmabuf_fd[i], 0, SEEK_END);
+		size = lseek(buffer->attributes.fd[i], 0, SEEK_END);
 		if (size == -1)
 			break;
 
-		if (buffer->offset[i] >= size) {
+		if (buffer->attributes.offset[i] >= size) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
 				"invalid offset %i for plane %i",
-				buffer->offset[i], i);
+				buffer->attributes.offset[i], i);
 			goto err_out;
 		}
 
-		if (buffer->offset[i] + buffer->stride[i] > size) {
+		if (buffer->attributes.offset[i] + buffer->attributes.stride[i] > size) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
 				"invalid stride %i for plane %i",
-				buffer->stride[i], i);
+				buffer->attributes.stride[i], i);
 			goto err_out;
 		}
 
 		/* Only valid for first plane as other planes might be
 		 * sub-sampled according to fourcc format */
 		if (i == 0 &&
-		    buffer->offset[i] + buffer->stride[i] * height > size) {
+		    buffer->attributes.offset[i] + buffer->attributes.stride[i] * height > size) {
 			wl_resource_post_error(params_resource,
 				ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
 				"invalid buffer stride or height for plane %i", i);
@@ -316,7 +316,7 @@ linux_dmabuf_create_params(struct wl_client *client,
 		goto err_out;
 
 	for (i = 0; i < MAX_DMABUF_PLANES; i++)
-		buffer->dmabuf_fd[i] = -1;
+		buffer->attributes.fd[i] = -1;
 
 	buffer->compositor = compositor;
 	buffer->params_resource =

@@ -31,19 +31,23 @@ struct linux_dmabuf_buffer;
 typedef void (*dmabuf_user_data_destroy_func)(
 			struct linux_dmabuf_buffer *buffer);
 
-struct linux_dmabuf_buffer {
-	struct wl_resource *buffer_resource;
-	struct wl_resource *params_resource;
-	struct weston_compositor *compositor;
+struct dmabuf_attributes {
 	int32_t width;
 	int32_t height;
 	uint32_t format;
 	uint32_t flags; /* enum zlinux_buffer_params_flags */
 	int n_planes;
-	int dmabuf_fd[MAX_DMABUF_PLANES];
+	int fd[MAX_DMABUF_PLANES];
 	uint32_t offset[MAX_DMABUF_PLANES];
 	uint32_t stride[MAX_DMABUF_PLANES];
 	uint64_t modifier[MAX_DMABUF_PLANES];
+};
+
+struct linux_dmabuf_buffer {
+	struct wl_resource *buffer_resource;
+	struct wl_resource *params_resource;
+	struct weston_compositor *compositor;
+	struct dmabuf_attributes attributes;
 
 	void *user_data;
 	dmabuf_user_data_destroy_func user_data_destroy_func;

@@ -1446,38 +1446,38 @@ import_dmabuf(struct gl_renderer *gr,
 	 */
 
 	attribs[atti++] = EGL_WIDTH;
-	attribs[atti++] = dmabuf->width;
+	attribs[atti++] = dmabuf->attributes.width;
 	attribs[atti++] = EGL_HEIGHT;
-	attribs[atti++] = dmabuf->height;
+	attribs[atti++] = dmabuf->attributes.height;
 	attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
-	attribs[atti++] = dmabuf->format;
+	attribs[atti++] = dmabuf->attributes.format;
 	/* XXX: Add modifier here when supported */
 
-	if (dmabuf->n_planes > 0) {
+	if (dmabuf->attributes.n_planes > 0) {
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_FD_EXT;
-		attribs[atti++] = dmabuf->dmabuf_fd[0];
+		attribs[atti++] = dmabuf->attributes.fd[0];
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
-		attribs[atti++] = dmabuf->offset[0];
+		attribs[atti++] = dmabuf->attributes.offset[0];
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-		attribs[atti++] = dmabuf->stride[0];
+		attribs[atti++] = dmabuf->attributes.stride[0];
 	}
 
-	if (dmabuf->n_planes > 1) {
+	if (dmabuf->attributes.n_planes > 1) {
 		attribs[atti++] = EGL_DMA_BUF_PLANE1_FD_EXT;
-		attribs[atti++] = dmabuf->dmabuf_fd[1];
+		attribs[atti++] = dmabuf->attributes.fd[1];
 		attribs[atti++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT;
-		attribs[atti++] = dmabuf->offset[1];
+		attribs[atti++] = dmabuf->attributes.offset[1];
 		attribs[atti++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
-		attribs[atti++] = dmabuf->stride[1];
+		attribs[atti++] = dmabuf->attributes.stride[1];
 	}
 
-	if (dmabuf->n_planes > 2) {
+	if (dmabuf->attributes.n_planes > 2) {
 		attribs[atti++] = EGL_DMA_BUF_PLANE2_FD_EXT;
-		attribs[atti++] = dmabuf->dmabuf_fd[2];
+		attribs[atti++] = dmabuf->attributes.fd[2];
 		attribs[atti++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT;
-		attribs[atti++] = dmabuf->offset[2];
+		attribs[atti++] = dmabuf->attributes.offset[2];
 		attribs[atti++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
-		attribs[atti++] = dmabuf->stride[2];
+		attribs[atti++] = dmabuf->attributes.stride[2];
 	}
 
 	attribs[atti++] = EGL_NONE;
@@ -1507,14 +1507,14 @@ gl_renderer_import_dmabuf(struct weston_compositor *ec,
 
 	assert(gr->has_dmabuf_import);
 
-	for (i = 0; i < dmabuf->n_planes; i++) {
+	for (i = 0; i < dmabuf->attributes.n_planes; i++) {
 		/* EGL import does not have modifiers */
-		if (dmabuf->modifier[i] != 0)
+		if (dmabuf->attributes.modifier[i] != 0)
 			return false;
 	}
 
 	/* reject all flags we do not recognize or handle */
-	if (dmabuf->flags & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT)
+	if (dmabuf->attributes.flags & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT)
 		return false;
 
 	image = import_dmabuf(gr, dmabuf);
@@ -1528,12 +1528,12 @@ gl_renderer_import_dmabuf(struct weston_compositor *ec,
 }
 
 static GLenum
-choose_texture_target(struct linux_dmabuf_buffer *dmabuf)
+choose_texture_target(struct dmabuf_attributes *attributes)
 {
-	if (dmabuf->n_planes > 1)
+	if (attributes->n_planes > 1)
 		return GL_TEXTURE_EXTERNAL_OES;
 
-	switch (dmabuf->format & ~DRM_FORMAT_BIG_ENDIAN) {
+	switch (attributes->format & ~DRM_FORMAT_BIG_ENDIAN) {
 	case DRM_FORMAT_YUYV:
 	case DRM_FORMAT_YVYU:
 	case DRM_FORMAT_UYVY:
@@ -1560,16 +1560,16 @@ gl_renderer_attach_dmabuf(struct weston_surface *surface,
 		return;
 	}
 
-	buffer->width = dmabuf->width;
-	buffer->height = dmabuf->height;
+	buffer->width = dmabuf->attributes.width;
+	buffer->height = dmabuf->attributes.height;
 	buffer->y_inverted =
-		!!(dmabuf->flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
+		!!(dmabuf->attributes.flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
 
 	for (i = 0; i < gs->num_images; i++)
 		egl_image_unref(gs->images[i]);
 	gs->num_images = 0;
 
-	gs->target = choose_texture_target(dmabuf);
+	gs->target = choose_texture_target(&dmabuf->attributes);
 	switch (gs->target) {
 	case GL_TEXTURE_2D:
 		gs->shader = &gr->texture_shader_rgba;

@@ -983,14 +983,14 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		 * support a mix of gbm_bos and drmfbs.
 		 */
 		struct gbm_import_fd_data gbm_dmabuf = {
-			.fd     = dmabuf->dmabuf_fd[0],
-			.width  = dmabuf->width,
-			.height = dmabuf->height,
-			.stride = dmabuf->stride[0],
-			.format = dmabuf->format
+			.fd     = dmabuf->attributes.fd[0],
+			.width  = dmabuf->attributes.width,
+			.height = dmabuf->attributes.height,
+			.stride = dmabuf->attributes.stride[0],
+			.format = dmabuf->attributes.format
 		};
 
-		if (dmabuf->n_planes != 1 || dmabuf->offset[0] != 0)
+		if (dmabuf->attributes.n_planes != 1 || dmabuf->attributes.offset[0] != 0)
 			return NULL;
 
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
