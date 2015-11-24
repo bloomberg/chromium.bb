@@ -278,6 +278,7 @@ void Program::Reset() {
   uniform_infos_.clear();
   uniform_locations_.clear();
   fragment_input_infos_.clear();
+  fragment_input_locations_.clear();
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
 }
@@ -663,11 +664,21 @@ void Program::UpdateUniforms() {
 void Program::UpdateFragmentInputs() {
   if (!feature_info().feature_flags().chromium_path_rendering)
     return;
+  for (const auto& binding : bind_fragment_input_location_map_) {
+    if (binding.second < 0)
+      continue;
+    size_t client_location = static_cast<size_t>(binding.second);
+    if (fragment_input_locations_.size() <= client_location)
+      fragment_input_locations_.resize(client_location + 1);
+    fragment_input_locations_[client_location].SetInactive();
+  }
+
   GLint num_fragment_inputs = 0;
   glGetProgramInterfaceiv(service_id_, GL_FRAGMENT_INPUT_NV,
                           GL_ACTIVE_RESOURCES, &num_fragment_inputs);
   if (num_fragment_inputs <= 0)
     return;
+
   GLint max_len = 0;
   glGetProgramInterfaceiv(service_id_, GL_FRAGMENT_INPUT_NV, GL_MAX_NAME_LENGTH,
                           &max_len);
@@ -680,6 +691,7 @@ void Program::UpdateFragmentInputs() {
 
   const GLenum kQueryProperties[] = {GL_LOCATION, GL_TYPE, GL_ARRAY_SIZE};
 
+  std::vector<size_t> client_location_indices;
   for (GLint ii = 0; ii < num_fragment_inputs; ++ii) {
     GLsizei name_length = 0;
     glGetProgramResourceName(service_id_, GL_FRAGMENT_INPUT_NV, ii, max_len,
@@ -728,12 +740,9 @@ void Program::UpdateFragmentInputs() {
         query_results[0] >= 0) {
       size_t client_location = static_cast<size_t>(it->second);
       GLuint service_location = static_cast<GLuint>(query_results[0]);
-
-      if (fragment_input_infos_.size() <= client_location)
-        fragment_input_infos_.resize(client_location + 1);
-      DCHECK(!fragment_input_infos_[client_location].IsValid());
-      fragment_input_infos_[client_location] =
-          FragmentInputInfo(type, service_location);
+      fragment_input_infos_.push_back(
+          FragmentInputInfo(type, service_location));
+      client_location_indices.push_back(client_location);
     }
 
     if (size <= 1)
@@ -762,14 +771,20 @@ void Program::UpdateFragmentInputs() {
         GLint service_location = glGetProgramResourceLocation(
             service_id_, GL_FRAGMENT_INPUT_NV, service_element_name.c_str());
         if (service_location >= 0) {
-          if (fragment_input_infos_.size() <= client_location)
-            fragment_input_infos_.resize(client_location + 1);
-          DCHECK(!fragment_input_infos_[client_location].IsValid());
-          fragment_input_infos_[client_location] =
-              FragmentInputInfo(type, static_cast<GLuint>(service_location));
+          fragment_input_infos_.push_back(
+              FragmentInputInfo(type, static_cast<GLuint>(service_location)));
+          client_location_indices.push_back(client_location);
         }
       }
     }
+  }
+  for (size_t i = 0; i < client_location_indices.size(); ++i) {
+    size_t client_location = client_location_indices[i];
+    // Before linking, we already validated that no two statically used fragment
+    // inputs are bound to the same location.
+    DCHECK(!fragment_input_locations_[client_location].IsActive());
+    fragment_input_locations_[client_location].SetActive(
+        &fragment_input_infos_[i]);
   }
 }
 
@@ -1024,7 +1039,8 @@ const Program::UniformInfo*
   if (!uniform_locations_[location_index].IsActive())
     return nullptr;
 
-  const UniformInfo* info = uniform_locations_[location_index].uniform();
+  const UniformInfo* info =
+      uniform_locations_[location_index].shader_variable();
   size_t element_index = GetArrayElementIndexFromFakeLocation(fake_location);
   if (static_cast<GLsizei>(element_index) >= info->size)
     return nullptr;
@@ -1085,13 +1101,24 @@ const std::string* Program::GetOriginalNameFromHashedName(
 
 const Program::FragmentInputInfo* Program::GetFragmentInputInfoByFakeLocation(
     GLint fake_location) const {
-  if (fake_location < 0 ||
-      static_cast<size_t>(fake_location) >= fragment_input_infos_.size())
+  if (fake_location < 0)
     return nullptr;
-  const FragmentInputInfo* info = &fragment_input_infos_[fake_location];
-  if (!info->IsValid())
+  size_t location_index = static_cast<size_t>(fake_location);
+  if (location_index >= fragment_input_locations_.size())
     return nullptr;
-  return info;
+  if (!fragment_input_locations_[location_index].IsActive())
+    return nullptr;
+  return fragment_input_locations_[location_index].shader_variable();
+}
+
+bool Program::IsInactiveFragmentInputLocationByFakeLocation(
+    GLint fake_location) const {
+  if (fake_location < 0)
+    return true;
+  size_t location_index = static_cast<size_t>(fake_location);
+  if (location_index >= fragment_input_locations_.size())
+    return false;
+  return fragment_input_locations_[location_index].IsInactive();
 }
 
 bool Program::SetUniformLocationBinding(
@@ -1227,7 +1254,7 @@ bool Program::SetSamplers(
   if (!uniform_locations_[location_index].IsActive())
     return false;
 
-  UniformInfo* info = uniform_locations_[location_index].uniform();
+  UniformInfo* info = uniform_locations_[location_index].shader_variable();
 
   size_t element_index = GetArrayElementIndexFromFakeLocation(fake_location);
   if (static_cast<GLsizei>(element_index) >= info->size)

@@ -1027,7 +1027,8 @@ New Procedures and Functions
     attached to a program object. Hence it is allowed to bind any name (except
     a name starting with "gl_") to an index, including a name that is never used
     as a varying in the fragment shader object. Assigned bindings for varying
-    variables that do not exist or are not active are ignored.
+    variables that do not exist or are not active are ignored. Using such bindings
+    behaves as if passed location was -1.
 
     It is possible for an application to bind more than one fragment
     input name to the same location.  This is referred to as aliasing.

@@ -15228,9 +15228,8 @@ error::Error GLES2DecoderImpl::HandleProgramPathFragmentInputGenCHROMIUM(
   }
 
   GLint location = static_cast<GLint>(c.location);
-  if (location == -1) {
+  if (program->IsInactiveFragmentInputLocationByFakeLocation(location))
     return error::kNoError;
-  }
 
   const Program::FragmentInputInfo* fragment_input_info =
       program->GetFragmentInputInfoByFakeLocation(location);

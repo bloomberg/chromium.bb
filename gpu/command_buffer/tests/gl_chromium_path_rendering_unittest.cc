@@ -1689,6 +1689,91 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
   TeardownStateForTestPattern();
 }
 
+TEST_P(CHROMIUMPathRenderingWithTexturingTest, UnusedFragmentInputUpdate) {
+  if (!IsApplicable())
+    return;
+
+  // clang-format off
+  static const char* kVertexShaderString = SHADER(
+      attribute vec4 a_position;
+      void main() {
+        gl_Position = a_position;
+      }
+  );
+  static const char* kFragmentShaderString = SHADER(
+      precision mediump float;
+      uniform vec4 u_colorA;
+      uniform float u_colorU;
+      uniform vec4 u_colorC;
+      void main() {
+        gl_FragColor = u_colorA + u_colorC;
+      }
+  );
+  // clang-format on
+  const GLint kColorULocation = 1;
+  const GLint kNonexistingLocation = 5;
+  const GLint kUnboundLocation = 6;
+
+  GLuint vertex_shader =
+      GLTestHelper::LoadShader(GL_VERTEX_SHADER, kVertexShaderString);
+  GLuint fragment_shader =
+      GLTestHelper::LoadShader(GL_FRAGMENT_SHADER, kFragmentShaderString);
+  GLuint program = glCreateProgram();
+  glBindFragmentInputLocationCHROMIUM(program, kColorULocation, "u_colorU");
+  // The non-existing uniform should behave like existing, but optimized away
+  // uniform.
+  glBindFragmentInputLocationCHROMIUM(program, kNonexistingLocation,
+                                      "nonexisting");
+  // Let A and C be assigned automatic locations.
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  glLinkProgram(program);
+  GLint linked = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  EXPECT_EQ(1, linked);
+  glUseProgram(program);
+
+  GLfloat kColor[16] = {
+      0.0f,
+  };
+  // No errors on bound locations, since caller does not know
+  // if the driver optimizes them away or not.
+  glProgramPathFragmentInputGenCHROMIUM(program, kColorULocation,
+                                        GL_CONSTANT_CHROMIUM, 1, kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // No errors on bound locations of names that do not exist
+  // in the shader. Otherwise it would be inconsistent wrt the
+  // optimization case.
+  glProgramPathFragmentInputGenCHROMIUM(program, kNonexistingLocation,
+                                        GL_CONSTANT_CHROMIUM, 1, kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // The above are equal to updating -1.
+  glProgramPathFragmentInputGenCHROMIUM(program, -1, GL_CONSTANT_CHROMIUM, 1,
+                                        kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // No errors when updating with other type either.
+  // The type can not be known with the non-existing case.
+  glProgramPathFragmentInputGenCHROMIUM(program, kColorULocation,
+                                        GL_CONSTANT_CHROMIUM, 4, kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glProgramPathFragmentInputGenCHROMIUM(program, kNonexistingLocation,
+                                        GL_CONSTANT_CHROMIUM, 4, kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glProgramPathFragmentInputGenCHROMIUM(program, -1, GL_CONSTANT_CHROMIUM, 4,
+                                        kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Updating an unbound, non-existing location still causes
+  // an error.
+  glProgramPathFragmentInputGenCHROMIUM(program, kUnboundLocation,
+                                        GL_CONSTANT_CHROMIUM, 4, kColor);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
+}
+
 INSTANTIATE_TEST_CASE_P(WithAndWithoutShaderNameMapping,
                         CHROMIUMPathRenderingWithTexturingTest,
                         ::testing::Bool());

@@ -66,7 +66,6 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     FragmentInputInfo(GLenum _type, GLuint _location)
         : type(_type), location(_location) {}
     FragmentInputInfo() : type(GL_NONE), location(0) {}
-    bool IsValid() const { return type != GL_NONE; }
     GLenum type;
     GLuint location;
   };
@@ -107,39 +106,44 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     std::string name;
   };
 
-  class UniformLocationEntry {
+  template <typename T>
+  class ShaderVariableLocationEntry {
    public:
-    UniformLocationEntry() : uniform_(nullptr), inactive_(false) {}
-    bool IsUnused() const { return !uniform_ && !inactive_; }
+    ShaderVariableLocationEntry()
+        : shader_variable_(nullptr), inactive_(false) {}
+    bool IsUnused() const { return !shader_variable_ && !inactive_; }
     bool IsInactive() const { return inactive_; }
-    bool IsActive() const { return uniform_ != nullptr; }
+    bool IsActive() const { return shader_variable_ != nullptr; }
     void SetInactive() {
-      uniform_ = nullptr;
+      shader_variable_ = nullptr;
       inactive_ = true;
     }
-    void SetActive(UniformInfo* uniform) {
-      DCHECK(uniform);
-      uniform_ = uniform;
+    void SetActive(T* shader_variable) {
+      DCHECK(shader_variable);
+      shader_variable_ = shader_variable;
       inactive_ = false;
     }
-    const UniformInfo* uniform() const {
+    const T* shader_variable() const {
       DCHECK(IsActive());
-      return uniform_;
+      return shader_variable_;
     }
-    UniformInfo* uniform() {
+    T* shader_variable() {
       DCHECK(IsActive());
-      return uniform_;
+      return shader_variable_;
     }
 
    private:
-    UniformInfo* uniform_;  // Pointer to uniform_info_ vector entry.
+    T* shader_variable_;  // Pointer to *_info_ vector entry.
     bool inactive_;
   };
 
   typedef std::vector<UniformInfo> UniformInfoVector;
-  typedef std::vector<UniformLocationEntry> UniformLocationVector;
+  typedef std::vector<ShaderVariableLocationEntry<UniformInfo>>
+      UniformLocationVector;
   typedef std::vector<VertexAttrib> AttribInfoVector;
   typedef std::vector<FragmentInputInfo> FragmentInputInfoVector;
+  typedef std::vector<ShaderVariableLocationEntry<FragmentInputInfo>>
+      FragmentInputLocationVector;
   typedef std::vector<int> SamplerIndices;
   typedef std::map<std::string, GLint> LocationMap;
   typedef std::vector<std::string> StringVector;
@@ -191,6 +195,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   const FragmentInputInfo* GetFragmentInputInfoByFakeLocation(
       GLint fake_location) const;
+
+  bool IsInactiveFragmentInputLocationByFakeLocation(GLint fake_location) const;
 
   // Gets the fake location of a uniform by name.
   GLint GetUniformFakeLocation(const std::string& name) const;
@@ -439,6 +445,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   SamplerIndices sampler_indices_;
 
   FragmentInputInfoVector fragment_input_infos_;
+  FragmentInputLocationVector fragment_input_locations_;
 
   // The program this Program is tracking.
   GLuint service_id_;
