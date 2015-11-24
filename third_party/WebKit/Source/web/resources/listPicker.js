@@ -87,7 +87,25 @@ ListPicker.prototype._handleWindowMessage = function(event) {
     delete window.updateData;
 };
 
+// This should be matched to the border width of the internal listbox
+// SELECT. See listPicker.css and html.css.
+ListPicker.ListboxSelectBorder = 1;
+
 ListPicker.prototype._handleWindowMouseMove = function (event) {
+    var visibleTop = ListPicker.ListboxSelectBorder;
+    var visibleBottom = this._selectElement.offsetHeight - ListPicker.ListboxSelectBorder;
+    var optionBounds = event.target.getBoundingClientRect();
+    if (optionBounds.height >= 1.0) {
+        // If the height of the visible part of event.target is less than 1px,
+        // ignore this event because it may be an error by sub-pixel layout.
+        if (optionBounds.top < visibleTop) {
+            if (optionBounds.bottom - visibleTop < 1.0)
+                return;
+        } else if (optionBounds.bottom > visibleBottom) {
+            if (visibleBottom - optionBounds.top < 1.0)
+                return;
+        }
+    }
     this.lastMousePositionX = event.clientX;
     this.lastMousePositionY = event.clientY;
     this._highlightOption(event.target);
@@ -194,10 +212,7 @@ ListPicker.prototype._handleKeyDown = function(event) {
 ListPicker.prototype._fixWindowSize = function() {
     this._selectElement.style.height = "";
     var maxHeight = this._selectElement.offsetHeight;
-    // heightOutsideOfContent should be matched to border widths of the listbox
-    // SELECT. See listPicker.css and html.css.
-    var heightOutsideOfContent = 2;
-    var noScrollHeight = Math.round(this._calculateScrollHeight() + heightOutsideOfContent);
+    var noScrollHeight = Math.round(this._calculateScrollHeight() + ListPicker.ListboxSelectBorder * 2);
     var desiredWindowHeight = noScrollHeight;
     var desiredWindowWidth = this._selectElement.offsetWidth;
     var expectingScrollbar = false;

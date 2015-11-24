@@ -11,8 +11,32 @@
   <option selected>bar</option>
   <option>baz</option>
 </select>
+<select id="menu2" style="font-size:13px; font-family:Arial">
+  <option>option1</option>
+  <option>option2</option>
+  <option>option3</option>
+  <option>option4</option>
+  <option>option5</option>
+  <option>option6</option>
+  <option>option7</option>
+  <option>option8</option>
+  <option>option9</option>
+  <option>option10</option>
+  <option>option11</option>
+  <option>option12</option>
+  <option>option13</option>
+  <option>option14</option>
+  <option>option15</option>
+  <option>option16</option>
+  <option>option17</option>
+  <option>option18</option>
+  <option>option19</option>
+  <option>option20</option>
+  <option>option21</option>
+</select>
 <script>
 var menuElement = document.getElementById('menu');
+var menuElement2 = document.getElementById('menu2');
 var picker = null;
 var clickEventCounter = 0;
 menuElement.addEventListener('click', function() { clickEventCounter++; }, false);
@@ -83,6 +107,18 @@ function test2() {
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'bar');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
+
+    waitUntilClosing(function() {
+        openPicker(menu2, test3, openPickerErrorCallback);
+    });
+}
+
+function test3() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    // We had a bug that almost-invisible OPTION was selected and the popup was
+    // scrolled. crbug.com/558287.
+    eventSender.mouseMoveTo(10, picker._selectElement.offsetHeight - 2);
+    shouldBeEqualToString('picker._selectElement.selectedOptions[0].label', 'option20');
 
     finishJSTest();
 }

@@ -23,7 +23,8 @@ PASS internals.selectMenuListText(menu) is "bar"
 PASS window.internals.pagePopupWindow is null
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "bar"
+PASS picker._selectElement.selectedOptions[0].label is "option20"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
+ 
