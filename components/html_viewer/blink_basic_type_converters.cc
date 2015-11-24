@@ -26,8 +26,8 @@ WebString TypeConverter<WebString, String>::Convert(const String& str) {
 // static
 WebString TypeConverter<WebString, Array<uint8_t>>::Convert(
     const Array<uint8_t>& input) {
-  COMPILE_ASSERT(sizeof(uint8_t) == sizeof(char),
-                 uint8_t_same_size_as_unsigned_char);
+  static_assert(sizeof(uint8_t) == sizeof(char),
+                "uint8_t must be the same size as a char");
   return input.is_null()
              ? WebString()
              : WebString::fromUTF8(
@@ -51,8 +51,8 @@ Array<uint8_t> TypeConverter<Array<uint8_t>, WebString>::Convert(
     return Array<uint8_t>();
   const std::string utf8 = input.utf8();
   Array<uint8_t> result(utf8.size());
-  COMPILE_ASSERT(sizeof(uint8_t) == sizeof(char),
-                 uint8_t_same_size_as_unsigned_char);
+  static_assert(sizeof(uint8_t) == sizeof(char),
+                "uint8_t must be the same size as an unsigned char");
   memcpy(&result.front(), utf8.data(), utf8.size());
   return result.Pass();
 }

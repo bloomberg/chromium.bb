@@ -40,18 +40,17 @@ struct TypeConverter<WebSocket::MessageType, WebSocketHandle::MessageType> {
            type == WebSocketHandle::MessageTypeText ||
            type == WebSocketHandle::MessageTypeBinary);
     typedef WebSocket::MessageType MessageType;
-    COMPILE_ASSERT(
+    static_assert(
         static_cast<MessageType>(WebSocketHandle::MessageTypeContinuation) ==
             WebSocket::MESSAGE_TYPE_CONTINUATION,
-        enum_values_must_match_for_message_type);
-    COMPILE_ASSERT(
-        static_cast<MessageType>(WebSocketHandle::MessageTypeText) ==
-            WebSocket::MESSAGE_TYPE_TEXT,
-        enum_values_must_match_for_message_type);
-    COMPILE_ASSERT(
+        "WebSocket and WebSocketHandle enum values must match");
+    static_assert(static_cast<MessageType>(WebSocketHandle::MessageTypeText) ==
+                      WebSocket::MESSAGE_TYPE_TEXT,
+                  "WebSocket and WebSocketHandle enum values must match");
+    static_assert(
         static_cast<MessageType>(WebSocketHandle::MessageTypeBinary) ==
             WebSocket::MESSAGE_TYPE_BINARY,
-        enum_values_must_match_for_message_type);
+        "WebSocket and WebSocketHandle enum values must match");
     return static_cast<WebSocket::MessageType>(type);
   }
 };

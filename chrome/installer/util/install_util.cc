@@ -88,8 +88,8 @@ const wchar_t* const kStages[] = {
   kStageUninstallingChromeFrame,
 };
 
-COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),
-               kStages_disagrees_with_Stage_comma_they_must_match_bang);
+static_assert(installer::NUM_STAGES == arraysize(kStages),
+              "kStages disagrees with Stage; they must match!");
 
 // Creates a zero-sized non-decorated foreground window that doesn't appear
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx

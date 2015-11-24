@@ -118,8 +118,8 @@ url::Origin FrameOriginFromClientProperty(const mojo::Array<uint8_t>& data) {
 
   CHECK(data.size());
   CHECK(data.size() < static_cast<size_t>(std::numeric_limits<int>::max()));
-  COMPILE_ASSERT(sizeof(uint8_t) == sizeof(unsigned char),
-                 uint8_t_same_size_as_unsigned_char);
+  static_assert(sizeof(uint8_t) == sizeof(unsigned char),
+                "uint8_t must be the same size as unsigned char");
   const base::Pickle pickle(reinterpret_cast<const char*>(&(data.front())),
                             static_cast<int>(data.size()));
   CHECK(pickle.data());

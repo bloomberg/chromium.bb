@@ -185,7 +185,7 @@ const int16* PopulateYUVToRGBTable(const double matrix[3][3],
 
   // Sanity check that our constants here match the size of the statically
   // allocated tables.
-  COMPILE_ASSERT(
+  static_assert(
       kNumTables * kNumRows * kNumColumns * kElementSize == kYUVToRGBTableSize,
       "YUV lookup table size doesn't match expectation.");
 

@@ -74,8 +74,8 @@ template<class T> struct must_be_specialized {
 };
 
 template<class T> T GetFirstColumn(const sql::Statement& s) {
-  COMPILE_ASSERT(must_be_specialized<T>::is_specialized,
-                 "Implement a specialization.");
+  static_assert(must_be_specialized<T>::is_specialized,
+                "Implement a specialization.");
 }
 
 template<> int64_t GetFirstColumn(const sql::Statement& s) {

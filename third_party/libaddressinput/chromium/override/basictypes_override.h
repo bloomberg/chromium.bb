@@ -7,4 +7,6 @@
 
 #include "base/basictypes.h"
 
+#define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
+
 #endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_BASICTYPES_OVERRIDE_H_

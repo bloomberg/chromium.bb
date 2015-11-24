@@ -31,15 +31,15 @@ struct TypeConverter<net::WebSocketFrameHeader::OpCode,
     typedef net::WebSocketFrameHeader::OpCode OpCode;
     // These compile asserts verify that the same underlying values are used for
     // both types, so we can simply cast between them.
-    COMPILE_ASSERT(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_CONTINUATION) ==
-                       net::WebSocketFrameHeader::kOpCodeContinuation,
-                   enum_values_must_match_for_opcode_continuation);
-    COMPILE_ASSERT(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_TEXT) ==
-                       net::WebSocketFrameHeader::kOpCodeText,
-                   enum_values_must_match_for_opcode_text);
-    COMPILE_ASSERT(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_BINARY) ==
-                       net::WebSocketFrameHeader::kOpCodeBinary,
-                   enum_values_must_match_for_opcode_binary);
+    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_CONTINUATION) ==
+                      net::WebSocketFrameHeader::kOpCodeContinuation,
+                  "enum values must match for opcode continuation");
+    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_TEXT) ==
+                      net::WebSocketFrameHeader::kOpCodeText,
+                  "enum values must match for opcode text");
+    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_BINARY) ==
+                      net::WebSocketFrameHeader::kOpCodeBinary,
+                  "enum values must match for opcode binary");
     return static_cast<OpCode>(type);
   }
 };

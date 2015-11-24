@@ -34,8 +34,8 @@ const int bits_per_sample = 16;
 
 // Faked ring buffer. Must be aligned.
 #define DATA_ALIGNMENT 16
-COMPILE_ASSERT(AudioBus::kChannelAlignment == DATA_ALIGNMENT,
-               Data_alignment_not_same_as_AudioBus);
+static_assert(AudioBus::kChannelAlignment == DATA_ALIGNMENT,
+              "Data alignment not same as AudioBus");
 ALIGNAS(DATA_ALIGNMENT) uint8 data[kSegments *
     (sizeof(media::AudioInputBufferParameters) + frames * channels *
         sizeof(float))];

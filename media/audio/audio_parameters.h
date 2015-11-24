@@ -29,8 +29,8 @@ namespace media {
 #pragma warning(disable: 4324)  // Disable warning for added padding.
 #endif
 #define PARAMETERS_ALIGNMENT 16
-COMPILE_ASSERT(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
-               AudioInputBufferParameters_alignment_not_same_as_AudioBus);
+static_assert(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
+              "AudioInputBufferParameters alignment not same as AudioBus");
 struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioInputBufferParameters {
   double volume;
   uint32 size;
@@ -43,9 +43,10 @@ struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioInputBufferParameters {
 #pragma warning(pop)
 #endif
 
-COMPILE_ASSERT(
-    sizeof(AudioInputBufferParameters) % AudioBus::kChannelAlignment == 0,
-    AudioInputBufferParameters_not_aligned);
+static_assert(sizeof(AudioInputBufferParameters) %
+                      AudioBus::kChannelAlignment ==
+                  0,
+              "AudioInputBufferParameters not aligned");
 
 struct MEDIA_EXPORT AudioInputBuffer {
   AudioInputBufferParameters params;

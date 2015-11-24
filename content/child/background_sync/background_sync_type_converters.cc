@@ -9,9 +9,9 @@
 namespace mojo {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(mojo_name, blink_name) \
-  COMPILE_ASSERT(static_cast<int>(content::mojo_name) ==    \
-                     static_cast<int>(blink::blink_name),   \
-                 mismatching_enums)
+  static_assert(static_cast<int>(content::mojo_name) ==     \
+                    static_cast<int>(blink::blink_name),    \
+                "mojo and blink enums must match")
 
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_PERIODIC,
                              WebSyncRegistration::PeriodicityPeriodic);

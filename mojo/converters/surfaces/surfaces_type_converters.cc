@@ -69,10 +69,10 @@ using mus::mojom::YUVVideoQuadStatePtr;
 
 namespace mojo {
 
-#define ASSERT_ENUM_VALUES_EQUAL(value)                                      \
-  COMPILE_ASSERT(cc::DrawQuad::value == static_cast<cc::DrawQuad::Material>( \
-                                            mus::mojom::MATERIAL_##value),   \
-                 value##_enum_value_matches)
+#define ASSERT_ENUM_VALUES_EQUAL(value)                                     \
+  static_assert(cc::DrawQuad::value == static_cast<cc::DrawQuad::Material>( \
+                                           mus::mojom::MATERIAL_##value),   \
+                #value " enum value must match")
 
 ASSERT_ENUM_VALUES_EQUAL(DEBUG_BORDER);
 ASSERT_ENUM_VALUES_EQUAL(IO_SURFACE_CONTENT);
@@ -85,10 +85,10 @@ ASSERT_ENUM_VALUES_EQUAL(TEXTURE_CONTENT);
 ASSERT_ENUM_VALUES_EQUAL(TILED_CONTENT);
 ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
 
-COMPILE_ASSERT(cc::YUVVideoDrawQuad::REC_601 ==
-                   static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-                       mus::mojom::YUV_COLOR_SPACE_REC_601),
-               rec_601_enum_matches);
+static_assert(cc::YUVVideoDrawQuad::REC_601 ==
+                  static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
+                      mus::mojom::YUV_COLOR_SPACE_REC_601),
+              "REC_601 enum value must match");
 // TODO(jamesr): Add REC_709 and JPEG to the YUVColorSpace enum upstream in
 // mojo.
 

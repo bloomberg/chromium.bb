@@ -422,21 +422,21 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
     L"1.1-full",
     L"1.1-dev-full"
   };
-  COMPILE_ASSERT(arraysize(full) == arraysize(plain), bad_full_array_size);
+  static_assert(arraysize(full) == arraysize(plain), "bad full array size");
   const wchar_t* const multifail[] = {
     L"-multifail",
     L"1.1-multifail",
     L"1.1-dev-multifail"
   };
-  COMPILE_ASSERT(arraysize(multifail) == arraysize(plain),
-                 bad_multifail_array_size);
+  static_assert(arraysize(multifail) == arraysize(plain),
+                "bad multifail array size");
   const wchar_t* const multifail_full[] = {
     L"-multifail-full",
     L"1.1-multifail-full",
     L"1.1-dev-multifail-full"
   };
-  COMPILE_ASSERT(arraysize(multifail_full) == arraysize(plain),
-                 bad_multifail_full_array_size);
+  static_assert(arraysize(multifail_full) == arraysize(plain),
+                "bad multifail_full array size");
   const wchar_t* const* input_arrays[] = {
     plain,
     full,

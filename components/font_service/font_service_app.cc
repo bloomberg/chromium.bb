@@ -9,19 +9,18 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
-COMPILE_ASSERT(static_cast<uint32>(SkTypeface::kNormal) ==
-                   static_cast<uint32>(font_service::TYPEFACE_STYLE_NORMAL),
-               typeface_flags_should_match);
-COMPILE_ASSERT(static_cast<uint32>(SkTypeface::kBold) ==
-                   static_cast<uint32>(font_service::TYPEFACE_STYLE_BOLD),
-               typeface_flags_should_match);
-COMPILE_ASSERT(static_cast<uint32>(SkTypeface::kItalic) ==
-                   static_cast<uint32>(font_service::TYPEFACE_STYLE_ITALIC),
-               typeface_flags_should_match);
-COMPILE_ASSERT(
-    static_cast<uint32>(SkTypeface::kBoldItalic) ==
-        static_cast<uint32>(font_service::TYPEFACE_STYLE_BOLD_ITALIC),
-    typeface_flags_should_match);
+static_assert(static_cast<uint32>(SkTypeface::kNormal) ==
+                  static_cast<uint32>(font_service::TYPEFACE_STYLE_NORMAL),
+              "Skia and font service flags must match");
+static_assert(static_cast<uint32>(SkTypeface::kBold) ==
+                  static_cast<uint32>(font_service::TYPEFACE_STYLE_BOLD),
+              "Skia and font service flags must match");
+static_assert(static_cast<uint32>(SkTypeface::kItalic) ==
+                  static_cast<uint32>(font_service::TYPEFACE_STYLE_ITALIC),
+              "Skia and font service flags must match");
+static_assert(static_cast<uint32>(SkTypeface::kBoldItalic) ==
+                  static_cast<uint32>(font_service::TYPEFACE_STYLE_BOLD_ITALIC),
+              "Skia and font service flags must match");
 
 namespace {
 

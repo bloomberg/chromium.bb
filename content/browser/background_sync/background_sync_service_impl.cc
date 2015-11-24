@@ -47,9 +47,9 @@ SyncRegistrationPtr ToMojoRegistration(
 }  // namespace
 
 #define COMPILE_ASSERT_MATCHING_ENUM(mojo_name, manager_name) \
-  COMPILE_ASSERT(static_cast<int>(content::mojo_name) ==      \
-                     static_cast<int>(content::manager_name), \
-                 mismatching_enums)
+  static_assert(static_cast<int>(content::mojo_name) ==       \
+                    static_cast<int>(content::manager_name),  \
+                "mojo and manager enums must match")
 
 // TODO(iclelland): Move these tests somewhere else
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_NONE,

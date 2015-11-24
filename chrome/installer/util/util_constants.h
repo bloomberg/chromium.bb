@@ -128,8 +128,8 @@ enum InstallerStage {
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(UNINSTALLING_CHROME_FRAME == 20,
-               never_ever_ever_change_InstallerStage_values_bang);
+static_assert(UNINSTALLING_CHROME_FRAME == 20,
+              "Never ever ever change InstallerStage values!");
 
 namespace switches {
 

@@ -1499,9 +1499,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     bool proceed_with_installation = true;
 
     uint32 higher_products = 0;
-    COMPILE_ASSERT(
-        sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
-        too_many_distribution_types_);
+    static_assert(sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
+                  "too many distribution types");
     const Products& products = installer_state.products();
     for (Products::const_iterator it = products.begin(); it < products.end();
          ++it) {
@@ -1519,8 +1518,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
 
     if (higher_products != 0) {
-      COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 3,
-                     add_support_for_new_products_here_);
+      static_assert(BrowserDistribution::NUM_TYPES == 3,
+                    "add support for new products here");
       int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
       proceed_with_installation = false;
       install_status = HIGHER_VERSION_EXISTS;

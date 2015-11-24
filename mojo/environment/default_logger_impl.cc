@@ -12,16 +12,16 @@ namespace internal {
 namespace {
 
 // We rely on log levels being the same numerically:
-COMPILE_ASSERT(logging::LOG_VERBOSE == MOJO_LOG_LEVEL_VERBOSE,
-               verbose_log_level_value_mismatch);
-COMPILE_ASSERT(logging::LOG_INFO == MOJO_LOG_LEVEL_INFO,
-               info_log_level_value_mismatch);
-COMPILE_ASSERT(logging::LOG_WARNING == MOJO_LOG_LEVEL_WARNING,
-               warning_log_level_value_mismatch);
-COMPILE_ASSERT(logging::LOG_ERROR == MOJO_LOG_LEVEL_ERROR,
-               error_log_level_value_mismatch);
-COMPILE_ASSERT(logging::LOG_FATAL == MOJO_LOG_LEVEL_FATAL,
-               fatal_log_level_value_mismatch);
+static_assert(logging::LOG_VERBOSE == MOJO_LOG_LEVEL_VERBOSE,
+              "verbose log level value mismatch");
+static_assert(logging::LOG_INFO == MOJO_LOG_LEVEL_INFO,
+              "info log level value mismatch");
+static_assert(logging::LOG_WARNING == MOJO_LOG_LEVEL_WARNING,
+              "warning log level value mismatch");
+static_assert(logging::LOG_ERROR == MOJO_LOG_LEVEL_ERROR,
+              "error log level value mismatch");
+static_assert(logging::LOG_FATAL == MOJO_LOG_LEVEL_FATAL,
+              "fatal log level value mismatch");
 
 int MojoToChromiumLogLevel(MojoLogLevel log_level) {
   // See the compile asserts above.

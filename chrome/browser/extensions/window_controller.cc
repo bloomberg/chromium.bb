@@ -21,8 +21,8 @@ namespace extensions {
 WindowController::TypeFilter WindowController::GetAllWindowFilter() {
   // This needs to be updated if there is a change to
   // extensions::api::windows:WindowType.
-  COMPILE_ASSERT(api::windows::WINDOW_TYPE_LAST == 5,
-                 Update_extensions_WindowController_to_match_WindowType);
+  static_assert(api::windows::WINDOW_TYPE_LAST == 5,
+                "Update extensions WindowController to match WindowType");
   return ((1 << api::windows::WINDOW_TYPE_NORMAL) |
           (1 << api::windows::WINDOW_TYPE_PANEL) |
           (1 << api::windows::WINDOW_TYPE_POPUP) |

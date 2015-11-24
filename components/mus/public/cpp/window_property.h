@@ -129,14 +129,16 @@ void Window::ClearLocalProperty(const WindowProperty<T>* property) {
   DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
 #define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                     \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
+  static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
+                "Property type must fit in 64 bits");                       \
   namespace {                                                               \
   const mus::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
   }                                                                         \
   const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;
 
 #define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)               \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
+  static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
+                "Property type must fit in 64 bits");                       \
   namespace {                                                               \
   const mus::WindowProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
   const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;              \

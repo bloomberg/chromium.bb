@@ -17,7 +17,8 @@ namespace sandbox {
 // Utility functions for using Linux namepaces.
 class SANDBOX_EXPORT NamespaceUtils {
  public:
-  COMPILE_ASSERT((base::is_same<uid_t, gid_t>::value), UidAndGidAreSameType);
+  static_assert((base::is_same<uid_t, gid_t>::value),
+                "uid_t and gid_t must be the same type");
   // generic_id_t can be used for either uid_t or gid_t.
   typedef uid_t generic_id_t;
 

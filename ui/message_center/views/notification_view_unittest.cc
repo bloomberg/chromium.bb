@@ -100,8 +100,8 @@ class NotificationViewTest : public views::ViewsTestBase,
     gfx::Size canvas_size = view->bounds().size();
     gfx::Canvas canvas(canvas_size, 1.0 /* image_scale */,
                        true /* is_opaque */);
-    COMPILE_ASSERT(kBitmapColor != SK_ColorBLACK,
-                   bitmap_color_matches_background_color);
+    static_assert(kBitmapColor != SK_ColorBLACK,
+                  "The bitmap color must match the background color");
     canvas.DrawColor(SK_ColorBLACK);
     view->OnPaint(&canvas);
 

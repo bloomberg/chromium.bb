@@ -237,7 +237,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
         domain_to_registry_controlled_domain[domain];
 
     Scheme scheme = SCHEME_HTTP;
-    COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update this logic");
+    static_assert(arraysize(kAllSchemes) == 2, "Update this logic");
     if (signon_realm_url.SchemeIs(url::kHttpsScheme))
       scheme = SCHEME_HTTPS;
     else if (!signon_realm_url.SchemeIs(url::kHttpScheme))
@@ -259,7 +259,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
           domain_to_registry_controlled_domain[domain];
 
       Scheme other_scheme = scheme == SCHEME_HTTP ? SCHEME_HTTPS : SCHEME_HTTP;
-      COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update |other_scheme|");
+      static_assert(arraysize(kAllSchemes) == 2, "Update |other_scheme|");
 
       // Discount the account at hand from the number of accounts with the same
       // domain and scheme.
@@ -288,7 +288,7 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
 
       std::string source_realm_kind =
           scheme == SCHEME_HTTP ? "FromHttpRealm" : "FromHttpsRealm";
-      COMPILE_ASSERT(arraysize(kAllSchemes) == 2, "Update |source_realm_kind|");
+      static_assert(arraysize(kAllSchemes) == 2, "Update |source_realm_kind|");
 
       // So far, the calculation has been carried out once per "source" domain,
       // but the metrics need to be recorded on a per-account basis. The set of

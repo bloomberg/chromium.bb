@@ -31,9 +31,9 @@ using blink::WebURL;
 namespace content {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name)                   \
-  COMPILE_ASSERT(                                                            \
+  static_assert(                                                             \
       static_cast<int>(WebSocket::webkit_name) == static_cast<int>(np_name), \
-      mismatching_enums)
+      "WebSocket enums must match PPAPI's")
 
 COMPILE_ASSERT_MATCHING_ENUM(CloseEventCodeNormalClosure,
                              PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE);
