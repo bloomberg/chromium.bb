@@ -1910,6 +1910,9 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
+    } else if (this.mainProcessor_.effect.isMultiframe()) {
+      // Draw in best quality to render multiple frames for taking pictures.
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
     } else {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.NORMAL);
     }
