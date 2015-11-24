@@ -53231,6 +53231,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Call.EstimatedSendBitrateInKbps" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average estimated send bitrate during a call, counted from first packet sent
+    until Call instance is destroyed. Only mesured for calls that are at least
+    10 seconds long.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Call.PacerBitrateInKbps" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    Average pacer bitrate during a call, counted from first packet sent until
+    Call instance is destroyed. Only mesured for calls that are at least 10
+    seconds long.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Call.RtcpBitrateReceivedInBps" units="bits/s">
   <owner>holmer@chromium.org</owner>
   <summary>
