@@ -13,6 +13,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -4066,6 +4067,118 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host(),
       "window.domAutomationController.send(getInputFieldText());", &result));
   EXPECT_EQ("FOO", result);
+}
+
+// A WebContentsDelegate to capture ContextMenu creation events.
+class ContextMenuObserverDelegate : public WebContentsDelegate {
+ public:
+  ContextMenuObserverDelegate()
+      : context_menu_created_(false),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  ~ContextMenuObserverDelegate() override {}
+
+  bool HandleContextMenu(const content::ContextMenuParams& params) override {
+    context_menu_created_ = true;
+    menu_params_ = params;
+    message_loop_runner_->Quit();
+    return true;
+  }
+
+  ContextMenuParams getParams() { return menu_params_; }
+
+  void Wait() {
+    if (!context_menu_created_)
+      message_loop_runner_->Run();
+    context_menu_created_ = false;
+  }
+
+ private:
+  bool context_menu_created_;
+  ContextMenuParams menu_params_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuObserverDelegate);
+};
+
+// Test that a mouse right-click to an out-of-process iframe causes a context
+// menu to be generated with the correct screen position.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#else
+#define MAYBE_CreateContextMenuTest CreateContextMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
+  if (!UseSurfacesEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // Ensure that the child process renderer is ready to have input events
+  // routed to it. This happens when the browser process has received
+  // updated compositor surfaces from both renderer processes.
+  gfx::Point point(75, 75);
+  gfx::Point transformed_point;
+  while (root_view->SurfaceIdNamespaceAtPoint(point, &transformed_point) !=
+         rwhv_child->GetSurfaceIdNamespace()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // A WebContentsDelegate to listen for the ShowContextMenu message.
+  ContextMenuObserverDelegate context_menu_delegate;
+  shell()->web_contents()->SetDelegate(&context_menu_delegate);
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  // Target right-click event to child frame.
+  blink::WebMouseEvent click_event;
+  click_event.type = blink::WebInputEvent::MouseDown;
+  click_event.button = blink::WebPointerProperties::ButtonRight;
+  click_event.x = 75;
+  click_event.y = 75;
+  click_event.clickCount = 1;
+  router->RouteMouseEvent(root_view, &click_event);
+
+  // We also need a MouseUp event, needed by Windows.
+  click_event.type = blink::WebInputEvent::MouseUp;
+  click_event.x = 75;
+  click_event.y = 75;
+  router->RouteMouseEvent(root_view, &click_event);
+
+  context_menu_delegate.Wait();
+
+  ContextMenuParams params = context_menu_delegate.getParams();
+
+  EXPECT_EQ(point.x(), params.x);
+  EXPECT_EQ(point.y(), params.y);
 }
 
 }  // namespace content

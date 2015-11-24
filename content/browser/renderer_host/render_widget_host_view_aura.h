@@ -192,6 +192,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                      gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
+  void TransformPointToLocalCoordSpace(const gfx::Point& point,
+                                       cc::SurfaceId original_surface,
+                                       gfx::Point* transformed_point) override;
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

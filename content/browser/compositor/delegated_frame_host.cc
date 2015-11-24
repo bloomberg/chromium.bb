@@ -220,6 +220,23 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   return target_surface_id;
 }
 
+void DelegatedFrameHost::TransformPointToLocalCoordSpace(
+    const gfx::Point& point,
+    cc::SurfaceId original_surface,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
+  if (surface_id_.is_null() || original_surface == surface_id_)
+    return;
+
+  gfx::Transform transform;
+  cc::SurfaceHittest hittest(GetSurfaceManager());
+  if (hittest.GetTransformToTargetSurface(surface_id_, original_surface,
+                                          &transform) &&
+      transform.GetInverse(&transform)) {
+    transform.TransformPoint(transformed_point);
+  }
+}
+
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
   // Should skip a frame only when another frame from the renderer is guaranteed
   // to replace it. Otherwise may cause hangs when the renderer is waiting for

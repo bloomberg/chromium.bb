@@ -164,6 +164,14 @@ class CONTENT_EXPORT DelegatedFrameHost
   cc::SurfaceId SurfaceIdAtPoint(const gfx::Point& point,
                                  gfx::Point* transformed_point);
 
+  // Given the SurfaceID of a Surface that is contained within this class'
+  // Surface, find the relative transform between the Surfaces and apply it
+  // to a point. If a Surface has not yet been created this returns the
+  // same point with no transform applied.
+  void TransformPointToLocalCoordSpace(const gfx::Point& point,
+                                       cc::SurfaceId original_surface,
+                                       gfx::Point* transformed_point);
+
   // Exposed for tests.
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {
     return frame_provider_.get();

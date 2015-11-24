@@ -378,6 +378,17 @@ void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     host_->ForwardWheelEvent(event);
 }
 
+void RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
+  if (!frame_connector_ || !use_surfaces_)
+    return;
+
+  frame_connector_->TransformPointToRootCoordSpace(point, surface_id_,
+                                                   transformed_point);
+}
+
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 }

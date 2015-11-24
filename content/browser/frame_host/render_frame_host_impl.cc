@@ -1271,6 +1271,15 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   process->FilterURL(false, &validated_params.page_url);
   process->FilterURL(true, &validated_params.frame_url);
 
+  // It is necessary to transform the coordinates to account for nested
+  // RenderWidgetHosts, such as with out-of-process iframes.
+  gfx::Point original_point(validated_params.x, validated_params.y);
+  gfx::Point transformed_point = original_point;
+  static_cast<RenderWidgetHostViewBase*>(GetView())
+      ->TransformPointToRootCoordSpace(original_point, &transformed_point);
+  validated_params.x = transformed_point.x();
+  validated_params.y = transformed_point.y();
+
   delegate_->ShowContextMenu(this, validated_params);
 }
 

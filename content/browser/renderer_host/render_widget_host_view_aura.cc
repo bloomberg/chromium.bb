@@ -2223,6 +2223,14 @@ void RenderWidgetHostViewAura::ProcessMouseWheelEvent(
   host_->ForwardWheelEvent(event);
 }
 
+void RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
+    const gfx::Point& point,
+    cc::SurfaceId original_surface,
+    gfx::Point* transformed_point) {
+  delegated_frame_host_->TransformPointToLocalCoordSpace(
+      point, original_surface, transformed_point);
+}
+
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnScrollEvent");
 

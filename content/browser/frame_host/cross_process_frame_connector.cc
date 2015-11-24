@@ -170,6 +170,17 @@ void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
     root_view->UpdateCursor(cursor);
 }
 
+void CrossProcessFrameConnector::TransformPointToRootCoordSpace(
+    const gfx::Point& point,
+    cc::SurfaceId surface_id,
+    gfx::Point* transformed_point) {
+  RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
+  *transformed_point = point;
+  if (root_view)
+    root_view->TransformPointToLocalCoordSpace(point, surface_id,
+                                               transformed_point);
+}
+
 bool CrossProcessFrameConnector::HasFocus() {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (root_view)

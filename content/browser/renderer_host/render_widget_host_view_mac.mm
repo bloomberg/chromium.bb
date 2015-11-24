@@ -1619,6 +1619,14 @@ void RenderWidgetHostViewMac::ProcessMouseWheelEvent(
   render_widget_host_->ForwardWheelEvent(event);
 }
 
+void RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
+    const gfx::Point& point,
+    cc::SurfaceId original_surface,
+    gfx::Point* transformed_point) {
+  delegated_frame_host_->TransformPointToLocalCoordSpace(
+      point, original_surface, transformed_point);
+}
+
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
   if (render_widget_host_)
     return render_widget_host_->Send(message);

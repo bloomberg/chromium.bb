@@ -681,4 +681,17 @@ uint32_t RenderWidgetHostViewBase::SurfaceIdNamespaceAtPoint(
   return 0;
 }
 
+void RenderWidgetHostViewBase::TransformPointToRootCoordSpace(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
+}
+
+void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
+    const gfx::Point& point,
+    cc::SurfaceId original_surface,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
+}
+
 }  // namespace content

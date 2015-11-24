@@ -193,6 +193,26 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
 
+  // If a RenderWidgetHost is dealing with points that are transformed from the
+  // root frame for a page (i.e. because its content is contained within
+  // that of another RenderWidgetHost), this provides a facility to convert
+  // a point from its own coordinate space to that of the root frame.
+  // This only needs to be overriden by RenderWidgetHostView subclasses
+  // that handle content embedded within other RenderWidgetHostViews.
+  virtual void TransformPointToRootCoordSpace(const gfx::Point& point,
+                                              gfx::Point* transformed_point);
+
+  // Transform a point that is in the coordinate space of a Surface that is
+  // embedded within the RenderWidgetHostViewBase's Surface to the
+  // coordinate space of the embedding Surface. Typically this means that a
+  // point was received from an out-of-process iframe's RenderWidget and needs
+  // to be translated to viewport coordinates for the root RWHV, in which case
+  // this method is called on the root RWHV with the out-of-process iframe's
+  // SurfaceId.
+  virtual void TransformPointToLocalCoordSpace(const gfx::Point& point,
+                                               cc::SurfaceId original_surface,
+                                               gfx::Point* transformed_point);
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 
