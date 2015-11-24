@@ -44,14 +44,11 @@ class MimeUtil {
 
   bool IsSupportedMediaMimeType(const std::string& mime_type) const;
 
-  bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs) const;
-
   void ParseCodecString(const std::string& codecs,
                         std::vector<std::string>* codecs_out,
                         bool strip);
 
-  bool IsStrictMediaMimeType(const std::string& mime_type) const;
-  SupportsType IsSupportedStrictMediaMimeType(
+  SupportsType IsSupportedMediaFormat(
       const std::string& mime_type,
       const std::vector<std::string>& codecs) const;
 
@@ -61,7 +58,7 @@ class MimeUtil {
   friend struct base::DefaultLazyInstanceTraits<MimeUtil>;
 
   typedef base::hash_set<int> CodecSet;
-  typedef std::map<std::string, CodecSet> StrictMappings;
+  typedef std::map<std::string, CodecSet> MediaFormatMappings;
   struct CodecEntry {
     CodecEntry() : codec(INVALID_CODEC), is_ambiguous(true) {}
     CodecEntry(Codec c, bool ambiguous) : codec(c), is_ambiguous(ambiguous) {}
@@ -119,7 +116,7 @@ class MimeUtil {
   MimeTypes media_map_;
 
   // A map of mime_types and hash map of the supported codecs for the mime_type.
-  StrictMappings strict_format_map_;
+  MediaFormatMappings media_format_format_map_;
 
   // Keeps track of whether proprietary codec support should be
   // advertised to callers.
@@ -233,7 +230,7 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
 }
 #endif
 
-struct MediaFormatStrict {
+struct MediaFormat {
   const char* const mime_type;
   const char* const codecs_list;
 };
@@ -275,7 +272,7 @@ static const char kMP4VideoCodecsExpression[] =
 
 // These containers are also included in
 // common_media_types/proprietary_media_types. See crbug.com/461012.
-static const MediaFormatStrict format_codec_mappings[] = {
+static const MediaFormat format_codec_mappings[] = {
     {"video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0"},
     {"audio/webm", "opus,vorbis"},
     {"audio/wav", "1"},
@@ -445,7 +442,7 @@ void MimeUtil::InitializeMimeTypeMaps() {
         CodecEntry(kAmbiguousCodecStringMap[i].codec, true);
   }
 
-  // Initialize the strict supported media types.
+  // Initialize the supported media formats.
   for (size_t i = 0; i < arraysize(format_codec_mappings); ++i) {
     std::vector<std::string> mime_type_codecs;
     ParseCodecString(format_codec_mappings[i].codecs_list,
@@ -461,26 +458,12 @@ void MimeUtil::InitializeMimeTypeMaps() {
       codecs.insert(codec);
     }
 
-    strict_format_map_[format_codec_mappings[i].mime_type] = codecs;
+    media_format_format_map_[format_codec_mappings[i].mime_type] = codecs;
   }
 }
 
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
   return media_map_.find(base::ToLowerASCII(mime_type)) != media_map_.end();
-}
-
-
-bool MimeUtil::AreSupportedMediaCodecs(
-    const std::vector<std::string>& codecs) const {
-  for (size_t i = 0; i < codecs.size(); ++i) {
-    Codec codec = INVALID_CODEC;
-    bool is_ambiguous = true;
-    if (!StringToCodec(codecs[i], &codec, &is_ambiguous) ||
-        !IsCodecSupported(codec)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void MimeUtil::ParseCodecString(const std::string& codecs,
@@ -507,21 +490,16 @@ void MimeUtil::ParseCodecString(const std::string& codecs,
   }
 }
 
-bool MimeUtil::IsStrictMediaMimeType(const std::string& mime_type) const {
-  return strict_format_map_.find(base::ToLowerASCII(mime_type)) !=
-         strict_format_map_.end();
-}
-
-SupportsType MimeUtil::IsSupportedStrictMediaMimeType(
+SupportsType MimeUtil::IsSupportedMediaFormat(
     const std::string& mime_type,
     const std::vector<std::string>& codecs) const {
   const std::string mime_type_lower_case = base::ToLowerASCII(mime_type);
-  StrictMappings::const_iterator it_strict_map =
-      strict_format_map_.find(mime_type_lower_case);
-  if (it_strict_map == strict_format_map_.end())
+  MediaFormatMappings::const_iterator it_media_format_map =
+      media_format_format_map_.find(mime_type_lower_case);
+  if (it_media_format_map == media_format_format_map_.end())
     return codecs.empty() ? MayBeSupported : IsNotSupported;
 
-  if (it_strict_map->second.empty()) {
+  if (it_media_format_map->second.empty()) {
     // We get here if the mimetype does not expect a codecs parameter.
     return (codecs.empty() &&
             IsDefaultCodecSupportedLowerCase(mime_type_lower_case))
@@ -547,11 +525,11 @@ SupportsType MimeUtil::IsSupportedStrictMediaMimeType(
     for (const auto& codec_id : codecs) {
       codecs_to_check.push_back(TranslateLegacyAvc1CodecIds(codec_id));
     }
-    return AreSupportedCodecs(it_strict_map->second, codecs_to_check);
+    return AreSupportedCodecs(it_media_format_map->second, codecs_to_check);
   }
 #endif
 
-  return AreSupportedCodecs(it_strict_map->second, codecs);
+  return AreSupportedCodecs(it_media_format_map->second, codecs);
 }
 
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
@@ -751,19 +729,9 @@ bool IsSupportedMediaMimeType(const std::string& mime_type) {
   return g_media_mime_util.Get().IsSupportedMediaMimeType(mime_type);
 }
 
-bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs) {
-  return g_media_mime_util.Get().AreSupportedMediaCodecs(codecs);
-}
-
-bool IsStrictMediaMimeType(const std::string& mime_type) {
-  return g_media_mime_util.Get().IsStrictMediaMimeType(mime_type);
-}
-
-SupportsType IsSupportedStrictMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs) {
-  return g_media_mime_util.Get().IsSupportedStrictMediaMimeType(
-      mime_type, codecs);
+SupportsType IsSupportedMediaFormat(const std::string& mime_type,
+                                    const std::vector<std::string>& codecs) {
+  return g_media_mime_util.Get().IsSupportedMediaFormat(mime_type, codecs);
 }
 
 void ParseCodecString(const std::string& codecs,

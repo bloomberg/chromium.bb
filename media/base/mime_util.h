@@ -16,10 +16,6 @@ namespace media {
 // supported/recognized MIME types.
 MEDIA_EXPORT bool IsSupportedMediaMimeType(const std::string& mime_type);
 
-// Returns true if and only if all codecs are supported, false otherwise.
-MEDIA_EXPORT bool AreSupportedMediaCodecs(
-    const std::vector<std::string>& codecs);
-
 // Parses a codec string, populating |codecs_out| with the prefix of each codec
 // in the string |codecs_in|. For example, passed "aaa.b.c,dd.eee", if
 // |strip| == true |codecs_out| will contain {"aaa", "dd"}, if |strip| == false
@@ -28,10 +24,6 @@ MEDIA_EXPORT bool AreSupportedMediaCodecs(
 MEDIA_EXPORT void ParseCodecString(const std::string& codecs,
                                    std::vector<std::string>* codecs_out,
                                    bool strip);
-
-// Check to see if a particular MIME type is in our list which only supports a
-// certain subset of codecs.
-MEDIA_EXPORT bool IsStrictMediaMimeType(const std::string& mime_type);
 
 // Indicates that the MIME type and (possible codec string) are supported by the
 // underlying platform.
@@ -60,9 +52,9 @@ enum SupportsType {
 // * Returns IsNotSupported if either the |mime_type| is not supported or the
 //   |mime_type| is supported but at least one of the codecs within |codecs| is
 //   not supported for the |mime_type|.
-MEDIA_EXPORT SupportsType IsSupportedStrictMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs);
+MEDIA_EXPORT SupportsType
+IsSupportedMediaFormat(const std::string& mime_type,
+                       const std::vector<std::string>& codecs);
 
 // Test only method that removes proprietary media types and codecs from the
 // list of supported MIME types and codecs. These types and codecs must be

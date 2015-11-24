@@ -10,43 +10,6 @@
 
 namespace media {
 
-TEST(MimeUtilTest, StrictMediaMimeType) {
-  EXPECT_TRUE(IsStrictMediaMimeType("video/webm"));
-  EXPECT_TRUE(IsStrictMediaMimeType("Video/WEBM"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/webm"));
-
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/wav"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/x-wav"));
-
-  EXPECT_TRUE(IsStrictMediaMimeType("video/ogg"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/ogg"));
-  EXPECT_TRUE(IsStrictMediaMimeType("application/ogg"));
-
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/mpeg"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/mp3"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/x-mp3"));
-
-  EXPECT_TRUE(IsStrictMediaMimeType("video/mp4"));
-  EXPECT_TRUE(IsStrictMediaMimeType("video/x-m4v"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/mp4"));
-  EXPECT_TRUE(IsStrictMediaMimeType("audio/x-m4a"));
-
-  EXPECT_TRUE(IsStrictMediaMimeType("application/x-mpegurl"));
-  EXPECT_TRUE(IsStrictMediaMimeType("application/vnd.apple.mpegurl"));
-
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
-  EXPECT_TRUE(IsStrictMediaMimeType("video/mp2t"));
-#else
-  EXPECT_FALSE(IsStrictMediaMimeType("video/mp2t"));
-#endif
-
-  EXPECT_FALSE(IsStrictMediaMimeType("video/unknown"));
-  EXPECT_FALSE(IsStrictMediaMimeType("Video/UNKNOWN"));
-  EXPECT_FALSE(IsStrictMediaMimeType("audio/unknown"));
-  EXPECT_FALSE(IsStrictMediaMimeType("application/unknown"));
-  EXPECT_FALSE(IsStrictMediaMimeType("unknown/unknown"));
-}
-
 TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/webm"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/webm"));

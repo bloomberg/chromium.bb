@@ -294,7 +294,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   std::vector<std::string> codec_vector;
   media::ParseCodecString(codecs, &codec_vector, false);
   if (!codec_vector.empty() &&
-      (media::IsSupportedStrictMediaMimeType(container_lower, codec_vector) !=
+      (media::IsSupportedMediaFormat(container_lower, codec_vector) !=
        media::IsSupported)) {
     return false;
   }
