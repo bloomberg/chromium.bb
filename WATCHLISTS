@@ -185,6 +185,16 @@
                   '|chrome/test/data/extensions/api_test/cast_'\
                   '|content/public/renderer/media_stream_',
     },
+    'certificate_transparency': {
+      'filepath': 'components/certificate_transparency/'\
+                  '|components/packed_ct_ev_whitelist/'\
+                  '|net/cert/ct_'\
+                  '|net/cert/multi_log_ct_verifier'\
+                  '|net/cert/sct_status_flags.h'\
+                  '|net/cert/signed_certificate_timestamp'\
+                  '|net/cert/signed_tree_head'\
+                  '|net/test/ct_',
+    },
     'chromecast': {
       'filepath': 'chromecast/',
     },
@@ -1278,6 +1288,7 @@
              'miu+watch@chromium.org',
              'xjz+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
+    'certificate_transparency': ['eranm@chromium.org', 'certificate-transparency-chrome@googlegroups.com'],
     'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
     'chromecast': ['gunsch+watch@chromium.org',
