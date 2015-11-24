@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/proof_verifier.h"
@@ -22,6 +23,7 @@ namespace net {
 
 class CertPolicyEnforcer;
 class CertVerifier;
+class CTVerifier;
 class TransportSecurityState;
 
 // ProofVerifyDetailsChromium is the implementation-specific information that a
@@ -34,6 +36,7 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
   ProofVerifyDetails* Clone() const override;
 
   CertVerifyResult cert_verify_result;
+  ct::CTVerifyResult ct_verify_result;
 
   // pinning_failure_log contains a message produced by
   // TransportSecurityState::PKPState::CheckPublicKeyPins in the event of a
@@ -58,7 +61,8 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
  public:
   ProofVerifierChromium(CertVerifier* cert_verifier,
                         CertPolicyEnforcer* cert_policy_enforcer,
-                        TransportSecurityState* transport_security_state);
+                        TransportSecurityState* transport_security_state,
+                        CTVerifier* cert_transparency_verifier);
   ~ProofVerifierChromium() override;
 
   // ProofVerifier interface
@@ -86,6 +90,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   CertPolicyEnforcer* const cert_policy_enforcer_;
 
   TransportSecurityState* const transport_security_state_;
+  CTVerifier* const cert_transparency_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ProofVerifierChromium);
 };

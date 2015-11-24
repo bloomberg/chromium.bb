@@ -20,7 +20,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/ct_verify_result.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
@@ -38,6 +38,7 @@ namespace net {
 ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
   ProofVerifyDetailsChromium* other = new ProofVerifyDetailsChromium;
   other->cert_verify_result = cert_verify_result;
+  other->ct_verify_result = ct_verify_result;
   return other;
 }
 
@@ -50,6 +51,7 @@ class ProofVerifierChromium::Job {
       CertVerifier* cert_verifier,
       CertPolicyEnforcer* cert_policy_enforcer,
       TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
       int cert_verify_flags,
       const BoundNetLog& net_log);
 
@@ -91,6 +93,8 @@ class ProofVerifierChromium::Job {
 
   TransportSecurityState* transport_security_state_;
 
+  CTVerifier* cert_transparency_verifier_;
+
   // |hostname| specifies the hostname for which |certs| is a valid chain.
   std::string hostname_;
 
@@ -117,12 +121,14 @@ ProofVerifierChromium::Job::Job(
     CertVerifier* cert_verifier,
     CertPolicyEnforcer* cert_policy_enforcer,
     TransportSecurityState* transport_security_state,
+    CTVerifier* cert_transparency_verifier,
     int cert_verify_flags,
     const BoundNetLog& net_log)
     : proof_verifier_(proof_verifier),
       verifier_(cert_verifier),
       policy_enforcer_(cert_policy_enforcer),
       transport_security_state_(transport_security_state),
+      cert_transparency_verifier_(cert_transparency_verifier),
       cert_verify_flags_(cert_verify_flags),
       next_state_(STATE_NONE),
       net_log_(net_log) {}
@@ -170,6 +176,15 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
     *verify_details = verify_details_.Pass();
     return QUIC_FAILURE;
+  }
+
+  if (cert_transparency_verifier_ && !cert_sct.empty()) {
+    // Note that this is a completely synchronous operation: The CT Log Verifier
+    // gets all the data it needs for SCT verification and does not do any
+    // external communication.
+    cert_transparency_verifier_->Verify(cert_.get(), std::string(), cert_sct,
+                                        &verify_details_->ct_verify_result,
+                                        net_log_);
   }
 
   // We call VerifySignature first to avoid copying of server_config and
@@ -253,13 +268,10 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   const CertStatus cert_status = cert_verify_result.cert_status;
   if (result == OK && policy_enforcer_ &&
       (cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
-    // QUIC does not support OCSP stapling or the CT TLS extension; as a
-    // result, CT can never be verified, thus the result is always empty.
-    ct::CTVerifyResult empty_ct_result;
     if (!policy_enforcer_->DoesConformToCTEVPolicy(
             cert_verify_result.verified_cert.get(),
-            SSLConfigService::GetEVCertsWhitelist().get(), empty_ct_result,
-            net_log_)) {
+            SSLConfigService::GetEVCertsWhitelist().get(),
+            verify_details_->ct_verify_result, net_log_)) {
       verify_details_->cert_verify_result.cert_status |=
           CERT_STATUS_CT_COMPLIANCE_FAILED;
       verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;
@@ -371,10 +383,12 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
 ProofVerifierChromium::ProofVerifierChromium(
     CertVerifier* cert_verifier,
     CertPolicyEnforcer* cert_policy_enforcer,
-    TransportSecurityState* transport_security_state)
+    TransportSecurityState* transport_security_state,
+    CTVerifier* cert_transparency_verifier)
     : cert_verifier_(cert_verifier),
       cert_policy_enforcer_(cert_policy_enforcer),
-      transport_security_state_(transport_security_state) {}
+      transport_security_state_(transport_security_state),
+      cert_transparency_verifier_(cert_transparency_verifier) {}
 
 ProofVerifierChromium::~ProofVerifierChromium() {
   STLDeleteElements(&active_jobs_);
@@ -396,9 +410,10 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
-  scoped_ptr<Job> job(new Job(
-      this, cert_verifier_, cert_policy_enforcer_, transport_security_state_,
-      chromium_context->cert_verify_flags, chromium_context->net_log));
+  scoped_ptr<Job> job(
+      new Job(this, cert_verifier_, cert_policy_enforcer_,
+              transport_security_state_, cert_transparency_verifier_,
+              chromium_context->cert_verify_flags, chromium_context->net_log));
   QuicAsyncStatus status =
       job->VerifyProof(hostname, server_config, certs, cert_sct, signature,
                        error_details, verify_details, callback);

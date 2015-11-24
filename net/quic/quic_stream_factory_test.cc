@@ -9,6 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -227,6 +228,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
                                  base::ThreadTaskRunnerHandle::Get())),
+        cert_transparency_verifier_(new MultiLogCTVerifier()),
         factory_(nullptr),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         privacy_mode_(PRIVACY_MODE_DISABLED),
@@ -254,7 +256,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     factory_.reset(new QuicStreamFactory(
         &host_resolver_, &socket_factory_, http_server_properties_.GetWeakPtr(),
         cert_verifier_.get(), nullptr, channel_id_service_.get(),
-        &transport_security_state_,
+        &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
         kDefaultMaxPacketSize, std::string(),
@@ -382,6 +384,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   scoped_ptr<CertVerifier> cert_verifier_;
   scoped_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
+  scoped_ptr<CTVerifier> cert_transparency_verifier_;
   scoped_ptr<QuicStreamFactory> factory_;
   HostPortPair host_port_pair_;
   PrivacyMode privacy_mode_;

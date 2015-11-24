@@ -13,6 +13,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -78,6 +79,7 @@ class QuicEndToEndTest : public PlatformTest {
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),
         host_resolver_(host_resolver_impl_.Pass()),
+        cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
@@ -93,6 +95,7 @@ class QuicEndToEndTest : public PlatformTest {
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;
+    params_.cert_transparency_verifier = cert_transparency_verifier_.get();
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
@@ -223,6 +226,7 @@ class QuicEndToEndTest : public PlatformTest {
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
+  scoped_ptr<CTVerifier> cert_transparency_verifier_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;

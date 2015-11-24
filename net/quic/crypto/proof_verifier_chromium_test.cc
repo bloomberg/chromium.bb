@@ -11,12 +11,17 @@
 #include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_serialization.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -93,6 +98,7 @@ class DummyProofVerifierCallback : public ProofVerifierCallback {
 
 const char kTestHostname[] = "test.example.com";
 const char kTestConfig[] = "server config bytes";
+const char kLogDescription[] = "somelog";
 
 }  // namespace
 
@@ -103,6 +109,14 @@ class ProofVerifierChromiumTest : public ::testing::Test {
                                                        BoundNetLog())) {}
 
   void SetUp() override {
+    scoped_refptr<const CTLogVerifier> log(CTLogVerifier::Create(
+        ct::GetTestPublicKey(), kLogDescription, "https://test.example.com"));
+    ASSERT_TRUE(log);
+    log_verifiers_.push_back(log);
+
+    ct_verifier_.reset(new MultiLogCTVerifier());
+    ct_verifier_->AddLogs(log_verifiers_);
+
     ASSERT_NO_FATAL_FAILURE(GetTestCertificates(&certs_));
   }
 
@@ -155,7 +169,65 @@ class ProofVerifierChromiumTest : public ::testing::Test {
                        sizeof(kTestSignature));
   }
 
+  void GetSCTTestCertificates(std::vector<std::string>* certs) {
+    std::string der_test_cert(ct::GetDerEncodedX509Cert());
+    scoped_refptr<X509Certificate> test_cert = X509Certificate::CreateFromBytes(
+        der_test_cert.data(), der_test_cert.length());
+    ASSERT_TRUE(test_cert.get());
+
+    std::string der_bytes;
+    ASSERT_TRUE(X509Certificate::GetDEREncoded(test_cert->os_cert_handle(),
+                                               &der_bytes));
+
+    certs->clear();
+    certs->push_back(der_bytes);
+  }
+
+  std::string GetSCTListForTesting() {
+    const std::string sct = ct::GetTestSignedCertificateTimestamp();
+    std::string sct_list;
+    ct::EncodeSCTListForTesting(sct, &sct_list);
+    return sct_list;
+  }
+
+  std::string GetCorruptSCTListForTesting() {
+    std::string sct = ct::GetTestSignedCertificateTimestamp();
+    sct[15] = 't';  // Corrupt a byte inside SCT.
+    std::string sct_list;
+    ct::EncodeSCTListForTesting(sct, &sct_list);
+    return sct_list;
+  }
+
+  bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result) {
+    return (result.verified_scts.size() == 1U) && result.invalid_scts.empty() &&
+           result.unknown_logs_scts.empty() &&
+           result.verified_scts[0]->log_description == kLogDescription;
+  }
+
+  bool CheckForSCTOrigin(const ct::CTVerifyResult& result,
+                         ct::SignedCertificateTimestamp::Origin origin) {
+    return (result.verified_scts.size() > 0) &&
+           (result.verified_scts[0]->origin == origin);
+  }
+
+  void CheckSCT(bool sct_expected_ok) {
+    ProofVerifyDetailsChromium* proof_details =
+        reinterpret_cast<ProofVerifyDetailsChromium*>(details_.get());
+    const ct::CTVerifyResult& ct_verify_result =
+        proof_details->ct_verify_result;
+    if (sct_expected_ok) {
+      ASSERT_TRUE(CheckForSingleVerifiedSCTInResult(ct_verify_result));
+      ASSERT_TRUE(CheckForSCTOrigin(
+          ct_verify_result,
+          ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
+    } else {
+      EXPECT_EQ(1U, ct_verify_result.unknown_logs_scts.size());
+    }
+  }
+
  protected:
+  scoped_ptr<MultiLogCTVerifier> ct_verifier_;
+  std::vector<scoped_refptr<const CTLogVerifier>> log_verifiers_;
   scoped_ptr<ProofVerifyContext> verify_context_;
   scoped_ptr<ProofVerifyDetails> details_;
   std::string error_details_;
@@ -166,7 +238,8 @@ class ProofVerifierChromiumTest : public ::testing::Test {
 // verification fails.
 TEST_F(ProofVerifierChromiumTest, FailsIfCertFails) {
   MockCertVerifier dummy_verifier;
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr);
+  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
+                                       ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
@@ -176,11 +249,48 @@ TEST_F(ProofVerifierChromiumTest, FailsIfCertFails) {
   delete callback;
 }
 
+// Valid SCT, but invalid signature.
+TEST_F(ProofVerifierChromiumTest, ValidSCTList) {
+  // Use different certificates for SCT tests.
+  ASSERT_NO_FATAL_FAILURE(GetSCTTestCertificates(&certs_));
+
+  MockCertVerifier cert_verifier;
+  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+                                       ct_verifier_.get());
+
+  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestConfig, certs_, GetSCTListForTesting(), "",
+      verify_context_.get(), &error_details_, &details_, callback);
+  ASSERT_EQ(QUIC_FAILURE, status);
+  CheckSCT(/*sct_expected_ok=*/true);
+  delete callback;
+}
+
+// Invalid SCT and signature.
+TEST_F(ProofVerifierChromiumTest, InvalidSCTList) {
+  // Use different certificates for SCT tests.
+  ASSERT_NO_FATAL_FAILURE(GetSCTTestCertificates(&certs_));
+
+  MockCertVerifier cert_verifier;
+  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+                                       ct_verifier_.get());
+
+  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestConfig, certs_, GetCorruptSCTListForTesting(), "",
+      verify_context_.get(), &error_details_, &details_, callback);
+  ASSERT_EQ(QUIC_FAILURE, status);
+  CheckSCT(/*sct_expected_ok=*/false);
+  delete callback;
+}
+
 // Tests that the ProofVerifier doesn't verify certificates if the config
 // signature fails.
 TEST_F(ProofVerifierChromiumTest, FailsIfSignatureFails) {
   FailsTestCertVerifier cert_verifier;
-  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr);
+  ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
+                                       ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
@@ -203,7 +313,8 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfNoPolicy) {
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
 
-  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr);
+  ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
+                                       ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
@@ -235,7 +346,7 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfAllowed) {
   MockCertPolicyEnforcer policy_enforcer(true /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr);
+                                       nullptr, ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
@@ -267,7 +378,7 @@ TEST_F(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
   MockCertPolicyEnforcer policy_enforcer(false /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr);
+                                       nullptr, ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(
@@ -300,7 +411,7 @@ TEST_F(ProofVerifierChromiumTest, IgnoresPolicyEnforcerIfNotEV) {
   FailsTestCertPolicyEnforcer policy_enforcer;
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
-                                       nullptr);
+                                       nullptr, ct_verifier_.get());
 
   DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
   QuicAsyncStatus status = proof_verifier.VerifyProof(

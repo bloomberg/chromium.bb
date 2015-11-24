@@ -147,6 +147,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.cert_policy_enforcer,
           params.channel_id_service,
           params.transport_security_state,
+          params.cert_transparency_verifier,
           params.socket_performance_watcher_factory,
           params.quic_crypto_client_stream_factory,
           params.quic_random ? params.quic_random : QuicRandom::GetInstance(),

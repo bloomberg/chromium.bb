@@ -14,6 +14,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
@@ -188,6 +189,7 @@ class QuicNetworkTransactionTest
   QuicNetworkTransactionTest()
       : clock_(new MockClock),
         maker_(GetParam(), 0, clock_, kDefaultServerHostName),
+        cert_transparency_verifier_(new MultiLogCTVerifier()),
         test_network_quality_estimator_(new TestNetworkQualityEstimator()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
@@ -298,6 +300,7 @@ class QuicNetworkTransactionTest
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;
+    params_.cert_transparency_verifier = cert_transparency_verifier_.get();
     params_.socket_performance_watcher_factory =
         test_network_quality_estimator_.get();
     params_.proxy_service = proxy_service_.get();
@@ -428,6 +431,7 @@ class QuicNetworkTransactionTest
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
+  scoped_ptr<CTVerifier> cert_transparency_verifier_;
   scoped_ptr<TestNetworkQualityEstimator> test_network_quality_estimator_;
   TestRTTObserver rtt_observer_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;

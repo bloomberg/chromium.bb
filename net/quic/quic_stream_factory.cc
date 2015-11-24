@@ -22,6 +22,7 @@
 #include "net/base/socket_performance_watcher.h"
 #include "net/base/socket_performance_watcher_factory.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_server_properties.h"
@@ -545,6 +546,7 @@ QuicStreamFactory::QuicStreamFactory(
     CertPolicyEnforcer* cert_policy_enforcer,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
+    CTVerifier* cert_transparency_verifier,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
@@ -575,6 +577,7 @@ QuicStreamFactory::QuicStreamFactory(
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
+      cert_transparency_verifier_(cert_transparency_verifier),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
@@ -583,7 +586,8 @@ QuicStreamFactory::QuicStreamFactory(
       config_(InitializeQuicConfig(connection_options)),
       crypto_config_(new ProofVerifierChromium(cert_verifier,
                                                cert_policy_enforcer,
-                                               transport_security_state)),
+                                               transport_security_state,
+                                               cert_transparency_verifier)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(

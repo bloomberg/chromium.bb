@@ -35,6 +35,7 @@ class CertPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class ClientSocketFactory;
+class CTVerifier;
 class HostResolver;
 class HttpServerProperties;
 class QuicClock;
@@ -114,6 +115,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       CertPolicyEnforcer* cert_policy_enforcer,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
@@ -330,6 +332,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   ClientSocketFactory* client_socket_factory_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;
   TransportSecurityState* transport_security_state_;
+  CTVerifier* cert_transparency_verifier_;
   scoped_ptr<QuicServerInfoFactory> quic_server_info_factory_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;

@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/socket_performance_watcher.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection_logger.h"
@@ -274,6 +275,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   TransportSecurityState* transport_security_state_;
   scoped_ptr<QuicServerInfo> server_info_;
   scoped_ptr<CertVerifyResult> cert_verify_result_;
+  scoped_ptr<ct::CTVerifyResult> ct_verify_result_;
   std::string pinning_failure_log_;
   ObserverSet observers_;
   StreamRequestQueue stream_requests_;

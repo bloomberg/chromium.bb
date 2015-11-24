@@ -51,6 +51,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
@@ -66,6 +67,8 @@
 
 using base::StringPiece;
 using net::CertVerifier;
+using net::CTVerifier;
+using net::MultiLogCTVerifier;
 using net::ProofVerifierChromium;
 using net::TransportSecurityState;
 using std::cout;
@@ -241,8 +244,10 @@ int main(int argc, char *argv[]) {
   scoped_ptr<TransportSecurityState> transport_security_state(
       new TransportSecurityState);
   transport_security_state.reset(new TransportSecurityState);
+  scoped_ptr<CTVerifier> ct_verifier(new MultiLogCTVerifier());
   ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
-      cert_verifier.get(), nullptr, transport_security_state.get());
+      cert_verifier.get(), nullptr, transport_security_state.get(),
+      ct_verifier.get());
   net::tools::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
                                 versions, &epoll_server, proof_verifier);
   client.set_initial_max_packet_length(
