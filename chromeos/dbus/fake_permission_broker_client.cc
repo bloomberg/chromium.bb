@@ -27,16 +27,16 @@ void OpenPathAndValidate(
     const std::string& path,
     const PermissionBrokerClient::OpenPathCallback& callback,
     scoped_refptr<base::TaskRunner> task_runner) {
+  dbus::FileDescriptor dbus_fd;
   int fd = HANDLE_EINTR(open(path.c_str(), O_RDWR));
   if (fd < 0) {
     PLOG(WARNING) << "Failed to open '" << path << "'";
   } else {
-    dbus::FileDescriptor dbus_fd;
     dbus_fd.PutValue(fd);
     dbus_fd.CheckValidity();
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(callback, base::Passed(&dbus_fd)));
   }
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(callback, base::Passed(&dbus_fd)));
 }
 
 }  // namespace
