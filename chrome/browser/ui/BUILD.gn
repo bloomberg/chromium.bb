@@ -196,12 +196,12 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_chromeos_sources,
                            ".",
                            "//chrome")
-    deps += [ "//chrome/browser/chromeos" ]
+    deps += [
+      "//chrome/browser/chromeos",
+      "//components/arc",
+    ]
   } else {
     defines += [ "FRAME_AVATAR_BUTTON=1" ]
-  }
-  if (is_chromeos && enable_arc) {
-    deps += [ "//components/arc" ]
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]

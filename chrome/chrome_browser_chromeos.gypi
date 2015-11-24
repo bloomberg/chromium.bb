@@ -1113,6 +1113,7 @@
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
+        '../components/components.gyp:arc',
         '../components/components.gyp:certificate_reporting',
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:drive',
@@ -1263,11 +1264,6 @@
         ['use_ozone == 1', {
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
-          ],
-        }],
-        ['enable_arc == 1', {
-          'dependencies': [
-            '../components/components.gyp:arc',
           ],
         }],
       ],

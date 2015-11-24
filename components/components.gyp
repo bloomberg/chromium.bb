@@ -149,14 +149,10 @@
     }],
     ['chromeos == 1', {
       'includes': [
+        'arc.gypi',
         'pairing.gypi',
         'timers.gypi',
         'wifi_sync.gypi',
-      ],
-    }],
-    ['chromeos == 1 and enable_arc == 1', {
-      'includes': [
-        'arc.gypi',
       ],
     }],
     ['OS == "win" or OS == "mac"', {

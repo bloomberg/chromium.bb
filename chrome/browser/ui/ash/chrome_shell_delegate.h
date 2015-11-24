@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-#if defined(OS_CHROMEOS) && defined(ENABLE_ARC)
+#if defined(OS_CHROMEOS)
 #include "ash/shell_observer.h"
 #endif
 
@@ -91,7 +91,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                const content::NotificationDetails& details) override;
 
  private:
-#if defined(OS_CHROMEOS) && defined(ENABLE_ARC)
+#if defined(OS_CHROMEOS)
   // An Observer to track session state and start/stop ARC accordingly.
   class ArcSessionObserver : public ash::ShellObserver {
    public:
@@ -123,9 +123,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
-#endif
 
-#if defined(OS_CHROMEOS) && defined(ENABLE_ARC)
   // An Observer to track session state and start/stop ARC accordingly.
   scoped_ptr<ArcSessionObserver> arc_session_observer_;
 #endif

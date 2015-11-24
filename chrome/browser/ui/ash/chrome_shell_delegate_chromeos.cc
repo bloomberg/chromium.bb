@@ -36,15 +36,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(ENABLE_ARC)
-#include "components/arc/arc_bridge_service.h"
-#endif
 
 namespace {
 
@@ -232,9 +229,7 @@ void ChromeShellDelegate::PreInit() {
   display_configuration_observer_.reset(
       new chromeos::DisplayConfigurationObserver());
 
-#if defined(ENABLE_ARC)
   arc_session_observer_.reset(new ArcSessionObserver);
-#endif
 
   chrome_user_metrics_recorder_.reset(new ChromeUserMetricsRecorder);
 }
@@ -242,11 +237,9 @@ void ChromeShellDelegate::PreInit() {
 void ChromeShellDelegate::PreShutdown() {
   display_configuration_observer_.reset();
 
-#if defined(ENABLE_ARC)
   // Remove the ARC observer now since it uses the ash::Shell instance in its
   // destructor, which is unavailable after PreShutdown() returns.
   arc_session_observer_.reset();
-#endif
 
   chrome_user_metrics_recorder_.reset();
 }
@@ -316,7 +309,6 @@ void ChromeShellDelegate::PlatformInit() {
                  content::NotificationService::AllSources());
 }
 
-#if defined(ENABLE_ARC)
 ChromeShellDelegate::ArcSessionObserver::ArcSessionObserver() {
   ash::Shell::GetInstance()->AddShellObserver(this);
 }
@@ -341,8 +333,10 @@ void ChromeShellDelegate::ArcSessionObserver::OnLoginStateChanged(
     case ash::user::LOGGED_IN_GUEST:
     case ash::user::LOGGED_IN_PUBLIC:
     case ash::user::LOGGED_IN_SUPERVISED:
-      arc::ArcBridgeService::Get()->HandleStartup();
+      if (arc::ArcBridgeService::GetEnabled(
+              base::CommandLine::ForCurrentProcess())) {
+        arc::ArcBridgeService::Get()->HandleStartup();
+      }
       break;
   }
 }
-#endif

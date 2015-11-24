@@ -1367,6 +1367,7 @@
         }],
         ['chromeos==1', {
           'sources': [
+            'arc/arc_bridge_service_unittest.cc',
             'pairing/message_buffer_unittest.cc',
             'timers/alarm_timer_unittest.cc',
             'wifi_sync/wifi_config_delegate_chromeos_unittest.cc',
@@ -1382,18 +1383,11 @@
           ],
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support',
+            'components.gyp:arc',
             'components.gyp:ownership',
             'components.gyp:pairing',
             'components.gyp:user_manager_test_support',
             'components.gyp:wifi_sync',
-          ],
-        }],
-        ['chromeos==1 and enable_arc==1', {
-          'sources': [
-            'arc/arc_bridge_service_unittest.cc',
-          ],
-          'dependencies': [
-            'components.gyp:arc',
           ],
         }],
         ['OS=="linux"', {

@@ -68,7 +68,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     }
   }
 
-  void OnInstanceBootPhase(InstanceBootPhase boot_phase) {
+  void OnInstanceBootPhase(InstanceBootPhase boot_phase) override {
     boot_phase_ = boot_phase;
   }
 

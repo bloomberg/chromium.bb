@@ -4,12 +4,14 @@
 
 #include "components/arc/arc_bridge_service.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -55,6 +57,11 @@ ArcBridgeService* ArcBridgeService::Get() {
   DCHECK(g_arc_bridge_service);
   DCHECK(g_arc_bridge_service->origin_task_runner_->RunsTasksOnCurrentThread());
   return g_arc_bridge_service;
+}
+
+// static
+bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
+  return command_line->HasSwitch(chromeos::switches::kEnableArc);
 }
 
 void ArcBridgeService::DetectAvailability() {
@@ -233,7 +240,9 @@ void ArcBridgeService::OnInstanceStarted(bool success) {
 
 void ArcBridgeService::OnInstanceBootPhase(InstanceBootPhase phase) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
-  if (state_ != State::STARTING) {
+  // The state can be STARTING the first time this is called, and will then
+  // transition to READY after BRIDGE_READY has been passed.
+  if (state_ != State::STARTING && state_ != State::READY) {
     VLOG(1) << "StopInstance() called while connecting";
     return;
   }

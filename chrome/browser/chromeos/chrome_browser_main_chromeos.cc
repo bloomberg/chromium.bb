@@ -144,9 +144,7 @@
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #endif
 
-#if defined(ENABLE_ARC)
 #include "components/arc/arc_bridge_service.h"
-#endif
 
 namespace chromeos {
 
@@ -390,14 +388,12 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-#if defined(ENABLE_ARC)
   arc_bridge_service_.reset(new arc::ArcBridgeService(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE)));
   arc_bridge_service_->DetectAvailability();
-#endif
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -712,9 +708,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
-#if defined(ENABLE_ARC)
   arc_bridge_service_->Shutdown();
-#endif
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

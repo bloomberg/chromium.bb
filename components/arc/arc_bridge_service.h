@@ -13,6 +13,10 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace arc {
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
@@ -83,6 +87,10 @@ class ArcBridgeService : public IPC::Listener {
   // Gets the global instance of the ARC Bridge Service. This can only be
   // called on the thread that this class was created on.
   static ArcBridgeService* Get();
+
+  // Return true if ARC has been enabled through a commandline
+  // switch.
+  static bool GetEnabled(const base::CommandLine* command_line);
 
   // DetectAvailability() should be called once D-Bus is available. It will
   // call CheckArcAvailability() on the session_manager. This can only be

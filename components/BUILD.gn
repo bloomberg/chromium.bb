@@ -92,6 +92,7 @@ group("all_components") {
     deps += [
       "//components/about_handler",
       "//components/app_modal",
+      "//components/arc",
       "//components/auto_login_parser",
       "//components/autofill/content/browser",
       "//components/autofill/content/common",
@@ -225,13 +226,10 @@ group("all_components") {
 
     if (!is_chromeos) {
       deps -= [
+        "//components/arc",
         "//components/pairing",
         "//components/wifi_sync",
       ]
-    }
-
-    if (is_chromeos && enable_arc) {
-      deps += [ "//components/arc" ]
     }
 
     if (!use_ash) {
@@ -512,10 +510,10 @@ test("components_unittests") {
       }
     }
     if (is_chromeos) {
-      deps += [ "//components/ownership:unit_tests" ]
-    }
-    if (is_chromeos && enable_arc) {
-      deps += [ "//components/arc:unit_tests" ]
+      deps += [
+        "//components/arc:unit_tests",
+        "//components/ownership:unit_tests",
+      ]
     }
 
     # TODO(GYP) need this target.
