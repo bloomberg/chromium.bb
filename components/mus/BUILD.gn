@@ -18,11 +18,11 @@ if (is_android) {
 
     deps = [
       ":lib",
+      "public/interfaces",
       "//mojo/application/public/cpp:sources",
       "//mojo/public/cpp/bindings",
       "//mojo/services/tracing/public/interfaces",
       "//mojo/shell",
-      "public/interfaces",
     ]
   }
 } else {
@@ -34,18 +34,11 @@ if (is_android) {
     deps = [
       ":lib",
       "//mojo/application/public/cpp:sources",
-      "//ui/resources",
     ]
 
     if (is_win) {
       deps += [ ":copy_gl_libraries" ]
     }
-
-    resources = [ "$root_gen_dir/ui/resources/ui_resources_100_percent.pak" ]
-
-    data_deps = [
-      "//ui/resources",
-    ]
   }
 }
 
@@ -82,11 +75,9 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
-    "//components/resource_provider/public/cpp",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/cpp",
-    "//ui/base",
     "//ui/events",
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",

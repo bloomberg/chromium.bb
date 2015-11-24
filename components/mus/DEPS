@@ -1,7 +1,6 @@
 include_rules = [
   "+cc",
   "+components/gpu",
-  "+components/resource_provider",
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",
