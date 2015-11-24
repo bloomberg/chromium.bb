@@ -1191,6 +1191,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return The {@code ReaderModeManager} or {@code null} if none;
+     */
+    public ReaderModeManager getReaderModeManager() {
+        return mReaderModeManager;
+    }
+
+    /**
      * Create a full-screen manager to be used by this activity.
      * @param controlContainer The control container that will be controlled by the full-screen
      *                         manager.

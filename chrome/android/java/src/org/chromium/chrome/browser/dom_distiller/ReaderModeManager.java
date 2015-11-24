@@ -71,7 +71,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     private int mTabId;
 
     // The ReaderModePanel that this class is managing.
-    private ReaderModePanel mReaderModePanel;
+    protected ReaderModePanel mReaderModePanel;
 
     // The ChromeActivity that this panel exists in.
     private ChromeActivity mChromeActivity;
@@ -289,7 +289,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         return tab.getWebContents();
     }
 
-    private WebContentsObserver createWebContentsObserver(WebContents webContents) {
+    protected WebContentsObserver createWebContentsObserver(WebContents webContents) {
         final int readerTabId = mTabModelSelector.getCurrentTabId();
         if (readerTabId == Tab.INVALID_TAB_ID) return null;
 
@@ -348,7 +348,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
      * showing.
      * @param reason The reason the panel is requesting to be shown.
      */
-    private void requestReaderPanelShow(StateChangeReason reason) {
+    protected void requestReaderPanelShow(StateChangeReason reason) {
         int currentTabId = mTabModelSelector.getCurrentTabId();
         if (currentTabId == Tab.INVALID_TAB_ID) return;
 
@@ -368,7 +368,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
      * @param reason The reason the panel is closing.
      * @param animate True if the panel should animate closed.
      */
-    private void closeReaderPanel(StateChangeReason reason, boolean animate) {
+    protected void closeReaderPanel(StateChangeReason reason, boolean animate) {
         if (mReaderModePanel == null) return;
         mReaderModePanel.closePanel(reason, animate);
     }
