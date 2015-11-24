@@ -90,7 +90,6 @@ source_set("browser") {
     "//sync",
   ]
   deps = [
-    "//base/allocator",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",

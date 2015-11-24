@@ -30,7 +30,6 @@ static_library("renderer") {
   defines = []
 
   deps = [
-    "//base/allocator",
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
