@@ -208,10 +208,10 @@ TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
 // Tests that the function IsProcessBackgroundedCGroup() can parse the contents
 // of the /proc/<pid>/cgroup file successfully.
 TEST_F(ProcessTest, TestIsProcessBackgroundedCGroup) {
-  const char kNotBackgrounded[] = "5:cpuacct,cpu,cpuset:/daemons";
+  const char kNotBackgrounded[] = "5:cpuacct,cpu,cpuset:/daemons\n";
   const char kBackgrounded[] =
       "2:freezer:/chrome_renderers/to_be_frozen\n"
-      "1:cpu:/chrome_renderers/background";
+      "1:cpu:/chrome_renderers/background\n";
 
   EXPECT_FALSE(IsProcessBackgroundedCGroup(kNotBackgrounded));
   EXPECT_TRUE(IsProcessBackgroundedCGroup(kBackgrounded));

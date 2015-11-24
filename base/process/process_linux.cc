@@ -140,8 +140,8 @@ bool IsProcessBackgroundedCGroup(const StringPiece& cgroup_contents) {
   // hierarchy there's an entry in the file. We look for a control group
   // named "/chrome_renderers/background" to determine if the process is
   // backgrounded. crbug.com/548818.
-  std::vector<StringPiece> lines =
-      SplitStringPiece(cgroup_contents, "\n", TRIM_WHITESPACE, SPLIT_WANT_ALL);
+  std::vector<StringPiece> lines = SplitStringPiece(
+      cgroup_contents, "\n", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
   for (const auto& line : lines) {
     std::vector<StringPiece> fields =
         SplitStringPiece(line, ":", TRIM_WHITESPACE, SPLIT_WANT_ALL);
