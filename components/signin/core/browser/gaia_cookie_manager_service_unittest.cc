@@ -556,6 +556,35 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
       "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
 }
 
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  std::vector<gaia::ListedAccount> list_accounts;
+  std::vector<gaia::ListedAccount> empty_list_accounts;
+
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+  EXPECT_CALL(observer,
+              OnGaiaAccountsInCookieUpdated(empty_list_accounts, no_error()));
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  ASSERT_TRUE(list_accounts.empty());
+  SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
+
+  // ListAccounts returns cached data.
+  ASSERT_TRUE(helper.ListAccounts(&list_accounts));
+  ASSERT_TRUE(list_accounts.empty());
+
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+  EXPECT_CALL(observer,
+              OnGaiaAccountsInCookieUpdated(empty_list_accounts, no_error()));
+  helper.ForceOnCookieChangedProcessing();
+
+  // OnCookieChanged should invalidate cached data.
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  ASSERT_TRUE(list_accounts.empty());
+  SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
+}
+
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
