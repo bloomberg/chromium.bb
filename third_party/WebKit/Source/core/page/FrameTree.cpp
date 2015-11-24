@@ -50,15 +50,6 @@ FrameTree::FrameTree(Frame* thisFrame)
 
 FrameTree::~FrameTree()
 {
-#if !ENABLE(OILPAN)
-    // FIXME: Why is this here? Doesn't this parallel what we already do in ~LocalFrame?
-    for (Frame* child = firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            toLocalFrame(child)->setView(nullptr);
-        else if (child->isRemoteFrame())
-            toRemoteFrame(child)->setView(nullptr);
-    }
-#endif
 }
 
 void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackName)

@@ -40,6 +40,7 @@ PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(RemoteFrameClient* clien
 
 RemoteFrame::~RemoteFrame()
 {
+    ASSERT(!m_view);
 }
 
 DEFINE_TRACE(RemoteFrame)
