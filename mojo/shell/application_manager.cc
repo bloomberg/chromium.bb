@@ -117,14 +117,16 @@ ApplicationInstance* ApplicationManager::GetApplicationInstance(
 }
 
 void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
-                                                 const GURL& url) {
+                                                 const GURL& url,
+                                                 CapabilityFilterPtr filter) {
   // Instances created by others are considered unique, and thus have no
   // identity. As such they cannot be connected to by anyone else, and so we
   // never call ConnectToClient().
   // TODO(beng): GetPermissiveCapabilityFilter() here obviously cannot make it
   //             to production. See note in application_manager.mojom.
   //             http://crbug.com/555392
-  Identity target_id(url, std::string(), GetPermissiveCapabilityFilter());
+  CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
+  Identity target_id(url, std::string(), local_filter);
   InterfaceRequest<Application> application_request =
       CreateInstance(target_id, base::Closure(), nullptr);
   NativeRunner* runner =

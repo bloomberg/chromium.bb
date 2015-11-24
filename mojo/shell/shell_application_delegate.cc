@@ -28,9 +28,11 @@ void ShellApplicationDelegate::Create(
   bindings_.AddBinding(this, request.Pass());
 }
 
-void ShellApplicationDelegate::CreateInstanceForHandle(ScopedHandle channel,
-                                                       const String& url) {
-  manager_->CreateInstanceForHandle(channel.Pass(), GURL(url));
+void ShellApplicationDelegate::CreateInstanceForHandle(
+    ScopedHandle channel,
+    const String& url,
+    CapabilityFilterPtr filter) {
+  manager_->CreateInstanceForHandle(channel.Pass(), GURL(url), filter.Pass());
 }
 
 }  // namespace shell

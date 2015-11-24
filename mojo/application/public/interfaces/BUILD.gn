@@ -8,6 +8,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "application.mojom",
+    "application_manager.mojom",
     "content_handler.mojom",
     "service_provider.mojom",
     "shell.mojom",

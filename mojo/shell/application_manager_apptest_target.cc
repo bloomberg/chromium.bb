@@ -7,7 +7,6 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/runner/child/test_native_main.h"
 #include "mojo/runner/init.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
@@ -25,9 +24,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate {
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
     CreateInstanceForHandleTestPtr service;
-    mojo::ApplicationImpl::ConnectParams params(
-        std::string("mojo:mojo_shell_apptests"));
-    app->ConnectToService(&params, &service);
+    app->ConnectToService("mojo:mojo_shell_apptests", &service);
     service->Ping("From Target");
   }
   bool ConfigureIncomingConnection(

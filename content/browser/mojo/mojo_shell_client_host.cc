@@ -4,14 +4,15 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "content/browser/mojo/mojo_shell_client_host.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/converters/network/network_type_converters.h"
-#include "mojo/shell/application_manager.mojom.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
@@ -82,8 +83,15 @@ void RegisterChildWithExternalShell(int child_process_id,
   //             http://crbug.com/555393
   std::string url =
       base::StringPrintf("exe:chrome_renderer%d", child_process_id);
+
+  mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+  mojo::Array<mojo::String> window_manager_interfaces;
+  window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
+  filter->filter.insert("mojo:mus", window_manager_interfaces.Pass());
   application_manager->CreateInstanceForHandle(
-      mojo::ScopedHandle(mojo::Handle(handle.release().value())), url);
+      mojo::ScopedHandle(mojo::Handle(handle.release().value())),
+      url,
+      filter.Pass());
 
   // Send the other end to the child via Chrome IPC.
   base::PlatformFile client_file = PlatformFileFromScopedPlatformHandle(

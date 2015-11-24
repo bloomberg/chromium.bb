@@ -205,6 +205,7 @@
       'variables': {
         'mojom_files': [
           'application/public/interfaces/application.mojom',
+          'application/public/interfaces/application_manager.mojom',
           'application/public/interfaces/content_handler.mojom',
           'application/public/interfaces/service_provider.mojom',
           'application/public/interfaces/shell.mojom',

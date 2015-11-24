@@ -17,11 +17,11 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/runner/child/test_native_main.h"
 #include "mojo/runner/init.h"
-#include "mojo/shell/application_manager.mojom.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
@@ -79,9 +79,15 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                    weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get()));
 
+    mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+    mojo::Array<mojo::String> test_interfaces;
+    test_interfaces.push_back(
+        mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
+    filter->filter.insert("mojo:mojo_shell_apptests", test_interfaces.Pass());
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(handle.release().value())),
-        "exe:application_manager_apptest_target");
+        "exe:application_manager_apptest_target",
+        filter.Pass());
     // Put the other end on the command line used to launch the target.
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);

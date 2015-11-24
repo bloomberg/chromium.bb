@@ -92,7 +92,9 @@ class ApplicationManager {
 
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
-  void CreateInstanceForHandle(ScopedHandle channel, const GURL& url);
+  void CreateInstanceForHandle(ScopedHandle channel,
+                               const GURL& url,
+                               CapabilityFilterPtr filter);
 
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;

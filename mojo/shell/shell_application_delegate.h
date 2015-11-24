@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/shell/application_manager.mojom.h"
 
 namespace mojo {
 namespace shell {
@@ -36,7 +36,8 @@ class ShellApplicationDelegate
 
   // Overridden from mojom::ApplicationManager:
   void CreateInstanceForHandle(ScopedHandle channel,
-                               const String& url) override;
+                               const String& url,
+                               CapabilityFilterPtr filter) override;
 
   mojo::shell::ApplicationManager* manager_;
 

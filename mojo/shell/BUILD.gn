@@ -50,7 +50,6 @@ source_set("shell") {
     "//url",
   ]
   deps = [
-    ":interfaces",
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
     "//mojo/application/public/cpp:sources",
@@ -115,12 +114,6 @@ mojom("test_bindings") {
   ]
 }
 
-mojom("interfaces") {
-  sources = [
-    "application_manager.mojom",
-  ]
-}
-
 mojo_native_application("apptests") {
   output_name = "mojo_shell_apptests"
   testonly = true
@@ -157,11 +150,11 @@ executable("application_manager_apptest_driver") {
     "//base",
     "//base:base_static",
     "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/network",
     "//mojo/runner:init",
     "//mojo/runner/child:test_native_main",
-    "//mojo/shell:interfaces",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }
