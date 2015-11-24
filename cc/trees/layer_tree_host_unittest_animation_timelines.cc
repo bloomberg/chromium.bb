@@ -1004,6 +1004,9 @@ class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
     : public LayerTreeHostTimelinesTest {
  public:
   void SetupTree() override {
+    prev_screen_space_transform_is_animating_ = true;
+    screen_space_transform_animation_stopped_ = false;
+
     LayerTreeHostTimelinesTest::SetupTree();
     AttachPlayersToTimeline();
     player_->AttachLayer(layer_tree_host()->root_layer()->id());
@@ -1013,24 +1016,11 @@ class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    if (host_impl->active_tree()->source_frame_number() == 1) {
-      EXPECT_TRUE(host_impl->active_tree());
-      EXPECT_TRUE(host_impl->active_tree()->root_layer());
-      EXPECT_TRUE(host_impl->pending_tree());
-      EXPECT_TRUE(host_impl->pending_tree()->root_layer());
-
-      EXPECT_EQ(2, host_impl->pending_tree()->source_frame_number());
-
-      EXPECT_TRUE(host_impl->active_tree()
+    if (host_impl->pending_tree()->source_frame_number() <= 1) {
+      EXPECT_TRUE(host_impl->pending_tree()
                       ->root_layer()
                       ->screen_space_transform_is_animating());
-      EXPECT_FALSE(host_impl->pending_tree()
-                       ->root_layer()
-                       ->screen_space_transform_is_animating());
-    } else if (host_impl->active_tree()->source_frame_number() == 2) {
-      EXPECT_FALSE(host_impl->active_tree()
-                       ->root_layer()
-                       ->screen_space_transform_is_animating());
+    } else {
       EXPECT_FALSE(host_impl->pending_tree()
                        ->root_layer()
                        ->screen_space_transform_is_animating());
@@ -1047,12 +1037,44 @@ class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
     }
   }
 
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    const bool screen_space_transform_is_animating =
+        host_impl->active_tree()
+            ->root_layer()
+            ->screen_space_transform_is_animating();
+
+    // Check that screen_space_transform_is_animating changes only once.
+    if (screen_space_transform_is_animating &&
+        prev_screen_space_transform_is_animating_)
+      EXPECT_FALSE(screen_space_transform_animation_stopped_);
+    if (!screen_space_transform_is_animating &&
+        prev_screen_space_transform_is_animating_) {
+      EXPECT_FALSE(screen_space_transform_animation_stopped_);
+      screen_space_transform_animation_stopped_ = true;
+    }
+    if (!screen_space_transform_is_animating &&
+        !prev_screen_space_transform_is_animating_)
+      EXPECT_TRUE(screen_space_transform_animation_stopped_);
+
+    prev_screen_space_transform_is_animating_ =
+        screen_space_transform_is_animating;
+
+    return draw_result;
+  }
+
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->active_tree()->source_frame_number() >= 2)
       EndTest();
   }
 
-  void AfterTest() override {}
+  void AfterTest() override {
+    EXPECT_TRUE(screen_space_transform_animation_stopped_);
+  }
+
+  bool prev_screen_space_transform_is_animating_;
+  bool screen_space_transform_animation_stopped_;
 };
 
 MULTI_THREAD_TEST_F(
