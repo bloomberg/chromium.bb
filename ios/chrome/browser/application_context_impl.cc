@@ -23,6 +23,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/service/variations_service.h"
+#include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -56,6 +57,8 @@ ApplicationContextImpl::~ApplicationContextImpl() {
 
 // static
 void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(ios::prefs::kApplicationLocale, std::string());
+  registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);

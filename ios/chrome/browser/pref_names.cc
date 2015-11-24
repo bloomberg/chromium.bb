@@ -14,6 +14,7 @@ namespace prefs {
 
 const char kAcceptLanguages[] = "intl.accept_languages";
 const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
+const char kApplicationLocale[] = "intl.app_locale";
 const char kBrowserStateInfoCache[] = "profile.info_cache";
 const char kBrowserStateLastUsed[] = "profile.last_used";
 const char kBrowserStatesLastActive[] = "profile.last_active_profiles";
