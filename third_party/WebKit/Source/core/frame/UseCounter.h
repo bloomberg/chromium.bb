@@ -779,7 +779,6 @@ public:
         CSSValuePrefixedMaxContent = 922,
         CSSValuePrefixedFitContent = 923,
         CSSValuePrefixedFillAvailable = 924,
-        FetchAPIRequestContext = 925,
         PresentationDefaultRequest = 926,
         PresentationAvailabilityChangeEventListener = 927,
         PresentationRequestConstructor = 928,
