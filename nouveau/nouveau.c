@@ -345,8 +345,9 @@ nouveau_device_del(struct nouveau_device **pdev)
 int
 nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 {
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct drm_nouveau_getparam r = { .param = param };
-	int fd = dev->fd, ret =
+	int fd = drm->fd, ret =
 		drmCommandWriteRead(fd, DRM_NOUVEAU_GETPARAM, &r, sizeof(r));
 	*value = r.value;
 	return ret;
@@ -355,8 +356,9 @@ nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 int
 nouveau_setparam(struct nouveau_device *dev, uint64_t param, uint64_t value)
 {
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct drm_nouveau_setparam r = { .param = param, .value = value };
-	return drmCommandWrite(dev->fd, DRM_NOUVEAU_SETPARAM, &r, sizeof(r));
+	return drmCommandWrite(drm->fd, DRM_NOUVEAU_SETPARAM, &r, sizeof(r));
 }
 
 int
@@ -417,6 +419,7 @@ nouveau_client_del(struct nouveau_client **pclient)
 static void
 nouveau_bo_del(struct nouveau_bo *bo)
 {
+	struct nouveau_drm *drm = nouveau_drm(&bo->device->object);
 	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	struct drm_gem_close req = { .handle = bo->handle };
@@ -433,11 +436,11 @@ nouveau_bo_del(struct nouveau_bo *bo)
 			 * might cause the bo to be closed accidentally while
 			 * re-importing.
 			 */
-			drmIoctl(bo->device->fd, DRM_IOCTL_GEM_CLOSE, &req);
+			drmIoctl(drm->fd, DRM_IOCTL_GEM_CLOSE, &req);
 		}
 		pthread_mutex_unlock(&nvdev->lock);
 	} else {
-		drmIoctl(bo->device->fd, DRM_IOCTL_GEM_CLOSE, &req);
+		drmIoctl(drm->fd, DRM_IOCTL_GEM_CLOSE, &req);
 	}
 	if (bo->map)
 		drm_munmap(bo->map, bo->size);
@@ -474,6 +477,7 @@ static int
 nouveau_bo_wrap_locked(struct nouveau_device *dev, uint32_t handle,
 		       struct nouveau_bo **pbo, int name)
 {
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct nouveau_device_priv *nvdev = nouveau_device(dev);
 	struct drm_nouveau_gem_info req = { .handle = handle };
 	struct nouveau_bo_priv *nvbo;
@@ -503,7 +507,7 @@ nouveau_bo_wrap_locked(struct nouveau_device *dev, uint32_t handle,
 		}
 	}
 
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_GEM_INFO,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_GEM_INFO,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -550,6 +554,7 @@ int
 nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 		    struct nouveau_bo **pbo)
 {
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct nouveau_device_priv *nvdev = nouveau_device(dev);
 	struct nouveau_bo_priv *nvbo;
 	struct drm_gem_open req = { .name = name };
@@ -565,7 +570,7 @@ nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 		}
 	}
 
-	ret = drmIoctl(dev->fd, DRM_IOCTL_GEM_OPEN, &req);
+	ret = drmIoctl(drm->fd, DRM_IOCTL_GEM_OPEN, &req);
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, req.handle, pbo, name);
 	}
@@ -578,11 +583,12 @@ int
 nouveau_bo_name_get(struct nouveau_bo *bo, uint32_t *name)
 {
 	struct drm_gem_flink req = { .handle = bo->handle };
+	struct nouveau_drm *drm = nouveau_drm(&bo->device->object);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 
 	*name = nvbo->name;
 	if (!*name) {
-		int ret = drmIoctl(bo->device->fd, DRM_IOCTL_GEM_FLINK, &req);
+		int ret = drmIoctl(drm->fd, DRM_IOCTL_GEM_FLINK, &req);
 
 		if (ret) {
 			*name = 0;
@@ -613,6 +619,7 @@ int
 nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 			    struct nouveau_bo **bo)
 {
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct nouveau_device_priv *nvdev = nouveau_device(dev);
 	int ret;
 	unsigned int handle;
@@ -620,7 +627,7 @@ nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 	nouveau_bo_ref(NULL, bo);
 
 	pthread_mutex_lock(&nvdev->lock);
-	ret = drmPrimeFDToHandle(dev->fd, prime_fd, &handle);
+	ret = drmPrimeFDToHandle(drm->fd, prime_fd, &handle);
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, handle, bo, 0);
 	}
@@ -631,10 +638,11 @@ nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 int
 nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd)
 {
+	struct nouveau_drm *drm = nouveau_drm(&bo->device->object);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	int ret;
 
-	ret = drmPrimeHandleToFD(bo->device->fd, nvbo->base.handle, DRM_CLOEXEC, prime_fd);
+	ret = drmPrimeHandleToFD(drm->fd, nvbo->base.handle, DRM_CLOEXEC, prime_fd);
 	if (ret)
 		return ret;
 
@@ -646,6 +654,7 @@ int
 nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 		struct nouveau_client *client)
 {
+	struct nouveau_drm *drm = nouveau_drm(&bo->device->object);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	struct drm_nouveau_gem_cpu_prep req;
 	struct nouveau_pushbuf *push;
@@ -669,7 +678,7 @@ nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 	if (access & NOUVEAU_BO_NOBLOCK)
 		req.flags |= NOUVEAU_GEM_CPU_PREP_NOWAIT;
 
-	ret = drmCommandWrite(bo->device->fd, DRM_NOUVEAU_GEM_CPU_PREP,
+	ret = drmCommandWrite(drm->fd, DRM_NOUVEAU_GEM_CPU_PREP,
 			      &req, sizeof(req));
 	if (ret == 0)
 		nvbo->access = 0;
@@ -680,10 +689,11 @@ int
 nouveau_bo_map(struct nouveau_bo *bo, uint32_t access,
 	       struct nouveau_client *client)
 {
+	struct nouveau_drm *drm = nouveau_drm(&bo->device->object);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	if (bo->map == NULL) {
 		bo->map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE,
-			       MAP_SHARED, bo->device->fd, nvbo->map_handle);
+			       MAP_SHARED, drm->fd, nvbo->map_handle);
 		if (bo->map == MAP_FAILED) {
 			bo->map = NULL;
 			return -errno;

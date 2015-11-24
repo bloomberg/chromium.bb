@@ -38,7 +38,7 @@
 static int
 abi16_chan_nv04(struct nouveau_object *obj)
 {
-	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	struct nv04_fifo *nv04 = obj->data;
 	struct drm_nouveau_channel_alloc req = {
 		.fb_ctxdma_handle = nv04->vram,
@@ -46,7 +46,7 @@ abi16_chan_nv04(struct nouveau_object *obj)
 	};
 	int ret;
 
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -62,12 +62,12 @@ abi16_chan_nv04(struct nouveau_object *obj)
 static int
 abi16_chan_nvc0(struct nouveau_object *obj)
 {
-	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	struct drm_nouveau_channel_alloc req = {};
 	struct nvc0_fifo *nvc0 = obj->data;
 	int ret;
 
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -83,7 +83,7 @@ abi16_chan_nvc0(struct nouveau_object *obj)
 static int
 abi16_chan_nve0(struct nouveau_object *obj)
 {
-	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	struct drm_nouveau_channel_alloc req = {};
 	struct nve0_fifo *nve0 = obj->data;
 	int ret;
@@ -93,7 +93,7 @@ abi16_chan_nve0(struct nouveau_object *obj)
 		req.tt_ctxdma_handle = nve0->engine;
 	}
 
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -109,12 +109,12 @@ abi16_chan_nve0(struct nouveau_object *obj)
 static int
 abi16_engobj(struct nouveau_object *obj)
 {
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	struct drm_nouveau_grobj_alloc req = {
 		.channel = obj->parent->handle,
 		.handle = obj->handle,
 		.class = obj->oclass,
 	};
-	struct nouveau_device *dev;
 	int ret;
 
 	/* Older kernel versions did not have the concept of nouveau-
@@ -138,8 +138,7 @@ abi16_engobj(struct nouveau_object *obj)
 		break;
 	}
 
-	dev = nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
-	ret = drmCommandWrite(dev->fd, DRM_NOUVEAU_GROBJ_ALLOC,
+	ret = drmCommandWrite(drm->fd, DRM_NOUVEAU_GROBJ_ALLOC,
 			      &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -151,17 +150,16 @@ abi16_engobj(struct nouveau_object *obj)
 static int
 abi16_ntfy(struct nouveau_object *obj)
 {
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	struct nv04_notify *ntfy = obj->data;
 	struct drm_nouveau_notifierobj_alloc req = {
 		.channel = obj->parent->handle,
 		.handle = ntfy->object->handle,
 		.size = ntfy->length,
 	};
-	struct nouveau_device *dev;
 	int ret;
 
-	dev = nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_NOTIFIEROBJ_ALLOC,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_NOTIFIEROBJ_ALLOC,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
@@ -223,18 +221,17 @@ abi16_sclass(struct nouveau_object *obj, struct nouveau_sclass **psclass)
 drm_private void
 abi16_delete(struct nouveau_object *obj)
 {
-	struct nouveau_device *dev =
-		nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
+	struct nouveau_drm *drm = nouveau_drm(obj);
 	if (obj->oclass == NOUVEAU_FIFO_CHANNEL_CLASS) {
 		struct drm_nouveau_channel_free req;
 		req.channel = obj->handle;
-		drmCommandWrite(dev->fd, DRM_NOUVEAU_CHANNEL_FREE,
+		drmCommandWrite(drm->fd, DRM_NOUVEAU_CHANNEL_FREE,
 				&req, sizeof(req));
 	} else {
 		struct drm_nouveau_gpuobj_free req;
 		req.channel = obj->parent->handle;
 		req.handle  = obj->handle;
-		drmCommandWrite(dev->fd, DRM_NOUVEAU_GPUOBJ_FREE,
+		drmCommandWrite(drm->fd, DRM_NOUVEAU_GPUOBJ_FREE,
 				&req, sizeof(req));
 	}
 }
@@ -314,6 +311,7 @@ abi16_bo_init(struct nouveau_bo *bo, uint32_t alignment,
 	      union nouveau_bo_config *config)
 {
 	struct nouveau_device *dev = bo->device;
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct drm_nouveau_gem_new req = {};
 	struct drm_nouveau_gem_info *info = &req.info;
 	int ret;
@@ -356,7 +354,7 @@ abi16_bo_init(struct nouveau_bo *bo, uint32_t alignment,
 	if (!nouveau_device(dev)->have_bo_usage)
 		info->tile_flags &= 0x0000ff00;
 
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_GEM_NEW,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_GEM_NEW,
 				  &req, sizeof(req));
 	if (ret == 0)
 		abi16_bo_info(bo, &req.info);

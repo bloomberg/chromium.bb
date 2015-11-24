@@ -312,6 +312,7 @@ pushbuf_submit(struct nouveau_pushbuf *push, struct nouveau_object *chan)
 	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(push);
 	struct nouveau_pushbuf_krec *krec = nvpb->list;
 	struct nouveau_device *dev = push->client->device;
+	struct nouveau_drm *drm = nouveau_drm(&dev->object);
 	struct drm_nouveau_gem_pushbuf_bo_presumed *info;
 	struct drm_nouveau_gem_pushbuf_bo *kref;
 	struct drm_nouveau_gem_pushbuf req;
@@ -345,7 +346,7 @@ pushbuf_submit(struct nouveau_pushbuf *push, struct nouveau_object *chan)
 			pushbuf_dump(krec, krec_id++, fifo->channel);
 
 #ifndef SIMULATE
-		ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_GEM_PUSHBUF,
+		ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_GEM_PUSHBUF,
 					  &req, sizeof(req));
 		nvpb->suffix0 = req.suffix0;
 		nvpb->suffix1 = req.suffix1;
@@ -536,7 +537,7 @@ nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 		    int nr, uint32_t size, bool immediate,
 		    struct nouveau_pushbuf **ppush)
 {
-	struct nouveau_device *dev = client->device;
+	struct nouveau_drm *drm = nouveau_drm(&client->device->object);
 	struct nouveau_fifo *fifo = chan->data;
 	struct nouveau_pushbuf_priv *nvpb;
 	struct nouveau_pushbuf *push;
@@ -551,7 +552,7 @@ nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 	 */
 	req.channel = fifo->channel;
 	req.nr_push = 0;
-	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_GEM_PUSHBUF,
+	ret = drmCommandWriteRead(drm->fd, DRM_NOUVEAU_GEM_PUSHBUF,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
