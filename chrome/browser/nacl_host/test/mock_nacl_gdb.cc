@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
       CHECK_LE(i, argc);
       std::string nacl_gdb_script(argv[i - 1]);
       base::WriteFile(base::FilePath::FromUTF8Unsafe(nacl_gdb_script),
-                      kPass, strlen(kPass));
+                      kPass, sizeof(kPass) - 1);
       continue;
     }
     // Unknown argument.
@@ -59,6 +59,6 @@ int main(int argc, char** argv) {
   }
   CHECK_EQ(i, argc);
   base::WriteFile(base::FilePath::FromUTF8Unsafe(mock_nacl_gdb_file),
-                  kPass, strlen(kPass));
+                  kPass, sizeof(kPass) - 1);
   return 0;
 }
