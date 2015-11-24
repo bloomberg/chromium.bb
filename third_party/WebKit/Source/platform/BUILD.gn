@@ -215,6 +215,7 @@ component("platform") {
     "//third_party/WebKit/Source/wtf",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
+    "//ui/gfx/geometry",
   ]
 
   if (is_mac) {

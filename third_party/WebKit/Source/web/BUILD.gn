@@ -27,6 +27,7 @@ component("web") {
     "//third_party/WebKit/Source/platform",
     "//third_party/angle:translator",
     "//third_party/icu",
+    "//ui/gfx/geometry",
     "//v8",
   ]
 

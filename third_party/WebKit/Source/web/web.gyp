@@ -61,8 +61,8 @@
                 '<(angle_path)/src/angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                 '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'export_dependent_settings': [
                 '<(DEPTH)/skia/skia.gyp:skia',
