@@ -27,7 +27,7 @@
 #include "printing/printing_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 #include "chrome/browser/android/tab_android.h"
 #endif
 
@@ -213,7 +213,7 @@ void PrintJobWorker::GetSettingsWithUI(
     bool is_scripted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   if (is_scripted) {
     PrintingContextDelegate* printing_context_delegate =
         static_cast<PrintingContextDelegate*>(printing_context_delegate_.get());
