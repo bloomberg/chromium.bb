@@ -56,8 +56,7 @@
               <paper-item class="split">
                 <div class="flex">[[item.name]]</div>
                 <iron-icon icon="done"
-                    hidden$="[[
-                        !isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
+                    hidden$="[[!isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
                 </iron-icon>
                 <paper-icon-button icon="settings"></paper-icon-button>
               </paper-item>
