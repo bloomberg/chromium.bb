@@ -42,6 +42,7 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList, const CSSPar
     , m_currentShorthand(CSSPropertyInvalid)
     , m_implicitShorthand(false)
 {
+    m_range.consumeWhitespace();
 }
 
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
@@ -1874,7 +1875,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeStrokeDasharray(CSSParserTokenRan
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
-    m_range.consumeWhitespace();
     switch (property) {
     case CSSPropertyWillChange:
         return consumeWillChange(m_range);
@@ -2134,8 +2134,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFaceSrc()
 bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
 {
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-
-    m_range.consumeWhitespace();
     switch (propId) {
     case CSSPropertyFontFamily:
         if (consumeGenericFamily(m_range))
@@ -2329,8 +2327,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeSingleViewportDescriptor(CSSParse
 bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool important)
 {
     ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
-
-    m_range.consumeWhitespace();
 
     switch (propId) {
     case CSSPropertyWidth: {
@@ -2533,7 +2529,6 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
 
-    m_range.consumeWhitespace();
     CSSPropertyID oldShorthand = m_currentShorthand;
     // TODO(rob.buis): Remove this when the legacy property parser is gone
     m_currentShorthand = property;
