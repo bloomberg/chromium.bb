@@ -38,6 +38,7 @@ proto_library("proto_internal") {
     "pointf.proto",
     "rect.proto",
     "rectf.proto",
+    "region.proto",
     "scroll_offset.proto",
     "size.proto",
     "sizef.proto",

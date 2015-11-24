@@ -84,6 +84,7 @@
       'playback/display_item_list_unittest.cc',
       'playback/display_list_raster_source_unittest.cc',
       'playback/display_list_recording_source_unittest.cc',
+      'proto/cc_conversions_unittest.cc',
       'proto/gfx_conversions_unittest.cc',
       'proto/skia_conversions_unittest.cc',
       'quads/draw_polygon_unittest.cc',

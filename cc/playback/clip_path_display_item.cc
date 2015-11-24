@@ -41,9 +41,9 @@ void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   // Just use skia's serialization method for the SkPath for now.
   size_t path_size = clip_path_.writeToMemory(nullptr);
   if (path_size > 0) {
-    scoped_ptr<char[]> buffer(new char[path_size]);
+    scoped_ptr<uint8_t[]> buffer(new uint8_t[path_size]);
     clip_path_.writeToMemory(buffer.get());
-    details->set_clip_path(std::string(buffer.get(), path_size));
+    details->set_clip_path(buffer.get(), path_size);
   }
 }
 
@@ -56,7 +56,7 @@ void ClipPathDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
 
   SkPath clip_path;
   if (details.has_clip_path()) {
-    size_t bytes_read = clip_path.readFromMemory(details.clip_path().c_str(),
+    size_t bytes_read = clip_path.readFromMemory(details.clip_path().data(),
                                                  details.clip_path().size());
     DCHECK_EQ(details.clip_path().size(), bytes_read);
   }
