@@ -35,7 +35,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
 {
     LayoutObject* next = current;
     while (current) {
-        if (isIsolated(current->style()->unicodeBidi())
+        if (treatAsIsolated(current->styleRef())
             && (current->isLayoutInline() || current->isLayoutBlock())) {
             if (current != root)
                 current = nullptr;
@@ -56,7 +56,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
             break;
 
         if (!isIteratorTarget(LineLayoutItem(current))
-            && !isIsolated(current->style()->unicodeBidi()))
+            && !treatAsIsolated(current->styleRef()))
             next = current->slowFirstChild();
 
         if (!next) {

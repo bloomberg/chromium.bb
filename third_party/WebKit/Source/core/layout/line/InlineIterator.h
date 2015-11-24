@@ -146,6 +146,11 @@ static inline WTF::Unicode::Direction embedCharFromDirection(TextDirection dir, 
     return dir == RTL ? RightToLeftOverride : LeftToRightOverride;
 }
 
+static inline bool treatAsIsolated(const ComputedStyle& style)
+{
+    return isIsolated(style.unicodeBidi()) && style.rtlOrdering() == LogicalOrder;
+}
+
 template <class Observer>
 static inline void notifyObserverEnteredObject(Observer* observer, LineLayoutItem object)
 {
@@ -160,7 +165,7 @@ static inline void notifyObserverEnteredObject(Observer* observer, LineLayoutIte
         // Thus we ignore any possible dir= attribute on the span.
         return;
     }
-    if (isIsolated(unicodeBidi)) {
+    if (treatAsIsolated(style)) {
         // Make sure that explicit embeddings are committed before we enter the isolated content.
         observer->commitExplicitEmbedding(observer->runs());
         observer->enterIsolate();
@@ -182,7 +187,7 @@ static inline void notifyObserverWillExitObject(Observer* observer, LineLayoutIt
     EUnicodeBidi unicodeBidi = object.style()->unicodeBidi();
     if (unicodeBidi == UBNormal)
         return; // Nothing to do for unicode-bidi: normal
-    if (isIsolated(unicodeBidi)) {
+    if (treatAsIsolated(object.styleRef())) {
         observer->exitIsolate();
         return;
     }
@@ -396,7 +401,7 @@ private:
 
 static inline bool endOfLineHasIsolatedObjectAncestor(const InlineIterator& isolatedIterator, const InlineIterator& ancestorItertor)
 {
-    if (!isolatedIterator.object() || !isIsolated(isolatedIterator.object().style()->unicodeBidi()))
+    if (!isolatedIterator.object() || !treatAsIsolated(isolatedIterator.object().styleRef()))
         return false;
 
     LineLayoutItem innerIsolatedObject = isolatedIterator.object();
@@ -548,7 +553,7 @@ inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs)
 static inline bool isIsolatedInline(LineLayoutItem object)
 {
     ASSERT(object);
-    return object.isLayoutInline() && isIsolated(object.style()->unicodeBidi());
+    return object.isLayoutInline() && treatAsIsolated(object.styleRef());
 }
 
 static inline LineLayoutItem highestContainingIsolateWithinRoot(LineLayoutItem object, LineLayoutItem root)
