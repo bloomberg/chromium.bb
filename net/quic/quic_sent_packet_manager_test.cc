@@ -944,7 +944,22 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   RetransmitNextPacket(12);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
-  EXPECT_EQ(8u, manager_.GetLeastUnacked());
+  if (!FLAGS_quic_track_single_retransmission) {
+    EXPECT_EQ(8u, manager_.GetLeastUnacked());
+    return;
+  }
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
+  // Least unacked isn't raised until an ack is received, so ack the
+  // crypto packets.
+  QuicPacketNumber acked[] = {8, 9};
+  ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
+  QuicAckFrame ack_frame;
+  ack_frame.largest_observed = 9;
+  for (QuicPacketNumber i = 1; i < 8; ++i) {
+    ack_frame.missing_packets.Add(i);
+  }
+  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  EXPECT_EQ(10u, manager_.GetLeastUnacked());
 }
 
 TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
@@ -1365,8 +1380,12 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
   // Handle an ack which causes the loss algorithm to be evaluated and
   // set the loss timeout.
   ExpectAck(2);
-  EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _))
-      .WillOnce(Return(PacketNumberSet()));
+  if (FLAGS_quic_general_loss_algorithm) {
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _));
+  } else {
+    EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _))
+        .WillOnce(Return(PacketNumberSet()));
+  }
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 2;
   ack_frame.missing_packets.Add(1);
@@ -1379,8 +1398,12 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
 
   // Fire the retransmission timeout and ensure the loss detection algorithm
   // is invoked.
-  EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _))
-      .WillOnce(Return(PacketNumberSet()));
+  if (FLAGS_quic_general_loss_algorithm) {
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _));
+  } else {
+    EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _))
+        .WillOnce(Return(PacketNumberSet()));
+  }
   manager_.OnRetransmissionTimeout();
 }
 

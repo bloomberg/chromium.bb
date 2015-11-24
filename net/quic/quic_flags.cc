@@ -82,6 +82,10 @@ bool FLAGS_quic_disable_pacing = false;
 // recorded correctly.
 bool FLAGS_quic_fix_fin_accounting = true;
 
+// If true, Use QUIC's GeneralLossAlgorithm implementation instead of
+// TcpLossAlgorithm or TimeLossAlgorithm.
+bool FLAGS_quic_general_loss_algorithm = true;
+
 // If true, ReliableQuicStream::StopReading (formerly CloseReadSide) causes
 // incoming data to be ignored but the read side of the stream object is not
 // closed.
@@ -108,6 +112,10 @@ bool FLAGS_quic_use_stream_sequencer_buffer = true;
 
 // If true, don't send QUIC packets if the send alarm is set.
 bool FLAGS_quic_respect_send_alarm = true;
+
+// If treu, Only track a single retransmission in QUIC's TransmissionInfo
+// struct.
+bool FLAGS_quic_track_single_retransmission = true;
 
 // If true, allow each quic stream to write 16k blocks rather than doing a round
 // robin of one packet per session when ack clocked or paced.

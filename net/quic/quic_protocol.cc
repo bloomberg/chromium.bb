@@ -821,7 +821,8 @@ TransmissionInfo::TransmissionInfo()
       in_flight(false),
       is_unackable(false),
       is_fec_packet(false),
-      all_transmissions(nullptr) {}
+      all_transmissions(nullptr),
+      retransmission(0) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
@@ -839,7 +840,8 @@ TransmissionInfo::TransmissionInfo(
       in_flight(false),
       is_unackable(false),
       is_fec_packet(is_fec_packet),
-      all_transmissions(nullptr) {}
+      all_transmissions(nullptr),
+      retransmission(0) {}
 
 TransmissionInfo::~TransmissionInfo() {}
 

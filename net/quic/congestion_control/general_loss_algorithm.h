@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_TCP_LOSS_ALGORITHM_H_
-#define NET_QUIC_CONGESTION_CONTROL_TCP_LOSS_ALGORITHM_H_
+#ifndef NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
+#define NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_
 
 #include <algorithm>
 #include <map>
@@ -16,24 +16,30 @@
 
 namespace net {
 
-// Class which implement's TCP's approach of detecting loss when 3 nacks have
-// been received for a packet.  Also implements TCP's early retransmit(RFC5827).
-class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
+// Class which can be configured to implement's TCP's approach of detecting loss
+// when 3 nacks have been received for a packet or with a time threshold.
+// Also implements TCP's early retransmit(RFC5827).
+class NET_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
  public:
   // TCP retransmits after 3 nacks.
   static const QuicPacketCount kNumberOfNacksBeforeRetransmission = 3;
 
-  TCPLossAlgorithm();
-  ~TCPLossAlgorithm() override {}
+  GeneralLossAlgorithm();
+  explicit GeneralLossAlgorithm(LossDetectionType loss_type);
+  ~GeneralLossAlgorithm() override {}
 
   LossDetectionType GetLossDetectionType() const override;
+  void SetLossDetectionType(LossDetectionType loss_type) {
+    loss_type_ = loss_type;
+  }
 
-  // Uses nack counts to decide when packets are lost.
+  // Only supported for tests.
   PacketNumberSet DetectLostPackets(const QuicUnackedPacketMap& unacked_packets,
                                     const QuicTime& time,
                                     QuicPacketNumber largest_observed,
                                     const RttStats& rtt_stats) override;
-  // Unsupported.
+
+  // Uses |largest_observed| and time to decide when packets are lost.
   void DetectLosses(
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
@@ -44,11 +50,12 @@ class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
   QuicTime GetLossTimeout() const override;
 
  private:
+  LossDetectionType loss_type_;
   QuicTime loss_detection_timeout_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPLossAlgorithm);
+  DISALLOW_COPY_AND_ASSIGN(GeneralLossAlgorithm);
 };
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_TCP_LOSS_ALGORITHM_H_
+#endif  // NET_QUIC_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_

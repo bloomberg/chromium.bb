@@ -579,6 +579,11 @@ class MockLossAlgorithm : public LossDetectionInterface {
                                const QuicTime& time,
                                QuicPacketNumber largest_observed,
                                const RttStats& rtt_stats));
+  MOCK_METHOD4(DetectLosses,
+               void(const QuicUnackedPacketMap& unacked_packets,
+                    const QuicTime& time,
+                    const RttStats& rtt_stats,
+                    SendAlgorithmInterface::CongestionVector* packets_lost));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
 
  private:

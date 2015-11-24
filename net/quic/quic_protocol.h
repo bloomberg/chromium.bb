@@ -515,8 +515,6 @@ enum QuicErrorCode {
   QUIC_INVALID_PRIORITY = 49,
   // Too many streams already open.
   QUIC_TOO_MANY_OPEN_STREAMS = 18,
-  // The peer must send a FIN/RST for each stream, and has not been doing so.
-  QUIC_TOO_MANY_UNFINISHED_STREAMS = 66,
   // The peer created too many available streams.
   QUIC_TOO_MANY_AVAILABLE_STREAMS = 76,
   // Received public reset for this connection.
@@ -1226,7 +1224,11 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   bool is_fec_packet;
   // Stores the packet numbers of all transmissions of this packet.
   // Must always be nullptr or have multiple elements.
+  // TODO(ianswett): Deprecate with quic_track_single_retransmission.
   PacketNumberList* all_transmissions;
+  // Stores the packet number of the next retransmission of this packet.
+  // Zero if the packet has not been retransmitted.
+  QuicPacketNumber retransmission;
   // Non-empty if there is a listener for this packet.
   std::list<AckListenerWrapper> ack_listeners;
 };
