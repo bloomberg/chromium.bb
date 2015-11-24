@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -379,7 +380,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   listener_result.Reset();
   listener_main2.Reply("");
   EXPECT_TRUE(listener_result.WaitUntilSatisfied());
-  if (content::AreAllSitesIsolatedForTesting()) {
+  if (content::AreAllSitesIsolatedForTesting() ||
+      extensions::IsIsolateExtensionsEnabled()) {
     // With --site-per-process, the extension frame does run in the extension's
     // process.
     EXPECT_EQ("Intercepted requests: ?contentscript",
