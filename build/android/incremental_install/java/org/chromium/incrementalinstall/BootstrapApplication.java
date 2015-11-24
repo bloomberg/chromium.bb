@@ -74,11 +74,12 @@ public final class BootstrapApplication extends Application {
                 LockFile.clearInstallerLock(firstRunLockFile);
             }
 
-            Bundle metadata = getManifestMetadata();
             // mInstrumentationAppDir is one of a set of fields that is initialized only when
             // instrumentation is active.
             if (Reflect.getField(mActivityThread, "mInstrumentationAppDir") != null) {
-                initInstrumentation(metadata.getString(REAL_INSTRUMENTATION_META_DATA_NAME));
+                String realInstrumentationName =
+                        getClassNameFromMetadata(REAL_INSTRUMENTATION_META_DATA_NAME);
+                initInstrumentation(realInstrumentationName);
             } else {
                 Log.i(TAG, "No instrumentation active.");
             }
@@ -92,7 +93,7 @@ public final class BootstrapApplication extends Application {
             // attachBaseContext() is called from ActivityThread#handleBindApplication() and
             // Application#mApplication is changed right after we return. Thus, we cannot swap
             // the Application instances until onCreate() is called.
-            String realApplicationName = metadata.getString(REAL_APP_META_DATA_NAME);
+            String realApplicationName = getClassNameFromMetadata(REAL_APP_META_DATA_NAME);
             Log.i(TAG, "Instantiating " + realApplicationName);
             mRealApplication =
                     (Application) Reflect.newInstance(Class.forName(realApplicationName));
@@ -107,6 +108,20 @@ public final class BootstrapApplication extends Application {
         } catch (Exception e) {
             throw new RuntimeException("Incremental install failed.", e);
         }
+    }
+
+    /**
+     * Returns the fully-qualified class name for the given key, stored in a
+     * &lt;meta&gt; witin the manifest.
+     */
+    private String getClassNameFromMetadata(String key) throws NameNotFoundException {
+        ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
+                PackageManager.GET_META_DATA);
+        String value = appInfo.metaData.getString(key);
+        if (!value.contains(".")) {
+            value = getPackageName() + "." + value;
+        }
+        return value;
     }
 
     /**
@@ -160,16 +175,6 @@ public final class BootstrapApplication extends Application {
         } catch (Exception e) {
             throw new RuntimeException("Incremental install failed.", e);
         }
-    }
-
-    /**
-     * Returns the class name of the real Application class (recorded in the
-     * AndroidManifest.xml)
-     */
-    private Bundle getManifestMetadata() throws NameNotFoundException {
-        ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
-                PackageManager.GET_META_DATA);
-        return appInfo.metaData;
     }
 
     /**
