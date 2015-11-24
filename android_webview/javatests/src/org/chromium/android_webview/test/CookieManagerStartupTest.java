@@ -14,8 +14,8 @@ import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.CookieUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.app.ContentMain;
 import org.chromium.net.test.util.TestWebServer;
 
 
@@ -30,7 +30,7 @@ public class CookieManagerStartupTest extends AwTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ContentMain.initApplicationContext(getActivity().getApplicationContext());
+        ContextUtils.initApplicationContext(getActivity().getApplicationContext());
     }
 
     @Override

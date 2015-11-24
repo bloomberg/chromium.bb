@@ -17,6 +17,7 @@ import android.view.Surface;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -211,7 +212,7 @@ public class ChildProcessService extends Service {
                             mMainThread.wait();
                         }
                     }
-                    ContentMain.initApplicationContext(sContext.get().getApplicationContext());
+                    ContextUtils.initApplicationContext(sContext.get().getApplicationContext());
                     for (FileDescriptorInfo fdInfo : mFdInfos) {
                         nativeRegisterGlobalFileDescriptor(
                                 fdInfo.mId, fdInfo.mFd.detachFd(), fdInfo.mOffset, fdInfo.mSize);
