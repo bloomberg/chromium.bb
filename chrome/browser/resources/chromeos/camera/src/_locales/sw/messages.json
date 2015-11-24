@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "Camera",
+    "message": "Kamera",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Take crazy pictures with your web camera.",
+    "message": "Piga picha maridadi ukitumia kamera yako ya wavuti.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -12,43 +12,43 @@
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "Big Eyes",
+    "message": "Macho Makubwa",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Beauty",
+    "message": "Urembo",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Colourise",
+    "message": "Ongeza rangi",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Funky",
+    "message": "Maridadi",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Greyscale",
+    "message": "Bila rangi",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "Newspaper",
+    "message": "Gazeti",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Normal",
+    "message": "Ya Kawaida",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "Big Head",
+    "message": "Kichwa Kikubwa",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "Big Jaw",
+    "message": "Taya Kubwa",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "Bunny Head",
+    "message": "Kichwa cha Sungura",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
@@ -68,15 +68,15 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Photo Lab",
+    "message": "Maabara ya Picha",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Modern",
+    "message": "Kisasa",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "Swirl",
+    "message": "Zungusha",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -84,139 +84,139 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Cinema",
+    "message": "Sinema",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "Ukale",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Ghost",
+    "message": "Rudufu",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Your camera is currently unavailable.",
+    "message": "Kamera yako haipatikani sasa hivi.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Check if the camera is properly connected.",
+    "message": "Angalia ikiwa kamera imeunganishwa vizuri.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Unable to save the picture to the gallery.",
+    "message": "Haikuweza kuhifadhi picha kwenye matunzio.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Unable to load the gallery.",
+    "message": "Haikuweza kupakia matunzio.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Unable to delete the selected picture.",
+    "message": "Haikuweza kufuta picha iliyochaguliwa.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Unable to save the selected picture.",
+    "message": "Haikuweza kuhifadhi picha iliyochaguliwa.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
-    "message": "Hardware acceleration is not available.",
+    "message": "Kuongeza kasi kwa kutumia maunzi hakupatikani.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Your computer may have an incompatible graphics card or old drivers.",
+    "message": "Huenda kompyuta yako ina kadi ya picha ambayo haioani, au viendeshaji vya zamani.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Go to gallery",
+    "message": "Nenda kwenye matunzio",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Toggle filters",
+    "message": "Geuza vichujio",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "Delete",
+    "message": "Futa",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Save to disk",
+    "message": "Hifadhi kwenye diski",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "Print",
+    "message": "Chapisha",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Go back",
+    "message": "Rudi ",
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Maximise",
+    "message": "Tanua",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "Close",
+    "message": "Funga",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Gallery images",
+    "message": "Picha za matunzio",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Take a picture",
+    "message": "Piga picha",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Toggle timer",
+    "message": "Geuza kipima saa",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Toggle multi-shot",
+    "message": "Geuza upigaji picha nyingi",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "Toggle mirroring",
+    "message": "Geuza uakisi",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Timer active",
+    "message": "Kipima saa kinatumika",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Timer inactive",
+    "message": "Kipima saa hakitumiki",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Multi-shot active",
+    "message": "Upigaji picha nyingi unatumika",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Multi-shot inactive",
+    "message": "Upigaji picha nyingi hautumiki",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Mirroring active",
+    "message": "Uakisi unatumika",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Mirroring inactive",
+    "message": "Uakisi hautumiki",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
-    "message": "Yes",
+    "message": "Ndiyo",
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
-    "message": "No",
+    "message": "La",
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "Sawa",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Do you really want to remove this picture from the gallery?",
+    "message": "Una uhakika ungependa kuondoa picha kwenye matunzio?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

@@ -96,27 +96,27 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "В настоящий момент камера недоступна.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Камера недоступна.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Возможно, она используется другим приложением.",
+    "message": "Проверьте, правильно ли подключена камера.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Не удалось сохранить фотографию в галерее",
+    "message": "Не удалось сохранить фото в галерее.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Не удалось загрузить галерею",
+    "message": "Не удалось загрузить галерею.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Не удалось удалить фотографию",
+    "message": "Не удалось удалить изображение.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Не удалось сохранить фотографию",
+    "message": "Не удалось сохранить изображение.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Включить/отключить фильтры",
+    "message": "Фильтры",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -176,7 +176,7 @@
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "Включить/отключить дублирование экрана",
+    "message": "Дублирование экрана",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -200,7 +200,7 @@
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Дублирование отключено",
+    "message": "Дублирование выключено",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -212,11 +212,11 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "ОК",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Удалить эту фотографию из галереи?",
+    "message": "Удалить это изображение из галереи?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

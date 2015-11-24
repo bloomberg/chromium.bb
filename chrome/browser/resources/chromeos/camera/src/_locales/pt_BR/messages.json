@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Sua câmera está indisponível no momento.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Outro aplicativo pode estar usando a câmera.",
+    "message": "Verifique se a câmera está conectada corretamente.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -168,11 +168,11 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Altenar temporizador",
+    "message": "Alternar temporizador",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Alternar recurso de múltipla fotos",
+    "message": "Alternar recurso de múltiplas fotos",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
@@ -212,7 +212,7 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "Ok",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {

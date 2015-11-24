@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Antik",
+    "message": "Klasik",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kamera Anda tidak tersedia untuk saat ini.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Untuk saat ini kamera Anda tidak tersedia.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Aplikasi lain mungkin sedang menggunakannya.",
+    "message": "Periksa apakah kamera tersambung dengan benar.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Mungkin komputer Anda memiliki kartu grafik yang tidak kompatibel atau driver yang kuno.",
+    "message": "Mungkin komputer Anda memiliki kartu grafis yang tidak kompatibel atau driver lawas.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {

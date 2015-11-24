@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Normalt",
+    "message": "Normal",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Kameran är inte tillgänglig för närvarande.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Den kanske används av en annan app.",
+    "message": "Kontrollera kameraanslutningen.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {

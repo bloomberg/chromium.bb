@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "미니어쳐",
+    "message": "미니어처",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "현재 카메라를 사용할 수 없습니다.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "다른 앱에서 사용 중일 수 있습니다.",
+    "message": "카메라가 제대로 연결되어 있는지 확인합니다.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "컴퓨터에서 호환되지 않는 그래픽 카드나 오래된 드라이버를 사용 중입니다.",
+    "message": "컴퓨터에서 호환되지 않는 그래픽 카드나 오래된 드라이버를 사용 중일 수 있습니다.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "돌아가기",
+    "message": "뒤로",
     "description": "Label for the back button."
   },
   "maximizeButton": {

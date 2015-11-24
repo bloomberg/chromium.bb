@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "המצלמה שלך לא זמינה כרגע.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "המצלמה אינה זמינה כרגע.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ייתכן שיישום אחר משתמש בה.",
+    "message": "בדקו אם המצלמה מחוברת כראוי.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "חזרה",
+    "message": "חזור",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -172,15 +172,15 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "הפעל/כבה צילומים ברצף",
+    "message": "הפעל/הפסק צילומים ברצף",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "הפעל/כבה שיקוף",
+    "message": "הפעל/הפסק שיקוף",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "הטיימר פועל",
+    "message": "הטיימר הופעל",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {

@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "இயல்பானது",
+    "message": "சாதாரண",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -72,7 +72,7 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "அடிப்படை",
+    "message": "நவீனமான",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "உங்கள் கேமரா தற்போது கிடைக்கவில்லை.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "அதை வேறொரு பயன்பாடு பயன்படுத்திக் கொண்டிருக்கலாம்.",
+    "message": "கேமரா சரியாக இணைக்கப்பட்டுள்ளதா எனப் பார்க்கவும்.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "திரும்பு",
+    "message": "பின் செல்",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,6 +175,10 @@
     "message": "மல்டி-ஷாட்டை நிலைமாற்று",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "பிரதிபலித்தலை நிலைமாற்று",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "டைமர் செயலில் உள்ளது",
     "description": "Message shown when activating the timer."
@@ -188,8 +192,16 @@
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "மல்டி-ஷாட் செயலற்றநிலையில் உள்ளது",
+    "message": "மல்டி-ஷாட் செயலற்ற நிலையில் உள்ளது",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "பிரதிபலித்தல் செயலில் உள்ளது",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "பிரதிபலித்தல் செயலற்ற நிலையில் உள்ளது",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "ஆம்",

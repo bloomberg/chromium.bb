@@ -8,7 +8,7 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "„Andy” effektus",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Funky",
+    "message": "„Funky” effektus",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -64,7 +64,7 @@
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "60-as évek retró stílusa",
+    "message": "A '60-as évek retró stílusa",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Klasszikus",
+    "message": "Régies",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "A kamera jelenleg nem érhető el.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "A kamera jelenleg nem áll rendelkezésre.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Lehet, hogy egy másik alkalmazás használja.",
+    "message": "Ellenőrizze, hogy a kamera megfelelően van-e csatlakoztatva.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -152,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Teljes méret",
+    "message": "Maximalizálás",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -172,7 +172,7 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Több felvétel készítésének be-/kikapcsolása",
+    "message": "„Több felvétel készítése” funkció be-/kikapcsolása",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {

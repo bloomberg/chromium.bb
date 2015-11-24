@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Vaša kamera je momentálne nedostupná.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Váš fotoaparát je momentálne nedostupný.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Pravdepodobne ju používa iná aplikácia.",
+    "message": "Skontrolujte, či je fotoaparát správne pripojený.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -164,7 +164,7 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Odfotiť snímku",
+    "message": "Odfotiť",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {

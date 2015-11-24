@@ -76,7 +76,7 @@
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "মোচড়",
+    "message": "ঘূর্ণি",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "আপনার ক্যামেরা বর্তমানে অনুপলব্ধ৷",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "সম্ভবত অন্য কোনো অ্যাপ্লিকেশান এটি ব্যবহার করছে৷",
+    "message": "ক্যামেরা সঠিকভাবে সংযুক্ত আছে কিনা তা পরীক্ষা করুন।",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -144,7 +144,7 @@
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "মুদ্রণ করুন",
+    "message": "মুদ্রণ",
     "description": "Label for the printing button."
   },
   "backButton": {
@@ -175,6 +175,10 @@
     "message": "একাধিক-শট টগল করুন",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "মিররিং টগল করুন",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "টাইমার সক্রিয় করা আছে",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "একাধিক-শট নিষ্ক্রিয় করা আছে",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "মিররিং সক্রিয় করা আছে",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "মিররিং নিষ্ক্রিয় করা আছে",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "হ্যাঁ",

@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "നിലവിൽ നിങ്ങളുടെ ക്യാമറ ലഭ്യമല്ല.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "മറ്റൊരു അപ്ലിക്കേഷൻ ഇത് ഉപയോഗിക്കുന്നുണ്ടാവാം.",
+    "message": "ക്യാമറ ശരിയായി കണക്റ്റുചെയ്‌തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -108,7 +108,7 @@
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "ഗാലറിയിൽ ലോഡുചെയ്യാനായില്ല.",
+    "message": "ഗാലറി ലോഡുചെയ്യാനായില്ല.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ പൊരുത്തപ്പെടാത്ത ഗ്രാഫിക്‌സ് കാർഡ് അല്ലെങ്കിൽ പഴയ ഡ്രൈവറുകൾ ഉണ്ടാകാം.",
+    "message": "നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അനുയോജ്യമല്ലാത്ത ഗ്രാഫിക്‌സ് കാർഡ് അല്ലെങ്കിൽ പഴയ ഡ്രൈവറുകൾ ഉണ്ടാകാം.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -144,11 +144,11 @@
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "അച്ചടിക്കുക",
+    "message": "പ്രിന്റുചെയ്യുക",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "മടങ്ങുക",
+    "message": "തിരിച്ചുപോവുക",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -156,7 +156,7 @@
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "അടയ്‌ക്കുക",
+    "message": "അടയ്ക്കുക",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
@@ -175,6 +175,10 @@
     "message": "മൾട്ടി-ഷോട്ട് ടോഗിൾ ചെയ്യുക",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "മിററിംഗ് ടോഗിൾ ചെയ്യുക",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "ടൈമർ സജീവം",
     "description": "Message shown when activating the timer."
@@ -191,8 +195,16 @@
     "message": "മൾട്ടി-ഷോട്ട് നിഷ്‌ക്രിയം",
     "description": "Message shown when inactivating the multi-shot feature."
   },
+  "toggleMirrorActiveMessage": {
+    "message": "മിററിംഗ് സജീവം",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "മിററിംഗ് നിഷ്‌ക്രിയം",
+    "description": "Message shown when inactivating the preview mirroring."
+  },
   "dialogYesButton": {
-    "message": "വേണം",
+    "message": "ഉവ്വ്",
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
@@ -200,11 +212,11 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "അതെ",
+    "message": "ഉവ്വ്",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "ഗാലറിയിൽ നിന്ന് നിങ്ങൾക്ക് ഈ ചിത്രം നീക്കംചെയ്യാൻ താൽപ്പര്യമുണ്ടോ?",
+    "message": "ഗാലറിയിൽ നിന്ന് നിങ്ങൾക്ക് ഈ ചിത്രം ശരിക്കും നീക്കംചെയ്യണോ?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

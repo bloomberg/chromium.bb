@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Feu fotos divertides amb la càmera web.",
+    "message": "Feu fotos esbojarrades amb la càmera web.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Modern",
+    "message": "Funky",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "La càmera no està disponible en aquest moment.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "És possible que una altra aplicació l'estigui fent servir.",
+    "message": "Comproveu que la càmera estigui ben connectada.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Commuta els filtres",
+    "message": "Alterna entre filtres",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Torna enrere",
+    "message": "Enrere",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -168,15 +168,15 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Commuta el cronòmetre",
+    "message": "Activa o desactiva el cronòmetre",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Commuta el disparament múltiple",
+    "message": "Activa o desactiva el disparament múltiple",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleMirrorButton": {
-    "message": "Commuta la rèplica",
+    "message": "Activa o desactiva la rèplica",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -212,11 +212,11 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "Accepta",
+    "message": "D'acord",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Confirmeu que voleu suprimir aquesta foto de la galeria?",
+    "message": "Esteu segur que voleu suprimir aquesta foto de la galeria?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

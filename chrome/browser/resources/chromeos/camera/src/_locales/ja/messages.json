@@ -4,15 +4,15 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ウェブ カメラでさまざまな効果を使用した写真を撮ることができます。",
+    "message": "ウェブカメラでさまざまな効果を使用した写真を撮ることができます。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "ポップ アート",
+    "message": "ポップアート",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "ビッグ アイ",
+    "message": "ビッグアイ",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
@@ -40,15 +40,15 @@
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "ビッグ ヘッド",
+    "message": "ビッグヘッド",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "ビッグ ジョー",
+    "message": "ビッグジョー",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "バニー ヘッド",
+    "message": "バニーヘッド",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "ティルト シフト",
+    "message": "ティルトシフト",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -97,26 +97,26 @@
   },
   "errorMsgNoCamera": {
     "message": "現在、カメラは使用できません。",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "別のアプリで使用されている可能性があります。",
+    "message": "カメラが正しく接続されているか確認してください。",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "画像をギャラリーに保存できません。",
+    "message": "画像をギャラリーに保存できませんでした。",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "ギャラリーを読み込めません。",
+    "message": "ギャラリーを読み込めませんでした。",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "選択した画像は削除できません。",
+    "message": "選択した画像を削除できませんでした。",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "選択した画像は保存できません。",
+    "message": "選択した画像を保存できませんでした。",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {

@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Bojanje",
+    "message": "Bojenje",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Vaš fotoaparat trenutačno nije dostupan.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Možda ga upotrebljava neka druga aplikacija.",
+    "message": "Provjerite je li fotoaparat pravilno povezan.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {

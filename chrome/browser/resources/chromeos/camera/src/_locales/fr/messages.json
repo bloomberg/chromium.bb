@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Funk",
+    "message": "Funky",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "Votre caméra est actuellement indisponible.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Une autre application l'utilise peut-être.",
+    "message": "Vérifiez si la caméra est bien connectée.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -180,7 +180,7 @@
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Minuteur activé",
+    "message": "Retardateur activé",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {

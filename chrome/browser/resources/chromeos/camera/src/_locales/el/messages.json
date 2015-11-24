@@ -1,6 +1,6 @@
 {
   "name": {
-    "message": "Φωτογραφική μηχανή ",
+    "message": "Κάμερα",
     "description": "Name of the Camera App."
   },
   "description": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Αντίκα",
+    "message": "Παλιομοδίτικο",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,15 +96,15 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Η φωτογραφική μηχανή δεν είναι διαθέσιμη προς το παρόν.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Η κάμερά σας δεν είναι διαθέσιμη προς το παρόν.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Μια άλλη εφαρμογή ενδέχεται να το χρησιμοποιεί.",
+    "message": "Ελέγξτε αν η κάμερά σας έχει συνδεθεί σωστά.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση της εικόνας στο gallery.",
+    "message": "Δεν είναι δυνατή η αποθήκευση της φωτογραφίας στο gallery.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -112,11 +112,11 @@
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Δεν είναι δυνατή η διαγραφή της επιλεγμένης εικόνας.",
+    "message": "Δεν είναι δυνατή η διαγραφή της επιλεγμένης φωτογραφίας.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση της επιλεγμένης εικόνας.",
+    "message": "Δεν είναι δυνατή η αποθήκευση της επιλεγμένης φωτογραφίας.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
@@ -160,7 +160,7 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Εικόνες Gallery",
+    "message": "Εικόνες gallery",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
@@ -168,7 +168,7 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Εναλλαγή χρονόμετρου",
+    "message": "Εναλλαγή χρονομέτρου",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
@@ -196,11 +196,11 @@
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Ενεργός κατοπτρισμός",
+    "message": "Κατοπτρισμός ενεργός",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Ανενεργός κατοπτρισμός",
+    "message": "Κατοπτρισμός ανενεργός",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -212,11 +212,11 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "ΟΚ",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτή την εικόνα από το gallery;",
+    "message": "Είστε βέβαιοι ότι θέλετε να αφαιρέσετε αυτήν τη φωτογραφία από το gallery;",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

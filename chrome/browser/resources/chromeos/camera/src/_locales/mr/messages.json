@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "घाबरट",
+    "message": "गंमतशीर",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -40,7 +40,7 @@
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "बढाईखोर",
+    "message": "मोठे डोके",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
@@ -97,10 +97,10 @@
   },
   "errorMsgNoCamera": {
     "message": "आपला कॅमेरा सध्या अनुपलब्ध आहे.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "दुसरा अॅप कदाचित याचा वापर करत असावा.",
+    "message": "कॅमेरा योग्यरित्या कनेक्ट केला असल्याचे तपासा.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -175,6 +175,10 @@
     "message": "मल्‍टि-शॉट टॉगल करा",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "मिररिंग टॉगल करा",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "टाइमर सक्रिय",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "मल्टी-शॉट निष्क्रिय",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "मिररिंग सक्रिय",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "मिररिंग निष्क्रिय",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "होय",

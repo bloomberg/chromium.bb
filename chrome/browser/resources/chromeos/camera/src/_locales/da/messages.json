@@ -96,11 +96,11 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Dit kamera er ikke tilgængeligt i øjeblikket.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "message": "Dit kamera er ikke tilgængeligt lige nu.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Det bruges muligvis af en anden app.",
+    "message": "Kontrollér, om kameraet er korrekt tilsluttet.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -152,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Maksimer",
+    "message": "Maksimér",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {

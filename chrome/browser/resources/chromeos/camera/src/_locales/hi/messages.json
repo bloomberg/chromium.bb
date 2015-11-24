@@ -97,14 +97,14 @@
   },
   "errorMsgNoCamera": {
     "message": "वर्तमान में आपका कैमरा उपलब्ध नहीं है.",
-    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "संभवत: कोई अन्य ऐप्स इसका उपयोग कर रहा है.",
+    "message": "देखें कि कैमरा ठीक तरह से कनेक्ट है या नहीं.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "फ़ोटो को गैलरी में सहेजने में असमर्थ.",
+    "message": "चित्र को गैलरी में सहेजने में असमर्थ.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -152,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "विस्तृत करें",
+    "message": "विस्‍तृत करें",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
