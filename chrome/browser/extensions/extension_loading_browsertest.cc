@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -97,6 +98,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 // Tests the behavior described in http://crbug.com/532088.
 IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
                        KeepAliveWithDevToolsOpenOnReload) {
+#if defined(OS_WIN)
+  // Flaky on Win XP SP3. http://crbug.com/560716.
+  if (base::win::GetVersion() <= base::win::VERSION_SERVER_2003)
+    return;
+#endif
+
   embedded_test_server()->ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(embedded_test_server()->Start());
