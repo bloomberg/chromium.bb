@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
@@ -205,6 +206,14 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase, paintOffset))
         return;
+
+    // The result rects are in coordinates of m_layoutObject's border box.
+    // Block flipping is not applied yet if !m_layoutObject.isBox().
+    if (!m_layoutObject.isBox() && m_layoutObject.styleRef().isFlippedBlocksWritingMode()) {
+        LayoutBlock* container = m_layoutObject.containingBlock();
+        if (container)
+            m_layoutObject.localToContainerRects(outlineRects, container, -paintOffset, paintOffset);
+    }
 
     Vector<IntRect> pixelSnappedOutlineRects;
     for (auto& r : outlineRects)

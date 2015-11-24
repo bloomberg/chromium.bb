@@ -2231,6 +2231,22 @@ FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, con
     return transformState.lastPlanarPoint();
 }
 
+void LayoutObject::localToContainerRects(Vector<LayoutRect>& rects, const LayoutBoxModelObject* paintInvalidationContainer, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const
+{
+    for (size_t i = 0; i < rects.size(); ++i) {
+        LayoutRect& rect = rects[i];
+        rect.moveBy(preOffset);
+        FloatQuad containerQuad = localToContainerQuad(FloatQuad(FloatRect(rect)), paintInvalidationContainer);
+        LayoutRect containerRect = LayoutRect(containerQuad.boundingBox());
+        if (containerRect.isEmpty()) {
+            rects.remove(i--);
+            continue;
+        }
+        containerRect.moveBy(postOffset);
+        rects[i] = containerRect;
+    }
+}
+
 FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, PaintLayer** backingLayer)
 {
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();

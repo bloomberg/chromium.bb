@@ -451,14 +451,8 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
     if (descendant.hasLayer()) {
         Vector<LayoutRect> layerOutlineRects;
         descendant.addOutlineRects(layerOutlineRects, LayoutPoint(), includeBlockOverflows);
-        for (size_t i = 0; i < layerOutlineRects.size(); ++i) {
-            FloatQuad quadInBox = toLayoutBoxModelObject(descendant).localToContainerQuad(FloatQuad(FloatRect(layerOutlineRects[i])), this);
-            LayoutRect rect = LayoutRect(quadInBox.boundingBox());
-            if (!rect.isEmpty()) {
-                rect.moveBy(additionalOffset);
-                rects.append(rect);
-            }
-        }
+        descendant.localToContainerRects(layerOutlineRects, this, LayoutPoint(), additionalOffset);
+        rects.appendVector(layerOutlineRects);
         return;
     }
 
