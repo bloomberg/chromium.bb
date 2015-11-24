@@ -29,7 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ParentTokenSerializer
   ParentTokenSerializer(HANDLE child_process, ScopedPlatformHandle pipe);
 
  private:
-  virtual ~ParentTokenSerializer();
+  virtual ~ParentTokenSerializer() override;
 
   void RegisterIOHandler();
   void BeginRead();
