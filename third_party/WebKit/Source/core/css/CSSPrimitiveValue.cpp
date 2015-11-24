@@ -440,10 +440,10 @@ void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, CSSLe
     }
 
     LengthUnitType lengthType;
-    if (unitTypeToLengthUnitType(type(), lengthType)) {
-        lengthArray.at(lengthType) += m_value.num * conversionToCanonicalUnitsScaleFactor(type()) * multiplier;
-        lengthTypeArray.set(lengthType);
-    }
+    bool conversionSuccess = unitTypeToLengthUnitType(type(), lengthType);
+    ASSERT_UNUSED(conversionSuccess, conversionSuccess);
+    lengthArray.at(lengthType) += m_value.num * conversionToCanonicalUnitsScaleFactor(type()) * multiplier;
+    lengthTypeArray.set(lengthType);
 }
 
 void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
