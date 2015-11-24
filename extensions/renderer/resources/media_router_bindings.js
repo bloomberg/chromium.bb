@@ -103,19 +103,18 @@ define('media_router_bindings', [
    * @return {!mediaRouterMojom.MediaRouter.PresentationConnectionState}
    */
   function presentationConnectionStateToMojo_(state) {
+    var PresentationConnectionState =
+        mediaRouterMojom.MediaRouter.PresentationConnectionState;
     switch (state) {
       case 'connected':
-        return
-            mediaRouterMojom.MediaRouter.PresentationConnectionState.CONNECTED;
+        return PresentationConnectionState.CONNECTED;
       case 'closed':
-        return mediaRouterMojom.MediaRouter.PresentationConnectionState.CLOSED;
+        return PresentationConnectionState.CLOSED;
       case 'terminated':
-        return
-            mediaRouterMojom.MediaRouter.PresentationConnectionState.TERMINATED;
+        return PresentationConnectionState.TERMINATED;
       default:
         console.error('Unknown presentation connection state: ' + state);
-        return
-            mediaRouterMojom.MediaRouter.PresentationConnectionState.TERMINATED;
+        return PresentationConnectionState.TERMINATED;
     }
   }
 
