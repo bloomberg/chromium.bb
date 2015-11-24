@@ -306,6 +306,7 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
 {
     ASSERT(interestRect || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(drawsContent());
+    ASSERT(&context.paintController() == m_paintController);
 
     if (!m_client)
         return;
@@ -313,7 +314,7 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
 #ifndef NDEBUG
-    if (m_paintController && contentsOpaque() && s_drawDebugRedFill) {
+    if (contentsOpaque() && s_drawDebugRedFill) {
         FloatRect rect(FloatPoint(), size());
         if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
             DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);

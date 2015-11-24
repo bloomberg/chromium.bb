@@ -326,11 +326,14 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
 
     IntSize size = expandedIntSize(layer->size());
 
-    SkPictureBuilder pictureBuilder(FloatRect(0, 0, size.width(), size.height()));
+    GraphicsContext context(*layer->paintController());
     IntRect interestRect(IntPoint(0, 0), size);
-    layer->paint(pictureBuilder.context(), &interestRect);
+    layer->paint(context, &interestRect);
+    layer->paintController()->commitNewDisplayItems();
 
-    RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(pictureBuilder.endRecording()));
+    context.beginRecording(interestRect);
+    layer->paintController()->paintArtifact().replay(context);
+    RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(context.endRecording()));
 
     *snapshotId = String::number(++s_lastSnapshotId);
     bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
