@@ -81,6 +81,7 @@
 #include "net/ssl/ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -15464,6 +15465,31 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
             trans->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(data_reads, arraysize(data_reads)),
             trans->GetTotalReceivedBytes());
+}
+
+TEST_P(HttpNetworkTransactionTest, EnableNPN) {
+  session_deps_.next_protos = NextProtosDefaults();
+  session_deps_.enable_npn = true;
+
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
+              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
+  EXPECT_THAT(trans.server_ssl_config_.npn_protos,
+              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
+}
+
+TEST_P(HttpNetworkTransactionTest, DisableNPN) {
+  session_deps_.next_protos = NextProtosDefaults();
+  session_deps_.enable_npn = false;
+
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
+              testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
+  EXPECT_TRUE(trans.server_ssl_config_.npn_protos.empty());
 }
 
 }  // namespace net

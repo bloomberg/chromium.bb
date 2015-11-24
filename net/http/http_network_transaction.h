@@ -116,6 +116,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            ResetStateForRestart);
+  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, EnableNPN);
+  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, DisableNPN);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            WindowUpdateReceived);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
