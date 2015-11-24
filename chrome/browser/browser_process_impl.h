@@ -247,6 +247,8 @@ class BrowserProcessImpl : public BrowserProcess,
   unsigned int module_ref_count_;
   bool did_start_;
 
+  bool tearing_down_;
+
   // Ensures that all the print jobs are finished before closing the browser.
   scoped_ptr<printing::PrintJobManager> print_job_manager_;
 

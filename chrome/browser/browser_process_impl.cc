@@ -188,6 +188,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_safe_browsing_service_(false),
       module_ref_count_(0),
       did_start_(false),
+      tearing_down_(false),
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner),
       cached_default_web_client_state_(ShellIntegration::UNKNOWN_DEFAULT) {
@@ -249,12 +250,17 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 #if !defined(OS_ANDROID)
 void BrowserProcessImpl::StartTearDown() {
   TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
+  // TODO(crbug.com/560486): Fix the tests that make the check of
+  // |tearing_down_| necessary in IsShuttingDown().
+  tearing_down_ = true;
+  DCHECK(IsShuttingDown());
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // PromoResourceService, and SafeBrowsing ClientSideDetectionService (owned by
   // the SafeBrowsingService) before the io_thread_ gets destroyed, since their
   // destructors can call the URLFetcher destructor, which does a
   // PostDelayedTask operation on the IO thread. (The IO thread will handle that
   // URLFetcher operation before going away.)
+  metrics_services_manager_.reset();
   intranet_redirect_detector_.reset();
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
@@ -286,10 +292,6 @@ void BrowserProcessImpl::StartTearDown() {
     profile_manager_.reset();
   }
 
-  // MetricsServiceManager holds reference to RapporService, wich is needed by
-  // WebContents (which can be held by ProfileManager). To prevent use after
-  // free, it must be destroyed after profile_manager_.
-  metrics_services_manager_.reset();
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
   promo_resource_service_.reset();
@@ -684,7 +686,9 @@ void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
 
 bool BrowserProcessImpl::IsShuttingDown() {
   DCHECK(CalledOnValidThread());
-  return did_start_ && 0 == module_ref_count_;
+  // TODO(crbug.com/560486): Fix the tests that make the check of
+  // |tearing_down_| necessary here.
+  return (did_start_ && 0 == module_ref_count_) || tearing_down_;
 }
 
 printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {

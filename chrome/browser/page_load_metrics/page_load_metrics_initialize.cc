@@ -41,6 +41,10 @@ PageLoadMetricsEmbedderInterfaceImpl::~PageLoadMetricsEmbedderInterfaceImpl() {}
 
 rappor::RapporService*
 PageLoadMetricsEmbedderInterfaceImpl::GetRapporService() {
+  // During the browser process shutdown path, calling this getter can
+  // reinitialize multiple destroyed objects. This alters shutdown ordering.
+  if (g_browser_process->IsShuttingDown())
+    return nullptr;
   return g_browser_process->rappor_service();
 }
 
