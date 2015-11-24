@@ -278,6 +278,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         tab_url_(item->GetTabUrl()),
         tab_referrer_url_(item->GetTabReferrerUrl()),
         archived_executable_(false),
+        archive_is_valid_(ArchiveValid::UNSET),
         callback_(callback),
         service_(service),
         binary_feature_extractor_(binary_feature_extractor),
@@ -485,6 +486,20 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DCHECK(item_ == NULL);
   }
 
+  // .zip files that look invalid to Chrome can often be successfully unpacked
+  // by other archive tools, so they may be a real threat.  For that reason,
+  // we send pings for them if !in_incognito && is_extended_reporting.
+  bool CanReportInvalidArchives() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
+    if (!profile ||
+        !profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled))
+      return false;
+
+    return !item_->GetBrowserContext()->IsOffTheRecord();
+  }
+
   void OnFileFeatureExtractionDone() {
     // This can run in any thread, since it just posts more messages.
 
@@ -564,15 +579,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DCHECK_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE, type_);
     if (!service_)
       return;
-    if (results.success) {
-      archived_executable_ = results.has_executable;
-      archived_binary_.CopyFrom(results.archived_binary);
-      DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
-               << ", has_executable=" << results.has_executable
-               << " has_archive=" << results.has_archive;
-    } else {
-      DVLOG(1) << "Zip analysis failed for " << item_->GetFullPath().value();
-    }
+
+    // Even if !results.success, some of the zip may have been parsed.
+    // Some unzippers will successfully unpack archives that we cannot,
+    // so we're lenient here.
+    archive_is_valid_ =
+        (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
+    archived_executable_ = results.has_executable;
+    archived_binary_.CopyFrom(results.archived_binary);
+    DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
+             << ", has_executable=" << results.has_executable
+             << ", has_archive=" << results.has_archive
+             << ", success=" << results.success;
+
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess", results.success);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
                           archived_executable_);
@@ -583,13 +602,18 @@ class DownloadProtectionService::CheckClientDownloadRequest
     for (const auto& file_name : results.archived_archive_filenames)
       RecordArchivedArchiveFileExtensionType(file_name);
 
-    if (!archived_executable_ && !results.has_archive) {
-      PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
-      return;
+    if (!archived_executable_) {
+      if (results.has_archive) {
+        type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
+      } else if (!results.success && CanReportInvalidArchives()) {
+        type_ = ClientDownloadRequest::INVALID_ZIP;
+      } else {
+        // Normal zip w/o EXEs, or invalid zip and not extended-reporting.
+        PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
+        return;
+      }
     }
 
-    if (!archived_executable_ && results.has_archive)
-      type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
     OnFileFeatureExtractionDone();
   }
 
@@ -611,15 +635,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (!service_)
       return;
 
-    if (results.success) {
-      archived_executable_ = results.has_executable;
-      archived_binary_.CopyFrom(results.archived_binary);
-      DVLOG(1) << "DMG analysis has finished for "
-               << item_->GetFullPath().value() << ", has_executable="
-               << results.has_executable;
-    } else {
-      DVLOG(1) << "DMG analysis failed for "<< item_->GetFullPath().value();
-    }
+    // Even if !results.success, some of the DMG may have been parsed.
+    archive_is_valid_ =
+        (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
+    archived_executable_ = results.has_executable;
+    archived_binary_.CopyFrom(results.archived_binary);
+    DVLOG(1) << "DMG analysis has finished for " << item_->GetFullPath().value()
+             << ", has_executable=" << results.has_executable
+             << ", success=" << results.success;
 
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileSuccess", results.success);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileHasExecutable",
@@ -628,8 +651,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
                         base::TimeTicks::Now() - dmg_analysis_start_time_);
 
     if (!archived_executable_) {
-      PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
-      return;
+      if (!results.success && CanReportInvalidArchives()) {
+        type_ = ClientDownloadRequest::INVALID_MAC_ARCHIVE;
+      } else {
+        PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
+        return;
+      }
     }
 
     OnFileFeatureExtractionDone();
@@ -812,6 +839,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.set_file_basename(
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
     request.set_download_type(type_);
+    if (archive_is_valid_ != ArchiveValid::UNSET)
+      request.set_archive_valid(archive_is_valid_ == ArchiveValid::VALID);
     request.mutable_signature()->CopyFrom(signature_info_);
     if (image_headers_)
       request.set_allocated_image_headers(image_headers_.release());
@@ -936,6 +965,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     return false;
   }
 
+  enum class ArchiveValid { UNSET, VALID, INVALID };
+
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.
   content::DownloadItem* item_;
@@ -949,6 +980,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   GURL tab_referrer_url_;
 
   bool archived_executable_;
+  ArchiveValid archive_is_valid_;
+
   ClientDownloadRequest_SignatureInfo signature_info_;
   scoped_ptr<ClientDownloadRequest_ImageHeaders> image_headers_;
   google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>

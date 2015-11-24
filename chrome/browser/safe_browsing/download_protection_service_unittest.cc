@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -243,6 +245,12 @@ class DownloadProtectionServiceTest : public testing::Test {
         .AppendASCII("data")
         .AppendASCII("safe_browsing")
         .AppendASCII("download_protection");
+
+    // Setup a profile
+    ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+    profile_.reset(new TestingProfile(profile_dir_.path()));
+    ASSERT_TRUE(profile_->CreateHistoryService(true /* delete_file */,
+                                               false /* no_db */));
   }
 
   void TearDown() override {
@@ -402,6 +410,11 @@ class DownloadProtectionServiceTest : public testing::Test {
         testing::AssertionFailure() << "Expected " << expected <<
                                        ", got " << result_;
   }
+  // Check scenarios where we should/shouldn't send a report for
+  // a corrupted zip.
+  void CheckClientDownloadReportCorruptZip(bool is_extended_reporting,
+                                           bool is_incognito);
+
 
  protected:
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
@@ -415,7 +428,90 @@ class DownloadProtectionServiceTest : public testing::Test {
   DownloadProtectionService::ClientDownloadRequestSubscription
       client_download_request_subscription_;
   scoped_ptr<ClientDownloadRequest> last_client_download_request_;
+  base::ScopedTempDir profile_dir_;
+  scoped_ptr<TestingProfile> profile_;
 };
+
+
+void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
+    bool is_extended_reporting,
+    bool is_incognito) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::SAFE);
+  net::FakeURLFetcherFactory factory(NULL);
+  // Empty response means SAFE.
+  factory.SetFakeResponse(
+      DownloadProtectionService::GetDownloadRequestUrl(),
+      response.SerializeAsString(),
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  base::ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+
+  base::FilePath a_tmp(download_dir.path().Append(FILE_PATH_LITERAL("a.tmp")));
+  base::FilePath a_zip(FILE_PATH_LITERAL("a.zip"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("http://www.evil.com/a.zip"));
+  GURL referrer("http://www.google.com/");
+  std::string hash = "hash";
+  profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+                                   is_extended_reporting);
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+
+  if (is_incognito) {
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+  } else {
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_.get()));
+  }
+
+  std::string file_contents = "corrupt zip file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
+      a_tmp, file_contents.data(), file_contents.size()));
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  const bool expect_request = is_extended_reporting && !is_incognito;
+#else
+  // For !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported.
+  const bool expect_request = false;
+#endif
+
+  if (expect_request) {
+    ASSERT_TRUE(HasClientDownloadRequest());
+    EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
+    EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_INVALID_ZIP,
+              GetClientDownloadRequest()->download_type());
+    ClearClientDownloadRequest();
+  } else {
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+}
+
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
@@ -1183,43 +1279,22 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
-TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
-  base::ScopedTempDir download_dir;
-  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptZipNormal) {
+  // !is_extended_reporting && !is_incognito
+  CheckClientDownloadReportCorruptZip(false, false);
+}
 
-  base::FilePath a_tmp(download_dir.path().Append(FILE_PATH_LITERAL("a.tmp")));
-  base::FilePath a_zip(FILE_PATH_LITERAL("a.zip"));
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL("http://www.evil.com/a.zip"));
-  GURL referrer("http://www.google.com/");
-  std::string hash = "hash";
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptZipExtended) {
+  // !is_extended_reporting && !is_incognito
+  CheckClientDownloadReportCorruptZip(true, false);
+}
 
-  content::MockDownloadItem item;
-  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
-  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
-  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
-  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
-  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
-  EXPECT_CALL(item, GetTabReferrerUrl())
-      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
-  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
-  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
-  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
-  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
-
-  std::string file_contents = "corrupt zip file";
-  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
-      a_tmp, file_contents.data(), file_contents.size()));
-
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  MessageLoop::current()->Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
-  Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportCorruptZipIncognito) {
+  // is_extended_reporting && is_incognito
+  CheckClientDownloadReportCorruptZip(true, true);
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
@@ -1448,12 +1523,6 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestTabHistory) {
   net::TestURLFetcherFactory factory;
 
-  base::ScopedTempDir profile_dir;
-  ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
-  TestingProfile profile(profile_dir.path());
-  ASSERT_TRUE(
-      profile.CreateHistoryService(true /* delete_file */, false /* no_db */));
-
   base::FilePath tmp_path(FILE_PATH_LITERAL("bla.tmp"));
   base::FilePath final_path(FILE_PATH_LITERAL("bla.exe"));
   std::vector<GURL> url_chain;
@@ -1477,7 +1546,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
   EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
   EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(remote_address));
-  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(&profile));
+  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(profile_.get()));
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -1559,7 +1628,7 @@ TEST_F(DownloadProtectionServiceTest,
     redirects.push_back(GURL("http://tab.com/ref1"));
     redirects.push_back(GURL("http://tab.com/ref2"));
     redirects.push_back(tab_url);
-    HistoryServiceFactory::GetForProfile(&profile,
+    HistoryServiceFactory::GetForProfile(profile_.get(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
         ->AddPage(tab_url,
                   base::Time::Now(),
