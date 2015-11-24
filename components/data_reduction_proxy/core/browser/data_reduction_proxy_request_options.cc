@@ -48,9 +48,7 @@ const char kSecureSessionHeaderOption[] = "s";
 const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
-const char kLoFiHeaderOption[] = "q";
 const char kExperimentsOption[] = "exp";
-const char kLoFiExperimentID[] = "lofi_active_control";
 
 // The empty version for the authentication protocol. Currently used by
 // Android webview.
@@ -160,56 +158,6 @@ void DataReductionProxyRequestOptions::UpdateVersion() {
   RegenerateRequestHeaderValue();
 }
 
-void DataReductionProxyRequestOptions::MayRegenerateHeaderBasedOnLoFi(
-    bool is_using_lofi_mode) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // The Lo-Fi directive should not be added for users in the Lo-Fi field
-  // trial "Control" group. Check that the user is in a group that should
-  // get "q=low".
-  bool lofi_enabled_via_flag_or_field_trial =
-      params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
-
-  // Lo-Fi was not enabled, but now is. Add the header option.
-  if (lofi_.empty() && is_using_lofi_mode &&
-      lofi_enabled_via_flag_or_field_trial) {
-    lofi_ = "low";
-    RegenerateRequestHeaderValue();
-    return;
-  }
-
-  // Lo-Fi was enabled, but no longer is. Remove the header option.
-  if (!lofi_.empty() &&
-      (!is_using_lofi_mode || !lofi_enabled_via_flag_or_field_trial)) {
-    lofi_ = std::string();
-    RegenerateRequestHeaderValue();
-    return;
-  }
-
-  // User was not part of Lo-Fi active control experiment, but now is.
-  if (std::find(experiments_.begin(), experiments_.end(),
-                std::string(kLoFiExperimentID)) == experiments_.end() &&
-      is_using_lofi_mode && params::IsIncludedInLoFiControlFieldTrial()) {
-    experiments_.push_back(kLoFiExperimentID);
-    RegenerateRequestHeaderValue();
-    DCHECK(std::find(experiments_.begin(), experiments_.end(),
-                     kLoFiExperimentID) != experiments_.end());
-    return;
-  }
-
-  // User was part of Lo-Fi active control experiment, but now is not.
-  auto it = std::find(experiments_.begin(), experiments_.end(),
-                      std::string(kLoFiExperimentID));
-  if (it != experiments_.end() &&
-      (!is_using_lofi_mode || !params::IsIncludedInLoFiControlFieldTrial())) {
-    experiments_.erase(it);
-    RegenerateRequestHeaderValue();
-    DCHECK(std::find(experiments_.begin(), experiments_.end(),
-                     std::string(kLoFiExperimentID)) == experiments_.end());
-    return;
-  }
-}
-
 void DataReductionProxyRequestOptions::UpdateExperiments() {
   std::string experiments =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -249,34 +197,30 @@ void DataReductionProxyRequestOptions::RandBytes(void* output,
 void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
     net::URLRequest* request,
     const net::ProxyServer& proxy_server,
-    net::HttpRequestHeaders* request_headers,
-    bool is_using_lofi_mode) {
+    net::HttpRequestHeaders* request_headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!proxy_server.is_valid())
     return;
   if (proxy_server.is_direct())
     return;
   MaybeAddRequestHeaderImpl(request, proxy_server.host_port_pair(), false,
-                            request_headers, is_using_lofi_mode);
+                            request_headers);
 }
 
 void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* request_headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MaybeAddRequestHeaderImpl(nullptr, proxy_server, true, request_headers,
-                            false);
+  MaybeAddRequestHeaderImpl(nullptr, proxy_server, true, request_headers);
 }
 
 void DataReductionProxyRequestOptions::SetHeader(
     const net::URLRequest* request,
-    net::HttpRequestHeaders* headers,
-    bool is_using_lofi_mode) {
+    net::HttpRequestHeaders* headers) {
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
   if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
     UpdateCredentials();
-  MayRegenerateHeaderBasedOnLoFi(is_using_lofi_mode);
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
   if (headers->HasHeader(kChromeProxyHeader)) {
@@ -395,14 +339,13 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     const net::URLRequest* request,
     const net::HostPortPair& proxy_server,
     bool expect_ssl,
-    net::HttpRequestHeaders* request_headers,
-    bool is_using_lofi_mode) {
+    net::HttpRequestHeaders* request_headers) {
   if (proxy_server.IsEmpty())
     return;
   if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
       data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
           expect_ssl) {
-    SetHeader(request, request_headers, is_using_lofi_mode);
+    SetHeader(request, request_headers);
   }
 }
 
@@ -422,8 +365,6 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
     headers.push_back(FormatOption(kBuildNumberHeaderOption, build_));
     headers.push_back(FormatOption(kPatchNumberHeaderOption, patch_));
   }
-  if (!lofi_.empty())
-    headers.push_back(FormatOption(kLoFiHeaderOption, lofi_));
   for (const auto& experiment : experiments_)
     headers.push_back(FormatOption(kExperimentsOption, experiment));
 

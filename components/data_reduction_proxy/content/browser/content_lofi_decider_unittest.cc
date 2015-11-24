@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -28,8 +29,6 @@
 namespace data_reduction_proxy {
 
 namespace {
-
-const char kChromeProxyHeader[] = "chrome-proxy";
 
 #if defined(OS_ANDROID)
 const Client kClient = Client::CHROME_ANDROID;
@@ -119,11 +118,23 @@ class ContentLoFiDeciderTest : public testing::Test {
 
   static void VerifyLoFiHeader(bool expected_lofi_used,
                                const net::HttpRequestHeaders& headers) {
-    EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+    EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
     std::string header_value;
-    headers.GetHeader(kChromeProxyHeader, &header_value);
-    EXPECT_EQ(expected_lofi_used,
-              header_value.find("q=low") != std::string::npos);
+    headers.GetHeader(chrome_proxy_header(), &header_value);
+    EXPECT_EQ(
+        expected_lofi_used,
+        header_value.find(chrome_proxy_lo_fi_directive()) != std::string::npos);
+  }
+
+  static void VerifyLoFiExperimentHeader(
+      bool expected_lofi_experiment_used,
+      const net::HttpRequestHeaders& headers) {
+    EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
+    std::string header_value;
+    headers.GetHeader(chrome_proxy_header(), &header_value);
+    EXPECT_EQ(expected_lofi_experiment_used,
+              header_value.find(chrome_proxy_lo_fi_experiment_directive()) !=
+                  std::string::npos);
   }
 
  protected:
@@ -219,6 +230,106 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(false, headers);
+  }
+}
+
+TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
+  const struct {
+    bool auto_lofi_enabled_group;
+    bool auto_lofi_control_group;
+    bool network_prohibitively_slow;
+  } tests[] = {
+      {false, false, false},
+      {false, false, true},
+      {true, false, false},
+      {true, false, true},
+      {false, true, false},
+      {false, true, true},
+      // Repeat this test data to simulate user moving out of Lo-Fi control
+      // experiment.
+      {false, true, false},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    test_context_->config()->ResetLoFiStatusForTest();
+    // Lo-Fi header is expected only if session is part of Lo-Fi enabled field
+    // trial and network is prohibitively slow.
+    bool expect_lofi_header =
+        tests[i].auto_lofi_enabled_group && tests[i].network_prohibitively_slow;
+    bool expect_lofi_experiment_header =
+        tests[i].auto_lofi_control_group && tests[i].network_prohibitively_slow;
+
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
+
+    if (tests[i].auto_lofi_control_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Control");
+    }
+
+    test_context_->config()->SetNetworkProhibitivelySlow(
+        tests[i].network_prohibitively_slow);
+
+    scoped_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].network_prohibitively_slow);
+    net::HttpRequestHeaders headers;
+    NotifyBeforeSendProxyHeaders(&headers, request.get());
+
+    VerifyLoFiHeader(expect_lofi_header, headers);
+    VerifyLoFiExperimentHeader(expect_lofi_experiment_header, headers);
+  }
+}
+
+TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
+  const struct {
+    bool slow_connections_flag_enabled;
+    bool network_prohibitively_slow;
+    bool auto_lofi_enabled_group;
+
+  } tests[] = {
+      {false, false, false}, {false, true, false}, {true, false, false},
+      {true, true, false},   {false, false, true}, {false, true, true},
+      {true, false, true},   {true, true, true},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    test_context_->config()->ResetLoFiStatusForTest();
+    // For the purpose of this test, Lo-Fi header is expected only if LoFi Slow
+    // Connection Flag is enabled or session is part of Lo-Fi enabled field
+    // trial. For both cases, an additional condition is that network must be
+    // prohibitively slow.
+    bool expect_lofi_header = (tests[i].slow_connections_flag_enabled &&
+                               tests[i].network_prohibitively_slow) ||
+                              (!tests[i].slow_connections_flag_enabled &&
+                               tests[i].auto_lofi_enabled_group &&
+                               tests[i].network_prohibitively_slow);
+
+    std::string expected_header;
+
+    if (tests[i].slow_connections_flag_enabled) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+    }
+
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
+
+    test_context_->config()->SetNetworkProhibitivelySlow(
+        tests[i].network_prohibitively_slow);
+
+    scoped_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].network_prohibitively_slow);
+    net::HttpRequestHeaders headers;
+    NotifyBeforeSendProxyHeaders(&headers, request.get());
+
+    VerifyLoFiHeader(expect_lofi_header, headers);
   }
 }
 

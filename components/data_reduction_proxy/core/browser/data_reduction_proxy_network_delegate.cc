@@ -174,12 +174,11 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
 
-  bool is_using_lofi_mode = false;
-
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() && request) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
-    is_using_lofi_mode = lofi_decider->IsUsingLoFiMode(*request);
+    bool is_using_lofi_mode =
+        lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
 
     if ((request->load_flags() & net::LOAD_MAIN_FRAME) != 0) {
       // TODO(megjablon): Need to switch to per page.
@@ -190,7 +189,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
 
   if (data_reduction_proxy_request_options_) {
     data_reduction_proxy_request_options_->MaybeAddRequestHeader(
-        request, proxy_info.proxy_server(), headers, is_using_lofi_mode);
+        request, proxy_info.proxy_server(), headers);
   }
 }
 

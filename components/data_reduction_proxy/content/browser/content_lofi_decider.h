@@ -9,6 +9,7 @@
 #include "base/macros.h"
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequest;
 }
 
@@ -17,14 +18,19 @@ namespace data_reduction_proxy {
 // Class responsible for deciding whether a request should be requested with low
 // fidelity (Lo-Fi) or not. Relies on the Lo-Fi mode state stored in the
 // request's content::ResourceRequestInfo, which must be fetched using
-// content::ResourceRequestInfo::ForRequest. Owned by DataReductionProxyIOData
-// and should be called on the IO thread.
+// content::ResourceRequestInfo::ForRequest. Lo-Fi mode will not be enabled for
+// requests that don't have a ResourceRequestInfo, such as background requests.
+// Owned by DataReductionProxyIOData and should be called on the IO thread.
 class ContentLoFiDecider : public LoFiDecider {
  public:
   ContentLoFiDecider();
   ~ContentLoFiDecider() override;
 
+  // LoFiDecider implementation:
   bool IsUsingLoFiMode(const net::URLRequest& request) const override;
+  bool MaybeAddLoFiDirectiveToHeaders(
+      const net::URLRequest& request,
+      net::HttpRequestHeaders* headers) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentLoFiDecider);

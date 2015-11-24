@@ -4,7 +4,12 @@
 
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 
+#include <string>
+
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/http/http_request_headers.h"
 
 namespace data_reduction_proxy {
 
@@ -15,8 +20,59 @@ ContentLoFiDecider::~ContentLoFiDecider() {}
 bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
+  // The Lo-Fi directive should not be added for users in the Lo-Fi field
+  // trial "Control" group. Check that the user is in a group that can get
+  // "q=low".
+  bool lofi_enabled_via_flag_or_field_trial =
+      params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
+
+  // Return if the user is using Lo-Fi and not part of the "Control" group.
   if (request_info)
-    return request_info->IsUsingLoFi();
+    return request_info->IsUsingLoFi() && lofi_enabled_via_flag_or_field_trial;
+  return false;
+}
+
+bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
+    const net::URLRequest& request,
+    net::HttpRequestHeaders* headers) const {
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+
+  if (!request_info)
+    return false;
+
+  // The Lo-Fi directive should not be added for users in the Lo-Fi field
+  // trial "Control" group. Check that the user is in a group that should
+  // get "q=low".
+  bool lofi_enabled_via_flag_or_field_trial =
+      params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
+
+  std::string header_value;
+
+  // User is using Lo-Fi and not part of the "Control" group.
+  if (request_info->IsUsingLoFi() && lofi_enabled_via_flag_or_field_trial) {
+    if (headers->HasHeader(chrome_proxy_header())) {
+      headers->GetHeader(chrome_proxy_header(), &header_value);
+      headers->RemoveHeader(chrome_proxy_header());
+      header_value += ", ";
+    }
+    header_value += chrome_proxy_lo_fi_directive();
+    headers->SetHeader(chrome_proxy_header(), header_value);
+    return true;
+  }
+
+  // User is part of Lo-Fi active control experiment.
+  if (request_info->IsUsingLoFi() &&
+      params::IsIncludedInLoFiControlFieldTrial()) {
+    if (headers->HasHeader(chrome_proxy_header())) {
+      headers->GetHeader(chrome_proxy_header(), &header_value);
+      headers->RemoveHeader(chrome_proxy_header());
+      header_value += ", ";
+    }
+    header_value += chrome_proxy_lo_fi_experiment_directive();
+    headers->SetHeader(chrome_proxy_header(), header_value);
+  }
+
   return false;
 }
 

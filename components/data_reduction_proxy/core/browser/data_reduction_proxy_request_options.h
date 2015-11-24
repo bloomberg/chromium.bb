@@ -29,9 +29,7 @@ extern const char kSecureSessionHeaderOption[];
 extern const char kBuildNumberHeaderOption[];
 extern const char kPatchNumberHeaderOption[];
 extern const char kClientHeaderOption[];
-extern const char kLoFiHeaderOption[];
 extern const char kExperimentsOption[];
-extern const char kLoFiExperimentID[];
 
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];
@@ -94,14 +92,12 @@ class DataReductionProxyRequestOptions {
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
-  // proxy authentication credentials. If |is_using_lofi_mode| is true
-  // adds the "q=low" directive to the header. Only adds this header if the
+  // proxy authentication credentials. Only adds this header if the
   // provided |proxy_server| is a data reduction proxy and not the data
   // reduction proxy's CONNECT server.
   void MaybeAddRequestHeader(net::URLRequest* request,
                              const net::ProxyServer& proxy_server,
-                             net::HttpRequestHeaders* request_headers,
-                             bool is_using_lofi_mode);
+                             net::HttpRequestHeaders* request_headers);
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the provided
@@ -139,8 +135,7 @@ class DataReductionProxyRequestOptions {
 
  protected:
   void SetHeader(const net::URLRequest* request,
-                 net::HttpRequestHeaders* headers,
-                 bool is_using_lofi_mode);
+                 net::HttpRequestHeaders* headers);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -175,9 +170,6 @@ class DataReductionProxyRequestOptions {
   // Updates client type, build, and patch.
   void UpdateVersion();
 
-  // May regenerate the Chrome Proxy header based on changes in Lo-Fi status.
-  void MayRegenerateHeaderBasedOnLoFi(bool is_using_lofi_mode);
-
   // Update the value of the experiments to be run and regenerate the header if
   // necessary.
   void UpdateExperiments();
@@ -194,13 +186,11 @@ class DataReductionProxyRequestOptions {
   // Adds authentication headers only if |expects_ssl| is true and
   // |proxy_server| is a data reduction proxy used for ssl tunneling via
   // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
-  // reduction proxy for HTTP traffic. If |is_using_lofi_mode| is true adds the
-  // "q=low" directive to the header.
+  // reduction proxy for HTTP traffic.
   void MaybeAddRequestHeaderImpl(const net::URLRequest* request,
                                  const net::HostPortPair& proxy_server,
                                  bool expect_ssl,
-                                 net::HttpRequestHeaders* request_headers,
-                                 bool is_using_lofi_mode);
+                                 net::HttpRequestHeaders* request_headers);
 
   // Regenerates the |header_value_| string which is concatenated to the
   // Chrome-proxy header.
@@ -220,7 +210,6 @@ class DataReductionProxyRequestOptions {
   std::string secure_session_;
   std::string build_;
   std::string patch_;
-  std::string lofi_;
   std::vector<std::string> experiments_;
 
   // The time at which the session expires. Used to ensure that a session is

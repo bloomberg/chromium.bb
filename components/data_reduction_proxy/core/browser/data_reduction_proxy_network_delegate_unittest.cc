@@ -83,6 +83,27 @@ class TestLoFiDecider : public LoFiDecider {
     should_request_lofi_resource_ = should_request_lofi_resource;
   }
 
+  bool MaybeAddLoFiDirectiveToHeaders(
+      const net::URLRequest& request,
+      net::HttpRequestHeaders* headers) const override {
+    if (should_request_lofi_resource_) {
+      const char kChromeProxyHeader[] = "Chrome-Proxy";
+      std::string header_value;
+
+      if (headers->HasHeader(kChromeProxyHeader)) {
+        headers->GetHeader(kChromeProxyHeader, &header_value);
+        headers->RemoveHeader(kChromeProxyHeader);
+        header_value += ", ";
+      }
+
+      header_value += "q=low";
+      headers->SetHeader(kChromeProxyHeader, header_value);
+      return true;
+    }
+
+    return false;
+  }
+
  private:
   bool should_request_lofi_resource_;
 };
