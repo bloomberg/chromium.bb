@@ -9,6 +9,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 
 namespace data_reduction_proxy {
@@ -47,6 +48,10 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
   bool lofi_enabled_via_flag_or_field_trial =
       params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
 
+  bool lofi_preview_via_flag_or_field_trial =
+      params::AreLoFiPreviewsEnabledViaFlags() ||
+      params::IsIncludedInLoFiPreviewFieldTrial();
+
   std::string header_value;
 
   // User is using Lo-Fi and not part of the "Control" group.
@@ -56,7 +61,16 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
       headers->RemoveHeader(chrome_proxy_header());
       header_value += ", ";
     }
-    header_value += chrome_proxy_lo_fi_directive();
+
+    // Only add the "q=preview" directive on mainframe requests. Otherwise,
+    // add "q=low"
+    if (lofi_preview_via_flag_or_field_trial &&
+        (request.load_flags() & net::LOAD_MAIN_FRAME)) {
+      header_value += chrome_proxy_lo_fi_preview_directive();
+    } else {
+      header_value += chrome_proxy_lo_fi_directive();
+    }
+
     headers->SetHeader(chrome_proxy_header(), header_value);
     return true;
   }

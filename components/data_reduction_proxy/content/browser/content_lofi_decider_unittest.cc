@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -126,6 +127,16 @@ class ContentLoFiDeciderTest : public testing::Test {
         header_value.find(chrome_proxy_lo_fi_directive()) != std::string::npos);
   }
 
+  static void VerifyLoFiPreviewHeader(bool expected_lofi_preview_used,
+                                      const net::HttpRequestHeaders& headers) {
+    EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
+    std::string header_value;
+    headers.GetHeader(chrome_proxy_header(), &header_value);
+    EXPECT_EQ(expected_lofi_preview_used,
+              header_value.find(chrome_proxy_lo_fi_preview_directive()) !=
+                  std::string::npos);
+  }
+
   static void VerifyLoFiExperimentHeader(
       bool expected_lofi_experiment_used,
       const net::HttpRequestHeaders& headers) {
@@ -151,29 +162,46 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
   // Enable Lo-Fi.
   const struct {
     bool is_using_lofi;
+    bool is_using_previews;
   } tests[] = {
-      {false}, {true},
+      {false, false}, {true, false}, {false, true}, {true, true},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->InitFromArgv(command_line->argv());
+    if (tests[i].is_using_previews) {
+      command_line->AppendSwitch(
+          switches::kEnableDataReductionProxyLoFiPreview);
+    }
 
     // No flags or field trials. The Lo-Fi header should not be added.
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(false, headers);
+    VerifyLoFiPreviewHeader(false, headers);
 
-    // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
-    // should
-    // be added.
+    // The Lo-Fi flag is "always-on", Lo-Fi is being used, and it's a main frame
+    // request. Lo-Fi preview header should be added.
     command_line->AppendSwitchASCII(
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueAlwaysOn);
+    request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+    headers.Clear();
+    NotifyBeforeSendProxyHeaders(&headers, request.get());
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+                     headers);
+    VerifyLoFiPreviewHeader(
+        tests[i].is_using_lofi && tests[i].is_using_previews, headers);
+
+    // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
+    // should be added.
+    request->SetLoadFlags(0);
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiPreviewHeader(false, headers);
 
     // The Lo-Fi flag is "cellular-only" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -183,6 +211,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiPreviewHeader(false, headers);
 
     // The Lo-Fi flag is "slow-connections-only" and Lo-Fi is being used. Lo-Fi
     // header should be added.
@@ -192,6 +221,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiPreviewHeader(false, headers);
   }
 }
 
@@ -211,6 +241,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiPreviewHeader(false, headers);
   }
 }
 
@@ -230,6 +261,32 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get());
     VerifyLoFiHeader(false, headers);
+    VerifyLoFiPreviewHeader(false, headers);
+  }
+}
+
+TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled_Preview");
+  // Enable Lo-Fi.
+  const struct {
+    bool is_using_lofi;
+    bool is_main_frame;
+  } tests[] = {
+      {false, false}, {true, false}, {false, true}, {true, true},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    if (tests[i].is_main_frame)
+      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+    net::HttpRequestHeaders headers;
+    NotifyBeforeSendProxyHeaders(&headers, request.get());
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_main_frame,
+                     headers);
+    VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
+                            headers);
   }
 }
 

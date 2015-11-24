@@ -26,6 +26,7 @@ const char kChromeProxyHeader[] = "chrome-proxy";
 const char kActionValueDelimiter = '=';
 
 const char kChromeProxyLoFiDirective[] = "q=low";
+const char kChromeProxyLoFiPreviewDirective[] = "q=preview";
 const char kChromeProxyLoFiExperimentDirective[] = "exp=lofi_active_control";
 
 const char kChromeProxyActionBlockOnce[] = "block-once";
@@ -59,6 +60,10 @@ const char* chrome_proxy_header() {
 
 const char* chrome_proxy_lo_fi_directive() {
   return kChromeProxyLoFiDirective;
+}
+
+const char* chrome_proxy_lo_fi_preview_directive() {
+  return kChromeProxyLoFiPreviewDirective;
 }
 
 const char* chrome_proxy_lo_fi_experiment_directive() {

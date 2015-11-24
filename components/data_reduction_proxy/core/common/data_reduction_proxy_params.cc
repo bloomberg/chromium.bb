@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
@@ -27,6 +28,7 @@ namespace {
 
 const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
+const char kPreview[] = "Enabled_Preview";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
 const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
 // A one-off change, until the Data Reduction Proxy configuration service is
@@ -83,11 +85,16 @@ std::string GetLoFiFlagFieldTrialName() {
 }
 
 bool IsIncludedInLoFiEnabledFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kEnabled;
+  std::string name = FieldTrialList::FindFullName(GetLoFiFieldTrialName());
+  return base::StartsWith(name, kEnabled, base::CompareCase::SENSITIVE);
 }
 
 bool IsIncludedInLoFiControlFieldTrial() {
   return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kControl;
+}
+
+bool IsIncludedInLoFiPreviewFieldTrial() {
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kPreview;
 }
 
 bool IsLoFiOnViaFlags() {
@@ -125,6 +132,11 @@ bool IsLoFiDisabledViaFlags() {
           data_reduction_proxy::switches::kDataReductionProxyLoFi);
   return lo_fi_value ==
          data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled;
+}
+
+bool AreLoFiPreviewsEnabledViaFlags() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyLoFiPreview);
 }
 
 bool WarnIfNoDataReductionProxy() {

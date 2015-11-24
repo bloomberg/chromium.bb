@@ -180,7 +180,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     bool is_using_lofi_mode =
         lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
 
-    if ((request->load_flags() & net::LOAD_MAIN_FRAME) != 0) {
+    if ((request->load_flags() & net::LOAD_MAIN_FRAME)) {
       // TODO(megjablon): Need to switch to per page.
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
           is_using_lofi_mode);

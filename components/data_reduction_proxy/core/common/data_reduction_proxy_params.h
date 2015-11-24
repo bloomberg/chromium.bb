@@ -50,13 +50,17 @@ std::string GetLoFiFieldTrialName();
 // is force enabled through flags.
 std::string GetLoFiFlagFieldTrialName();
 
-// Returns true if this client is part of the "Enabled" group of the Lo-Fi field
-// trial.
+// Returns true if this client is part of the "Enabled" or "Enabled_Preview"
+// group of the Lo-Fi field trial, both of which mean Lo-Fi should be enabled.
 bool IsIncludedInLoFiEnabledFieldTrial();
 
 // Returns true if this client is part of the "Control" group of the Lo-Fi field
 // trial.
 bool IsIncludedInLoFiControlFieldTrial();
+
+// Returns true if this client is part of the "Preview" group of the Lo-Fi field
+// trial.
+bool IsIncludedInLoFiPreviewFieldTrial();
 
 // Returns true if this client has any of the values to enable Lo-Fi mode for
 // the "data-reduction-proxy-lo-fi" command line switch. This includes the
@@ -78,6 +82,11 @@ bool IsLoFiSlowConnectionsOnlyViaFlags();
 // Returns true if this client has the command line switch to disable Lo-Fi
 // mode.
 bool IsLoFiDisabledViaFlags();
+
+// Returns true if this client has the command line switch to enable Lo-Fi
+// previews. This means a preview should be requested instead of placeholders
+// whenever Lo-Fi mode is on.
+bool AreLoFiPreviewsEnabledViaFlags();
 
 // Returns true if this client has the command line switch to show
 // interstitials for data reduction proxy bypasses.

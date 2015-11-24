@@ -1730,6 +1730,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION,
      kOsAll,
      MULTI_VALUE_TYPE(kDataReductionProxyLoFiChoices)},
+    {"enable-data-reduction-proxy-lo-fi-preview",
+     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_PREVIEW_NAME,
+     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_PREVIEW_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         data_reduction_proxy::switches::kEnableDataReductionProxyLoFiPreview)},
     {"clear-data-reduction-proxy-data-savings",
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME,
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION,
@@ -2103,9 +2109,11 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 #endif
 
-  // data-reduction-proxy-lo-fi is only available for Chromium builds and
-  // the Canary/Dev/Beta channels.
-  if (!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) &&
+  // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lo-fi-preview
+  // are only available for Chromium builds and the Canary/Dev/Beta channels.
+  if ((!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) ||
+       !strcmp("enable-data-reduction-proxy-lo-fi-preview",
+               entry.internal_name)) &&
       channel != version_info::Channel::BETA &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&

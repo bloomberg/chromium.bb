@@ -71,6 +71,10 @@ const char* chrome_proxy_header();
 // and responses.
 const char* chrome_proxy_lo_fi_directive();
 
+// Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi preview
+// requests and responses.
+const char* chrome_proxy_lo_fi_preview_directive();
+
 // Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi control
 // experiment requests.
 const char* chrome_proxy_lo_fi_experiment_directive();

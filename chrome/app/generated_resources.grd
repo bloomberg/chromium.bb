@@ -6200,6 +6200,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
          Slow connections only
       </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_PREVIEW_NAME" desc="An about::flags experiment title to enable previews Data Saver Lo-Fi" translateable="false">
+         Previews for Data Saver Lo-Fi mode
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_PREVIEW_DESCRIPTION" desc="Describes an about::flags experiment to enable previews for Data Saver Lo-Fi" translateable="false">
+         Enable previews in Data Saver Lo-Fi mode. Previews of pages will be shown instead of placeholders when Lo-Fi is on. Data Saver and Lo-Fi must be enabled for previews to be shown.
+      </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clear data savings on startup
       </message>

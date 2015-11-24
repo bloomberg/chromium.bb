@@ -26,8 +26,10 @@ class LoFiDecider {
 
   // Returns true when Lo-Fi mode is on for the given |request|. If the
   // |request| is using Lo-Fi mode, adds the "q=low" directive to the |headers|.
-  // If the user is in the experiment control group and Lo-Fi is on, adds the
-  // experiment directive "exp=lofi_active_control".
+  // If the |request| is using Lo-Fi preview mode, and it is a main frame
+  // request adds the "q=preview" and it is a main frame request directive to
+  // the |headers|. If the user is in the experiment control group and Lo-Fi is
+  // on, adds the experiment directive "exp=lofi_active_control".
   virtual bool MaybeAddLoFiDirectiveToHeaders(
       const net::URLRequest& request,
       net::HttpRequestHeaders* headers) const = 0;

@@ -67203,6 +67203,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
   <int value="-1714128884" label="disable-launcher-search-provider-api"/>
+  <int value="-1711751318" label="enable-data-reduction-proxy-lo-fi-preview"/>
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
