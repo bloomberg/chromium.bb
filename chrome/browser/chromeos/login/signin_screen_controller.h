@@ -14,6 +14,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class LoginDisplayWebUIHandler;
@@ -47,18 +49,18 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
 
   // Query to remove user with specified id.
   // TODO(antrim): move to user selection screen handler.
-  void RemoveUser(const std::string& user_id);
+  void RemoveUser(const AccountId& account_id);
 
+ private:
   // user_manager::RemoveUserDelegate implementation:
-  void OnBeforeUserRemoved(const std::string& username) override;
-  void OnUserRemoved(const std::string& username) override;
+  void OnBeforeUserRemoved(const AccountId& account_id) override;
+  void OnUserRemoved(const AccountId& account_id) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
- private:
   static SignInScreenController* instance_;
 
   OobeDisplay* oobe_display_;

@@ -264,20 +264,20 @@ void UserSelectionScreen::Init(const user_manager::UserList& users,
     activity_detector->AddObserver(this);
 }
 
-void UserSelectionScreen::OnBeforeUserRemoved(const std::string& username) {
+void UserSelectionScreen::OnBeforeUserRemoved(const AccountId& account_id) {
   for (user_manager::UserList::iterator it = users_.begin(); it != users_.end();
        ++it) {
-    if ((*it)->email() == username) {
+    if ((*it)->GetAccountId() == account_id) {
       users_.erase(it);
       break;
     }
   }
 }
 
-void UserSelectionScreen::OnUserRemoved(const std::string& username) {
+void UserSelectionScreen::OnUserRemoved(const AccountId& account_id) {
   if (!handler_)
     return;
-  handler_->OnUserRemoved(username, users_.empty());
+  handler_->OnUserRemoved(account_id, users_.empty());
 }
 
 void UserSelectionScreen::OnUserImageChanged(const user_manager::User& user) {

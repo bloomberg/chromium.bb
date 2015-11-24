@@ -506,7 +506,7 @@ bool ChromeUserManagerImpl::AreEphemeralUsersEnabled() const {
 }
 
 void ChromeUserManagerImpl::OnUserRemoved(const AccountId& account_id) {
-  RemoveReportingUser(FullyCanonicalize(account_id.GetUserEmail()));
+  RemoveReportingUser(account_id);
 }
 
 const std::string& ChromeUserManagerImpl::GetApplicationLocale() const {
@@ -1150,23 +1150,24 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
 void ChromeUserManagerImpl::SetUserAffiliation(
     const std::string& user_email,
     const AffiliationIDSet& user_affiliation_ids) {
-  std::string canonicalized_email = FullyCanonicalize(user_email);
-  user_manager::User* user =
-      FindUserAndModify(AccountId::FromUserEmail(canonicalized_email));
+  const AccountId& account_id =
+      user_manager::UserManager::GetKnownUserAccountId(user_email,
+                                                       std::string());
+  user_manager::User* user = FindUserAndModify(account_id);
 
   if (user) {
     policy::BrowserPolicyConnectorChromeOS const* const connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     const bool is_affiliated = chromeos::IsUserAffiliated(
         user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
-        canonicalized_email, connector->GetEnterpriseDomain());
+        account_id.GetUserEmail(), connector->GetEnterpriseDomain());
     user->set_affiliation(is_affiliated);
 
     if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
       if (is_affiliated) {
-        AddReportingUser(canonicalized_email);
+        AddReportingUser(account_id);
       } else {
-        RemoveReportingUser(canonicalized_email);
+        RemoveReportingUser(account_id);
       }
     }
   }
@@ -1179,15 +1180,16 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
 }
 
-void ChromeUserManagerImpl::AddReportingUser(const std::string& user_id) {
+void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->AppendIfNotPresent(
-      new base::StringValue(FullyCanonicalize(user_id)));
+      new base::StringValue(account_id.GetUserEmail()));
 }
 
-void ChromeUserManagerImpl::RemoveReportingUser(const std::string& user_id) {
+void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
-  users_update->Remove(base::StringValue(FullyCanonicalize(user_id)), NULL);
+  users_update->Remove(
+      base::StringValue(FullyCanonicalize(account_id.GetUserEmail())), NULL);
 }
 
 }  // namespace chromeos

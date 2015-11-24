@@ -17,6 +17,8 @@
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/views/widget/widget.h"
 
+class AccountId;
+
 namespace chromeos {
 
 // WebUI-based login UI implementation.
@@ -35,7 +37,7 @@ class WebUILoginDisplay : public LoginDisplay,
             bool show_users,
             bool show_new_user) override;
   void OnPreferencesChanged() override;
-  void RemoveUser(const std::string& user_id) override;
+  void RemoveUser(const AccountId& account_id) override;
   void SetUIEnabled(bool is_enabled) override;
   void ShowError(int error_msg_id,
                  int login_attempts,

@@ -248,8 +248,8 @@ void WebUILoginDisplay::OnSigninScreenReady() {
     delegate_->OnSigninScreenReady();
 }
 
-void WebUILoginDisplay::RemoveUser(const std::string& user_id) {
-  SignInScreenController::Get()->RemoveUser(user_id);
+void WebUILoginDisplay::RemoveUser(const AccountId& account_id) {
+  SignInScreenController::Get()->RemoveUser(account_id);
 }
 
 void WebUILoginDisplay::ResyncUserData() {

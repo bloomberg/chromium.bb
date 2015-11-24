@@ -35,6 +35,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/events/event_handler.h"
 
+class AccountId;
 class EasyUnlockService;
 
 namespace base {
@@ -77,7 +78,7 @@ class LoginDisplayWebUIHandler {
  public:
   virtual void ClearAndEnablePassword() = 0;
   virtual void ClearUserPodPassword() = 0;
-  virtual void OnUserRemoved(const std::string& username,
+  virtual void OnUserRemoved(const AccountId& account_id,
                              bool last_user_removed) = 0;
   virtual void OnUserImageChanged(const user_manager::User& user) = 0;
   virtual void OnPreferencesChanged() = 0;
@@ -166,7 +167,7 @@ class SigninScreenHandlerDelegate {
   virtual void LoadSigninWallpaper() = 0;
 
   // Attempts to remove given user.
-  virtual void RemoveUser(const std::string& username) = 0;
+  virtual void RemoveUser(const AccountId& account_id) = 0;
 
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
@@ -285,7 +286,7 @@ class SigninScreenHandler
   // LoginDisplayWebUIHandler implementation:
   void ClearAndEnablePassword() override;
   void ClearUserPodPassword() override;
-  void OnUserRemoved(const std::string& username,
+  void OnUserRemoved(const AccountId& account_id,
                      bool last_user_removed) override;
   void OnUserImageChanged(const user_manager::User& user) override;
   void OnPreferencesChanged() override;

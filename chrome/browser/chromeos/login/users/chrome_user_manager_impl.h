@@ -216,10 +216,10 @@ class ChromeUserManagerImpl
   void UpdateUserTimeZoneRefresher(Profile* profile);
 
   // Adds user to the list of the users who should be reported.
-  void AddReportingUser(const std::string& user_id);
+  void AddReportingUser(const AccountId& account_id);
 
   // Removes user from the list of the users who should be reported.
-  void RemoveReportingUser(const std::string& user_id);
+  void RemoveReportingUser(const AccountId& account_id);
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

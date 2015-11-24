@@ -99,12 +99,12 @@ const char kReauthReasonKey[] = "reauth_reason";
 const int kLogoutToLoginDelayMaxSec = 1800;
 
 // Callback that is called after user removal is complete.
-void OnRemoveUserComplete(const std::string& user_email,
+void OnRemoveUserComplete(const AccountId& account_id,
                           bool success,
                           cryptohome::MountError return_code) {
   // Log the error, but there's not much we can do.
   if (!success) {
-    LOG(ERROR) << "Removal of cryptohome for " << user_email
+    LOG(ERROR) << "Removal of cryptohome for " << account_id.Serialize()
                << " failed, return code: " << return_code;
   }
 }
@@ -353,14 +353,13 @@ void UserManagerBase::RemoveUserInternal(const AccountId& account_id,
 void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
                                                  RemoveUserDelegate* delegate) {
   if (delegate)
-    delegate->OnBeforeUserRemoved(account_id.GetUserEmail());
+    delegate->OnBeforeUserRemoved(account_id);
   RemoveUserFromList(account_id);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      account_id.GetUserEmail(),
-      base::Bind(&OnRemoveUserComplete, account_id.GetUserEmail()));
+      account_id.GetUserEmail(), base::Bind(&OnRemoveUserComplete, account_id));
 
   if (delegate)
-    delegate->OnUserRemoved(account_id.GetUserEmail());
+    delegate->OnUserRemoved(account_id);
 }
 
 void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {

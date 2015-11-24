@@ -129,9 +129,9 @@ class DeviceIDTest : public OobeBaseTest,
 
  private:
   // user_manager::RemoveUserDelegate:
-  void OnBeforeUserRemoved(const std::string& username) override {}
+  void OnBeforeUserRemoved(const AccountId& account_id) override {}
 
-  void OnUserRemoved(const std::string& username) override {
+  void OnUserRemoved(const AccountId& account_id) override {
     user_removal_loop_.Quit();
   }
 

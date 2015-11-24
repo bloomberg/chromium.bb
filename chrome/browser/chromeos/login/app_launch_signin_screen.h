@@ -62,7 +62,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void LoadWallpaper(const std::string& username) override;
   void LoadSigninWallpaper() override;
   void OnSigninScreenReady() override;
-  void RemoveUser(const std::string& username) override;
+  void RemoveUser(const AccountId& account_id) override;
   void ResyncUserData() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowEnableDebuggingScreen() override;

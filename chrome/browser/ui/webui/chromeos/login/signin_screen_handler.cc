@@ -865,9 +865,9 @@ void SigninScreenHandler::RefocusCurrentPod() {
   core_oobe_actor_->RefocusCurrentPod();
 }
 
-void SigninScreenHandler::OnUserRemoved(const std::string& username,
+void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
                                         bool last_user_removed) {
-  CallJS("login.AccountPickerScreen.removeUser", username);
+  CallJS("login.AccountPickerScreen.removeUser", account_id);
   if (last_user_removed)
     OnShowAddUser();
 }
@@ -1061,7 +1061,7 @@ void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {
 
   if (!delegate_)
     return;
-  delegate_->RemoveUser(account_id.GetUserEmail());
+  delegate_->RemoveUser(account_id);
   UpdateAddButtonStatus();
 }
 

@@ -106,7 +106,7 @@ void AppLaunchSigninScreen::LoadSigninWallpaper() {
 void AppLaunchSigninScreen::OnSigninScreenReady() {
 }
 
-void AppLaunchSigninScreen::RemoveUser(const std::string& username) {
+void AppLaunchSigninScreen::RemoveUser(const AccountId& account_id) {
   NOTREACHED();
 }
 
