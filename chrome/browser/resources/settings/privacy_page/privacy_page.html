@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item-body.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/clear_browsing_data_page/clear_browsing_data_page.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
@@ -68,18 +69,23 @@
           </settings-checkbox>
 </if>
         </div>
-        <div class="settings-box end-justified">
-          <paper-button
-              on-tap="onManageCertificatesTap_"
-              i18n-content="manageCertificates">
-          </paper-button>
-          <paper-button
-              on-tap="onSiteSettingsTap_"
-              i18n-content="siteSettings">
-          </paper-button>
-          <paper-button
-              on-tap="onClearBrowsingDataTap_"
-              raised i18n-content="clearBrowsingData">
+        <div class="settings-box" on-tap="onManageCertificatesTap_">
+          <paper-item>
+            <paper-item-body>
+              <div i18n-content="manageCertificates"></div>
+            </paper-item-body>
+          </paper-item>
+        </div>
+        <div class="settings-box" on-tap="onSiteSettingsTap_">
+          <paper-item>
+            <paper-item-body>
+              <div i18n-content="siteSettings"></div>
+            </paper-item-body>
+          </paper-item>
+        </div>
+        <div class="settings-box">
+          <paper-button on-tap="onClearBrowsingDataTap_"
+              i18n-content="clearBrowsingData">
           </paper-button>
         </div>
       </neon-animatable>
