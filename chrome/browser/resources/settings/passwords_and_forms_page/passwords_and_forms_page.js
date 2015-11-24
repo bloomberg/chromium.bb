@@ -14,5 +14,15 @@
 
 Polymer({
   is: 'settings-passwords-and-forms-page',
+
+  properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+  },
 });
 })();
