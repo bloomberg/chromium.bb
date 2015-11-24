@@ -420,19 +420,6 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   rwhv->SelectionBoundsChanged(guest_params);
 }
 
-void RenderWidgetHostViewGuest::SetBackgroundColor(SkColor color) {
-  // Content embedders can toggle opaque backgrounds through this API.
-  // We plumb the value here so that BrowserPlugin updates its compositing
-  // state in response to this change. We also want to preserve this flag
-  // after recovering from a crash so we let BrowserPluginGuest store it.
-  if (!guest_)
-    return;
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
-  host_->SetBackgroundOpaque(opaque);
-  guest_->SetContentsOpaque(opaque);
-}
-
 bool RenderWidgetHostViewGuest::LockMouse() {
   return platform_view_->LockMouse();
 }

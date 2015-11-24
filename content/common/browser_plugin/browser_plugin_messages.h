@@ -182,11 +182,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ShouldAcceptTouchEvents,
                      int /* browser_plugin_instance_id */,
                      bool /* accept */)
 
-// Tells the guest to change its background opacity.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetContentsOpaque,
-                     int /* browser_plugin_instance_id */,
-                     bool /* opaque */)
-
 // Inform the embedder of the cursor the guest wishes to display.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,

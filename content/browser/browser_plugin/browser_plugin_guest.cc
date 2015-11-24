@@ -444,12 +444,6 @@ void BrowserPluginGuest::OnRequireSequence(
   surface->AddDestructionDependency(sequence);
 }
 
-void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_SetContentsOpaque(
-          browser_plugin_instance_id(), opaque));
-}
-
 bool BrowserPluginGuest::HandleFindForEmbedder(
     int request_id,
     const base::string16& search_text,

@@ -130,6 +130,9 @@ RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
+  RenderWidgetHostViewBase::SetBackgroundColor(color);
+  bool opaque = GetBackgroundOpaque();
+  host_->SetBackgroundOpaque(opaque);
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {

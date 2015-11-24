@@ -74,7 +74,6 @@ BrowserPlugin::BrowserPlugin(
       mouse_locked_(false),
       ready_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
-      contents_opaque_(true),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   browser_plugin_instance_id_ =
@@ -103,7 +102,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetContentsOpaque, OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
@@ -238,15 +236,6 @@ void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BrowserPlugin::OnSetContentsOpaque(int browser_plugin_instance_id,
-                                        bool opaque) {
-  if (contents_opaque_ == opaque)
-    return;
-  contents_opaque_ = opaque;
-  if (compositing_helper_.get())
-    compositing_helper_->SetContentsOpaque(opaque);
-}
-
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
                                 const WebCursor& cursor) {
   cursor_ = cursor;
@@ -360,8 +349,6 @@ void BrowserPlugin::EnableCompositing(bool enable) {
           weak_ptr_factory_.GetWeakPtr());
     }
   }
-  compositing_helper_->EnableCompositing(enable);
-  compositing_helper_->SetContentsOpaque(contents_opaque_);
 
   if (!enable) {
     DCHECK(compositing_helper_.get());

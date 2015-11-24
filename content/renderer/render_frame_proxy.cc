@@ -261,7 +261,6 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
   if (!compositing_helper_.get()) {
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
-    compositing_helper_->EnableCompositing(true);
   }
   compositing_helper_->OnCompositorFrameSwapped(
       frame.Pass(),
@@ -286,7 +285,6 @@ void RenderFrameProxy::OnSetChildFrameSurface(
   if (!compositing_helper_.get()) {
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
-    compositing_helper_->EnableCompositing(true);
   }
   compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
                                     sequence);

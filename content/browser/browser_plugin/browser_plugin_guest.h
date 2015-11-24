@@ -247,8 +247,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                     float scale_factor,
                                     const cc::SurfaceSequence& sequence);
 
-  void SetContentsOpaque(bool opaque);
-
   // Find the given |search_text| in the page. Returns true if the find request
   // is handled by this browser plugin guest.
   bool HandleFindForEmbedder(int request_id,
