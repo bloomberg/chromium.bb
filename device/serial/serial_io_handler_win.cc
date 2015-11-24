@@ -226,7 +226,7 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
   }
 
   if (port() == com_port)
-    CancelRead(serial::RECEIVE_ERROR_DISCONNECTED);
+    CancelRead(serial::RECEIVE_ERROR_DEVICE_LOST);
 }
 
 bool SerialIoHandlerWin::PostOpen() {
