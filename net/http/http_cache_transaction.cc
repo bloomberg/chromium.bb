@@ -2346,8 +2346,8 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
                                             cache_->clock_->Now());
 
   if (validation_required_by_headers == VALIDATION_ASYNCHRONOUS) {
-    // Asynchronous revalidation is only supported for GET and HEAD methods.
-    if (request_->method != "GET" && request_->method != "HEAD")
+    // Asynchronous revalidation is only supported for GET methods.
+    if (request_->method != "GET")
       return VALIDATION_SYNCHRONOUS;
   }
 
