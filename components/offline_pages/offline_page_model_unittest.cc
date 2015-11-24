@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -983,6 +984,34 @@ TEST_F(OfflinePageModelTest, ClearAll) {
   PumpLoop();
   EXPECT_EQ(1UL, model()->GetAllPages().size());
   EXPECT_EQ(1UL, GetStore()->offline_pages().size());
+}
+
+TEST_F(OfflinePageModelTest, BookmarkNodeChangesUrl) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  EXPECT_EQ(1UL, model()->GetAllPages().size());
+
+  bookmarks::BookmarkNode bookmark_node(kTestPageBookmarkId1, kTestUrl2);
+  model()->BookmarkNodeChanged(nullptr, &bookmark_node);
+  PumpLoop();
+
+  // Offline copy should be removed. Chrome should not crash.
+  // http://crbug.com/558929
+  EXPECT_EQ(0UL, model()->GetAllPages().size());
+
+  // Chrome should not crash when a bookmark with no offline copy is changed.
+  // http://crbug.com/560518
+  bookmark_node.set_url(kTestUrl);
+  model()->BookmarkNodeChanged(nullptr, &bookmark_node);
+  PumpLoop();
+  EXPECT_EQ(0UL, model()->GetAllPages().size());
 }
 
 }  // namespace offline_pages

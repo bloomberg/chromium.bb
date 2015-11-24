@@ -492,8 +492,8 @@ void OfflinePageModel::BookmarkNodeChanged(
     const bookmarks::BookmarkNode* node) {
   // BookmarkNodeChanged could be triggered if title or URL gets changed. If
   // the latter, we need to invalidate the offline copy.
-  DCHECK(offline_pages_.count(node->id()) > 0);
-  if (offline_pages_[node->id()].url != node->url())
+  auto iter = offline_pages_.find(node->id());
+  if (iter != offline_pages_.end() && iter->second.url != node->url())
     DeletePageByBookmarkId(node->id(), DeletePageCallback());
 }
 

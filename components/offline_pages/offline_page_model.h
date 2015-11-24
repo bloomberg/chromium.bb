@@ -208,6 +208,7 @@ class OfflinePageModel : public KeyedService,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, MarkPageForDeletion);
+  FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, BookmarkNodeChangesUrl);
 
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
 
