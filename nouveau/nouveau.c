@@ -59,6 +59,62 @@ debug_init(char *args)
 }
 #endif
 
+int
+nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
+		   uint32_t oclass, void *data, uint32_t length,
+		   struct nouveau_object **pobj)
+{
+	struct nouveau_object *obj;
+	int (*func)(struct nouveau_object *);
+	int ret = -EINVAL;
+
+	if (length == 0)
+		length = sizeof(struct nouveau_object *);
+	obj = malloc(sizeof(*obj) + length);
+	obj->parent = parent;
+	obj->handle = handle;
+	obj->oclass = oclass;
+	obj->length = length;
+	obj->data = obj + 1;
+	if (data)
+		memcpy(obj->data, data, length);
+	*(struct nouveau_object **)obj->data = obj;
+
+	abi16_object(obj, &func);
+	if (func)
+		ret = func(obj);
+
+	if (ret) {
+		free(obj);
+		return ret;
+	}
+
+	*pobj = obj;
+	return 0;
+}
+
+void
+nouveau_object_del(struct nouveau_object **pobj)
+{
+	struct nouveau_object *obj = *pobj;
+	if (obj) {
+		abi16_delete(obj);
+		free(obj);
+		*pobj = NULL;
+	}
+}
+
+void *
+nouveau_object_find(struct nouveau_object *obj, uint32_t pclass)
+{
+	while (obj && obj->oclass != pclass) {
+		obj = obj->parent;
+		if (pclass == NOUVEAU_PARENT_CLASS)
+			break;
+	}
+	return obj;
+}
+
 /* this is the old libdrm's version of nouveau_device_wrap(), the symbol
  * is kept here to prevent AIGLX from crashing if the DDX is linked against
  * the new libdrm, but the DRI driver against the old
@@ -245,62 +301,6 @@ nouveau_client_del(struct nouveau_client **pclient)
 		free(pcli->kref);
 		free(pcli);
 	}
-}
-
-int
-nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
-		   uint32_t oclass, void *data, uint32_t length,
-		   struct nouveau_object **pobj)
-{
-	struct nouveau_object *obj;
-	int (*func)(struct nouveau_object *);
-	int ret = -EINVAL;
-
-	if (length == 0)
-		length = sizeof(struct nouveau_object *);
-	obj = malloc(sizeof(*obj) + length);
-	obj->parent = parent;
-	obj->handle = handle;
-	obj->oclass = oclass;
-	obj->length = length;
-	obj->data = obj + 1;
-	if (data)
-		memcpy(obj->data, data, length);
-	*(struct nouveau_object **)obj->data = obj;
-
-	abi16_object(obj, &func);
-	if (func)
-		ret = func(obj);
-
-	if (ret) {
-		free(obj);
-		return ret;
-	}
-
-	*pobj = obj;
-	return 0;
-}
-
-void
-nouveau_object_del(struct nouveau_object **pobj)
-{
-	struct nouveau_object *obj = *pobj;
-	if (obj) {
-		abi16_delete(obj);
-		free(obj);
-		*pobj = NULL;
-	}
-}
-
-void *
-nouveau_object_find(struct nouveau_object *obj, uint32_t pclass)
-{
-	while (obj && obj->oclass != pclass) {
-		obj = obj->parent;
-		if (pclass == NOUVEAU_PARENT_CLASS)
-			break;
-	}
-	return obj;
 }
 
 static void
