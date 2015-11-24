@@ -279,6 +279,15 @@ void PageLoadTracker::RecordTimingHistograms() {
     if (first_contentful_paint < background_delta) {
       PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaint,
                           first_contentful_paint);
+      // Bucket these histograms into high/low resolution clock systems. This
+      // might point us to directions that will de-noise some UMA.
+      if (base::TimeTicks::IsHighResolution()) {
+        PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaintHigh,
+                            first_contentful_paint);
+      } else {
+        PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaintLow,
+                            first_contentful_paint);
+      }
     } else {
       PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstContentfulPaint,
                           first_contentful_paint);

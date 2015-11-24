@@ -61,6 +61,11 @@ const char kBackgroundHistogramFirstImagePaint[] =
 const char kBackgroundHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint.Background";
 
+const char kHistogramFirstContentfulPaintHigh[] =
+    "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
+const char kHistogramFirstContentfulPaintLow[] =
+    "PageLoad.Timing2.NavigationToFirstContentfulPaint.LowResolutionClock";
+
 const char kHistogramFirstBackground[] =
     "PageLoad.Timing2.NavigationToFirstBackground";
 const char kHistogramFirstForeground[] =
