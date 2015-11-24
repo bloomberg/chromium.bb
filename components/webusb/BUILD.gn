@@ -27,6 +27,7 @@ source_set("unit_tests") {
     ":webusb",
     "//base",
     "//device/core",
+    "//device/core:mocks",
     "//device/usb",
     "//device/usb:mocks",
     "//testing/gmock",

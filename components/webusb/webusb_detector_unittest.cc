@@ -4,15 +4,15 @@
 
 #include "components/webusb/webusb_detector.h"
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/webusb/webusb_browser_client.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -34,19 +34,6 @@ const char* kLandingPage_3 = "https://www.google.com/C";
 namespace webusb {
 
 namespace {
-
-class TestDeviceClient : public device::DeviceClient {
- public:
-  TestDeviceClient() : device::DeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  device::MockUsbService& mock_usb_service() { return usb_service_; }
-
- private:
-  device::UsbService* GetUsbService() override { return &usb_service_; }
-
-  device::MockUsbService usb_service_;
-};
 
 class MockWebUsbBrowserClient : public webusb::WebUsbBrowserClient {
  public:
@@ -76,9 +63,10 @@ class WebUsbDetectorTest : public testing::Test {
   ~WebUsbDetectorTest() override = default;
 
  protected:
-  TestDeviceClient device_client_;
+  device::MockDeviceClient device_client_;
   MockWebUsbBrowserClient mock_webusb_browser_client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorTest);
 };
 
@@ -97,7 +85,7 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAdded) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
@@ -117,8 +105,8 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->AddDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
@@ -135,8 +123,8 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->AddDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWithoutLandingPageAddedAndRemoved) {
@@ -152,8 +140,8 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWithoutLandingPageAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->AddDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 }
 
 TEST_F(WebUsbDetectorTest, WebUsbBrowserClientIsNullptr) {
@@ -169,8 +157,8 @@ TEST_F(WebUsbDetectorTest, WebUsbBrowserClientIsNullptr) {
 
   webusb::WebUsbDetector webusb_detector(nullptr);
 
-  device_client_.mock_usb_service().AddDevice(device);
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->AddDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 }
 
 TEST_F(WebUsbDetectorTest, NoUsbService) {
@@ -199,11 +187,11 @@ TEST_F(WebUsbDetectorTest, UsbDeviceWasThereBeforeAndThenRemoved) {
   EXPECT_CALL(mock_webusb_browser_client_, OnDeviceRemoved(guid)).Times(1);
 
   // usb device was added before webusb_detector was created
-  device_client_.mock_usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 }
 
 TEST_F(
@@ -243,13 +231,13 @@ TEST_F(
 
   // three usb devices were added and removed before webusb_detector was
   // created
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().AddDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->AddDevice(device_3);
 
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->RemoveDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_3);
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 }
@@ -294,15 +282,15 @@ TEST_F(
   }
 
   // three usb devices were added before webusb_detector was created
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().AddDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->AddDevice(device_3);
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->RemoveDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_3);
 }
 
 TEST_F(WebUsbDetectorTest,
@@ -344,15 +332,15 @@ TEST_F(WebUsbDetectorTest,
   }
 
   // two usb devices were added before webusb_detector was created
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_3);
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_2);
 }
 
 TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
@@ -395,12 +383,12 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
-  device_client_.mock_usb_service().AddDevice(device_3);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_2);
+  device_client_.usb_service()->AddDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_3);
 }
 
 TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
@@ -446,12 +434,12 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
 
   webusb::WebUsbDetector webusb_detector(&mock_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
-  device_client_.mock_usb_service().AddDevice(device_3);
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_2);
+  device_client_.usb_service()->AddDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->RemoveDevice(device_3);
 }
 
 }  // namespace webusb

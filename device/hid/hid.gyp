@@ -66,5 +66,20 @@
         }],
       ],
     },
+    {
+      'target_name': 'device_hid_mocks',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../testing/gmock.gyp:gmock',
+        'device_hid',
+      ],
+      'sources': [
+        'mock_hid_service.cc',
+        'mock_hid_service.h',
+      ],
+    },
   ],
 }

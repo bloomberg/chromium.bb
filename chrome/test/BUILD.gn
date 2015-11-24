@@ -1592,6 +1592,7 @@ test("unit_tests") {
       "//components/webdata_services:test_support",
       "//content/app/resources",
       "//device/bluetooth:mocks",
+      "//device/core:mocks",
       "//gpu:test_support",
       "//media:test_support",
 

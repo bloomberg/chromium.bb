@@ -7,8 +7,9 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/test/base/testing_profile.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/hid/hid_device_info.h"
+#include "device/hid/mock_hid_service.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -21,14 +22,8 @@ namespace extensions {
 
 namespace {
 
-using device::HidDeviceId;
 using device::HidDeviceInfo;
-using device::HidService;
 using device::MockUsbDevice;
-using device::MockUsbService;
-using device::UsbDevice;
-using device::UsbDeviceHandle;
-using device::UsbService;
 using testing::_;
 using testing::DoAll;
 using testing::Return;
@@ -39,51 +34,6 @@ const uint64_t kTestDeviceIds[] = {1, 2, 3, 4};
 #else
 const char* kTestDeviceIds[] = {"A", "B", "C", "D"};
 #endif
-
-class MockDeviceClient : device::DeviceClient {
- public:
-  MockDeviceClient() {}
-
-  // device::DeviceClient implementation:
-  UsbService* GetUsbService() override {
-    DCHECK(usb_service_);
-    return usb_service_;
-  }
-
-  HidService* GetHidService() override {
-    DCHECK(hid_service_);
-    return hid_service_;
-  }
-
-  void set_usb_service(UsbService* service) { usb_service_ = service; }
-  void set_hid_service(HidService* service) { hid_service_ = service; }
-
- private:
-  UsbService* usb_service_ = nullptr;
-  HidService* hid_service_ = nullptr;
-};
-
-class MockHidService : public HidService {
- public:
-  MockHidService() {}
-  ~MockHidService() override {}
-
-  // Public wrappers around protected functions needed for tests.
-  void AddDevice(scoped_refptr<HidDeviceInfo> info) {
-    HidService::AddDevice(info);
-  }
-
-  void RemoveDevice(const HidDeviceId& device_id) {
-    HidService::RemoveDevice(device_id);
-  }
-
-  void FirstEnumerationComplete() { HidService::FirstEnumerationComplete(); }
-
- private:
-  MOCK_METHOD2(Connect,
-               void(const HidDeviceId& device_id,
-                    const ConnectCallback& callback));
-};
 
 }  // namespace
 
@@ -111,29 +61,25 @@ class DevicePermissionsManagerTest : public testing::Test {
     device4_ =
         new HidDeviceInfo(kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
                           device::kHIDBusTypeUSB, std::vector<uint8>());
-    hid_service_.AddDevice(device4_);
+    device_client_.hid_service()->AddDevice(device4_);
     device5_ = new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
                                  device::kHIDBusTypeUSB, std::vector<uint8>());
-    hid_service_.AddDevice(device5_);
+    device_client_.hid_service()->AddDevice(device5_);
     device6_ =
         new HidDeviceInfo(kTestDeviceIds[2], 0, 0, "Test HID Device", "67890",
                           device::kHIDBusTypeUSB, std::vector<uint8>());
-    hid_service_.AddDevice(device6_);
+    device_client_.hid_service()->AddDevice(device6_);
     device7_ = new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
                                  device::kHIDBusTypeUSB, std::vector<uint8>());
-    hid_service_.AddDevice(device7_);
-    hid_service_.FirstEnumerationComplete();
-    mock_device_client_.set_usb_service(&usb_service_);
-    mock_device_client_.set_hid_service(&hid_service_);
+    device_client_.hid_service()->AddDevice(device7_);
+    device_client_.hid_service()->FirstEnumerationComplete();
   }
 
   void TearDown() override { env_.reset(nullptr); }
 
   scoped_ptr<extensions::TestExtensionEnvironment> env_;
   const extensions::Extension* extension_;
-  MockDeviceClient mock_device_client_;
-  MockUsbService usb_service_;
-  MockHidService hid_service_;
+  device::MockDeviceClient device_client_;
   scoped_refptr<MockUsbDevice> device0_;
   scoped_refptr<MockUsbDevice> device1_;
   scoped_refptr<MockUsbDevice> device2_;
@@ -231,10 +177,10 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
   EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
 
-  usb_service_.RemoveDevice(device0_);
-  usb_service_.RemoveDevice(device1_);
-  hid_service_.RemoveDevice(device4_->device_id());
-  hid_service_.RemoveDevice(device5_->device_id());
+  device_client_.usb_service()->RemoveDevice(device0_);
+  device_client_.usb_service()->RemoveDevice(device1_);
+  device_client_.hid_service()->RemoveDevice(device4_->device_id());
+  device_client_.hid_service()->RemoveDevice(device5_->device_id());
 
   // Device 0 will be accessible when it is reconnected because it can be
   // recognized by its serial number.

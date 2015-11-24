@@ -4,6 +4,9 @@
 
 #include "device/usb/mock_usb_service.h"
 
+#include <string>
+#include <vector>
+
 #include "device/usb/usb_device.h"
 
 namespace device {
@@ -33,9 +36,8 @@ scoped_refptr<UsbDevice> MockUsbService::GetDevice(const std::string& guid) {
 
 void MockUsbService::GetDevices(const GetDevicesCallback& callback) {
   std::vector<scoped_refptr<UsbDevice>> devices;
-  for (const auto& map_entry : devices_) {
+  for (const auto& map_entry : devices_)
     devices.push_back(map_entry.second);
-  }
   callback.Run(devices);
 }
 

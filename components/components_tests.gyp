@@ -1345,6 +1345,8 @@
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../device/core/core.gyp:device_core',
+            '../device/core/core.gyp:device_core_mocks',
+            '../device/hid/hid.gyp:device_hid_mocks',
             '../device/usb/usb.gyp:device_usb',
             '../device/usb/usb.gyp:device_usb_mocks',
             '../google_apis/google_apis.gyp:google_apis_test_support',

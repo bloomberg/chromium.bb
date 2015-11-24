@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
@@ -20,17 +20,13 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
 using testing::Return;
-using content::BrowserThread;
-using device::DeviceClient;
+using device::MockDeviceClient;
 using device::MockUsbDevice;
 using device::MockUsbDeviceHandle;
-using device::MockUsbService;
 using device::UsbConfigDescriptor;
-using device::UsbDevice;
 using device::UsbDeviceHandle;
 using device::UsbEndpointDirection;
 using device::UsbInterfaceDescriptor;
-using device::UsbService;
 
 namespace extensions {
 
@@ -54,7 +50,7 @@ class TestDevicePermissionsPrompt
     : public DevicePermissionsPrompt,
       public DevicePermissionsPrompt::Prompt::Observer {
  public:
-  TestDevicePermissionsPrompt(content::WebContents* web_contents)
+  explicit TestDevicePermissionsPrompt(content::WebContents* web_contents)
       : DevicePermissionsPrompt(web_contents) {}
 
   void ShowDialog() override { prompt()->SetObserver(this); }
@@ -68,19 +64,6 @@ class TestDevicePermissionsPrompt
     }
     prompt()->Dismissed();
   }
-};
-
-class TestDeviceClient : public DeviceClient {
- public:
-  TestDeviceClient() : DeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  MockUsbService& mock_usb_service() { return usb_service_; }
-
- private:
-  UsbService* GetUsbService() override { return &usb_service_; }
-
-  MockUsbService usb_service_;
 };
 
 class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
@@ -98,6 +81,9 @@ class UsbApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
+    // MockDeviceClient replaces ShellDeviceClient.
+    device_client_.reset(new MockDeviceClient());
+
     std::vector<UsbConfigDescriptor> configs;
     UsbConfigDescriptor config;
     config.configuration_value = 1;
@@ -110,14 +96,13 @@ class UsbApiTest : public ShellApiTest {
     mock_device_handle_ = new MockUsbDeviceHandle(mock_device_.get());
     EXPECT_CALL(*mock_device_.get(), Open(_))
         .WillRepeatedly(InvokeCallback<0>(mock_device_handle_));
-    device_client_.reset(new TestDeviceClient());
-    device_client_->mock_usb_service().AddDevice(mock_device_);
+    device_client_->usb_service()->AddDevice(mock_device_);
   }
 
  protected:
   scoped_refptr<MockUsbDeviceHandle> mock_device_handle_;
   scoped_refptr<MockUsbDevice> mock_device_;
-  scoped_ptr<TestDeviceClient> device_client_;
+  scoped_ptr<MockDeviceClient> device_client_;
 };
 
 }  // namespace
@@ -221,10 +206,10 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
   scoped_refptr<MockUsbDevice> device(new MockUsbDevice(0x18D1, 0x58F0));
-  device_client_->mock_usb_service().AddDevice(device);
+  device_client_->usb_service()->AddDevice(device);
 
   device = new MockUsbDevice(0x18D1, 0x58F1);
-  device_client_->mock_usb_service().AddDevice(device);
+  device_client_->usb_service()->AddDevice(device);
 
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
@@ -237,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceRemoved) {
   ASSERT_TRUE(LoadApp("api_test/usb/remove_event"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
-  device_client_->mock_usb_service().RemoveDevice(mock_device_);
+  device_client_->usb_service()->RemoveDevice(mock_device_);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
 
@@ -252,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(LoadApp("api_test/usb/get_user_selected_devices"));
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
-  device_client_->mock_usb_service().RemoveDevice(mock_device_);
+  device_client_->usb_service()->RemoveDevice(mock_device_);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
 

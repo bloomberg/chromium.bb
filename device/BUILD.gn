@@ -123,6 +123,7 @@ test("device_unittests") {
     ]
     deps += [
       "//device/core",
+      "//device/core:mocks",
       "//device/devices_app:lib",
       "//device/devices_app/usb/public/interfaces",
       "//device/usb",

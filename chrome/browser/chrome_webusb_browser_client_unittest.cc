@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chrome_webusb_browser_client.h"
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/webusb/webusb_detector.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_device.h"
@@ -31,19 +33,6 @@ const char* kLandingPage_1 = "https://www.google.com/A";
 const char* kLandingPage_2 = "https://www.google.com/B";
 const char* kLandingPage_3 = "https://www.google.com/C";
 
-class TestDeviceClient : public device::DeviceClient {
- public:
-  TestDeviceClient() : device::DeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  device::MockUsbService& mock_usb_service() { return usb_service_; }
-
- private:
-  device::UsbService* GetUsbService() override { return &usb_service_; }
-
-  device::MockUsbService usb_service_;
-};
-
 }  // namespace
 
 class ChromeWebUsbBrowserClientTest : public testing::Test {
@@ -57,9 +46,10 @@ class ChromeWebUsbBrowserClientTest : public testing::Test {
   void TearDown() override { message_center::MessageCenter::Shutdown(); }
 
  protected:
-  TestDeviceClient device_client_;
+  device::MockDeviceClient device_client_;
   ChromeWebUsbBrowserClient chrome_webusb_browser_client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUsbBrowserClientTest);
 };
 
@@ -71,7 +61,7 @@ TEST_F(ChromeWebUsbBrowserClientTest, UsbDeviceAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&chrome_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -91,7 +81,7 @@ TEST_F(ChromeWebUsbBrowserClientTest, UsbDeviceAddedAndRemoved) {
 
   EXPECT_TRUE(notification->delegate() != nullptr);
 
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 
   // device is removed, so notification should be removed from the
   // message_center too
@@ -108,7 +98,7 @@ TEST_F(ChromeWebUsbBrowserClientTest,
 
   webusb::WebUsbDetector webusb_detector(&chrome_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -117,7 +107,7 @@ TEST_F(ChromeWebUsbBrowserClientTest,
   // for device without product name, no notification is generated
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 }
@@ -131,7 +121,7 @@ TEST_F(ChromeWebUsbBrowserClientTest,
 
   webusb::WebUsbDetector webusb_detector(&chrome_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device);
+  device_client_.usb_service()->AddDevice(device);
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -140,7 +130,7 @@ TEST_F(ChromeWebUsbBrowserClientTest,
   // for device without landing page, no notification is generated
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 }
@@ -159,7 +149,7 @@ TEST_F(ChromeWebUsbBrowserClientTest, UsbDeviceWasThereBeforeAndThenRemoved) {
 
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 
-  device_client_.mock_usb_service().RemoveDevice(device);
+  device_client_.usb_service()->RemoveDevice(device);
 
   EXPECT_EQ(nullptr, message_center->FindVisibleNotificationById(guid));
 }
@@ -185,9 +175,9 @@ TEST_F(ChromeWebUsbBrowserClientTest, ThreeUsbDevicesAddedAndRemoved) {
 
   webusb::WebUsbDetector webusb_detector(&chrome_webusb_browser_client_);
 
-  device_client_.mock_usb_service().AddDevice(device_1);
-  device_client_.mock_usb_service().AddDevice(device_2);
-  device_client_.mock_usb_service().AddDevice(device_3);
+  device_client_.usb_service()->AddDevice(device_1);
+  device_client_.usb_service()->AddDevice(device_2);
+  device_client_.usb_service()->AddDevice(device_3);
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -227,9 +217,9 @@ TEST_F(ChromeWebUsbBrowserClientTest, ThreeUsbDevicesAddedAndRemoved) {
   EXPECT_TRUE(notification_2->delegate() != nullptr);
   EXPECT_TRUE(notification_3->delegate() != nullptr);
 
-  device_client_.mock_usb_service().RemoveDevice(device_1);
-  device_client_.mock_usb_service().RemoveDevice(device_2);
-  device_client_.mock_usb_service().RemoveDevice(device_3);
+  device_client_.usb_service()->RemoveDevice(device_1);
+  device_client_.usb_service()->RemoveDevice(device_2);
+  device_client_.usb_service()->RemoveDevice(device_3);
 
   // devices are removed, so notifications should be removed from the
   // message_center too

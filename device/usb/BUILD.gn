@@ -86,6 +86,9 @@ source_set("mocks") {
   deps = [
     ":usb",
     "//base",
+  ]
+
+  public_deps = [
     "//testing/gmock",
   ]
 }

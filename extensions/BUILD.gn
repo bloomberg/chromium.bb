@@ -260,6 +260,8 @@ test("extensions_browsertests") {
     "//components/storage_monitor:test_support",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
+    "//device/core:mocks",
+    "//device/hid:mocks",
     "//device/usb:mocks",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",

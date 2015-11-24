@@ -28,5 +28,20 @@
         '../../base/base.gyp:base',
       ]
     },
+    {
+      'target_name': 'device_core_mocks',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../testing/gmock.gyp:gmock',
+        'device_core',
+      ],
+      'sources': [
+        'mock_device_client.cc',
+        'mock_device_client.h',
+      ],
+    },
   ],
 }

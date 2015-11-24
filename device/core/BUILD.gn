@@ -24,3 +24,18 @@ component("core") {
     libs = [ "setupapi.lib" ]
   }
 }
+
+source_set("mocks") {
+  testonly = true
+
+  sources = [
+    "mock_device_client.cc",
+    "mock_device_client.h",
+  ]
+
+  deps = [
+    ":core",
+    "//device/hid:mocks",
+    "//device/usb:mocks",
+  ]
+}

@@ -5,12 +5,12 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "device/core/device_client.h"
+#include "device/core/mock_device_client.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
-#include "device/hid/hid_service.h"
 #include "device/hid/hid_usage_and_page.h"
+#include "device/hid/mock_hid_service.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
@@ -19,20 +19,18 @@
 
 using base::ThreadTaskRunnerHandle;
 using device::HidCollectionInfo;
-using device::HidConnection;
 using device::HidDeviceId;
 using device::HidDeviceInfo;
-using device::HidService;
 using device::HidUsageAndPage;
+using device::MockDeviceClient;
 using net::IOBuffer;
+using testing::_;
 
 #if defined(OS_MACOSX)
 const uint64_t kTestDeviceIds[] = {1, 2, 3, 4, 5};
 #else
 const char* kTestDeviceIds[] = {"A", "B", "C", "D", "E"};
 #endif
-
-namespace device {
 
 // These report descriptors define two devices with 8-byte input, output and
 // feature reports. The first implements usage page 0xFF00 and has a single
@@ -47,9 +45,11 @@ const uint8 kReportDescriptorWithIDs[] = {
     0xFF, 0x00, 0x85, 0x01, 0x75, 0x08, 0x95, 0x08, 0x08,
     0x81, 0x02, 0x08, 0x91, 0x02, 0x08, 0xB1, 0x02, 0xC0};
 
-class MockHidConnection : public HidConnection {
+namespace extensions {
+
+class MockHidConnection : public device::HidConnection {
  public:
-  MockHidConnection(scoped_refptr<HidDeviceInfo> device_info)
+  explicit MockHidConnection(scoped_refptr<HidDeviceInfo> device_info)
       : HidConnection(device_info) {}
 
   void PlatformClose() override {}
@@ -117,80 +117,11 @@ class MockHidConnection : public HidConnection {
   ~MockHidConnection() override {}
 };
 
-class MockHidService : public HidService {
- public:
-  MockHidService() : HidService() {
-    // Verify that devices are enumerated properly even when the first
-    // enumeration happens asynchronously.
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockHidService::LazyFirstEnumeration,
-                              base::Unretained(this)));
-  }
-
-  void Connect(const HidDeviceId& device_id,
-               const ConnectCallback& callback) override {
-    const auto& device_entry = devices().find(device_id);
-    scoped_refptr<HidConnection> connection;
-    if (device_entry != devices().end()) {
-      connection = new MockHidConnection(device_entry->second);
-    }
-
-    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                            base::Bind(callback, connection));
-  }
-
-  void LazyFirstEnumeration() {
-    AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false);
-    AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true);
-    AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false);
-    FirstEnumerationComplete();
-  }
-
-  void AddDevice(const HidDeviceId& device_id,
-                 int vendor_id,
-                 int product_id,
-                 bool report_id) {
-    std::vector<uint8> report_descriptor;
-    if (report_id) {
-      report_descriptor.insert(
-          report_descriptor.begin(), kReportDescriptorWithIDs,
-          kReportDescriptorWithIDs + sizeof(kReportDescriptorWithIDs));
-    } else {
-      report_descriptor.insert(report_descriptor.begin(), kReportDescriptor,
-                               kReportDescriptor + sizeof(kReportDescriptor));
-    }
-    HidService::AddDevice(new HidDeviceInfo(device_id, vendor_id, product_id,
-                                            "Test Device", "A", kHIDBusTypeUSB,
-                                            report_descriptor));
-  }
-
-  void RemoveDevice(const HidDeviceId& device_id) {
-    HidService::RemoveDevice(device_id);
-  }
-};
-
-class TestDeviceClient : public DeviceClient {
- public:
-  TestDeviceClient() : DeviceClient() {}
-  ~TestDeviceClient() override {}
-
-  MockHidService& mock_service() { return hid_service_; }
-
- private:
-  HidService* GetHidService() override { return &hid_service_; }
-
-  MockHidService hid_service_;
-};
-
-}  // namespace device
-
-namespace extensions {
-
 class TestDevicePermissionsPrompt
     : public DevicePermissionsPrompt,
       public DevicePermissionsPrompt::Prompt::Observer {
  public:
-  TestDevicePermissionsPrompt(content::WebContents* web_contents)
+  explicit TestDevicePermissionsPrompt(content::WebContents* web_contents)
       : DevicePermissionsPrompt(web_contents) {}
 
   ~TestDevicePermissionsPrompt() override { prompt()->SetObserver(nullptr); }
@@ -222,11 +153,57 @@ class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    device_client_.reset(new device::TestDeviceClient());
+
+    // MockDeviceClient replaces ShellDeviceClient.
+    device_client_.reset(new MockDeviceClient());
+
+    ON_CALL(*device_client_->hid_service(), Connect(_, _))
+        .WillByDefault(Invoke(this, &HidApiTest::Connect));
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&HidApiTest::LazyFirstEnumeration, base::Unretained(this)));
+  }
+
+  void Connect(const HidDeviceId& device_id,
+               const device::HidService::ConnectCallback& callback) {
+    const auto& devices = device_client_->hid_service()->devices();
+    const auto& device_entry = devices.find(device_id);
+    scoped_refptr<MockHidConnection> connection;
+    if (device_entry != devices.end()) {
+      connection = new MockHidConnection(device_entry->second);
+    }
+
+    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                            base::Bind(callback, connection));
+  }
+
+  void LazyFirstEnumeration() {
+    AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false);
+    AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true);
+    AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false);
+    device_client_->hid_service()->FirstEnumerationComplete();
+  }
+
+  void AddDevice(const HidDeviceId& device_id,
+                 int vendor_id,
+                 int product_id,
+                 bool report_id) {
+    std::vector<uint8> report_descriptor;
+    if (report_id) {
+      report_descriptor.insert(
+          report_descriptor.begin(), kReportDescriptorWithIDs,
+          kReportDescriptorWithIDs + sizeof(kReportDescriptorWithIDs));
+    } else {
+      report_descriptor.insert(report_descriptor.begin(), kReportDescriptor,
+                               kReportDescriptor + sizeof(kReportDescriptor));
+    }
+    device_client_->hid_service()->AddDevice(
+        new HidDeviceInfo(device_id, vendor_id, product_id, "Test Device", "A",
+                          device::kHIDBusTypeUSB, report_descriptor));
   }
 
  protected:
-  scoped_ptr<device::TestDeviceClient> device_client_;
+  scoped_ptr<MockDeviceClient> device_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
@@ -243,10 +220,8 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
 
   // Add a blocked device first so that the test will fail if a notification is
   // received.
-  device_client_->mock_service().AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1,
-                                           false);
-  device_client_->mock_service().AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0,
-                                           false);
+  AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1, false);
+  AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0, false);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -261,9 +236,9 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
 
   // Device C was not returned by chrome.hid.getDevices, the app will not get
   // a notification.
-  device_client_->mock_service().RemoveDevice(kTestDeviceIds[2]);
+  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[2]);
   // Device A was returned, the app will get a notification.
-  device_client_->mock_service().RemoveDevice(kTestDeviceIds[0]);
+  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -276,12 +251,11 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(open_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener remove_listener("removed", false);
-  device_client_->mock_service().RemoveDevice(kTestDeviceIds[0]);
+  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener add_listener("added", false);
-  device_client_->mock_service().AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0,
-                                           true);
+  AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, true);
   ASSERT_TRUE(add_listener.WaitUntilSatisfied());
 }
 
