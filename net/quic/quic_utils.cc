@@ -343,9 +343,4 @@ string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
   return s;
 }
 
-// static
-QuicPriority QuicUtils::HighestPriority() {
-  return QuicWriteBlockedList::kHighestPriority;
-}
-
 }  // namespace net

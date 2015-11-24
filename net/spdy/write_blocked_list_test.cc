@@ -78,6 +78,34 @@ TEST_F(WriteBlockedListTest, PopFront) {
   EXPECT_EQ(3, list.PopFront(4));
 }
 
+TEST_F(WriteBlockedListTest, PushFront) {
+  list.PushFront(1, 4);
+  EXPECT_EQ(1u, list.NumBlockedStreams());
+  list.PushFront(2, 4);
+  list.PushFront(1, 4);
+  list.PushFront(3, 4);
+  EXPECT_EQ(3u, list.NumBlockedStreams());
+
+  EXPECT_EQ(3, list.PopFront(4));
+  EXPECT_EQ(2, list.PopFront(4));
+  EXPECT_EQ(1u, list.NumBlockedStreams());
+  EXPECT_EQ(1, list.PopFront(4));
+}
+
+TEST_F(WriteBlockedListTest, PushFrontAndBack) {
+  list.PushFront(1, 4);
+  list.PushBack(5, 4);
+  list.PushFront(2, 4);
+  list.PushBack(3, 4);
+  list.PushFront(4, 4);
+
+  EXPECT_EQ(4, list.PopFront(4));
+  EXPECT_EQ(2, list.PopFront(4));
+  EXPECT_EQ(1, list.PopFront(4));
+  EXPECT_EQ(5, list.PopFront(4));
+  EXPECT_EQ(3, list.PopFront(4));
+}
+
 TEST_F(WriteBlockedListTest, UpdateStreamPriorityInWriteBlockedList) {
   list.PushBack(1, 1);
   list.PushBack(2, 2);

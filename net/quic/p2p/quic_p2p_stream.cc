@@ -49,7 +49,7 @@ void QuicP2PStream::OnCanWrite() {
   }
 }
 
-QuicPriority QuicP2PStream::EffectivePriority() const {
+SpdyPriority QuicP2PStream::Priority() const {
   return priority_;
 }
 

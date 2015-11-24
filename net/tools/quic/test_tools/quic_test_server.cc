@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -76,6 +77,7 @@ class QuicTestDispatcher : public QuicDispatcher {
 
   QuicServerSession* CreateQuicSession(QuicConnectionId id,
                                        const IPEndPoint& client) override {
+    base::AutoLock lock(factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {
       return QuicDispatcher::CreateQuicSession(id, client);
@@ -97,30 +99,30 @@ class QuicTestDispatcher : public QuicDispatcher {
     return session;
   }
 
-  void set_session_factory(QuicTestServer::SessionFactory* factory) {
+  void SetSessionFactory(QuicTestServer::SessionFactory* factory) {
+    base::AutoLock lock(factory_lock_);
     DCHECK(session_factory_ == nullptr);
     DCHECK(stream_factory_ == nullptr);
     DCHECK(crypto_stream_factory_ == nullptr);
     session_factory_ = factory;
   }
 
-  void set_stream_factory(QuicTestServer::StreamFactory* factory) {
+  void SetStreamFactory(QuicTestServer::StreamFactory* factory) {
+    base::AutoLock lock(factory_lock_);
     DCHECK(session_factory_ == nullptr);
     DCHECK(stream_factory_ == nullptr);
     stream_factory_ = factory;
   }
 
-  void set_crypto_stream_factory(QuicTestServer::CryptoStreamFactory* factory) {
+  void SetCryptoStreamFactory(QuicTestServer::CryptoStreamFactory* factory) {
+    base::AutoLock lock(factory_lock_);
     DCHECK(session_factory_ == nullptr);
     DCHECK(crypto_stream_factory_ == nullptr);
     crypto_stream_factory_ = factory;
   }
 
-  QuicTestServer::SessionFactory* session_factory() { return session_factory_; }
-
-  QuicTestServer::StreamFactory* stream_factory() { return stream_factory_; }
-
  private:
+  base::Lock factory_lock_;
   QuicTestServer::SessionFactory* session_factory_;             // Not owned.
   QuicTestServer::StreamFactory* stream_factory_;               // Not owned.
   QuicTestServer::CryptoStreamFactory* crypto_stream_factory_;  // Not owned.
@@ -143,16 +145,16 @@ QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
 
 void QuicTestServer::SetSessionFactory(SessionFactory* factory) {
   DCHECK(dispatcher());
-  static_cast<QuicTestDispatcher*>(dispatcher())->set_session_factory(factory);
+  static_cast<QuicTestDispatcher*>(dispatcher())->SetSessionFactory(factory);
 }
 
 void QuicTestServer::SetSpdyStreamFactory(StreamFactory* factory) {
-  static_cast<QuicTestDispatcher*>(dispatcher())->set_stream_factory(factory);
+  static_cast<QuicTestDispatcher*>(dispatcher())->SetStreamFactory(factory);
 }
 
 void QuicTestServer::SetCryptoStreamFactory(CryptoStreamFactory* factory) {
   static_cast<QuicTestDispatcher*>(dispatcher())
-      ->set_crypto_stream_factory(factory);
+      ->SetCryptoStreamFactory(factory);
 }
 
 ///////////////////////////   TEST SESSIONS ///////////////////////////////

@@ -170,7 +170,7 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
 
   void set_auto_reconnect(bool reconnect) { auto_reconnect_ = reconnect; }
 
-  void set_priority(QuicPriority priority) { priority_ = priority; }
+  void set_priority(SpdyPriority priority) { priority_ = priority; }
 
   // Sets client's FEC policy. This policy applies to the data stream(s), and
   // also to the headers and crypto streams.
@@ -226,7 +226,7 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   bool response_complete_;
   bool response_headers_complete_;
   mutable BalsaHeaders headers_;
-  QuicPriority priority_;
+  SpdyPriority priority_;
   std::string response_;
   uint64 bytes_read_;
   uint64 bytes_written_;

@@ -402,7 +402,6 @@ TEST_F(TcpCubicBytesSenderTest, RetransmissionDelay) {
 }
 
 TEST_F(TcpCubicBytesSenderTest, TcpCubicResetEpochOnQuiescence) {
-  ValueRestore<bool> old_flag(&FLAGS_reset_cubic_epoch_when_app_limited, true);
   const int kMaxCongestionWindow = 50;
   const QuicByteCount kMaxCongestionWindowBytes =
       kMaxCongestionWindow * kDefaultTCPMSS;

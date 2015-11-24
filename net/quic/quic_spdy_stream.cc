@@ -11,6 +11,7 @@
 
 using base::StringPiece;
 using std::min;
+using net::SpdyPriority;
 
 namespace net {
 
@@ -24,7 +25,7 @@ namespace {
 // to set a priority client-side, or cancel a stream before stripping the
 // priority from the wire server-side.  In either case, start out with a
 // priority in the middle.
-QuicPriority kDefaultPriority = 3;
+SpdyPriority kDefaultPriority = 3;
 
 }  // namespace
 
@@ -112,12 +113,12 @@ void QuicSpdyStream::MarkHeadersConsumed(size_t bytes_consumed) {
   }
 }
 
-void QuicSpdyStream::set_priority(QuicPriority priority) {
+void QuicSpdyStream::set_priority(SpdyPriority priority) {
   DCHECK_EQ(0u, stream_bytes_written());
   priority_ = priority;
 }
 
-QuicPriority QuicSpdyStream::EffectivePriority() const {
+SpdyPriority QuicSpdyStream::Priority() const {
   return priority();
 }
 
@@ -125,7 +126,7 @@ void QuicSpdyStream::OnStreamHeaders(StringPiece headers_data) {
   headers_data.AppendToString(&decompressed_headers_);
 }
 
-void QuicSpdyStream::OnStreamHeadersPriority(QuicPriority priority) {
+void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   set_priority(priority);
 }

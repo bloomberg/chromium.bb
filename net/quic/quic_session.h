@@ -168,7 +168,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // connection-level flow control but not by its own stream-level flow control.
   // The stream will be given a chance to write when a connection-level
   // WINDOW_UPDATE arrives.
-  void MarkConnectionLevelWriteBlocked(QuicStreamId id, QuicPriority priority);
+  void MarkConnectionLevelWriteBlocked(QuicStreamId id, SpdyPriority priority);
 
   // Returns true if the session has data to be sent, either queued in the
   // connection, or in a write-blocked stream.
@@ -334,9 +334,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Used for connection-level flow control.
   QuicFlowController flow_controller_;
-
-  // Indicate if there is pending data for the crypto stream.
-  bool has_pending_handshake_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

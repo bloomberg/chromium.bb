@@ -65,7 +65,8 @@ namespace test {
 class QuicPacketGeneratorPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicPacketGenerator {
+class NET_EXPORT_PRIVATE QuicPacketGenerator
+    : public QuicPacketCreator::DelegateInterface {
  public:
   class NET_EXPORT_PRIVATE DelegateInterface {
    public:
@@ -98,7 +99,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                       QuicRandom* random_generator,
                       DelegateInterface* delegate);
 
-  virtual ~QuicPacketGenerator();
+  ~QuicPacketGenerator() override;
 
   // Called by the connection in the event of the congestion window changing.
   void OnCongestionWindowChange(QuicPacketCount max_packets_in_flight);
@@ -183,6 +184,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Sets the encrypter to use for the encryption level.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
+  // QuicPacketCreator::DelegateInterface.
+  void OnSerializedPacket(SerializedPacket* serialized_packet) override;
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
 
@@ -256,13 +260,14 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // retransmittable) would still allow the resulting packet to be sent now.
   bool CanSendWithNextPendingFrameAddition() const;
   // Add exactly one pending frame, preferring ack frames over control frames.
+  // Returns true if a pending frame is successfully added.
+  // Returns false and flushes current open packet if the pending frame cannot
+  // fit into current open packet.
   bool AddNextPendingFrame();
   // Adds a frame and takes ownership of the underlying buffer.
   bool AddFrame(const QuicFrame& frame,
                 UniqueStreamBuffer buffer,
                 bool needs_padding);
-
-  void SerializeAndSendPacket();
 
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;

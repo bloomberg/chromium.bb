@@ -262,7 +262,7 @@ class QuicNetworkTransactionTest
       bool should_include_version,
       bool fin,
       const SpdyHeaderBlock& headers) {
-    QuicPriority priority =
+    SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
     return maker_.MakeRequestHeadersPacket(packet_number, stream_id,
                                            should_include_version, fin,

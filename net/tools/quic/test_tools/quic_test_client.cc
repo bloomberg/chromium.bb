@@ -587,7 +587,6 @@ void QuicTestClient::set_bind_to_address(IPAddressNumber address) {
 }
 
 const IPEndPoint& QuicTestClient::address() const {
-  LOG(DFATAL) << "Not implemented";
   return client_->server_address();
 }
 

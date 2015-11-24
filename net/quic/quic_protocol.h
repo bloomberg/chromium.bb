@@ -50,9 +50,6 @@ typedef uint32 QuicHeaderId;
 typedef uint32 QuicTag;
 typedef std::vector<QuicTag> QuicTagVector;
 typedef std::map<QuicTag, std::string> QuicTagValueMap;
-// TODO(rtenneti): Didn't use SpdyPriority because SpdyPriority is uint8 and
-// QuicPriority is uint32. Use SpdyPriority when we change the QUIC_VERSION.
-typedef uint32 QuicPriority;
 typedef uint16 QuicPacketLength;
 
 // Default initial maximum size in bytes of a QUIC packet.

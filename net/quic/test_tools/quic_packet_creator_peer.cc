@@ -60,5 +60,18 @@ void QuicPacketCreatorPeer::FillPacketHeader(QuicPacketCreator* creator,
   creator->FillPacketHeader(fec_group, fec_flag, header);
 }
 
+// static
+size_t QuicPacketCreatorPeer::CreateStreamFrame(QuicPacketCreator* creator,
+                                                QuicStreamId id,
+                                                QuicIOVector iov,
+                                                size_t iov_offset,
+                                                QuicStreamOffset offset,
+                                                bool fin,
+                                                QuicFrame* frame,
+                                                UniqueStreamBuffer* buffer) {
+  return creator->CreateStreamFrame(id, iov, iov_offset, offset, fin, frame,
+                                    buffer);
+}
+
 }  // namespace test
 }  // namespace net

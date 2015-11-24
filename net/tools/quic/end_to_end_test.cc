@@ -1379,7 +1379,6 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   int max_streams = 100;
 
   AddToCache("/large_response", 200, large_body);
-  ;
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
   SetPacketLossPercentage(10);

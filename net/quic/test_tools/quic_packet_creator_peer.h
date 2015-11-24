@@ -33,6 +33,14 @@ class QuicPacketCreatorPeer {
                                QuicFecGroupNumber fec_group,
                                bool fec_flag,
                                QuicPacketHeader* header);
+  static size_t CreateStreamFrame(QuicPacketCreator* creator,
+                                  QuicStreamId id,
+                                  QuicIOVector iov,
+                                  size_t iov_offset,
+                                  QuicStreamOffset offset,
+                                  bool fin,
+                                  QuicFrame* frame,
+                                  UniqueStreamBuffer* buffer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);

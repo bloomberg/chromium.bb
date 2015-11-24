@@ -277,7 +277,7 @@ void ReliableQuicStream::MaybeSendBlocked() {
   // WINDOW_UPDATE arrives.
   if (connection_flow_controller_->IsBlocked() &&
       !flow_controller_.IsBlocked()) {
-    session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
+    session_->MarkConnectionLevelWriteBlocked(id(), Priority());
   }
 }
 
@@ -325,6 +325,12 @@ QuicConsumedData ReliableQuicStream::WritevData(
 
   AddBytesSent(consumed_data.bytes_consumed);
 
+  // The write may have generated a write error causing this stream to be
+  // closed. If so, simply return without marking the stream write blocked.
+  if (write_side_closed_) {
+    return consumed_data;
+  }
+
   if (consumed_data.bytes_consumed == write_length) {
     if (!fin_with_zero_data) {
       MaybeSendBlocked();
@@ -336,10 +342,10 @@ QuicConsumedData ReliableQuicStream::WritevData(
       }
       CloseWriteSide();
     } else if (fin && !consumed_data.fin_consumed) {
-      session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
+      session_->MarkConnectionLevelWriteBlocked(id(), Priority());
     }
   } else {
-    session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
+    session_->MarkConnectionLevelWriteBlocked(id(), Priority());
   }
   return consumed_data;
 }

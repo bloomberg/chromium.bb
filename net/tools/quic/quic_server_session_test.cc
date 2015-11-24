@@ -367,8 +367,8 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
-  session_->MarkConnectionLevelWriteBlocked(
-      kCryptoStreamId, QuicWriteBlockedList::kHighestPriority);
+  session_->MarkConnectionLevelWriteBlocked(kCryptoStreamId,
+                                            net::kHighestPriority);
   EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.

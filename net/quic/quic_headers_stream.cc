@@ -204,12 +204,11 @@ QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
 
 QuicHeadersStream::~QuicHeadersStream() {}
 
-size_t QuicHeadersStream::WriteHeaders(
-    QuicStreamId stream_id,
-    const SpdyHeaderBlock& headers,
-    bool fin,
-    QuicPriority priority,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
+                                       const SpdyHeaderBlock& headers,
+                                       bool fin,
+                                       SpdyPriority priority,
+                                       QuicAckListenerInterface* ack_listener) {
   SpdyHeadersIR headers_frame(stream_id);
   headers_frame.set_header_block(headers);
   headers_frame.set_fin(fin);
@@ -220,7 +219,30 @@ size_t QuicHeadersStream::WriteHeaders(
   scoped_ptr<SpdySerializedFrame> frame(
       spdy_framer_.SerializeFrame(headers_frame));
   WriteOrBufferData(StringPiece(frame->data(), frame->size()), false,
-                    ack_notifier_delegate);
+                    ack_listener);
+  return frame->size();
+}
+
+size_t QuicHeadersStream::WritePushPromise(
+    QuicStreamId original_stream_id,
+    QuicStreamId promised_stream_id,
+    const SpdyHeaderBlock& headers,
+    QuicAckListenerInterface* ack_listener) {
+  if (session()->perspective() == Perspective::IS_CLIENT) {
+    LOG(DFATAL) << "Client shouldn't send PUSH_PROMISE";
+    return 0;
+  }
+
+  SpdyPushPromiseIR push_promise(original_stream_id, promised_stream_id);
+  push_promise.set_header_block(headers);
+  // PUSH_PROMISE must not be the last frame sent out, at least followed by
+  // response headers.
+  push_promise.set_fin(false);
+
+  scoped_ptr<SpdySerializedFrame> frame(
+      spdy_framer_.SerializeFrame(push_promise));
+  WriteOrBufferData(StringPiece(frame->data(), frame->size()), false,
+                    ack_listener);
   return frame->size();
 }
 
@@ -253,7 +275,9 @@ void QuicHeadersStream::OnDataAvailable() {
   }
 }
 
-QuicPriority QuicHeadersStream::EffectivePriority() const { return 0; }
+SpdyPriority QuicHeadersStream::Priority() const {
+  return net::kHighestPriority;  // The smallest priority is also the highest
+}
 
 void QuicHeadersStream::OnSynStream(SpdyStreamId stream_id,
                                     SpdyPriority priority,

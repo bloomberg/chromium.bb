@@ -31,7 +31,7 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // received for this stream.  This method will only be called for server
   // streams.
   virtual void OnStreamHeadersPriority(QuicStreamId stream_id,
-                                       QuicPriority priority);
+                                       SpdyPriority priority);
   // Called by |headers_stream_| when headers have been completely received
   // for a stream.  |fin| will be true if the fin flag was set in the headers
   // frame.
@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   size_t WriteHeaders(QuicStreamId id,
                       const SpdyHeaderBlock& headers,
                       bool fin,
-                      QuicPriority priority,
+                      SpdyPriority priority,
                       QuicAckListenerInterface* ack_notifier_delegate);
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }

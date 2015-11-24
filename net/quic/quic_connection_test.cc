@@ -676,7 +676,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         framer_(SupportedVersions(version()),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        peer_creator_(connection_id_, &framer_, &random_generator_),
+        peer_creator_(connection_id_,
+                      &framer_,
+                      &random_generator_,
+                      /*delegate=*/nullptr),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
@@ -5247,6 +5250,36 @@ TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {
   EXPECT_TRUE(connection_.goaway_sent());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   connection_.SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away.");
+}
+
+TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {
+  FLAGS_quic_respect_send_alarm = true;
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 0, !kFin,
+                                       nullptr);
+
+  // Evaluate CanWrite, and have it return a non-Zero value.
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+      .WillRepeatedly(Return(QuicTime::Delta::FromMilliseconds(1)));
+  connection_.OnCanWrite();
+  EXPECT_TRUE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(1)),
+            connection_.GetSendAlarm()->deadline());
+
+  // Process an ack and the send alarm will be set to the  new 2ms delay.
+  QuicAckFrame ack = InitAckFrame(1);
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(PacketNumberSet()));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+      .WillRepeatedly(Return(QuicTime::Delta::FromMilliseconds(2)));
+  ProcessAckPacket(&ack);
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->stream_frames().size());
+  EXPECT_TRUE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(2)),
+            connection_.GetSendAlarm()->deadline());
+  writer_->Reset();
 }
 
 }  // namespace

@@ -120,7 +120,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     return ERR_CONNECTION_CLOSED;
   }
 
-  QuicPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
+  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->set_priority(priority);
   // Store the serialized request headers.
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, HTTP2,

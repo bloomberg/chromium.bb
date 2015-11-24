@@ -737,6 +737,9 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
+  if (FLAGS_quic_respect_send_alarm && send_alarm_->IsSet()) {
+    send_alarm_->Cancel();
+  }
   ProcessAckFrame(incoming_ack);
   if (incoming_ack.is_truncated) {
     should_last_packet_instigate_acks_ = true;
@@ -1475,7 +1478,7 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   }
 
   // If the send alarm is set, wait for it to fire.
-  if (FLAGS_respect_send_alarm && send_alarm_->IsSet()) {
+  if (FLAGS_quic_respect_send_alarm && send_alarm_->IsSet()) {
     return false;
   }
 
@@ -1494,7 +1497,7 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
              << "ms";
     return false;
   }
-  if (!FLAGS_respect_send_alarm) {
+  if (!FLAGS_quic_respect_send_alarm) {
     send_alarm_->Cancel();
   }
   return true;

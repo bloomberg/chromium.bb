@@ -95,17 +95,10 @@ TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
   // Close the stream, but without having received a FIN or a RST_STREAM
   // and check that a new one can not be created.
   session_->CloseStream(stream->id());
-  if (FLAGS_quic_count_unfinished_as_open_streams) {
-    EXPECT_EQ(1u, session_->GetNumOpenStreams());
-  } else {
-    EXPECT_EQ(0u, session_->GetNumOpenStreams());
-  }
+  EXPECT_EQ(1u, session_->GetNumOpenStreams());
+
   stream = session_->CreateOutgoingDynamicStream();
-  if (FLAGS_quic_count_unfinished_as_open_streams) {
-    EXPECT_FALSE(stream);
-  } else {
-    EXPECT_TRUE(stream);
-  }
+  EXPECT_FALSE(stream);
 }
 
 TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithRst) {

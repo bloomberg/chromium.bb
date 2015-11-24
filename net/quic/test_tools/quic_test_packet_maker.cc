@@ -175,7 +175,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    QuicPriority priority,
+    SpdyPriority priority,
     const SpdyHeaderBlock& headers,
     size_t* spdy_headers_frame_length) {
   InitializeHeader(packet_number, should_include_version);
@@ -208,7 +208,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    QuicPriority priority,
+    SpdyPriority priority,
     const SpdyHeaderBlock& headers) {
   return MakeRequestHeadersPacket(packet_number, stream_id,
                                   should_include_version, fin, priority,

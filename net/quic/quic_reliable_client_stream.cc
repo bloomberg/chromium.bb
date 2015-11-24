@@ -70,11 +70,11 @@ void QuicReliableClientStream::OnCanWrite() {
   }
 }
 
-QuicPriority QuicReliableClientStream::EffectivePriority() const {
+SpdyPriority QuicReliableClientStream::Priority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
-    return QuicSpdyStream::EffectivePriority();
+    return QuicSpdyStream::Priority();
   }
-  return QuicWriteBlockedList::kHighestPriority;
+  return net::kHighestPriority;
 }
 
 int QuicReliableClientStream::WriteStreamData(
@@ -126,7 +126,7 @@ int QuicReliableClientStream::Read(IOBuffer* buf, int buf_len) {
 bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
   bool can_write =  session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
-    session()->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
+    session()->MarkConnectionLevelWriteBlocked(id(), Priority());
     DCHECK(callback_.is_null());
     callback_ = callback;
   }

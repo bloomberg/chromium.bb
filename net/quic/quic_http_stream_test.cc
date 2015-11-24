@@ -264,7 +264,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       bool fin,
       RequestPriority request_priority,
       size_t* spdy_headers_frame_length) {
-    QuicPriority priority =
+    SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return maker_.MakeRequestHeadersPacket(
         packet_number, stream_id_, kIncludeVersion, fin, priority,
@@ -822,15 +822,14 @@ TEST_P(QuicHttpStreamTest, Priority) {
   QuicReliableClientStream* reliable_stream =
       QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
   DCHECK(reliable_stream);
-  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
-            reliable_stream->EffectivePriority());
+  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
 
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
 
   // Check that priority has now dropped back to MEDIUM.
-  DCHECK_EQ(MEDIUM, ConvertQuicPriorityToRequestPriority(
-      reliable_stream->EffectivePriority()));
+  DCHECK_EQ(MEDIUM,
+            ConvertQuicPriorityToRequestPriority(reliable_stream->Priority()));
 
   // Ack the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -875,14 +874,12 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK(reliable_stream);
   QuicReliableClientStream::Delegate* delegate = reliable_stream->GetDelegate();
   DCHECK(delegate);
-  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
-            reliable_stream->EffectivePriority());
+  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
 
-  // Set Delegate to nullptr and make sure EffectivePriority returns highest
+  // Set Delegate to nullptr and make sure Priority returns highest
   // priority.
   reliable_stream->SetDelegate(nullptr);
-  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
-            reliable_stream->EffectivePriority());
+  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
   reliable_stream->SetDelegate(delegate);
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());

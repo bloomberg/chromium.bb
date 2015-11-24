@@ -440,8 +440,8 @@ class MockQuicSpdySession : public QuicSpdySession {
                                 QuicAckListenerInterface*));
   MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
                                      base::StringPiece headers_data));
-  MOCK_METHOD2(OnStreamHeadersPriority, void(QuicStreamId stream_id,
-                                             QuicPriority priority));
+  MOCK_METHOD2(OnStreamHeadersPriority,
+               void(QuicStreamId stream_id, SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete, void(QuicStreamId stream_id,
                                              bool fin,
                                              size_t frame_len));

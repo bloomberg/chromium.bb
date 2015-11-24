@@ -310,13 +310,10 @@ bool TcpCubicSender::InRecovery() const {
 void TcpCubicSender::MaybeIncreaseCwnd(QuicPacketNumber acked_packet_number,
                                        QuicByteCount bytes_in_flight) {
   LOG_IF(DFATAL, InRecovery()) << "Never increase the CWND during recovery.";
+  // Do not increase the congestion window unless the sender is close to using
+  // the current window.
   if (!IsCwndLimited(bytes_in_flight)) {
-    // Do not increase the congestion window unless the sender is close to using
-    // the current window.
-    if (FLAGS_reset_cubic_epoch_when_app_limited ||
-        FLAGS_shift_quic_cubic_epoch_when_app_limited) {
-      cubic_.OnApplicationLimited();
-    }
+    cubic_.OnApplicationLimited();
     return;
   }
   if (congestion_window_ >= max_tcp_congestion_window_) {

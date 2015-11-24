@@ -13,6 +13,7 @@
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -124,7 +125,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
         headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
         framer_(HTTP2),
-        stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, "") {
+        stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
+        next_promised_stream_id_(2) {
     headers_[":version"]  = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";
@@ -155,7 +157,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
 
   void WriteHeadersAndExpectSynStream(QuicStreamId stream_id,
                                       bool fin,
-                                      QuicPriority priority) {
+                                      SpdyPriority priority) {
     WriteHeadersAndCheckData(stream_id, fin, priority, SYN_STREAM);
   }
 
@@ -166,7 +168,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
 
   void WriteHeadersAndCheckData(QuicStreamId stream_id,
                                 bool fin,
-                                QuicPriority priority,
+                                SpdyPriority priority,
                                 SpdyFrameType type) {
     // Write the headers and capture the outgoing data
     EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, _, nullptr))
@@ -222,6 +224,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     QuicConnectionPeer::CloseConnection(connection_);
   }
 
+  QuicStreamId NextPromisedStreamId() { return next_promised_stream_id_++; }
+
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
 
@@ -236,6 +240,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   SpdyFramer framer_;
   StrictMock<MockVisitor> visitor_;
   QuicStreamFrame stream_frame_;
+  QuicStreamId next_promised_stream_id_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
@@ -246,8 +251,8 @@ TEST_P(QuicHeadersStreamTest, StreamId) {
   EXPECT_EQ(3u, headers_stream_->id());
 }
 
-TEST_P(QuicHeadersStreamTest, EffectivePriority) {
-  EXPECT_EQ(0u, headers_stream_->EffectivePriority());
+TEST_P(QuicHeadersStreamTest, Priority) {
+  EXPECT_EQ(0u, headers_stream_->Priority());
 }
 
 TEST_P(QuicHeadersStreamTest, WriteHeaders) {
@@ -257,7 +262,7 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
       if (perspective() == Perspective::IS_SERVER) {
         WriteHeadersAndExpectSynReply(stream_id, fin);
       } else {
-        for (QuicPriority priority = 0; priority < 7; ++priority) {
+        for (SpdyPriority priority = 0; priority < 7; ++priority) {
           // TODO(rch): implement priorities correctly.
           WriteHeadersAndExpectSynStream(stream_id, fin, 0);
         }
@@ -266,11 +271,42 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
   }
 }
 
+TEST_P(QuicHeadersStreamTest, WritePushPromises) {
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
+    QuicStreamId promised_stream_id = NextPromisedStreamId();
+    if (perspective() == Perspective::IS_SERVER) {
+      // Write the headers and capture the outgoing data
+      EXPECT_CALL(session_,
+                  WritevData(kHeadersStreamId, _, _, false, _, nullptr))
+          .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
+      headers_stream_->WritePushPromise(stream_id, promised_stream_id, headers_,
+                                        nullptr);
+
+      // Parse the outgoing data and check that it matches was was written.
+      EXPECT_CALL(visitor_,
+                  OnPushPromise(stream_id, promised_stream_id, kFrameComplete));
+      EXPECT_CALL(visitor_, OnControlFrameHeaderData(stream_id, _, _))
+          .WillRepeatedly(WithArgs<1, 2>(
+              Invoke(this, &QuicHeadersStreamTest::SaveHeaderData)));
+      framer_.ProcessInput(saved_data_.data(), saved_data_.length());
+      EXPECT_FALSE(framer_.HasError())
+          << SpdyFramer::ErrorCodeToString(framer_.error_code());
+      CheckHeaders();
+      saved_data_.clear();
+    } else {
+      EXPECT_DFATAL(headers_stream_->WritePushPromise(
+                        stream_id, promised_stream_id, headers_, nullptr),
+                    "Client shouldn't send PUSH_PROMISE");
+    }
+  }
+}
+
 TEST_P(QuicHeadersStreamTest, ProcessRawData) {
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {
-    for (bool fin : kFins) {
-      for (QuicPriority priority = 0; priority < 7; ++priority) {
+    for (bool fin : {false, true}) {
+      for (SpdyPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;
         if (perspective() == Perspective::IS_SERVER) {
@@ -387,8 +423,8 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
   headers_["key2"] = string(1 << 13, '.');
   for (QuicStreamId stream_id = kClientDataStreamId1;
        stream_id < kClientDataStreamId3; stream_id += 2) {
-    for (bool fin : kFins) {
-      for (QuicPriority priority = 0; priority < 7; ++priority) {
+    for (bool fin : {false, true}) {
+      for (SpdyPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;
         if (perspective() == Perspective::IS_SERVER) {

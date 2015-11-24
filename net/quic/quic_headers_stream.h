@@ -32,12 +32,20 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   size_t WriteHeaders(QuicStreamId stream_id,
                       const SpdyHeaderBlock& headers,
                       bool fin,
-                      QuicPriority priority,
-                      QuicAckListenerInterface* ack_notifier_delegate);
+                      SpdyPriority priority,
+                      QuicAckListenerInterface* ack_listener);
+
+  // Write |headers| for |promised_stream_id| on |original_stream_id| in a
+  // PUSH_PROMISE frame to peer. Return the size, in bytes, of the resulting
+  // SPDY frame.
+  size_t WritePushPromise(QuicStreamId original_stream_id,
+                          QuicStreamId promised_stream_id,
+                          const SpdyHeaderBlock& headers,
+                          QuicAckListenerInterface* ack_listener);
 
   // ReliableQuicStream implementation
   void OnDataAvailable() override;
-  QuicPriority EffectivePriority() const override;
+  SpdyPriority Priority() const override;
 
  private:
   class SpdyFramerVisitor;

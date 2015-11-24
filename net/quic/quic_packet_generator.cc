@@ -40,7 +40,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
       debug_delegate_(nullptr),
-      packet_creator_(connection_id, framer, random_generator),
+      packet_creator_(connection_id, framer, random_generator, this),
       batch_mode_(false),
       fec_timeout_(QuicTime::Delta::Zero()),
       rtt_multiplier_for_fec_timeout_(kRttMultiplierForFecTimeout),
@@ -139,7 +139,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   bool fin_consumed = false;
 
   if (!packet_creator_.HasRoomForStreamFrame(id, offset)) {
-    SerializeAndSendPacket();
+    packet_creator_.Flush();
   }
 
   if (fec_protection == MUST_FEC_PROTECT) {
@@ -151,23 +151,22 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     return QuicConsumedData(0, false);
   }
 
-  int frames_created = 0;
   while (delegate_->ShouldGeneratePacket(
       HAS_RETRANSMITTABLE_DATA, has_handshake ? IS_HANDSHAKE : NOT_HANDSHAKE)) {
     QuicFrame frame;
-    UniqueStreamBuffer buffer;
-    size_t bytes_consumed = packet_creator_.CreateStreamFrame(
-        id, iov, total_bytes_consumed, offset + total_bytes_consumed, fin,
-        &frame, &buffer);
-    ++frames_created;
-
-    if (!AddFrame(frame, buffer.Pass(), has_handshake)) {
-      LOG(DFATAL) << "Failed to add stream frame.";
-      // Inability to add a STREAM frame creates an unrecoverable hole in a
-      // the stream, so it's best to close the connection.
-      delegate_->CloseConnection(QUIC_INTERNAL_ERROR, false);
-      return QuicConsumedData(0, false);
+    if (!packet_creator_.ConsumeData(id, iov, total_bytes_consumed,
+                                     offset + total_bytes_consumed, fin,
+                                     has_handshake, &frame)) {
+      // Current packet is full and flushed.
+      continue;
     }
+
+    // A stream frame is created and added.
+    size_t bytes_consumed = frame.stream_frame->data.length();
+    if (debug_delegate_ != nullptr) {
+      debug_delegate_->OnFrameAddedToPacket(frame);
+    }
+
     if (listener != nullptr) {
       ack_listeners_.push_back(AckListenerWrapper(listener, bytes_consumed));
     }
@@ -175,13 +174,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && total_bytes_consumed == iov.total_length;
     DCHECK(total_bytes_consumed == iov.total_length ||
-           packet_creator_.BytesFree() == 0u);
+           (bytes_consumed > 0 && packet_creator_.HasPendingFrames()));
 
-    if (!InBatchMode() || !packet_creator_.HasRoomForStreamFrame(id, offset)) {
+    if (!InBatchMode()) {
       // TODO(rtenneti): remove MaybeSendFecPacketAndCloseGroup() from inside
       // SerializeAndSendPacket() and make it an explicit call here (and
       // elsewhere where we call SerializeAndSendPacket?).
-      SerializeAndSendPacket();
+      packet_creator_.Flush();
     }
 
     if (total_bytes_consumed == iov.total_length) {
@@ -228,7 +227,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
   if (listener != nullptr) {
     ack_listeners_.push_back(AckListenerWrapper(listener, 0));
   }
-  SerializeAndSendPacket();
+  packet_creator_.Flush();
   // The only reason AddFrame can fail is that the packet is too full to fit in
   // a ping.  This is not possible for any sane MTU.
   DCHECK(success);
@@ -253,13 +252,10 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush, bool is_fec_timeout) {
   // Only add pending frames if we are SURE we can then send the whole packet.
   while (HasPendingFrames() &&
          (flush || CanSendWithNextPendingFrameAddition())) {
-    if (!AddNextPendingFrame()) {
-      // Packet was full, so serialize and send it.
-      SerializeAndSendPacket();
-    }
+    AddNextPendingFrame();
   }
-  if (packet_creator_.HasPendingFrames() && (flush || !InBatchMode())) {
-    SerializeAndSendPacket();
+  if (flush || !InBatchMode()) {
+    packet_creator_.Flush();
   }
   MaybeSendFecPacketAndCloseGroup(flush, is_fec_timeout);
 }
@@ -424,40 +420,6 @@ bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
   return success;
 }
 
-void QuicPacketGenerator::SerializeAndSendPacket() {
-  // The optimized encryption algorithm implementations run faster when
-  // operating on aligned memory.
-  //
-  // TODO(rtenneti): Change the default 64 alignas value (used the default
-  // value from CACHELINE_SIZE).
-  ALIGNAS(64) char buffer[kMaxPacketSize];
-  SerializedPacket serialized_packet =
-      packet_creator_.SerializePacket(buffer, kMaxPacketSize);
-  if (serialized_packet.packet == nullptr) {
-    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy_
-                << " should_fec_protect_:" << should_fec_protect_;
-    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
-    return;
-  }
-
-  // There may be AckListeners interested in this packet.
-  serialized_packet.listeners.swap(ack_listeners_);
-  ack_listeners_.clear();
-
-  delegate_->OnSerializedPacket(serialized_packet);
-  MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);
-
-  // Maximum packet size may be only enacted while no packet is currently being
-  // constructed, so here we have a good opportunity to actually change it.
-  if (packet_creator_.CanSetMaxPacketLength()) {
-    packet_creator_.SetMaxPacketLength(max_packet_length_);
-  }
-
-  // The packet has now been serialized, so the frames are no longer queued.
-  ack_queued_ = false;
-  stop_waiting_queued_ = false;
-}
-
 void QuicPacketGenerator::StopSendingVersion() {
   packet_creator_.StopSendingVersion();
 }
@@ -530,6 +492,33 @@ void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
 void QuicPacketGenerator::SetEncrypter(EncryptionLevel level,
                                        QuicEncrypter* encrypter) {
   packet_creator_.SetEncrypter(level, encrypter);
+}
+
+void QuicPacketGenerator::OnSerializedPacket(
+    SerializedPacket* serialized_packet) {
+  if (serialized_packet->packet == nullptr) {
+    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy_
+                << " should_fec_protect_:" << should_fec_protect_;
+    delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
+    return;
+  }
+
+  // There may be AckListeners interested in this packet.
+  serialized_packet->listeners.swap(ack_listeners_);
+  ack_listeners_.clear();
+
+  delegate_->OnSerializedPacket(*serialized_packet);
+  MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);
+
+  // Maximum packet size may be only enacted while no packet is currently being
+  // constructed, so here we have a good opportunity to actually change it.
+  if (packet_creator_.CanSetMaxPacketLength()) {
+    packet_creator_.SetMaxPacketLength(max_packet_length_);
+  }
+
+  // The packet has now been serialized, so the frames are no longer queued.
+  ack_queued_ = false;
+  stop_waiting_queued_ = false;
 }
 
 }  // namespace net

@@ -32,7 +32,8 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
-#include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_fec_group.h"
+#include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_packet_writer.h"
@@ -48,7 +49,6 @@ namespace net {
 class QuicClock;
 class QuicConfig;
 class QuicConnection;
-class QuicDecrypter;
 class QuicEncrypter;
 class QuicFecGroup;
 class QuicRandom;

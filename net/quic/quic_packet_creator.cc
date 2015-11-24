@@ -69,8 +69,10 @@ class QuicRandomBoolSource {
 
 QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicFramer* framer,
-                                     QuicRandom* random_generator)
-    : connection_id_(connection_id),
+                                     QuicRandom* random_generator,
+                                     DelegateInterface* delegate)
+    : delegate_(delegate),
+      connection_id_(connection_id),
       encryption_level_(ENCRYPTION_NONE),
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
@@ -235,6 +237,28 @@ void QuicPacketCreator::UpdatePacketNumberLength(
   const uint64 delta = max(current_delta, max_packets_in_flight);
   next_packet_number_length_ =
       QuicFramer::GetMinSequenceNumberLength(delta * 4);
+}
+
+bool QuicPacketCreator::ConsumeData(QuicStreamId id,
+                                    QuicIOVector iov,
+                                    size_t iov_offset,
+                                    QuicStreamOffset offset,
+                                    bool fin,
+                                    bool needs_padding,
+                                    QuicFrame* frame) {
+  if (!HasRoomForStreamFrame(id, offset)) {
+    Flush();
+    return false;
+  }
+
+  UniqueStreamBuffer buffer;
+  CreateStreamFrame(id, iov, iov_offset, offset, fin, frame, &buffer);
+
+  bool success = AddFrame(*frame,
+                          /*save_retransmittable_frames=*/true, needs_padding,
+                          std::move(buffer));
+  DCHECK(success);
+  return true;
 }
 
 bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
@@ -411,6 +435,19 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames,
   SerializedPacket packet = SerializePacket(buffer, buffer_len);
   DCHECK(packet.retransmittable_frames == nullptr);
   return packet;
+}
+
+void QuicPacketCreator::Flush() {
+  if (!HasPendingFrames()) {
+    return;
+  }
+
+  // TODO(rtenneti): Change the default 64 alignas value (used the default
+  // value from CACHELINE_SIZE).
+  ALIGNAS(64) char seralized_packet_buffer[kMaxPacketSize];
+  SerializedPacket serialized_packet =
+      SerializePacket(seralized_packet_buffer, kMaxPacketSize);
+  delegate_->OnSerializedPacket(&serialized_packet);
 }
 
 bool QuicPacketCreator::HasPendingFrames() const {
@@ -649,6 +686,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
       frame, BytesFree(), queued_frames_.empty(), true, is_in_fec_group,
       packet_number_length_);
   if (frame_len == 0) {
+    // Current open packet is full.
+    Flush();
     return false;
   }
   DCHECK_LT(0u, packet_size_);

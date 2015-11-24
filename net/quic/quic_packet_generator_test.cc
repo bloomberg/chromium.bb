@@ -716,12 +716,14 @@ TEST_P(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   EXPECT_TRUE(generator_.HasQueuedFrames());
 
   // This frame will not fit with the existing frame, causing the queued frame
-  // to be serialized, and it will not fit with another frame like it, so it is
-  // serialized by itself.
+  // to be serialized, and it will be added to a new open packet.
   consumed = generator_.ConsumeData(kHeadersStreamId, MakeIOVector("bar"), 3,
                                     true, MAY_FEC_PROTECT, nullptr);
   EXPECT_EQ(3u, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+
+  creator_->Flush();
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
   PacketContents contents;

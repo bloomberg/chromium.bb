@@ -104,12 +104,8 @@ bool QuicPacketReader::ReadAndDispatchPackets(
                                            packets_dropped);
   }
 
-  if (FLAGS_quic_read_packets_full_recvmmsg) {
-    // We may not have read all of the packets available on the socket.
-    return packets_read == kNumPacketsPerReadMmsgCall;
-  } else {
-    return true;
-  }
+  // We may not have read all of the packets available on the socket.
+  return packets_read == kNumPacketsPerReadMmsgCall;
 #else
   LOG(FATAL) << "Unsupported";
   return false;

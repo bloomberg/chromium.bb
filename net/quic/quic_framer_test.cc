@@ -66,7 +66,7 @@ size_t GetMinStreamFrameSize() {
 size_t GetPacketNumberOffset(QuicConnectionIdLength connection_id_length,
                              bool include_version) {
   return kConnectionIdOffset + connection_id_length +
-      (include_version ? kQuicVersionSize : 0);
+         (include_version ? kQuicVersionSize : 0);
 }
 
 size_t GetPacketNumberOffset(bool include_version) {
@@ -94,12 +94,12 @@ size_t GetPrivateFlagsOffset(bool include_version,
 size_t GetFecGroupOffset(QuicConnectionIdLength connection_id_length,
                          bool include_version) {
   return GetPrivateFlagsOffset(connection_id_length, include_version) +
-      kPrivateFlagsSize;
+         kPrivateFlagsSize;
 }
 
 size_t GetFecGroupOffset(bool include_version) {
   return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version) +
-      kPrivateFlagsSize;
+         kPrivateFlagsSize;
 }
 
 size_t GetFecGroupOffset(bool include_version,
@@ -185,8 +185,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
         complete_packets_(0),
         revived_packets_(0),
         accept_packet_(true),
-        accept_public_header_(true) {
-  }
+        accept_public_header_(true) {}
 
   ~TestQuicVisitor() override {
     STLDeleteElements(&stream_frames_);
@@ -353,13 +352,13 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
   // Helper function to get unsigned char representation of digit in the
   // units place of the current QUIC version number.
   unsigned char GetQuicVersionDigitOnes() {
-    return static_cast<unsigned char> ('0' + version_%10);
+    return static_cast<unsigned char>('0' + version_ % 10);
   }
 
   // Helper function to get unsigned char representation of digit in the
   // tens place of the current QUIC version number.
   unsigned char GetQuicVersionDigitTens() {
-    return static_cast<unsigned char> ('0' + (version_/10)%10);
+    return static_cast<unsigned char>('0' + (version_ / 10) % 10);
   }
 
   bool CheckEncryption(QuicPacketNumber packet_number, QuicPacket* packet) {
@@ -370,14 +369,14 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     }
     if (packet->AssociatedData() != encrypter_->associated_data_) {
       LOG(ERROR) << "Encrypted incorrect associated data.  expected "
-                 << packet->AssociatedData() << " actual: "
-                 << encrypter_->associated_data_;
+                 << packet->AssociatedData()
+                 << " actual: " << encrypter_->associated_data_;
       return false;
     }
     if (packet->Plaintext() != encrypter_->plaintext_) {
       LOG(ERROR) << "Encrypted incorrect plaintext data.  expected "
-                 << packet->Plaintext() << " actual: "
-                 << encrypter_->plaintext_;
+                 << packet->Plaintext()
+                 << " actual: " << encrypter_->plaintext_;
       return false;
     }
     return true;
@@ -406,16 +405,13 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                                 PACKET_6BYTE_PACKET_NUMBER)));
     if (ciphertext != decrypter_->ciphertext_) {
       LOG(ERROR) << "Decrypted incorrect ciphertext data.  expected "
-                 << ciphertext << " actual: "
-                 << decrypter_->ciphertext_;
+                 << ciphertext << " actual: " << decrypter_->ciphertext_;
       return false;
     }
     return true;
   }
 
-  char* AsChars(unsigned char* data) {
-    return reinterpret_cast<char*>(data);
-  }
+  char* AsChars(unsigned char* data) { return reinterpret_cast<char*>(data); }
 
   void CheckProcessingFails(unsigned char* packet,
                             size_t len,
@@ -592,7 +588,7 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearNextMax) {
 }
 
 TEST_P(QuicFramerTest, EmptyPacket) {
-  char packet[] = { 0x00 };
+  char packet[] = {0x00};
   QuicEncryptedPacket encrypted(packet, 0, false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_INVALID_PACKET_HEADER, framer_.error());
@@ -1071,9 +1067,7 @@ TEST_P(QuicFramerTest, InvalidPublicFlag) {
   };
   // clang-format on
 
-  CheckProcessingFails(packet,
-                       arraysize(packet),
-                       "Illegal public flags value.",
+  CheckProcessingFails(packet, arraysize(packet), "Illegal public flags value.",
                        QUIC_INVALID_PACKET_HEADER);
 
   // Now turn off validation.
@@ -1103,9 +1097,7 @@ TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
     0x00, 0x00, 0x00, 0x00
   };
   // clang-format on
-  CheckProcessingFails(packet,
-                       arraysize(packet),
-                       "Illegal public flags value.",
+  CheckProcessingFails(packet, arraysize(packet), "Illegal public flags value.",
                        QUIC_INVALID_PACKET_HEADER);
 };
 
@@ -1157,8 +1149,7 @@ TEST_P(QuicFramerTest, InvalidPrivateFlag) {
     0x00, 0x00, 0x00, 0x00
   };
   // clang-format on
-  CheckProcessingFails(packet,
-                       arraysize(packet),
+  CheckProcessingFails(packet, arraysize(packet),
                        "Illegal private flags value.",
                        QUIC_INVALID_PACKET_HEADER);
 };
@@ -1577,9 +1568,8 @@ TEST_P(QuicFramerTest, RevivedStreamFrame) {
   header.fec_group = 0;
 
   // Do not encrypt the payload because the revived payload is post-encryption.
-  EXPECT_TRUE(framer_.ProcessRevivedPacket(&header,
-                                           StringPiece(AsChars(payload),
-                                                       arraysize(payload))));
+  EXPECT_TRUE(framer_.ProcessRevivedPacket(
+      &header, StringPiece(AsChars(payload), arraysize(payload))));
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_EQ(1, visitor_.revived_packets_);
@@ -1715,8 +1705,8 @@ TEST_P(QuicFramerTest, AckFrameTwoTimestamp) {
   EXPECT_EQ(kMissingPacket, frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
-  const size_t kLargestObservedOffset = kReceivedEntropyOffset +
-      kQuicEntropyHashSize;
+  const size_t kLargestObservedOffset =
+      kReceivedEntropyOffset + kQuicEntropyHashSize;
   const size_t kMissingDeltaTimeOffset =
       kLargestObservedOffset + PACKET_6BYTE_PACKET_NUMBER;
   const size_t kNumTimestampsOffset =
@@ -1840,7 +1830,7 @@ TEST_P(QuicFramerTest, AckFrameOneTimestamp) {
   const size_t kTimestampDeltaLargestObserved =
       kNumTimestampsOffset + kQuicNumTimestampsSize;
   const size_t kTimestampTimeDeltaLargestObserved =
-    kTimestampDeltaLargestObserved + 1;
+      kTimestampDeltaLargestObserved + 1;
   const size_t kNumMissingPacketOffset = kTimestampTimeDeltaLargestObserved + 4;
   const size_t kMissingPacketsOffset =
       kNumMissingPacketOffset + kNumberOfNackRangesSize;
@@ -1932,16 +1922,16 @@ TEST_P(QuicFramerTest, AckFrame) {
   EXPECT_EQ(kMissingPacket, frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
-  const size_t kLargestObservedOffset = kReceivedEntropyOffset +
-      kQuicEntropyHashSize;
+  const size_t kLargestObservedOffset =
+      kReceivedEntropyOffset + kQuicEntropyHashSize;
   const size_t kMissingDeltaTimeOffset =
       kLargestObservedOffset + PACKET_6BYTE_PACKET_NUMBER;
-  const size_t kNumTimestampsOffset = kMissingDeltaTimeOffset +
-      kQuicDeltaTimeLargestObservedSize;
-  const size_t kNumMissingPacketOffset = kNumTimestampsOffset +
-      kQuicNumTimestampsSize;
-  const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfNackRangesSize;
+  const size_t kNumTimestampsOffset =
+      kMissingDeltaTimeOffset + kQuicDeltaTimeLargestObservedSize;
+  const size_t kNumMissingPacketOffset =
+      kNumTimestampsOffset + kQuicNumTimestampsSize;
+  const size_t kMissingPacketsOffset =
+      kNumMissingPacketOffset + kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange =
       kMissingPacketsOffset + PACKET_1BYTE_PACKET_NUMBER;
   const size_t kRevivedPacketsLength =
@@ -2030,16 +2020,16 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets) {
   EXPECT_EQ(kMissingPacket, frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
-  const size_t kLargestObservedOffset = kReceivedEntropyOffset +
-      kQuicEntropyHashSize;
+  const size_t kLargestObservedOffset =
+      kReceivedEntropyOffset + kQuicEntropyHashSize;
   const size_t kMissingDeltaTimeOffset =
       kLargestObservedOffset + PACKET_6BYTE_PACKET_NUMBER;
-  const size_t kNumTimestampsOffset = kMissingDeltaTimeOffset +
-      kQuicDeltaTimeLargestObservedSize;
-  const size_t kNumMissingPacketOffset = kNumTimestampsOffset +
-      kQuicNumTimestampsSize;
-  const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfNackRangesSize;
+  const size_t kNumTimestampsOffset =
+      kMissingDeltaTimeOffset + kQuicDeltaTimeLargestObservedSize;
+  const size_t kNumMissingPacketOffset =
+      kNumTimestampsOffset + kQuicNumTimestampsSize;
+  const size_t kMissingPacketsOffset =
+      kNumMissingPacketOffset + kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange =
       kMissingPacketsOffset + PACKET_1BYTE_PACKET_NUMBER;
   const size_t kRevivedPacketsLength =
@@ -2194,9 +2184,9 @@ TEST_P(QuicFramerTest, AckFrame500Nacks) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(*visitor_.header_, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, StopWaitingFrame) {
@@ -2423,8 +2413,8 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
     string expected_error;
     if (i < kQuicFrameTypeSize + kQuicErrorCodeSize) {
       expected_error = "Unable to read go away error code.";
-    } else if (i < kQuicFrameTypeSize + kQuicErrorCodeSize +
-               kQuicMaxStreamIdSize) {
+    } else if (i <
+               kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicMaxStreamIdSize) {
       expected_error = "Unable to read last good stream id.";
     } else {
       expected_error = "Unable to read goaway reason.";
@@ -2603,8 +2593,8 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(kPacketNumber,
             visitor_.public_reset_packet_->rejected_packet_number);
-  EXPECT_TRUE(
-      visitor_.public_reset_packet_->client_address.address().empty());
+  EXPECT_EQ(ADDRESS_FAMILY_UNSPECIFIED,
+            visitor_.public_reset_packet_->client_address.GetFamily());
 
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
@@ -2852,9 +2842,8 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet),
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
                                       arraysize(packet));
 }
 
@@ -2900,9 +2889,8 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet),
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
                                       arraysize(packet));
 }
 
@@ -2948,9 +2936,8 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet),
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
                                       arraysize(packet));
 }
 
@@ -2996,9 +2983,8 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet),
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
                                       arraysize(packet));
 }
 
@@ -3048,9 +3034,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacketInFecGroup) {
@@ -3097,9 +3083,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketInFecGroup) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
@@ -3123,58 +3109,22 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // public flags (version, 8 byte connection_id)
       0x3D,
       // connection_id
-      0x10,
-      0x32,
-      0x54,
-      0x76,
-      0x98,
-      0xBA,
-      0xDC,
-      0xFE,
+      0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
       // version tag
-      'Q',
-      '0',
-      GetQuicVersionDigitTens(),
-      GetQuicVersionDigitOnes(),
+      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
       // packet number
-      0xBC,
-      0x9A,
-      0x78,
-      0x56,
-      0x34,
-      0x12,
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
       // private flags (entropy)
       0x01,
 
       // frame type (stream frame with fin and no length)
       0xDF,
       // stream id
-      0x04,
-      0x03,
-      0x02,
-      0x01,
+      0x04, 0x03, 0x02, 0x01,
       // offset
-      0x54,
-      0x76,
-      0x10,
-      0x32,
-      0xDC,
-      0xFE,
-      0x98,
-      0xBA,
+      0x54, 0x76, 0x10, 0x32, 0xDC, 0xFE, 0x98, 0xBA,
       // data
-      'h',
-      'e',
-      'l',
-      'l',
-      'o',
-      ' ',
-      'w',
-      'o',
-      'r',
-      'l',
-      'd',
-      '!',
+      'h',  'e',  'l',  'l',  'o',  ' ',  'w',  'o',  'r', 'l', 'd', '!',
   };
   // clang-format on
 
@@ -3182,9 +3132,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
@@ -3193,19 +3143,9 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
       // public flags (version, 8 byte connection_id)
       0x0D,
       // connection_id
-      0x10,
-      0x32,
-      0x54,
-      0x76,
-      0x98,
-      0xBA,
-      0xDC,
-      0xFE,
+      0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
       // version tag
-      'Q',
-      '0',
-      GetQuicVersionDigitTens(),
-      GetQuicVersionDigitOnes(),
+      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
   };
   // clang-format on
 
@@ -3272,9 +3212,9 @@ TEST_P(QuicFramerTest, BuildAckFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 // TODO(jri): Add test for tuncated packets in which the original ack frame had
@@ -3386,9 +3326,9 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
@@ -3451,9 +3391,9 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
   ASSERT_TRUE(data != nullptr);
   // Expect 1 byte unused since at least 2 bytes are needed to fit more nacks.
   EXPECT_EQ(36u, data->length());
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildStopWaitingPacket) {
@@ -3498,9 +3438,9 @@ TEST_P(QuicFramerTest, BuildStopWaitingPacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
@@ -3601,9 +3541,9 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildGoAwayPacket) {
@@ -3656,9 +3596,9 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
@@ -3876,9 +3816,9 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
       framer_.BuildPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
@@ -3930,9 +3870,9 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
       framer_.BuildPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildFecPacket) {
@@ -3974,9 +3914,9 @@ TEST_P(QuicFramerTest, BuildFecPacket) {
   scoped_ptr<QuicPacket> data(framer_.BuildFecPacket(header, redundancy));
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, EncryptPacket) {

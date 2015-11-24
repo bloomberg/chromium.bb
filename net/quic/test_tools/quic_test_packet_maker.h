@@ -61,7 +61,7 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      QuicPriority priority,
+      SpdyPriority priority,
       const SpdyHeaderBlock& headers,
       size_t* spdy_headers_frame_length);
 
@@ -72,7 +72,7 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      QuicPriority priority,
+      SpdyPriority priority,
       const SpdyHeaderBlock& headers);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of

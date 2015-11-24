@@ -62,11 +62,9 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // ReliableQuicStream implementation
   void OnClose() override;
 
-  // By default, this is the same as priority(), however it allows streams
-  // to temporarily alter effective priority.   For example if a SPDY stream has
-  // compressed but not written headers it can write the headers with a higher
-  // priority.
-  QuicPriority EffectivePriority() const override;
+  // This is the same as priority() and is being deprecated
+  // TODO(alyssar) remove after Priority refactor.
+  SpdyPriority Priority() const override;
 
   // Called by the session when decompressed headers data is received
   // for this stream.
@@ -76,7 +74,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
 
   // Called by the session when headers with a priority have been received
   // for this stream.  This method will only be called for server streams.
-  virtual void OnStreamHeadersPriority(QuicPriority priority);
+  virtual void OnStreamHeadersPriority(SpdyPriority priority);
 
   // Called by the session when decompressed headers have been completely
   // delilvered to this stream.  If |fin| is true, then this stream
@@ -115,13 +113,12 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
     return decompressed_headers_;
   }
 
+  SpdyPriority priority() const { return priority_; }
+
  protected:
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.
-  void set_priority(QuicPriority priority);
-  // This is protected because external classes should use EffectivePriority
-  // instead.
-  QuicPriority priority() const { return priority_; }
+  void set_priority(SpdyPriority priority);
 
   bool FinishedReadingHeaders() const;
 
@@ -136,7 +133,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // True if the headers have been completely decompressed.
   bool headers_decompressed_;
   // The priority of the stream, once parsed.
-  QuicPriority priority_;
+  SpdyPriority priority_;
   // Contains a copy of the decompressed headers until they are consumed
   // via ProcessData or Readv.
   std::string decompressed_headers_;

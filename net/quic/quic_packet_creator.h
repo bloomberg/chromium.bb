@@ -29,10 +29,20 @@ class QuicRandomBoolSource;
 
 class NET_EXPORT_PRIVATE QuicPacketCreator {
  public:
+  // A delegate interface for further processing serialized packet.
+  class NET_EXPORT_PRIVATE DelegateInterface {
+   public:
+    virtual ~DelegateInterface() {}
+    // Called when a packet is serialized. Delegate does not take the ownership
+    // of |serialized_packet|.
+    virtual void OnSerializedPacket(SerializedPacket* serialized_packet) = 0;
+  };
+
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
-                    QuicRandom* random_generator);
+                    QuicRandom* random_generator,
+                    DelegateInterface* delegate);
 
   ~QuicPacketCreator();
 
@@ -74,21 +84,22 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
       QuicStreamOffset offset,
       InFecGroup is_in_fec_group);
 
-  bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset) const;
+  // Returns false and flushes all pending frames if current open packet is
+  // full.
+  // If current packet is not full, converts a raw payload into a stream frame
+  // that fits into the open packet and adds it to the packet.
+  // The payload begins at |iov_offset| into the |iov|.
+  bool ConsumeData(QuicStreamId id,
+                   QuicIOVector iov,
+                   size_t iov_offset,
+                   QuicStreamOffset offset,
+                   bool fin,
+                   bool needs_padding,
+                   QuicFrame* frame);
 
-  // Converts a raw payload to a frame which fits into the currently open
-  // packet.  The payload begins at |iov_offset| into the |iov|.
-  // Returns the number of bytes consumed from data.
-  // If data is empty and fin is true, the expected behavior is to consume the
-  // fin but return 0.  If any data is consumed, it will be copied into a
-  // new buffer that |frame| will point to and will be stored in |buffer|.
-  size_t CreateStreamFrame(QuicStreamId id,
-                           QuicIOVector iov,
-                           size_t iov_offset,
-                           QuicStreamOffset offset,
-                           bool fin,
-                           QuicFrame* frame,
-                           UniqueStreamBuffer* buffer);
+  // Returns true if current open packet can accommodate more stream frames of
+  // stream |id| at |offset|, false otherwise.
+  bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset) const;
 
   // Serializes all frames into a single packet. All frames must fit into a
   // single packet. Also, sets the entropy hash of the serialized packet to a
@@ -106,6 +117,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
                                         QuicPacketNumberLength original_length,
                                         char* buffer,
                                         size_t buffer_len);
+
+  // Serializes all added frames into a single packet and invokes the delegate_
+  // to further process the SerializedPacket.
+  void Flush();
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
@@ -146,8 +161,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // TODO(jri): AddSavedFrame calls AddFrame, which only saves the frame
   // if it is a stream frame, not other types of frames. Fix this API;
   // add a AddNonSavedFrame method.
-  // Adds |frame| to the packet creator's list of frames to be serialized.
-  // Returns false if the frame doesn't fit into the current packet.
+  // Tries to add |frame| to the packet creator's std::list of frames to be
+  // serialized. If the frame does not fit into the current packet, flushes the
+  // packet and returns false.
   bool AddSavedFrame(const QuicFrame& frame);
 
   // Identical to AddSavedFrame, but takes ownership of the buffer.
@@ -156,16 +172,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Identical to AddSavedFrame, but takes ownership of the buffer, and allows
   // to cause the packet to be padded.
   bool AddPaddedSavedFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
-
-  // Serializes all frames which have been added and adds any which should be
-  // retransmitted to |retransmittable_frames| if it's not nullptr. All frames
-  // must fit into a single packet. Sets the entropy hash of the serialized
-  // packet to a random bool and returns that value as a member of
-  // SerializedPacket. Also, sets |serialized_frames| in the SerializedPacket to
-  // the corresponding RetransmittableFrames if any frames are to be
-  // retransmitted.
-  // Fails if |buffer_len| isn't long enough for the encrypted packet.
-  SerializedPacket SerializePacket(char* encrypted_buffer, size_t buffer_len);
 
   // Packetize FEC data. All frames must fit into a single packet. Also, sets
   // the entropy hash of the serialized packet to a random bool and returns
@@ -226,7 +232,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // To turn off FEC protection, use StopFecProtectingPackets().
   void set_max_packets_per_fec_group(size_t max_packets_per_fec_group);
 
-  // Returns the currently open FEC group's number.  Returns 0 when FEC is
+  // Returns the current open FEC group's number.  Returns 0 when FEC is
   // disabled or no FEC group is open.
   QuicFecGroupNumber fec_group_number();
 
@@ -234,6 +240,20 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   friend class test::QuicPacketCreatorPeer;
 
   static bool ShouldRetransmit(const QuicFrame& frame);
+
+  // Converts a raw payload to a frame which fits into the current open
+  // packet.  The payload begins at |iov_offset| into the |iov|.
+  // Returns the number of bytes consumed from data.
+  // If data is empty and fin is true, the expected behavior is to consume the
+  // fin but return 0.  If any data is consumed, it will be copied into a
+  // new buffer that |frame| will point to and will be stored in |buffer|.
+  size_t CreateStreamFrame(QuicStreamId id,
+                           QuicIOVector iov,
+                           size_t iov_offset,
+                           QuicStreamOffset offset,
+                           bool fin,
+                           QuicFrame* frame,
+                           UniqueStreamBuffer* buffer);
 
   // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
   // |iov| must be at least iov_offset+length total length and buffer must be
@@ -258,6 +278,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
   // Allows a frame to be added without creating retransmittable frames.
   // Particularly useful for retransmits using SerializeAllFrames().
+  // If current open packet cannot accommodate |frame|, returns false and
+  // flushes all pending frames.
   bool AddFrame(const QuicFrame& frame,
                 bool save_retransmittable_frames,
                 bool needs_padding,
@@ -268,6 +290,18 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // padding frame.
   void MaybeAddPadding();
 
+  // Serializes all frames which have been added and adds any which should be
+  // retransmitted to queued_retransmittable_frames_ if it's not nullptr. All
+  // frames must fit into a single packet. Sets the entropy hash of the
+  // serialized packet to a random bool and returns that value as a member of
+  // SerializedPacket. Also, sets |serialized_frames| in the SerializedPacket to
+  // the corresponding RetransmittableFrames if any frames are to be
+  // retransmitted.
+  // Fails if |buffer_len| isn't long enough for the encrypted packet.
+  SerializedPacket SerializePacket(char* encrypted_buffer, size_t buffer_len);
+
+  // Does not own this delegate.
+  DelegateInterface* delegate_;
   QuicConnectionId connection_id_;
   EncryptionLevel encryption_level_;
   QuicFramer* framer_;

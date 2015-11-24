@@ -58,10 +58,6 @@ bool FLAGS_quic_require_handshake_confirmation = false;
 // client, a GO_AWAY frame is sent to the client.
 bool FLAGS_send_goaway_after_client_migration = true;
 
-// QUIC-specific flag. If true, Cubic's epoch is reset when the sender is
-// application-limited.
-bool FLAGS_reset_cubic_epoch_when_app_limited = true;
-
 // If true, use an interval set as the internal representation of a packet queue
 // instead of a set.
 bool FLAGS_quic_packet_queue_use_interval_set = true;
@@ -72,11 +68,6 @@ bool FLAGS_shift_quic_cubic_epoch_when_app_limited = true;
 // If true, accounts for available (implicitly opened) streams under a separate
 // quota from open streams, which is 10 times larger.
 bool FLAGS_allow_many_available_streams = true;
-
-// If true, QuicPacketReader::ReadAndDispatchPackets will only return true if
-// recvmmsg fills all of the passed in messages. Otherwise, it will return true
-// if recvmmsg read any messages.
-bool FLAGS_quic_read_packets_full_recvmmsg = true;
 
 // If true, QUIC will measure head of line (HOL) blocking due between
 // streams due to packet losses on the headers stream.  The
@@ -100,11 +91,6 @@ bool FLAGS_quic_implement_stop_reading = true;
 // and AckNotifierManager.
 bool FLAGS_quic_no_ack_notifier = true;
 
-// If true, QuicSession::GetNumOpenStreams will count unfinished
-// streams as open streams, QuicSession::PostProcessAfterData will not
-// check the quota of unifinished streams.
-bool FLAGS_quic_count_unfinished_as_open_streams = true;
-
 // If true, use the unrolled prefetch path in QuicPacketCreator::CopyToBuffer.
 bool FLAGS_quic_packet_creator_prefetch = false;
 
@@ -121,5 +107,8 @@ bool FLAGS_quic_use_new_idle_timeout = true;
 bool FLAGS_quic_use_stream_sequencer_buffer = true;
 
 // If true, don't send QUIC packets if the send alarm is set.
-// Disabled until b/25638635 is resolved.
-bool FLAGS_respect_send_alarm = false;
+bool FLAGS_quic_respect_send_alarm = true;
+
+// If true, allow each quic stream to write 16k blocks rather than doing a round
+// robin of one packet per session when ack clocked or paced.
+bool FLAGS_quic_batch_writes = true;

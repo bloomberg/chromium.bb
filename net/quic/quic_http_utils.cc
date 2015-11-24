@@ -6,15 +6,15 @@
 
 namespace net {
 
-QuicPriority ConvertRequestPriorityToQuicPriority(
+SpdyPriority ConvertRequestPriorityToQuicPriority(
     const RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
-  return static_cast<QuicPriority>(HIGHEST - priority);
+  return static_cast<SpdyPriority>(HIGHEST - priority);
 }
 
-NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
-    QuicPriority priority) {
+NET_EXPORT_PRIVATE RequestPriority
+ConvertQuicPriorityToRequestPriority(SpdyPriority priority) {
   // Handle invalid values gracefully.
   return (priority >= 5) ?
       IDLE : static_cast<RequestPriority>(HIGHEST - priority);
@@ -23,7 +23,7 @@ NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
 scoped_ptr<base::Value> QuicRequestNetLogCallback(
     QuicStreamId stream_id,
     const SpdyHeaderBlock* headers,
-    QuicPriority priority,
+    SpdyPriority priority,
     NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(static_cast<base::DictionaryValue*>(
       SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));

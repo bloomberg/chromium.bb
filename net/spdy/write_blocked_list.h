@@ -81,29 +81,20 @@ class WriteBlockedList {
     return false;
   }
 
+  // Add this stream to the back of the write blocked list for this priority
+  // level.  If the stream is already on that write blocked list this is a
+  // no-op.  If the stream is on a write blocked list for a different priority
+  // it will be removed from that list.
   void PushBack(IdType stream_id, SpdyPriority priority) {
-    priority = ClampPriority(priority);
-    DVLOG(2) << "Adding stream " << stream_id << " at priority "
-             << static_cast<int>(priority);
-    bool should_insert_stream = true;
-    typename StreamToPriorityMap::iterator iter =
-        stream_to_priority_.find(stream_id);
-    if (iter != stream_to_priority_.end()) {
-      DVLOG(1) << "Stream " << stream_id << " already in write blocked list.";
-      if (iter->second == priority) {
-        // The stream is already in the write blocked list for the priority.
-        should_insert_stream = false;
-      } else {
-        // The stream is in a write blocked list for a different priority.
-        bool removed =
-            RemoveStreamFromWriteBlockedList(stream_id, iter->second);
-        DCHECK(removed);
-      }
-    }
-    if (should_insert_stream) {
-      stream_to_priority_[stream_id] = priority;
-      write_blocked_lists_[priority].push_back(stream_id);
-    }
+    AddStream(stream_id, priority, true);
+  }
+
+  // Add this stream to the front of the write blocked list for this priority
+  // level.  If the stream is already on that write blocked list this is a
+  // no-op.  If the stream is on a write blocked list for a different priority
+  // it will be removed from that list.
+  void PushFront(IdType stream_id, SpdyPriority priority) {
+    AddStream(stream_id, priority, false);
   }
 
   bool RemoveStreamFromWriteBlockedList(IdType stream_id,
@@ -153,11 +144,48 @@ class WriteBlockedList {
     return num_blocked_streams;
   }
 
+  size_t NumBlockedStreams(SpdyPriority priority) const {
+    priority = ClampPriority(priority);
+    return write_blocked_lists_[priority].size();
+  }
+
  private:
   friend class net::test::WriteBlockedListPeer;
 
   typedef base::hash_map<IdType, SpdyPriority> StreamToPriorityMap;
 
+  void AddStream(IdType stream_id, SpdyPriority priority, bool push_back) {
+    priority = ClampPriority(priority);
+    DVLOG(2) << "Adding stream " << stream_id << " at priority "
+             << static_cast<int>(priority);
+    bool should_insert_stream = true;
+    typename StreamToPriorityMap::iterator iter =
+        stream_to_priority_.find(stream_id);
+    // Ensure the stream is not in the write blocked list multiple times.
+    if (iter != stream_to_priority_.end()) {
+      DVLOG(1) << "Stream " << stream_id << " already in write blocked list.";
+      if (iter->second == priority) {
+        // The stream is already in the write blocked list for the priority.
+        // It will not be inserted again but will retain its place in the list.
+        should_insert_stream = false;
+      } else {
+        // The stream is in a write blocked list for a different priority.
+        // Remove it from that list and allow it to be added to the list for
+        // this priority.
+        bool removed =
+            RemoveStreamFromWriteBlockedList(stream_id, iter->second);
+        DCHECK(removed);
+      }
+    }
+    if (should_insert_stream) {
+      stream_to_priority_[stream_id] = priority;
+      if (push_back) {
+        write_blocked_lists_[priority].push_back(stream_id);
+      } else {
+        write_blocked_lists_[priority].push_front(stream_id);
+      }
+    }
+  }
   BlockedList write_blocked_lists_[kLowestPriority + 1];
   StreamToPriorityMap stream_to_priority_;
 };

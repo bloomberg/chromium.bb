@@ -10,20 +10,21 @@
 #include "net/base/request_priority.h"
 #include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_header_block.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
-NET_EXPORT_PRIVATE QuicPriority ConvertRequestPriorityToQuicPriority(
-    RequestPriority priority);
+NET_EXPORT_PRIVATE SpdyPriority
+ConvertRequestPriorityToQuicPriority(RequestPriority priority);
 
-NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
-    QuicPriority priority);
+NET_EXPORT_PRIVATE RequestPriority
+ConvertQuicPriorityToRequestPriority(SpdyPriority priority);
 
 // Converts a SpdyHeaderBlock and priority into NetLog event parameters.
 NET_EXPORT scoped_ptr<base::Value> QuicRequestNetLogCallback(
     QuicStreamId stream_id,
     const SpdyHeaderBlock* headers,
-    QuicPriority priority,
+    SpdyPriority priority,
     NetLogCaptureMode capture_mode);
 
 }  // namespace net
