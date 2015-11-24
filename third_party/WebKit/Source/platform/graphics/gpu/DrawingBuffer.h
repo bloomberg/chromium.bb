@@ -69,12 +69,10 @@ class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public W
     struct TextureInfo {
         Platform3DObject textureId;
         WGC3Duint imageId;
-        bool immutable;
 
         TextureInfo()
             : textureId(0)
             , imageId(0)
-            , immutable(false)
         {
         }
     };
@@ -232,6 +230,9 @@ private:
     // Helper function to flip a bitmap vertically.
     void flipVertically(uint8_t* data, int width, int height);
 
+    // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
+    // By default, alignment is 4, the OpenGL default setting.
+    void texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint alignment = 4);
     // Allocate buffer storage to be sent to compositor using either texImage2D or CHROMIUM_image based on available support.
     void allocateTextureMemory(TextureInfo*, const IntSize&);
     void deleteChromiumImageForTexture(TextureInfo*);
@@ -250,7 +251,6 @@ private:
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
     bool m_discardFramebufferSupported;
-    bool m_storageTextureSupported;
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;
