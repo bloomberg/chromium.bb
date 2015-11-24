@@ -472,6 +472,16 @@ class ContextualSearchPolicy {
     }
 
     /**
+     * @return Whether forcing a translation Onebox based on auto-detection of the source language
+     *         is disabled.
+     */
+    boolean disableAutoDetectTranslationOnebox() {
+        if (disableForceTranslationOnebox()) return true;
+
+        return ContextualSearchFieldTrial.disableAutoDetectTranslationOnebox();
+    }
+
+    /**
      * Sets the limit for the tap triggered promo.
      */
     @VisibleForTesting

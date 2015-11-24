@@ -2585,4 +2585,51 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Make sure we did not try to trigger translate.
         assertFalse(mManager.getRequest().isTranslationForced());
     }
+
+    /**
+     * Tests that a long-press does trigger translation.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testLongpressTranslates() throws InterruptedException, TimeoutException {
+        // LongPress on any word should trigger translation.
+        simulateLongPressSearch("search");
+
+        // Make sure we did try to trigger translate.
+        assertTrue(mManager.getRequest().isTranslationForced());
+    }
+
+    /**
+     * Tests that a long-press does trigger translation.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX
+            + "=true")
+    public void testLongpressAutoDetectDisabledDoesNotTranslate()
+            throws InterruptedException, TimeoutException {
+        // Unless disabled, LongPress on any word should trigger translation.
+        simulateLongPressSearch("search");
+
+        // Make sure we did not try to trigger translate.
+        assertFalse(mManager.getRequest().isTranslationForced());
+    }
+
+    /**
+     * Tests that a long-press does trigger translation.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_FORCE_TRANSLATION_ONEBOX + "=true")
+    public void testLongpressTranslateDisabledDoesNotTranslate()
+            throws InterruptedException, TimeoutException {
+        // Unless disabled, LongPress on any word should trigger translation.
+        simulateLongPressSearch("search");
+
+        // Make sure we did not try to trigger translate.
+        assertFalse(mManager.getRequest().isTranslationForced());
+    }
 }

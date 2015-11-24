@@ -161,6 +161,15 @@ class ContextualSearchRequest {
     }
 
     /**
+     * Adds translation parameters that will trigger auto-detection of the source language.
+     * @param targetLanguage The language the that the user prefers.
+     */
+    void forceAutoDetectTranslation(String targetLanguage) {
+        // Use the empty string for the source language in order to trigger auto-detect.
+        forceTranslation("", targetLanguage);
+    }
+
+    /**
      * @return Whether translation was forced for this request.
      */
     @VisibleForTesting

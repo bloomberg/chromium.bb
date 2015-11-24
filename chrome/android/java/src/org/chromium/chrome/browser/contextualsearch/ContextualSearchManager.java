@@ -492,7 +492,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult(isTap);
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
                     null, shouldPrefetch);
-            // TODO(donnd): figure out a way to do translation on long-press selections.
+            forceAutoDetectTranslateUnlessDisabled(mSearchRequest);
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.displaySearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
@@ -738,16 +738,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult(true);
             mSearchRequest = new ContextualSearchRequest(searchTerm, alternateTerm, shouldPreload);
             // Trigger translation, if enabled.
-            if (!contextLanguage.isEmpty()) {
-                if (mPolicy.needsTranslation(contextLanguage, getReadableLanguages())) {
-                    boolean doForceTranslate = !mPolicy.disableForceTranslationOnebox();
-                    if (doForceTranslate) {
-                        mSearchRequest.forceTranslation(contextLanguage,
-                                mPolicy.bestTargetLanguage(getWritableLanguages()));
-                    }
-                    ContextualSearchUma.logTranslateOnebox(doForceTranslate);
-                }
-            }
+            forceTranslateIfNeeded(mSearchRequest, contextLanguage);
             mDidStartLoadingResolvedSearchRequest = false;
             if (mSearchPanel.isContentShowing()) {
                 mSearchRequest.setNormalPriority();
@@ -797,6 +788,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     // ============================================================================================
     // Translation support
+    // TODO(donnd): move to a separate file.
     // ============================================================================================
 
     /**
@@ -869,6 +861,48 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // TODO(donnd): Shouldn't getLanguage() do this?
         String trimmedLocale = locale.substring(0, 2);
         return new Locale(trimmedLocale).getLanguage();
+    }
+
+    /**
+     * Force translation from the given language for the current search request,
+     * unless disabled by experiment.  Also log whenever conditions are right to translate.
+     * @param searchRequest The search request to force translation upon.
+     * @param sourceLanguage The language to translate from, or an empty string if not known.
+     */
+    private void forceTranslateIfNeeded(ContextualSearchRequest searchRequest,
+            String sourceLanguage) {
+        if (!TextUtils.isEmpty(sourceLanguage)) {
+            if (mPolicy.needsTranslation(sourceLanguage, getReadableLanguages())) {
+                boolean doForceTranslate = !mPolicy.disableForceTranslationOnebox();
+                if (doForceTranslate && searchRequest != null) {
+                    searchRequest.forceTranslation(sourceLanguage,
+                            mPolicy.bestTargetLanguage(getWritableLanguages()));
+                }
+                // Log that conditions were right for translation, even though it may be disabled
+                // for an experiment so we can compare with the counter factual data.
+                ContextualSearchUma.logTranslateOnebox(doForceTranslate);
+            }
+        }
+    }
+
+    /**
+     * Force auto-detect translation for the current search request unless disabled by experiment.
+     * Also log that conditions are right to translate.
+     * @param searchRequest The search request to force translation upon.
+     */
+    private void forceAutoDetectTranslateUnlessDisabled(ContextualSearchRequest searchRequest) {
+        // Always trigger translation using auto-detect when we're not resolving,
+        // unless disabled by policy.
+        boolean shouldAutoDetectTranslate = !mPolicy.disableAutoDetectTranslationOnebox();
+        if (shouldAutoDetectTranslate && searchRequest != null) {
+            // The translation one-box won't actually show when the source text ends up being
+            // the same as the target text, so we err on over-triggering.
+            searchRequest.forceAutoDetectTranslation(
+                    mPolicy.bestTargetLanguage(getWritableLanguages()));
+        }
+        // Log that conditions were right for translation, even though it may be disabled
+        // for an experiment so we can compare with the counter factual data.
+        ContextualSearchUma.logTranslateOnebox(shouldAutoDetectTranslate);
     }
 
     // ============================================================================================
