@@ -107,6 +107,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -3745,11 +3746,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
       // by sending false if it's not present.
       "  window.domAutomationController.send(%d);"
       "}",
-      SecurityInterstitialPage::CMD_TEXT_FOUND,
-      SecurityInterstitialPage::CMD_TEXT_NOT_FOUND,
-      SecurityInterstitialPage::CMD_ERROR);
+      security_interstitials::CMD_TEXT_FOUND,
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_ERROR);
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rvh, command, &result));
-  EXPECT_EQ(SecurityInterstitialPage::CMD_TEXT_NOT_FOUND, result);
+  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND, result);
 }
 
 // Test that when SSL error overriding is allowed by policy (default), the
@@ -3828,7 +3829,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
   SSLBlockingPage* ssl_delegate =
       static_cast<SSLBlockingPage*>(interstitial_delegate);
   ssl_delegate->CommandReceived(
-      base::IntToString(SecurityInterstitialPage::CMD_PROCEED));
+      base::IntToString(security_interstitials::CMD_PROCEED));
   EXPECT_TRUE(interstitial);
   EXPECT_TRUE(browser()
                   ->tab_strip_model()

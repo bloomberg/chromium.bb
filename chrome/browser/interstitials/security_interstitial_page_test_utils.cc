@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -31,12 +32,12 @@ bool IsInterstitialDisplayingText(
   std::string command = base::StringPrintf(
       "var hasText = document.body.textContent.indexOf('%s') >= 0;"
       "window.domAutomationController.send(hasText ? %d : %d);",
-      text.c_str(), SecurityInterstitialPage::CMD_TEXT_FOUND,
-      SecurityInterstitialPage::CMD_TEXT_NOT_FOUND);
+      text.c_str(), security_interstitials::CMD_TEXT_FOUND,
+      security_interstitials::CMD_TEXT_NOT_FOUND);
   int result = 0;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(interstitial->GetMainFrame(),
                                                   command, &result));
-  return result == SecurityInterstitialPage::CMD_TEXT_FOUND;
+  return result == security_interstitials::CMD_TEXT_FOUND;
 }
 
 void SecurityInterstitialIDNTest::SetUpOnMainThread() {

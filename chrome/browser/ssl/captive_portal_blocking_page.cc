@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/certificate_reporting/error_reporter.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/web_contents.h"
@@ -183,7 +184,7 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   if (cert_report_helper_)
     cert_report_helper_->PopulateExtendedReportingOption(load_time_data);
   else
-    load_time_data->SetBoolean(interstitials::kDisplayCheckBox, false);
+    load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, false);
 }
 
 void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
@@ -196,7 +197,7 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
   bool command_is_num = base::StringToInt(command, &command_num);
   DCHECK(command_is_num) << command;
   // Any command other than "open the login page" is ignored.
-  if (command_num == CMD_OPEN_LOGIN) {
+  if (command_num == security_interstitials::CMD_OPEN_LOGIN) {
     RecordUMA(OPEN_LOGIN_PAGE);
     CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
   }

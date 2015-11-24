@@ -33,6 +33,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -429,7 +430,7 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SendCommand(
-      SecurityInterstitialPage::SecurityInterstitialCommands command) {
+      security_interstitials::SecurityInterstitialCommands command) {
     WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     // We use InterstitialPage::GetInterstitialPage(tab) instead of
@@ -529,7 +530,7 @@ class SafeBrowsingBlockingPageBrowserTest
     // below, and crbug.com/76460), we use SendCommand to trigger the callback
     // directly rather than using ClickAndWaitForDetach since there might not
     // be a notification to wait for.
-    SendCommand(SecurityInterstitialPage::CMD_PROCEED);
+    SendCommand(security_interstitials::CMD_PROCEED);
   }
 
   content::RenderViewHost* GetRenderViewHost() {
@@ -783,7 +784,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ProceedDisabled) {
   EXPECT_TRUE(Click("details-button"));
   EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
   EXPECT_EQ(HIDDEN, GetVisibility("final-paragraph"));
-  SendCommand(SecurityInterstitialPage::CMD_PROCEED);
+  SendCommand(security_interstitials::CMD_PROCEED);
 
   // The "proceed" command should go back instead, if proceeding is disabled.
   AssertNoInterstitial(true);

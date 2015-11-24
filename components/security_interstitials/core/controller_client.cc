@@ -13,6 +13,13 @@
 
 namespace security_interstitials {
 
+const char kBoxChecked[] = "boxchecked";
+const char kDisplayCheckBox[] = "displaycheckbox";
+const char kOptInLink[] = "optInLink";
+const char kPrivacyLinkHtml[] =
+    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
+    "return false;\" onmousedown=\"return false;\">%s</a>";
+
 ControllerClient::ControllerClient() {}
 ControllerClient::~ControllerClient() {}
 

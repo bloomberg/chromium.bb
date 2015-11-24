@@ -11,12 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/referrer.h"
+#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/url_formatter/url_formatter.h"
@@ -28,25 +27,14 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace interstitials {
-const char kBoxChecked[] = "boxchecked";
-const char kDisplayCheckBox[] = "displaycheckbox";
-const char kOptInLink[] = "optInLink";
-const char kPrivacyLinkHtml[] =
-    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
-    "return false;\" onmousedown=\"return false;\">%s</a>";
-}
-
-using content::OpenURLParams;
-using content::Referrer;
-
 SecurityInterstitialPage::SecurityInterstitialPage(
     content::WebContents* web_contents,
     const GURL& request_url)
     : web_contents_(web_contents),
       request_url_(request_url),
       interstitial_page_(NULL),
-      create_view_(true) {
+      create_view_(true),
+      controller_(new ChromeControllerClient(web_contents)) {
   // Creating interstitial_page_ without showing it leaks memory, so don't
   // create it here.
 }
@@ -110,22 +98,20 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
-void SecurityInterstitialPage::OpenUrlInCurrentTab(const GURL& url) {
-  OpenURLParams params(url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
-                       false);
-  web_contents()->OpenURL(params);
+void SecurityInterstitialPage::SetReportingPreference(bool report) {
+  controller_->SetReportingPreference(report);
 }
 
-const std::string& SecurityInterstitialPage::GetApplicationLocale() {
-  return g_browser_process->GetApplicationLocale();
+void SecurityInterstitialPage::OpenExtendedReportingPrivacyPolicy() {
+  controller_->OpenExtendedReportingPrivacyPolicy();
 }
 
-PrefService* SecurityInterstitialPage::GetPrefService() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return profile->GetPrefs();
+security_interstitials::MetricsHelper*
+SecurityInterstitialPage::metrics_helper() {
+  return controller_->metrics_helper();
 }
 
-const std::string SecurityInterstitialPage::GetExtendedReportingPrefName() {
-  return prefs::kSafeBrowsingExtendedReportingEnabled;
+void SecurityInterstitialPage::set_metrics_helper(
+    scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
+  controller_->set_metrics_helper(metrics_helper.Pass());
 }

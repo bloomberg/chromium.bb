@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
 
 #include "base/strings/string16.h"
-#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -19,17 +18,13 @@ class InterstitialPage;
 class WebContents;
 }
 
-namespace interstitials {
-// Constants used to communicate with the JavaScript.
-extern const char kBoxChecked[];
-extern const char kDisplayCheckBox[];
-extern const char kOptInLink[];
-extern const char kPrivacyLinkHtml[];
+namespace security_interstitials {
+class MetricsHelper;
 }
 
-class SecurityInterstitialPage
-    : public content::InterstitialPageDelegate,
-      public security_interstitials::ControllerClient {
+class ChromeControllerClient;
+
+class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
   SecurityInterstitialPage(content::WebContents* web_contents,
                            const GURL& url);
@@ -63,12 +58,14 @@ class SecurityInterstitialPage
   // Profile associated with |web_contents_|.
   bool IsPrefEnabled(const char* pref);
 
- protected:
-  // security_interstitials::ControllerClient overrides
-  void OpenUrlInCurrentTab(const GURL& url) override;
-  const std::string& GetApplicationLocale() override;
-  PrefService* GetPrefService() override;
-  const std::string GetExtendedReportingPrefName() override;
+  // TODO(felt): Remove these. They are temporary methods, used to pass along
+  // calls to the |controller_| for subclasses that don't yet have their own
+  // ChromeControllerClients. crbug.com/488673
+  void SetReportingPreference(bool report);
+  void OpenExtendedReportingPrivacyPolicy();
+  security_interstitials::MetricsHelper* metrics_helper();
+  void set_metrics_helper(
+      scoped_ptr<security_interstitials::MetricsHelper> metrics_helper);
 
  private:
   // The WebContents with which this interstitial page is
@@ -81,6 +78,8 @@ class SecurityInterstitialPage
   content::InterstitialPage* interstitial_page_;
   // Whether the interstitial should create a view.
   bool create_view_;
+  // For subclasses that don't have their own ChromeControllerClients yet.
+  scoped_ptr<ChromeControllerClient> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPage);
 };

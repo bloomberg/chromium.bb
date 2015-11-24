@@ -31,6 +31,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -314,30 +315,30 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
   bool retval = base::StringToInt(command, &cmd);
   DCHECK(retval);
   switch (cmd) {
-    case CMD_DONT_PROCEED: {
+    case security_interstitials::CMD_DONT_PROCEED: {
       interstitial_page()->DontProceed();
       break;
     }
-    case CMD_PROCEED: {
+    case security_interstitials::CMD_PROCEED: {
       if (danger_overridable_) {
         interstitial_page()->Proceed();
       }
       break;
     }
-    case CMD_DO_REPORT: {
+    case security_interstitials::CMD_DO_REPORT: {
       SetReportingPreference(true);
       break;
     }
-    case CMD_DONT_REPORT: {
+    case security_interstitials::CMD_DONT_REPORT: {
       SetReportingPreference(false);
       break;
     }
-    case CMD_SHOW_MORE_SECTION: {
+    case security_interstitials::CMD_SHOW_MORE_SECTION: {
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     }
-    case CMD_OPEN_HELP_CENTER: {
+    case security_interstitials::CMD_OPEN_HELP_CENTER: {
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
       content::NavigationController::LoadURLParams help_page_params(
@@ -346,18 +347,18 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       web_contents()->GetController().LoadURLWithParams(help_page_params);
       break;
     }
-    case CMD_RELOAD: {
+    case security_interstitials::CMD_RELOAD: {
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::RELOAD);
       // The interstitial can't refresh itself.
       web_contents()->GetController().Reload(true);
       break;
     }
-    case CMD_OPEN_REPORTING_PRIVACY:
+    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
       OpenExtendedReportingPrivacyPolicy();
       break;
-    case CMD_OPEN_DATE_SETTINGS:
-    case CMD_OPEN_DIAGNOSTIC:
+    case security_interstitials::CMD_OPEN_DATE_SETTINGS:
+    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
       // Commands not supported by the SSL interstitial.
       NOTREACHED() << "Unexpected command: " << command;
   }

@@ -46,6 +46,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/variations/variations_associated_data.h"
@@ -2319,9 +2320,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetMainFrame()->GetRenderViewHost();
   int result = -1;
-  std::string javascript = base::StringPrintf(
-      "window.domAutomationController.send(%d);",
-      SecurityInterstitialPage::CMD_PROCEED);
+  std::string javascript =
+      base::StringPrintf("window.domAutomationController.send(%d);",
+                         security_interstitials::CMD_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
               interstitial_rvh, javascript, &result));
   // The above will hang without the fix.
@@ -2354,9 +2355,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetMainFrame()->GetRenderViewHost();
   int result = -1;
-  std::string javascript = base::StringPrintf(
-      "window.domAutomationController.send(%d);",
-      SecurityInterstitialPage::CMD_DONT_PROCEED);
+  std::string javascript =
+      base::StringPrintf("window.domAutomationController.send(%d);",
+                         security_interstitials::CMD_DONT_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       interstitial_rvh, javascript, &result));
   // The above will hang without the fix.

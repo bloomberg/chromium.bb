@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -326,32 +327,32 @@ void BadClockBlockingPage::CommandReceived(const std::string& command) {
   bool retval = base::StringToInt(command, &cmd);
   DCHECK(retval);
   switch (cmd) {
-    case CMD_DONT_PROCEED:
+    case security_interstitials::CMD_DONT_PROCEED:
       interstitial_page()->DontProceed();
       break;
-    case CMD_DO_REPORT:
+    case security_interstitials::CMD_DO_REPORT:
       SetReportingPreference(true);
       break;
-    case CMD_DONT_REPORT:
+    case security_interstitials::CMD_DONT_REPORT:
       SetReportingPreference(false);
       break;
-    case CMD_SHOW_MORE_SECTION:
+    case security_interstitials::CMD_SHOW_MORE_SECTION:
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
-    case CMD_OPEN_DATE_SETTINGS:
+    case security_interstitials::CMD_OPEN_DATE_SETTINGS:
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::OPEN_TIME_SETTINGS);
       content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
                                        base::Bind(&LaunchDateAndTimeSettings));
       break;
-    case CMD_OPEN_REPORTING_PRIVACY:
+    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
       OpenExtendedReportingPrivacyPolicy();
       break;
-    case CMD_PROCEED:
-    case CMD_OPEN_HELP_CENTER:
-    case CMD_RELOAD:
-    case CMD_OPEN_DIAGNOSTIC:
+    case security_interstitials::CMD_PROCEED:
+    case security_interstitials::CMD_OPEN_HELP_CENTER:
+    case security_interstitials::CMD_RELOAD:
+    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
       // Not supported for the bad clock interstitial.
       NOTREACHED() << "Unexpected command: " << command;
   }

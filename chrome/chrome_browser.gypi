@@ -573,6 +573,8 @@
       'browser/interests/interests_fetcher.h',
       'browser/internal_auth.cc',
       'browser/internal_auth.h',
+      'browser/interstitials/chrome_controller_client.cc',
+      'browser/interstitials/chrome_controller_client.h',
       'browser/interstitials/chrome_metrics_helper.cc',
       'browser/interstitials/chrome_metrics_helper.h',
       'browser/interstitials/security_interstitial_page.cc',

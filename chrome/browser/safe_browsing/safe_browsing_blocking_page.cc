@@ -33,6 +33,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -238,17 +239,17 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
   DCHECK(retval) << page_cmd;
 
   switch (command) {
-    case CMD_DO_REPORT: {
+    case security_interstitials::CMD_DO_REPORT: {
       // User enabled SB Extended Reporting via the checkbox.
       SetReportingPreference(true);
       break;
     }
-    case CMD_DONT_REPORT: {
+    case security_interstitials::CMD_DONT_REPORT: {
       // User disabled SB Extended Reporting via the checkbox.
       SetReportingPreference(false);
       break;
     }
-    case CMD_OPEN_HELP_CENTER: {
+    case security_interstitials::CMD_OPEN_HELP_CENTER: {
       // User pressed "Learn more".
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
@@ -265,12 +266,12 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       web_contents()->OpenURL(params);
       break;
     }
-    case CMD_OPEN_REPORTING_PRIVACY: {
+    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY: {
       // User pressed on the SB Extended Reporting "privacy policy" link.
       OpenExtendedReportingPrivacyPolicy();
       break;
     }
-    case CMD_PROCEED: {
+    case security_interstitials::CMD_PROCEED: {
       // User pressed on the button to proceed.
       if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
         metrics_helper()->RecordUserDecision(
@@ -281,7 +282,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       }
       // If the user can't proceed, fall through to CMD_DONT_PROCEED.
     }
-    case CMD_DONT_PROCEED: {
+    case security_interstitials::CMD_DONT_PROCEED: {
       // User pressed on the button to return to safety.
       // Don't record the user action here because there are other ways of
       // triggering DontProceed, like clicking the back button.
@@ -306,7 +307,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       }
       break;
     }
-    case CMD_OPEN_DIAGNOSTIC: {
+    case security_interstitials::CMD_OPEN_DIAGNOSTIC: {
       // User wants to see why this page is blocked.
       const UnsafeResource& unsafe_resource = unsafe_resources_[0];
       std::string bad_url_spec = unsafe_resource.url.spec();
@@ -328,13 +329,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       web_contents()->OpenURL(params);
       break;
     }
-    case CMD_SHOW_MORE_SECTION: {
+    case security_interstitials::CMD_SHOW_MORE_SECTION: {
       // User has opened up the hidden text.
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     }
-    case CMD_REPORT_PHISHING_ERROR: {
+    case security_interstitials::CMD_REPORT_PHISHING_ERROR: {
       // User wants to report a phishing error.
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::REPORT_PHISHING_ERROR);
@@ -632,19 +633,20 @@ void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
   // Only show checkbox if !(HTTPS || incognito-mode).
   const bool show = CanShowThreatDetailsOption();
-  load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
+  load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, show);
   if (!show)
     return;
 
   const std::string privacy_link = base::StringPrintf(
-      interstitials::kPrivacyLinkHtml, CMD_OPEN_REPORTING_PRIVACY,
+      security_interstitials::kPrivacyLinkHtml,
+      security_interstitials::CMD_OPEN_REPORTING_PRIVACY,
       l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
   load_time_data->SetString(
-      interstitials::kOptInLink,
+      security_interstitials::kOptInLink,
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                  base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(
-      interstitials::kBoxChecked,
+      security_interstitials::kBoxChecked,
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
 }
 

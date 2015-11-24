@@ -15,6 +15,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
@@ -55,21 +56,21 @@ void CertReportHelper::PopulateExtendedReportingOption(
   // by policy.
   const bool show = ShouldShowCertificateReporterCheckbox();
 
-  load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
+  load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, show);
   if (!show)
     return;
 
   load_time_data->SetBoolean(
-      interstitials::kBoxChecked,
+      security_interstitials::kBoxChecked,
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
 
   const std::string privacy_link = base::StringPrintf(
-      interstitials::kPrivacyLinkHtml,
-      SecurityInterstitialPage::CMD_OPEN_REPORTING_PRIVACY,
+      security_interstitials::kPrivacyLinkHtml,
+      security_interstitials::CMD_OPEN_REPORTING_PRIVACY,
       l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
 
   load_time_data->SetString(
-      interstitials::kOptInLink,
+      security_interstitials::kOptInLink,
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                  base::UTF8ToUTF16(privacy_link)));
 }
