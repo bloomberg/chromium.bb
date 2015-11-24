@@ -272,7 +272,9 @@ class GPU_EXPORT Texture {
     FaceInfo();
     ~FaceInfo();
 
+    // This is relative to base_level and max_level of a texture.
     GLsizei num_mip_levels;
+    // This contains slots for all levels starting at 0.
     std::vector<LevelInfo> level_infos;
   };
 
@@ -362,10 +364,11 @@ class GPU_EXPORT Texture {
                                   GLenum format,
                                   GLenum type);
 
-  // Returns true if texture mip level is complete relative to first level.
-  static bool TextureMipComplete(const Texture::LevelInfo& level0_face,
+  // Returns true if texture mip level is complete relative to base level.
+  // Note that level_diff = level - base_level.
+  static bool TextureMipComplete(const Texture::LevelInfo& base_level_face,
                                  GLenum target,
-                                 GLint level,
+                                 GLint level_diff,
                                  GLenum internal_format,
                                  GLsizei width,
                                  GLsizei height,
@@ -417,6 +420,10 @@ class GPU_EXPORT Texture {
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
+
+  void UpdateBaseLevel(GLint base_level);
+  void UpdateMaxLevel(GLint max_level);
+  void UpdateNumMipLevels();
 
   MailboxManager* mailbox_manager_;
 

@@ -146,6 +146,8 @@
          wake_up_gpu_before_drawing)                         \
   GPU_OP(UNBIND_EGL_CONTEXT_TO_FLUSH_DRIVER_CACHES,          \
          unbind_egl_context_to_flush_driver_caches)          \
+  GPU_OP(SET_ZERO_LEVEL_BEFORE_GENERATING_MIPMAP,            \
+         set_zero_level_before_generating_mipmap)            \
 
 namespace gpu {
 

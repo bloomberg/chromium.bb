@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.32",
+  "version": "8.33",
   "entries": [
     {
       "id": 1,
@@ -1595,6 +1595,17 @@ LONG_STRING_CONST(
       "features": [
         "disable_overlay_ca_layers",
         "disable_post_sub_buffers_for_onscreen_surfaces"
+      ]
+    },
+    {
+      "id": 136,
+      "description": "glGenerateMipmap fails if the zero texture level is not set on some Mac drivers",
+      "cr_bugs": [560499],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "set_zero_level_before_generating_mipmap"
       ]
     }
   ]

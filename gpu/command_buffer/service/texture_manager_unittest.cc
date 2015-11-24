@@ -47,12 +47,12 @@ class TextureTestHelper {
 
 class TextureManagerTest : public GpuServiceTest {
  public:
-  static const GLint kMaxTextureSize = 16;
+  static const GLint kMaxTextureSize = 32;
   static const GLint kMaxCubeMapTextureSize = 8;
-  static const GLint kMaxRectangleTextureSize = 16;
-  static const GLint kMaxExternalTextureSize = 16;
+  static const GLint kMaxRectangleTextureSize = 32;
+  static const GLint kMaxExternalTextureSize = 32;
   static const GLint kMax3DTextureSize = 256;
-  static const GLint kMax2dLevels = 5;
+  static const GLint kMax2dLevels = 6;
   static const GLint kMaxCubeMapLevels = 4;
   static const GLint kMaxExternalLevels = 1;
   static const bool kUseDefaultTextures = false;
@@ -465,11 +465,11 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
 
 class TextureTestBase : public GpuServiceTest {
  public:
-  static const GLint kMaxTextureSize = 16;
+  static const GLint kMaxTextureSize = 32;
   static const GLint kMaxCubeMapTextureSize = 8;
-  static const GLint kMaxRectangleTextureSize = 16;
+  static const GLint kMaxRectangleTextureSize = 32;
   static const GLint kMax3DTextureSize = 256;
-  static const GLint kMax2dLevels = 5;
+  static const GLint kMax2dLevels = 6;
   static const GLint kMaxCubeMapLevels = 4;
   static const GLuint kClient1Id = 1;
   static const GLuint kService1Id = 11;
@@ -682,6 +682,55 @@ TEST_F(TextureTest, POT2D) {
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
+}
+
+TEST_F(TextureTest, BaseLevel) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  Texture* texture = texture_ref_->texture();
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
+  // Check Setting level 1 to POT
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR, GL_NO_ERROR);
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 1, GL_NO_ERROR);
+  EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
+}
+
+TEST_F(TextureTest, BaseLevelMaxLevel) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  Texture* texture = texture_ref_->texture();
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
+  // Set up level 2, 3, 4.
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 2, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 8));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 3, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 4, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR,
+      GL_NO_ERROR);
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_MAG_FILTER, GL_LINEAR, GL_NO_ERROR);
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 2, GL_NO_ERROR);
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_MAX_LEVEL, 4, GL_NO_ERROR);
+  EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_FALSE(manager_->HaveUnrenderableTextures());
+  SetParameter(
+      texture_ref_.get(), GL_TEXTURE_BASE_LEVEL, 0, GL_NO_ERROR);
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_TRUE(manager_->HaveUnrenderableTextures());
 }
 
 TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {

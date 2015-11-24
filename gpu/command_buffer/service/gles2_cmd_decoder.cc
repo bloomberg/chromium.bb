@@ -4999,7 +4999,36 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   if (workarounds().set_texture_filter_before_generating_mipmap) {
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
   }
+
+  // Workaround for Mac driver bug. If the base level is non-zero but the zero
+  // level of a texture has not been set glGenerateMipmaps sets the entire mip
+  // chain to opaque black. If the zero level is set at all, however, the mip
+  // chain is properly generated from the base level.
+  bool texture_zero_level_set = false;
+  GLenum type = 0;
+  GLenum internal_format = 0;
+  GLenum format = 0;
+  if (workarounds().set_zero_level_before_generating_mipmap &&
+      target == GL_TEXTURE_2D) {
+    Texture* tex = texture_ref->texture();
+    if (tex && tex->base_level() != 0 &&
+        !tex->GetLevelType(target, 0, &type, &internal_format) &&
+        tex->GetLevelType(target, tex->base_level(), &type, &internal_format)) {
+      format = TextureManager::ExtractFormatFromStorageFormat(internal_format);
+      glTexImage2D(target, 0, internal_format, 1, 1, 0, format, type, nullptr);
+      texture_zero_level_set = true;
+    }
+  }
+
   glGenerateMipmapEXT(target);
+
+  if (texture_zero_level_set) {
+    // This may have some unwanted side effects, but we expect command buffer
+    // validation to prevent you from doing anything weird with the texture
+    // after this, like calling texSubImage2D sucessfully.
+    glTexImage2D(target, 0, internal_format, 0, 0, 0, format, type, nullptr);
+  }
+
   if (workarounds().set_texture_filter_before_generating_mipmap) {
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
                     texture_ref->texture()->min_filter());

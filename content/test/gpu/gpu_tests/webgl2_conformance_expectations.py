@@ -92,7 +92,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         bug=295792)
@@ -119,6 +118,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
     self.Skip('conformance2/transform_feedback/transform_feedback.html',
         ['win'], bug=483282)
