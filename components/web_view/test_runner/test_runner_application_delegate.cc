@@ -66,7 +66,8 @@ void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
     NOTREACHED() << "Test environment could not be properly set up for blink.";
   }
   app_ = app;
-  mus::CreateSingleWindowTreeHost(app_, this, &host_, nullptr, nullptr);
+  mus::CreateSingleWindowTreeHost(app_, mus::mojom::WindowTreeHostClientPtr(),
+                                  this, &host_, nullptr, nullptr);
 }
 
 bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(

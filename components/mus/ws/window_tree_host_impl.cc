@@ -30,9 +30,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      focus_controller_(new FocusController(this)),
       window_manager_(window_manager.Pass()) {
-  focus_controller_->AddObserver(this);
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -151,6 +149,10 @@ void WindowTreeHostImpl::RemoveActivationParent(uint32_t window_id) {
     activation_parents_.erase(window->id());
 }
 
+void WindowTreeHostImpl::ActivateNextWindow() {
+  focus_controller_->ActivateNextWindow();
+}
+
 void WindowTreeHostImpl::OnClientClosed() {
   // |display_manager_.reset()| destroys the display-manager first, and then
   // sets |display_manager_| to nullptr. However, destroying |display_manager_|
@@ -182,6 +184,8 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
         ServerWindow::Properties()));
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
     root_->SetVisible(true);
+    focus_controller_.reset(new FocusController(this, root_.get()));
+    focus_controller_->AddObserver(this);
     if (delegate_)
       delegate_->OnDisplayInitialized();
     event_dispatcher_.set_root(root_.get());

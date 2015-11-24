@@ -98,6 +98,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(uint32_t window_id) override;
   void RemoveActivationParent(uint32_t window_id) override;
+  void ActivateNextWindow() override;
 
  private:
   void OnClientClosed();

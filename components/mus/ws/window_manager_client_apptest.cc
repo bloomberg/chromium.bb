@@ -118,10 +118,8 @@ class TreeSizeMatchesObserver : public WindowObserver {
 };
 
 // Wait until |window| has |tree_size| descendants; returns false on timeout.
-// The
-// count includes |window|. For example, if you want to wait for |window| to
-// have
-// a single child, use a |tree_size| of 2.
+// The count includes |window|. For example, if you want to wait for |window| to
+// have a single child, use a |tree_size| of 2.
 bool WaitForTreeSizeToMatch(Window* window, size_t tree_size) {
   TreeSizeMatchesObserver observer(window, tree_size);
   return observer.IsTreeCorrectSize() ||
@@ -744,6 +742,26 @@ TEST_F(WindowServerTest, Activation) {
             ValidIndexOf(parent->children(), child1));
   EXPECT_GT(ValidIndexOf(parent->children(), child3),
             ValidIndexOf(parent->children(), child1));
+}
+
+TEST_F(WindowServerTest, ActivationNext) {
+  Window* parent = window_manager()->GetRoot();
+  Window* child1 = NewVisibleWindow(parent, window_manager());
+  Window* child2 = NewVisibleWindow(parent, window_manager());
+  Window* child3 = NewVisibleWindow(parent, window_manager());
+
+  WindowTreeConnection* embedded1 = Embed(child1).connection;
+  ASSERT_NE(nullptr, embedded1);
+
+  NewVisibleWindow(embedded1->GetRoot(), embedded1);
+  WaitForTreeSizeToMatch(parent, 5);
+
+  Window* expecteds[] = { child1, child2, child3, child1, nullptr };
+  for (size_t index = 0; expecteds[index]; ++index) {
+    host()->ActivateNextWindow();
+    ASSERT_TRUE(WaitForOrderChange(window_manager(), expecteds[index]))
+        << " Failure at " << index;
+  }
 }
 
 namespace {

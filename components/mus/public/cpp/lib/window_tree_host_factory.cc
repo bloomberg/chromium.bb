@@ -27,15 +27,15 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
 
 void CreateSingleWindowTreeHost(
     mojo::ApplicationImpl* app,
+    mojom::WindowTreeHostClientPtr host_client,
     WindowTreeDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
     mojom::WindowManagerPtr window_manager,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
   app->ConnectToService("mojo:mus", &factory);
-  CreateWindowTreeHost(factory.get(), mojom::WindowTreeHostClientPtr(),
-                       delegate, host, window_manager.Pass(),
-                       window_manager_delegate);
+  CreateWindowTreeHost(factory.get(), host_client.Pass(), delegate, host,
+                       window_manager.Pass(), window_manager_delegate);
 }
 
 }  // namespace mus

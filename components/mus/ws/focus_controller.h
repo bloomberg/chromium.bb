@@ -28,7 +28,7 @@ enum class FocusControllerChangeSource {
 // state of the focused window changes.
 class FocusController : public ServerWindowDrawnTrackerObserver {
  public:
-  explicit FocusController(FocusControllerDelegate* delegate);
+  FocusController(FocusControllerDelegate* delegate, ServerWindow* root);
   ~FocusController() override;
 
   // Sets the focused window. Does nothing if |window| is currently focused.
@@ -36,13 +36,21 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   void SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
+  // Moves activation to the next activatable window.
+  void ActivateNextWindow();
+
   void AddObserver(FocusControllerObserver* observer);
   void RemoveObserver(FocusControllerObserver* observer);
 
  private:
+  void SetActiveWindow(ServerWindow* window);
+
   // Returns whether |window| can be focused or activated.
   bool CanBeFocused(ServerWindow* window) const;
   bool CanBeActivated(ServerWindow* window) const;
+
+  ServerWindow* GetNextActivatableWindow(ServerWindow* window) const;
+  ServerWindow* FindNextWindowInTree(ServerWindow* window) const;
 
   // Returns the closest activatable ancestor of |window|. Returns nullptr if
   // there is no such ancestor.
@@ -59,6 +67,7 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
 
   FocusControllerDelegate* delegate_;
 
+  ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* active_window_;
 

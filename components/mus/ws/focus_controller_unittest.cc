@@ -73,7 +73,7 @@ TEST(FocusControllerTest, Basic) {
   child.Add(&child_child);
 
   TestFocusControllerObserver focus_observer;
-  FocusController focus_controller(&focus_observer);
+  FocusController focus_controller(&focus_observer, &root);
   focus_controller.AddObserver(&focus_observer);
 
   focus_controller.SetFocusedWindow(&child_child);

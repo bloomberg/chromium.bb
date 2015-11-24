@@ -15,6 +15,7 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_tree.h"
@@ -371,8 +372,9 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mus::CreateSingleWindowTreeHost(application_impl(), this, &host_, nullptr,
-                                    nullptr);
+    mus::CreateSingleWindowTreeHost(application_impl(),
+                                    mus::mojom::WindowTreeHostClientPtr(), this,
+                                    &host_, nullptr, nullptr);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);

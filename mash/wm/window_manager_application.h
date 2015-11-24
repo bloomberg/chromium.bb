@@ -38,6 +38,7 @@ class AuraInit;
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
       public mus::WindowObserver,
+      public mus::mojom::WindowTreeHostClient,
       public mus::WindowTreeDelegate,
       public mojo::InterfaceFactory<mus::mojom::WindowManager>,
       // TODO(sky): make WindowManagerImpl implement this.
@@ -57,10 +58,15 @@ class WindowManagerApplication
   mojo::ApplicationImpl* app() { return app_; }
 
  private:
+  void AddAccelerators();
+
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
+
+  // WindowTreeHostClient:
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
@@ -92,6 +98,7 @@ class WindowManagerApplication
   mojo::TracingImpl tracing_;
 
   mus::mojom::WindowTreeHostPtr host_;
+  mojo::Binding<mus::mojom::WindowTreeHostClient> host_client_binding_;
 
   scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
