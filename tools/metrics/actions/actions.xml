@@ -8723,7 +8723,16 @@ should be able to be added at any place in this file.
 <action name="Notifications.Persistent.Clicked">
   <owner>peter@chromium.org</owner>
   <description>
-    Recorded when a persistent notification gets clicked on by the user.
+    Recorded when the main body of a persistent notification gets clicked on by
+    the user (does not include action buttons).
+  </description>
+</action>
+
+<action name="Notifications.Persistent.ClickedActionButton">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when one of a persistent notification's action buttons gets clicked
+    on by the user.
   </description>
 </action>
 

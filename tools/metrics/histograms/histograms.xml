@@ -29816,6 +29816,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.PersistentNotificationActionCount"
+    units="buttons">
+  <owner>johnme@chromium.org</owner>
+  <summary>
+    The number of action buttons the developer provided for a persistent Web
+    Notification. Logged whenever showNotification is called.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.PersistentNotificationDataDeleted"
     enum="BooleanSuccess">
   <owner>peter@chromium.org</owner>

@@ -118,8 +118,13 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     return;
   }
 
-  content::RecordAction(
-      base::UserMetricsAction("Notifications.Persistent.Clicked"));
+  if (action_index == -1) {
+    content::RecordAction(base::UserMetricsAction(
+        "Notifications.Persistent.Clicked"));
+  } else {
+    content::RecordAction(base::UserMetricsAction(
+        "Notifications.Persistent.ClickedActionButton"));
+  }
 
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
