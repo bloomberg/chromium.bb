@@ -385,7 +385,13 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   std::string notification_id_;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadFile DISABLED_DownloadFile
+#else
+#define MAYBE_DownloadFile DownloadFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadFile) {
   CreateDownload();
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -437,7 +443,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadDangerousFile DISABLED_DownloadDangerousFile
+#else
+#define MAYBE_DownloadDangerousFile DownloadDangerousFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadDangerousFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/dangerous/dangerous.swf"));
 
@@ -488,7 +500,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   EXPECT_TRUE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DiscardDangerousFile DISABLED_DiscardDangerousFile
+#else
+#define MAYBE_DiscardDangerousFile DiscardDangerousFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DiscardDangerousFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/dangerous/dangerous.swf"));
 
@@ -537,7 +555,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
   EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadImageFile DISABLED_DownloadImageFile
+#else
+#define MAYBE_DownloadImageFile DownloadImageFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadImageFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/image-octet-stream.png"));
 
@@ -559,8 +583,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
   }
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_CloseNotificationAfterDownload DISABLED_CloseNotificationAfterDownload
+#else
+#define MAYBE_CloseNotificationAfterDownload CloseNotificationAfterDownload
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       CloseNotificationAfterDownload) {
+                       MAYBE_CloseNotificationAfterDownload) {
   CreateDownload();
 
   // Requests to complete the download.
@@ -592,8 +622,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(content::DownloadItem::COMPLETE, downloads[0]->GetState());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_CloseNotificationWhileDownloading DISABLED_CloseNotificationWhileDownloading
+#else
+#define MAYBE_CloseNotificationWhileDownloading CloseNotificationWhileDownloading
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       CloseNotificationWhileDownloading) {
+                       MAYBE_CloseNotificationWhileDownloading) {
   CreateDownload();
 
   // Closes the notification.
@@ -632,7 +668,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_InterruptDownload DISABLED_InterruptDownload
+#else
+#define MAYBE_InterruptDownload InterruptDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_InterruptDownload) {
   CreateDownload();
 
   // Installs observers before requesting.
@@ -672,8 +714,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
             GetNotification(notification_id())->type());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_InterruptDownloadAfterClosingNotification DISABLED_InterruptDownloadAfterClosingNotification
+#else
+#define MAYBE_InterruptDownloadAfterClosingNotification InterruptDownloadAfterClosingNotification
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       InterruptDownloadAfterClosingNotification) {
+                       MAYBE_InterruptDownloadAfterClosingNotification) {
   CreateDownload();
 
   // Closes the notification.
@@ -712,7 +760,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadRemoved DISABLED_DownloadRemoved
+#else
+#define MAYBE_DownloadRemoved DownloadRemoved
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadRemoved) {
   CreateDownload();
 
   NotificationRemoveObserver notification_close_observer;
@@ -728,7 +782,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
   EXPECT_EQ(0u, downloads.size());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadMultipleFiles DISABLED_DownloadMultipleFiles
+#else
+#define MAYBE_DownloadMultipleFiles DownloadMultipleFiles
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   GURL url1(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
   GURL url2(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
 
@@ -860,8 +920,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
             GetNotification(notification_id2)->type());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadMultipleFilesOneByOne DISABLED_DownloadMultipleFilesOneByOne
+#else
+#define MAYBE_DownloadMultipleFilesOneByOne DownloadMultipleFilesOneByOne
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DownloadMultipleFilesOneByOne) {
+                       MAYBE_DownloadMultipleFilesOneByOne) {
   CreateDownload();
   content::DownloadItem* first_download_item = download_item();
   content::DownloadItem* second_download_item = nullptr;
@@ -937,7 +1003,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(2u, GetMessageCenter()->GetVisibleNotifications().size());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_CancelDownload DISABLED_CancelDownload
+#else
+#define MAYBE_CancelDownload CancelDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_CancelDownload) {
   CreateDownload();
 
   // Opens the message center.
@@ -956,8 +1028,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
   EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadCancelledByUserExternally DISABLED_DownloadCancelledByUserExternally
+#else
+#define MAYBE_DownloadCancelledByUserExternally DownloadCancelledByUserExternally
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DownloadCancelledByUserExternally) {
+                       MAYBE_DownloadCancelledByUserExternally) {
   CreateDownload();
 
   // Cancels the notification by clicking the "cancel' button.
@@ -973,8 +1051,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadCancelledExternally DISABLED_DownloadCancelledExternally
+#else
+#define MAYBE_DownloadCancelledExternally DownloadCancelledExternally
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DownloadCancelledExternally) {
+                       MAYBE_DownloadCancelledExternally) {
   CreateDownload();
 
   // Cancels the notification by clicking the "cancel' button.
@@ -990,7 +1074,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_IncognitoDownloadFile DISABLED_IncognitoDownloadFile
+#else
+#define MAYBE_IncognitoDownloadFile IncognitoDownloadFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
 
   // Starts an incognito download.
@@ -1039,8 +1129,14 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   chrome::CloseWindow(incognito_browser());
 }
 
+// TODO(yoshiki): Disabled due to crbug.com/560329
+#if defined(OS_CHROMEOS)
+#define MAYBE_SimultaneousIncognitoAndNormalDownloads DISABLED_SimultaneousIncognitoAndNormalDownloads
+#else
+#define MAYBE_SimultaneousIncognitoAndNormalDownloads SimultaneousIncognitoAndNormalDownloads
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       SimultaneousIncognitoAndNormalDownloads) {
+                       MAYBE_SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
 
   GURL url_incognito(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
