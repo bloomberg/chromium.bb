@@ -27,11 +27,7 @@
 // https://url.spec.whatwg.org/#url
 
 [
-    // TODO(philipj): There should only be one constructor:
-    // Constructor(USVString url, optional USVString base)
-    Constructor(USVString url),
-    Constructor(USVString url, USVString base),
-    Constructor(USVString url, URL base),
+    Constructor(USVString url, optional USVString base),
     Exposed=(Window,Worker),
     ImplementedAs=DOMURL,
     RaisesException=Constructor,

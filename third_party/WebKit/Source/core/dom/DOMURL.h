@@ -52,11 +52,6 @@ public:
     {
         return new DOMURL(url, KURL(KURL(), base), exceptionState);
     }
-    static DOMURL* create(const String& url, DOMURL* base, ExceptionState& exceptionState)
-    {
-        ASSERT(base);
-        return new DOMURL(url, base->m_url, exceptionState);
-    }
 
     static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
     static void revokeObjectURL(ExecutionContext*, const String&);
