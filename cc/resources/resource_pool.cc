@@ -106,7 +106,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       continue;
 
     // Transfer resource to |in_use_resources_|.
-    in_use_resources_.set(resource->id(), it->Pass());
+    in_use_resources_[resource->id()] = std::move(*it);
     unused_resources_.erase(it);
     in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
         resource->size(), resource->format());
@@ -130,7 +130,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
   ++total_resource_count_;
 
   Resource* resource = pool_resource.get();
-  in_use_resources_.set(resource->id(), std::move(pool_resource));
+  in_use_resources_[resource->id()] = std::move(pool_resource);
   in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
       resource->size(), resource->format());
   return resource;
@@ -151,7 +151,7 @@ Resource* ResourcePool::TryAcquireResourceWithContentId(uint64_t content_id) {
   DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
   // Transfer resource to |in_use_resources_|.
-  in_use_resources_.set(resource->id(), it->Pass());
+  in_use_resources_[resource->id()] = std::move(*it);
   unused_resources_.erase(it);
   in_use_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
       resource->size(), resource->format());
@@ -162,12 +162,13 @@ void ResourcePool::ReleaseResource(Resource* resource, uint64_t content_id) {
   auto it = in_use_resources_.find(resource->id());
   DCHECK(it != in_use_resources_.end());
 
-  PoolResource* pool_resource = it->second;
+  PoolResource* pool_resource = it->second.get();
   pool_resource->set_content_id(content_id);
   pool_resource->set_last_usage(base::TimeTicks::Now());
 
   // Transfer resource to |busy_resources_|.
-  busy_resources_.push_front(in_use_resources_.take_and_erase(it));
+  busy_resources_.push_front(std::move(it->second));
+  in_use_resources_.erase(it);
   in_use_memory_usage_bytes_ -= ResourceUtil::UncheckedSizeInBytes<size_t>(
       pool_resource->size(), pool_resource->format());
 

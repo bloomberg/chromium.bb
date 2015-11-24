@@ -6,8 +6,8 @@
 #define CC_RESOURCES_RESOURCE_POOL_H_
 
 #include <deque>
+#include <map>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
@@ -120,8 +120,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 
-  using ResourceMap = base::ScopedPtrMap<ResourceId, scoped_ptr<PoolResource>>;
-  ResourceMap in_use_resources_;
+  std::map<ResourceId, scoped_ptr<PoolResource>> in_use_resources_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool evict_expired_resources_pending_;
