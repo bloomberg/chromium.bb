@@ -356,8 +356,7 @@ AwContentBrowserClient::CreateQuotaPermissionContext() {
 }
 
 void AwContentBrowserClient::AllowCertificateError(
-    int render_process_id,
-    int render_frame_id,
+    content::WebContents* web_contents,
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -368,7 +367,7 @@ void AwContentBrowserClient::AllowCertificateError(
     const base::Callback<void(bool)>& callback,
     content::CertificateRequestResultType* result) {
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(render_process_id, render_frame_id);
+      AwContentsClientBridgeBase::FromWebContents(web_contents);
   bool cancel_request = true;
   if (client)
     client->AllowCertificateError(cert_error,

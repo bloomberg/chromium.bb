@@ -25,6 +25,7 @@ namespace content {
 class ResourceDispatcherHostImpl;
 class SSLCertErrorHandler;
 class SSLManager;
+class WebContents;
 
 // An SSLErrorHandler carries information from the IO thread to the UI thread
 // and is dispatched to the appropriate SSLManager when it arrives on the
@@ -65,7 +66,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // this error.
   //
   // Call on UI thread.
-  void Dispatch();
+  void Dispatch(const base::Callback<WebContents*(void)>& web_contents_getter);
 
   // Available on either thread.
   const GURL& request_url() const { return request_url_; }
@@ -96,8 +97,9 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // call this.
   void TakeNoAction();
 
-  int render_process_id() const { return render_process_id_; }
-  int render_frame_id() const { return render_frame_id_; }
+  // Returns the manager associated with this SSLErrorHandler.
+  // Should only be accessed on the UI thread.
+  SSLManager* GetManager() const;
 
  protected:
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
@@ -105,9 +107,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Construct on the IO thread.
   SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                   ResourceType resource_type,
-                  const GURL& url,
-                  int render_process_id,
-                  int render_frame_id);
+                  const GURL& url);
 
   virtual ~SSLErrorHandler();
 
@@ -136,11 +136,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Derefs this instance.
   // Call on the IO thread.
   void CompleteTakeNoAction();
-
-  // We use these members to find the correct SSLManager when we arrive on
-  // the UI thread.
-  int render_process_id_;
-  int render_frame_id_;
 
   // The URL that we requested.
   // This read-only member can be accessed on any thread.

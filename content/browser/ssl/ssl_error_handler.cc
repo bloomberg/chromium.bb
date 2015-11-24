@@ -20,13 +20,9 @@ namespace content {
 
 SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                                  ResourceType resource_type,
-                                 const GURL& url,
-                                 int render_process_id,
-                                 int render_frame_id)
+                                 const GURL& url)
     : manager_(NULL),
       delegate_(delegate),
-      render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
       request_url_(url),
       resource_type_(resource_type),
       request_has_been_notified_(false) {
@@ -55,13 +51,11 @@ SSLCertErrorHandler* SSLErrorHandler::AsSSLCertErrorHandler() {
   return NULL;
 }
 
-void SSLErrorHandler::Dispatch() {
+void SSLErrorHandler::Dispatch(
+    const base::Callback<WebContents*(void)>& web_contents_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebContents* web_contents = NULL;
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  web_contents = WebContents::FromRenderFrameHost(render_frame_host);
+  WebContents* web_contents = web_contents_getter.Run();
 
   if (!web_contents) {
     // We arrived on the UI thread, but the tab we're looking for is no longer
@@ -114,6 +108,11 @@ void SSLErrorHandler::TakeNoAction() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SSLErrorHandler::CompleteTakeNoAction, this));
+}
+
+SSLManager* SSLErrorHandler::GetManager() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return manager_;
 }
 
 void SSLErrorHandler::CompleteCancelRequest(int error) {

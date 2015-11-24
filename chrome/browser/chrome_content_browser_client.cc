@@ -1963,8 +1963,7 @@ ChromeContentBrowserClient::GetTemporaryStorageEvictionPolicy(
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(
-    int render_process_id,
-    int render_frame_id,
+    content::WebContents* web_contents,
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -1974,6 +1973,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     bool expired_previous_decision,
     const base::Callback<void(bool)>& callback,
     content::CertificateRequestResultType* result) {
+  DCHECK(web_contents);
   if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
@@ -1984,16 +1984,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   // If the tab is being prerendered, cancel the prerender and the request.
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
-  if (!tab) {
-    NOTREACHED();
-    return;
-  }
-
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(tab);
+      prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
     *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
@@ -2016,8 +2008,9 @@ void ChromeContentBrowserClient::AllowCertificateError(
       new SafeBrowsingSSLCertReporter(safe_browsing_service
                                           ? safe_browsing_service->ui_manager()
                                           : nullptr));
-  SSLErrorHandler::HandleSSLError(tab, cert_error, ssl_info, request_url,
-                                  options_mask, cert_reporter.Pass(), callback);
+  SSLErrorHandler::HandleSSLError(web_contents, cert_error, ssl_info,
+                                  request_url, options_mask,
+                                  cert_reporter.Pass(), callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

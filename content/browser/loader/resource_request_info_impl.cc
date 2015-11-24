@@ -4,14 +4,33 @@
 
 #include "content/browser/loader/resource_request_info_impl.h"
 
+#include "base/command_line.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/net/url_request_user_data.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
+
+namespace {
+
+WebContents* GetWebContentsFromFTNID(int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
+    return nullptr;
+
+  return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
+}
+
+}  // namespace
 
 // ----------------------------------------------------------------------------
 // ResourceRequestInfo
@@ -166,6 +185,30 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
 }
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
+}
+
+base::Callback<WebContents*(void)>
+ResourceRequestInfoImpl::GetWebContentsForRequest() const {
+  // PlzNavigate: navigation requests are created with a valid FrameTreeNode ID
+  // and invalid RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode
+  // ID should be used to access the WebContents.
+  if (frame_tree_node_id_ != -1) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserSideNavigation));
+    return base::Bind(&GetWebContentsFromFTNID, frame_tree_node_id_);
+  }
+
+  // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
+  // the WebContents.
+  int render_process_host_id = -1;
+  int render_frame_host_id = -1;
+  if (!GetAssociatedRenderFrame(&render_process_host_id,
+                                &render_frame_host_id)) {
+    NOTREACHED();
+  }
+
+  return base::Bind(&WebContentsImpl::FromRenderFrameHostID,
+                    render_process_host_id, render_frame_host_id);
 }
 
 ResourceContext* ResourceRequestInfoImpl::GetContext() const {

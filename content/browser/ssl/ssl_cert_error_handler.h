@@ -22,8 +22,6 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   SSLCertErrorHandler(const base::WeakPtr<Delegate>& delegate,
                       ResourceType resource_type,
                       const GURL& url,
-                      int render_process_id,
-                      int render_frame_id,
                       const net::SSLInfo& ssl_info,
                       bool fatal);
 

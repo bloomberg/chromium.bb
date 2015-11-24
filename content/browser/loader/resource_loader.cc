@@ -312,19 +312,9 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
                                            bool fatal) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  int render_process_id;
-  int render_frame_id;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
-    NOTREACHED();
-
   SSLManager::OnSSLCertificateError(
-      weak_ptr_factory_.GetWeakPtr(),
-      info->GetResourceType(),
-      request_->url(),
-      render_process_id,
-      render_frame_id,
-      ssl_info,
-      fatal);
+      weak_ptr_factory_.GetWeakPtr(), info->GetResourceType(), request_->url(),
+      info->GetWebContentsForRequest(), ssl_info, fatal);
 }
 
 void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,

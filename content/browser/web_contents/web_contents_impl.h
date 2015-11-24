@@ -113,6 +113,8 @@ class CONTENT_EXPORT WebContentsImpl
   static std::vector<WebContentsImpl*> GetAllWebContents();
 
   static WebContentsImpl* FromFrameTreeNode(FrameTreeNode* frame_tree_node);
+  static WebContents* FromRenderFrameHostID(int render_process_host_id,
+                                            int render_frame_host_id);
 
   // Creates a swapped out RenderView. This is used by the browser plugin to
   // create a swapped out RenderView in the embedder render process for the

@@ -178,8 +178,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   scoped_ptr<storage::QuotaEvictionPolicy> GetTemporaryStorageEvictionPolicy(
       content::BrowserContext* context) override;
   void AllowCertificateError(
-      int render_process_id,
-      int render_frame_id,
+      content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,

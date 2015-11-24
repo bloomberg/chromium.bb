@@ -232,17 +232,11 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
   CertificateRequestResultType result =
       CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
   GetContentClient()->browser()->AllowCertificateError(
-      handler->render_process_id(),
-      handler->render_frame_id(),
-      handler->cert_error(),
-      handler->ssl_info(),
-      handler->request_url(),
-      handler->resource_type(),
-      overridable,
-      strict_enforcement,
+      handler->GetManager()->controller()->GetWebContents(),
+      handler->cert_error(), handler->ssl_info(), handler->request_url(),
+      handler->resource_type(), overridable, strict_enforcement,
       expired_previous_decision,
-      base::Bind(&SSLPolicy::OnAllowCertificate,
-                 base::Unretained(this),
+      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
                  make_scoped_refptr(handler)),
       &result);
   switch (result) {

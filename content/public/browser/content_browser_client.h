@@ -464,8 +464,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // asynchronously. If |result| is not set to
   // CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE, the request will be cancelled
   // or denied immediately, and the callback won't be run.
-  virtual void AllowCertificateError(int render_process_id,
-                                     int render_frame_id,
+  virtual void AllowCertificateError(WebContents* web_contents,
                                      int cert_error,
                                      const net::SSLInfo& ssl_info,
                                      const GURL& request_url,

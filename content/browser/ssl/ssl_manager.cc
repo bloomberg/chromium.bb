@@ -51,8 +51,7 @@ void SSLManager::OnSSLCertificateError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
     const ResourceType resource_type,
     const GURL& url,
-    int render_process_id,
-    int render_frame_id,
+    const base::Callback<WebContents*(void)>& web_contents_getter,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   DCHECK(delegate.get());
@@ -60,8 +59,6 @@ void SSLManager::OnSSLCertificateError(
            << net::MapCertStatusToNetError(ssl_info.cert_status)
            << " resource_type: " << resource_type
            << " url: " << url.spec()
-           << " render_process_id: " << render_process_id
-           << " render_frame_id: " << render_frame_id
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
@@ -69,13 +66,23 @@ void SSLManager::OnSSLCertificateError(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SSLCertErrorHandler::Dispatch,
-                 new SSLCertErrorHandler(delegate,
-                                         resource_type,
-                                         url,
-                                         render_process_id,
-                                         render_frame_id,
-                                         ssl_info,
-                                         fatal)));
+                 new SSLCertErrorHandler(delegate, resource_type, url, ssl_info,
+                                         fatal),
+                 web_contents_getter));
+}
+
+// static
+void SSLManager::OnSSLCertificateSubresourceError(
+    const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
+    const GURL& url,
+    int render_process_id,
+    int render_frame_id,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  OnSSLCertificateError(delegate, RESOURCE_TYPE_SUB_RESOURCE, url,
+                        base::Bind(&WebContentsImpl::FromRenderFrameHostID,
+                                   render_process_id, render_frame_id),
+                        ssl_info, fatal);
 }
 
 // static

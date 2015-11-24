@@ -14,6 +14,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/websocket_messages.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -274,13 +275,9 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
   ssl_error_handler_delegate_.reset(
       new SSLErrorHandlerDelegate(callbacks.Pass()));
-  SSLManager::OnSSLCertificateError(ssl_error_handler_delegate_->GetWeakPtr(),
-                                    RESOURCE_TYPE_SUB_RESOURCE,
-                                    url,
-                                    dispatcher_->render_process_id(),
-                                    render_frame_id_,
-                                    ssl_info,
-                                    fatal);
+  SSLManager::OnSSLCertificateSubresourceError(
+      ssl_error_handler_delegate_->GetWeakPtr(), url,
+      dispatcher_->render_process_id(), render_frame_id_, ssl_info, fatal);
   // The above method is always asynchronous.
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
