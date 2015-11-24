@@ -677,8 +677,9 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
     return getPropertyValue(propertyID);
 }
 
-void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const String&, bool, ExceptionState& exceptionState)
+void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const String&, const String&, bool, ExceptionState& exceptionState)
 {
+    // TODO(leviw): This code is currently unreachable, but shouldn't be.
     exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + getPropertyNameString(id) + "' property is read-only.");
 }
 

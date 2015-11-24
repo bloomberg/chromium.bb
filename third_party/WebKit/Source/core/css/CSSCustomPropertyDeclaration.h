@@ -27,6 +27,7 @@ public:
     const AtomicString& name() const { return m_name; }
     CSSVariableData* value() const { return m_value.get(); }
     CSSValueID id() const { return m_valueId; }
+    String customCSSText() const;
 
     bool equals(const CSSCustomPropertyDeclaration& other) const { return this == &other; }
 

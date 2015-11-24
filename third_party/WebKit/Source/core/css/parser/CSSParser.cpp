@@ -17,6 +17,7 @@
 #include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSSupportsParser.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/layout/LayoutTheme.h"
 
 namespace blink {
@@ -67,6 +68,20 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
         context.setMode(parserMode);
     }
     return parseValue(declaration, unresolvedProperty, string, important, context);
+}
+
+bool CSSParser::parseValueForCustomProperty(MutableStylePropertySet* declaration, const AtomicString& propertyName, const String& value, bool important, StyleSheetContents* styleSheet)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName));
+    if (value.isEmpty())
+        return false;
+    CSSParserMode parserMode = declaration->cssParserMode();
+    CSSParserContext context(parserMode, 0);
+    if (styleSheet) {
+        context = styleSheet->parserContext();
+        context.setMode(parserMode);
+    }
+    return CSSParserImpl::parseVariableValue(declaration, propertyName, value, important, context);
 }
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, const CSSParserContext& context)

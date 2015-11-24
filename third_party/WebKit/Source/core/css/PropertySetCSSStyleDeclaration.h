@@ -62,7 +62,7 @@ private:
     void setCSSText(const String&, ExceptionState&) final;
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;
     String getPropertyValueInternal(CSSPropertyID) final;
-    void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) final;
+    void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) final;
 
     bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const final;
 

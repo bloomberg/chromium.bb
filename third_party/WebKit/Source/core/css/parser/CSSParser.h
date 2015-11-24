@@ -35,6 +35,8 @@ public:
     // Returns whether anything was changed.
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, StyleSheetContents*);
 
+    static bool parseValueForCustomProperty(MutableStylePropertySet*, const AtomicString& propertyName, const String& value, bool important, StyleSheetContents*);
+
     // This is for non-shorthands only
     static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
 

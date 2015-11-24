@@ -25,6 +25,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
 #include "wtf/BitArray.h"
@@ -174,6 +175,22 @@ bool StylePropertySerializer::StylePropertySetForSerializer::propertyIsImportant
 StylePropertySerializer::StylePropertySerializer(const StylePropertySet& properties)
     : m_propertySet(properties)
 {
+}
+
+String StylePropertySerializer::getCustomPropertyText(const PropertyValueForSerializer& property, bool isNotFirstDecl) const
+{
+    ASSERT(property.id() == CSSPropertyVariable);
+    StringBuilder result;
+    if (isNotFirstDecl)
+        result.append(' ');
+    const CSSCustomPropertyDeclaration* value = toCSSCustomPropertyDeclaration(property.value());
+    result.append(value->name());
+    result.appendLiteral(": ");
+    result.append(value->customCSSText());
+    if (property.isImportant())
+        result.appendLiteral(" !important");
+    result.append(';');
+    return result.toString();
 }
 
 String StylePropertySerializer::getPropertyText(CSSPropertyID propertyID, const String& value, bool isImportant, bool isNotFirstDecl) const
@@ -343,6 +360,9 @@ String StylePropertySerializer::asText() const
         case CSSPropertyWebkitMaskOrigin:
             shorthandPropertyID = CSSPropertyWebkitMask;
             break;
+        case CSSPropertyVariable:
+            result.append(getCustomPropertyText(property, numDecls++));
+            continue;
         case CSSPropertyAll:
             result.append(getPropertyText(propertyID, property.value()->cssText(), property.isImportant(), numDecls++));
             continue;

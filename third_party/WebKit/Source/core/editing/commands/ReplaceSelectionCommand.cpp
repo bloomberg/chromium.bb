@@ -570,9 +570,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
             // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
             if (isEnclosingBlock(element))
-                element->style()->setPropertyInternal(CSSPropertyDisplay, "inline", false, IGNORE_EXCEPTION);
+                element->style()->setPropertyInternal(CSSPropertyDisplay, String(), "inline", false, IGNORE_EXCEPTION);
             if (element->layoutObject() && element->layoutObject()->style()->isFloating())
-                element->style()->setPropertyInternal(CSSPropertyFloat, "none", false, IGNORE_EXCEPTION);
+                element->style()->setPropertyInternal(CSSPropertyFloat, String(), "none", false, IGNORE_EXCEPTION);
         }
     }
 }

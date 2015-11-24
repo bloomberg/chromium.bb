@@ -24,9 +24,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -150,7 +152,10 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const
 {
     if (i >= propertySet().propertyCount())
         return "";
-    return getPropertyName(propertySet().propertyAt(i).id());
+    StylePropertySet::PropertyReference property = propertySet().propertyAt(i);
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && property.id() == CSSPropertyVariable)
+        return toCSSCustomPropertyDeclaration(property.value())->name();
+    return getPropertyName(property.id());
 }
 
 String AbstractPropertySetCSSStyleDeclaration::cssText() const
@@ -170,25 +175,36 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, Exce
     mutationScope.enqueueMutationRecord();
 }
 
-String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(const String &propertyName)
+String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return String();
+    if (!propertyID) {
+        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+            return String();
+        return propertySet().getPropertyValue(AtomicString(propertyName));
+    }
     return propertySet().getPropertyValue(propertyID);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(const String& propertyName)
 {
+    bool important = false;
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return String();
-    return propertySet().propertyIsImportant(propertyID) ? "important" : "";
+    if (!propertyID) {
+        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+            return String();
+        important = propertySet().propertyIsImportant(AtomicString(propertyName));
+    } else {
+        important = propertySet().propertyIsImportant(propertyID);
+    }
+    return important ? "important" : "";
 }
 
 String AbstractPropertySetCSSStyleDeclaration::getPropertyShorthand(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
+
+    // Custom properties don't have shorthands, so we can ignore them here.
     if (!propertyID)
         return String();
     CSSPropertyID shorthandID = propertySet().getPropertyShorthand(propertyID);
@@ -200,6 +216,8 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyShorthand(const String
 bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
+
+    // Custom properties don't have shorthands, so we can ignore them here.
     if (!propertyID)
         return false;
     return propertySet().isPropertyImplicit(propertyID);
@@ -208,27 +226,37 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& pr
 void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = unresolvedCSSPropertyID(propertyName);
-    if (!propertyID)
-        return;
+    if (!propertyID) {
+        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+            return;
+        propertyID = CSSPropertyVariable;
+    }
 
     bool important = equalIgnoringCase(priority, "important");
     if (!important && !priority.isEmpty())
         return;
 
-    setPropertyInternal(propertyID, value, important, exceptionState);
+    setPropertyInternal(propertyID, propertyName, value, important, exceptionState);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& exceptionState)
 {
-    StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return String();
+    if (!propertyID) {
+        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+            return String();
+        propertyID = CSSPropertyVariable;
+    }
 
+    StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
     String result;
-    bool changed = propertySet().removeProperty(propertyID, &result);
+    bool changed = false;
+    if (propertyID == CSSPropertyVariable)
+        changed = propertySet().removeProperty(AtomicString(propertyName), &result);
+    else
+        changed = propertySet().removeProperty(propertyID, &result);
 
     didMutate(changed ? PropertyChanged : NoChanges);
 
@@ -247,12 +275,16 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPrope
     return propertySet().getPropertyValue(propertyID);
 }
 
-void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID unresolvedProperty, const String& value, bool important, ExceptionState&)
+void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID unresolvedProperty, const String& customPropertyName, const String& value, bool important, ExceptionState&)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    bool changed = propertySet().setProperty(unresolvedProperty, value, important, contextStyleSheet());
+    bool changed = false;
+    if (unresolvedProperty == CSSPropertyVariable)
+        changed = propertySet().setProperty(AtomicString(customPropertyName), value, important, contextStyleSheet());
+    else
+        changed = propertySet().setProperty(unresolvedProperty, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);
 

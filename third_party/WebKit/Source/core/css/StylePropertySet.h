@@ -90,13 +90,24 @@ public:
     unsigned propertyCount() const;
     bool isEmpty() const;
     PropertyReference propertyAt(unsigned index) const { return PropertyReference(*this, index); }
-    int findPropertyIndex(CSSPropertyID) const;
+
+    template<typename T> // CSSPropertyID or AtomicString
+    int findPropertyIndex(T property) const;
+
     bool hasProperty(CSSPropertyID property) const { return findPropertyIndex(property) != -1; }
 
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
-    String getPropertyValue(CSSPropertyID) const;
+    template<typename T> // CSSPropertyID or AtomicString
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(T property) const;
 
-    bool propertyIsImportant(CSSPropertyID) const;
+    template<typename T> // CSSPropertyID or AtomicString
+    String getPropertyValue(T property) const;
+
+    template<typename T> // CSSPropertyID or AtomicString
+    bool propertyIsImportant(T property) const;
+
+    bool shorthandIsImportant(CSSPropertyID) const;
+    bool shorthandIsImportant(AtomicString customPropertyName) const;
+
     CSSPropertyID getPropertyShorthand(CSSPropertyID) const;
     bool isPropertyImplicit(CSSPropertyID) const;
 
@@ -156,7 +167,9 @@ public:
 
     const RawPtrWillBeMember<CSSValue>* valueArray() const;
     const StylePropertyMetadata* metadataArray() const;
-    int findPropertyIndex(CSSPropertyID) const;
+
+    template<typename T> // CSSPropertyID or AtomicString
+    int findPropertyIndex(T property) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -197,13 +210,15 @@ public:
 
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
+    bool setProperty(const AtomicString& customPropertyName, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
     void setProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important = false);
 
     // These do not. FIXME: This is too messy, we can do better.
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
     bool setProperty(const CSSProperty&, CSSProperty* slot = 0);
 
-    bool removeProperty(CSSPropertyID, String* returnText = 0);
+    template<typename T> // CSSPropertyID or AtomicString
+    bool removeProperty(T property, String* returnText = 0);
     bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
     void removeEquivalentProperties(const StylePropertySet*);
     void removeEquivalentProperties(const CSSStyleDeclaration*);
@@ -214,7 +229,9 @@ public:
     void parseDeclarationList(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
-    int findPropertyIndex(CSSPropertyID) const;
+
+    template<typename T> // CSSPropertyID or AtomicString
+    int findPropertyIndex(T property) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -223,7 +240,10 @@ private:
     explicit MutableStylePropertySet(const StylePropertySet&);
     MutableStylePropertySet(const CSSProperty* properties, unsigned count);
 
+    bool removePropertyAtIndex(int, String* returnText);
+
     bool removeShorthandProperty(CSSPropertyID);
+    bool removeShorthandProperty(const AtomicString& customPropertyName) { return false; }
     CSSProperty* findCSSPropertyWithID(CSSPropertyID);
     OwnPtrWillBeMember<PropertySetCSSStyleDeclaration> m_cssomWrapper;
 
@@ -288,11 +308,12 @@ inline void StylePropertySet::deref()
 }
 #endif // !ENABLE(OILPAN)
 
-inline int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
+template<typename T>
+inline int StylePropertySet::findPropertyIndex(T property) const
 {
     if (m_isMutable)
-        return toMutableStylePropertySet(this)->findPropertyIndex(propertyID);
-    return toImmutableStylePropertySet(this)->findPropertyIndex(propertyID);
+        return toMutableStylePropertySet(this)->findPropertyIndex(property);
+    return toImmutableStylePropertySet(this)->findPropertyIndex(property);
 }
 
 } // namespace blink

@@ -97,7 +97,7 @@ private:
     void setCSSText(const String&, ExceptionState&) override;
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
     String getPropertyValueInternal(CSSPropertyID) override;
-    void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) override;
+    void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) override;
 
     bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
 

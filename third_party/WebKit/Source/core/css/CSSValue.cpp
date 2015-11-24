@@ -261,8 +261,7 @@ String CSSValue::cssText() const
     case VariableReferenceClass:
         return toCSSVariableReferenceValue(this)->customCSSText();
     case CustomPropertyDeclarationClass:
-        // TODO(leviw): We don't allow custom properties in CSSOM yet
-        ASSERT_NOT_REACHED();
+        return toCSSCustomPropertyDeclaration(this)->customCSSText();
     }
     ASSERT_NOT_REACHED();
     return String();

@@ -53,7 +53,7 @@ public:
     }
     void setCSSFloat(const String& value, ExceptionState& exceptionState)
     {
-        setPropertyInternal(CSSPropertyFloat, value, false, exceptionState);
+        setPropertyInternal(CSSPropertyFloat, String(), value, false, exceptionState);
     }
     virtual String cssText() const = 0;
     virtual void setCSSText(const String&, ExceptionState&) = 0;
@@ -71,7 +71,7 @@ public:
     // The CSSValue returned by this function should not be exposed to the web as it may be used by multiple documents at the same time.
     virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) = 0;
     virtual String getPropertyValueInternal(CSSPropertyID) = 0;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) = 0;
+    virtual void setPropertyInternal(CSSPropertyID, const String& propertyValue, const String& value, bool important, ExceptionState&) = 0;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }

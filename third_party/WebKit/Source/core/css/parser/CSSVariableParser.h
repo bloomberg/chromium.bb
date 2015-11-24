@@ -21,6 +21,7 @@ public:
     static PassRefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> parseDeclarationValue(const AtomicString&, CSSParserTokenRange);
 
     static bool isValidVariableName(const CSSParserToken&);
+    static bool isValidVariableName(const String&);
 };
 
 } // namespace blink

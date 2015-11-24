@@ -51,6 +51,16 @@ bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSProperty
     return declaration->addParsedProperties(parser.m_parsedProperties);
 }
 
+bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration, const AtomicString& propertyName, const String& value, bool important, const CSSParserContext& context)
+{
+    CSSParserImpl parser(context);
+    CSSTokenizer::Scope scope(value);
+    parser.consumeVariableValue(scope.tokenRange(), propertyName, important);
+    if (parser.m_parsedProperties.isEmpty())
+        return false;
+    return declaration->addParsedProperties(parser.m_parsedProperties);
+}
+
 static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
@@ -698,7 +708,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     }
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
         AtomicString variableName = token.value();
-        consumeVariableDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
+        consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
         return;
     }
 
@@ -721,7 +731,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
 }
 
-void CSSParserImpl::consumeVariableDeclarationValue(CSSParserTokenRange range, const AtomicString& variableName, bool important)
+void CSSParserImpl::consumeVariableValue(CSSParserTokenRange range, const AtomicString& variableName, bool important)
 {
     if (RefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> value = CSSVariableParser::parseDeclarationValue(variableName, range))
         m_parsedProperties.append(CSSProperty(CSSPropertyVariable, value.release(), important));
