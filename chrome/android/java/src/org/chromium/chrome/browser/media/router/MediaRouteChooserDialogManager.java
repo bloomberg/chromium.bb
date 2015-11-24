@@ -4,15 +4,11 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnDismissListener;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
-import android.support.v7.app.MediaRouteDialogFactory;
 
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
@@ -20,8 +16,7 @@ import org.chromium.chrome.browser.media.router.cast.MediaSource;
 /**
  * Manages the dialog responsible for selecting a {@link MediaSink}.
  */
-public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager implements
-        OnCancelListener, OnDismissListener {
+public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager {
 
     private static final String DIALOG_FRAGMENT_TAG =
             "android.support.v7.mediarouter:MediaRouteChooserDialogFragment";
@@ -34,39 +29,50 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
     }
 
     @Override
-    protected DialogFragment openDialogInternal(FragmentManager fm,
-            MediaRouteDialogFactory factory) {
+    protected DialogFragment openDialogInternal(FragmentManager fm) {
         if (fm.findFragmentByTag(DIALOG_FRAGMENT_TAG) != null) return null;
 
-        MediaRouteChooserDialogFragment fragment = factory.onCreateChooserDialogFragment();
+        MediaRouteChooserDialogFragment fragment = new MediaRouteChooserDialogFragment() {
+            final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
+
+            @Override
+            public void onStart() {
+                mVisibilitySaver.saveSystemVisibility(getActivity());
+                super.onStart();
+            }
+
+            @Override
+            public void onStop() {
+                super.onStop();
+                mVisibilitySaver.restoreSystemVisibility(getActivity());
+            }
+
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                mCancelled = true;
+
+                delegate().onDialogCancelled();
+
+                super.onCancel(dialog);
+            }
+
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                super.onDismiss(dialog);
+
+                mDialogFragment = null;
+
+                if (mCancelled) return;
+
+                MediaSink newSink = MediaSink.fromRoute(androidMediaRouter().getSelectedRoute());
+                delegate().onSinkSelected(newSink);
+            }
+        };
+
         fragment.setRouteSelector(mediaSource().buildRouteSelector());
         fragment.show(fm, DIALOG_FRAGMENT_TAG);
         fm.executePendingTransactions();
 
-        Dialog dialog = fragment.getDialog();
-        if (dialog == null) return null;
-
-        dialog.setOnCancelListener(this);
-        dialog.setOnDismissListener(this);
-
         return fragment;
     }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        mCancelled = true;
-
-        delegate().onDialogCancelled();
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        closeDialog();
-
-        if (mCancelled) return;
-
-        MediaSink newSink = MediaSink.fromRoute(androidMediaRouter().getSelectedRoute());
-        delegate().onSinkSelected(newSink);
-    }
-
 }

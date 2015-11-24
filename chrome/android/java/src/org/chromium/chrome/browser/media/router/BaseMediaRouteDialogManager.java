@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.MediaRouteDialogFactory;
 import android.support.v7.media.MediaRouter;
+import android.view.View;
+import android.widget.FrameLayout;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.media.remote.ChromeMediaRouteDialogFactory;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
 
 import javax.annotation.Nullable;
@@ -22,11 +23,45 @@ import javax.annotation.Nullable;
  */
 public abstract class BaseMediaRouteDialogManager implements MediaRouteDialogManager {
 
+    /**
+     * A helper class to handle the system visibility change caused by the dialog showing up.
+     * Call saveSystemVisibility() in onCreateDialog() of the DialogFragment and later
+     * restoreSystemVisibility() in onStop().
+     * TODO(avayvod): refactor this to avoid a redundant copy in ChromeMediaRouteDialogFactory.
+     */
+    protected static class SystemVisibilitySaver {
+        private int mSystemVisibilityToRestore;
+        private boolean mWasFullscreenBeforeShowing;
+
+        void saveSystemVisibility(Activity activity) {
+            // If we are in fullscreen we may have also have hidden the system UI. This
+            // is overridden when we display the dialog. Save the system UI visibility
+            // state so we can restore it.
+            FrameLayout decor = (FrameLayout) activity.getWindow().getDecorView();
+            mSystemVisibilityToRestore = decor.getSystemUiVisibility();
+            mWasFullscreenBeforeShowing = (
+                    (mSystemVisibilityToRestore & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0);
+        }
+
+        void restoreSystemVisibility(Activity activity) {
+            if (!mWasFullscreenBeforeShowing) return;
+
+            FrameLayout decor = (FrameLayout) activity.getWindow().getDecorView();
+            // In some cases we come out of fullscreen before closing this dialog. In these
+            // cases we don't want to restore the system UI visibility state.
+            boolean isStillFullscreen =
+                    (decor.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0;
+            if (!isStillFullscreen) return;
+
+            decor.setSystemUiVisibility(mSystemVisibilityToRestore);
+        }
+    }
+
     private final MediaSource mMediaSource;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteDialogDelegate mDelegate;
 
-    private DialogFragment mDialogFragment;
+    protected DialogFragment mDialogFragment;
 
     @Override
     public void openDialog() {
@@ -39,8 +74,7 @@ public abstract class BaseMediaRouteDialogManager implements MediaRouteDialogMan
         FragmentManager fm = currentActivity.getSupportFragmentManager();
         if (fm == null) return;
 
-        MediaRouteDialogFactory factory = new ChromeMediaRouteDialogFactory();
-        mDialogFragment = openDialogInternal(fm, factory);
+        mDialogFragment = openDialogInternal(fm);
     }
 
     @Override
@@ -68,12 +102,10 @@ public abstract class BaseMediaRouteDialogManager implements MediaRouteDialogMan
      * needed.
      *
      * @param fm {@link FragmentManager} to use to show the dialog.
-     * @param factory {@link MediaRouteDialogFactory} to use to create the dialog.
      * @return null if the initialization fails, otherwise the initialized dialog fragment.
      */
     @Nullable
-    protected abstract DialogFragment openDialogInternal(
-            FragmentManager fm, MediaRouteDialogFactory factory);
+    protected abstract DialogFragment openDialogInternal(FragmentManager fm);
 
     protected MediaRouteDialogDelegate delegate() {
         return mDelegate;
