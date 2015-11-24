@@ -1144,6 +1144,7 @@
       'browser/importer/profile_writer.h',
       'browser/lifetime/browser_close_manager.cc',
       'browser/lifetime/browser_close_manager.h',
+      'browser/media_galleries/android/mtp_device_delegate_impl_android.cc',
       'browser/media_galleries/fileapi/av_scanning_file_validator.cc',
       'browser/media_galleries/fileapi/av_scanning_file_validator.h',
       'browser/media_galleries/fileapi/device_media_async_file_util.cc',
