@@ -21,6 +21,7 @@
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/protocol/fake_connection_to_client.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
@@ -34,7 +35,6 @@
 namespace remoting {
 
 using protocol::MockClientStub;
-using protocol::MockConnectionToClient;
 using protocol::MockHostStub;
 using protocol::MockInputStub;
 using protocol::MockSession;
@@ -193,7 +193,7 @@ class ClientSessionTest : public testing::Test {
   scoped_ptr<MockInputInjector> input_injector_;
 
   // ClientSession owns |connection_| but tests need it to inject fake events.
-  MockConnectionToClient* connection_;
+  protocol::FakeConnectionToClient* connection_;
 
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
 };
@@ -232,12 +232,10 @@ void ClientSessionTest::CreateClientSession() {
 
   // Mock protocol::ConnectionToClient APIs called directly by ClientSession.
   // HostStub is not touched by ClientSession, so we can safely pass nullptr.
-  scoped_ptr<MockConnectionToClient> connection(
-      new MockConnectionToClient(session.Pass(), nullptr));
-  EXPECT_CALL(*connection, client_stub())
-      .WillRepeatedly(Return(&client_stub_));
-  EXPECT_CALL(*connection, video_stub()).WillRepeatedly(Return(&video_stub_));
-  EXPECT_CALL(*connection, Disconnect(_));
+  scoped_ptr<protocol::FakeConnectionToClient> connection(
+      new protocol::FakeConnectionToClient(session.Pass()));
+  connection->set_client_stub(&client_stub_);
+  connection->set_video_stub(&video_stub_);
   connection_ = connection.get();
 
   client_session_.reset(new ClientSession(
@@ -257,9 +255,6 @@ void ClientSessionTest::CreateClientSession() {
 
 void ClientSessionTest::DisconnectClientSession() {
   client_session_->DisconnectSession(protocol::OK);
-  // MockSession won't trigger OnConnectionClosed, so fake it.
-  client_session_->OnConnectionClosed(client_session_->connection(),
-                                      protocol::OK);
 }
 
 void ClientSessionTest::StopClientSession() {

@@ -30,55 +30,6 @@
 namespace remoting {
 namespace protocol {
 
-class MockConnectionToClient : public ConnectionToClient {
- public:
-  MockConnectionToClient(scoped_ptr<Session> session, HostStub* host_stub);
-  ~MockConnectionToClient() override;
-
-  void SetEventHandler(EventHandler* event_handler) override {
-    event_handler_ = event_handler;
-  }
-
-  MOCK_METHOD1(Init, void(Session* session));
-  MOCK_METHOD0(video_stub, VideoStub*());
-  MOCK_METHOD0(audio_stub, AudioStub*());
-  MOCK_METHOD0(client_stub, ClientStub*());
-  MOCK_METHOD1(Disconnect, void(ErrorCode error));
-
-  Session* session() override { return session_.get(); }
-  void OnInputEventReceived(int64_t timestamp) override {}
-
-  void set_clipboard_stub(ClipboardStub* clipboard_stub) override {
-    clipboard_stub_ = clipboard_stub;
-  }
-  void set_host_stub(HostStub* host_stub) override { host_stub_ = host_stub; }
-  void set_input_stub(InputStub* input_stub) override {
-    input_stub_ = input_stub;
-  }
-
-  void set_video_feedback_stub(
-      VideoFeedbackStub* video_feedback_stub) override {
-    video_feedback_stub_ = video_feedback_stub;
-  }
-
-  EventHandler* event_handler() { return event_handler_; }
-  ClipboardStub* clipboard_stub() { return clipboard_stub_; }
-  HostStub* host_stub() { return host_stub_; }
-  InputStub* input_stub() { return input_stub_; }
-  VideoFeedbackStub* video_feedback_stub() { return video_feedback_stub_; }
-
- private:
-  scoped_ptr<Session> session_;
-  EventHandler* event_handler_ = nullptr;
-
-  ClipboardStub* clipboard_stub_ = nullptr;
-  HostStub* host_stub_ = nullptr;
-  InputStub* input_stub_ = nullptr;
-  VideoFeedbackStub* video_feedback_stub_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MockConnectionToClient);
-};
-
 class MockConnectionToClientEventHandler
     : public ConnectionToClient::EventHandler {
  public:

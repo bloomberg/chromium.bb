@@ -32,6 +32,8 @@
         'host/fake_oauth_token_getter.h',
         'protocol/fake_authenticator.cc',
         'protocol/fake_authenticator.h',
+        'protocol/fake_connection_to_client.cc',
+        'protocol/fake_connection_to_client.h',
         'protocol/fake_connection_to_host.cc',
         'protocol/fake_connection_to_host.h',
         'protocol/fake_datagram_socket.cc',
