@@ -679,6 +679,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   float GetIdealContentsScale() const;
 
+  bool was_ever_ready_since_last_transform_animation() const {
+    return was_ever_ready_since_last_transform_animation_;
+  }
+
+  void set_was_ever_ready_since_last_transform_animation(bool was_ready) {
+    was_ever_ready_since_last_transform_animation_ = was_ready;
+  }
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -783,6 +791,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool is_container_for_fixed_position_layers_ : 1;
 
   bool is_affected_by_page_scale_ : 1;
+
+  // This is true if and only if the layer was ever ready since it last animated
+  // (all content was complete).
+  bool was_ever_ready_since_last_transform_animation_ : 1;
 
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;

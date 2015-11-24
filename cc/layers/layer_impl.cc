@@ -70,6 +70,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       transform_is_invertible_(true),
       is_container_for_fixed_position_layers_(false),
       is_affected_by_page_scale_(true),
+      was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -933,6 +934,7 @@ void LayerImpl::OnOpacityAnimated(float opacity) {
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
   UpdatePropertyTreeTransform();
+  was_ever_ready_since_last_transform_animation_ = false;
 }
 
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
@@ -951,6 +953,7 @@ void LayerImpl::OnAnimationWaitingForDeletion() {}
 
 void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
   UpdatePropertyTreeTransformIsAnimated(is_animating);
+  was_ever_ready_since_last_transform_animation_ = false;
 }
 
 bool LayerImpl::IsActive() const {

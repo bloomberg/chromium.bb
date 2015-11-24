@@ -954,12 +954,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         append_quads_data.checkerboarded_no_recording_content_area;
     checkerboarded_needs_raster_content_area +=
         append_quads_data.checkerboarded_needs_raster_content_area;
-
-    if (append_quads_data.num_missing_tiles) {
-      bool layer_has_animating_transform =
+    if (append_quads_data.num_missing_tiles > 0) {
+      have_missing_animated_tiles |=
+          !it->was_ever_ready_since_last_transform_animation() ||
           it->screen_space_transform_is_animating();
-      if (layer_has_animating_transform)
-        have_missing_animated_tiles = true;
+    } else {
+      it->set_was_ever_ready_since_last_transform_animation(true);
     }
   }
 

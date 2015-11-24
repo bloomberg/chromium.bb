@@ -1182,6 +1182,107 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   EXPECT_FALSE(did_request_commit_);
 }
 
+class MissingTilesLayer : public LayerImpl {
+ public:
+  MissingTilesLayer(LayerTreeImpl* layer_tree_impl, int id)
+      : LayerImpl(layer_tree_impl, id), has_missing_tiles_(true) {}
+
+  void set_has_missing_tiles(bool has_missing_tiles) {
+    has_missing_tiles_ = has_missing_tiles;
+  }
+
+  void AppendQuads(RenderPass* render_pass,
+                   AppendQuadsData* append_quads_data) override {
+    append_quads_data->num_missing_tiles += has_missing_tiles_;
+  }
+
+ private:
+  bool has_missing_tiles_;
+};
+
+TEST_F(LayerTreeHostImplTest, AnimationSchedulingMarksLayerNotReady) {
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  host_impl_->active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->active_tree(), 1));
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetHasRenderSurface(true);
+
+  root->AddChild(scoped_ptr<MissingTilesLayer>(
+      new MissingTilesLayer(host_impl_->active_tree(), 2)));
+  MissingTilesLayer* child =
+      static_cast<MissingTilesLayer*>(root->children()[0].get());
+  child->SetBounds(gfx::Size(10, 10));
+  child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
+  child->SetDrawsContent(true);
+
+  EXPECT_TRUE(child->was_ever_ready_since_last_transform_animation());
+
+  // Add a translate from 6,7 to 8,9.
+  TransformOperations start;
+  start.AppendTranslate(6.f, 7.f, 0.f);
+  TransformOperations end;
+  end.AppendTranslate(8.f, 9.f, 0.f);
+  int animation_id = AddAnimatedTransformToLayer(child, 4.0, start, end);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  host_impl_->WillBeginImplFrame(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now));
+
+  host_impl_->ActivateAnimations();
+  host_impl_->Animate();
+
+  EXPECT_FALSE(child->was_ever_ready_since_last_transform_animation());
+
+  host_impl_->active_tree()->property_trees()->needs_rebuild = true;
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ResetRequiresHighResToDraw();
+
+  // Child layer has an animating transform but missing tiles.
+  FakeLayerTreeHostImpl::FrameData frame;
+  DrawResult result = host_impl_->PrepareToDraw(&frame);
+  EXPECT_EQ(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS, result);
+  host_impl_->DidDrawAllLayers(frame);
+
+  child->set_has_missing_tiles(false);
+
+  // Child layer has an animating and no missing tiles.
+  result = host_impl_->PrepareToDraw(&frame);
+  EXPECT_EQ(DRAW_SUCCESS, result);
+  EXPECT_TRUE(child->was_ever_ready_since_last_transform_animation());
+  host_impl_->DidDrawAllLayers(frame);
+
+  // Remove the animation.
+  child->set_has_missing_tiles(true);
+  child->layer_animation_controller()->RemoveAnimation(animation_id);
+  child->draw_properties().screen_space_transform_is_animating = false;
+
+  // Child layer doesn't have an animation, but was never ready since the last
+  // time it animated (and has missing tiles).
+  result = host_impl_->PrepareToDraw(&frame);
+  EXPECT_EQ(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS, result);
+  EXPECT_FALSE(child->was_ever_ready_since_last_transform_animation());
+  host_impl_->DidDrawAllLayers(frame);
+
+  child->set_has_missing_tiles(false);
+
+  // Child layer doesn't have an animation and all tiles are ready.
+  result = host_impl_->PrepareToDraw(&frame);
+  EXPECT_EQ(DRAW_SUCCESS, result);
+  EXPECT_TRUE(child->was_ever_ready_since_last_transform_animation());
+  host_impl_->DidDrawAllLayers(frame);
+
+  child->set_has_missing_tiles(true);
+
+  // Child layer doesn't have an animation, and was ready at least once since
+  // the last time it animated.
+  result = host_impl_->PrepareToDraw(&frame);
+  EXPECT_EQ(DRAW_SUCCESS, result);
+  EXPECT_TRUE(child->was_ever_ready_since_last_transform_animation());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
 TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
