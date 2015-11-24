@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -64,14 +65,6 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   return level;
 }
 
-scoped_refptr<net::X509Certificate> GetCertForSSLStatus(
-    const content::SSLStatus& ssl) {
-  scoped_refptr<net::X509Certificate> cert;
-  return content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert)
-             ? cert
-             : nullptr;
-}
-
 SecurityStateModel::SHA1DeprecationStatus GetSHA1DeprecationStatus(
     scoped_refptr<net::X509Certificate> cert,
     const content::SSLStatus& ssl) {
@@ -115,7 +108,8 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
     Profile* profile,
     scoped_refptr<net::X509Certificate> cert,
     SecurityStateModel::SHA1DeprecationStatus sha1_status,
-    SecurityStateModel::MixedContentStatus mixed_content_status) {
+    SecurityStateModel::MixedContentStatus mixed_content_status,
+    bool used_policy_installed_certificate) {
   switch (ssl.security_style) {
     case content::SECURITY_STYLE_UNKNOWN:
       return SecurityStateModel::NONE;
@@ -134,17 +128,13 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
       return SecurityStateModel::SECURITY_WARNING;
 
     case content::SECURITY_STYLE_AUTHENTICATED: {
-#if defined(OS_CHROMEOS)
       // Report if there is a policy cert first, before reporting any other
       // authenticated-but-with-errors cases. A policy cert is a strong
       // indicator of a MITM being present (the enterprise), while the
       // other authenticated-but-with-errors indicate something may
       // be wrong, or may be wrong in the future, but is unclear now.
-      policy::PolicyCertService* service =
-          policy::PolicyCertServiceFactory::GetForProfile(profile);
-      if (service && service->UsedPolicyCertificates())
+      if (used_policy_installed_certificate)
         return SecurityStateModel::SECURITY_POLICY_WARNING;
-#endif
 
       if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_MAJOR)
         return SecurityStateModel::SECURITY_ERROR;
@@ -217,13 +207,15 @@ const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
     return security_info_;
   }
 
+  scoped_refptr<net::X509Certificate> cert = nullptr;
+  client_->RetrieveCert(&cert);
+
   if (entry->GetURL() == visible_url_ &&
       entry->GetSSL().Equals(visible_ssl_status_)) {
     // A cert must be present in the CertStore in order for the site to
     // be considered EV_SECURE, and the cert might have been removed
     // since the security level was last computed.
-    if (security_info_.security_level == EV_SECURE &&
-        !GetCertForSSLStatus(visible_ssl_status_)) {
+    if (security_info_.security_level == EV_SECURE && !cert) {
       security_info_.security_level = SECURE;
     }
     return security_info_;
@@ -231,19 +223,21 @@ const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
 
   SecurityInfoForRequest(
       entry->GetURL(), entry->GetSSL(),
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      &security_info_);
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()), cert,
+      client_->UsedPolicyInstalledCertificate(), &security_info_);
   visible_url_ = entry->GetURL();
   visible_ssl_status_ = entry->GetSSL();
   return security_info_;
 }
 
 // static
-void SecurityStateModel::SecurityInfoForRequest(const GURL& url,
-                                                const content::SSLStatus& ssl,
-                                                Profile* profile,
-                                                SecurityInfo* security_info) {
-  scoped_refptr<net::X509Certificate> cert = GetCertForSSLStatus(ssl);
+void SecurityStateModel::SecurityInfoForRequest(
+    const GURL& url,
+    const content::SSLStatus& ssl,
+    Profile* profile,
+    const scoped_refptr<net::X509Certificate>& cert,
+    bool used_policy_installed_certificate,
+    SecurityInfo* security_info) {
   security_info->cert_id = ssl.cert_id;
   security_info->sha1_deprecation_status = GetSHA1DeprecationStatus(cert, ssl);
   security_info->mixed_content_status = GetMixedContentStatus(ssl);
@@ -264,8 +258,9 @@ void SecurityStateModel::SecurityInfoForRequest(const GURL& url,
 
   security_info->security_level = GetSecurityLevelForRequest(
       url, ssl, profile, cert, security_info->sha1_deprecation_status,
-      security_info->mixed_content_status);
+      security_info->mixed_content_status, used_policy_installed_certificate);
 }
 
 SecurityStateModel::SecurityStateModel(content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : web_contents_(web_contents),
+      client_(new ChromeSecurityStateModelClient(web_contents)) {}

@@ -20,12 +20,14 @@ namespace {
 
 const char kUrl[] = "https://foo.test";
 
-void GetTestSSLStatus(int process_id, content::SSLStatus* ssl_status) {
+void GetTestSSLStatus(int process_id,
+                      scoped_refptr<net::X509Certificate>* cert,
+                      content::SSLStatus* ssl_status) {
   content::CertStore* cert_store = content::CertStore::GetInstance();
-  const scoped_refptr<net::X509Certificate>& cert =
+  *cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "sha1_2016.pem");
-  ASSERT_TRUE(cert);
-  ssl_status->cert_id = cert_store->StoreCert(cert.get(), process_id);
+  ASSERT_TRUE(*cert);
+  ssl_status->cert_id = cert_store->StoreCert(cert->get(), process_id);
   EXPECT_GT(ssl_status->cert_id, 0);
   ssl_status->cert_status = net::CERT_STATUS_SHA1_SIGNATURE_PRESENT;
   ssl_status->security_bits = 256;
@@ -42,9 +44,11 @@ TEST_F(SecurityStateModelTest, SHA1Warning) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
@@ -57,10 +61,12 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   ssl_status.content_status = content::SSLStatus::DISPLAYED_INSECURE_CONTENT;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::DISPLAYED_MIXED_CONTENT,
@@ -70,7 +76,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
   ssl_status.security_style = content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   ssl_status.content_status = content::SSLStatus::RAN_INSECURE_CONTENT;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::RAN_MIXED_CONTENT,
@@ -85,11 +91,13 @@ TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   ssl_status.security_style = content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   ssl_status.cert_status |= net::CERT_STATUS_DATE_INVALID;
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
@@ -102,7 +110,9 @@ TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc02f;
@@ -111,7 +121,7 @@ TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   net::SSLConnectionStatusSetCipherSuite(ciphersuite,
                                          &ssl_status.connection_status);
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_TRUE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
@@ -120,7 +130,9 @@ TEST_F(SecurityStateModelTest, NonsecureProtocol) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc02f;
@@ -129,7 +141,7 @@ TEST_F(SecurityStateModelTest, NonsecureProtocol) {
   net::SSLConnectionStatusSetCipherSuite(ciphersuite,
                                          &ssl_status.connection_status);
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
@@ -138,7 +150,9 @@ TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
   Profile* test_profile = profile();
   SecurityStateModel::SecurityInfo security_info;
   content::SSLStatus ssl_status;
-  ASSERT_NO_FATAL_FAILURE(GetTestSSLStatus(process()->GetID(), &ssl_status));
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLStatus(process()->GetID(), &cert, &ssl_status));
   // TLS_RSA_WITH_AES_128_CCM_8 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
   const uint16 ciphersuite = 0xc0a0;
@@ -147,7 +161,7 @@ TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
   net::SSLConnectionStatusSetCipherSuite(ciphersuite,
                                          &ssl_status.connection_status);
   SecurityStateModel::SecurityInfoForRequest(url, ssl_status, test_profile,
-                                             &security_info);
+                                             cert, false, &security_info);
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
 }
 

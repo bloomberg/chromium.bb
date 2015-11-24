@@ -19,6 +19,7 @@ class WebContents;
 }  // namespace content
 
 class Profile;
+class SecurityStateModelClient;
 
 // SecurityStateModel provides high-level security information about a
 // page or request. It is attached to a WebContents and will provide the
@@ -132,10 +133,13 @@ class SecurityStateModel
 
   // Returns a SecurityInfo describing an individual request for the
   // given |profile|.
-  static void SecurityInfoForRequest(const GURL& url,
-                                     const content::SSLStatus& ssl,
-                                     Profile* profile,
-                                     SecurityInfo* security_info);
+  static void SecurityInfoForRequest(
+      const GURL& url,
+      const content::SSLStatus& ssl,
+      Profile* profile,
+      const scoped_refptr<net::X509Certificate>& cert,
+      bool used_known_mitm_certificate,
+      SecurityInfo* security_info);
 
  private:
   explicit SecurityStateModel(content::WebContents* web_contents);
@@ -150,6 +154,11 @@ class SecurityStateModel
   mutable SecurityInfo security_info_;
   mutable GURL visible_url_;
   mutable content::SSLStatus visible_ssl_status_;
+
+  // TODO(estark): The SecurityStateModel temporarily owns and
+  // instantiates this member, but it will soon be injected, once the
+  // model is compnentized. https://crbug.com/515071
+  scoped_ptr<SecurityStateModelClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModel);
 };
