@@ -366,6 +366,11 @@
             'app/close_handle_hook_win.h',
           ],
           'conditions': [
+            ['OS=="win" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
             ['OS=="win"', {
               'conditions': [
                 ['chrome_pgo_phase==1', {

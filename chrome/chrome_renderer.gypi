@@ -391,16 +391,6 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-              'export_dependent_settings': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
         }],
       ],
     },

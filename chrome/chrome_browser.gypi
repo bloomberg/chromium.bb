@@ -3763,11 +3763,6 @@
                 'kasko_dll',
               ],
             }],
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
             ['branding!="Chrome"', {
               'dependencies!': [
                 '../google_update/google_update.gyp:google_update',

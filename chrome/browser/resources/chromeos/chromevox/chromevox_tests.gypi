@@ -122,6 +122,11 @@
             '<(DEPTH)/native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
           ],
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',

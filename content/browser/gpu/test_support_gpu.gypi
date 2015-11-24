@@ -25,13 +25,6 @@
       'include_dirs': [
         '<(DEPTH)/third_party/wtl/include',
       ],
-      'conditions': [
-        ['win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-      ],
       'configurations': {
         'Debug': {
           'msvs_settings': {

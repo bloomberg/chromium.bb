@@ -1097,13 +1097,6 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
         }, {  # 'OS!="win"
           'conditions': [
             ['OS=="linux" and toolkit_views==1',{
