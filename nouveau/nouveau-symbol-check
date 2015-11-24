@@ -30,6 +30,8 @@ nouveau_device_del
 nouveau_device_open
 nouveau_device_open_existing
 nouveau_device_wrap
+nouveau_drm_del
+nouveau_drm_new
 nouveau_getparam
 nouveau_object_del
 nouveau_object_find

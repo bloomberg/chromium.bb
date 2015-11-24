@@ -22,6 +22,24 @@ struct nouveau_object {
 	void *data;
 };
 
+struct nouveau_drm {
+	struct nouveau_object client;
+	int fd;
+	uint32_t version;
+	bool nvif;
+};
+
+static inline struct nouveau_drm *
+nouveau_drm(struct nouveau_object *obj)
+{
+	while (obj && obj->parent)
+		obj = obj->parent;
+	return (struct nouveau_drm *)obj;
+}
+
+int nouveau_drm_new(int fd, struct nouveau_drm **);
+void nouveau_drm_del(struct nouveau_drm **);
+
 struct nouveau_fifo {
 	struct nouveau_object *object;
 	uint32_t channel;

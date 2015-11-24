@@ -195,6 +195,41 @@ nouveau_object_find(struct nouveau_object *obj, uint32_t pclass)
 	return obj;
 }
 
+void
+nouveau_drm_del(struct nouveau_drm **pdrm)
+{
+	free(*pdrm);
+	*pdrm = NULL;
+}
+
+int
+nouveau_drm_new(int fd, struct nouveau_drm **pdrm)
+{
+	struct nouveau_drm *drm;
+	drmVersionPtr ver;
+
+#ifdef DEBUG
+	debug_init(getenv("NOUVEAU_LIBDRM_DEBUG"));
+#endif
+
+	if (!(drm = calloc(1, sizeof(*drm))))
+		return -ENOMEM;
+	drm->fd = fd;
+
+	if (!(ver = drmGetVersion(fd))) {
+		nouveau_drm_del(&drm);
+		return -EINVAL;
+	}
+	*pdrm = drm;
+
+	drm->version = (ver->version_major << 24) |
+		       (ver->version_minor << 8) |
+		        ver->version_patchlevel;
+	drm->nvif = false;
+	drmFreeVersion(ver);
+	return 0;
+}
+
 /* this is the old libdrm's version of nouveau_device_wrap(), the symbol
  * is kept here to prevent AIGLX from crashing if the DDX is linked against
  * the new libdrm, but the DRI driver against the old
