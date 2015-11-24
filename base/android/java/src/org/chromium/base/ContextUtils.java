@@ -41,14 +41,22 @@ public class ContextUtils {
      * both sides.
      */
     public static void initApplicationContext(Context appContext) {
+        assert appContext != null;
+        assert sApplicationContext == null || sApplicationContext == appContext;
         initJavaSideApplicationContext(appContext);
         nativeInitNativeSideApplicationContext(appContext);
     }
 
+    /**
+     * JUnit Robolectric tests run without native code; allow them to set just the Java-side
+     * context. Do not use in configurations that actually run on Android!
+     */
+    public static void initApplicationContextForJUnitTests(Context appContext) {
+        initJavaSideApplicationContext(appContext);
+    }
+
     @CalledByNative
     private static void initJavaSideApplicationContext(Context appContext) {
-        assert appContext != null;
-        assert sApplicationContext == null || sApplicationContext == appContext;
         sApplicationContext = appContext;
     }
 
