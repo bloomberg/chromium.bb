@@ -7,3 +7,7 @@
   cursor: pointer;
   text-align: center;
 }
+
+[hidden] {
+  display: none !important;
+}
