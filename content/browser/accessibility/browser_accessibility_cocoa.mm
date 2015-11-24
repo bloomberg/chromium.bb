@@ -1949,10 +1949,12 @@ bool InitializeAccessibilityTreeSearch(
   if (!browserAccessibility_)
     return NO;
 
-  if ([attribute isEqualToString:NSAccessibilityFocusedAttribute])
+  if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
     if ([self internalRole] == ui::AX_ROLE_DATE_TIME)
       return NO;
     return GetState(browserAccessibility_, ui::AX_STATE_FOCUSABLE);
+  }
+
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
     return browserAccessibility_->GetBoolAttribute(
         ui::AX_ATTR_CAN_SET_VALUE);
