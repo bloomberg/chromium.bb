@@ -69,6 +69,7 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
     # Swarming tools, doesn't exist in the snapshot
     path_join('tools', 'swarming_client'),
     # Ignore sysroots.
+    path_join('build', 'linux', 'debian_wheezy_amd64-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_arm-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_mips-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_i386-sysroot'),
