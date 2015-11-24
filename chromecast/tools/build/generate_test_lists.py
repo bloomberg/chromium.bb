@@ -24,6 +24,8 @@ def CombineList(test_files_dir, list_output_file, include_filters,
     list_output_file: Path to write the unit test file out to.
     include_filters: Whether or not to include the filters when generating
         the test list.
+    additional_runtime_options: Arguments to be applied to all tests.  These are
+        applied before filters (so test-specific filters take precedence).
   """
 
   # GYP targets may provide a numbered priority for the filename. Sort to
@@ -45,8 +47,7 @@ def CombineList(test_files_dir, list_output_file, include_filters,
     for filter_filename in filter_files:
       with open(filter_filename, "r") as filter_file:
         for filter_line in filter_file:
-          filter = filter_line.strip()
-          test_binary_name = filter.split(" ", 1)[0]
+          (test_binary_name, filter) = filter_line.strip().split(" ", 1)
 
           if test_binary_name not in test_bin_set:
             raise Exception("Filter found for unknown target: " +
@@ -56,19 +57,13 @@ def CombineList(test_files_dir, list_output_file, include_filters,
           # priority files are evaluated after lower priority files.
           test_filters[test_binary_name] = filter
 
-  test_binaries = (
-      list(test_bin_set - set(test_filters.keys())) +
-      test_filters.values())
+  test_binaries = [
+      binary + " " + (additional_runtime_options or "")
+             + (" " + test_filters[binary] if binary in test_filters else "")
+      for binary in test_bin_set]
 
-  if additional_runtime_options:
-    lines = [
-        binary + " " + additional_runtime_options
-        for binary in test_binaries
-    ]
-  else:
-    lines = test_binaries
   with open(list_output_file, "w") as f:
-    f.write("\n".join(sorted(lines)))
+    f.write("\n".join(sorted(test_binaries)))
 
 
 def CreateList(inputs, list_output_file):
