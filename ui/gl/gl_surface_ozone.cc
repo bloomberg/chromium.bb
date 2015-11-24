@@ -366,9 +366,11 @@ void GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
 
     base::WorkerPool::PostTaskAndReply(FROM_HERE, fence_wait_task,
                                        fence_retired_callback, false);
-  } else if (ozone_surface_->IsUniversalDisplayLinkDevice()) {
-    glFinish();
+    return;  // Defer frame submission until fence signals.
   }
+
+  if (ozone_surface_->IsUniversalDisplayLinkDevice())
+    glFinish();
 
   frame->ready = true;
   SubmitFrame();
