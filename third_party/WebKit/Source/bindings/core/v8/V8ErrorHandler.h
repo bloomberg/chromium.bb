@@ -43,12 +43,14 @@ class V8ErrorHandler final : public V8EventListener {
 public:
     static PassRefPtrWillBeRawPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     {
-        return adoptRefWillBeNoop(new V8ErrorHandler(listener, isInline, scriptState));
+        RefPtrWillBeRawPtr<V8ErrorHandler> eventListener = adoptRefWillBeNoop(new V8ErrorHandler(isInline, scriptState));
+        eventListener->setListenerObject(listener);
+        return eventListener.release();
     }
     static void storeExceptionOnErrorEventWrapper(ScriptState*, ErrorEvent*, v8::Local<v8::Value>, v8::Local<v8::Object> creationContext);
 
 private:
-    V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState*);
+    V8ErrorHandler(bool isInline, ScriptState*);
     v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
     bool shouldPreventDefault(v8::Local<v8::Value> returnValue) override;
 };

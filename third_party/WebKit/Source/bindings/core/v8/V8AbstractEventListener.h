@@ -42,6 +42,7 @@
 namespace blink {
 
 class Event;
+class WorkerGlobalScope;
 
 // There are two kinds of event listeners: HTML or non-HMTL. onload,
 // onfocus, etc (attributes) are always HTML event handler type; Event
@@ -105,31 +106,20 @@ public:
         return !m_listener.isEmpty();
     }
 
-    void clearListenerObject()
-    {
-        m_listener.clear();
-    }
+    void clearListenerObject();
 
     bool belongsToTheCurrentWorld() const final;
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
 
-    // Oilpan: promptly clear listener wrapper.
-    EAGERLY_FINALIZE();
-#if ENABLE(OILPAN)
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        EventListener::trace(visitor);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);
 
     virtual void prepareListenerObject(ExecutionContext*) { }
 
-    void setListenerObject(v8::Local<v8::Object>, ScriptState*);
+    void setListenerObject(v8::Local<v8::Object>);
 
     void invokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
 
@@ -147,9 +137,8 @@ private:
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 
     static void setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>&);
+    static void secondWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>&);
 
-    // The ScriptState the m_listener below was created in.
-    RefPtr<ScriptState> m_scriptStateForListener;
     ScopedPersistent<v8::Object> m_listener;
 
     // Indicates if this is an HTML type listener.
@@ -157,6 +146,13 @@ private:
 
     RefPtr<DOMWrapperWorld> m_world;
     v8::Isolate* m_isolate;
+
+    // nullptr unless this listener belongs to a worker.
+    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
+
+#if ENABLE(OILPAN)
+    SelfKeepAlive<V8AbstractEventListener> m_keepAlive;
+#endif
 };
 
 } // namespace blink

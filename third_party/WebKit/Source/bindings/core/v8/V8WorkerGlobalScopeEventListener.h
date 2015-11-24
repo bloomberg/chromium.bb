@@ -43,13 +43,15 @@ class V8WorkerGlobalScopeEventListener final : public V8EventListener {
 public:
     static PassRefPtrWillBeRawPtr<V8WorkerGlobalScopeEventListener> create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     {
-        return adoptRefWillBeNoop(new V8WorkerGlobalScopeEventListener(listener, isInline, scriptState));
+        RefPtrWillBeRawPtr<V8WorkerGlobalScopeEventListener> eventListener = adoptRefWillBeNoop(new V8WorkerGlobalScopeEventListener(isInline, scriptState));
+        eventListener->setListenerObject(listener);
+        return eventListener.release();
     }
 
     void handleEvent(ScriptState*, Event*) override;
 
 protected:
-    V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, ScriptState*);
+    V8WorkerGlobalScopeEventListener(bool isInline, ScriptState*);
 
 private:
     v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;

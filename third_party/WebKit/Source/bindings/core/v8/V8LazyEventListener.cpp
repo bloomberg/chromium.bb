@@ -203,7 +203,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     // m_code = String();
     // m_eventParameterName = String();
     // m_sourceURL = String();
-    setListenerObject(wrappedFunction, scriptState);
+    setListenerObject(wrappedFunction);
 }
 
 void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, ExecutionContext* executionContext, v8::Local<v8::Message> message)

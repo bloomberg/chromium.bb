@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScheduledAction.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/AddConsoleMessageTask.h"
@@ -211,6 +212,14 @@ void WorkerGlobalScope::dispose()
 
     // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
     // which become dangling once Heap is destroyed.
+    for (auto it = m_eventListeners.begin(); it != m_eventListeners.end(); ) {
+        RefPtrWillBeRawPtr<V8AbstractEventListener> listener = *it;
+        // clearListenerObject() will unregister the listener from
+        // m_eventListeners, and invalidate the iterator, so we have to advance
+        // it first.
+        ++it;
+        listener->clearListenerObject();
+    }
     removeAllEventListeners();
 
     clearScript();
@@ -324,6 +333,19 @@ WorkerEventQueue* WorkerGlobalScope::eventQueue() const
     return m_eventQueue.get();
 }
 
+void WorkerGlobalScope::registerEventListener(V8AbstractEventListener* eventListener)
+{
+    bool newEntry = m_eventListeners.add(eventListener).isNewEntry;
+    RELEASE_ASSERT(newEntry);
+}
+
+void WorkerGlobalScope::deregisterEventListener(V8AbstractEventListener* eventListener)
+{
+    auto it = m_eventListeners.find(eventListener);
+    RELEASE_ASSERT(it != m_eventListeners.end());
+    m_eventListeners.remove(it);
+}
+
 void WorkerGlobalScope::countFeature(UseCounter::Feature) const
 {
     // FIXME: How should we count features for shared/service workers?
@@ -404,6 +426,7 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_timers);
     visitor->trace(m_messageStorage);
     visitor->trace(m_pendingMessages);
+    visitor->trace(m_eventListeners);
     HeapSupplementable<WorkerGlobalScope>::trace(visitor);
 #endif
     ExecutionContext::trace(visitor);
