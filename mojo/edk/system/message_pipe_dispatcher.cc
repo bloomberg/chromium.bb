@@ -16,6 +16,10 @@
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/edk/system/transport_data.h"
 
+#if defined(OS_WIN)
+#include "mojo/edk/system/token_serializer_win.h"
+#endif
+
 namespace mojo {
 namespace edk {
 
@@ -38,7 +42,7 @@ struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
 
   size_t serialized_read_buffer_size;
   size_t serialized_write_buffer_size;
-  size_t serialized_messagage_queue_size;
+  size_t serialized_message_queue_size;
 
   // These are the FDs required as part of serializing channel_ and
   // message_queue_. This is only used on POSIX.
@@ -161,9 +165,9 @@ Dispatcher::Type MessagePipeDispatcher::GetType() const {
   return Type::MESSAGE_PIPE;
 }
 
+#if defined(OS_WIN)
 // TODO(jam): this is copied from RawChannelWin till I figure out what's the
-// best way we want to share this. Need to also consider posix which does
-// require access to the RawChannel.
+// best way we want to share this.
 // Since this is used for serialization of messages read/written to a MP that
 // aren't consumed by Mojo primitives yet, there could be an unbounded number of
 // them when a MP is being sent. As a result, even for POSIX we will probably
@@ -173,41 +177,16 @@ Dispatcher::Type MessagePipeDispatcher::GetType() const {
 ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
     size_t num_platform_handles,
     const void* platform_handle_table) {
-  // TODO(jam): this code will have to be updated once it's used in a sandbox
-  // and the receiving process doesn't have duplicate permission for the
-  // receiver. Once there's a broker and we have a connection to it (possibly
-  // through ConnectionManager), then we can make a sync IPC to it here to get a
-  // token for this handle, and it will duplicate the handle to is process. Then
-  // we pass the token to the receiver, which will then make a sync call to the
-  // broker to get a duplicated handle. This will also allow us to avoid leaks
-  // of the handle if the receiver dies, since the broker can notice that.
-  DCHECK_GT(num_platform_handles, 0u);
   ScopedPlatformHandleVectorPtr rv(new PlatformHandleVector());
+  rv->resize(num_platform_handles);
 
-#if defined(OS_WIN)
-  const char* serialization_data =
-      static_cast<const char*>(platform_handle_table);
-  for (size_t i = 0; i < num_platform_handles; i++) {
-    DWORD pid = *reinterpret_cast<const DWORD*>(serialization_data);
-    serialization_data += sizeof(DWORD);
-    HANDLE source_handle = *reinterpret_cast<const HANDLE*>(serialization_data);
-    serialization_data += sizeof(HANDLE);
-    base::Process sender =
-        base::Process::OpenWithAccess(pid, PROCESS_DUP_HANDLE);
-    DCHECK(sender.IsValid());
-    HANDLE target_handle = NULL;
-    BOOL dup_result =
-        DuplicateHandle(sender.Handle(), source_handle,
-                        base::GetCurrentProcessHandle(), &target_handle, 0,
-                        FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    DCHECK(dup_result);
-    rv->push_back(PlatformHandle(target_handle));
-  }
-#else
-  NOTREACHED() << "TODO(jam): implement";
-#endif
+  const uint64_t* tokens =
+      static_cast<const uint64_t*>(platform_handle_table);
+  internal::g_token_serializer->TokenToHandle(
+      tokens, num_platform_handles, &rv->at(0));
   return rv.Pass();
 }
+#endif
 
 scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     const void* source,
@@ -223,7 +202,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
   if (serialization->shared_memory_size !=
       (serialization->serialized_read_buffer_size +
        serialization->serialized_write_buffer_size +
-       serialization->serialized_messagage_queue_size)) {
+       serialization->serialized_message_queue_size)) {
     LOG(ERROR) << "Invalid serialized message pipe dispatcher (bad struct)";
     return nullptr;
   }
@@ -260,9 +239,9 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
           serialization->serialized_write_buffer_size;
       buffer += serialized_write_buffer_size;
     }
-    if (serialization->serialized_messagage_queue_size) {
+    if (serialization->serialized_message_queue_size) {
       message_queue_data = buffer;
-      message_queue_size = serialization->serialized_messagage_queue_size;
+      message_queue_size = serialization->serialized_message_queue_size;
       buffer += message_queue_size;
     }
   }
@@ -459,18 +438,13 @@ void MessagePipeDispatcher::SerializeInternal() {
           message->transport_data()->platform_handles();
       if (all_platform_handles) {
 #if defined(OS_WIN)
-        char* serialization_data =
+        uint64_t* tokens = reinterpret_cast<uint64_t*>(
             static_cast<char*>(message->transport_data()->buffer()) +
-             message->transport_data()->platform_handle_table_offset();
-        DWORD current_process_id = base::GetCurrentProcId();
-        for (size_t i = 0; i < all_platform_handles->size(); i++) {
-          *reinterpret_cast<DWORD*>(serialization_data) = current_process_id;
-          serialization_data += sizeof(DWORD);
-          *reinterpret_cast<HANDLE*>(serialization_data) =
-              all_platform_handles->at(i).handle;
-          serialization_data += sizeof(HANDLE);
+            message->transport_data()->platform_handle_table_offset());
+        internal::g_token_serializer->HandleToToken(
+            &all_platform_handles->at(0), all_platform_handles->size(), tokens);
+        for (size_t i = 0; i < all_platform_handles->size(); i++)
           all_platform_handles->at(i) = PlatformHandle();
-        }
 #else
         for (size_t i = 0; i < all_platform_handles->size(); i++) {
           serialized_fds_.push_back(all_platform_handles->at(i).fd);
@@ -700,13 +674,13 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
   serialization->write_error = write_error_;
   serialization->serialized_read_buffer_size = serialized_read_buffer_.size();
   serialization->serialized_write_buffer_size = serialized_write_buffer_.size();
-  serialization->serialized_messagage_queue_size =
+  serialization->serialized_message_queue_size =
       serialized_message_queue_.size();
 
   serialization->shared_memory_size = static_cast<uint32_t>(
       serialization->serialized_read_buffer_size +
       serialization->serialized_write_buffer_size +
-      serialization->serialized_messagage_queue_size);
+      serialization->serialized_message_queue_size);
   if (serialization->shared_memory_size) {
     scoped_refptr<PlatformSharedBuffer> shared_buffer(
         internal::g_platform_support->CreateSharedBuffer(

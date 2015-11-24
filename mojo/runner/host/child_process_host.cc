@@ -39,8 +39,15 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       channel_info_(nullptr),
       start_child_process_event_(false, false),
       weak_factory_(this) {
-  platform_channel_ = platform_channel_pair_.PassServerHandle();
-  CHECK(platform_channel_.is_valid());
+#if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
+    serializer_platform_channel_pair_.reset(new edk::PlatformChannelPair(true));
+#endif
+
+  child_message_pipe_ = embedder::CreateChannel(
+      platform_channel_pair_.PassServerHandle(),
+      base::Bind(&ChildProcessHost::DidCreateChannel, base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 ChildProcessHost::ChildProcessHost(ScopedHandle channel)
@@ -61,14 +68,27 @@ ChildProcessHost::~ChildProcessHost() {
 
 void ChildProcessHost::Start() {
   DCHECK(!child_process_.IsValid());
-  DCHECK(platform_channel_.is_valid());
+  DCHECK(child_message_pipe_.is_valid());
 
-  ScopedMessagePipeHandle handle(embedder::CreateChannel(
-      platform_channel_.Pass(), base::Bind(&ChildProcessHost::DidCreateChannel,
-                                           weak_factory_.GetWeakPtr()),
-      base::ThreadTaskRunnerHandle::Get()));
+#if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    std::string client_handle_as_string =
+        serializer_platform_channel_pair_
+            ->PrepareToPassClientHandleToChildProcessAsString(
+                &handle_passing_info_);
+    // We can't send the MP for the token serializer implementation as a
+    // platform handle, because that would require the other side to use the
+    // token initializer itself! So instead we send it as a string.
+    MojoResult rv = MojoWriteMessage(
+        child_message_pipe_.get().value(), client_handle_as_string.c_str(),
+        static_cast<uint32_t>(client_handle_as_string.size()), nullptr, 0,
+        MOJO_WRITE_MESSAGE_FLAG_NONE);
+    DCHECK_EQ(rv, MOJO_RESULT_OK);
+  }
+#endif
 
-  controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
+  controller_.Bind(
+      InterfacePtrInfo<ChildController>(child_message_pipe_.Pass(), 0u));
 
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -133,14 +153,13 @@ void ChildProcessHost::DoLaunch() {
   if (start_sandboxed_)
     child_command_line.AppendSwitch(switches::kEnableSandbox);
 
-  embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_.PrepareToPassClientHandleToChildProcess(
-      &child_command_line, &handle_passing_info);
+      &child_command_line, &handle_passing_info_);
 
   base::LaunchOptions options;
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    options.handles_to_inherit = &handle_passing_info;
+    options.handles_to_inherit = &handle_passing_info_;
   } else {
 #if defined(OFFICIAL_BUILD)
     CHECK(false) << "Launching mojo process with inherit_handles is insecure!";
@@ -159,16 +178,16 @@ void ChildProcessHost::DoLaunch() {
   // (i.e. by apptest_runner.py) then a real handle is used. In that case, we do
   // want to add it to the list of handles that is inherited.
   if (GetFileType(options.stdout_handle) != FILE_TYPE_CHAR)
-    handle_passing_info.push_back(options.stdout_handle);
+    handle_passing_info_.push_back(options.stdout_handle);
   if (GetFileType(options.stderr_handle) != FILE_TYPE_CHAR &&
       options.stdout_handle != options.stdout_handle) {
-    handle_passing_info.push_back(options.stderr_handle);
+    handle_passing_info_.push_back(options.stderr_handle);
   }
 #elif defined(OS_POSIX)
-  handle_passing_info.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
-  handle_passing_info.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
-  handle_passing_info.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
-  options.fds_to_remap = &handle_passing_info;
+  handle_passing_info_.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
+  handle_passing_info_.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
+  handle_passing_info_.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
+  options.fds_to_remap = &handle_passing_info_;
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line.GetCommandLineString();
@@ -184,8 +203,19 @@ void ChildProcessHost::DoLaunch() {
 #endif
     child_process_ = base::LaunchProcess(child_command_line, options);
 
-  if (child_process_.IsValid())
+  if (child_process_.IsValid()) {
     platform_channel_pair_.ChildProcessLaunched();
+#if defined(OS_WIN)
+    if (serializer_platform_channel_pair_.get()) {
+      serializer_platform_channel_pair_->ChildProcessLaunched();
+      mojo::embedder::ChildProcessLaunched(
+          child_process_.Handle(),
+          serializer_platform_channel_pair_->PassServerHandle()
+              .release()
+              .handle);
+    }
+#endif
+  }
   start_child_process_event_.Signal();
 }
 

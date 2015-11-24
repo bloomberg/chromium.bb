@@ -10,6 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/runner/child/child_controller.mojom.h"
 #include "mojo/runner/host/child_process_host.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
@@ -70,22 +72,29 @@ class ChildProcessHost {
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
 
-  base::TaskRunner* const launch_process_runner_;
+  scoped_refptr<base::TaskRunner> launch_process_runner_;
   bool start_sandboxed_;
   const base::FilePath app_path_;
   base::Process child_process_;
+  // Used for the ChildController binding.
   embedder::PlatformChannelPair platform_channel_pair_;
   ChildControllerPtr controller_;
   embedder::ChannelInfo* channel_info_;
   ChildController::StartAppCallback on_app_complete_;
+  embedder::HandlePassingInformation handle_passing_info_;
+
+#if defined(OS_WIN)
+  // Used only when --use-new-edk is specified, as a communication channel for
+  // TokenSerializer.
+  scoped_ptr<edk::PlatformChannelPair> serializer_platform_channel_pair_;
+#endif
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.
   base::WaitableEvent start_child_process_event_;
 
-  // Platform-specific "pipe" to the child process. Valid immediately after
-  // creation.
-  embedder::ScopedPlatformHandle platform_channel_;
+  // A message pipe to the child process. Valid immediately after creation.
+  mojo::ScopedMessagePipeHandle child_message_pipe_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

@@ -19,11 +19,11 @@ int main(int argc, char** argv) {
   // Register JNI bindings for android.
   base::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
 #endif
+  content::UnitTestTestSuite test_suite(
+      new content::ContentTestSuite(argc, argv));
 #if !defined(OS_IOS)
   content::InitializeMojo();
 #endif
-  content::UnitTestTestSuite test_suite(
-      new content::ContentTestSuite(argc, argv));
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&content::UnitTestTestSuite::Run,

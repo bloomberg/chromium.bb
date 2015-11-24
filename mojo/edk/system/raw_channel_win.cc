@@ -19,6 +19,7 @@
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
+#include "mojo/edk/system/token_serializer_win.h"
 #include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -29,11 +30,6 @@ namespace mojo {
 namespace edk {
 
 namespace {
-
-struct MOJO_ALIGNAS(8) SerializedHandle {
-  DWORD handle_pid;
-  HANDLE handle;
-};
 
 class VistaOrHigherFunctions {
  public:
@@ -602,35 +598,14 @@ class RawChannelWin final : public RawChannel {
   ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) override {
-    // TODO(jam): this code will have to be updated once it's used in a sandbox
-    // and the receiving process doesn't have duplicate permission for the
-    // receiver. Once there's a broker and we have a connection to it (possibly
-    // through ConnectionManager), then we can make a sync IPC to it here to get
-    // a token for this handle, and it will duplicate the handle to is process.
-    // Then we pass the token to the receiver, which will then make a sync call
-    // to the broker to get a duplicated handle. This will also allow us to
-    // avoid leaks of the handle if the receiver dies, since the broker can
-    // notice that.
     DCHECK_GT(num_platform_handles, 0u);
     ScopedPlatformHandleVectorPtr rv(new PlatformHandleVector());
+    rv->resize(num_platform_handles);
 
-    const SerializedHandle* serialization_data =
-        static_cast<const SerializedHandle*>(platform_handle_table);
-    for (size_t i = 0; i < num_platform_handles; i++) {
-      DWORD pid = serialization_data->handle_pid;
-      HANDLE source_handle = serialization_data->handle;
-      serialization_data ++;
-      base::Process sender =
-          base::Process::OpenWithAccess(pid, PROCESS_DUP_HANDLE);
-      DCHECK(sender.IsValid());
-      HANDLE target_handle = NULL;
-      BOOL dup_result = DuplicateHandle(
-          sender.Handle(), source_handle,
-          base::GetCurrentProcessHandle(), &target_handle, 0,
-          FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-      DCHECK(dup_result);
-      rv->push_back(PlatformHandle(target_handle));
-    }
+    const uint64_t* tokens =
+        static_cast<const uint64_t*>(platform_handle_table);
+    internal::g_token_serializer->TokenToHandle(
+        tokens, num_platform_handles, &rv->at(0));
     return rv.Pass();
   }
 
@@ -638,26 +613,19 @@ class RawChannelWin final : public RawChannel {
     if (!write_buffer_no_lock()->HavePlatformHandlesToSend())
       return 0u;
 
-    // Since we're not sure which process might ultimately deserialize this
-    // message, we can't duplicate the handle now. Instead, write the process
-    // ID and handle now and let the receiver duplicate it.
     PlatformHandle* platform_handles;
     void* serialization_data_temp;
     size_t num_platform_handles;
     write_buffer_no_lock()->GetPlatformHandlesToSend(
         &num_platform_handles, &platform_handles, &serialization_data_temp);
-    SerializedHandle* serialization_data =
-        static_cast<SerializedHandle*>(serialization_data_temp);
+    uint64_t* tokens = static_cast<uint64_t*>(serialization_data_temp);
     DCHECK_GT(num_platform_handles, 0u);
     DCHECK(platform_handles);
 
-    DWORD current_process_id = base::GetCurrentProcId();
-    for (size_t i = 0; i < num_platform_handles; i++) {
-      serialization_data->handle_pid = current_process_id;
-      serialization_data->handle = platform_handles[i].handle;
-      serialization_data++;
+    internal::g_token_serializer->HandleToToken(
+        &platform_handles[0], num_platform_handles, tokens);
+    for (size_t i = 0; i < num_platform_handles; i++)
       platform_handles[i] = PlatformHandle();
-    }
     return num_platform_handles;
   }
 
@@ -778,7 +746,7 @@ RawChannel* RawChannel::Create(ScopedPlatformHandle handle) {
 }
 
 size_t RawChannel::GetSerializedPlatformHandleSize() {
-  return sizeof(SerializedHandle);
+  return sizeof(uint64_t);
 }
 
 bool RawChannel::IsOtherEndOf(RawChannel* other) {

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/process.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -28,6 +29,27 @@ class ProcessDelegate;
 
 // Allows changing the default max message size. Must be called before Init.
 MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
+
+#if defined(OS_WIN)
+// Must be called before Init in the parent (unsandboxed) process.
+MOJO_SYSTEM_IMPL_EXPORT void PreInitializeParentProcess();
+
+// Must be called before Init in the child (sandboxed) process.
+MOJO_SYSTEM_IMPL_EXPORT void PreInitializeChildProcess();
+
+// Called in the parent process for each child process that is launched. The
+// returned handle must be sent to the child process which then calls
+// SetParentPipeHandle.
+MOJO_SYSTEM_IMPL_EXPORT HANDLE ChildProcessLaunched(HANDLE child_process);
+// Like above, except used when the embedder establishes the pipe between the
+// parent and child processes itself.
+MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(HANDLE child_process,
+                                                  HANDLE server_pipe);
+
+// Should be called as early as possible in the child process with the handle
+// that the parent received from ChildProcessLaunched.
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(HANDLE pipe);
+#endif
 
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.

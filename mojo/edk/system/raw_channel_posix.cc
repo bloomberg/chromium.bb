@@ -566,19 +566,25 @@ size_t RawChannel::GetSerializedPlatformHandleSize() {
 }
 
 bool RawChannel::IsOtherEndOf(RawChannel* other) {
+#if defined(OFFICIAL_BUILD)
+  return false;
+#else
+  // We don't check the return code of getsockopt because this is only available
+  // on Linux after 3.4. This is a developer error, so we just have to catch it
+  // on platforms that developers use.
+  // Note that since we're storing a 32 bit integer, we can get collisions so we
+  // will only use it in non-official builds.
   DCHECK_NE(other, this);
   PlatformHandle this_handle = static_cast<RawChannelPosix*>(this)->GetFD();
   PlatformHandle other_handle = static_cast<RawChannelPosix*>(other)->GetFD();
 
-  // We don't check the return code of getsockopt because this is only available
-  // on Linux after 3.4. This is a developer error, so we just have to catch it
-  // on platforms that developers use.
   int id1 = 0;
   int id2 = 1;
   socklen_t peek_off_size = sizeof(id1);
   getsockopt(this_handle.fd, SOL_SOCKET, SO_PEEK_OFF, &id1, &peek_off_size);
   getsockopt(other_handle.fd, SOL_SOCKET, SO_PEEK_OFF, &id2, &peek_off_size);
   return id1 == id2;
+#endif
 }
 
 }  // namespace edk

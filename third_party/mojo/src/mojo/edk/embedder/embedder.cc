@@ -13,7 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/process_delegate.h"
+#include "mojo/edk/system/core.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder_internal.h"
 #include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
@@ -27,8 +29,6 @@
 #include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/platform_handle_dispatcher.h"
 #include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
-#include "../../../../../../mojo/edk/system/core.h"
-#include "../../../../../../mojo/edk/embedder/embedder_internal.h"
 
 namespace mojo {
 namespace embedder {
@@ -93,6 +93,28 @@ system::ChannelId MakeChannelId() {
 }
 
 }  // namespace
+
+#if defined(OS_WIN)
+void PreInitializeParentProcess() {
+  edk::PreInitializeParentProcess();
+}
+
+void PreInitializeChildProcess() {
+  edk::PreInitializeChildProcess();
+}
+
+HANDLE ChildProcessLaunched(HANDLE child_process) {
+  return edk::ChildProcessLaunched(child_process);
+}
+
+void ChildProcessLaunched(HANDLE child_process, HANDLE server_pipe) {
+  return edk::ChildProcessLaunched(child_process, server_pipe);
+}
+
+void SetParentPipeHandle(HANDLE pipe) {
+  edk::SetParentPipeHandle(pipe);
+}
+#endif
 
 void SetMaxMessageSize(size_t bytes) {
   system::GetMutableConfiguration()->max_message_num_bytes = bytes;

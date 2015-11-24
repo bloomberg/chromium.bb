@@ -38,22 +38,24 @@ bool IsTargetDescriptorUsed(
 
 }  // namespace
 
-PlatformChannelPair::PlatformChannelPair() {
-  // Create the Unix domain socket and set the ends to nonblocking.
+PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
+  // Create the Unix domain socket.
   int fds[2];
   // TODO(vtl): Maybe fail gracefully if |socketpair()| fails.
 
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
 
   // Store a common id in the SO_PEEK_OFF option (which we don't use since we
-  // don't peak) as a way of determining later if two sockets are connected to
+  // don't peek) as a way of determining later if two sockets are connected to
   // each other.
   int identifier = base::RandInt(kint32min, kint32max);
   setsockopt(fds[0], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
   setsockopt(fds[1], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
 
+  // Set the ends to nonblocking.
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
-  PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
+  if (!client_is_blocking)
+    PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
 
 #if defined(OS_MACOSX)
   // This turns off |SIGPIPE| when writing to a closed socket (causing it to
@@ -77,9 +79,15 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   std::string client_fd_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
+  return PassClientHandleFromParentProcessFromString(client_fd_string);
+}
+
+ScopedPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+    const std::string& value) {
   int client_fd = -1;
-  if (client_fd_string.empty() ||
-      !base::StringToInt(client_fd_string, &client_fd) ||
+  if (value.empty() ||
+      !base::StringToInt(value, &client_fd) ||
       client_fd < base::GlobalDescriptors::kBaseDescriptor) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
     return ScopedPlatformHandle();
@@ -92,6 +100,24 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
     base::CommandLine* command_line,
     base::FileHandleMappingVector* handle_passing_info) const {
   DCHECK(command_line);
+
+  // Log a warning if the command line already has the switch, but "clobber" it
+  // anyway, since it's reasonably likely that all the switches were just copied
+  // from the parent.
+  LOG_IF(WARNING, command_line->HasSwitch(kMojoPlatformChannelHandleSwitch))
+      << "Child command line already has switch --"
+      << kMojoPlatformChannelHandleSwitch << "="
+      << command_line->GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
+  // (Any existing switch won't actually be removed from the command line, but
+  // the last one appended takes precedence.)
+  command_line->AppendSwitchASCII(
+      kMojoPlatformChannelHandleSwitch,
+      PrepareToPassClientHandleToChildProcessAsString(handle_passing_info));
+}
+
+std::string
+PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
+      HandlePassingInformation* handle_passing_info) const {
   DCHECK(handle_passing_info);
   // This is an arbitrary sanity check. (Note that this guarantees that the loop
   // below will terminate sanely.)
@@ -108,17 +134,7 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
 
   handle_passing_info->push_back(
       std::pair<int, int>(client_handle_.get().fd, target_fd));
-  // Log a warning if the command line already has the switch, but "clobber" it
-  // anyway, since it's reasonably likely that all the switches were just copied
-  // from the parent.
-  LOG_IF(WARNING, command_line->HasSwitch(kMojoPlatformChannelHandleSwitch))
-      << "Child command line already has switch --"
-      << kMojoPlatformChannelHandleSwitch << "="
-      << command_line->GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
-  // (Any existing switch won't actually be removed from the command line, but
-  // the last one appended takes precedence.)
-  command_line->AppendSwitchASCII(kMojoPlatformChannelHandleSwitch,
-                                  base::IntToString(target_fd));
+  return base::IntToString(target_fd);
 }
 
 }  // namespace edk

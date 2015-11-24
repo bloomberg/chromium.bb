@@ -166,6 +166,7 @@
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
@@ -2441,6 +2442,16 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // Send a handle that the external Mojo shell can use to pass an Application
   // request to the child.
   RegisterChildWithExternalShell(id_, GetHandle(), this);
+#endif
+
+#if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk") &&
+      child_process_launcher_.get()) {
+    HANDLE process_handle = child_process_launcher_->GetProcess().Handle();
+    HANDLE client_pipe = mojo::embedder::ChildProcessLaunched(process_handle);
+    Send(new ChildProcessMsg_SetMojoParentPipeHandle(
+        IPC::GetFileHandleForProcess(client_pipe, process_handle, true)));
+  }
 #endif
 
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.

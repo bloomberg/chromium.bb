@@ -235,6 +235,9 @@ class CONTENT_EXPORT ChildThreadImpl
 #ifdef IPC_MESSAGE_LOG_ENABLED
   void OnSetIPCLoggingEnabled(bool enable);
 #endif
+#if defined(OS_WIN)
+  void OnSetMojoParentPipeHandle(const IPC::PlatformFileForTransit& file);
+#endif
 #if defined(USE_TCMALLOC)
   void OnGetTcmallocStats();
 #endif

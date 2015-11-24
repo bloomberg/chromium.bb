@@ -61,6 +61,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
@@ -658,6 +659,10 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProcessBackgrounded)
     IPC_MESSAGE_HANDLER(MojoMsg_BindExternalMojoShellHandle,
                         OnBindExternalMojoShellHandle)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetMojoParentPipeHandle,
+                        OnSetMojoParentPipeHandle)
+#endif
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
@@ -729,6 +734,13 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
   MojoShellConnectionImpl::CreateWithMessagePipe(message_pipe.Pass());
 #endif  // defined(MOJO_SHELL_CLIENT)
 }
+
+#if defined(OS_WIN)
+void ChildThreadImpl::OnSetMojoParentPipeHandle(
+    const IPC::PlatformFileForTransit& file) {
+  mojo::embedder::SetParentPipeHandle(file);
+}
+#endif
 
 #if defined(USE_TCMALLOC)
 void ChildThreadImpl::OnGetTcmallocStats() {

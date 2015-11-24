@@ -13,12 +13,20 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
+
+#if defined(OS_WIN)
+#include "mojo/edk/system/child_token_serializer_win.h"
+#include "mojo/edk/system/parent_token_serializer_state_win.h"
+#include "mojo/edk/system/parent_token_serializer_win.h"
+#include "mojo/edk/system/simple_token_serializer_win.h"
+#endif
 
 namespace mojo {
 namespace edk {
@@ -49,6 +57,9 @@ void ShutdownIPCSupportHelper(bool wait_for_no_more_channels) {
 namespace internal {
 
 // Declared in embedder_internal.h.
+#if defined(OS_WIN)
+TokenSerializer* g_token_serializer = nullptr;
+#endif
 PlatformSupport* g_platform_support = nullptr;
 Core* g_core = nullptr;
 
@@ -82,7 +93,40 @@ void SetMaxMessageSize(size_t bytes) {
   GetMutableConfiguration()->max_message_num_bytes = bytes;
 }
 
+#if defined(OS_WIN)
+void PreInitializeParentProcess() {
+  ParentTokenSerializerState::GetInstance();
+}
+
+void PreInitializeChildProcess() {
+  ChildTokenSerializer::GetInstance();
+}
+
+HANDLE ChildProcessLaunched(HANDLE child_process) {
+  PlatformChannelPair token_channel;
+  new ParentTokenSerializer(child_process, token_channel.PassServerHandle());
+  return token_channel.PassClientHandle().release().handle;
+}
+
+void ChildProcessLaunched(HANDLE child_process, HANDLE server_pipe) {
+  new ParentTokenSerializer(
+      child_process, ScopedPlatformHandle(PlatformHandle(server_pipe)));
+}
+
+void SetParentPipeHandle(HANDLE pipe) {
+  ScopedPlatformHandle handle;
+  handle.reset(PlatformHandle(pipe));
+  ChildTokenSerializer::GetInstance()->
+      SetParentTokenSerializerHandle(handle.Pass());
+}
+#endif
+
 void Init() {
+#if defined(OS_WIN)
+  if (!internal::g_token_serializer)
+    internal::g_token_serializer = new SimpleTokenSerializer;
+#endif
+
   DCHECK(!internal::g_platform_support);
   internal::g_platform_support = new SimplePlatformSupport();
 

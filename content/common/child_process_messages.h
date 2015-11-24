@@ -16,6 +16,7 @@
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
@@ -130,6 +131,12 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)
 // and/or acquiring IOSurfaces.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIOSurfaceManagerToken,
                      content::IOSurfaceManagerToken /* token */)
+#endif
+
+#if defined(OS_WIN)
+// Sends a pipe used by the child process to broker passing of Mojo handles.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetMojoParentPipeHandle,
+                     IPC::PlatformFileForTransit /* handle */)
 #endif
 
 #if defined(USE_OZONE)

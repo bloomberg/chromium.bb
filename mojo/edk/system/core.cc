@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/platform_support.h"
@@ -23,6 +24,10 @@
 #include "mojo/edk/system/waiter.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/system/macros.h"
+
+#if defined(OS_WIN)
+#include "mojo/edk/system/token_serializer_win.h"
+#endif
 
 namespace mojo {
 namespace edk {
@@ -204,11 +209,19 @@ MojoResult Core::CreateMessagePipe(
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
+  ScopedPlatformHandle server_handle, client_handle;
+#if defined(OS_WIN)
+  internal::g_token_serializer->CreatePlatformChannelPair(
+      &server_handle, &client_handle);
+#else
   PlatformChannelPair channel_pair;
-  dispatcher0->Init(channel_pair.PassServerHandle(), nullptr, 0u, nullptr, 0u,
-                    nullptr, nullptr);
-  dispatcher1->Init(channel_pair.PassClientHandle(), nullptr, 0u, nullptr, 0u,
-                    nullptr, nullptr);
+  server_handle = channel_pair.PassServerHandle();
+  client_handle = channel_pair.PassClientHandle();
+#endif
+  dispatcher0->Init(server_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
+                    nullptr);
+  dispatcher1->Init(client_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
+                    nullptr);
 
   *message_pipe_handle0 = handle_pair.first;
   *message_pipe_handle1 = handle_pair.second;
@@ -364,9 +377,17 @@ MojoResult Core::CreateDataPipe(
   }
   DCHECK_NE(handle_pair.second, MOJO_HANDLE_INVALID);
 
+  ScopedPlatformHandle server_handle, client_handle;
+#if defined(OS_WIN)
+  internal::g_token_serializer->CreatePlatformChannelPair(
+      &server_handle, &client_handle);
+#else
   PlatformChannelPair channel_pair;
-  producer_dispatcher->Init(channel_pair.PassServerHandle(), nullptr, 0u);
-  consumer_dispatcher->Init(channel_pair.PassClientHandle(), nullptr, 0u);
+  server_handle = channel_pair.PassServerHandle();
+  client_handle = channel_pair.PassClientHandle();
+#endif
+  producer_dispatcher->Init(server_handle.Pass(), nullptr, 0u);
+  consumer_dispatcher->Init(client_handle.Pass(), nullptr, 0u);
 
   *data_pipe_producer_handle = handle_pair.first;
   *data_pipe_consumer_handle = handle_pair.second;

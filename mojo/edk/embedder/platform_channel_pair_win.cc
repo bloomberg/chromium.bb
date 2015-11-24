@@ -29,10 +29,10 @@ std::wstring GeneratePipeName() {
 
 }  // namespace
 
-PlatformChannelPair::PlatformChannelPair() {
+PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   std::wstring pipe_name = GeneratePipeName();
 
-  const DWORD kOpenMode =
+  DWORD kOpenMode =
       PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE;
   const DWORD kPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE;
   server_handle_.reset(PlatformHandle(
@@ -47,8 +47,9 @@ PlatformChannelPair::PlatformChannelPair() {
   const DWORD kDesiredAccess = GENERIC_READ | GENERIC_WRITE;
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
-  const DWORD kFlags =
-      SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
+  DWORD kFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS;
+  if (!client_is_blocking)
+    kFlags |= FILE_FLAG_OVERLAPPED;
   // Allow the handle to be inherited by child processes.
   SECURITY_ATTRIBUTES security_attributes = {
       sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
@@ -70,10 +71,15 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   std::string client_handle_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
+  return PassClientHandleFromParentProcessFromString(client_handle_string);
+}
 
+ScopedPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+    const std::string& value) {
   int client_handle_value = 0;
-  if (client_handle_string.empty() ||
-      !base::StringToInt(client_handle_string, &client_handle_value)) {
+  if (value.empty() ||
+      !base::StringToInt(value, &client_handle_value)) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
     return ScopedPlatformHandle();
   }
@@ -86,11 +92,6 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
     base::CommandLine* command_line,
     base::HandlesToInheritVector* handle_passing_info) const {
   DCHECK(command_line);
-  DCHECK(handle_passing_info);
-  DCHECK(client_handle_.is_valid());
-
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    handle_passing_info->push_back(client_handle_.get().handle);
 
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
@@ -103,7 +104,19 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
   // the last one appended takes precedence.)
   command_line->AppendSwitchASCII(
       kMojoPlatformChannelHandleSwitch,
-      base::IntToString(HandleToLong(client_handle_.get().handle)));
+      PrepareToPassClientHandleToChildProcessAsString(handle_passing_info));
+}
+
+std::string
+PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
+    HandlePassingInformation* handle_passing_info) const {
+  DCHECK(handle_passing_info);
+  DCHECK(client_handle_.is_valid());
+
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    handle_passing_info->push_back(client_handle_.get().handle);
+
+  return base::IntToString(HandleToLong(client_handle_.get().handle));
 }
 
 }  // namespace edk

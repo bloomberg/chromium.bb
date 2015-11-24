@@ -19,9 +19,23 @@
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
+namespace edk {
+class TokenSerializer;
+}
+
 namespace embedder {
 
 class ProcessDelegate;
+
+#if defined(OS_WIN)
+// Wrapper functions around the ones in src/mojo/edk for component builds.
+MOJO_SYSTEM_IMPL_EXPORT void PreInitializeParentProcess();
+MOJO_SYSTEM_IMPL_EXPORT void PreInitializeChildProcess();
+MOJO_SYSTEM_IMPL_EXPORT HANDLE ChildProcessLaunched(HANDLE child_process);
+MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(HANDLE child_process,
+                                                  HANDLE server_pipe);
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(HANDLE pipe);
+#endif
 
 // Basic configuration/initialization ------------------------------------------
 

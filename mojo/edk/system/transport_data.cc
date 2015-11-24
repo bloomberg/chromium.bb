@@ -18,7 +18,7 @@ namespace edk {
 // |TransportData::kMaxBufferSize|. This value should be a multiple of the
 // alignment in order to simplify calculations, even though the actual amount of
 // space needed need not be a multiple of the alignment.
-const size_t kMaxSizePerPlatformHandle = 16;
+const size_t kMaxSizePerPlatformHandle = 8;
 static_assert(kMaxSizePerPlatformHandle % MessageInTransit::kMessageAlignment ==
                   0,
               "kMaxSizePerPlatformHandle not a multiple of alignment");

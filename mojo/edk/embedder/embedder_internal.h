@@ -24,8 +24,14 @@ namespace edk {
 class Core;
 class PlatformSupport;
 class ProcessDelegate;
+class TokenSerializer;
 
 namespace internal {
+
+#if defined(OS_WIN)
+// Instance of |TokenSerializer| to use.
+extern TokenSerializer* g_token_serializer;
+#endif
 
 // Instance of |PlatformSupport| to use.
 extern PlatformSupport* g_platform_support;

@@ -12,6 +12,10 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/handle_table.h"
 
+#if defined(OS_WIN)
+#include "mojo/edk/system/token_serializer_win.h"
+#endif
+
 namespace mojo {
 
 namespace edk {
@@ -46,6 +50,12 @@ bool Shutdown() {
   CHECK(internal::g_platform_support);
   delete internal::g_platform_support;
   internal::g_platform_support = nullptr;
+
+#if defined(OS_WIN)
+  CHECK(internal::g_token_serializer);
+  delete internal::g_token_serializer;
+  internal::g_token_serializer = nullptr;
+#endif
 
   return rv;
 }

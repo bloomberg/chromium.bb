@@ -21,6 +21,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
@@ -43,6 +45,10 @@ namespace mojo {
 namespace runner {
 
 namespace {
+
+void DidCreateChannel(embedder::ChannelInfo* channel_info) {
+  DVLOG(2) << "ChildControllerImpl::DidCreateChannel()";
+}
 
 // Blocker ---------------------------------------------------------------------
 
@@ -102,6 +108,10 @@ class AppContext : public embedder::ProcessDelegate {
   ~AppContext() override {}
 
   void Init() {
+#if defined(OS_WIN)
+    embedder::PreInitializeChildProcess();
+#endif
+
     // Initialize Mojo before starting any threads.
     embedder::Init();
 
@@ -193,21 +203,15 @@ class ChildControllerImpl : public ChildController {
   // etc.
   static void Init(AppContext* app_context,
                    base::NativeLibrary app_library,
-                   embedder::ScopedPlatformHandle platform_channel,
+                   ScopedMessagePipeHandle host_message_pipe,
                    const Blocker::Unblocker& unblocker) {
     DCHECK(app_context);
-    DCHECK(platform_channel.is_valid());
+    DCHECK(host_message_pipe.is_valid());
 
     DCHECK(!app_context->controller());
 
     scoped_ptr<ChildControllerImpl> impl(
         new ChildControllerImpl(app_context, app_library, unblocker));
-
-    ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
-        platform_channel.Pass(),
-        base::Bind(&ChildControllerImpl::DidCreateChannel,
-                   base::Unretained(impl.get())),
-        base::ThreadTaskRunnerHandle::Get()));
 
     impl->Bind(host_message_pipe.Pass());
 
@@ -251,13 +255,6 @@ class ChildControllerImpl : public ChildController {
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
-  // Callback for |embedder::CreateChannel()|.
-  void DidCreateChannel(embedder::ChannelInfo* channel_info) {
-    DVLOG(2) << "ChildControllerImpl::DidCreateChannel()";
-    DCHECK(thread_checker_.CalledOnValidThread());
-    channel_info_ = channel_info;
-  }
-
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,
       InterfaceRequest<Application> application_request) {
@@ -278,6 +275,69 @@ class ChildControllerImpl : public ChildController {
   DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);
 };
 
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+scoped_ptr<mojo::runner::LinuxSandbox> InitializeSandbox() {
+  using sandbox::syscall_broker::BrokerFilePermission;
+  // Warm parts of base in the copy of base in the mojo runner.
+  base::RandUint64();
+  base::SysInfo::AmountOfPhysicalMemory();
+  base::SysInfo::MaxSharedMemorySize();
+  base::SysInfo::NumberOfProcessors();
+
+  // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
+  // spy on other shared memory using processes. This is a temporary hack
+  // so that we have some sandbox until we have proper shared memory
+  // support integrated into mojo.
+  std::vector<BrokerFilePermission> permissions;
+  permissions.push_back(
+      BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
+  scoped_ptr<mojo::runner::LinuxSandbox> sandbox(
+      new mojo::runner::LinuxSandbox(permissions));
+  sandbox->Warmup();
+  sandbox->EngageNamespaceSandbox();
+  sandbox->EngageSeccompSandbox();
+  sandbox->Seal();
+  return sandbox.Pass();
+}
+#endif
+
+ScopedMessagePipeHandle InitializeHostMessagePipe(
+    embedder::ScopedPlatformHandle platform_channel,
+    scoped_refptr<base::TaskRunner> io_task_runner) {
+  ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
+      platform_channel.Pass(), base::Bind(&DidCreateChannel), io_task_runner));
+
+#if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    // When using the new Mojo EDK, each message pipe is backed by a platform
+    // handle. The one platform handle that comes on the command line is used
+    // to bind to the ChildController interface. However we also want a
+    // platform handle to setup the communication channel by which we exchange
+    // handles to/from tokens, which is needed for sandboxed Windows
+    // processes.
+    char token_serializer_handle[10];
+    MojoHandleSignalsState state;
+    MojoResult rv =
+        MojoWait(host_message_pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                 MOJO_DEADLINE_INDEFINITE, &state);
+    CHECK_EQ(MOJO_RESULT_OK, rv);
+    uint32_t num_bytes = arraysize(token_serializer_handle);
+    rv = MojoReadMessage(host_message_pipe.get().value(),
+                         token_serializer_handle, &num_bytes, nullptr, 0,
+                         MOJO_READ_MESSAGE_FLAG_NONE);
+    CHECK_EQ(MOJO_RESULT_OK, rv);
+
+    edk::ScopedPlatformHandle token_serializer_channel =
+        edk::PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+            std::string(token_serializer_handle, num_bytes));
+    CHECK(token_serializer_channel.is_valid());
+    embedder::SetParentPipeHandle(token_serializer_channel.release().handle);
+  }
+#endif
+
+  return host_message_pipe.Pass();
+}
+
 }  // namespace
 
 int ChildProcessMain() {
@@ -286,41 +346,19 @@ int ChildProcessMain() {
       *base::CommandLine::ForCurrentProcess();
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  using sandbox::syscall_broker::BrokerFilePermission;
   scoped_ptr<mojo::runner::LinuxSandbox> sandbox;
 #endif
   base::NativeLibrary app_library = 0;
-  if (command_line.HasSwitch(switches::kChildProcess)) {
-    // Load the application library before we engage the sandbox.
-    app_library = mojo::runner::LoadNativeApplication(
-        command_line.GetSwitchValuePath(switches::kChildProcess));
+  // Load the application library before we engage the sandbox.
+  app_library = mojo::runner::LoadNativeApplication(
+      command_line.GetSwitchValuePath(switches::kChildProcess));
 
-    base::i18n::InitializeICU();
-    CallLibraryEarlyInitialization(app_library);
-
+  base::i18n::InitializeICU();
+  CallLibraryEarlyInitialization(app_library);
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-    if (command_line.HasSwitch(switches::kEnableSandbox)) {
-      // Warm parts of base in the copy of base in the mojo runner.
-      base::RandUint64();
-      base::SysInfo::AmountOfPhysicalMemory();
-      base::SysInfo::MaxSharedMemorySize();
-      base::SysInfo::NumberOfProcessors();
-
-      // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
-      // spy on other shared memory using processes. This is a temporary hack
-      // so that we have some sandbox until we have proper shared memory
-      // support integrated into mojo.
-      std::vector<BrokerFilePermission> permissions;
-      permissions.push_back(
-          BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
-      sandbox.reset(new mojo::runner::LinuxSandbox(permissions));
-      sandbox->Warmup();
-      sandbox->EngageNamespaceSandbox();
-      sandbox->EngageSeccompSandbox();
-      sandbox->Seal();
-    }
+  if (command_line.HasSwitch(switches::kEnableSandbox))
+    sandbox = InitializeSandbox();
 #endif
-  }
 
   embedder::ScopedPlatformHandle platform_channel =
       embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
@@ -331,12 +369,14 @@ int ChildProcessMain() {
 
   AppContext app_context;
   app_context.Init();
+  ScopedMessagePipeHandle host_message_pipe = InitializeHostMessagePipe(
+      platform_channel.Pass(), app_context.io_runner());
   Blocker blocker;
   app_context.controller_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ChildControllerImpl::Init, base::Unretained(&app_context),
-                 base::Unretained(app_library), base::Passed(&platform_channel),
-                 blocker.GetUnblocker()));
+                 base::Unretained(app_library),
+                 base::Passed(&host_message_pipe), blocker.GetUnblocker()));
   // This will block, then run whatever the controller wants.
   blocker.Block();
 

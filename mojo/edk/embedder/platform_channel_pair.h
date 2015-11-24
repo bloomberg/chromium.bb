@@ -52,7 +52,9 @@ using HandlePassingInformation = base::FileHandleMappingVector;
 // platform differences in suppressing |SIGPIPE|.
 class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
  public:
-  PlatformChannelPair();
+  // If |client_is_blocking| is true, then the client handle only supports
+   // blocking reads and writes. The default is nonblocking.
+  PlatformChannelPair(bool client_is_blocking = false);
   ~PlatformChannelPair();
 
   ScopedPlatformHandle PassServerHandle();
@@ -67,12 +69,20 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   static ScopedPlatformHandle PassClientHandleFromParentProcess(
       const base::CommandLine& command_line);
 
+  // Like above, but gets the handle from the passed in string.
+  static ScopedPlatformHandle PassClientHandleFromParentProcessFromString(
+      const std::string& value);
+
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
   // |*handle_passing_info| as needed.
   // Note: For Windows, this method only works on Vista and later.
   void PrepareToPassClientHandleToChildProcess(
       base::CommandLine* command_line,
+      HandlePassingInformation* handle_passing_info) const;
+
+  // Like above, but returns a string instead of changing the command line.
+  std::string PrepareToPassClientHandleToChildProcessAsString(
       HandlePassingInformation* handle_passing_info) const;
 
   // To be called once the child process has been successfully launched, to do

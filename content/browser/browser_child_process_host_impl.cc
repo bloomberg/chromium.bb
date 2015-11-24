@@ -21,6 +21,7 @@
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
@@ -400,6 +402,12 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK(process.IsValid());
 
 #if defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
+    HANDLE client_pipe = mojo::embedder::ChildProcessLaunched(process.Handle());
+    Send(new ChildProcessMsg_SetMojoParentPipeHandle(
+        IPC::GetFileHandleForProcess(client_pipe, process.Handle(), true)));
+  }
+
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the
   // child process exits. This watcher is stopped once the IPC channel is
   // connected and the exit of the child process is detecter by an error on the
