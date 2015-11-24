@@ -1095,6 +1095,9 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 		(struct drm_backend *)output->base.compositor->backend;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 
+	if (ev->transform.enabled &&
+	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
+		return NULL;
 	if (b->gbm == NULL)
 		return NULL;
 	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
@@ -1166,7 +1169,7 @@ drm_output_set_cursor(struct drm_output *output)
 		(struct drm_backend *) output->base.compositor->backend;
 	EGLint handle;
 	struct gbm_bo *bo;
-	int x, y;
+	float x, y;
 
 	output->cursor_view = NULL;
 	if (ev == NULL) {
@@ -1192,8 +1195,7 @@ drm_output_set_cursor(struct drm_output *output)
 		}
 	}
 
-	x = (ev->geometry.x - output->base.x) * output->base.current_scale;
-	y = (ev->geometry.y - output->base.y) * output->base.current_scale;
+	weston_view_to_global_float(ev, 0, 0, &x, &y);
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
 		if (drmModeMoveCursor(b->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
