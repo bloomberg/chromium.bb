@@ -353,30 +353,30 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   ConvertPointToTarget(browser_view(), this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
   const int h = toolbar_bounds.height();
+  const bool md = ui::MaterialDesignController::IsModeMaterial();
   ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor separator_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
 
-  // Background.
   if (browser_view()->IsTabStripVisible()) {
+    gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
     int x = toolbar_bounds.x();
     const int y = toolbar_bounds.y();
+    const int bg_y =
+        GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
     int w = toolbar_bounds.width();
 
-    // The top stroke is drawn using the IDR_CONTENT_TOP_XXX images, which
-    // overlay the toolbar.  The top 2 px of these images is the actual top
-    // stroke + shadow, and is partly transparent, so the toolbar background
-    // shouldn't be drawn over it.
+    //  Background. The top stroke is drawn using the IDR_CONTENT_TOP_XXX
+    // images, which overlay the toolbar.  The top 2 px of these images is the
+    // actual top stroke + shadow, and is partly transparent, so the toolbar
+    // background shouldn't be drawn over it.
     const int split_point = std::min(kContentEdgeShadowThickness, h);
     if (h > split_point) {
       // Tile the toolbar image starting at the frame edge on the left and where
       // the tabstrip is on the top.
       const int split_y = y + split_point;
-      const int bg_y =
-          GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
-      canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                           x + GetThemeBackgroundXInset(), split_y - bg_y, x,
-                           split_y, w, h - split_point);
+      canvas->TileImageInt(*bg, x + GetThemeBackgroundXInset(), split_y - bg_y,
+                           x, split_y, w, h - split_point);
     }
 
     // On Windows 10+ where we don't draw our own window border but rather go
@@ -409,20 +409,17 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
     // Top stroke.
     canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER), x, y,
                          w, split_point);
-
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      // Toolbar/content separator.
-      toolbar_bounds.Inset(kClientEdgeThickness, 0);
-      BrowserView::Paint1pxHorizontalLine(canvas, separator_color,
-                                          toolbar_bounds);
-      return;
-    }
   }
 
   // Toolbar/content separator.
   toolbar_bounds.Inset(kClientEdgeThickness, h - kClientEdgeThickness,
                         kClientEdgeThickness, 0);
-  canvas->FillRect(toolbar_bounds, separator_color);
+  if (md) {
+    BrowserView::Paint1pxHorizontalLine(canvas, separator_color,
+                                        toolbar_bounds);
+  } else {
+    canvas->FillRect(toolbar_bounds, separator_color);
+  }
 }
 
 void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
@@ -454,15 +451,16 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 
   const int x = client_bounds.x();
   y += toolbar_bounds.bottom();  // The side edges start below the toolbar.
+  const int img_y = y;
   const int w = client_bounds.width();
   const int right = client_bounds.right();
   const int bottom = std::max(y, height() - NonClientBorderThickness(false));
-  const int height = bottom - y;
+  const int height = bottom - img_y;
 
   // Draw the client edge images.
   gfx::ImageSkia* right_image = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   const int img_w = right_image->width();
-  canvas->TileImageInt(*right_image, right, y, img_w, height);
+  canvas->TileImageInt(*right_image, right, img_y, img_w, height);
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
                        right, bottom);
   gfx::ImageSkia* bottom_image =
@@ -471,7 +469,7 @@ void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
                        x - img_w, bottom);
   canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE), x - img_w,
-                       y, img_w, height);
+                       img_y, img_w, height);
 
   // Draw the toolbar color so that the client edges show the right color even
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
