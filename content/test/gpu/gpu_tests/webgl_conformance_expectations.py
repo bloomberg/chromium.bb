@@ -38,8 +38,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        bug=559359)
     self.Fail('conformance/textures/misc/cube-incomplete-fbo.html',
         bug=559362)
 
