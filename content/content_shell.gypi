@@ -5,10 +5,7 @@
 {
   'variables': {
     'content_shell_product_name': 'Content Shell',
-    # The "19" is so that sites that sniff for version think that this is
-    # something reasonably current; the "77.34.5" is a hint that this isn't a
-    # standard Chrome.
-    'content_shell_version': '19.77.34.5',
+    'content_shell_version': '99.77.34.5',
     'conditions': [
       ['OS=="linux"', {
        'use_custom_freetype%': 1,

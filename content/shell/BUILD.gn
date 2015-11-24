@@ -14,11 +14,7 @@ if (is_android) {
 
 declare_args() {
   content_shell_product_name = "Content Shell"
-
-  # The "19" is so that sites that sniff for version think that this is
-  # something reasonably current; the "77.34.5" is a hint that this isn't a
-  # standard Chrome.
-  content_shell_version = "19.77.34.5"
+  content_shell_version = "99.77.34.5"
 }
 
 config("content_shell_lib_warnings") {
