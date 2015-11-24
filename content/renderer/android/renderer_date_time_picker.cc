@@ -5,17 +5,32 @@
 #include "content/renderer/android/renderer_date_time_picker.h"
 
 #include "base/strings/string_util.h"
+#include "content/common/date_time_suggestion.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/date_time_suggestion_builder.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserCompletion.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 #include "third_party/WebKit/public/web/WebDateTimeInputType.h"
+#include "third_party/WebKit/public/web/WebDateTimeSuggestion.h"
 #include "ui/base/ime/text_input_type.h"
 
 using blink::WebString;
 
 namespace content {
+
+namespace {
+
+// Converts a |blink::WebDateTimeSuggestion| structure to |DateTimeSuggestion|.
+DateTimeSuggestion ToDateTimeSuggestion(
+    const blink::WebDateTimeSuggestion& suggestion) {
+  DateTimeSuggestion result;
+  result.value = suggestion.value;
+  result.localized_value = suggestion.localizedValue;
+  result.label = suggestion.label;
+  return result;
+}
+
+}  // namespace
 
 static ui::TextInputType ToTextInputType(int type) {
   switch (type) {
@@ -64,7 +79,7 @@ bool RendererDateTimePicker::Open() {
   message.step = chooser_params_.step;
   for (size_t i = 0; i < chooser_params_.suggestions.size(); i++) {
     message.suggestions.push_back(
-        DateTimeSuggestionBuilder::Build(chooser_params_.suggestions[i]));
+        ToDateTimeSuggestion(chooser_params_.suggestions[i]));
   }
   Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
   return true;
