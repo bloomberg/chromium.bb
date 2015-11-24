@@ -309,7 +309,6 @@ public class ApplicationStatus {
     /**
      * @return The state of the application (see {@link ApplicationState}).
      */
-    @CalledByNative
     public static int getStateForApplication() {
         synchronized (sCachedApplicationStateLock) {
             if (sCachedApplicationState == null) {

@@ -65,12 +65,6 @@ void ApplicationStatusListener::NotifyApplicationStateChange(
                            state);
 }
 
-// static
-ApplicationState ApplicationStatusListener::GetState() {
-  return static_cast<ApplicationState>(
-      Java_ApplicationStatus_getStateForApplication(AttachCurrentThread()));
-}
-
 static void OnApplicationStateChange(JNIEnv* env,
                                      const JavaParamRef<jclass>& clazz,
                                      jint new_state) {
