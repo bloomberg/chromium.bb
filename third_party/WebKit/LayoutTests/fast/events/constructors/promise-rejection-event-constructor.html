@@ -8,17 +8,17 @@
 test(function() {
   var p = new Promise(function(resolve, reject) {});
 
-  // No initializer is passed.
-  assert_equals(new PromiseRejectionEvent('eventType').bubbles, false);
-  assert_equals(new PromiseRejectionEvent('eventType').cancelable, false);
-  assert_equals(new PromiseRejectionEvent('eventType').promise, null);
-  assert_equals(new PromiseRejectionEvent('eventType').reason, null);
+  // No custom options are passed (besides required promise).
+  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).bubbles, false);
+  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).cancelable, false);
+  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).promise, p);
+  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).reason, undefined);
 
   // No promise is passed.
   assert_throws(new TypeError(),
                 function() {
                   new PromiseRejectionEvent('eventType', { bubbles: false });
-                }, 
+                },
                 'Cannot construct PromiseRejectionEventInit without promise');
 
   // bubbles is passed.
@@ -28,9 +28,6 @@ test(function() {
   // cancelable is passed.
   assert_equals(new PromiseRejectionEvent('eventType', { cancelable: false, promise: p }).cancelable, false);
   assert_equals(new PromiseRejectionEvent('eventType', { cancelable: true, promise: p }).cancelable, true);
-
-  // promise is passed.
-  assert_equals(new PromiseRejectionEvent('eventType', { promise: p }).promise, p);
 
   // reason is passed.
   var r = new Error();

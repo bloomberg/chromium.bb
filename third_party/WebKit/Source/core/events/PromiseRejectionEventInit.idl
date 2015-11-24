@@ -7,6 +7,6 @@
 [
     RuntimeEnabled=PromiseRejectionEvent,
 ] dictionary PromiseRejectionEventInit : EventInit {
-    required Promise<any>? promise;
-    any reason = null;
+    required Promise<any> promise;
+    any reason;
 };

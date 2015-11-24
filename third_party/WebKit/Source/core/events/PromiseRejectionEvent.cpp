@@ -44,7 +44,7 @@ ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const
 {
     // Return null when the value is accessed by a different world than the world that created the value.
     if (m_reason.isEmpty() || !m_scriptState || !m_scriptState->contextIsValid() || m_scriptState->world().worldId() != state->world().worldId())
-        return ScriptValue(state, v8::Null(state->isolate()));
+        return ScriptValue(state, v8::Undefined(state->isolate()));
     return ScriptValue(m_scriptState.get(), m_reason.newLocal(m_scriptState->isolate()));
 }
 
