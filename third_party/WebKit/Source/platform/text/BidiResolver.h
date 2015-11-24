@@ -178,9 +178,12 @@ enum VisualDirectionOverride {
     VisualRightToLeftOverride
 };
 
+class NoIsolatedRun {
+};
+
 // BidiResolver is WebKit's implementation of the Unicode Bidi Algorithm
 // http://unicode.org/reports/tr9
-template <class Iterator, class Run> class BidiResolver {
+template <class Iterator, class Run, class IsolatedRun = NoIsolatedRun> class BidiResolver {
     WTF_MAKE_NONCOPYABLE(BidiResolver);
 public:
     BidiResolver()
@@ -243,7 +246,7 @@ public:
     // It's unclear if this is still needed.
     void markCurrentRunEmpty() { m_emptyRun = true; }
 
-    Vector<Run*>& isolatedRuns() { return m_isolatedRuns; }
+    Vector<IsolatedRun>& isolatedRuns() { return m_isolatedRuns; }
 
     bool isEndOfLine(const Iterator& end) { return m_current == end || m_current.atEnd(); }
 
@@ -258,8 +261,8 @@ public:
         return determineDirectionalityInternal(breakOnParagraph, hasStrongDirectionality);
     }
 
-    void setMidpointStateForIsolatedRun(Run*, const MidpointState<Iterator>&);
-    MidpointState<Iterator> midpointStateForIsolatedRun(Run*);
+    void setMidpointStateForIsolatedRun(Run&, const MidpointState<Iterator>&);
+    MidpointState<Iterator> midpointStateForIsolatedRun(Run&);
 
     Iterator endOfLine() const { return m_endOfLine; }
 
@@ -294,7 +297,7 @@ protected:
     MidpointState<Iterator> m_midpointState;
 
     unsigned m_nestedIsolateCount;
-    Vector<Run*> m_isolatedRuns;
+    Vector<IsolatedRun> m_isolatedRuns;
     Run* m_trailingSpaceRun;
     TextDirection m_paragraphDirectionality;
 
@@ -318,16 +321,16 @@ private:
 };
 
 #if ENABLE(ASSERT)
-template <class Iterator, class Run>
-BidiResolver<Iterator, Run>::~BidiResolver()
+template <class Iterator, class Run, class IsolatedRun>
+BidiResolver<Iterator, Run, IsolatedRun>::~BidiResolver()
 {
     // The owner of this resolver should have handled the isolated runs.
     ASSERT(m_isolatedRuns.isEmpty());
 }
 #endif
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::appendRun(BidiRunList<Run>& runs)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::appendRun(BidiRunList<Run>& runs)
 {
     if (!m_emptyRun && !m_eor.atEnd()) {
         unsigned startOffset = m_sor.offset();
@@ -361,8 +364,8 @@ void BidiResolver<Iterator, Run>::appendRun(BidiRunList<Run>& runs)
     m_status.eor = WTF::Unicode::OtherNeutral;
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::embed(WTF::Unicode::Direction dir, BidiEmbeddingSource source)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::embed(WTF::Unicode::Direction dir, BidiEmbeddingSource source)
 {
     // Isolated spans compute base directionality during their own UBA run.
     // Do not insert fake embed characters once we enter an isolated span.
@@ -373,8 +376,8 @@ void BidiResolver<Iterator, Run>::embed(WTF::Unicode::Direction dir, BidiEmbeddi
     m_currentExplicitEmbeddingSequence.append(BidiEmbedding(dir, source));
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::checkDirectionInLowerRaiseEmbeddingLevel()
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::checkDirectionInLowerRaiseEmbeddingLevel()
 {
     using namespace WTF::Unicode;
 
@@ -390,8 +393,8 @@ void BidiResolver<Iterator, Run>::checkDirectionInLowerRaiseEmbeddingLevel()
         m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : RightToLeft;
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from)
 {
     using namespace WTF::Unicode;
 
@@ -428,8 +431,8 @@ void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& 
     m_eor = Iterator();
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from, WTF::Unicode::Direction to)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from, WTF::Unicode::Direction to)
 {
     using namespace WTF::Unicode;
 
@@ -467,8 +470,8 @@ void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& 
     m_eor = Iterator();
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::applyL1Rule(BidiRunList<Run>& runs)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::applyL1Rule(BidiRunList<Run>& runs)
 {
     ASSERT(runs.runCount());
     if (!needsToApplyL1Rule(runs))
@@ -506,8 +509,8 @@ void BidiResolver<Iterator, Run>::applyL1Rule(BidiRunList<Run>& runs)
     m_trailingSpaceRun = trailingSpaceRun;
 }
 
-template <class Iterator, class Run>
-bool BidiResolver<Iterator, Run>::commitExplicitEmbedding(BidiRunList<Run>& runs)
+template <class Iterator, class Run, class IsolatedRun>
+bool BidiResolver<Iterator, Run, IsolatedRun>::commitExplicitEmbedding(BidiRunList<Run>& runs)
 {
     // When we're "inIsolate()" we're resolving the parent context which
     // ignores (skips over) the isolated content, including embedding levels.
@@ -551,8 +554,8 @@ bool BidiResolver<Iterator, Run>::commitExplicitEmbedding(BidiRunList<Run>& runs
     return fromLevel != toLevel;
 }
 
-template <class Iterator, class Run>
-inline void BidiResolver<Iterator, Run>::updateStatusLastFromCurrentDirection(WTF::Unicode::Direction dirCurrent)
+template <class Iterator, class Run, class IsolatedRun>
+inline void BidiResolver<Iterator, Run, IsolatedRun>::updateStatusLastFromCurrentDirection(WTF::Unicode::Direction dirCurrent)
 {
     using namespace WTF::Unicode;
     switch (dirCurrent) {
@@ -593,8 +596,8 @@ inline void BidiResolver<Iterator, Run>::updateStatusLastFromCurrentDirection(WT
     }
 }
 
-template <class Iterator, class Run>
-inline void BidiResolver<Iterator, Run>::reorderRunsFromLevels(BidiRunList<Run>& runs) const
+template <class Iterator, class Run, class IsolatedRun>
+inline void BidiResolver<Iterator, Run, IsolatedRun>::reorderRunsFromLevels(BidiRunList<Run>& runs) const
 {
     unsigned char levelLow = BidiContext::kMaxLevel;
     unsigned char levelHigh = 0;
@@ -630,8 +633,8 @@ inline void BidiResolver<Iterator, Run>::reorderRunsFromLevels(BidiRunList<Run>&
     }
 }
 
-template <class Iterator, class Run>
-TextDirection BidiResolver<Iterator, Run>::determineDirectionalityInternal(
+template <class Iterator, class Run, class IsolatedRun>
+TextDirection BidiResolver<Iterator, Run, IsolatedRun>::determineDirectionalityInternal(
     bool breakOnParagraph, bool* hasStrongDirectionality)
 {
     while (!m_current.atEnd()) {
@@ -682,8 +685,8 @@ inline TextDirection directionForCharacter(UChar32 character)
     return LTR;
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak, bool reorderRuns)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak, bool reorderRuns)
 {
     using namespace WTF::Unicode;
 
@@ -714,7 +717,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
     m_last = m_current;
     bool lastLineEnded = false;
-    BidiResolver<Iterator, Run> stateAtEnd;
+    BidiResolver<Iterator, Run, IsolatedRun> stateAtEnd;
 
     while (true) {
         if (inIsolate() && m_emptyRun) {
@@ -1091,19 +1094,18 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         applyL1Rule(m_runs);
 }
 
-template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::setMidpointStateForIsolatedRun(Run* run, const MidpointState<Iterator>& midpoint)
+template <class Iterator, class Run, class IsolatedRun>
+void BidiResolver<Iterator, Run, IsolatedRun>::setMidpointStateForIsolatedRun(Run& run, const MidpointState<Iterator>& midpoint)
 {
-    ASSERT(!m_midpointStateForIsolatedRun.contains(run));
-    m_midpointStateForIsolatedRun.add(run, midpoint);
+    ASSERT(!m_midpointStateForIsolatedRun.contains(&run));
+    m_midpointStateForIsolatedRun.add(&run, midpoint);
 }
 
-template<class Iterator, class Run>
-MidpointState<Iterator> BidiResolver<Iterator, Run>::midpointStateForIsolatedRun(Run* run)
+template<class Iterator, class Run, class IsolatedRun>
+MidpointState<Iterator> BidiResolver<Iterator, Run, IsolatedRun>::midpointStateForIsolatedRun(Run& run)
 {
-    return m_midpointStateForIsolatedRun.take(run);
+    return m_midpointStateForIsolatedRun.take(&run);
 }
-
 
 } // namespace blink
 

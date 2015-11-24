@@ -33,6 +33,22 @@
 
 namespace blink {
 
+struct BidiIsolatedRun {
+    BidiIsolatedRun(LayoutObject& object, unsigned position, LayoutObject& root, BidiRun& runToReplace)
+        : object(object)
+        , root(root)
+        , runToReplace(runToReplace)
+        , position(position)
+    {
+    }
+
+    LayoutObject& object;
+    LayoutObject& root;
+    BidiRun& runToReplace;
+    unsigned position;
+};
+
+
 // This class is used to LayoutInline subtrees, stepping by character within the
 // text children. InlineIterator will use bidiNext to find the next LayoutText
 // optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
@@ -565,14 +581,14 @@ static inline unsigned numberOfIsolateAncestors(const InlineIterator& iter)
 
 // FIXME: This belongs on InlineBidiResolver, except it's a template specialization
 // of BidiResolver which knows nothing about LayoutObjects.
-static inline BidiRun* addPlaceholderRunForIsolatedInline(InlineBidiResolver& resolver, LineLayoutItem obj, unsigned pos)
+static inline BidiRun* addPlaceholderRunForIsolatedInline(InlineBidiResolver& resolver, LineLayoutItem obj, unsigned pos, LineLayoutItem root)
 {
     ASSERT(obj);
     BidiRun* isolatedRun = new BidiRun(pos, pos, obj, resolver.context(), resolver.dir());
     resolver.runs().addRun(isolatedRun);
     // FIXME: isolatedRuns() could be a hash of object->run and then we could cheaply
     // ASSERT here that we didn't create multiple objects for the same inline.
-    resolver.isolatedRuns().append(isolatedRun);
+    resolver.isolatedRuns().append(BidiIsolatedRun(*obj, pos, *root, *isolatedRun));
     return isolatedRun;
 }
 
@@ -616,7 +632,7 @@ public:
     void commitExplicitEmbedding(BidiRunList<BidiRun>&) { }
     BidiRunList<BidiRun>& runs() { return m_runs; }
 
-    void addFakeRunIfNecessary(LineLayoutItem obj, unsigned pos, unsigned end, InlineBidiResolver& resolver)
+    void addFakeRunIfNecessary(LineLayoutItem obj, unsigned pos, unsigned end, LineLayoutItem root, InlineBidiResolver& resolver)
     {
         // We only need to add a fake run for a given isolated span once during each call to createBidiRunsForLine.
         // We'll be called for every span inside the isolated span so we just ignore subsequent calls.
@@ -624,8 +640,8 @@ public:
         if (LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
             return;
         if (!m_haveAddedFakeRunForRootIsolate) {
-            BidiRun* run = addPlaceholderRunForIsolatedInline(resolver, obj, pos);
-            resolver.setMidpointStateForIsolatedRun(run, m_midpointStateForRootIsolate);
+            BidiRun* run = addPlaceholderRunForIsolatedInline(resolver, obj, pos, root);
+            resolver.setMidpointStateForIsolatedRun(*run, m_midpointStateForRootIsolate);
             m_haveAddedFakeRunForRootIsolate = true;
         }
         // obj and pos together denote a single position in the inline, from which the parsing of the isolate will start.
@@ -640,7 +656,7 @@ private:
     BidiRunList<BidiRun>& m_runs;
 };
 
-static void inline appendRunObjectIfNecessary(LineLayoutItem obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
+static void inline appendRunObjectIfNecessary(LineLayoutItem obj, unsigned start, unsigned end, LineLayoutItem root, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
 {
     // Trailing space code creates empty BidiRun objects, start == end, so
     // that case needs to be handled specifically.
@@ -655,14 +671,14 @@ static void inline appendRunObjectIfNecessary(LineLayoutItem obj, unsigned start
         if (end - start > limit)
             limitedEnd = start + limit;
         if (behavior == AppendingFakeRun)
-            tracker.addFakeRunIfNecessary(obj, start, limitedEnd, resolver);
+            tracker.addFakeRunIfNecessary(obj, start, limitedEnd, root, resolver);
         else
             resolver.runs().addRun(createRun(start, limitedEnd, obj, resolver));
         start = limitedEnd;
     }
 }
 
-static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
+static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, unsigned start, unsigned end, LineLayoutItem root, InlineBidiResolver& resolver, AppendRunBehavior behavior, IsolateTracker& tracker)
 {
     if (start > end || LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
         return;
@@ -681,10 +697,10 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, un
         start = nextMidpoint.offset();
         lineMidpointState.incrementCurrentMidpoint();
         if (start < end)
-            return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, behavior, tracker);
+            return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, root, resolver, behavior, tracker);
     } else {
         if (!haveNextMidpoint || (obj != nextMidpoint.object())) {
-            appendRunObjectIfNecessary(obj, start, end, resolver, behavior, tracker);
+            appendRunObjectIfNecessary(obj, start, end, root, resolver, behavior, tracker);
             return;
         }
 
@@ -695,19 +711,19 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, un
             lineMidpointState.incrementCurrentMidpoint();
             if (nextMidpoint.offset() != UINT_MAX) { // UINT_MAX means stop at the object and don't nclude any of it.
                 if (nextMidpoint.offset() + 1 > start)
-                    appendRunObjectIfNecessary(obj, start, nextMidpoint.offset() + 1, resolver, behavior, tracker);
-                return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.offset() + 1, end, resolver, behavior, tracker);
+                    appendRunObjectIfNecessary(obj, start, nextMidpoint.offset() + 1, root, resolver, behavior, tracker);
+                return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.offset() + 1, end, root, resolver, behavior, tracker);
             }
         } else {
-            appendRunObjectIfNecessary(obj, start, end, resolver, behavior, tracker);
+            appendRunObjectIfNecessary(obj, start, end, root, resolver, behavior, tracker);
         }
     }
 }
 
-static inline void addFakeRunIfNecessary(LineLayoutItem obj, unsigned start, unsigned end, InlineBidiResolver& resolver, IsolateTracker& tracker)
+static inline void addFakeRunIfNecessary(LineLayoutItem obj, unsigned start, unsigned end, LineLayoutItem root, InlineBidiResolver& resolver, IsolateTracker& tracker)
 {
     tracker.setMidpointStateForRootIsolate(resolver.midpointState());
-    adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, obj.length(), resolver, AppendingFakeRun, tracker);
+    adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, obj.length(), root, resolver, AppendingFakeRun, tracker);
 }
 
 template <>
@@ -722,9 +738,9 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
         LineLayoutItem obj = m_sor.object();
         while (obj && obj != m_eor.object() && obj != m_endOfRunAtEndOfLine.object()) {
             if (isolateTracker.inIsolate())
-                addFakeRunIfNecessary(obj, start, obj.length(), *this, isolateTracker);
+                addFakeRunIfNecessary(obj, start, obj.length(), m_sor.root(), *this, isolateTracker);
             else
-                adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, obj.length(), *this, AppendingRunsForObject, isolateTracker);
+                adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, obj.length(), m_sor.root(), *this, AppendingRunsForObject, isolateTracker);
             // FIXME: start/obj should be an InlineIterator instead of two separate variables.
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
@@ -739,9 +755,9 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
             // It's OK to add runs for zero-length LayoutObjects, just don't make the run larger than it should be
             int end = obj.length() ? pos + 1 : 0;
             if (isolateTracker.inIsolate())
-                addFakeRunIfNecessary(obj, start, end, *this, isolateTracker);
+                addFakeRunIfNecessary(obj, start, end, m_sor.root(), *this, isolateTracker);
             else
-                adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, *this, AppendingRunsForObject, isolateTracker);
+                adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, m_sor.root(), *this, AppendingRunsForObject, isolateTracker);
         }
 
         if (isEndOfLine)

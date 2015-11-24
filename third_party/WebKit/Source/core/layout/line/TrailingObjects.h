@@ -34,10 +34,11 @@ namespace blink {
 class InlineIterator;
 
 struct BidiRun;
+struct BidiIsolatedRun;
 
-template <class Iterator, class Run> class BidiResolver;
+template <class Iterator, class Run, class IsolatedRun> class BidiResolver;
 template <class Iterator> class MidpointState;
-typedef BidiResolver<InlineIterator, BidiRun> InlineBidiResolver;
+typedef BidiResolver<InlineIterator, BidiRun, BidiIsolatedRun> InlineBidiResolver;
 typedef MidpointState<InlineIterator> LineMidpointState;
 
 // This class allows us to ensure lineboxes are created in the right place on the line when
