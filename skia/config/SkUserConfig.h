@@ -218,10 +218,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_LINEAR_GRADIENT_TABLE
-#   define SK_SUPPORT_LEGACY_LINEAR_GRADIENT_TABLE
-#endif
-
 #ifndef    SK_IGNORE_GPU_DITHER
 #   define SK_IGNORE_GPU_DITHER
 #endif
