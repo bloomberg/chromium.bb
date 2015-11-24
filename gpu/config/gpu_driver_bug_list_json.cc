@@ -1591,7 +1591,7 @@ LONG_STRING_CONST(
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": ["0x9440", "0x944a"],
+      "device_id": ["0x9440", "0x944a", "0x9488", "0x9490"],
       "features": [
         "disable_overlay_ca_layers",
         "disable_post_sub_buffers_for_onscreen_surfaces"
