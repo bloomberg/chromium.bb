@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CAST_VIDEO_CAPTURER_ADAPTER_H_
-#define REMOTING_HOST_CAST_VIDEO_CAPTURER_ADAPTER_H_
+#ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
+#define REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 
 #include <vector>
 
@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,18 +26,18 @@ namespace remoting {
 
 // This class controls the capture of video frames from the desktop and is used
 // to construct a VideoSource as part of the webrtc PeerConnection API.
-// CastVideoCapturerAdapter acts as an adapter between webrtc::DesktopCapturer
+// WebrtcVideoCapturerAdapter acts as an adapter between webrtc::DesktopCapturer
 // and the cricket::VideoCapturer interface, which it implements. It is used
 // to construct a cricket::VideoSource for a PeerConnection, to capture frames
 // of the desktop. As indicated in the base implementation, Start() and Stop()
 // should be called on the same thread.
-class CastVideoCapturerAdapter : public cricket::VideoCapturer,
-                                 public webrtc::DesktopCapturer::Callback {
+class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
+                                   public webrtc::DesktopCapturer::Callback {
  public:
-  explicit CastVideoCapturerAdapter(
+  explicit WebrtcVideoCapturerAdapter(
       scoped_ptr<webrtc::DesktopCapturer> capturer);
 
-  ~CastVideoCapturerAdapter() override;
+  ~WebrtcVideoCapturerAdapter() override;
 
   // webrtc::DesktopCapturer::Callback implementation.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
@@ -70,10 +70,10 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
   // Used to schedule periodic screen captures.
   scoped_ptr<base::RepeatingTimer> capture_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastVideoCapturerAdapter);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcVideoCapturerAdapter);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CAST_VIDEO_CAPTURER_ADAPTER_H_
+#endif  // REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 

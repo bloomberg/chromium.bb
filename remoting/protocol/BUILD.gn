@@ -45,7 +45,10 @@ source_set("protocol") {
         "//third_party/libjingle:libpeerconnection",
       ]
     } else {
-      sources -= [ "webrtc_transport.cc" ]
+      sources -= [
+        "webrtc_transport.cc",
+        "webrtc_video_capturer_adapter.cc",
+      ]
     }
   }
 }

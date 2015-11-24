@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/cast_video_capturer_adapter.h"
+#include "remoting/protocol/webrtc_video_capturer_adapter.h"
 
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -11,7 +11,7 @@ namespace remoting {
 // Number of frames to be captured per second.
 const int kFramesPerSec = 10;
 
-CastVideoCapturerAdapter::CastVideoCapturerAdapter(
+WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
     : desktop_capturer_(capturer.Pass()) {
   DCHECK(desktop_capturer_);
@@ -22,16 +22,17 @@ CastVideoCapturerAdapter::CastVideoCapturerAdapter(
   set_enable_video_adapter(false);
 }
 
-CastVideoCapturerAdapter::~CastVideoCapturerAdapter() {
+WebrtcVideoCapturerAdapter::~WebrtcVideoCapturerAdapter() {
   DCHECK(!capture_timer_);
 }
 
-webrtc::SharedMemory* CastVideoCapturerAdapter::CreateSharedMemory(
+webrtc::SharedMemory* WebrtcVideoCapturerAdapter::CreateSharedMemory(
     size_t size) {
   return nullptr;
 }
 
-void CastVideoCapturerAdapter::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
+void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
+    webrtc::DesktopFrame* frame) {
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
   // Drop the owned_frame if there were no changes.
@@ -59,7 +60,7 @@ void CastVideoCapturerAdapter::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   SignalFrameCaptured(this, &captured_frame);
 }
 
-bool CastVideoCapturerAdapter::GetBestCaptureFormat(
+bool WebrtcVideoCapturerAdapter::GetBestCaptureFormat(
     const cricket::VideoFormat& desired,
     cricket::VideoFormat* best_format) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -72,14 +73,14 @@ bool CastVideoCapturerAdapter::GetBestCaptureFormat(
   return true;
 }
 
-cricket::CaptureState CastVideoCapturerAdapter::Start(
+cricket::CaptureState WebrtcVideoCapturerAdapter::Start(
     const cricket::VideoFormat& capture_format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!capture_timer_);
   DCHECK_EQ(capture_format.fourcc, (static_cast<uint32>(cricket::FOURCC_ARGB)));
 
   if (!desktop_capturer_) {
-    VLOG(1) << "CastVideoCapturerAdapter failed to start.";
+    VLOG(1) << "WebrtcVideoCapturerAdapter failed to start.";
     return cricket::CS_FAILED;
   }
 
@@ -95,7 +96,7 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
                             GetCaptureFormat()->interval /
                             (base::Time::kNanosecondsPerMicrosecond)),
                         this,
-                        &CastVideoCapturerAdapter::CaptureNextFrame);
+                        &WebrtcVideoCapturerAdapter::CaptureNextFrame);
 
   return cricket::CS_RUNNING;
 }
@@ -105,7 +106,7 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
 // |desktop_capturer_|.
 // 2. Does not support unpausing after stopping the capturer. It is unclear
 // if that flow needs to be supported.
-bool CastVideoCapturerAdapter::Pause(bool pause) {
+bool WebrtcVideoCapturerAdapter::Pause(bool pause) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (pause) {
@@ -119,7 +120,7 @@ bool CastVideoCapturerAdapter::Pause(bool pause) {
 
     if (!running) {
       LOG(ERROR)
-          << "Cannot pause CastVideoCapturerAdapter.";
+          << "Cannot pause WebrtcVideoCapturerAdapter.";
       return false;
     }
 
@@ -127,13 +128,13 @@ bool CastVideoCapturerAdapter::Pause(bool pause) {
     capture_timer_->Stop();
     SetCaptureState(cricket::CS_PAUSED);
 
-    VLOG(1) << "CastVideoCapturerAdapter paused.";
+    VLOG(1) << "WebrtcVideoCapturerAdapter paused.";
 
     return true;
   } else {  // Unpausing.
     if (capture_state() != cricket::CS_PAUSED || !GetCaptureFormat() ||
         !capture_timer_) {
-      LOG(ERROR) << "Cannot unpause CastVideoCapturerAdapter.";
+      LOG(ERROR) << "Cannot unpause WebrtcVideoCapturerAdapter.";
       return false;
     }
 
@@ -143,15 +144,15 @@ bool CastVideoCapturerAdapter::Pause(bool pause) {
                               GetCaptureFormat()->interval /
                               (base::Time::kNanosecondsPerMicrosecond)),
                           this,
-                          &CastVideoCapturerAdapter::CaptureNextFrame);
+                          &WebrtcVideoCapturerAdapter::CaptureNextFrame);
     SetCaptureState(cricket::CS_RUNNING);
 
-    VLOG(1) << "CastVideoCapturerAdapter unpaused.";
+    VLOG(1) << "WebrtcVideoCapturerAdapter unpaused.";
   }
   return true;
 }
 
-void CastVideoCapturerAdapter::Stop() {
+void WebrtcVideoCapturerAdapter::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(capture_state(), cricket::CS_STOPPED);
 
@@ -160,21 +161,21 @@ void CastVideoCapturerAdapter::Stop() {
   SetCaptureFormat(nullptr);
   SetCaptureState(cricket::CS_STOPPED);
 
-  VLOG(1) << "CastVideoCapturerAdapter stopped.";
+  VLOG(1) << "WebrtcVideoCapturerAdapter stopped.";
 }
 
 
-bool CastVideoCapturerAdapter::IsRunning() {
+bool WebrtcVideoCapturerAdapter::IsRunning() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return capture_timer_->IsRunning();
 }
 
-bool CastVideoCapturerAdapter::IsScreencast() const {
+bool WebrtcVideoCapturerAdapter::IsScreencast() const {
   return true;
 }
 
-bool CastVideoCapturerAdapter::GetPreferredFourccs(
+bool WebrtcVideoCapturerAdapter::GetPreferredFourccs(
     std::vector<uint32>* fourccs) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!fourccs)
@@ -183,7 +184,7 @@ bool CastVideoCapturerAdapter::GetPreferredFourccs(
   return true;
 }
 
-void CastVideoCapturerAdapter::CaptureNextFrame() {
+void WebrtcVideoCapturerAdapter::CaptureNextFrame() {
   // If we are paused, then don't capture.
   if (!IsRunning())
     return;
@@ -192,4 +193,3 @@ void CastVideoCapturerAdapter::CaptureNextFrame() {
 }
 
 }  // namespace remoting
-

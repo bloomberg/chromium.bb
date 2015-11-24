@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/host/cast_video_capturer_adapter.h"
 #include "remoting/host/client_session.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/webrtc_video_capturer_adapter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
@@ -535,8 +535,8 @@ bool CastExtensionSession::SetupVideoStream(
     return false;
   }
 
-  scoped_ptr<CastVideoCapturerAdapter> cast_video_capturer_adapter(
-      new CastVideoCapturerAdapter(desktop_capturer.Pass()));
+  scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
+      new WebrtcVideoCapturerAdapter(desktop_capturer.Pass()));
 
   // Set video stream constraints.
   webrtc::FakeConstraints video_constraints;
@@ -547,7 +547,7 @@ bool CastExtensionSession::SetupVideoStream(
       peer_conn_factory_->CreateVideoTrack(
           kVideoLabel,
           peer_conn_factory_->CreateVideoSource(
-              cast_video_capturer_adapter.release(), &video_constraints));
+              video_capturer_adapter.release(), &video_constraints));
 
   stream_ = peer_conn_factory_->CreateLocalMediaStream(kStreamLabel);
 

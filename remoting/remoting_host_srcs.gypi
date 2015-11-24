@@ -320,8 +320,6 @@
       'host/cast_extension.h',
       'host/cast_extension_session.cc',
       'host/cast_extension_session.h',
-      'host/cast_video_capturer_adapter.cc',
-      'host/cast_video_capturer_adapter.h',
     ],
     'remoting_it2me_host_static_sources' : [
       'host/it2me/it2me_confirmation_dialog.cc',

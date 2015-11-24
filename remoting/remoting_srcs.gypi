@@ -218,6 +218,8 @@
       'protocol/video_frame_pump.h',
       'protocol/webrtc_transport.cc',
       'protocol/webrtc_transport.h',
+      'protocol/webrtc_video_capturer_adapter.cc',
+      'protocol/webrtc_video_capturer_adapter.h',
     ],
 
     'remoting_signaling_sources': [
