@@ -53,20 +53,19 @@ bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
     return parser.parsePathDataFromSource(NormalizedParsing);
 }
 
-bool buildStringFromByteStream(const SVGPathByteStream& stream, String& result, PathParsingMode parsingMode)
+String buildStringFromByteStream(const SVGPathByteStream& stream, PathParsingMode parsingMode)
 {
     if (stream.isEmpty())
-        return true;
+        return String();
 
     SVGPathStringBuilder builder;
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
-    bool ok = parser.parsePathDataFromSource(parsingMode);
-    result = builder.result();
-    return ok;
+    parser.parsePathDataFromSource(parsingMode);
+    return builder.result();
 }
 
-bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream& result, PathParsingMode parsingMode)
+bool buildByteStreamFromString(const String& d, SVGPathByteStream& result)
 {
     result.clear();
     if (d.isEmpty())
@@ -78,7 +77,7 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream& result
     SVGPathByteStreamBuilder builder(result);
     SVGPathStringSource source(d);
     SVGPathParser parser(&source, &builder);
-    bool ok = parser.parsePathDataFromSource(parsingMode);
+    bool ok = parser.parsePathDataFromSource(UnalteredParsing);
     result.shrinkToFit();
     return ok;
 }

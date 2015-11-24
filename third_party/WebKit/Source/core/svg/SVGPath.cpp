@@ -122,14 +122,12 @@ const SVGPathByteStream& SVGPath::byteStream() const
 
 String SVGPath::valueAsString() const
 {
-    String string;
-    buildStringFromByteStream(byteStream(), string, UnalteredParsing);
-    return string;
+    return buildStringFromByteStream(byteStream(), UnalteredParsing);
 }
 
 void SVGPath::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
-    if (!buildSVGPathByteStreamFromString(string, ensureByteStream(), UnalteredParsing))
+    if (!buildByteStreamFromString(string, ensureByteStream()))
         exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
     byteStreamChanged();
 }

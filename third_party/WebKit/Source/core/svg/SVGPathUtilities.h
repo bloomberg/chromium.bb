@@ -35,10 +35,10 @@ bool CORE_EXPORT buildPathFromString(const String&, Path&);
 bool buildPathFromByteStream(const SVGPathByteStream&, Path&);
 
 // String -> SVGPathByteStream
-bool buildSVGPathByteStreamFromString(const String&, SVGPathByteStream&, PathParsingMode);
+bool buildByteStreamFromString(const String&, SVGPathByteStream&);
 
 // SVGPathByteStream -> String
-bool buildStringFromByteStream(const SVGPathByteStream&, String&, PathParsingMode);
+String buildStringFromByteStream(const SVGPathByteStream&, PathParsingMode);
 
 unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream&, float length);
 float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream&);
