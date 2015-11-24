@@ -19,6 +19,7 @@
 
 #if !defined(OS_MACOSX)
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -33,14 +34,6 @@ bool UseVectorGraphics() {
   return ui::MaterialDesignController::IsModeMaterial();
 #endif
 }
-
-#if !defined(OS_MACOSX)
-// Gets a vector icon badged with |badge|.
-gfx::Image GetIcon(gfx::VectorIconId id, gfx::VectorIconId badge) {
-  return gfx::Image(
-      gfx::CreateVectorIconWithBadge(id, 16, gfx::kChromeIconGrey, badge));
-}
-#endif
 
 }  // namespace
 
@@ -320,18 +313,18 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     SetIconByResourceId(icon_id);
 #if !defined(OS_MACOSX)
   } else {
-    if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
-      set_icon(GetIcon(image_details->vector_icon_id,
-                       gfx::VectorIconId::WARNING_BADGE));
-    } else {
-      SetIconByVectorId(image_details->vector_icon_id,
-                        content_settings->IsContentBlocked(type));
-    }
+    gfx::VectorIconId badge_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+    if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
+      badge_id = gfx::VectorIconId::WARNING_BADGE;
+    else if (content_settings->IsContentBlocked(type))
+      badge_id = gfx::VectorIconId::BLOCKED_BADGE;
+
+    set_icon_by_vector_id(image_details->vector_icon_id, badge_id);
 #endif
   }
   set_explanatory_string_id(explanation_id);
   DCHECK(tooltip_id);
-  set_tooltip(l10n_util::GetStringUTF8(tooltip_id));
+  set_tooltip(l10n_util::GetStringUTF16(tooltip_id));
 }
 
 // Geolocation -----------------------------------------------------------------
@@ -361,14 +354,18 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(NULL, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  if (!UseVectorGraphics())
+  if (!UseVectorGraphics()) {
     SetIconByResourceId(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
 #if !defined(OS_MACOSX)
-  else
-    SetIconByVectorId(gfx::VectorIconId::MY_LOCATION, !allowed);
+  } else {
+    set_icon_by_vector_id(gfx::VectorIconId::MY_LOCATION,
+                          allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
+                                  : gfx::VectorIconId::BLOCKED_BADGE);
 #endif
-  set_tooltip(l10n_util::GetStringUTF8(allowed ?
-      IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
+  }
+  set_tooltip(l10n_util::GetStringUTF16(allowed
+                                            ? IDS_GEOLOCATION_ALLOWED_TOOLTIP
+                                            : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
 
 // Media -----------------------------------------------------------------------
@@ -403,26 +400,30 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   int id = IDS_CAMERA_BLOCKED;
   if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
                TabSpecificContentSettings::CAMERA_BLOCKED)) {
-    if (!UseVectorGraphics())
+    if (!UseVectorGraphics()) {
       SetIconByResourceId(IDR_BLOCKED_CAMERA);
 #if !defined(OS_MACOSX)
-    else
-      SetIconByVectorId(gfx::VectorIconId::VIDEOCAM, true);
+    } else {
+      set_icon_by_vector_id(gfx::VectorIconId::VIDEOCAM,
+                            gfx::VectorIconId::BLOCKED_BADGE);
 #endif
+    }
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
   } else {
-    if (!UseVectorGraphics())
+    if (!UseVectorGraphics()) {
       SetIconByResourceId(IDR_ALLOWED_CAMERA);
 #if !defined(OS_MACOSX)
-    else
-      SetIconByVectorId(gfx::VectorIconId::VIDEOCAM, false);
+    } else {
+      set_icon_by_vector_id(gfx::VectorIconId::VIDEOCAM,
+                            gfx::VectorIconId::VECTOR_ICON_NONE);
 #endif
+    }
     id = IDS_CAMERA_ACCESSED;
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
   }
-  set_tooltip(l10n_util::GetStringUTF8(id));
+  set_tooltip(l10n_util::GetStringUTF16(id));
   set_visible(true);
 }
 
@@ -471,13 +472,15 @@ void ContentSettingMediaImageModel::SetAnimationHasRun(
 
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
     : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  if (!UseVectorGraphics())
+  if (!UseVectorGraphics()) {
     SetIconByResourceId(IDR_REGISTER_PROTOCOL_HANDLER);
 #if !defined(OS_MACOSX)
-  else
-    SetIconByVectorId(gfx::VectorIconId::PROTOCOL_HANDLER, false);
+  } else {
+    set_icon_by_vector_id(gfx::VectorIconId::PROTOCOL_HANDLER,
+                          gfx::VectorIconId::VECTOR_ICON_NONE);
 #endif
-  set_tooltip(l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
+  }
+  set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
 void ContentSettingRPHImageModel::UpdateFromWebContents(
@@ -527,19 +530,34 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   SetIconByResourceId(allowed ? IDR_ALLOWED_MIDI_SYSEX
                               : IDR_BLOCKED_MIDI_SYSEX);
 #else
-  SetIconByVectorId(gfx::VectorIconId::MIDI, !allowed);
+  set_icon_by_vector_id(gfx::VectorIconId::MIDI,
+                        allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
+                                : gfx::VectorIconId::BLOCKED_BADGE);
 #endif
-  set_tooltip(l10n_util::GetStringUTF8(allowed ?
-      IDS_MIDI_SYSEX_ALLOWED_TOOLTIP : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
+  set_tooltip(l10n_util::GetStringUTF16(allowed
+                                            ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
+                                            : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
 }
 
 // Base class ------------------------------------------------------------------
 
+#if !defined(OS_MACOSX)
+gfx::Image ContentSettingImageModel::GetIcon(SkColor nearby_text_color) const {
+  return UseVectorGraphics()
+             ? gfx::Image(gfx::CreateVectorIconWithBadge(
+                   vector_icon_id_, 16,
+                   color_utils::DeriveDefaultIconColor(nearby_text_color),
+                   vector_icon_badge_id_))
+             : icon_;
+}
+#endif
+
 ContentSettingImageModel::ContentSettingImageModel()
     : is_visible_(false),
       icon_id_(0),
-      explanatory_string_id_(0) {
-}
+      vector_icon_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
+      vector_icon_badge_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
+      explanatory_string_id_(0) {}
 
 // static
 ScopedVector<ContentSettingImageModel>
@@ -577,11 +595,3 @@ void ContentSettingImageModel::SetIconByResourceId(int id) {
   icon_id_ = id;
   icon_ = ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
 }
-
-#if !defined(OS_MACOSX)
-void ContentSettingImageModel::SetIconByVectorId(gfx::VectorIconId id,
-                                                 bool blocked) {
-  icon_ = GetIcon(id, blocked ? gfx::VectorIconId::BLOCKED_BADGE
-                              : gfx::VectorIconId::VECTOR_ICON_NONE);
-}
-#endif

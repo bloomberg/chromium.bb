@@ -75,11 +75,14 @@ class ContentSettingImageView : public IconLabelBubbleView,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
   void OnClick();
+
+  void UpdateImage();
 
   LocationBarView* parent_;  // Weak, owns us.
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;

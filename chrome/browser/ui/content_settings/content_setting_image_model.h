@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 
-#include <string>
-
 #include "base/basictypes.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -50,34 +49,43 @@ class ContentSettingImageModel {
   virtual void SetAnimationHasRun(content::WebContents* web_contents) = 0;
 
   bool is_visible() const { return is_visible_; }
-  const gfx::Image& icon() const { return icon_; }
 #if defined(OS_MACOSX)
+  const gfx::Image& icon() const { return icon_; }
   int icon_id() const { return icon_id_; }
+#else
+  gfx::Image GetIcon(SkColor nearby_text_color) const;
 #endif
   // Returns the resource ID of a string to show when the icon appears, or 0 if
   // we don't wish to show anything.
   int explanatory_string_id() const { return explanatory_string_id_; }
-  std::string get_tooltip() const { return tooltip_; }
+  const base::string16& get_tooltip() const { return tooltip_; }
 
  protected:
   ContentSettingImageModel();
   void SetIconByResourceId(int id);
 #if !defined(OS_MACOSX)
-  void SetIconByVectorId(gfx::VectorIconId id, bool blocked);
+  void set_icon_by_vector_id(gfx::VectorIconId id, gfx::VectorIconId badge_id) {
+    vector_icon_id_ = id;
+    vector_icon_badge_id_ = badge_id;
+  }
 #endif
   void set_visible(bool visible) { is_visible_ = visible; }
   void set_icon(const gfx::Image& image) { icon_ = image; }
   void set_explanatory_string_id(int text_id) {
     explanatory_string_id_ = text_id;
   }
-  void set_tooltip(const std::string& tooltip) { tooltip_ = tooltip; }
+  void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
 
  private:
   bool is_visible_;
+  // |icon_id_| and |icon_| are only used for pre-MD.
   int icon_id_;
   gfx::Image icon_;
+  // Vector icons are used for MD.
+  gfx::VectorIconId vector_icon_id_;
+  gfx::VectorIconId vector_icon_badge_id_;
   int explanatory_string_id_;
-  std::string tooltip_;
+  base::string16 tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
 };

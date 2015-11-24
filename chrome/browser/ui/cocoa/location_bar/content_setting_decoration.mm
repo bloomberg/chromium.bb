@@ -182,8 +182,8 @@ bool ContentSettingDecoration::UpdateFromWebContents(
       old_icon != content_setting_image_model_->icon_id();
   if (IsVisible()) {
     SetImage(content_setting_image_model_->icon().ToNSImage());
-    SetToolTip(base::SysUTF8ToNSString(
-        content_setting_image_model_->get_tooltip()));
+    SetToolTip(
+        base::SysUTF16ToNSString(content_setting_image_model_->get_tooltip()));
 
     // Check if there is an animation and start it if it hasn't yet started.
     bool has_animated_text =
