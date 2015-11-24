@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
@@ -479,6 +480,7 @@ public class DocumentActivity extends ChromeActivity {
             if (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null) {
                 loadLastKnownUrl(asyncParams);
             }
+            mDocumentTab.show(TabSelectionType.FROM_USER);
         }
         StartupMetrics.getInstance().recordHistogram(false);
     }
