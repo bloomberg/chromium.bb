@@ -31,13 +31,13 @@
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
-#include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
+#include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
 #include "core/animation/SVGPointListInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/SVGValueInterpolationType.h"
@@ -298,6 +298,11 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             || attribute == SVGNames::surfaceScaleAttr
             || attribute == SVGNames::zAttr) {
             applicableTypes->append(adoptPtr(new SVGNumberInterpolationType(attribute)));
+        } else if (attribute == SVGNames::baseFrequencyAttr
+            || attribute == SVGNames::kernelUnitLengthAttr
+            || attribute == SVGNames::radiusAttr
+            || attribute == SVGNames::stdDeviationAttr) {
+            applicableTypes->append(adoptPtr(new SVGNumberOptionalNumberInterpolationType(attribute)));
         } else if (attribute == SVGNames::pointsAttr) {
             applicableTypes->append(adoptPtr(new SVGPointListInterpolationType(attribute)));
         } else if (attribute == HTMLNames::classAttr
@@ -568,8 +573,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedLengthList:
         interpolation = ListSVGInterpolation<LengthSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
-    case AnimatedNumberOptionalNumber:
-        return NumberOptionalNumberSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedNumberList:
         interpolation = ListSVGInterpolation<NumberSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
@@ -586,6 +589,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedAngle:
     case AnimatedInteger:
     case AnimatedNumber:
+    case AnimatedNumberOptionalNumber:
     case AnimatedPoints:
         ASSERT_NOT_REACHED();
         // Fallthrough.

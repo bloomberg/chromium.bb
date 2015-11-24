@@ -59,8 +59,8 @@ public:
 
     static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
 
-    PassRefPtrWillBeRawPtr<SVGNumber> firstNumber() { return m_firstNumber; }
-    PassRefPtrWillBeRawPtr<SVGNumber> secondNumber() { return m_secondNumber; }
+    PassRefPtrWillBeRawPtr<SVGNumber> firstNumber() const { return m_firstNumber; }
+    PassRefPtrWillBeRawPtr<SVGNumber> secondNumber() const { return m_secondNumber; }
 
     DECLARE_VIRTUAL_TRACE();
 
