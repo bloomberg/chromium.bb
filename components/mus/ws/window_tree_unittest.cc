@@ -390,9 +390,20 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
+  // Focus should not go to |child1| yet, since the parent still doesn't allow
+  // active children.
   display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
+  EXPECT_EQ(nullptr, connection1->GetHost()->GetFocusedWindow());
+  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
+  connection1_client->tracker()->changes()->clear();
+  wm_client()->tracker()->changes()->clear();
+
+  connection1->GetHost()->AddActivationParent(
+      WindowIdToTransportId(embed_window_id));
+
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
+  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
   EXPECT_EQ(v1, connection1->GetHost()->GetFocusedWindow());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=2,1",
@@ -406,19 +417,10 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
-  // Press outside of the embedded window. Focus should go to the root. Notice
-  // the client1 doesn't see who has focus as the focused window (root) isn't
-  // visible to it.
+  // Press outside of the embedded window. Note that root cannot be focused
+  // (because it cannot be activated). So the focus would not move in this case.
   display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(host_connection()->window_tree_host()->root_window(),
-            host_connection()->window_tree_host()->GetFocusedWindow());
-  ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
-  EXPECT_EQ("Focused id=0,2",
-            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  ASSERT_GE(connection1_client->tracker()->changes()->size(), 1u);
-  EXPECT_EQ(
-      "Focused id=null",
-      ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
+  EXPECT_EQ(v1, host_connection()->window_tree_host()->GetFocusedWindow());
 
   display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
@@ -427,9 +429,9 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   // Press in the same location. Should not get a focus change event (only input
   // event).
   display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(host_connection()->window_tree_host()->root_window(),
-            host_connection()->window_tree_host()->GetFocusedWindow());
-  ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);
+  EXPECT_EQ(v1, host_connection()->window_tree_host()->GetFocusedWindow());
+  ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
+      << SingleChangeToDescription(*wm_client()->tracker()->changes());
   EXPECT_EQ("InputEvent window=0,2 event_action=4",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(connection1_client->tracker()->changes()->empty());
@@ -465,6 +467,9 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   const WindowId child1(connection1->id(), 1);
   EXPECT_TRUE(connection1->NewWindow(child1, ServerWindow::Properties()));
   EXPECT_TRUE(connection1->AddWindow(embed_window_id, child1));
+  connection1->GetHost()->AddActivationParent(
+      WindowIdToTransportId(embed_window_id));
+
   ServerWindow* v1 = connection1->GetWindow(child1);
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));

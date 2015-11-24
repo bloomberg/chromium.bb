@@ -87,6 +87,7 @@ bool WindowServerTestBase::ConfigureIncomingConnection(
 void WindowServerTestBase::OnEmbed(Window* root) {
   most_recent_connection_ = root->connection();
   EXPECT_TRUE(QuitRunLoop());
+  host_->AddActivationParent(root->id());
 }
 
 void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {

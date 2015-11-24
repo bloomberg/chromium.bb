@@ -30,7 +30,7 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      focus_controller_(new FocusController),
+      focus_controller_(new FocusController(this)),
       window_manager_(window_manager.Pass()) {
   focus_controller_->AddObserver(this);
   display_manager_->Init(this);
@@ -137,6 +137,20 @@ void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
   event_dispatcher_.RemoveAccelerator(id);
 }
 
+void WindowTreeHostImpl::AddActivationParent(uint32_t window_id) {
+  ServerWindow* window =
+      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+  if (window)
+    activation_parents_.insert(window->id());
+}
+
+void WindowTreeHostImpl::RemoveActivationParent(uint32_t window_id) {
+  ServerWindow* window =
+      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+  if (window)
+    activation_parents_.erase(window->id());
+}
+
 void WindowTreeHostImpl::OnClientClosed() {
   // |display_manager_.reset()| destroys the display-manager first, and then
   // sets |display_manager_| to nullptr. However, destroying |display_manager_|
@@ -187,6 +201,20 @@ void WindowTreeHostImpl::OnCompositorFrameDrawn() {
   for (ServerWindow* window : windows) {
     window->RemoveObserver(this);
     window->DestroySurfacesScheduledForDestruction();
+  }
+}
+
+bool WindowTreeHostImpl::CanHaveActiveChildren(ServerWindow* window) const {
+  return window && activation_parents_.count(window->id()) > 0;
+}
+
+void WindowTreeHostImpl::OnActivationChanged(ServerWindow* old_active_window,
+                                             ServerWindow* new_active_window) {
+  DCHECK_NE(new_active_window, old_active_window);
+  if (new_active_window && new_active_window->parent()) {
+    // Raise the new active window.
+    // TODO(sad): Let the WM dictate whether to raise the window or not?
+    new_active_window->parent()->StackChildAtTop(new_active_window);
   }
 }
 

@@ -45,6 +45,7 @@ class WindowServerTestBase
   WindowTreeConnection* window_manager() { return window_manager_; }
 
  protected:
+  mojom::WindowTreeHost* host() { return host_.get(); }
   WindowTreeConnection* most_recent_connection() {
     return most_recent_connection_;
   }

@@ -57,8 +57,12 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
       GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_BACKGROUND)));
   shelf_layout_.reset(new ShelfLayout(
       GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_SHELF)));
+
+  mus::Window* window =
+      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS);
   window_layout_.reset(new WindowLayout(
       GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS)));
+  host_->AddActivationParent(window->id());
 
   window_manager_.reset(new WindowManagerImpl(this));
 

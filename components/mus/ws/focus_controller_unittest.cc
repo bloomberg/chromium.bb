@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/focus_controller.h"
 
+#include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_server_window_delegate.h"
@@ -14,7 +15,8 @@ namespace mus {
 namespace ws {
 namespace {
 
-class TestFocusControllerObserver : public FocusControllerObserver {
+class TestFocusControllerObserver : public FocusControllerObserver,
+                                    public FocusControllerDelegate {
  public:
   TestFocusControllerObserver()
       : change_count_(0u),
@@ -31,7 +33,13 @@ class TestFocusControllerObserver : public FocusControllerObserver {
   ServerWindow* new_focused_window() { return new_focused_window_; }
 
  private:
+  // FocusControllerDelegate:
+  bool CanHaveActiveChildren(ServerWindow* window) const override {
+    return true;
+  }
   // FocusControllerObserver:
+  void OnActivationChanged(ServerWindow* old_active_window,
+                           ServerWindow* new_active_window) override {}
   void OnFocusChanged(FocusControllerChangeSource source,
                       ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override {
@@ -65,7 +73,7 @@ TEST(FocusControllerTest, Basic) {
   child.Add(&child_child);
 
   TestFocusControllerObserver focus_observer;
-  FocusController focus_controller;
+  FocusController focus_controller(&focus_observer);
   focus_controller.AddObserver(&focus_observer);
 
   focus_controller.SetFocusedWindow(&child_child);

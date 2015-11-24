@@ -27,6 +27,10 @@ interface WindowTreeHost {
   // easily identify the accelerator's action.
   AddAccelerator(uint32 id, EventMatcher matcher);
   RemoveAccelerator(uint32 id);
+
+  // Enables (or disables) child windows of |window_id| to be activated.
+  AddActivationParent(uint32 window_id);
+  RemoveActivationParent(uint32 window_id);
 };
 
 interface WindowTreeHostClient {

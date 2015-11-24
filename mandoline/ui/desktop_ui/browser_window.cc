@@ -200,6 +200,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   host_->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
 
   root_->AddChild(content_);
+  host_->AddActivationParent(root_->id());
   content_->SetVisible(true);
 
   web_view_.Init(app_, content_);

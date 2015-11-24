@@ -12,6 +12,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
+#include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
@@ -32,6 +33,7 @@ class WindowTreeImpl;
 class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public mojom::WindowTreeHost,
                            public FocusControllerObserver,
+                           public FocusControllerDelegate,
                            public EventDispatcherDelegate,
                            public ServerWindowObserver {
  public:
@@ -94,6 +96,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void AddAccelerator(uint32_t id,
                       mojom::EventMatcherPtr event_matcher) override;
   void RemoveAccelerator(uint32_t id) override;
+  void AddActivationParent(uint32_t window_id) override;
+  void RemoveActivationParent(uint32_t window_id) override;
 
  private:
   void OnClientClosed();
@@ -108,7 +112,12 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
   void OnCompositorFrameDrawn() override;
 
+  // FocusControllerDelegate:
+  bool CanHaveActiveChildren(ServerWindow* window) const override;
+
   // FocusControllerObserver:
+  void OnActivationChanged(ServerWindow* old_active_window,
+                           ServerWindow* new_active_window) override;
   void OnFocusChanged(FocusControllerChangeSource change_source,
                       ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
@@ -132,6 +141,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
   mojom::WindowManagerPtr window_manager_;
+
+  std::set<WindowId> activation_parents_;
 
   // Set of windows with surfaces that need to be destroyed once the frame
   // draws.
