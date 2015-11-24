@@ -8,6 +8,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/wm/core/transient_window_observer.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
@@ -42,6 +43,27 @@ class TestTransientWindowObserver : public TransientWindowObserver {
   int remove_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTransientWindowObserver);
+};
+
+class WindowVisibilityObserver : public aura::WindowObserver {
+ public:
+  WindowVisibilityObserver(Window* observed_window,
+                           scoped_ptr<Window> owned_window)
+      : observed_window_(observed_window), owned_window_(owned_window.Pass()) {
+    observed_window_->AddObserver(this);
+  }
+  ~WindowVisibilityObserver() override {
+    observed_window_->RemoveObserver(this);
+  }
+
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+    owned_window_.reset();
+  }
+ private:
+  Window* observed_window_;
+  scoped_ptr<Window> owned_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowVisibilityObserver);
 };
 
 class TransientWindowManagerTest : public aura::test::AuraTestBase {
@@ -312,6 +334,17 @@ TEST_F(TransientWindowManagerTest, StackUponCreation) {
   EXPECT_EQ("0 2 1", ChildWindowIDsAsString(root_window()));
 }
 
+// Tests for a crash when window destroyed inside
+// UpdateTransientChildVisibility loop.
+TEST_F(TransientWindowManagerTest, CrashOnVisibilityChange) {
+  scoped_ptr<Window> window1(CreateTransientChild(1, root_window()));
+  scoped_ptr<Window> window2(CreateTransientChild(2, root_window()));
+  window1->Show();
+  window2->Show();
+
+  WindowVisibilityObserver visibility_observer(window1.get(), window2.Pass());
+  root_window()->Hide();
+}
 // Tests that windows are restacked properly after a call to AddTransientChild()
 // or RemoveTransientChild().
 TEST_F(TransientWindowManagerTest, RestackUponAddOrRemoveTransientChild) {
