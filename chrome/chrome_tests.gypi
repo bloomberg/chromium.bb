@@ -990,6 +990,7 @@
       'test/data/webui/polymer_browser_test_base.js',
       'test/data/webui/print_preview.js',
       'test/data/webui/sandboxstatus_browsertest.js',
+      'test/data/webui/settings/appearance_browsertest.js',
       'test/data/webui/settings/cr_settings_browsertest.js',
       'test/data/webui/settings/main_page_browsertest.js',
       'test/data/webui/settings/settings_page_browsertest.js',

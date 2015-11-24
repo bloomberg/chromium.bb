@@ -29,6 +29,13 @@ SettingsPageBrowserTest.prototype = {
   /** @override */
   runAccessibilityChecks: false,
 
+  /** @override */
+  setUp: function() {
+    suiteSetup(function() {
+      return CrSettingsPrefs.initialized;
+    });
+  },
+
   /**
    * @param {string} type The settings page type, e.g. 'advanced' or 'basic'.
    * @return {Node} The DOM node for the page.
