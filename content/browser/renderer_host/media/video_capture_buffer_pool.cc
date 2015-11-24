@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -65,7 +64,8 @@ class GpuMemoryBufferBufferHandle final
     : public VideoCaptureBufferPool::BufferHandle {
  public:
   GpuMemoryBufferBufferHandle(const gfx::Size& dimensions,
-                              ScopedVector<gfx::GpuMemoryBuffer>* gmbs)
+                              std::vector<
+                                scoped_ptr<gfx::GpuMemoryBuffer>>* gmbs)
       : dimensions_(dimensions), gmbs_(gmbs) {
     DCHECK(gmbs);
   }
@@ -93,7 +93,7 @@ class GpuMemoryBufferBufferHandle final
 
  private:
   const gfx::Size dimensions_;
-  ScopedVector<gfx::GpuMemoryBuffer>* const gmbs_;
+  std::vector<scoped_ptr<gfx::GpuMemoryBuffer>>* const gmbs_;
 };
 
 // Tracker specifics for SharedMemory.
@@ -155,7 +155,7 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
  private:
   gfx::Size dimensions_;
   // Owned references to GpuMemoryBuffers.
-  ScopedVector<gfx::GpuMemoryBuffer> gpu_memory_buffers_;
+  std::vector<scoped_ptr<gfx::GpuMemoryBuffer>> gpu_memory_buffers_;
 };
 
 VideoCaptureBufferPool::SharedMemTracker::SharedMemTracker() : Tracker() {}
