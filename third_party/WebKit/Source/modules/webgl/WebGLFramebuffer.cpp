@@ -50,6 +50,7 @@ private:
     GLsizei height() const override;
     GLenum format() const override;
     GLenum type() const override;
+    bool isCubeComplete() const override;
     WebGLSharedObject* object() const override;
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
@@ -143,6 +144,12 @@ GLenum WebGLRenderbufferAttachment::type() const
     return WebGLTexture::getValidTypeForInternalFormat(m_renderbuffer->internalFormat());
 }
 
+bool WebGLRenderbufferAttachment::isCubeComplete() const
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
 public:
     static WebGLFramebuffer::WebGLAttachment* create(WebGLTexture*, GLenum target, GLint level, GLint layer);
@@ -157,6 +164,7 @@ private:
     GLsizei height() const override;
     GLenum format() const override;
     GLenum type() const override;
+    bool isCubeComplete() const override;
     WebGLSharedObject* object() const override;
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
@@ -252,6 +260,11 @@ void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum targ
 GLenum WebGLTextureAttachment::type() const
 {
     return m_texture->getType(m_target, m_level);
+}
+
+bool WebGLTextureAttachment::isCubeComplete() const
+{
+    return m_texture->isCubeComplete();
 }
 
 bool isColorRenderable(GLenum internalformat, bool includesFloat)
@@ -450,6 +463,12 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
         *reason = "attachment has a 0 dimension";
         return false;
     }
+
+    if (attachedObject->object()->isTexture() && !attachedObject->isCubeComplete()) {
+        *reason = "attachment is not cube complete";
+        return false;
+    }
+
     return true;
 }
 

@@ -49,6 +49,7 @@ public:
         // To avoid confusion, it would be better to not implement type() for renderbuffer attachment and
         // we should always use the internalformat of the renderbuffer and avoid using type() API.
         virtual GLenum type() const = 0;
+        virtual bool isCubeComplete() const = 0;
         virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;

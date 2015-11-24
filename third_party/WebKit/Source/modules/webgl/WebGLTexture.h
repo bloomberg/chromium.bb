@@ -68,6 +68,8 @@ public:
 
     static GLenum getValidFormatForInternalFormat(GLenum);
 
+    bool isCubeComplete() const { return m_isCubeComplete; }
+
     // Whether width/height is NotPowerOfTwo.
     static bool isNPOT(GLsizei, GLsizei);
 
