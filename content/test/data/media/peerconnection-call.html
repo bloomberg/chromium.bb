@@ -545,9 +545,14 @@
       setAllEventsOccuredHandler(reportTestSuccess);
 
       gFirstConnection.removeStream(localStream);
+      gSecondConnection.removeStream(localStream);
+
       localStream.addTrack(gLocalStream.getAudioTracks()[0]);
       localStream.removeTrack(localStream.getVideoTracks()[0]);
+
       gFirstConnection.addStream(localStream);
+      gSecondConnection.addStream(localStream);
+
       negotiate();
     });
   }
