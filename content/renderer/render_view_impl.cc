@@ -3220,7 +3220,7 @@ bool RenderViewImpl::SetDeviceColorProfile(
 void RenderViewImpl::ResetDeviceColorProfileForTesting() {
   RenderWidget::ResetDeviceColorProfileForTesting();
   if (webview())
-    webview()->resetDeviceColorProfile();
+    webview()->resetDeviceColorProfileForTesting();
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {

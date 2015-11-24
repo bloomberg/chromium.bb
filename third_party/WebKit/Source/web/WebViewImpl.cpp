@@ -3131,12 +3131,12 @@ void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile)
     page()->setDeviceColorProfile(deviceProfile);
 }
 
-void WebViewImpl::resetDeviceColorProfile()
+void WebViewImpl::resetDeviceColorProfileForTesting()
 {
     if (!page())
         return;
 
-    page()->resetDeviceColorProfile();
+    page()->resetDeviceColorProfileForTesting();
 }
 
 void WebViewImpl::enableAutoResizeMode(const WebSize& minSize, const WebSize& maxSize)

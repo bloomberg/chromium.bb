@@ -331,7 +331,7 @@ void Page::setDeviceColorProfile(const Vector<char>& profile)
     // FIXME: implement.
 }
 
-void Page::resetDeviceColorProfile()
+void Page::resetDeviceColorProfileForTesting()
 {
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(false);
 }

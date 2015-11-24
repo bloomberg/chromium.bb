@@ -292,7 +292,7 @@ public:
 
     // Set and reset the device color profile.
     virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
-    virtual void resetDeviceColorProfile() = 0;
+    virtual void resetDeviceColorProfileForTesting() = 0;
 
     // Auto-Resize -----------------------------------------------------------
 
