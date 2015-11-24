@@ -556,8 +556,7 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
   std::vector<base::WaitableEvent*> events;
   for (size_t i = 0; i < web_events.size(); ++i)
     events.push_back(static_cast<WebWaitableEventImpl*>(web_events[i])->impl());
-  size_t idx = base::WaitableEvent::WaitMany(
-      vector_as_array(&events), events.size());
+  size_t idx = base::WaitableEvent::WaitMany(events.data(), events.size());
   DCHECK_LT(idx, web_events.size());
   return web_events[idx];
 }

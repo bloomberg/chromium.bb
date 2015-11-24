@@ -1803,7 +1803,7 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
     init_data_type_ = init_data_type;
 
   encrypted_client_->encrypted(ConvertToWebInitDataType(init_data_type),
-                               vector_as_array(&init_data), init_data.size());
+                               init_data.data(), init_data.size());
 }
 
 void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {

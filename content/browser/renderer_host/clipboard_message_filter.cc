@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -193,7 +192,7 @@ void ClipboardMessageFilter::OnReadImageReply(
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &png_data)) {
       base::SharedMemory buffer;
       if (buffer.CreateAndMapAnonymous(png_data.size())) {
-        memcpy(buffer.memory(), vector_as_array(&png_data), png_data.size());
+        memcpy(buffer.memory(), png_data.data(), png_data.size());
         if (buffer.GiveToProcess(PeerHandle(), &image_handle)) {
           image_size = png_data.size();
         }

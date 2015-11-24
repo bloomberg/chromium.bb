@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/clipboard_utils.h"
@@ -111,7 +110,7 @@ blink::WebData MockWebClipboardImpl::readImage(
                         false /* discard_transparency */,
                         std::vector<gfx::PNGCodec::Comment>(),
                         &encoded_image);
-  data.assign(reinterpret_cast<char*>(vector_as_array(&encoded_image)),
+  data.assign(reinterpret_cast<char*>(encoded_image.data()),
               encoded_image.size());
   return data;
 }

@@ -9,7 +9,6 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/base/audio_buffer.h"
@@ -421,8 +420,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(certificate.size()),
-          vector_as_array(&certificate));
+          base::checked_cast<uint32>(certificate.size()), certificate.data());
   plugin_decryption_interface_->SetServerCertificate(
       pp_instance_, promise_id, certificate_array);
 }
@@ -435,8 +433,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(init_data.size()),
-          vector_as_array(&init_data));
+          base::checked_cast<uint32>(init_data.size()), init_data.data());
   plugin_decryption_interface_->CreateSessionAndGenerateRequest(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       MediaInitDataTypeToPpInitDataType(init_data_type), init_data_array);
@@ -459,8 +456,7 @@ void ContentDecryptorDelegate::UpdateSession(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(response.size()),
-          vector_as_array(&response));
+          base::checked_cast<uint32>(response.size()), response.data());
   plugin_decryption_interface_->UpdateSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(session_id),
       response_array);

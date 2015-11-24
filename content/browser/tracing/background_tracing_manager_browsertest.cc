@@ -48,7 +48,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
     stream.avail_in = compressed_length;
     stream.avail_out = kOutputBufferLength;
     stream.next_in = (Bytef*)&file_contents->data()[0];
-    stream.next_out = (Bytef*)vector_as_array(&output_str);
+    stream.next_out = (Bytef*)output_str.data();
 
     // 16 + MAX_WBITS means only decoding gzip encoded streams, and using
     // the biggest window size, according to zlib.h
@@ -60,7 +60,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
     inflateEnd(&stream);
     EXPECT_EQ(Z_STREAM_END, result);
 
-    last_file_contents_.assign(vector_as_array(&output_str), bytes_written);
+    last_file_contents_.assign(output_str.data(), bytes_written);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(done_callback));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
