@@ -31,6 +31,9 @@ def _ParseArgs(args):
                       help='GYP-list of files to add as assets in the form '
                            '"srcPath:zipPath", where ":zipPath" is optional.',
                       default='[]')
+  parser.add_argument('--write-asset-list',
+                      action='store_true',
+                      help='Whether to create an assets/assets_list file.')
   parser.add_argument('--uncompressed-assets',
                       help='Same as --assets, except disables compression.',
                       default='[]')
@@ -110,6 +113,11 @@ def _AddAssets(apk, paths, disable_compression=False):
                                        compress=compress)
 
 
+def _CreateAssetsList(paths):
+  """Returns a newline-separated list of asset paths for the given paths."""
+  return '\n'.join(_SplitAssetPath(p)[1] for p in sorted(paths)) + '\n'
+
+
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
@@ -142,8 +150,14 @@ def main(args):
       # with finalize_apk(), which sometimes aligns and uncompresses the
       # native libraries.
       with zipfile.ZipFile(tmp_apk, 'a', zipfile.ZIP_DEFLATED) as apk:
+        if options.write_asset_list:
+          data = _CreateAssetsList(
+              itertools.chain(options.assets, options.uncompressed_assets))
+          build_utils.AddToZipHermetic(apk, 'assets/assets_list', data=data)
+
         _AddAssets(apk, options.assets, disable_compression=False)
         _AddAssets(apk, options.uncompressed_assets, disable_compression=True)
+
         for path in native_libs:
           basename = os.path.basename(path)
           apk_path = 'lib/%s/%s' % (options.android_abi, basename)

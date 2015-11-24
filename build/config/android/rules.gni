@@ -1201,6 +1201,8 @@ template("android_java_prebuilt") {
 #   include_all_resources - If true include all resource IDs in all generated
 #     R.java files.
 #   testonly: Marks this target as "test-only".
+#   write_asset_list: Adds an extra file to the assets, which contains a list of
+#     all other asset files.
 #
 #   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
 #     this directory will be included in the library. This is only supported to
@@ -1655,6 +1657,7 @@ template("android_apk") {
                              "extensions_to_not_compress",
                              "language_splits",
                              "shared_resources",
+                             "write_asset_list",
                            ])
     apk_path = _final_apk_path
     android_manifest = _android_manifest
@@ -1912,38 +1915,37 @@ template("instrumentation_test_apk") {
 #     unittests_dep = ":foo_unittests"
 #   }
 template("unittest_apk") {
-  set_sources_assignment_filter([])
-  testonly = true
-
-  assert(defined(invoker.unittests_dep), "Need unittests_dep for $target_name")
-
-  test_suite_name = get_label_info(invoker.unittests_dep, "name")
-
-  # This trivial assert is needed in case both unittests_binary and apk_name
-  # are defined, as otherwise test_suite_name would not be used.
-  assert(test_suite_name != "")
-
-  if (defined(invoker.unittests_binary)) {
-    unittests_binary = invoker.unittests_binary
-  } else {
-    unittests_binary = "lib${test_suite_name}${shlib_extension}"
-  }
-
-  if (defined(invoker.apk_name)) {
-    apk_name = invoker.apk_name
-  } else {
-    apk_name = test_suite_name
-  }
-
   android_apk(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "asset_location",
-                             "android_manifest",
-                           ])
+    set_sources_assignment_filter([])
+    data_deps = []
+    deps = []
+    forward_variables_from(invoker, "*")
+    testonly = true
+
+    assert(defined(unittests_dep), "Need unittests_dep for $target_name")
+
+    test_suite_name = get_label_info(unittests_dep, "name")
+
+    # This trivial assert is needed in case both unittests_binary and apk_name
+    # are defined, as otherwise test_suite_name would not be used.
+    assert(test_suite_name != "")
+
+    if (!defined(apk_name)) {
+      apk_name = test_suite_name
+    }
+
+    if (!defined(android_manifest)) {
+      android_manifest =
+          "//testing/android/native_test/java/AndroidManifest.xml"
+    }
+
+    if (!defined(unittests_binary)) {
+      unittests_binary = "lib${test_suite_name}${shlib_extension}"
+    }
+
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
 
-    if (!defined(invoker.use_default_launcher) || invoker.use_default_launcher) {
+    if (!defined(use_default_launcher) || use_default_launcher) {
       java_files = [
         "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
         "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestActivity.java",
@@ -1951,28 +1953,16 @@ template("unittest_apk") {
         "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
       ]
     }
-    if (!defined(invoker.android_manifest)) {
-      android_manifest =
-          "//testing/android/native_test/java/AndroidManifest.xml"
-    }
     native_libs = [ unittests_binary ]
-    deps = [
+    deps += [
       "//base:base_java",
       "//build/android/pylib/remote/device/dummy:remote_device_dummy_apk",
       "//testing/android/appurify_support:appurify_support_java",
       "//testing/android/reporter:reporter_java",
     ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    data_deps = [
-      "//tools/android/md5sum",
-    ]
+    data_deps += [ "//tools/android/md5sum" ]
     if (host_os == "linux") {
       data_deps += [ "//tools/android/forwarder2" ]
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps += invoker.data_deps
     }
   }
 }

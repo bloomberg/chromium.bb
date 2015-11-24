@@ -64,6 +64,13 @@ template("test") {
     }
 
     unittest_apk(apk_name) {
+      forward_variables_from(invoker,
+                             [
+                               "android_manifest",
+                               "use_default_launcher",
+                               "write_asset_list",
+                             ])
+
       unittests_dep = ":$library_name"
       apk_name = main_target_name
       if (defined(invoker.output_name)) {
@@ -78,12 +85,6 @@ template("test") {
       }
       if (defined(invoker.apk_asset_location)) {
         asset_location = invoker.apk_asset_location
-      }
-      if (defined(invoker.android_manifest)) {
-        android_manifest = invoker.android_manifest
-      }
-      if (defined(invoker.use_default_launcher)) {
-        use_default_launcher = invoker.use_default_launcher
       }
     }
 

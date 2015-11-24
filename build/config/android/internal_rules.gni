@@ -668,6 +668,8 @@ template("emma_instr") {
 #   native_lib_placeholders: List of placeholder filenames to add to the apk
 #     (optional).
 #   native_libs_dir: Directory containing native libraries.
+#   write_asset_list: Adds an extra file to the assets, which contains a list of
+#     all other asset files.
 template("package_apk") {
   action(target_name) {
     forward_variables_from(invoker,
@@ -717,6 +719,9 @@ template("package_apk") {
         "--assets=@FileArg($_rebased_build_config:assets)",
         "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
       ]
+    }
+    if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
+      args += [ "--write-asset-list" ]
     }
     if (defined(invoker.dex_path)) {
       _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
@@ -1010,6 +1015,7 @@ template("create_apk") {
                              "emma_instrument",
                              "native_lib_placeholders",
                              "native_libs_dir",
+                             "write_asset_list",
                            ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
 
