@@ -97,7 +97,7 @@ def ReadStampFile():
   """Return the contents of the stamp file, or '' if it doesn't exist."""
   try:
     with open(STAMP_FILE, 'r') as f:
-      return f.read()
+      return f.read().rstrip()
   except IOError:
     return ''
 
@@ -108,6 +108,7 @@ def WriteStampFile(s):
     os.makedirs(os.path.dirname(STAMP_FILE))
   with open(STAMP_FILE, 'w') as f:
     f.write(s)
+    f.write('\n')
 
 
 def GetSvnRevision(svn_repo):
@@ -281,7 +282,13 @@ def UpdateClang(args):
 
   if not args.force_local_build:
     cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
-    cds_full_url = CDS_URL + '/Win/' + cds_file
+    if sys.platform == 'win32':
+      cds_full_url = CDS_URL + '/Win/' + cds_file
+    elif sys.platform == 'darwin':
+      cds_full_url = CDS_URL + '/Mac/' + cds_file
+    else:
+      assert sys.platform.startswith('linux')
+      cds_full_url = CDS_URL + '/Linux_x64/' + cds_file
 
     # Check if there's a prebuilt binary and if so just fetch that. That's
     # faster, and goma relies on having matching binary hashes on client and
