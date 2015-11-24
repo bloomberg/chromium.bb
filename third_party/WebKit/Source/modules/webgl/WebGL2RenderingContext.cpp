@@ -79,7 +79,7 @@ void WebGL2RenderingContext::registerContextExtensions()
 {
     // Register extensions.
     registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
-    registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat);
+    registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat, DraftExtension);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
     registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
     registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
