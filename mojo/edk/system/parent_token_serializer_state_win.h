@@ -43,7 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ParentTokenSerializerState
   friend struct base::DefaultSingletonTraits<ParentTokenSerializerState>;
 
   ParentTokenSerializerState();
-  virtual ~ParentTokenSerializerState();
+  ~ParentTokenSerializerState() override;
 
   // A separate thread to handle sync IPCs from child processes for exchanging
   // platform handles with tokens. We use a separate thread because latency is
