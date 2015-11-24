@@ -121,11 +121,6 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
                      bool /* background */)
 
-#if defined(USE_TCMALLOC)
-// Sent to child process to request tcmalloc stats.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)
-#endif
-
 #if defined(OS_MACOSX)
 // Sent to child processes to tell them what token to use when registering
 // and/or acquiring IOSurfaces.
@@ -200,12 +195,6 @@ IPC_MESSAGE_CONTROL3(ChildProcessHostMsg_AllocatedSharedBitmap,
 // Informs the browser that the child deleted a shared bitmap.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedSharedBitmap,
                      cc::SharedBitmapId)
-
-#if defined(USE_TCMALLOC)
-// Reply to ChildProcessMsg_GetTcmallocStats.
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
-                     std::string /* output */)
-#endif
 
 // Asks the browser to create a gpu memory buffer.
 IPC_SYNC_MESSAGE_CONTROL5_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,

@@ -83,10 +83,6 @@ class GpuChildThread : public ChildThreadImpl {
   void OnDisableWatchdog();
   void OnGpuSwitched();
 
-#if defined(USE_TCMALLOC)
-  void OnGetGpuTcmalloc();
-#endif
-
   void BindProcessControlRequest(
       mojo::InterfaceRequest<ProcessControl> request);
 

@@ -238,9 +238,6 @@ class CONTENT_EXPORT ChildThreadImpl
 #if defined(OS_WIN)
   void OnSetMojoParentPipeHandle(const IPC::PlatformFileForTransit& file);
 #endif
-#if defined(USE_TCMALLOC)
-  void OnGetTcmallocStats();
-#endif
 
   void EnsureConnected();
 

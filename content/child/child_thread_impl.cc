@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/allocator/allocator_extension.h"
 #include "base/base_switches.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -663,9 +662,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetMojoParentPipeHandle,
                         OnSetMojoParentPipeHandle)
 #endif
-#if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -739,16 +735,6 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
 void ChildThreadImpl::OnSetMojoParentPipeHandle(
     const IPC::PlatformFileForTransit& file) {
   mojo::embedder::SetParentPipeHandle(file);
-}
-#endif
-
-#if defined(USE_TCMALLOC)
-void ChildThreadImpl::OnGetTcmallocStats() {
-  std::string result;
-  char buffer[1024 * 32];
-  base::allocator::GetStats(buffer, sizeof(buffer));
-  result.append(buffer);
-  Send(new ChildProcessHostMsg_TcmallocStats(result));
 }
 #endif
 

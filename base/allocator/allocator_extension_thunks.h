@@ -15,10 +15,6 @@ namespace thunks {
 // new allocator extension from a specific allocator implementation to base.
 // See allocator_extension.h to see the interface that base exports.
 
-typedef void (*GetStatsFunction)(char* buffer, int buffer_length);
-void SetGetStatsFunction(GetStatsFunction get_stats_function);
-GetStatsFunction GetGetStatsFunction();
-
 typedef void (*ReleaseFreeMemoryFunction)();
 void SetReleaseFreeMemoryFunction(
     ReleaseFreeMemoryFunction release_free_memory_function);

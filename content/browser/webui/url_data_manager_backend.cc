@@ -26,7 +26,6 @@
 #include "content/browser/net/view_blob_internals_job_factory.h"
 #include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -483,14 +482,6 @@ class ChromeProtocolHandler
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
           request, network_delegate, blob_storage_context_->context());
     }
-
-#if defined(USE_TCMALLOC)
-    // Next check for chrome://tcmalloc/, which uses its own job type.
-    if (request->url().SchemeIs(kChromeUIScheme) &&
-        request->url().host() == kChromeUITcmallocHost) {
-      return new TcmallocInternalsRequestJob(request, network_delegate);
-    }
-#endif
 
     // Next check for chrome://histograms/, which uses its own job type.
     if (request->url().SchemeIs(kChromeUIScheme) &&

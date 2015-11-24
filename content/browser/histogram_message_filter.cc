@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_controller.h"
-#include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/common/content_switches.h"
 
