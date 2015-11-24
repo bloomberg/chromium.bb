@@ -88,12 +88,6 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   variations::VariationsService* variations_service = GetVariationsService();
   if (variations_service)
     variations_service->OnAppEnterForeground();
-
-  std::vector<ios::ChromeBrowserState*> loaded_browser_state =
-      GetChromeBrowserStateManager()->GetLoadedBrowserStates();
-  for (ios::ChromeBrowserState* browser_state : loaded_browser_state) {
-    browser_state->SetExitType(ios::ChromeBrowserState::EXIT_CRASHED);
-  }
 }
 
 void ApplicationContextImpl::OnAppEnterBackground() {
@@ -108,7 +102,6 @@ void ApplicationContextImpl::OnAppEnterBackground() {
       history_service->HandleBackgrounding();
     }
 
-    browser_state->SetExitType(ios::ChromeBrowserState::EXIT_NORMAL);
     PrefService* browser_state_prefs = browser_state->GetPrefs();
     if (browser_state_prefs)
       browser_state_prefs->CommitPendingWrite();

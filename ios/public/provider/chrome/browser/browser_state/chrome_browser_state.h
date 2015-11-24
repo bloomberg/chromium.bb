@@ -31,11 +31,6 @@ namespace ios {
 // This class is a Chrome-specific extension of the BrowserState interface.
 class ChromeBrowserState : public web::BrowserState {
  public:
-  enum ExitType {
-    EXIT_NORMAL,
-    EXIT_CRASHED,
-  };
-
   ~ChromeBrowserState() override {}
 
   // Returns the ChromeBrowserState corresponding to the given BrowserState.
@@ -74,18 +69,6 @@ class ChromeBrowserState : public web::BrowserState {
   // Retrieves a pointer to the PrefService that manages the preferences as
   // a syncable_prefs::PrefServiceSyncable.
   virtual syncable_prefs::PrefServiceSyncable* GetSyncablePrefs() = 0;
-
-  // Sets the ExitType for the ChromeBrowserState. This may be invoked multiple
-  // times during shutdown; only the first such change (the transition from
-  // EXIT_CRASHED to one of the other values) is written to prefs, any later
-  // calls are ignored.
-  //
-  // NOTE: this is invoked internally on a normal shutdown, but is public so
-  // that it can be invoked to handle backgrounding/foregrounding.
-  virtual void SetExitType(ExitType exit_type) = 0;
-
-  // Returns how the last session was shutdown.
-  virtual ExitType GetLastSessionExitType() = 0;
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and it also deletes HttpServerProperties data.
