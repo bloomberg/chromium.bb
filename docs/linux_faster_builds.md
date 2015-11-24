@@ -40,6 +40,10 @@ When you use Icecc, you need to set some gyp variables.
 
 Icecc doesn't support clang yet.
 
+    use_sysroot=0
+
+Icecc doesn't work with sysroot.
+
 ## Build only specific targets
 
 If you specify just the target(s) you want built, the build will only walk that
