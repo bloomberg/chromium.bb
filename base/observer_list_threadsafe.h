@@ -67,9 +67,8 @@ template <class T, class Method, class Params>
 class UnboundMethod {
  public:
   UnboundMethod(Method m, const Params& p) : m_(m), p_(p) {
-    COMPILE_ASSERT(
-        (internal::ParamsUseScopedRefptrCorrectly<Params>::value),
-        badunboundmethodparams);
+    static_assert((internal::ParamsUseScopedRefptrCorrectly<Params>::value),
+                  "bad unbound method params");
   }
   void Run(T* obj) const {
     DispatchToMethod(obj, m_, p_);

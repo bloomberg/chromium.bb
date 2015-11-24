@@ -187,8 +187,8 @@ TEST(TimeTicks, TimerPerformance) {
   };
   // Cheating a bit here:  assumes sizeof(TimeTicks) == sizeof(Time)
   // in order to create a single test case list.
-  COMPILE_ASSERT(sizeof(TimeTicks) == sizeof(Time),
-                 test_only_works_with_same_sizes);
+  static_assert(sizeof(TimeTicks) == sizeof(Time),
+                "TimeTicks and Time must be the same size");
   std::vector<TestCase> cases;
   cases.push_back({reinterpret_cast<TestFunc>(&Time::Now), "Time::Now"});
   cases.push_back({&TimeTicks::Now, "TimeTicks::Now"});

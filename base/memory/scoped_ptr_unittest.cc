@@ -102,8 +102,8 @@ TEST(ScopedPtrTest, ScopedPtr) {
   int constructed = 0;
 
   // Ensure size of scoped_ptr<> doesn't increase unexpectedly.
-  COMPILE_ASSERT(sizeof(int*) >= sizeof(scoped_ptr<int>),
-                 scoped_ptr_larger_than_raw_ptr);
+  static_assert(sizeof(int*) >= sizeof(scoped_ptr<int>),
+                "scoped_ptr shouldn't be larger than the raw pointer");
 
   {
     scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));

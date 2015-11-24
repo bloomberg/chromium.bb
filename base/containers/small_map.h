@@ -187,7 +187,7 @@ class SmallMap {
   // particular, gcc 2.95.3 does it but later versions allow 0-length
   // arrays.  Therefore, we explicitly reject non-positive kArraySize
   // here.
-  COMPILE_ASSERT(kArraySize > 0, default_initial_size_should_be_positive);
+  static_assert(kArraySize > 0, "default initial size should be positive");
 
  public:
   typedef typename NormalMap::key_type key_type;

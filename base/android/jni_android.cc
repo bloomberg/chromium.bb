@@ -125,8 +125,8 @@ jclass LazyGetClass(
     JNIEnv* env,
     const char* class_name,
     base::subtle::AtomicWord* atomic_class_id) {
-  COMPILE_ASSERT(sizeof(subtle::AtomicWord) >= sizeof(jclass),
-                 AtomicWord_SmallerThan_jMethodID);
+  static_assert(sizeof(subtle::AtomicWord) >= sizeof(jclass),
+                "AtomicWord can't be smaller than jclass");
   subtle::AtomicWord value = base::subtle::Acquire_Load(atomic_class_id);
   if (value)
     return reinterpret_cast<jclass>(value);
@@ -170,8 +170,8 @@ jmethodID MethodID::LazyGet(JNIEnv* env,
                             const char* method_name,
                             const char* jni_signature,
                             base::subtle::AtomicWord* atomic_method_id) {
-  COMPILE_ASSERT(sizeof(subtle::AtomicWord) >= sizeof(jmethodID),
-                 AtomicWord_SmallerThan_jMethodID);
+  static_assert(sizeof(subtle::AtomicWord) >= sizeof(jmethodID),
+                "AtomicWord can't be smaller than jMethodID");
   subtle::AtomicWord value = base::subtle::Acquire_Load(atomic_method_id);
   if (value)
     return reinterpret_cast<jmethodID>(value);

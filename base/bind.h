@@ -89,7 +89,7 @@ Bind(Functor functor, const Args&... args) {
   // invoked function will receive a reference to the stored copy of the
   // argument and not the original.
   static_assert(!internal::HasNonConstReferenceParam<BoundRunType>::value,
-                "do_not_bind_functions_with_nonconst_ref");
+                "do not bind functions with nonconst ref");
 
   const bool is_method = internal::HasIsMethodTag<RunnableType>::value;
 
@@ -98,10 +98,10 @@ Bind(Functor functor, const Args&... args) {
   // methods. We also disallow binding of an array as the method's target
   // object.
   static_assert(!internal::BindsArrayToFirstArg<is_method, Args...>::value,
-                "first_bound_argument_to_method_cannot_be_array");
+                "first bound argument to method cannot be array");
   static_assert(
       !internal::HasRefCountedParamAsRawPtr<is_method, Args...>::value,
-      "a_parameter_is_refcounted_type_and_needs_scoped_refptr");
+      "a parameter is a refcounted type and needs scoped_refptr");
 
   typedef internal::BindState<
       RunnableType, RunType,

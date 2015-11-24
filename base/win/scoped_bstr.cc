@@ -14,7 +14,7 @@ ScopedBstr::ScopedBstr(const char16* non_bstr)
 }
 
 ScopedBstr::~ScopedBstr() {
-  COMPILE_ASSERT(sizeof(ScopedBstr) == sizeof(BSTR), ScopedBstrSize);
+  static_assert(sizeof(ScopedBstr) == sizeof(BSTR), "ScopedBstrSize");
   SysFreeString(bstr_);
 }
 

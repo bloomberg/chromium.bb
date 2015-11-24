@@ -72,7 +72,7 @@ const char kDownCaseHexDigits[] = "0123456789abcdef";
 #if defined(NDEBUG)
 // We would like to define kSSizeMax as std::numeric_limits<ssize_t>::max(),
 // but C++ doesn't allow us to do that for constants. Instead, we have to
-// use careful casting and shifting. We later use a COMPILE_ASSERT to
+// use careful casting and shifting. We later use a static_assert to
 // verify that this worked correctly.
 namespace {
 const size_t kSSizeMax = kSSizeMaxConst;
@@ -110,18 +110,13 @@ class Buffer {
       : buffer_(buffer),
         size_(size - 1),  // Account for trailing NUL byte
         count_(0) {
-// The following assertion does not build on Mac and Android. This is because
-// static_assert only works with compile-time constants, but mac uses
-// libstdc++4.2 and android uses stlport, which both don't mark
-// numeric_limits::max() as constexp.  Likewise, MSVS2013's standard library
-// also doesn't mark max() as constexpr yet. cl.exe supports static_cast but
-// doesn't really implement constexpr yet so it doesn't complain, but clang
-// does.
-#if __cplusplus >= 201103 && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
-    !defined(OS_IOS) && !(defined(__clang__) && defined(OS_WIN))
-    COMPILE_ASSERT(kSSizeMaxConst == \
-                   static_cast<size_t>(std::numeric_limits<ssize_t>::max()),
-                   kSSizeMax_is_the_max_value_of_an_ssize_t);
+// MSVS2013's standard library doesn't mark max() as constexpr yet. cl.exe
+// supports static_cast but doesn't really implement constexpr yet so it doesn't
+// complain, but clang does.
+#if __cplusplus >= 201103 && !(defined(__clang__) && defined(OS_WIN))
+    static_assert(kSSizeMaxConst ==
+                      static_cast<size_t>(std::numeric_limits<ssize_t>::max()),
+                  "kSSizeMaxConst should be the max value of an ssize_t");
 #endif
     DEBUG_CHECK(size > 0);
     DEBUG_CHECK(size <= kSSizeMax);

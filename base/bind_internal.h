@@ -313,8 +313,8 @@ struct InvokeHelper<true, ReturnType, Runnable, ArgsType> {
   // WeakCalls are only supported for functions with a void return type.
   // Otherwise, the function result would be undefined if the the WeakPtr<>
   // is invalidated.
-  COMPILE_ASSERT(is_void<ReturnType>::value,
-                 weak_ptrs_can_only_bind_to_methods_without_return_values);
+  static_assert(is_void<ReturnType>::value,
+                "weak_ptrs can only bind to methods without return values");
 };
 
 #endif

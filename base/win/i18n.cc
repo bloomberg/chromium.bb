@@ -32,8 +32,9 @@ const char *const kLanguageFunctionNames[] = {
   &kThreadLanguagesFunctionName[0]
 };
 
-COMPILE_ASSERT(NUM_FUNCTIONS == arraysize(kLanguageFunctionNames),
-               language_function_enum_and_names_out_of_sync);
+static_assert(NUM_FUNCTIONS == arraysize(kLanguageFunctionNames),
+              "LanguageFunction enum and kLanguageFunctionNames array must be "
+              "kept in sync");
 
 // Calls one of the MUI Get*PreferredUILanguages functions, placing the result
 // in |languages|.  |function| identifies the function to call and |flags| is

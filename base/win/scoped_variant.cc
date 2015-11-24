@@ -12,7 +12,7 @@ namespace win {
 const VARIANT ScopedVariant::kEmptyVariant = {{{VT_EMPTY}}};
 
 ScopedVariant::~ScopedVariant() {
-  COMPILE_ASSERT(sizeof(ScopedVariant) == sizeof(VARIANT), ScopedVariantSize);
+  static_assert(sizeof(ScopedVariant) == sizeof(VARIANT), "ScopedVariantSize");
   ::VariantClear(&var_);
 }
 

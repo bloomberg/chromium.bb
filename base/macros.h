@@ -129,7 +129,8 @@ template <typename T, size_t N> char (&ArraySizeHelper(T (&array)[N]))[N];
 
 template <class Dest, class Source>
 inline Dest bit_cast(const Source& source) {
-  COMPILE_ASSERT(sizeof(Dest) == sizeof(Source), VerifySizesAreEqual);
+  static_assert(sizeof(Dest) == sizeof(Source),
+                "bit_cast requires source and destination to be the same size");
 
   Dest dest;
   memcpy(&dest, &source, sizeof(dest));

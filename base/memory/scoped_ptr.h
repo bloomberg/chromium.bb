@@ -239,8 +239,8 @@ template <class T, class D = std::default_delete<T>>
 class scoped_ptr {
   MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(scoped_ptr)
 
-  COMPILE_ASSERT(base::internal::IsNotRefCounted<T>::value,
-                 T_is_refcounted_type_and_needs_scoped_refptr);
+  static_assert(base::internal::IsNotRefCounted<T>::value,
+                "T is a refcounted type and needs a scoped_refptr");
 
  public:
   // The element and deleter types.

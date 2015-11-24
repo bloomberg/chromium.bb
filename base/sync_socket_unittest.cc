@@ -49,7 +49,7 @@ class HangingReceiveThread : public base::DelegateSimpleThread::Delegate {
 void SendReceivePeek(base::SyncSocket* socket_a, base::SyncSocket* socket_b) {
   int received = 0;
   const int kSending = 123;
-  COMPILE_ASSERT(sizeof(kSending) == sizeof(received), Invalid_Data_Size);
+  static_assert(sizeof(kSending) == sizeof(received), "invalid data size");
 
   ASSERT_EQ(0u, socket_a->Peek());
   ASSERT_EQ(0u, socket_b->Peek());

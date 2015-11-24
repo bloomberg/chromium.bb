@@ -952,9 +952,9 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
 #define NOTIMPLEMENTED() EAT_STREAM_PARAMETERS
 #elif NOTIMPLEMENTED_POLICY == 1
 // TODO, figure out how to generate a warning
-#define NOTIMPLEMENTED() COMPILE_ASSERT(false, NOT_IMPLEMENTED)
+#define NOTIMPLEMENTED() static_assert(false, "NOT_IMPLEMENTED")
 #elif NOTIMPLEMENTED_POLICY == 2
-#define NOTIMPLEMENTED() COMPILE_ASSERT(false, NOT_IMPLEMENTED)
+#define NOTIMPLEMENTED() static_assert(false, "NOT_IMPLEMENTED")
 #elif NOTIMPLEMENTED_POLICY == 3
 #define NOTIMPLEMENTED() NOTREACHED()
 #elif NOTIMPLEMENTED_POLICY == 4

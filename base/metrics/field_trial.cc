@@ -325,12 +325,11 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
         // group number, so that it does not conflict with the |AppendGroup()|
         // result for the chosen group.
         const int kNonConflictingGroupNumber = -2;
-        COMPILE_ASSERT(
+        static_assert(
             kNonConflictingGroupNumber != FieldTrial::kDefaultGroupNumber,
-            conflicting_default_group_number);
-        COMPILE_ASSERT(
-            kNonConflictingGroupNumber != FieldTrial::kNotFinalized,
-            conflicting_default_group_number);
+            "The 'non-conflicting' group number conflicts");
+        static_assert(kNonConflictingGroupNumber != FieldTrial::kNotFinalized,
+                      "The 'non-conflicting' group number conflicts");
         *default_group_number = kNonConflictingGroupNumber;
       }
     }

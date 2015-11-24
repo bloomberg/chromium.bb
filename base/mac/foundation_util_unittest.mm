@@ -281,8 +281,8 @@ TEST(FoundationUtilTest, GetValueFromDictionary) {
   CFStringRef keys[] = { CFSTR("one"), CFSTR("two"), CFSTR("three") };
   CFNumberRef values[] = { cf_one, cf_two, cf_three };
 
-  COMPILE_ASSERT(arraysize(keys) == arraysize(values),
-                 keys_and_values_arraysizes_are_different);
+  static_assert(arraysize(keys) == arraysize(values),
+                "keys and values arrays must have the same size");
 
   ScopedCFTypeRef<CFDictionaryRef> test_dict(
       CFDictionaryCreate(kCFAllocatorDefault,

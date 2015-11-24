@@ -121,7 +121,7 @@ size_t CancelableFileOperation(Function operation,
                                DWORD timeout_in_ms) {
   ThreadRestrictions::AssertIOAllowed();
   // The buffer must be byte size or the length check won't make much sense.
-  COMPILE_ASSERT(sizeof(buffer[0]) == sizeof(char), incorrect_buffer_type);
+  static_assert(sizeof(buffer[0]) == sizeof(char), "incorrect buffer type");
   DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(file, SyncSocket::kInvalidHandle);

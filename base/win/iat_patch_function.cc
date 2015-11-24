@@ -67,8 +67,9 @@ bool InterceptEnumCallback(const base::win::PEImage& image, const char* module,
     }
 
     // portability check
-    COMPILE_ASSERT(sizeof(iat->u1.Function) ==
-      sizeof(intercept_information->new_function), unknown_IAT_thunk_format);
+    static_assert(
+        sizeof(iat->u1.Function) == sizeof(intercept_information->new_function),
+        "unknown IAT thunk format");
 
     // Patch the function.
     intercept_information->return_code =

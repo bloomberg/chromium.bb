@@ -9,7 +9,8 @@
 namespace base {
 namespace {
 
-COMPILE_ASSERT(DefaultSingletonTraits<int>::kRegisterAtExit == true, a);
+static_assert(DefaultSingletonTraits<int>::kRegisterAtExit == true,
+              "object must be deleted on process exit");
 
 typedef void (*CallbackFunc)();
 

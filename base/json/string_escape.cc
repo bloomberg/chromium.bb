@@ -23,7 +23,7 @@ const char kU16EscapeFormat[] = "\\u%04X";
 const uint32 kReplacementCodePoint = 0xFFFD;
 
 // Used below in EscapeSpecialCodePoint().
-COMPILE_ASSERT('<' == 0x3C, less_than_sign_is_0x3c);
+static_assert('<' == 0x3C, "less than sign must be 0x3c");
 
 // Try to escape the |code_point| if it is a known special character. If
 // successful, returns true and appends the escape sequence to |dest|. This

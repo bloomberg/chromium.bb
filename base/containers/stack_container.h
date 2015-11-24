@@ -57,7 +57,7 @@ class StackAllocator : public std::allocator<T> {
     // buffer of the right size instead.
     base::AlignedMemory<sizeof(T[stack_capacity]), ALIGNOF(T)> stack_buffer_;
 #if defined(__GNUC__) && !defined(ARCH_CPU_X86_FAMILY)
-    COMPILE_ASSERT(ALIGNOF(T) <= 16, crbug_115612);
+    static_assert(ALIGNOF(T) <= 16, "http://crbug.com/115612");
 #endif
 
     // Set when the stack buffer is used for an allocation. We do not track

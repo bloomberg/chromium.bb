@@ -43,8 +43,9 @@ class ScopedComPtr : public scoped_refptr<Interface> {
   ~ScopedComPtr() {
     // We don't want the smart pointer class to be bigger than the pointer
     // it wraps.
-    COMPILE_ASSERT(sizeof(ScopedComPtr<Interface, interface_id>) ==
-                   sizeof(Interface*), ScopedComPtrSize);
+    static_assert(
+        sizeof(ScopedComPtr<Interface, interface_id>) == sizeof(Interface*),
+        "ScopedComPtrSize");
   }
 
   // Explicit Release() of the held object.  Useful for reuse of the

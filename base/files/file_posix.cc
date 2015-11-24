@@ -22,9 +22,9 @@
 namespace base {
 
 // Make sure our Whence mappings match the system headers.
-COMPILE_ASSERT(File::FROM_BEGIN   == SEEK_SET &&
-               File::FROM_CURRENT == SEEK_CUR &&
-               File::FROM_END     == SEEK_END, whence_matches_system);
+static_assert(File::FROM_BEGIN == SEEK_SET && File::FROM_CURRENT == SEEK_CUR &&
+                  File::FROM_END == SEEK_END,
+              "whence mapping must match the system headers");
 
 namespace {
 
@@ -184,11 +184,11 @@ int64 File::Seek(Whence whence, int64 offset) {
   SCOPED_FILE_TRACE_WITH_SIZE("Seek", offset);
 
 #if defined(OS_ANDROID)
-  COMPILE_ASSERT(sizeof(int64) == sizeof(off64_t), off64_t_64_bit);
+  static_assert(sizeof(int64) == sizeof(off64_t), "off64_t must be 64 bits");
   return lseek64(file_.get(), static_cast<off64_t>(offset),
                  static_cast<int>(whence));
 #else
-  COMPILE_ASSERT(sizeof(int64) == sizeof(off_t), off_t_64_bit);
+  static_assert(sizeof(int64) == sizeof(off_t), "off_t must be 64 bits");
   return lseek(file_.get(), static_cast<off_t>(offset),
                static_cast<int>(whence));
 #endif
@@ -471,7 +471,7 @@ void File::DoInitialize(const FilePath& path, uint32 flags) {
   else if (flags & FLAG_APPEND)
     open_flags |= O_APPEND | O_WRONLY;
 
-  COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
+  static_assert(O_RDONLY == 0, "O_RDONLY must equal zero");
 
   int mode = S_IRUSR | S_IWUSR;
 #if defined(OS_CHROMEOS)
