@@ -1,20 +1,4 @@
-(function() {
-
-    'use strict';
-
-    function classNames(obj) {
-      var classNames = [];
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key) && obj[key]) {
-          classNames.push(key);
-        }
-      }
-
-      return classNames.join(' ');
-    }
-
-    Polymer({
-
+Polymer({
       is: 'paper-toolbar',
 
       hostAttributes: {
@@ -22,7 +6,6 @@
       },
 
       properties: {
-
         /**
          * Controls how the items are aligned horizontally when they are placed
          * at the bottom.
@@ -110,27 +93,9 @@
         }
       },
 
-      _computeBarClassName: function(barJustify) {
-        var classObj = {
-          'center': true,
-          'horizontal': true,
-          'layout': true,
-          'toolbar-tools': true
-        };
+      _computeBarExtraClasses: function(barJustify) {
+        if (!barJustify) return '';
 
-        // If a blank string or any falsy value is given, no other class name is
-        // added.
-        if (barJustify) {
-          var justifyClassName = (barJustify === 'justified') ?
-              barJustify :
-              barJustify + '-justified';
-
-          classObj[justifyClassName] = true;
-        }
-
-        return classNames(classObj);
+        return barJustify + (barJustify === 'justified' ? '' : '-justified');
       }
-
     });
-
-  }());

@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-image/iron-image.html">
 
 <!--
 Material design: [Cards](https://www.google.com/design/spec/components/cards.html)
@@ -80,8 +81,9 @@ Custom property | Description | Default
         @apply(--paper-card-header);
       }
 
-      .header img {
+      .header iron-image {
         width: 100%;
+        --iron-image-width: 100%;
         pointer-events: none;
         @apply(--paper-card-header-image);
       }
@@ -89,7 +91,7 @@ Custom property | Description | Default
       .header .title-text {
         padding: 16px;
         font-size: 24px;
-        font-weight: bold;
+        font-weight: 400;
         color: var(--paper-card-header-color, #000);
         @apply(--paper-card-header-text);
       }
@@ -115,7 +117,7 @@ Custom property | Description | Default
     </style>
 
     <div class="header">
-      <img hidden$="[[!image]]" src="[[image]]">
+      <iron-image hidden$="[[!image]]" src="[[image]]" preload$="[[preloadImage]]" fade$="[[fadeImage]]"></iron-image>
       <div hidden$="[[!heading]]" class$="[[_computeHeadingClass(image)]]">[[heading]]</div>
     </div>
 

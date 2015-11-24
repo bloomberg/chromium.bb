@@ -51,10 +51,10 @@
     /**
      * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
-     * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
+     * @param {!Event=} optTriggeringEvent (optional) event that triggered the
      * ripple.
      */
-    ensureRipple: function(opt_triggeringEvent) {
+    ensureRipple: function(optTriggeringEvent) {
       if (!this.hasRipple()) {
         this._ripple = this._createRipple();
         this._ripple.noink = this.noink;
@@ -62,12 +62,14 @@
         if (rippleContainer) {
           Polymer.dom(rippleContainer).appendChild(this._ripple);
         }
-        var domContainer = rippleContainer === this.shadyRoot ? this :
-          rippleContainer;
-        if (opt_triggeringEvent) {
-          var target = opt_triggeringEvent.target;
-          if (domContainer.contains(/** @type {Node} */(target))) {
-            this._ripple.uiDownAction(opt_triggeringEvent);
+        if (optTriggeringEvent) {
+          // Check if the event happened inside of the ripple container
+          // Fall back to host instead of the root because distributed text
+          // nodes are not valid event targets
+          var domContainer = Polymer.dom(this._rippleContainer || this);
+          var target = Polymer.dom(optTriggeringEvent).rootTarget;
+          if (domContainer.deepContains( /** @type {Node} */(target))) {
+            this._ripple.uiDownAction(optTriggeringEvent);
           }
         }
       }

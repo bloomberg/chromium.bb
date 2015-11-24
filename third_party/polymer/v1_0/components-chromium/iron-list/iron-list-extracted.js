@@ -2,7 +2,7 @@
 
   var IOS = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
   var IOS_TOUCH_SCROLLING = IOS && IOS[1] >= 8;
-  var DEFAULT_PHYSICAL_COUNT = 20;
+  var DEFAULT_PHYSICAL_COUNT = 3;
   var MAX_PHYSICAL_COUNT = 500;
 
   Polymer({
@@ -185,7 +185,7 @@
     _scrollHeight: 0,
 
     /**
-     * The size of the viewport
+     * The height of the list. This is referred as the viewport in the context of list.
      */
     _viewportSize: 0,
 
@@ -219,6 +219,16 @@
      * after attached.
      */
     _itemsRendered: false,
+
+    /**
+     * The page that is currently rendered.
+     */
+    _lastPage: null,
+
+    /**
+     * The max number of pages to render. One page is equivalent to the height of the list.
+     */
+    _maxPages: 3,
 
     /**
      * The bottom of the physical content.
@@ -292,7 +302,7 @@
      * to a viewport of physical items above and below the user's viewport.
      */
     get _optPhysicalSize() {
-      return this._viewportSize * 3;
+      return this._viewportSize * this._maxPages;
     },
 
    /**
@@ -393,7 +403,7 @@
       // IE 10|11 scrollTop may go above `_maxScrollTop`
       // iOS `scrollTop` may go below 0 and above `_maxScrollTop`
       var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scroller.scrollTop));
-      var tileHeight, tileTop, kth, recycledTileSet, scrollBottom;
+      var tileHeight, tileTop, kth, recycledTileSet, scrollBottom, physicalBottom;
       var ratio = this._ratio;
       var delta = scrollTop - this._scrollPosition;
       var recycledTiles = 0;
@@ -408,6 +418,7 @@
       this._firstVisibleIndexVal = null;
 
       scrollBottom = this._scrollBottom;
+      physicalBottom = this._physicalBottom;
 
       // random access
       if (Math.abs(delta) > this._physicalSize) {
@@ -418,7 +429,6 @@
       else if (delta < 0) {
         var topSpace = scrollTop - this._physicalTop;
         var virtualStart = this._virtualStart;
-        var physicalBottom = this._physicalBottom;
 
         recycledTileSet = [];
 
@@ -450,7 +460,7 @@
       }
       // scroll down
       else if (delta > 0) {
-        var bottomSpace = this._physicalBottom - scrollBottom;
+        var bottomSpace = physicalBottom - scrollBottom;
         var virtualEnd = this._virtualEnd;
         var lastVirtualItemIndex = this._virtualCount-1;
 
@@ -485,9 +495,8 @@
         // If the list ever reach this case, the physical average is not significant enough
         // to create all the items needed to cover the entire viewport.
         // e.g. A few items have a height that differs from the average by serveral order of magnitude.
-        if (this._increasePoolIfNeeded()) {
-          // yield and set models to the new items
-          this.async(this._update);
+        if (physicalBottom < scrollBottom || this._physicalTop > scrollTop) {
+          this.async(this._increasePool.bind(this, 1));
         }
       } else {
         this._virtualStart = this._virtualStart + recycledTiles;
@@ -519,11 +528,8 @@
       // set the scroller size
       this._updateScrollerSize();
 
-      // increase the pool of physical items if needed
-      if (this._increasePoolIfNeeded()) {
-        // yield set models to the new items
-        this.async(this._update);
-      }
+      // increase the pool of physical items
+      this._increasePoolIfNeeded();
     },
 
     /**
@@ -536,7 +542,6 @@
 
       for (var i = 0; i < size; i++) {
         var inst = this.stamp(null);
-
         // First element child is item; Safari doesn't support children[0]
         // on a doc fragment
         physicalItems[i] = inst.root.querySelector('*');
@@ -549,20 +554,25 @@
     /**
      * Increases the pool of physical items only if needed.
      * This function will allocate additional physical items
-     * (limited by `MAX_PHYSICAL_COUNT`) if the content size is shorter than
-     * `_optPhysicalSize`
-     *
-     * @return boolean
+     * if the physical size is shorter than `_optPhysicalSize`
      */
     _increasePoolIfNeeded: function() {
-      if (this._physicalAverage === 0) {
-        return false;
-      }
-      if (this._physicalBottom < this._scrollBottom || this._physicalTop > this._scrollPosition) {
-        return this._increasePool(1);
-      }
-      if (this._physicalSize < this._optPhysicalSize) {
-        return this._increasePool(Math.round((this._optPhysicalSize - this._physicalSize) * 1.2 / this._physicalAverage));
+      if (this._viewportSize !== 0 && this._physicalSize < this._optPhysicalSize) {
+        // 0 <= `currentPage` <= `_maxPages`
+        var currentPage = Math.floor(this._physicalSize / this._viewportSize);
+
+        if (currentPage === 0) {
+          // fill the first page
+          this.async(this._increasePool.bind(this, Math.round(this._physicalCount * 0.5)));
+        } else if (this._lastPage !== currentPage) {
+          // once a page is filled up, paint it and defer the next increase
+          requestAnimationFrame(this._increasePool.bind(this, 1));
+        } else {
+          // fill the rest of the pages
+          this.async(this._increasePool.bind(this, 1));
+        }
+        this._lastPage = currentPage;
+        return true;
       }
       return false;
     },
@@ -577,20 +587,17 @@
           this._virtualCount,
           MAX_PHYSICAL_COUNT
         );
-
       var prevPhysicalCount = this._physicalCount;
       var delta = nextPhysicalCount - prevPhysicalCount;
 
-      if (delta <= 0) {
-        return false;
+      if (delta > 0) {
+        [].push.apply(this._physicalItems, this._createPool(delta));
+        [].push.apply(this._physicalSizes, new Array(delta));
+
+        this._physicalCount = prevPhysicalCount + delta;
+        // tail call
+        return this._update();
       }
-
-      [].push.apply(this._physicalItems, this._createPool(delta));
-      [].push.apply(this._physicalSizes, new Array(delta));
-
-      this._physicalCount = prevPhysicalCount + delta;
-
-      return true;
     },
 
     /**
@@ -600,7 +607,8 @@
     _render: function() {
       var requiresUpdate = this._virtualCount > 0 || this._physicalCount > 0;
 
-      if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate)  {
+      if (this.isAttached && !this._itemsRendered && this._isVisible && requiresUpdate) {
+        this._lastPage = 0;
         this._update();
         this._itemsRendered = true;
       }
@@ -964,7 +972,7 @@
       var hiddenContentSize = this._hiddenContentSize;
 
       // scroll to the item as much as we can
-      while (currentVirtualItem !== idx && targetOffsetTop < hiddenContentSize) {
+      while (currentVirtualItem < idx && targetOffsetTop < hiddenContentSize) {
         targetOffsetTop = targetOffsetTop + this._physicalSizes[currentTopItem];
         currentTopItem = (currentTopItem + 1) % this._physicalCount;
         currentVirtualItem++;
@@ -980,10 +988,8 @@
       this._resetScrollPosition(this._physicalTop + targetOffsetTop + 1);
 
       // increase the pool of physical items if needed
-      if (this._increasePoolIfNeeded()) {
-        // yield set models to the new items
-        this.async(this._update);
-      }
+      this._increasePoolIfNeeded();
+
       // clear cached visible index
       this._firstVisibleIndexVal = null;
     },

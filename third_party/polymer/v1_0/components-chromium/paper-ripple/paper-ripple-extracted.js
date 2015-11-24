@@ -399,10 +399,6 @@
         }
       },
 
-      observers: [
-        '_noinkChanged(noink, isAttached)'
-      ],
-
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
         var target;
@@ -423,6 +419,10 @@
       },
 
       attached: function() {
+        // Set up a11yKeysBehavior to listen to key events on the target,
+        // so that space and enter activate the ripple even if the target doesn't
+        // handle key events. The key handlers deal with `noink` themselves.
+        this.keyEventTarget = this.target;
         this.listen(this.target, 'up', 'uiUpAction');
         this.listen(this.target, 'down', 'uiDownAction');
       },
@@ -591,12 +591,6 @@
           this.downAction();
         } else {
           this.upAction();
-        }
-      },
-
-      _noinkChanged: function(noink, attached) {
-        if (attached) {
-          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });

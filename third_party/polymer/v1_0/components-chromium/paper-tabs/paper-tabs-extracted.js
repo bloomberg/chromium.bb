@@ -150,7 +150,7 @@ Polymer({
     },
 
     _computeTabsContentClass: function(scrollable) {
-      return scrollable ? 'scrollable' : 'horizontal layout';
+      return scrollable ? 'scrollable' : 'horizontal';
     },
 
     _computeSelectionBarClass: function(noBar, alignBottom) {

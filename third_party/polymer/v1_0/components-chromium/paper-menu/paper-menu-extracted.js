@@ -1,13 +1,9 @@
 (function() {
+      Polymer({
+        is: 'paper-menu',
 
-  Polymer({
-
-    is: 'paper-menu',
-
-    behaviors: [
-      Polymer.IronMenuBehavior
-    ]
-
-  });
-
-})();
+        behaviors: [
+          Polymer.IronMenuBehavior
+        ]
+      });
+    })();

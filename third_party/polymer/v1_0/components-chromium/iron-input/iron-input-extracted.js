@@ -65,7 +65,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
        * Regular expression to match valid input characters.
        */
       allowedPattern: {
-        type: String
+        type: String,
+        observer: "_allowedPatternChanged"
       },
 
       _previousValidInput: {
@@ -114,6 +115,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _allowedPatternChanged: function() {
+      // Force to prevent invalid input when an `allowed-pattern` is set
+      this.preventInvalidInput = this.allowedPattern ? true : false;
     },
 
     _onInput: function() {

@@ -22,6 +22,24 @@ Polymer({
       },
 
       /**
+       * When `true`, any change to the image url property will cause the
+       * `placeholder` image to be shown until the image is fully rendered.
+       */
+      preloadImage: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * When `preloadImage` is true, setting `fadeImage` to true will cause the
+       * image to fade into place.
+       */
+      fadeImage: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
        * The z-depth of the card, from 0-5.
        */
       elevation: {

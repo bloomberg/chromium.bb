@@ -296,6 +296,11 @@
       _ariaDescribedBy: {
         type: String,
         value: ''
+      },
+
+      _ariaLabelledBy: {
+        type: String,
+        value: ''
       }
 
     },

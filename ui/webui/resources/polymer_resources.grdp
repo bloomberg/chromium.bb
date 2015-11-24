@@ -23,17 +23,17 @@
   <structure name="IDR_POLYMER_1_0_FONT_ROBOTO_ROBOTO_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/font-roboto/roboto.html"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_EXTRACTED_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys-extracted.js"
-             type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_HTML"
-             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys.html"
-             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_BEHAVIOR_IRON_A11Y_KEYS_BEHAVIOR_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_BEHAVIOR_IRON_A11Y_KEYS_BEHAVIOR_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_BEHAVIORS_IRON_BUTTON_STATE_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-button-state-extracted.js"
@@ -404,6 +404,9 @@
   <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_COMMON_CSS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-common.css"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_SHARED_STYLES_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-shared-styles.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_PAPER_DIALOG_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog/paper-dialog-extracted.js"
              type="chrome_html" />
@@ -485,6 +488,12 @@
   <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ICON_ITEM_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-icon-item.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_BEHAVIOR_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-behavior-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_BEHAVIOR_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-behavior.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_BODY_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item-body-extracted.js"
              type="chrome_html" />
@@ -521,8 +530,8 @@
   <structure name="IDR_POLYMER_1_0_PAPER_MENU_PAPER_MENU_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-menu/paper-menu-extracted.js"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_PAPER_MENU_PAPER_MENU_SHARED_CSS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu/paper-menu-shared.css"
+  <structure name="IDR_POLYMER_1_0_PAPER_MENU_PAPER_MENU_SHARED_STYLES_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-menu/paper-menu-shared-styles.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_MENU_PAPER_MENU_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-menu/paper-menu.html"
@@ -566,11 +575,11 @@
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-extracted.js"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_HTML"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner.html"
-             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_STYLES_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-styles.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_STYLES_CLASSES_SHADOW_LAYOUT_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-styles/classes/shadow-layout.html"
@@ -654,3 +663,4 @@
              file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
              type="chrome_html" />
 </grit-part>
+

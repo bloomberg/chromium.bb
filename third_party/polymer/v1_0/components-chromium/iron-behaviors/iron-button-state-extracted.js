@@ -120,14 +120,6 @@
       this._setPressed(false);
     },
 
-    __isFocusedLightDescendant: function(target) {
-      var root = Polymer.dom(this).getOwnerRoot() || document;
-      var focusedElement = root.activeElement;
-
-      // TODO(noms): remove the `this !== target` check once polymer#2610 is fixed.
-      return this !== target && this.isLightDescendant(target) && target == focusedElement;
-    },
-
     /**
      * @param {!KeyboardEvent} event .
      */
@@ -137,7 +129,7 @@
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.__isFocusedLightDescendant(target))
+      if (this.isLightDescendant(target))
         return;
 
       keyboardEvent.preventDefault();
@@ -154,7 +146,7 @@
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.__isFocusedLightDescendant(target))
+      if (this.isLightDescendant(target))
         return;
 
       if (this.pressed) {

@@ -282,12 +282,14 @@ Polymer({
     },
 
     _maxMarkersChanged: function(maxMarkers) {
-      var l = (this.max - this.min) / this.step;
-      if (!this.snaps && l > maxMarkers) {
+      if (!this.snaps) {
         this._setMarkers([]);
-      } else {
-        this._setMarkers(new Array(l));
       }
+      var steps = Math.floor((this.max - this.min) / this.step);
+      if (steps > maxMarkers) {
+        steps = maxMarkers;
+      }
+      this._setMarkers(new Array(steps));
     },
 
     _mergeClasses: function(classes) {
