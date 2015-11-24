@@ -41971,6 +41971,177 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchBasePageProtocol"
+    enum="ContextualSearchBasePageProtocol">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The protocol of the base page, logged at the time that any Search Term
+    Resolution Response is recieved.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchDurationNonPrefetched"
+    units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from opening the panel until the SERP is fully loaded. Applies only
+    to non-prefetched requests. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchDurationPrefetched"
+    units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from opening the panel until the SERP is fully loaded. Applies only
+    to prefetched requests. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchDurationSeen" units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from initiating to ending a contextual search, when results were
+    seen as part of the search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchDurationUnseen" units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from initiating to ending a contextual search, when results were
+    not seen as part of the search and the search did not end with the beginning
+    of another contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchDurationUnseenChained"
+    units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time from initiating to ending a contextual search, when results were
+    not seen as part of the search and the search ended with the beginning of
+    another contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchEnterClosed"
+    enum="ContextualSearchEnterClosedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (previous state and reason) of the first entry into the closed
+    panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchEnterExpanded"
+    enum="ContextualSearchEnterExpandedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (previous state and reason) of the first entry into the expanded
+    panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchEnterMaximized"
+    enum="ContextualSearchEnterMaximizedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (previous state and reason) of the first entry into the
+    maximized panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchEnterPeeked"
+    enum="ContextualSearchEnterPeekedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (previous state and reason) of the first entry into the peeked
+    panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchExitClosed"
+    enum="ContextualSearchExitClosedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (destination state and reason) of the first exit out of the
+    closed panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchExitExpanded"
+    enum="ContextualSearchExitExpandedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (destination state and reason) of the first exit out of the
+    expanded panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchExitMaximized"
+    enum="ContextualSearchExitMaximizedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (destination state and reason) of the first exit out of the
+    maximized panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchExitPeeked"
+    enum="ContextualSearchExitPeekedStateChange">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The details (destination state and reason) of the first exit out of the
+    peeked panel state within a contextual search. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchFallbackSearchRequestStatus"
+    enum="ContextualSearchSearchRequestStatus">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The status of the Contextual Search fallback Search request. Implemented for
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchFirstRunFlowOutcome"
+    enum="ContextualSearchPreferenceState">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The state of the Contextual Search Preference after the first run flow.
+    Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchFirstRunPanelSeen"
+    enum="ContextualSearchFirstRunPanelSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether the first run flow's panel was seen as part of a contextual search.
+    Only logged when the user triggered the first run flow yet exited the search
+    still in the undecided preference state. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchIconSpriteAnimated"
     enum="ContextualSearchIconSpriteAnimated">
   <owner>donnd@chromium.org</owner>
@@ -41980,6 +42151,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     was animated when the panel first appeared, and the triggering gesture. If
     animation is disabled due to a field trial, we still log
     &quot;animated&quot; if the animation would have run otherwise.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchLowPrioritySearchRequestStatus"
+    enum="ContextualSearchSearchRequestStatus">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The status of the Contextual Search low priority Search request. Implemented
+    for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchNormalPrioritySearchRequestStatus"
+    enum="ContextualSearchSearchRequestStatus">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The status of the Contextual Search normal priority Search request.
+    Implemented for Android.
   </summary>
 </histogram>
 
@@ -42025,6 +42216,141 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchPreferenceState"
+    enum="ContextualSearchPreferenceState">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The state of the Contextual Search Preference. Can be logged multiple times.
+    Used to determine the population size (user view). Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPreferenceStateChange"
+    enum="ContextualSearchPreferenceState">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The Contextual Search preference state after a modification from the
+    preference menu. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPrefetchSummary"
+    enum="ContextualSearchPrefetchSummary">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    A summary histogram for prefetch timings, indicating fully preloaded, etc.
+    Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoOpenCount" units="opens">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The total count of times that the bar with the promo has been opened. Once
+    the user decides, this counter is no longer updated.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoOutcomeByGesture"
+    enum="ContextualSearchOutcomeByGesture">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The outcome of the promo broken down by original triggering gesture. Logged
+    for each view of the promo.  Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoSeenByGesture"
+    enum="ContextualSearchSeenByGesture">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether the promo was seen, broken down by original triggering gesture.
+    Logged each time the promo was activated.  Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoTapsBeforeFirstOpen" units="taps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The historic number of taps that showed a peeking bar with the opt-out promo
+    before the first time the user opened the panel.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoTapsForNeverOpened" units="taps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The historic number of taps that showed a peeking bar with the opt-out promo
+    for users who have never opened the panel. This count may be limited by the
+    Finch config param promo_on_limited_taps.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoTapsRemaining" units="taps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of remaining taps that can trigger the promo for this user.
+    Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchResolvedTermWords"
+    enum="ContextualSearchResolvedTermWords">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether the search term was single or multi-word, logged at the time that
+    any Search Term Resolution Response is recieved.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchResultsSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether search results were seen as part of a contextual search. Implemented
+    for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchResultsSeenByGesture"
+    enum="ContextualSearchSeenByGesture">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether search results were seen, broken down by original triggering
+    gesture. Only includes users that have enabled. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchSelectionValid"
+    enum="ContextualSearchSelectionValid">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether a Contextual Search selection was valid. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchSerpLoadedOnClose"
+    enum="ContextualSearchLoaded">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether the SERP was fully loaded when an opened panel was closed.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchShouldTranslate"
     enum="ContextualSearchShouldTranslate">
   <owner>donnd@chromium.org</owner>
@@ -42033,6 +42359,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Emitted when a translate one-box should be forced, to indicate if it
     actually was forced or simply would have been forced if not disabled by a
     flag in the variations_service.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapsSinceOpenDecided" units="taps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The count of taps that showed a peeking bar without the opt-out promo since
+    this user has last opened the panel.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapsSinceOpenUndecided" units="taps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The count of taps that showed a peeking bar with the opt-out promo since
+    this user has last opened the panel.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTimeToSearch" units="milliseconds">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The time between tapping on a word and performing a search. Implemented for
+    Android.
   </summary>
 </histogram>
 
@@ -56769,6 +57122,106 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Pdf"/>
 </enum>
 
+<enum name="ContextualSearchBasePageProtocol" type="int">
+  <int value="0" label="Is HTTP"/>
+  <int value="1" label="Not HTTP"/>
+</enum>
+
+<enum name="ContextualSearchEnterClosedStateChange" type="int">
+  <int value="0" label="From Other"/>
+  <int value="1" label="From Peeked (back press)"/>
+  <int value="2" label="From Peeked (base page scroll)"/>
+  <int value="3" label="From Peeked (text select tap)"/>
+  <int value="4" label="From Expanded (back press)"/>
+  <int value="5" label="From Expanded (base page tap)"/>
+  <int value="6" label="From Expanded (fling)"/>
+  <int value="7" label="From Maximized (back press)"/>
+  <int value="8" label="From Maximized (fling)"/>
+  <int value="9" label="From Maximized (tab promotion)"/>
+  <int value="10" label="From Maximized (SERP navigation)"/>
+</enum>
+
+<enum name="ContextualSearchEnterExpandedStateChange" type="int">
+  <int value="0" label="From Other"/>
+  <int value="1" label="From Peeked (search bar tap)"/>
+  <int value="2" label="From Peeked (swipe)"/>
+  <int value="3" label="From Peeked (fling)"/>
+  <int value="4" label="From Maximized (swipe)"/>
+  <int value="5" label="From Maximized (fling)"/>
+</enum>
+
+<enum name="ContextualSearchEnterMaximizedStateChange" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="From Peeked (swipe)"/>
+  <int value="2" label="From Peeked (fling)"/>
+  <int value="3" label="From Expanded (swipe)"/>
+  <int value="4" label="From Expanded (fling)"/>
+  <int value="5" label="From Expanded (SERP navigation)"/>
+</enum>
+
+<enum name="ContextualSearchEnterPeekedStateChange" type="int">
+  <int value="0" label="From Other"/>
+  <int value="1" label="From Closed (text select tap)"/>
+  <int value="2" label="From Closed (text select long press)"/>
+  <int value="3" label="From Peeked (text select tap)"/>
+  <int value="4" label="From Peeked (text select long press)"/>
+  <int value="5" label="From Expanded (search bar tap)"/>
+  <int value="6" label="From Expanded (swipe)"/>
+  <int value="7" label="From Expanded (fling)"/>
+  <int value="8" label="From Maximized (swipe)"/>
+  <int value="9" label="From Maximized (fling)"/>
+</enum>
+
+<enum name="ContextualSearchExitClosedStateChange" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Peek (text select tap)"/>
+  <int value="2" label="Peek (text select long press)"/>
+</enum>
+
+<enum name="ContextualSearchExitExpandedStateChange" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Close (back press)"/>
+  <int value="2" label="Close (base page tap)"/>
+  <int value="3" label="Close (fling)"/>
+  <int value="4" label="Peek (search bar tap)"/>
+  <int value="5" label="Peek (swipe)"/>
+  <int value="6" label="Peek (fling)"/>
+  <int value="7" label="Maximize (swipe)"/>
+  <int value="8" label="Maximize (fling)"/>
+  <int value="9" label="Maximize (SERP navigation)"/>
+</enum>
+
+<enum name="ContextualSearchExitMaximizedStateChange" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Close (back press)"/>
+  <int value="2" label="Close (fling)"/>
+  <int value="3" label="Close (tab promotion)"/>
+  <int value="4" label="Close (SERP navigation)"/>
+  <int value="5" label="Peek (swipe)"/>
+  <int value="6" label="Peek (fling)"/>
+  <int value="7" label="Expand (swipe)"/>
+  <int value="8" label="Expand (fling)"/>
+</enum>
+
+<enum name="ContextualSearchExitPeekedStateChange" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Close (back press)"/>
+  <int value="2" label="Close (base page scroll)"/>
+  <int value="3" label="Close (text select tap)"/>
+  <int value="4" label="Peek (text select tap)"/>
+  <int value="5" label="Peek (text select long press)"/>
+  <int value="6" label="Expand (search bar tap)"/>
+  <int value="7" label="Expand (swipe)"/>
+  <int value="8" label="Expand (fling)"/>
+  <int value="9" label="Maximize (swipe)"/>
+  <int value="10" label="To Maximize (fling)"/>
+</enum>
+
+<enum name="ContextualSearchFirstRunPanelSeen" type="int">
+  <int value="0" label="Seen"/>
+  <int value="1" label="Unseen"/>
+</enum>
+
 <enum name="ContextualSearchIconSpriteAnimated" type="int">
   <int value="0" label="Animated, seen, from tap"/>
   <int value="1" label="Animated, not seen, from tap"/>
@@ -56780,12 +57233,65 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="Not animated, not seen, from long press"/>
 </enum>
 
+<enum name="ContextualSearchLoaded" type="int">
+  <int value="0" label="Partially Loaded"/>
+  <int value="1" label="Fully Loaded"/>
+</enum>
+
+<enum name="ContextualSearchOutcomeByGesture" type="int">
+  <int value="0" label="Enabled, from Tap"/>
+  <int value="1" label="Disabled, from Tap"/>
+  <int value="2" label="Undecided from Tap"/>
+  <int value="3" label="Enabled, from Long-press"/>
+  <int value="4" label="Disabled, from Long-press"/>
+  <int value="5" label="Undecided from Long-press"/>
+</enum>
+
 <enum name="ContextualSearchPeekPromoOutcome" type="int">
   <summary>The outcome of the Contextual Search Peek Promo.</summary>
   <int value="0" label="Peek Promo was seen, Panel was opened"/>
   <int value="1" label="Peek Promo was seen, Panel was not opened"/>
   <int value="2" label="Peek Promo was not seen, Panel was opened"/>
   <int value="3" label="Peek Promo was not seen, Panel was not opened"/>
+</enum>
+
+<enum name="ContextualSearchPreferenceState" type="int">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="Enabled"/>
+  <int value="2" label="Disabled"/>
+</enum>
+
+<enum name="ContextualSearchPrefetchSummary" type="int">
+  <int value="0" label="Prefetched, partly loaded"/>
+  <int value="1" label="Fully preloaded"/>
+  <int value="2" label="Not prefetched"/>
+</enum>
+
+<enum name="ContextualSearchResolvedTermWords" type="int">
+  <int value="0" label="Single Word"/>
+  <int value="1" label="Multi Word"/>
+</enum>
+
+<enum name="ContextualSearchResultsSeen" type="int">
+  <int value="0" label="Seen"/>
+  <int value="1" label="Unseen"/>
+</enum>
+
+<enum name="ContextualSearchSearchRequestStatus" type="int">
+  <int value="0" label="Not Failed"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<enum name="ContextualSearchSeenByGesture" type="int">
+  <int value="0" label="Seen, from Tap"/>
+  <int value="1" label="Not seen, from Tap"/>
+  <int value="2" label="Seen, from Long-press"/>
+  <int value="3" label="Not seen, from Long-press"/>
+</enum>
+
+<enum name="ContextualSearchSelectionValid" type="int">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Invalid"/>
 </enum>
 
 <enum name="ContextualSearchShouldTranslate" type="int">
