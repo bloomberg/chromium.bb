@@ -5,12 +5,10 @@
 #include "chrome/browser/password_manager/password_manager_infobar_delegate.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 PasswordManagerInfoBarDelegate::~PasswordManagerInfoBarDelegate() {}
 
@@ -41,7 +39,7 @@ base::string16 PasswordManagerInfoBarDelegate::GetMessageText() const {
 }
 
 GURL PasswordManagerInfoBarDelegate::GetLinkURL() const {
-  return GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE));
+  return GURL(password_manager::kPasswordManagerAccountDashboardURL);
 }
 
 bool PasswordManagerInfoBarDelegate::LinkClicked(

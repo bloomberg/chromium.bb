@@ -380,9 +380,6 @@ const char kUpgradeHelpCenterBaseURL[] =
     "http://support.google.com/installer/?product="
     "{8A69D345-D564-463c-AFF1-A69D9E530F96}&error=";
 
-const char kPasswordManagerAccountDashboardURL[] =
-    "https://passwords.google.com/settings/passwords";
-
 const char kSmartLockHelpPage[] =
     "https://support.google.com/accounts/answer/6197437";
 

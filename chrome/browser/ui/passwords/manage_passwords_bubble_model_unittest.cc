@@ -83,7 +83,6 @@ class ManagePasswordsUIControllerMockWithMockNavigation
 
   MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
   MOCK_METHOD0(NavigateToExternalPasswordManager, void());
-  MOCK_METHOD0(NavigateToSmartLockPage, void());
   MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
   MOCK_CONST_METHOD0(GetCurrentInteractionStats,
                      password_manager::InteractionsStats*());
@@ -578,7 +577,7 @@ TEST_P(ManagePasswordsBubbleModelBrandLinkTest, OnBrandLinkClicked) {
 
   switch (test_case.expected_target) {
     case BrandLinkTarget::SMART_LOCK_HOME:
-      EXPECT_CALL(*controller(), NavigateToSmartLockPage());
+      EXPECT_CALL(*controller(), NavigateToExternalPasswordManager());
       break;
     case BrandLinkTarget::SMART_LOCK_HELP:
       EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());

@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "components/url_formatter/url_formatter.h"
@@ -111,11 +112,12 @@ void PasswordManagerHandler::GetLocalizedValues(
 
   localized_strings->SetString("passwordManagerLearnMoreURL",
                                chrome::kPasswordManagerLearnMoreURL);
-  localized_strings->SetString("passwordsManagePasswordsLink",
-                               chrome::kPasswordManagerAccountDashboardURL);
+  localized_strings->SetString(
+      "passwordsManagePasswordsLink",
+      password_manager::kPasswordManagerAccountDashboardURL);
 
   std::string management_hostname =
-      GURL(chrome::kPasswordManagerAccountDashboardURL).host();
+      GURL(password_manager::kPasswordManagerAccountDashboardURL).host();
   base::string16 link_text = base::UTF8ToUTF16(management_hostname);
   size_t offset;
   base::string16 full_text = l10n_util::GetStringFUTF16(

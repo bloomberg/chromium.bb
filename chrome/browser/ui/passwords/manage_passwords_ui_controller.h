@@ -110,10 +110,7 @@ class ManagePasswordsUIController
   void ChooseCredential(
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) override;
-  // Two different ways to open a new tab pointing to passwords.google.com.
-  // TODO(crbug.com/548259) eliminate one of them.
   void NavigateToExternalPasswordManager() override;
-  void NavigateToSmartLockPage() override;
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerSettingsPage() override;
 

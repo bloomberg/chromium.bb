@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_details.h"
@@ -303,20 +304,7 @@ void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
 #else
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
-      GURL(chrome::kPasswordManagerAccountDashboardURL),
-      ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-#endif
-}
-
-void ManagePasswordsUIController::NavigateToSmartLockPage() {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-#else
-  chrome::NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
+      GURL(password_manager::kPasswordManagerAccountDashboardURL),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);

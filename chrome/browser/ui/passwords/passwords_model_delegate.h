@@ -80,10 +80,8 @@ class PasswordsModelDelegate {
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) = 0;
 
-  // Two different ways to open a new tab pointing to passwords.google.com.
-  // TODO(crbug.com/548259) eliminate one of them.
+  // Open a new tab pointing to passwords.google.com.
   virtual void NavigateToExternalPasswordManager() = 0;
-  virtual void NavigateToSmartLockPage() = 0;
   // Open a new tab, pointing to the Smart Lock help article.
   virtual void NavigateToSmartLockHelpPage() = 0;
   // Open a new tab, pointing to the password manager settings page.

@@ -60,9 +60,6 @@ extern const size_t kNumberOfChromeHostURLs;
 // URL to the sync google dashboard.
 extern const char kSyncGoogleDashboardURL[];
 
-// URL to the password manager account dashboard.
-extern const char kPasswordManagerAccountDashboardURL[];
-
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 

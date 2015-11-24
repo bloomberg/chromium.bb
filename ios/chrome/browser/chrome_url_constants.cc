@@ -54,9 +54,6 @@ const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
 
-const char kPasswordManagerAccountDashboardURL[] =
-    "https://passwords.google.com/settings/passwords";
-
 const char kPageInfoHelpCenterURL[] =
     "https://support.google.com/chrome/?p=ui_security_indicator";
 

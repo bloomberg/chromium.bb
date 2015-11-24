@@ -16,11 +16,11 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -122,7 +122,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     if (GetSmartLockBrandingState(GetProfile()) ==
         password_bubble_experiment::SmartLockBranding::FULL) {
       std::string management_hostname =
-          GURL(chrome::kPasswordManagerAccountDashboardURL).host();
+          GURL(password_manager::kPasswordManagerAccountDashboardURL).host();
       save_confirmation_link = base::UTF8ToUTF16(management_hostname);
       confirmation_text_id =
           IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_SMART_LOCK_TEXT;
@@ -315,7 +315,7 @@ void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   switch (GetSmartLockBrandingState(GetProfile())) {
     case password_bubble_experiment::SmartLockBranding::FULL:
       PasswordsModelDelegateFromWebContents(web_contents())
-          ->NavigateToSmartLockPage();
+          ->NavigateToExternalPasswordManager();
       break;
     case password_bubble_experiment::SmartLockBranding::SAVE_BUBBLE_ONLY:
       PasswordsModelDelegateFromWebContents(web_contents())

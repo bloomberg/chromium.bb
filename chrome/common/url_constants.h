@@ -347,7 +347,6 @@ extern const char kSyncGoogleDashboardURL[];
 
 extern const char kPasswordManagerLearnMoreURL[];
 extern const char kUpgradeHelpCenterBaseURL[];
-extern const char kPasswordManagerAccountDashboardURL[];
 extern const char kSmartLockHelpPage[];
 
 // "Learn more" URL for the Settings API, NTP bubble and other settings bubbles
