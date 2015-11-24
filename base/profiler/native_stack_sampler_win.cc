@@ -148,7 +148,7 @@ int RecordStack(CONTEXT* context, int max_stack_size,
   for (; (i < max_stack_size) && context->Rip; ++i) {
     instruction_pointers[i] = reinterpret_cast<const void*>(context->Rip);
     if (!frame_unwinder.TryUnwind(context, &modules[i]))
-      return i + 1;
+      return i;
   }
   return i;
 #else

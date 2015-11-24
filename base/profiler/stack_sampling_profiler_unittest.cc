@@ -515,15 +515,14 @@ void TestLibraryUnload(bool wait_until_unloaded) {
       << FormatSampleForDiagnosticOutput(sample, profile.modules);
 
   if (wait_until_unloaded) {
-    // The stack should look like this, resulting in two frames between
-    // SignalAndWaitUntilSignaled and the last frame, which should be the one in
-    // the now-unloaded library:
+    // The stack should look like this, resulting one frame after
+    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library is not
+    // recorded since we can't get module information.
     //
     // ... WaitableEvent and system frames ...
     // TargetThread::SignalAndWaitUntilSignaled
     // TargetThread::OtherLibraryCallback
-    // InvokeCallbackFunction (in other library, now unloaded)
-    EXPECT_EQ(2, (sample.end() - 1) - end_frame)
+    EXPECT_EQ(2, sample.end() - end_frame)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(sample, profile.modules);
   } else {
