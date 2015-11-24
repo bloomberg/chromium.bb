@@ -12,8 +12,9 @@
 #include <string.h>
 #endif  // ADDRESS_SANITIZER && OS_MACOSX
 
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
 // Functions returning default options are declared weak in the tools' runtime
 // libraries. To make the linker pick the strong replacements for those
 // functions from this module, we explicitly force its inclusion by passing
@@ -25,12 +26,10 @@ void _sanitizer_options_link_helper() { }
 // aren't referenced from the Chrome executable. We must ensure that those
 // callbacks are not sanitizer-instrumented, and that they aren't stripped by
 // the linker.
-#define SANITIZER_HOOK_ATTRIBUTE          \
-  extern "C"                              \
-  __attribute__((no_sanitize_address))    \
-  __attribute__((no_sanitize_memory))     \
-  __attribute__((no_sanitize_thread))     \
-  __attribute__((visibility("default")))  \
+#define SANITIZER_HOOK_ATTRIBUTE                                           \
+  extern "C"                                                               \
+  __attribute__((no_sanitize("address", "memory", "thread", "undefined"))) \
+  __attribute__((visibility("default")))                                   \
   __attribute__((used))
 #endif
 
@@ -177,3 +176,14 @@ SANITIZER_HOOK_ATTRIBUTE const char *__lsan_default_suppressions() {
 }
 
 #endif  // LEAK_SANITIZER
+
+#if defined(UNDEFINED_SANITIZER)
+// Default options for UndefinedBehaviorSanitizer:
+//   print_stacktrace=1 - print the stacktrace when UBSan reports an error.
+const char kUbsanDefaultOptions[] = "print_stacktrace=1";
+
+SANITIZER_HOOK_ATTRIBUTE const char* __ubsan_default_options() {
+  return kUbsanDefaultOptions;
+}
+
+#endif  // UNDEFINED_SANITIZER
