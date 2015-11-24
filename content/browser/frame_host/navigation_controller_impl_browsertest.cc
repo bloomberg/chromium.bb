@@ -66,20 +66,101 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
   EXPECT_EQ(AreAllSitesIsolatedForTesting(), cross_process);
 }
 
+// Verifies that the base, history, and data URLs for LoadDataWithBaseURL end up
+// in the expected parts of the NavigationEntry in each stage of navigation, and
+// that we don't kill the renderer on reload.  See https://crbug.com/522567.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   const GURL base_url("http://baseurl");
   const GURL history_url("http://historyurl");
   const std::string data = "<html><body>foo</body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
 
-  const NavigationController& controller =
-      shell()->web_contents()->GetController();
-  // Load data. Blocks until it is done.
-  content::LoadDataWithBaseURL(shell(), history_url, data, base_url);
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
 
-  // We should use history_url instead of the base_url as the original url of
+  // Load data, but don't commit yet.
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+  shell()->LoadDataWithBaseURL(history_url, data, base_url);
+
+  // Verify the pending NavigationEntry.
+  NavigationEntryImpl* pending_entry = controller.GetPendingEntry();
+  EXPECT_EQ(base_url, pending_entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, pending_entry->GetVirtualURL());
+  EXPECT_EQ(history_url, pending_entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, pending_entry->GetURL());
+
+  // Let the navigation commit.
+  same_tab_observer.Wait();
+
+  // Verify the last committed NavigationEntry.
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, entry->GetURL());
+
+  // We should use data_url instead of the base_url as the original url of
   // this navigation entry, because base_url is only used for resolving relative
   // paths in the data, or enforcing same origin policy.
-  EXPECT_EQ(controller.GetVisibleEntry()->GetOriginalRequestURL(), history_url);
+  EXPECT_EQ(data_url, entry->GetOriginalRequestURL());
+
+  // Now reload and make sure the renderer isn't killed.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_TRUE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
+
+  // Verify the last committed NavigationEntry hasn't changed.
+  NavigationEntryImpl* reload_entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(entry, reload_entry);
+  EXPECT_EQ(base_url, reload_entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, reload_entry->GetVirtualURL());
+  EXPECT_EQ(history_url, reload_entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, reload_entry->GetOriginalRequestURL());
+  EXPECT_EQ(data_url, reload_entry->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigateFromLoadDataWithBaseURL) {
+  const GURL base_url("http://baseurl");
+  const GURL history_url("http://historyurl");
+  const std::string data = "<html><body></body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Load data and commit.
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    shell()->LoadDataWithBaseURL(history_url, data, base_url);
+    same_tab_observer.Wait();
+    EXPECT_EQ(1, controller.GetEntryCount());
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+    EXPECT_EQ(history_url, entry->GetVirtualURL());
+    EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+    EXPECT_EQ(data_url, entry->GetURL());
+  }
+
+  // TODO(boliu): Add test for in-page fragment navigation. See
+  // crbug.com/561034.
+
+  // Navigate with Javascript.
+  {
+    GURL navigate_url = embedded_test_server()->base_url();
+    std::string script = "document.location = '" +
+                         navigate_url.spec() + "';";
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    EXPECT_TRUE(content::ExecuteScript(shell()->web_contents(), script));
+    same_tab_observer.Wait();
+    EXPECT_EQ(2, controller.GetEntryCount());
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry->GetBaseURLForDataURL().is_empty());
+    EXPECT_TRUE(entry->GetHistoryURLForDataURL().is_empty());
+    EXPECT_EQ(navigate_url, entry->GetVirtualURL());
+    EXPECT_EQ(navigate_url, entry->GetURL());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {

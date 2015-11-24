@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebFrameLoadType.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
@@ -840,7 +841,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Loads a data url.
   void LoadDataURL(const CommonNavigationParams& params,
-                   blink::WebFrame* frame);
+                   blink::WebFrame* frame,
+                   blink::WebFrameLoadType load_type);
 
   // Sends the current frame's navigation state to the browser.
   void SendUpdateState();

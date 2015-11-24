@@ -789,7 +789,9 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     ui::PageTransition transition_type) {
   if (!render_frame_host->GetParent()) {
-    src_ = url;
+    // For LoadDataWithBaseURL loads, |url| contains the data URL, but the
+    // virtual URL is needed in that case. So use WebContents::GetURL instead.
+    src_ = web_contents()->GetURL();
     // Handle a pending zoom if one exists.
     if (pending_zoom_factor_) {
       SetZoom(pending_zoom_factor_);
@@ -797,7 +799,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     }
   }
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guest_view::kUrl, url.spec());
+  args->SetString(guest_view::kUrl, src_.spec());
   args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
   args->SetString(webview::kInternalBaseURLForDataURL,
                   web_contents()

@@ -307,16 +307,37 @@ void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   }
 }
 
-// Returns the original request url. If there is no redirect, the original
-// url is the same as ds->request()->url(). If the WebDataSource belongs to a
-// frame was loaded by loadData, the original url will be ds->unreachableURL()
-GURL GetOriginalRequestURL(WebDataSource* ds) {
+// Gets URL that should override the default getter for this data source
+// (if any), storing it in |output|. Returns true if there is an override URL.
+bool MaybeGetOverriddenURL(WebDataSource* ds, GURL* output) {
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+
+  // If load was from a data URL, then the saved data URL, not the history
+  // URL, should be the URL of the data source.
+  if (document_state->was_load_data_with_base_url_request()) {
+    *output = document_state->data_url();
+    return true;
+  }
+
   // WebDataSource has unreachable URL means that the frame is loaded through
   // blink::WebFrame::loadData(), and the base URL will be in the redirect
   // chain. However, we never visited the baseURL. So in this case, we should
   // use the unreachable URL as the original URL.
-  if (ds->hasUnreachableURL())
-    return ds->unreachableURL();
+  if (ds->hasUnreachableURL()) {
+    *output = ds->unreachableURL();
+    return true;
+  }
+
+  return false;
+}
+
+// Returns the original request url. If there is no redirect, the original
+// url is the same as ds->request()->url(). If the WebDataSource belongs to a
+// frame was loaded by loadData, the original url will be ds->unreachableURL()
+GURL GetOriginalRequestURL(WebDataSource* ds) {
+  GURL overriden_url;
+  if (MaybeGetOverriddenURL(ds, &overriden_url))
+    return overriden_url;
 
   std::vector<GURL> redirects;
   GetRedirectChain(ds, &redirects);
@@ -4840,7 +4861,7 @@ void RenderFrameImpl::NavigateInternal(
     if (!common_params.base_url_for_data_url.is_empty() ||
         (browser_side_navigation &&
          common_params.url.SchemeIs(url::kDataScheme))) {
-      LoadDataURL(common_params, frame_);
+      LoadDataURL(common_params, frame_, load_type);
     } else {
       // Load the request.
       frame_->toWebLocalFrame()->load(request, load_type,
@@ -5080,19 +5101,23 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
 }
 
 void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
-                                  WebFrame* frame) {
+                                  WebFrame* frame,
+                                  blink::WebFrameLoadType load_type) {
   // A loadData request with a specified base URL.
   std::string mime_type, charset, data;
   if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
+    bool replace = load_type == blink::WebFrameLoadType::ReloadFromOrigin ||
+                   load_type == blink::WebFrameLoadType::Reload;
     frame->loadData(
         WebData(data.c_str(), data.length()),
         WebString::fromUTF8(mime_type),
         WebString::fromUTF8(charset),
         base_url,
+        // Needed so that history-url-only changes don't become reloads.
         params.history_url_for_data_url,
-        false);
+        replace);
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();
@@ -5156,8 +5181,10 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
 
 GURL RenderFrameImpl::GetLoadingUrl() const {
   WebDataSource* ds = frame_->dataSource();
-  if (ds->hasUnreachableURL())
-    return ds->unreachableURL();
+
+  GURL overriden_url;
+  if (MaybeGetOverriddenURL(ds, &overriden_url))
+    return overriden_url;
 
   const WebURLRequest& request = ds->request();
   return request.url();
@@ -5224,6 +5251,16 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state) {
           base::TimeTicks::Now();
     }
     document_state->set_navigation_state(CreateNavigationStateFromPending());
+
+    const CommonNavigationParams& common_params =
+        pending_navigation_params_->common_params;
+    bool load_data = !common_params.base_url_for_data_url.is_empty() &&
+                     !common_params.history_url_for_data_url.is_empty() &&
+                     common_params.url.SchemeIs(url::kDataScheme);
+    document_state->set_was_load_data_with_base_url_request(load_data);
+    if (load_data)
+      document_state->set_data_url(common_params.url);
+
     pending_navigation_params_.reset();
   } else {
     document_state->set_navigation_state(

@@ -19,6 +19,7 @@ DocumentState::DocumentState()
       was_prefetcher_(false),
       was_referred_by_prefetcher_(false),
       was_after_preconnect_request_(false),
+      was_load_data_with_base_url_request_(false),
       load_type_(UNDEFINED_LOAD),
       can_load_local_resources_(false) {
 }

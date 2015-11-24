@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -181,6 +182,23 @@ class CONTENT_EXPORT DocumentState
   }
   bool was_after_preconnect_request() { return was_after_preconnect_request_; }
 
+  // For LoadDataWithBaseURL navigations, |was_load_data_with_base_url_request_|
+  // is set to true and |data_url_| is set to the data URL of the navigation.
+  // Otherwise, |was_load_data_with_base_url_request_| is false and |data_url_|
+  // is empty.
+  void set_was_load_data_with_base_url_request(bool value) {
+    was_load_data_with_base_url_request_ = value;
+  }
+  bool was_load_data_with_base_url_request() const {
+    return was_load_data_with_base_url_request_;
+  }
+  const GURL& data_url() const {
+    return data_url_;
+  }
+  void set_data_url(const GURL& data_url) {
+    data_url_ = data_url;
+  }
+
   // Record the nature of this load, for use when histogramming page load times.
   LoadType load_type() const { return load_type_; }
   void set_load_type(LoadType load_type) { load_type_ = load_type; }
@@ -215,6 +233,9 @@ class CONTENT_EXPORT DocumentState
   bool was_prefetcher_;
   bool was_referred_by_prefetcher_;
   bool was_after_preconnect_request_;
+
+  bool was_load_data_with_base_url_request_;
+  GURL data_url_;
 
   LoadType load_type_;
 
