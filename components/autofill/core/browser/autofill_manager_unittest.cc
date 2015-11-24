@@ -443,14 +443,21 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
-  MockAutofillDriver() {}
+  MockAutofillDriver() : is_off_the_record_(false) {}
 
   // Mock methods to enable testability.
   MOCK_METHOD3(SendFormDataToRenderer, void(int query_id,
                                             RendererFormDataAction action,
                                             const FormData& data));
 
+  void SetIsOffTheRecord(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
+
+  bool IsOffTheRecord() const override { return is_off_the_record_; }
+
  private:
+  bool is_off_the_record_;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
 };
 
@@ -990,6 +997,91 @@ TEST_F(AutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 2);
   download_manager_->VerifyLastQueriedForms(forms);
+}
+
+// Test that no suggestions are returned when there are less than three fields
+// and none of them have an autocomplete attribute.
+TEST_F(AutofillManagerTest, GetProfileSuggestions_SmallFormNoAutocomplete) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  GetAutofillSuggestions(form, form.fields[0]);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+
+  GetAutofillSuggestions(form, form.fields[1]);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that for form with two fields with one that has an autocomplete
+// attribute, suggestions are only made for the one that has the attribute.
+TEST_F(AutofillManagerTest,
+       GetProfileSuggestions_SmallFormWithOneAutocomplete) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Check that suggestions are made for the field that has the autocomplete
+  // attribute.
+  GetAutofillSuggestions(form, form.fields[0]);
+  external_delegate_->CheckSuggestions(kDefaultPageID,
+                                       Suggestion("Elvis", "", "", 1),
+                                       Suggestion("Charles", "", "", 2));
+
+  // Check that there are no suggestions for the field without the autocomplete
+  // attribute.
+  GetAutofillSuggestions(form, form.fields[1]);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that for a form with two fields with autocomplete attributes,
+// suggestions are made for both fields.
+TEST_F(AutofillManagerTest,
+       GetProfileSuggestions_SmallFormWithTwoAutocomplete) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "family-name";
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  GetAutofillSuggestions(form, form.fields[0]);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Elvis", "Elvis Aaron Presley", "", 1),
+      Suggestion("Charles", "Charles Hardin Holley", "", 2));
+
+  GetAutofillSuggestions(form, form.fields[1]);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Presley", "Elvis Aaron Presley", "", 1),
+      Suggestion("Holley", "Charles Hardin Holley", "", 2));
 }
 
 // Test that we return all address profile suggestions when all form fields are
@@ -3729,6 +3821,53 @@ TEST_F(AutofillManagerTest,
                  1),
       Suggestion("Adam Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
                  2));
+}
+
+TEST_F(AutofillManagerTest, ShouldUploadForm) {
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  // Has less than 3 fields.
+  EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure));
+
+  // Has less than 3 fields but has autocomplete attribute.
+  form.fields[0].autocomplete_attribute = "given-name";
+  FormStructure form_structure_2(form);
+  EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_2));
+
+  // Has more than 3 fields, no autocomplete attribute.
+  form.fields[0].autocomplete_attribute = "";
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure_3(form);
+  EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_3));
+
+  // Has more than 3 fields and at least one autocomplete attribute.
+  form.fields[0].autocomplete_attribute = "given-name";
+  FormStructure form_structure_4(form);
+  EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_4));
+
+  // Is off the record.
+  autofill_driver_->SetIsOffTheRecord(true);
+  EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_4));
+
+  // Make sure it's reset for the next test case.
+  autofill_driver_->SetIsOffTheRecord(false);
+  EXPECT_TRUE(autofill_manager_->ShouldUploadForm(form_structure_4));
+
+  // Autofill disabled.
+  autofill_manager_->set_autofill_enabled(false);
+  EXPECT_FALSE(autofill_manager_->ShouldUploadForm(form_structure_3));
 }
 
 }  // namespace autofill

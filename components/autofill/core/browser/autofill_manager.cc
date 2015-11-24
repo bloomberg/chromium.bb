@@ -45,6 +45,7 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -390,8 +391,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   AutofillField* autofill_field = NULL;
   bool got_autofillable_form =
       GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
-      // Don't send suggestions or track forms that aren't auto-fillable.
-      form_structure->IsAutofillable();
+      // Don't send suggestions or track forms that should not be parsed.
+      form_structure->ShouldBeParsed();
 
   // Logging interactions of forms that are autofillable.
   if (got_autofillable_form) {
@@ -889,17 +890,9 @@ bool AutofillManager::IsCreditCardUploadEnabled() {
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
-  if (!IsAutofillEnabled())
-    return false;
-
-  if (driver_->IsOffTheRecord())
-    return false;
-
-  // Disregard forms that we wouldn't ever autofill in the first place.
-  if (!form.ShouldBeParsed())
-    return false;
-
-  return true;
+  return IsAutofillEnabled() && !driver_->IsOffTheRecord() &&
+         form.ShouldBeParsed() &&
+         form.active_field_count() >= kRequiredFieldsForUpload;
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
@@ -1497,6 +1490,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> queryable_forms;
   for (const FormData& form : forms) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+    form_structure->ParseFieldTypesFromAutocompleteAttributes();
 
     if (!form_structure->ShouldBeParsed())
       continue;

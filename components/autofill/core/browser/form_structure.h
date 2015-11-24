@@ -135,12 +135,12 @@ class FormStructure {
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's
   // |heuristic_type|.
-  // Fills |found_types| with |true| if the attribute is available and neither
-  // empty nor set to the special values "on" or "off" for at least one field.
-  // Fills |found_sections| with |true| if the attribute specifies a section for
+  // Fills |has_author_specified_types_| with |true| if the attribute is
+  // available and neither empty nor set to the special values "on" or "off" for
   // at least one field.
-  void ParseFieldTypesFromAutocompleteAttributes(bool* found_types,
-                                                 bool* found_sections);
+  // Fills |has_author_specified_sections_| with |true| if the attribute
+  // specifies a section for at least one field.
+  void ParseFieldTypesFromAutocompleteAttributes();
 
   // Determines whether |type| and |field| match.
   typedef base::Callback<bool(ServerFieldType type,
@@ -192,6 +192,12 @@ class FormStructure {
   const base::string16& form_name() const { return form_name_; }
 
   const GURL& source_url() const { return source_url_; }
+
+  bool has_author_specified_types() { return has_author_specified_types_; }
+
+  bool has_author_specified_sections() {
+    return has_author_specified_sections_;
+  }
 
   void set_upload_required(UploadRequired required) {
     upload_required_ = required;
@@ -265,6 +271,15 @@ class FormStructure {
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_;
+
+  // Whether the form includes any sections explicitly specified by the site
+  // author, via the autocomplete attribute.
+  bool has_author_specified_sections_;
+
+  // Whether the form was parsed for autocomplete attribute, thus assigning
+  // the real values of |has_author_specified_types_| and
+  // |has_author_specified_sections_|.
+  bool was_parsed_for_autocomplete_attributes_;
 
   // True if the form contains at least one password field.
   bool has_password_field_;

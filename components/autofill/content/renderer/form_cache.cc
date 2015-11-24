@@ -56,13 +56,23 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
   }
 }
 
-// To avoid overly expensive computation, we impose a minimum number of
-// allowable fields.  The corresponding maximum number of allowable fields
-// is imposed by WebFormElementToFormData().
-bool ShouldIgnoreForm(size_t num_editable_elements,
-                      size_t num_control_elements) {
-  return (num_editable_elements < kRequiredAutofillFields &&
-          num_control_elements > 0);
+// Determines whether the form is interesting enough to send to the browser
+// for further operations.
+bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
+  if (form.fields.empty())
+    return false;
+
+  // If the form has at least one field with an autocomplete attribute, it is a
+  // candidate for autofill.
+  for (const FormFieldData& field : form.fields) {
+    if (!field.autocomplete_attribute.empty())
+      return true;
+  }
+
+  // If there are no autocomplete attributes, the form needs to have at least
+  // the required number of editable fields for the prediction routines to be a
+  // candidate for autofill.
+  return num_editable_elements >= kRequiredFieldsForPredictionRoutines;
 }
 
 }  // namespace
@@ -101,7 +111,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     size_t num_editable_elements =
         ScanFormControlElements(control_elements, log_deprecation_messages);
 
-    if (ShouldIgnoreForm(num_editable_elements, control_elements.size()))
+    if (num_editable_elements == 0)
       continue;
 
     FormData form;
@@ -114,8 +124,8 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     if (num_fields_seen > form_util::kMaxParseableFields)
       return forms;
 
-    if (form.fields.size() >= kRequiredAutofillFields &&
-        !ContainsKey(parsed_forms_, form)) {
+    if (!ContainsKey(parsed_forms_, form) &&
+        IsFormInteresting(form, num_editable_elements)) {
       for (auto it = parsed_forms_.begin(); it != parsed_forms_.end(); ++it) {
         if (it->SameFormAs(form)) {
           parsed_forms_.erase(it);
@@ -138,7 +148,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
   size_t num_editable_elements =
       ScanFormControlElements(control_elements, log_deprecation_messages);
 
-  if (ShouldIgnoreForm(num_editable_elements, control_elements.size()))
+  if (num_editable_elements == 0)
     return forms;
 
   FormData synthetic_form;
@@ -152,8 +162,8 @@ std::vector<FormData> FormCache::ExtractNewForms() {
   if (num_fields_seen > form_util::kMaxParseableFields)
     return forms;
 
-  if (synthetic_form.fields.size() >= kRequiredAutofillFields &&
-      !parsed_forms_.count(synthetic_form)) {
+  if (!parsed_forms_.count(synthetic_form) &&
+      IsFormInteresting(synthetic_form, num_editable_elements)) {
     SaveInitialValues(control_elements);
     forms.push_back(synthetic_form);
     parsed_forms_.insert(synthetic_form);

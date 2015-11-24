@@ -15,6 +15,4 @@ const char kHelpURL[] =
     "https://support.google.com/chrome/?p=settings_autofill";
 #endif
 
-const size_t kRequiredAutofillFields = 3;
-
 }  // namespace autofill

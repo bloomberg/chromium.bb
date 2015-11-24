@@ -373,6 +373,8 @@ FormStructure::FormStructure(const FormData& form)
       active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       has_author_specified_types_(false),
+      has_author_specified_sections_(false),
+      was_parsed_for_autocomplete_attributes_(false),
       has_password_field_(false),
       is_form_tag_(form.is_form_tag) {
   // Copy the form fields.
@@ -407,9 +409,8 @@ void FormStructure::DetermineHeuristicTypes() {
   // attribute value.  If there is at least one form field that specifies an
   // autocomplete type hint, don't try to apply other heuristics to match fields
   // in this form.
-  bool has_author_specified_sections;
-  ParseFieldTypesFromAutocompleteAttributes(&has_author_specified_types_,
-                                            &has_author_specified_sections);
+  if (!was_parsed_for_autocomplete_attributes_)
+    ParseFieldTypesFromAutocompleteAttributes();
 
   if (!has_author_specified_types_) {
     ServerFieldTypeMap field_type_map;
@@ -424,7 +425,7 @@ void FormStructure::DetermineHeuristicTypes() {
   }
 
   UpdateAutofillCount();
-  IdentifySections(has_author_specified_sections);
+  IdentifySections(has_author_specified_sections_);
 
   if (IsAutofillable()) {
     AutofillMetrics::LogDeveloperEngagementMetric(
@@ -709,7 +710,7 @@ bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
 }
 
 bool FormStructure::IsAutofillable() const {
-  if (autofill_count() < kRequiredAutofillFields)
+  if (autofill_count() < kRequiredFieldsForPredictionRoutines)
     return false;
 
   return ShouldBeParsed();
@@ -724,8 +725,10 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed() const {
-  if (active_field_count() < kRequiredAutofillFields)
+  if (active_field_count() < kRequiredFieldsForPredictionRoutines &&
+      !has_author_specified_types_) {
     return false;
+  }
 
   // Rule out http(s)://*/search?...
   //  e.g. http://www.google.com/search?q=...
@@ -893,7 +896,7 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
   AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
       num_edited_autofilled_fields);
 
-  if (num_detected_field_types < kRequiredAutofillFields) {
+  if (num_detected_field_types < kRequiredFieldsForPredictionRoutines) {
     AutofillMetrics::LogAutofillFormSubmittedState(
         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   } else {
@@ -1058,13 +1061,11 @@ bool FormStructure::EncodeFormRequest(
   return true;
 }
 
-void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
-    bool* found_types,
-    bool* found_sections) {
+void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   const std::string kDefaultSection = "-default";
 
-  *found_types = false;
-  *found_sections = false;
+  has_author_specified_types_ = false;
+  has_author_specified_sections_ = false;
   for (AutofillField* field : fields_) {
     // To prevent potential section name collisions, add a default suffix for
     // other fields.  Without this, 'autocomplete' attribute values
@@ -1095,7 +1096,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     // This allows a website's author to specify an attribute like
     // autocomplete="other" on a field to disable all Autofill heuristics for
     // the form.
-    *found_types = true;
+    has_author_specified_types_ = true;
 
     // Tokenize the attribute value.  Per the spec, the tokens are parsed in
     // reverse order.
@@ -1158,7 +1159,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
       continue;
 
     if (section != kDefaultSection) {
-      *found_sections = true;
+      has_author_specified_sections_ = true;
       field->set_section(section);
     }
 
@@ -1166,6 +1167,8 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     // Update the |field|'s type based on what was parsed from the attribute.
     field->SetHtmlType(field_type, mode);
   }
+
+  was_parsed_for_autocomplete_attributes_ = true;
 }
 
 bool FormStructure::FillFields(

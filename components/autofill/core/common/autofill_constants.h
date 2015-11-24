@@ -14,11 +14,16 @@ namespace autofill {
 // Help URL for the Autofill dialog.
 extern const char kHelpURL[];
 
-// The number of fields required by Autofill.  Ideally we could send the forms
-// to Autofill no matter how many fields are in the forms; however, finding the
-// label for each field is a costly operation and we can't spare the cycles if
-// it's not necessary.
-extern const size_t kRequiredAutofillFields;
+// The number of fields required by Autofill to execute its heuristic and
+// crowdsourcing prediction routines. Ideally we would execute those routines no
+// matter how many fields are in the forms; however, finding the label for each
+// field is a costly operation and we can't spare the cycles if it's not
+// necessary.
+const size_t kRequiredFieldsForPredictionRoutines = 3;
+
+// The minimum number of fields required to upload a form to the Autofill
+// servers.
+const size_t kRequiredFieldsForUpload = 3;
 
 // Options bitmask values for AutofillHostMsg_ShowPasswordSuggestions IPC
 enum ShowPasswordSuggestionsOptions {

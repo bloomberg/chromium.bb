@@ -305,9 +305,34 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   EXPECT_TRUE(form_structure->ShouldBeParsed());
 
   form.fields[0].form_control_type = "select-one";
+
   // Now, no text fields.
   form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed());
+}
+
+// Tests that ShouldBeParsed returns true for a form containing less than three
+// fields if at least one has an autocomplete attribute.
+TEST_F(FormStructureTest, ShouldBeParsed_TwoFields_HasAutocomplete) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("name");
+  field.form_control_type = "name";
+  field.autocomplete_attribute = "name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("Address");
+  field.form_control_type = "select-one";
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->ParseFieldTypesFromAutocompleteAttributes();
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 }
 
 TEST_F(FormStructureTest, HeuristicsContactInfo) {
@@ -2959,8 +2984,7 @@ TEST_F(FormStructureTest, PossibleValues) {
   form_data.fields.push_back(field);
   FormStructure form_structure(form_data);
 
-  bool unused;
-  form_structure.ParseFieldTypesFromAutocompleteAttributes(&unused, &unused);
+  form_structure.ParseFieldTypesFromAutocompleteAttributes();
 
   // All values in <option> value= or contents are returned, set to upper case.
   std::set<base::string16> possible_values =
@@ -2982,7 +3006,7 @@ TEST_F(FormStructureTest, PossibleValues) {
   freeform_field.autocomplete_attribute = "billing country";
   form_data.fields.push_back(freeform_field);
   FormStructure form_structure2(form_data);
-  form_structure2.ParseFieldTypesFromAutocompleteAttributes(&unused, &unused);
+  form_structure2.ParseFieldTypesFromAutocompleteAttributes();
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
 }
 

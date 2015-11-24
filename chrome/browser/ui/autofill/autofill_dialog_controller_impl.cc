@@ -422,13 +422,10 @@ void AutofillDialogControllerImpl::Show() {
   dialog_shown_timestamp_ = base::Time::Now();
 
   // Determine what field types should be included in the dialog.
-  bool has_types = false;
-  bool has_sections = false;
-  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
-      &has_types, &has_sections);
+  form_structure_.ParseFieldTypesFromAutocompleteAttributes();
 
   // Fail if the author didn't specify autocomplete types.
-  if (!has_types) {
+  if (!form_structure_.has_author_specified_types()) {
     callback_.Run(
         AutofillClient::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is missing autocomplete attributes."),
