@@ -121,6 +121,15 @@ monospace
 -webkit-pictograph
 
 //
+// font-display
+//
+//auto
+//block
+swap
+fallback
+optional
+
+//
 //
 // *-color
 //

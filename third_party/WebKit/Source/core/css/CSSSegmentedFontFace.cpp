@@ -72,12 +72,7 @@ bool CSSSegmentedFontFace::isValid() const
     return false;
 }
 
-void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
-{
-    pruneTable();
-}
-
-void CSSSegmentedFontFace::fontLoadWaitLimitExceeded(CSSFontFace*)
+void CSSSegmentedFontFace::fontFaceInvalidated()
 {
     pruneTable();
 }

@@ -128,6 +128,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
         && fontFace->setPropertyFromStyle(properties, CSSPropertyUnicodeRange)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontVariant)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontFeatureSettings)
+        && fontFace->setPropertyFromStyle(properties, CSSPropertyFontDisplay)
         && !fontFace->family().isEmpty()
         && fontFace->traits().bitfield()) {
         fontFace->initCSSFontFace(document, src);
@@ -263,6 +264,9 @@ bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPrope
         break;
     case CSSPropertyFontFeatureSettings:
         m_featureSettings = value;
+        break;
+    case CSSPropertyFontDisplay:
+        m_display = value;
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -528,6 +532,27 @@ FontTraits FontFace::traits() const
     return FontTraits(style, variant, weight, stretch);
 }
 
+static FontDisplay CSSValueToFontDisplay(CSSValue* value)
+{
+    if (value && value->isPrimitiveValue()) {
+        switch (toCSSPrimitiveValue(value)->getValueID()) {
+        case CSSValueAuto:
+            return FontDisplayAuto;
+        case CSSValueBlock:
+            return FontDisplayBlock;
+        case CSSValueSwap:
+            return FontDisplaySwap;
+        case CSSValueFallback:
+            return FontDisplayFallback;
+        case CSSValueOptional:
+            return FontDisplayOptional;
+        default:
+            break;
+        }
+    }
+    return FontDisplayAuto;
+}
+
 static PassOwnPtrWillBeRawPtr<CSSFontFace> createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange)
 {
     Vector<CSSFontFace::UnicodeRange> ranges;
@@ -566,7 +591,7 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
                 FontResource* fetched = item->fetch(document);
                 if (fetched) {
                     FontLoader* fontLoader = document->styleEngine().fontSelector()->fontLoader();
-                    source = adoptPtrWillBeNoop(new RemoteFontFaceSource(fetched, fontLoader));
+                    source = adoptPtrWillBeNoop(new RemoteFontFaceSource(fetched, fontLoader, CSSValueToFontDisplay(m_display.get())));
                 }
             }
         } else {
@@ -601,6 +626,7 @@ DEFINE_TRACE(FontFace)
     visitor->trace(m_unicodeRange);
     visitor->trace(m_variant);
     visitor->trace(m_featureSettings);
+    visitor->trace(m_display);
     visitor->trace(m_error);
     visitor->trace(m_loadedProperty);
     visitor->trace(m_cssFontFace);

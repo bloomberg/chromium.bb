@@ -139,6 +139,7 @@ private:
     RefPtrWillBeMember<CSSValue> m_unicodeRange;
     RefPtrWillBeMember<CSSValue> m_variant;
     RefPtrWillBeMember<CSSValue> m_featureSettings;
+    RefPtrWillBeMember<CSSValue> m_display;
     LoadStatus m_status;
     PersistentWillBeMember<DOMException> m_error;
 

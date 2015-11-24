@@ -70,7 +70,7 @@ public:
 
     void didBeginLoad();
     void fontLoaded(RemoteFontFaceSource*);
-    void fontLoadWaitLimitExceeded(RemoteFontFaceSource*);
+    void didBecomeVisibleFallback(RemoteFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 

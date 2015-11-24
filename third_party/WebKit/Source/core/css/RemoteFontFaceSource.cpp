@@ -16,9 +16,11 @@
 
 namespace blink {
 
-RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader)
+RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader, FontDisplay display)
     : m_font(font)
     , m_fontLoader(fontLoader)
+    , m_display(display)
+    , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
 {
     m_font->addClient(this);
 }
@@ -80,15 +82,42 @@ void RemoteFontFaceSource::fontLoaded(FontResource*)
     }
 }
 
-void RemoteFontFaceSource::fontLoadWaitLimitExceeded(FontResource*)
+void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*)
 {
+    if (m_display == FontDisplayFallback)
+        switchToSwapPeriod();
+    else if (m_display == FontDisplayOptional)
+        switchToFailurePeriod();
+}
+
+void RemoteFontFaceSource::fontLoadLongLimitExceeded(FontResource*)
+{
+    if (m_display == FontDisplayAuto || m_display == FontDisplayBlock)
+        switchToSwapPeriod();
+    else if (m_display == FontDisplayFallback)
+        switchToFailurePeriod();
+}
+
+void RemoteFontFaceSource::switchToSwapPeriod()
+{
+    ASSERT(m_period == BlockPeriod);
+    m_period = SwapPeriod;
+
     pruneTable();
     if (m_face) {
         m_fontLoader->fontFaceInvalidated();
-        m_face->fontLoadWaitLimitExceeded(this);
+        m_face->didBecomeVisibleFallback(this);
     }
 
     m_histograms.recordFallbackTime(m_font.get());
+}
+
+void RemoteFontFaceSource::switchToFailurePeriod()
+{
+    if (m_period == BlockPeriod)
+        switchToSwapPeriod();
+    ASSERT(m_period == SwapPeriod);
+    m_period = FailurePeriod;
 }
 
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(const FontDescription& fontDescription)
@@ -96,8 +125,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(const FontDescri
     if (!isLoaded())
         return createLoadingFallbackFontData(fontDescription);
 
-    // Create new FontPlatformData from our CGFontRef, point size and ATSFontRef.
-    if (!m_font->ensureCustomFontData())
+    if (!m_font->ensureCustomFontData() || m_period == FailurePeriod)
         return nullptr;
 
     m_histograms.recordFallbackTime(m_font.get());
@@ -117,7 +145,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(c
         ASSERT_NOT_REACHED();
         return nullptr;
     }
-    RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(this, m_font->exceedsFontLoadWaitLimit() ? CSSCustomFontData::VisibleFallback : CSSCustomFontData::InvisibleFallback);
+    RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(this, m_period == BlockPeriod ? CSSCustomFontData::InvisibleFallback : CSSCustomFontData::VisibleFallback);
     return SimpleFontData::create(temporaryFont->platformData(), cssFontData);
 }
 

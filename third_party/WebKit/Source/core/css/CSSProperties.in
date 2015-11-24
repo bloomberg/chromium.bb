@@ -430,6 +430,7 @@ z-index interpolable, type_name=int, custom_all
 // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
 
 all builder_skip
+font-display builder_skip, runtime_flag=CSSFontDisplay
 max-zoom builder_skip
 min-zoom builder_skip
 orientation builder_skip

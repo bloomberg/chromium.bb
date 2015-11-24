@@ -38,7 +38,10 @@
 
 namespace blink {
 
-static const double fontLoadWaitLimitSec = 3.0;
+// Durations of font-display periods.
+// https://tabatkins.github.io/specs/css-font-display/#font-display-desc
+static const double fontLoadWaitShortLimitSec = 0.1;
+static const double fontLoadWaitLongLimitSec = 3.0;
 
 enum FontPackageFormat {
     PackageFormatUnknown,
@@ -77,9 +80,9 @@ ResourcePtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFet
 FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
     , m_state(Unloaded)
-    , m_exceedsFontLoadWaitLimit(false)
     , m_corsFailed(false)
-    , m_fontLoadWaitLimitTimer(this, &FontResource::fontLoadWaitLimitCallback)
+    , m_fontLoadShortLimitTimer(this, &FontResource::fontLoadShortLimitCallback)
+    , m_fontLoadLongLimitTimer(this, &FontResource::fontLoadLongLimitCallback)
 {
 }
 
@@ -121,7 +124,8 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
     if (m_state != LoadInitiated) {
         m_state = LoadInitiated;
         Resource::load(dl, m_options);
-        m_fontLoadWaitLimitTimer.startOneShot(fontLoadWaitLimitSec, BLINK_FROM_HERE);
+        m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
+        m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec, BLINK_FROM_HERE);
 
         ResourceClientWalker<FontResourceClient> walker(m_clients);
         while (FontResourceClient* client = walker.next())
@@ -156,14 +160,22 @@ bool FontResource::isSafeToUnlock() const
     return m_data->hasOneRef();
 }
 
-void FontResource::fontLoadWaitLimitCallback(Timer<FontResource>*)
+void FontResource::fontLoadShortLimitCallback(Timer<FontResource>*)
 {
     if (!isLoading())
         return;
-    m_exceedsFontLoadWaitLimit = true;
     ResourceClientWalker<FontResourceClient> walker(m_clients);
     while (FontResourceClient* client = walker.next())
-        client->fontLoadWaitLimitExceeded(this);
+        client->fontLoadShortLimitExceeded(this);
+}
+
+void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
+{
+    if (!isLoading())
+        return;
+    ResourceClientWalker<FontResourceClient> walker(m_clients);
+    while (FontResourceClient* client = walker.next())
+        client->fontLoadLongLimitExceeded(this);
 }
 
 void FontResource::allClientsRemoved()
@@ -174,7 +186,8 @@ void FontResource::allClientsRemoved()
 
 void FontResource::checkNotify()
 {
-    m_fontLoadWaitLimitTimer.stop();
+    m_fontLoadShortLimitTimer.stop();
+    m_fontLoadLongLimitTimer.stop();
     ResourceClientWalker<FontResourceClient> w(m_clients);
     while (FontResourceClient* c = w.next())
         c->fontLoaded(this);

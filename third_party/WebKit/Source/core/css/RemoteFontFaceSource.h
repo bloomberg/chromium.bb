@@ -14,21 +14,33 @@ namespace blink {
 
 class FontLoader;
 
+enum FontDisplay {
+    FontDisplayAuto,
+    FontDisplayBlock,
+    FontDisplaySwap,
+    FontDisplayFallback,
+    FontDisplayOptional
+};
+
 class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {
 public:
-    explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>);
+    enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
+
+    explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>, FontDisplay);
     ~RemoteFontFaceSource() override;
 
     FontResource* resource() override { return m_font.get(); }
     bool isLoading() const override;
     bool isLoaded() const override;
     bool isValid() const override;
+    DisplayPeriod displayPeriod() const { return m_period; }
 
     void beginLoadIfNeeded() override;
 
     void didStartFontLoad(FontResource*) override;
     void fontLoaded(FontResource*) override;
-    void fontLoadWaitLimitExceeded(FontResource*) override;
+    void fontLoadShortLimitExceeded(FontResource*) override;
+    void fontLoadLongLimitExceeded(FontResource*) override;
     String debugName() const override { return "RemoteFontFaceSource"; }
 
     // For UMA reporting
@@ -58,8 +70,13 @@ private:
         double m_fallbackPaintTime;
     };
 
+    void switchToSwapPeriod();
+    void switchToFailurePeriod();
+
     ResourcePtr<FontResource> m_font;
     RefPtrWillBeMember<FontLoader> m_fontLoader;
+    const FontDisplay m_display;
+    DisplayPeriod m_period;
     FontLoadHistograms m_histograms;
 };
 

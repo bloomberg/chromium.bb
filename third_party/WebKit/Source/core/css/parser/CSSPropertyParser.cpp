@@ -2146,6 +2146,7 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
     case CSSPropertyUnicodeRange:
         parsedValue = consumeFontFaceUnicodeRange(m_range);
         break;
+    case CSSPropertyFontDisplay:
     case CSSPropertyFontStretch:
     case CSSPropertyFontStyle: {
         CSSValueID id = m_range.consumeIncludingWhitespace().id();

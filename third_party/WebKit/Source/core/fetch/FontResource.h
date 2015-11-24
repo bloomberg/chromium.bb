@@ -53,7 +53,6 @@ public:
     void allClientsRemoved() override;
     void beginLoadIfNeeded(ResourceFetcher* dl);
     bool stillNeedsLoad() const override { return m_state != LoadInitiated; }
-    bool exceedsFontLoadWaitLimit() const { return m_exceedsFontLoadWaitLimit; }
 
     bool loadScheduled() const { return m_state != Unloaded; }
     void didScheduleLoad();
@@ -83,16 +82,17 @@ private:
     FontResource(const ResourceRequest&);
 
     void checkNotify() override;
-    void fontLoadWaitLimitCallback(Timer<FontResource>*);
+    void fontLoadShortLimitCallback(Timer<FontResource>*);
+    void fontLoadLongLimitCallback(Timer<FontResource>*);
 
     enum State { Unloaded, LoadScheduled, LoadInitiated };
 
     OwnPtr<FontCustomPlatformData> m_fontData;
     String m_otsParsingMessage;
     State m_state;
-    bool m_exceedsFontLoadWaitLimit;
     bool m_corsFailed;
-    Timer<FontResource> m_fontLoadWaitLimitTimer;
+    Timer<FontResource> m_fontLoadShortLimitTimer;
+    Timer<FontResource> m_fontLoadLongLimitTimer;
 
     friend class MemoryCache;
 };
@@ -106,7 +106,8 @@ public:
     ResourceClientType resourceClientType() const final { return expectedType(); }
     virtual void fontLoaded(FontResource*) {}
     virtual void didStartFontLoad(FontResource*) {}
-    virtual void fontLoadWaitLimitExceeded(FontResource*) {}
+    virtual void fontLoadShortLimitExceeded(FontResource*) {}
+    virtual void fontLoadLongLimitExceeded(FontResource*) {}
 };
 
 }

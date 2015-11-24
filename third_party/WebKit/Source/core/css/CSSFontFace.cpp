@@ -63,6 +63,9 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
     if (loadStatus() == FontFace::Loading) {
         if (source->isValid()) {
             setLoadStatus(FontFace::Loaded);
+        } else if (source->displayPeriod() == RemoteFontFaceSource::FailurePeriod) {
+            m_sources.clear();
+            setLoadStatus(FontFace::Error);
         } else {
             m_sources.removeFirst();
             load();
@@ -70,15 +73,15 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
     }
 
     if (m_segmentedFontFace)
-        m_segmentedFontFace->fontLoaded(this);
+        m_segmentedFontFace->fontFaceInvalidated();
 }
 
-void CSSFontFace::fontLoadWaitLimitExceeded(RemoteFontFaceSource* source)
+void CSSFontFace::didBecomeVisibleFallback(RemoteFontFaceSource* source)
 {
     if (!isValid() || source != m_sources.first())
         return;
     if (m_segmentedFontFace)
-        m_segmentedFontFace->fontLoadWaitLimitExceeded(this);
+        m_segmentedFontFace->fontFaceInvalidated();
 }
 
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription)

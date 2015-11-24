@@ -56,8 +56,9 @@ public:
     CSSFontSelector* fontSelector() const { return m_fontSelector; }
     FontTraits traits() const { return m_traits; }
 
-    void fontLoaded(CSSFontFace*);
-    void fontLoadWaitLimitExceeded(CSSFontFace*);
+    // Called when status of a FontFace has changed (e.g. loaded or timed out)
+    // so cached FontData must be discarded.
+    void fontFaceInvalidated();
 
     void addFontFace(PassRefPtrWillBeRawPtr<FontFace>, bool cssConnected);
     void removeFontFace(PassRefPtrWillBeRawPtr<FontFace>);
