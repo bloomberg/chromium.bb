@@ -71,9 +71,7 @@ pnacl_toolchain("newlib_pnacl") {
 
 pnacl_toolchain("newlib_pnacl_nonsfi") {
   executable_extension = ""
-  # TODO(mcgrathr): Uncomment this after pnacl-strip has been taught
-  # to grok --strip-unneeded.
-  #strip = "strip"
+  strip = "strip"
 }
 
 template("nacl_glibc_toolchain") {
