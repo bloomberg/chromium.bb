@@ -449,7 +449,7 @@
       }
     ]
   },
-  "Chromium Mac 10.10": {
+  "Chromium Mac 10.11": {
     "gtest_tests": [
       {
         "test": "accessibility_unittests"
@@ -512,16 +512,16 @@
         "test": "jingle_unittests"
       },
       {
-        "test": "media_unittests"
-      },
-      {
         "test": "media_blink_unittests"
       },
       {
-        "test": "midi_unittests"
+        "test": "media_unittests"
       },
       {
         "test": "message_center_unittests"
+      },
+      {
+        "test": "midi_unittests"
       },
       {
         "test": "mojo_common_unittests"
