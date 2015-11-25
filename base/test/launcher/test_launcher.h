@@ -163,6 +163,9 @@ class TestLauncher {
   // Tests to use (cached result of TestLauncherDelegate::GetTests).
   std::vector<TestIdentifier> tests_;
 
+  // Number of tests found in this binary.
+  size_t test_found_count_;
+
   // Number of tests started in this iteration.
   size_t test_started_count_;
 

@@ -452,6 +452,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       total_shards_(1),
       shard_index_(0),
       cycles_(1),
+      test_found_count_(0),
       test_started_count_(0),
       test_finished_count_(0),
       test_success_count_(0),
@@ -621,7 +622,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     test_broken_count_++;
   }
   size_t broken_threshold =
-      std::max(static_cast<size_t>(20), test_started_count_ / 10);
+      std::max(static_cast<size_t>(20), test_found_count_ / 10);
   if (!force_run_broken_tests_ && test_broken_count_ >= broken_threshold) {
     fprintf(stdout, "Too many badly broken tests (%" PRIuS "), exiting now.\n",
             test_broken_count_);
@@ -927,6 +928,9 @@ void TestLauncher::RunTests() {
       continue;
     }
 
+    // Count tests in the binary, before we apply filter and sharding.
+    test_found_count_++;
+
     // Skip the test that doesn't match the filter (if given).
     if (!positive_test_filter_.empty()) {
       bool found = false;
@@ -980,6 +984,7 @@ void TestLauncher::RunTestIteration() {
   // Special value "-1" means "repeat indefinitely".
   cycles_ = (cycles_ == -1) ? cycles_ : cycles_ - 1;
 
+  test_found_count_ = 0;
   test_started_count_ = 0;
   test_finished_count_ = 0;
   test_success_count_ = 0;
