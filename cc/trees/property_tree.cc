@@ -7,9 +7,40 @@
 
 #include "base/logging.h"
 #include "cc/base/math_util.h"
+#include "cc/proto/gfx_conversions.h"
+#include "cc/proto/property_tree.pb.h"
+#include "cc/proto/scroll_offset.pb.h"
+#include "cc/proto/transform.pb.h"
+#include "cc/proto/vector2df.pb.h"
 #include "cc/trees/property_tree.h"
 
 namespace cc {
+
+template <typename T>
+bool TreeNode<T>::operator==(const TreeNode<T>& other) const {
+  return id == other.id && parent_id == other.parent_id &&
+         owner_id == other.owner_id && data == other.data;
+}
+
+template <typename T>
+void TreeNode<T>::ToProtobuf(proto::TreeNode* proto) const {
+  proto->set_id(id);
+  proto->set_parent_id(parent_id);
+  proto->set_owner_id(owner_id);
+  data.ToProtobuf(proto);
+}
+
+template <typename T>
+void TreeNode<T>::FromProtobuf(const proto::TreeNode& proto) {
+  id = proto.id();
+  parent_id = proto.parent_id();
+  owner_id = proto.owner_id();
+  data.FromProtobuf(proto);
+}
+
+template struct TreeNode<TransformNodeData>;
+template struct TreeNode<ClipNodeData>;
+template struct TreeNode<EffectNodeData>;
 
 template <typename T>
 PropertyTree<T>::PropertyTree()
@@ -50,6 +81,38 @@ void PropertyTree<T>::clear() {
   back()->parent_id = -1;
 }
 
+template <typename T>
+bool PropertyTree<T>::operator==(const PropertyTree<T>& other) const {
+  return nodes_ == other.nodes() && needs_update_ == other.needs_update();
+}
+
+template <typename T>
+void PropertyTree<T>::ToProtobuf(proto::PropertyTree* proto) const {
+  DCHECK_EQ(0, proto->nodes_size());
+  for (const auto& node : nodes_)
+    node.ToProtobuf(proto->add_nodes());
+  proto->set_needs_update(needs_update_);
+}
+
+template <typename T>
+void PropertyTree<T>::FromProtobuf(const proto::PropertyTree& proto) {
+  // Verify that the property tree is empty.
+  DCHECK_EQ(static_cast<int>(nodes_.size()), 1);
+  DCHECK_EQ(back()->id, 0);
+  DCHECK_EQ(back()->parent_id, -1);
+
+  // Add the first node.
+  DCHECK_GT(proto.nodes_size(), 0);
+  nodes_.back().FromProtobuf(proto.nodes(0));
+
+  for (int i = 1; i < proto.nodes_size(); ++i) {
+    nodes_.push_back(T());
+    nodes_.back().FromProtobuf(proto.nodes(i));
+  }
+
+  needs_update_ = proto.needs_update();
+}
+
 template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
 template class PropertyTree<EffectNode>;
@@ -84,6 +147,54 @@ TransformNodeData::TransformNodeData()
 TransformNodeData::~TransformNodeData() {
 }
 
+bool TransformNodeData::operator==(const TransformNodeData& other) const {
+  return pre_local == other.pre_local && local == other.local &&
+         post_local == other.post_local && to_parent == other.to_parent &&
+         to_target == other.to_target && from_target == other.from_target &&
+         to_screen == other.to_screen && from_screen == other.from_screen &&
+         target_id == other.target_id &&
+         content_target_id == other.content_target_id &&
+         source_node_id == other.source_node_id &&
+         needs_local_transform_update == other.needs_local_transform_update &&
+         is_invertible == other.is_invertible &&
+         ancestors_are_invertible == other.ancestors_are_invertible &&
+         is_animated == other.is_animated &&
+         to_screen_is_animated == other.to_screen_is_animated &&
+         has_only_translation_animations ==
+             other.has_only_translation_animations &&
+         to_screen_has_scale_animation == other.to_screen_has_scale_animation &&
+         flattens_inherited_transform == other.flattens_inherited_transform &&
+         node_and_ancestors_are_flat == other.node_and_ancestors_are_flat &&
+         node_and_ancestors_have_only_integer_translation ==
+             other.node_and_ancestors_have_only_integer_translation &&
+         scrolls == other.scrolls &&
+         needs_sublayer_scale == other.needs_sublayer_scale &&
+         affected_by_inner_viewport_bounds_delta_x ==
+             other.affected_by_inner_viewport_bounds_delta_x &&
+         affected_by_inner_viewport_bounds_delta_y ==
+             other.affected_by_inner_viewport_bounds_delta_y &&
+         affected_by_outer_viewport_bounds_delta_x ==
+             other.affected_by_outer_viewport_bounds_delta_x &&
+         affected_by_outer_viewport_bounds_delta_y ==
+             other.affected_by_outer_viewport_bounds_delta_y &&
+         in_subtree_of_page_scale_layer ==
+             other.in_subtree_of_page_scale_layer &&
+         post_local_scale_factor == other.post_local_scale_factor &&
+         local_maximum_animation_target_scale ==
+             other.local_maximum_animation_target_scale &&
+         local_starting_animation_scale ==
+             other.local_starting_animation_scale &&
+         combined_maximum_animation_target_scale ==
+             other.combined_maximum_animation_target_scale &&
+         combined_starting_animation_scale ==
+             other.combined_starting_animation_scale &&
+         sublayer_scale == other.sublayer_scale &&
+         scroll_offset == other.scroll_offset &&
+         scroll_snap == other.scroll_snap &&
+         source_offset == other.source_offset &&
+         source_to_parent == other.source_to_parent;
+}
+
 void TransformNodeData::update_pre_local_transform(
     const gfx::Point3F& transform_origin) {
   pre_local.MakeIdentity();
@@ -102,6 +213,133 @@ void TransformNodeData::update_post_local_transform(
       transform_origin.z());
 }
 
+void TransformNodeData::ToProtobuf(proto::TreeNode* proto) const {
+  DCHECK(!proto->has_transform_node_data());
+  proto::TranformNodeData* data = proto->mutable_transform_node_data();
+
+  TransformToProto(pre_local, data->mutable_pre_local());
+  TransformToProto(local, data->mutable_local());
+  TransformToProto(post_local, data->mutable_post_local());
+
+  TransformToProto(to_parent, data->mutable_to_parent());
+
+  TransformToProto(to_target, data->mutable_to_target());
+  TransformToProto(from_target, data->mutable_from_target());
+
+  TransformToProto(to_screen, data->mutable_to_screen());
+  TransformToProto(from_screen, data->mutable_from_screen());
+
+  data->set_target_id(target_id);
+  data->set_content_target_id(content_target_id);
+  data->set_source_node_id(source_node_id);
+
+  data->set_needs_local_transform_update(needs_local_transform_update);
+
+  data->set_is_invertible(is_invertible);
+  data->set_ancestors_are_invertible(ancestors_are_invertible);
+
+  data->set_is_animated(is_animated);
+  data->set_to_screen_is_animated(to_screen_is_animated);
+  data->set_has_only_translation_animations(has_only_translation_animations);
+  data->set_to_screen_has_scale_animation(to_screen_has_scale_animation);
+
+  data->set_flattens_inherited_transform(flattens_inherited_transform);
+  data->set_node_and_ancestors_are_flat(node_and_ancestors_are_flat);
+
+  data->set_node_and_ancestors_have_only_integer_translation(
+      node_and_ancestors_have_only_integer_translation);
+  data->set_scrolls(scrolls);
+  data->set_needs_sublayer_scale(needs_sublayer_scale);
+
+  data->set_affected_by_inner_viewport_bounds_delta_x(
+      affected_by_inner_viewport_bounds_delta_x);
+  data->set_affected_by_inner_viewport_bounds_delta_y(
+      affected_by_inner_viewport_bounds_delta_y);
+  data->set_affected_by_outer_viewport_bounds_delta_x(
+      affected_by_outer_viewport_bounds_delta_x);
+  data->set_affected_by_outer_viewport_bounds_delta_y(
+      affected_by_outer_viewport_bounds_delta_y);
+
+  data->set_in_subtree_of_page_scale_layer(in_subtree_of_page_scale_layer);
+  data->set_post_local_scale_factor(post_local_scale_factor);
+  data->set_local_maximum_animation_target_scale(
+      local_maximum_animation_target_scale);
+  data->set_local_starting_animation_scale(local_starting_animation_scale);
+  data->set_combined_maximum_animation_target_scale(
+      combined_maximum_animation_target_scale);
+  data->set_combined_starting_animation_scale(
+      combined_starting_animation_scale);
+
+  Vector2dFToProto(sublayer_scale, data->mutable_sublayer_scale());
+  ScrollOffsetToProto(scroll_offset, data->mutable_scroll_offset());
+  Vector2dFToProto(scroll_snap, data->mutable_scroll_snap());
+  Vector2dFToProto(source_offset, data->mutable_source_offset());
+  Vector2dFToProto(source_to_parent, data->mutable_source_to_parent());
+}
+
+void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
+  DCHECK(proto.has_transform_node_data());
+  const proto::TranformNodeData& data = proto.transform_node_data();
+
+  pre_local = ProtoToTransform(data.pre_local());
+  local = ProtoToTransform(data.local());
+  post_local = ProtoToTransform(data.post_local());
+
+  to_parent = ProtoToTransform(data.to_parent());
+
+  to_target = ProtoToTransform(data.to_target());
+  from_target = ProtoToTransform(data.from_target());
+
+  to_screen = ProtoToTransform(data.to_screen());
+  from_screen = ProtoToTransform(data.from_screen());
+
+  target_id = data.target_id();
+  content_target_id = data.content_target_id();
+  source_node_id = data.source_node_id();
+
+  needs_local_transform_update = data.needs_local_transform_update();
+
+  is_invertible = data.is_invertible();
+  ancestors_are_invertible = data.ancestors_are_invertible();
+
+  is_animated = data.is_animated();
+  to_screen_is_animated = data.to_screen_is_animated();
+  has_only_translation_animations = data.has_only_translation_animations();
+  to_screen_has_scale_animation = data.to_screen_has_scale_animation();
+
+  flattens_inherited_transform = data.flattens_inherited_transform();
+  node_and_ancestors_are_flat = data.node_and_ancestors_are_flat();
+
+  node_and_ancestors_have_only_integer_translation =
+      data.node_and_ancestors_have_only_integer_translation();
+  scrolls = data.scrolls();
+  needs_sublayer_scale = data.needs_sublayer_scale();
+
+  affected_by_inner_viewport_bounds_delta_x =
+      data.affected_by_inner_viewport_bounds_delta_x();
+  affected_by_inner_viewport_bounds_delta_y =
+      data.affected_by_inner_viewport_bounds_delta_y();
+  affected_by_outer_viewport_bounds_delta_x =
+      data.affected_by_outer_viewport_bounds_delta_x();
+  affected_by_outer_viewport_bounds_delta_y =
+      data.affected_by_outer_viewport_bounds_delta_y();
+
+  in_subtree_of_page_scale_layer = data.in_subtree_of_page_scale_layer();
+  post_local_scale_factor = data.post_local_scale_factor();
+  local_maximum_animation_target_scale =
+      data.local_maximum_animation_target_scale();
+  local_starting_animation_scale = data.local_starting_animation_scale();
+  combined_maximum_animation_target_scale =
+      data.combined_maximum_animation_target_scale();
+  combined_starting_animation_scale = data.combined_starting_animation_scale();
+
+  sublayer_scale = ProtoToVector2dF(data.sublayer_scale());
+  scroll_offset = ProtoToScrollOffset(data.scroll_offset());
+  scroll_snap = ProtoToVector2dF(data.scroll_snap());
+  source_offset = ProtoToVector2dF(data.source_offset());
+  source_to_parent = ProtoToVector2dF(data.source_to_parent());
+}
+
 ClipNodeData::ClipNodeData()
     : transform_id(-1),
       target_id(-1),
@@ -112,12 +350,97 @@ ClipNodeData::ClipNodeData()
       layers_are_clipped_when_surfaces_disabled(false),
       resets_clip(false) {}
 
+bool ClipNodeData::operator==(const ClipNodeData& other) const {
+  return clip == other.clip &&
+         combined_clip_in_target_space == other.combined_clip_in_target_space &&
+         clip_in_target_space == other.clip_in_target_space &&
+         transform_id == other.transform_id && target_id == other.target_id &&
+         applies_local_clip == other.applies_local_clip &&
+         layer_clipping_uses_only_local_clip ==
+             other.layer_clipping_uses_only_local_clip &&
+         target_is_clipped == other.target_is_clipped &&
+         layers_are_clipped == other.layers_are_clipped &&
+         layers_are_clipped_when_surfaces_disabled ==
+             other.layers_are_clipped_when_surfaces_disabled &&
+         resets_clip == other.resets_clip;
+}
+
+void ClipNodeData::ToProtobuf(proto::TreeNode* proto) const {
+  DCHECK(!proto->has_clip_node_data());
+  proto::ClipNodeData* data = proto->mutable_clip_node_data();
+
+  RectFToProto(clip, data->mutable_clip());
+  RectFToProto(combined_clip_in_target_space,
+               data->mutable_combined_clip_in_target_space());
+  RectFToProto(clip_in_target_space, data->mutable_clip_in_target_space());
+
+  data->set_transform_id(transform_id);
+  data->set_target_id(target_id);
+  data->set_applies_local_clip(applies_local_clip);
+  data->set_layer_clipping_uses_only_local_clip(
+      layer_clipping_uses_only_local_clip);
+  data->set_target_is_clipped(target_is_clipped);
+  data->set_layers_are_clipped(layers_are_clipped);
+  data->set_layers_are_clipped_when_surfaces_disabled(
+      layers_are_clipped_when_surfaces_disabled);
+  data->set_resets_clip(resets_clip);
+}
+
+void ClipNodeData::FromProtobuf(const proto::TreeNode& proto) {
+  DCHECK(proto.has_clip_node_data());
+  const proto::ClipNodeData& data = proto.clip_node_data();
+
+  clip = ProtoToRectF(data.clip());
+  combined_clip_in_target_space =
+      ProtoToRectF(data.combined_clip_in_target_space());
+  clip_in_target_space = ProtoToRectF(data.clip_in_target_space());
+
+  transform_id = data.transform_id();
+  target_id = data.target_id();
+  applies_local_clip = data.applies_local_clip();
+  layer_clipping_uses_only_local_clip =
+      data.layer_clipping_uses_only_local_clip();
+  target_is_clipped = data.target_is_clipped();
+  layers_are_clipped = data.layers_are_clipped();
+  layers_are_clipped_when_surfaces_disabled =
+      data.layers_are_clipped_when_surfaces_disabled();
+  resets_clip = data.resets_clip();
+}
+
 EffectNodeData::EffectNodeData()
     : opacity(1.f),
       screen_space_opacity(1.f),
       has_render_surface(false),
       transform_id(0),
       clip_id(0) {}
+
+bool EffectNodeData::operator==(const EffectNodeData& other) const {
+  return opacity == other.opacity &&
+         screen_space_opacity == other.screen_space_opacity &&
+         has_render_surface == other.has_render_surface &&
+         transform_id == other.transform_id && clip_id == other.clip_id;
+}
+
+void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
+  DCHECK(!proto->has_effect_node_data());
+  proto::EffectNodeData* data = proto->mutable_effect_node_data();
+  data->set_opacity(opacity);
+  data->set_screen_space_opacity(screen_space_opacity);
+  data->set_has_render_surface(has_render_surface);
+  data->set_transform_id(transform_id);
+  data->set_clip_id(clip_id);
+}
+
+void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
+  DCHECK(proto.has_effect_node_data());
+  const proto::EffectNodeData& data = proto.effect_node_data();
+
+  opacity = data.opacity();
+  screen_space_opacity = data.screen_space_opacity();
+  has_render_surface = data.has_render_surface();
+  transform_id = data.transform_id();
+  clip_id = data.clip_id();
+}
 
 void TransformTree::clear() {
   PropertyTree<TransformNode>::clear();
@@ -624,6 +947,78 @@ bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
   return !nodes_affected_by_outer_viewport_bounds_delta_.empty();
 }
 
+bool TransformTree::operator==(const TransformTree& other) const {
+  return PropertyTree::operator==(other) &&
+         source_to_parent_updates_allowed_ ==
+             other.source_to_parent_updates_allowed() &&
+         page_scale_factor_ == other.page_scale_factor() &&
+         device_scale_factor_ == other.device_scale_factor() &&
+         device_transform_scale_factor_ ==
+             other.device_transform_scale_factor() &&
+         inner_viewport_bounds_delta_ == other.inner_viewport_bounds_delta() &&
+         outer_viewport_bounds_delta_ == other.outer_viewport_bounds_delta() &&
+         nodes_affected_by_inner_viewport_bounds_delta_ ==
+             other.nodes_affected_by_inner_viewport_bounds_delta() &&
+         nodes_affected_by_outer_viewport_bounds_delta_ ==
+             other.nodes_affected_by_outer_viewport_bounds_delta();
+}
+
+void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
+  DCHECK(!proto->has_property_type());
+  proto->set_property_type(proto::PropertyTree::Transform);
+
+  PropertyTree::ToProtobuf(proto);
+  proto::TransformTreeData* data = proto->mutable_transform_tree_data();
+
+  data->set_source_to_parent_updates_allowed(source_to_parent_updates_allowed_);
+  data->set_page_scale_factor(page_scale_factor_);
+  data->set_device_scale_factor(device_scale_factor_);
+  data->set_device_transform_scale_factor(device_transform_scale_factor_);
+
+  Vector2dFToProto(inner_viewport_bounds_delta_,
+                   data->mutable_inner_viewport_bounds_delta());
+  Vector2dFToProto(outer_viewport_bounds_delta_,
+                   data->mutable_outer_viewport_bounds_delta());
+
+  for (auto i : nodes_affected_by_inner_viewport_bounds_delta_)
+    data->add_nodes_affected_by_inner_viewport_bounds_delta(i);
+
+  for (auto i : nodes_affected_by_outer_viewport_bounds_delta_)
+    data->add_nodes_affected_by_outer_viewport_bounds_delta(i);
+}
+
+void TransformTree::FromProtobuf(const proto::PropertyTree& proto) {
+  DCHECK(proto.has_property_type());
+  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Transform);
+
+  PropertyTree::FromProtobuf(proto);
+  const proto::TransformTreeData& data = proto.transform_tree_data();
+
+  source_to_parent_updates_allowed_ = data.source_to_parent_updates_allowed();
+  page_scale_factor_ = data.page_scale_factor();
+  device_scale_factor_ = data.device_scale_factor();
+  device_transform_scale_factor_ = data.device_transform_scale_factor();
+
+  inner_viewport_bounds_delta_ =
+      ProtoToVector2dF(data.inner_viewport_bounds_delta());
+  outer_viewport_bounds_delta_ =
+      ProtoToVector2dF(data.outer_viewport_bounds_delta());
+
+  DCHECK(nodes_affected_by_inner_viewport_bounds_delta_.empty());
+  for (int i = 0; i < data.nodes_affected_by_inner_viewport_bounds_delta_size();
+       ++i) {
+    nodes_affected_by_inner_viewport_bounds_delta_.push_back(
+        data.nodes_affected_by_inner_viewport_bounds_delta(i));
+  }
+
+  DCHECK(nodes_affected_by_outer_viewport_bounds_delta_.empty());
+  for (int i = 0; i < data.nodes_affected_by_outer_viewport_bounds_delta_size();
+       ++i) {
+    nodes_affected_by_outer_viewport_bounds_delta_.push_back(
+        data.nodes_affected_by_outer_viewport_bounds_delta(i));
+  }
+}
+
 void EffectTree::UpdateOpacities(int id) {
   EffectNode* node = Node(id);
   node->data.screen_space_opacity = node->data.opacity;
@@ -660,9 +1055,78 @@ gfx::RectF ClipTree::ViewportClip() {
   return Node(1)->data.clip;
 }
 
+bool ClipTree::operator==(const ClipTree& other) const {
+  return PropertyTree::operator==(other);
+}
+
+void ClipTree::ToProtobuf(proto::PropertyTree* proto) const {
+  DCHECK(!proto->has_property_type());
+  proto->set_property_type(proto::PropertyTree::Clip);
+
+  PropertyTree::ToProtobuf(proto);
+}
+
+void ClipTree::FromProtobuf(const proto::PropertyTree& proto) {
+  DCHECK(proto.has_property_type());
+  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Clip);
+
+  PropertyTree::FromProtobuf(proto);
+}
+
+bool EffectTree::operator==(const EffectTree& other) const {
+  return PropertyTree::operator==(other);
+}
+
+void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
+  DCHECK(!proto->has_property_type());
+  proto->set_property_type(proto::PropertyTree::Effect);
+
+  PropertyTree::ToProtobuf(proto);
+}
+
+void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
+  DCHECK(proto.has_property_type());
+  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Effect);
+
+  PropertyTree::FromProtobuf(proto);
+}
+
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
       non_root_surfaces_enabled(true),
       sequence_number(0) {}
+
+bool PropertyTrees::operator==(const PropertyTrees& other) const {
+  return transform_tree == other.transform_tree &&
+         effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
+         needs_rebuild == other.needs_rebuild &&
+         non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
+         sequence_number == other.sequence_number;
+}
+
+void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
+  // TODO(khushalsagar): Add support for sending diffs when serializaing
+  // property trees. See crbug/555370.
+  transform_tree.ToProtobuf(proto->mutable_transform_tree());
+  effect_tree.ToProtobuf(proto->mutable_effect_tree());
+  clip_tree.ToProtobuf(proto->mutable_clip_tree());
+  proto->set_needs_rebuild(needs_rebuild);
+  proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
+
+  // TODO(khushalsagar): Consider using the sequence number to decide if
+  // property trees need to be serialized again for a commit. See crbug/555370.
+  proto->set_sequence_number(sequence_number);
+}
+
+// static
+void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
+  transform_tree.FromProtobuf(proto.transform_tree());
+  effect_tree.FromProtobuf(proto.effect_tree());
+  clip_tree.FromProtobuf(proto.clip_tree());
+
+  needs_rebuild = proto.needs_rebuild();
+  non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
+  sequence_number = proto.sequence_number();
+}
 
 }  // namespace cc

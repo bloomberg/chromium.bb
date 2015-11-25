@@ -194,29 +194,79 @@ TEST(GfxProtoConversionsTest, SerializeDeserializeTransform) {
 }
 
 TEST(GfxProtoConversionsTest, SerializeDeserializeVector2dF) {
-  const gfx::Vector2dF vector(5.1f, 10.2f);
+  // Test Case 1
+  const gfx::Vector2dF vector1(5.1f, 10.2f);
 
   // Test Vector2dFToProto
-  proto::Vector2dF proto;
-  Vector2dFToProto(vector, &proto);
-  EXPECT_EQ(vector.x(), proto.x());
-  EXPECT_EQ(vector.y(), proto.y());
+  proto::Vector2dF proto1;
+  Vector2dFToProto(vector1, &proto1);
+  EXPECT_EQ(vector1.x(), proto1.x());
+  EXPECT_EQ(vector1.y(), proto1.y());
 
   // Test ProtoToVector2dF
-  EXPECT_EQ(vector, ProtoToVector2dF(proto));
+  EXPECT_EQ(vector1, ProtoToVector2dF(proto1));
+
+  // Test Case 2
+  const gfx::Vector2dF vector2(-3.1f, 0.2f);
+
+  // Test Vector2dFToProto
+  proto::Vector2dF proto2;
+  Vector2dFToProto(vector2, &proto2);
+  EXPECT_EQ(vector2.x(), proto2.x());
+  EXPECT_EQ(vector2.y(), proto2.y());
+
+  // Test ProtoToVector2dF
+  EXPECT_EQ(vector2, ProtoToVector2dF(proto2));
+
+  // Test Case 3
+  const gfx::Vector2dF vector3(2.0f, -1.5f);
+
+  // Test Vector2dFToProto
+  proto::Vector2dF proto3;
+  Vector2dFToProto(vector3, &proto3);
+  EXPECT_EQ(vector3.x(), proto3.x());
+  EXPECT_EQ(vector3.y(), proto3.y());
+
+  // Test ProtoToVector2dF
+  EXPECT_EQ(vector3, ProtoToVector2dF(proto3));
 }
 
 TEST(GfxProtoConversionsTest, SerializeDeserializeScrollOffset) {
-  const gfx::ScrollOffset scroll_offset(5.1f, 10.2f);
+  // Test Case 1
+  const gfx::ScrollOffset scroll_offset1(5.1f, 10.2f);
 
   // Test ScrollOffsetToProto
-  proto::ScrollOffset proto;
-  ScrollOffsetToProto(scroll_offset, &proto);
-  EXPECT_EQ(scroll_offset.x(), proto.x());
-  EXPECT_EQ(scroll_offset.y(), proto.y());
+  proto::ScrollOffset proto1;
+  ScrollOffsetToProto(scroll_offset1, &proto1);
+  EXPECT_EQ(scroll_offset1.x(), proto1.x());
+  EXPECT_EQ(scroll_offset1.y(), proto1.y());
 
   // Test ProtoToScrollOffset
-  EXPECT_EQ(scroll_offset, ProtoToScrollOffset(proto));
+  EXPECT_EQ(scroll_offset1, ProtoToScrollOffset(proto1));
+
+  // Test Case 2
+  const gfx::ScrollOffset scroll_offset2(-0.1f, 0.2f);
+
+  // Test ScrollOffsetToProto
+  proto::ScrollOffset proto2;
+  ScrollOffsetToProto(scroll_offset2, &proto2);
+  EXPECT_EQ(scroll_offset2.x(), proto2.x());
+  EXPECT_EQ(scroll_offset2.y(), proto2.y());
+
+  // Test ProtoToScrollOffset
+  EXPECT_EQ(scroll_offset2, ProtoToScrollOffset(proto2));
+
+  // Test Case 3
+  const gfx::ScrollOffset scroll_offset3(4.0f, -3.2f);
+
+  // Test ScrollOffsetToProto
+  proto::ScrollOffset proto3;
+  ScrollOffsetToProto(scroll_offset3, &proto3);
+  EXPECT_EQ(scroll_offset3.x(), proto3.x());
+  EXPECT_EQ(scroll_offset3.y(), proto3.y());
+
+  // Test ProtoToScrollOffset
+  EXPECT_EQ(scroll_offset3, ProtoToScrollOffset(proto3));
 }
 
 }  // namespace

@@ -594,6 +594,7 @@
         'proto/point.proto',
         'proto/point3f.proto',
         'proto/pointf.proto',
+        'proto/property_tree.proto',
         'proto/rect.proto',
         'proto/rectf.proto',
         'proto/region.proto',

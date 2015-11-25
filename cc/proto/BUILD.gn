@@ -36,6 +36,7 @@ proto_library("proto_internal") {
     "point.proto",
     "point3f.proto",
     "pointf.proto",
+    "property_tree.proto",
     "rect.proto",
     "rectf.proto",
     "region.proto",
