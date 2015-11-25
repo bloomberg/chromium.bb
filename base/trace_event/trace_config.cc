@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_config.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/pattern.h"
@@ -466,7 +468,7 @@ void TraceConfig::AddCategoryToDict(base::DictionaryValue& dict,
     list->AppendString(*ci);
   }
 
-  dict.Set(param, list.Pass());
+  dict.Set(param, std::move(list));
 }
 
 void TraceConfig::SetMemoryDumpConfig(
@@ -558,13 +560,13 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
                                static_cast<int>(config.periodic_interval_ms));
       trigger_dict->SetString(
           kModeParam, MemoryDumpLevelOfDetailToString(config.level_of_detail));
-      triggers_list->Append(trigger_dict.Pass());
+      triggers_list->Append(std::move(trigger_dict));
     }
 
     // Empty triggers will still be specified explicitly since it means that
     // the periodic dumps are not enabled.
-    memory_dump_config->Set(kTriggersParam, triggers_list.Pass());
-    dict.Set(kMemoryDumpConfigParam, memory_dump_config.Pass());
+    memory_dump_config->Set(kTriggersParam, std::move(triggers_list));
+    dict.Set(kMemoryDumpConfigParam, std::move(memory_dump_config));
   }
 }
 

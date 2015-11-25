@@ -127,7 +127,7 @@ scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
   auto original_samples_it = histograms_snapshot_.find(histogram_name);
   if (original_samples_it != histograms_snapshot_.end())
     named_samples->Subtract(*original_samples_it->second);
-  return named_samples.Pass();
+  return named_samples;
 }
 
 void HistogramTester::CheckBucketCount(

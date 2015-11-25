@@ -4,6 +4,8 @@
 
 #include "base/prefs/json_pref_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -73,12 +75,12 @@ void InterceptingPrefFilter::FilterOnLoad(
     const PostFilterOnLoadCallback& post_filter_on_load_callback,
     scoped_ptr<base::DictionaryValue> pref_store_contents) {
   post_filter_on_load_callback_ = post_filter_on_load_callback;
-  intercepted_prefs_ = pref_store_contents.Pass();
+  intercepted_prefs_ = std::move(pref_store_contents);
 }
 
 void InterceptingPrefFilter::ReleasePrefs() {
   EXPECT_FALSE(post_filter_on_load_callback_.is_null());
-  post_filter_on_load_callback_.Run(intercepted_prefs_.Pass(), false);
+  post_filter_on_load_callback_.Run(std::move(intercepted_prefs_), false);
   post_filter_on_load_callback_.Reset();
 }
 
@@ -348,7 +350,7 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
 
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("key", "value");
-  pref_store->SetValue("dict", dict.Pass(),
+  pref_store->SetValue("dict", std::move(dict),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   pref_store->RemoveValue("dict.key",
@@ -392,8 +394,9 @@ TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
       new InterceptingPrefFilter());
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), intercepting_pref_filter.Pass());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_.task_runner(),
+                        std::move(intercepting_pref_filter));
 
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE,
             pref_store->ReadPrefs());
@@ -437,8 +440,9 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
       new InterceptingPrefFilter());
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), intercepting_pref_filter.Pass());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_.task_runner(),
+                        std::move(intercepting_pref_filter));
 
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);

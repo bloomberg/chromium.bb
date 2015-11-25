@@ -231,8 +231,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemory) {
 
   SetUpChild("MachBasedSharedMemoryClient");
 
-  scoped_ptr<SharedMemory> shared_memory(
-      CreateSharedMemory(s_memory_size).Pass());
+  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
   // Send the underlying memory object to the client process.
   SendMachPort(client_port_.get(), shared_memory->handle().GetMemoryObject(),
@@ -383,8 +382,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachReadOnly) {
   if (mac::IsOSSnowLeopard())
     return;
 
-  scoped_ptr<SharedMemory> shared_memory(
-      CreateSharedMemory(s_memory_size).Pass());
+  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
   SharedMemoryHandle shm2 = shared_memory->handle().Duplicate();
   ASSERT_TRUE(shm2.IsValid());
@@ -402,8 +400,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {
-    scoped_ptr<SharedMemory> shared_memory(
-        CreateSharedMemory(s_memory_size).Pass());
+    scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
     SharedMemoryHandle shm2;
     ASSERT_TRUE(shared_memory->ShareToProcess(GetCurrentProcId(), &shm2));
@@ -425,8 +422,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
   if (mac::IsOSSnowLeopard())
     return;
 
-  scoped_ptr<SharedMemory> shared_memory(
-      CreateSharedMemory(s_memory_size).Pass());
+  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
   // Check the protection levels.
   int current_prot, max_prot;
@@ -472,8 +468,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonlyLeak) {
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {
-    scoped_ptr<SharedMemory> shared_memory(
-        CreateSharedMemory(s_memory_size).Pass());
+    scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
     SharedMemoryHandle shm2;
     ASSERT_TRUE(

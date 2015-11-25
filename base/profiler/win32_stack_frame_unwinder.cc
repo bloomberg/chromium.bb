@@ -5,6 +5,7 @@
 #include "base/profiler/win32_stack_frame_unwinder.h"
 
 #include <windows.h>
+#include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
@@ -292,7 +293,6 @@ Win32StackFrameUnwinder::Win32StackFrameUnwinder(
     scoped_ptr<UnwindFunctions> unwind_functions)
     : at_top_frame_(true),
       unwind_info_present_for_all_frames_(true),
-      unwind_functions_(unwind_functions.Pass()) {
-}
+      unwind_functions_(std::move(unwind_functions)) {}
 
 }  // namespace base

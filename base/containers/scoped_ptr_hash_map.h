@@ -82,7 +82,7 @@ class ScopedPtrHashMap {
 
     ScopedPtr ret(it->second);
     it->second = NULL;
-    return ret.Pass();
+    return ret;
   }
 
   ScopedPtr take(const Key& k) {
@@ -100,7 +100,7 @@ class ScopedPtrHashMap {
 
     ScopedPtr ret(it->second);
     data_.erase(it);
-    return ret.Pass();
+    return ret;
   }
 
   ScopedPtr take_and_erase(const Key& k) {

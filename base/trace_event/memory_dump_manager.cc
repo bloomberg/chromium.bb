@@ -5,6 +5,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/base_switches.h"
@@ -306,7 +307,7 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   // Start the thread hop. |dump_providers_| are kept sorted by thread, so
   // ContinueAsyncProcessDump will hop at most once per thread (w.r.t. thread
   // affinity specified by the MemoryDumpProvider(s) in RegisterDumpProvider()).
-  ContinueAsyncProcessDump(pmd_async_state.Pass());
+  ContinueAsyncProcessDump(std::move(pmd_async_state));
 }
 
 // At most one ContinueAsyncProcessDump() can be active at any time for a given
@@ -378,7 +379,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
 
       const bool did_post_task = task_runner->PostTask(
           FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
-                          Unretained(this), Passed(pmd_async_state.Pass())));
+                          Unretained(this), Passed(&pmd_async_state)));
       if (did_post_task)
         return;
 
@@ -430,9 +431,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   }
 
   if (finalize)
-    return FinalizeDumpAndAddToTrace(pmd_async_state.Pass());
+    return FinalizeDumpAndAddToTrace(std::move(pmd_async_state));
 
-  ContinueAsyncProcessDump(pmd_async_state.Pass());
+  ContinueAsyncProcessDump(std::move(pmd_async_state));
 }
 
 // static
@@ -444,7 +445,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
         pmd_async_state->callback_task_runner;
     callback_task_runner->PostTask(
         FROM_HERE, Bind(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
-                        Passed(pmd_async_state.Pass())));
+                        Passed(&pmd_async_state)));
     return;
   }
 
@@ -529,7 +530,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   }
 
   DCHECK(!dump_thread_);
-  dump_thread_ = dump_thread.Pass();
+  dump_thread_ = std::move(dump_thread);
   session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator);
 
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
@@ -583,7 +584,7 @@ void MemoryDumpManager::OnTraceLogDisabled() {
   scoped_ptr<Thread> dump_thread;
   {
     AutoLock lock(lock_);
-    dump_thread = dump_thread_.Pass();
+    dump_thread = std::move(dump_thread_);
     session_state_ = nullptr;
   }
 
@@ -645,7 +646,7 @@ ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
   auto iter = process_dumps.find(pid);
   if (iter == process_dumps.end()) {
     scoped_ptr<ProcessMemoryDump> new_pmd(new ProcessMemoryDump(session_state));
-    iter = process_dumps.insert(pid, new_pmd.Pass()).first;
+    iter = process_dumps.insert(pid, std::move(new_pmd)).first;
   }
   return iter->second;
 }

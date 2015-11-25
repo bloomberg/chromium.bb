@@ -180,26 +180,6 @@ TEST(RefCountedUnitTest, ConvertibleEquality) {
   EXPECT_EQ(p2, p1);
 }
 
-TEST(RefCountedUnitTest, SelfMoveAssignment) {
-  ScopedRefPtrCountBase::reset_count();
-
-  {
-    ScopedRefPtrCountBase *raw = new ScopedRefPtrCountBase();
-    scoped_refptr<ScopedRefPtrCountBase> p(raw);
-    EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
-    EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
-
-    p = p.Pass();
-    EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
-    EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
-    EXPECT_EQ(raw, p.get());
-
-    // p goes out of scope.
-  }
-  EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
-  EXPECT_EQ(1, ScopedRefPtrCountBase::destructor_count());
-}
-
 TEST(RefCountedUnitTest, MoveAssignment1) {
   ScopedRefPtrCountBase::reset_count();
 
@@ -212,7 +192,7 @@ TEST(RefCountedUnitTest, MoveAssignment1) {
     {
       scoped_refptr<ScopedRefPtrCountBase> p2;
 
-      p2 = p1.Pass();
+      p2 = std::move(p1);
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(nullptr, p1.get());
@@ -243,7 +223,7 @@ TEST(RefCountedUnitTest, MoveAssignment2) {
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
 
-      p1 = p2.Pass();
+      p1 = std::move(p2);
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(raw, p1.get());
@@ -274,7 +254,7 @@ TEST(RefCountedUnitTest, MoveAssignmentSameInstance1) {
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
 
-      p1 = p2.Pass();
+      p1 = std::move(p2);
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(raw, p1.get());
@@ -305,7 +285,7 @@ TEST(RefCountedUnitTest, MoveAssignmentSameInstance2) {
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
 
-      p2 = p1.Pass();
+      p2 = std::move(p1);
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(nullptr, p1.get());
@@ -337,7 +317,7 @@ TEST(RefCountedUnitTest, MoveAssignmentDifferentInstances) {
       EXPECT_EQ(2, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
 
-      p1 = p2.Pass();
+      p1 = std::move(p2);
       EXPECT_EQ(2, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(1, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(raw2, p1.get());
@@ -374,7 +354,7 @@ TEST(RefCountedUnitTest, MoveAssignmentDerived) {
       EXPECT_EQ(1, ScopedRefPtrCountDerived::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountDerived::destructor_count());
 
-      p1 = p2.Pass();
+      p1 = std::move(p2);
       EXPECT_EQ(2, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(1, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(1, ScopedRefPtrCountDerived::constructor_count());
@@ -407,7 +387,7 @@ TEST(RefCountedUnitTest, MoveConstructor) {
     EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
 
     {
-      scoped_refptr<ScopedRefPtrCountBase> p2(p1.Pass());
+      scoped_refptr<ScopedRefPtrCountBase> p2(std::move(p1));
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(nullptr, p1.get());
@@ -437,7 +417,7 @@ TEST(RefCountedUnitTest, MoveConstructorDerived) {
     EXPECT_EQ(0, ScopedRefPtrCountDerived::destructor_count());
 
     {
-      scoped_refptr<ScopedRefPtrCountBase> p2(p1.Pass());
+      scoped_refptr<ScopedRefPtrCountBase> p2(std::move(p1));
       EXPECT_EQ(1, ScopedRefPtrCountBase::constructor_count());
       EXPECT_EQ(0, ScopedRefPtrCountBase::destructor_count());
       EXPECT_EQ(1, ScopedRefPtrCountDerived::constructor_count());

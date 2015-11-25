@@ -167,12 +167,12 @@ TEST(ScopedPtrMapTest, Compare) {
 
   // Test the move constructor.
   ScopedPtrMap<int, scoped_ptr<int>, std::greater<int>> scoped_map2(
-      scoped_map1.Pass());
+      std::move(scoped_map1));
   EXPECT_EQ(2u, scoped_map2.size());
   EXPECT_TRUE(scoped_map1.empty());
 
   // Test move assignment.
-  scoped_map1 = scoped_map2.Pass();
+  scoped_map1 = std::move(scoped_map2);
   EXPECT_EQ(2u, scoped_map1.size());
   EXPECT_TRUE(scoped_map2.empty());
 
@@ -203,7 +203,7 @@ TEST(ScopedPtrMapTest, MoveConstruct) {
     EXPECT_FALSE(scoped_map.empty());
 
     ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>> scoped_map_copy(
-        scoped_map.Pass());
+        std::move(scoped_map));
     EXPECT_TRUE(scoped_map.empty());
     EXPECT_FALSE(scoped_map_copy.empty());
     EXPECT_EQ(elem, scoped_map_copy.find(0)->second);
@@ -223,7 +223,7 @@ TEST(ScopedPtrMapTest, MoveAssign) {
     EXPECT_FALSE(scoped_map.empty());
 
     ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>> scoped_map_assign;
-    scoped_map_assign = scoped_map.Pass();
+    scoped_map_assign = std::move(scoped_map);
     EXPECT_TRUE(scoped_map.empty());
     EXPECT_FALSE(scoped_map_assign.empty());
     EXPECT_EQ(elem, scoped_map_assign.find(0)->second);

@@ -5,6 +5,7 @@
 #include "base/message_loop/message_loop.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -417,7 +418,7 @@ void MessageLoop::SetTaskRunner(
   DCHECK_EQ(this, current());
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(!unbound_task_runner_);
-  task_runner_ = task_runner.Pass();
+  task_runner_ = std::move(task_runner);
   SetThreadTaskRunnerHandle();
 }
 

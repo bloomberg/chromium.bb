@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_generic.h"
+
+#include <utility>
 #include <vector>
 
-#include "base/scoped_generic.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -85,10 +87,10 @@ TEST(ScopedGenericTest, ScopedGeneric) {
   EXPECT_EQ(kSecond, values_freed[1]);
   values_freed.clear();
 
-  // Pass constructor.
+  // Move constructor.
   {
     ScopedInt a(kFirst, traits);
-    ScopedInt b(a.Pass());
+    ScopedInt b(std::move(a));
     EXPECT_TRUE(values_freed.empty());  // Nothing should be freed.
     ASSERT_EQ(IntTraits::InvalidValue(), a.get());
     ASSERT_EQ(kFirst, b.get());
@@ -98,11 +100,11 @@ TEST(ScopedGenericTest, ScopedGeneric) {
   ASSERT_EQ(kFirst, values_freed[0]);
   values_freed.clear();
 
-  // Pass assign.
+  // Move assign.
   {
     ScopedInt a(kFirst, traits);
     ScopedInt b(kSecond, traits);
-    b = a.Pass();
+    b = std::move(a);
     ASSERT_EQ(1u, values_freed.size());
     EXPECT_EQ(kSecond, values_freed[0]);
     ASSERT_EQ(IntTraits::InvalidValue(), a.get());

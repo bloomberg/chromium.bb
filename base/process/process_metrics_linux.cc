@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -544,7 +545,7 @@ scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
   res->SetInteger("gem_size", gem_size);
 #endif
 
-  return res.Pass();
+  return std::move(res);
 }
 
 // exposed for testing
@@ -747,7 +748,7 @@ scoped_ptr<Value> SystemDiskInfo::ToValue() const {
   res->SetDouble("io_time", static_cast<double>(io_time));
   res->SetDouble("weighted_io_time", static_cast<double>(weighted_io_time));
 
-  return res.Pass();
+  return std::move(res);
 }
 
 bool IsValidDiskName(const std::string& candidate) {
@@ -872,7 +873,7 @@ scoped_ptr<Value> SwapInfo::ToValue() const {
   else
     res->SetDouble("compression_ratio", 0);
 
-  return res.Pass();
+  return std::move(res);
 }
 
 void GetSwapInfo(SwapInfo* swap_info) {

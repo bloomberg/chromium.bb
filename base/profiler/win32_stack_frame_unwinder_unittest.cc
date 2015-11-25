@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/profiler/win32_stack_frame_unwinder.h"
+
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/win32_stack_frame_unwinder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -197,7 +199,8 @@ scoped_ptr<Win32StackFrameUnwinder>
 Win32StackFrameUnwinderTest::CreateUnwinder() {
   scoped_ptr<TestUnwindFunctions> unwind_functions(new TestUnwindFunctions);
   unwind_functions_ = unwind_functions.get();
-  return make_scoped_ptr(new Win32StackFrameUnwinder(unwind_functions.Pass()));
+  return make_scoped_ptr(
+      new Win32StackFrameUnwinder(std::move(unwind_functions)));
 }
 
 // Checks the case where all frames have unwind information.

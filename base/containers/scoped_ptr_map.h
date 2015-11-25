@@ -116,7 +116,7 @@ class ScopedPtrMap {
     ScopedPtr ret(position->second);
     // Key-based lookup (cannot use const_iterator overload in C++03 library).
     data_.erase(position->first);
-    return ret.Pass();
+    return ret;
   }
 
   // Like |erase()|, but returns the element instead of deleting it.
@@ -127,7 +127,7 @@ class ScopedPtrMap {
 
     ScopedPtr ret(it->second);
     data_.erase(it);
-    return ret.Pass();
+    return ret;
   }
 
  private:

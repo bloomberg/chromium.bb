@@ -37,42 +37,43 @@
 // in that they are "movable but not copyable."  You can use the scopers in
 // the parameter and return types of functions to signify ownership transfer
 // in to and out of a function.  When calling a function that has a scoper
-// as the argument type, it must be called with the result of an analogous
-// scoper's Pass() function or another function that generates a temporary;
-// passing by copy will NOT work.  Here is an example using scoped_ptr:
+// as the argument type, it must be called with an rvalue of a scoper, which
+// can be created by using std::move(), or the result of another function that
+// generates a temporary; passing by copy will NOT work.  Here is an example
+// using scoped_ptr:
 //
 //   void TakesOwnership(scoped_ptr<Foo> arg) {
-//     // Do something with arg
+//     // Do something with arg.
 //   }
 //   scoped_ptr<Foo> CreateFoo() {
-//     // No need for calling Pass() because we are constructing a temporary
-//     // for the return value.
+//     // No need for calling std::move() for returning a move-only value, or
+//     // when you already have an rvalue as we do here.
 //     return scoped_ptr<Foo>(new Foo("new"));
 //   }
 //   scoped_ptr<Foo> PassThru(scoped_ptr<Foo> arg) {
-//     return arg.Pass();
+//     return arg;
 //   }
 //
 //   {
 //     scoped_ptr<Foo> ptr(new Foo("yay"));  // ptr manages Foo("yay").
-//     TakesOwnership(ptr.Pass());           // ptr no longer owns Foo("yay").
+//     TakesOwnership(std::move(ptr));       // ptr no longer owns Foo("yay").
 //     scoped_ptr<Foo> ptr2 = CreateFoo();   // ptr2 owns the return Foo.
 //     scoped_ptr<Foo> ptr3 =                // ptr3 now owns what was in ptr2.
-//         PassThru(ptr2.Pass());            // ptr2 is correspondingly nullptr.
+//         PassThru(std::move(ptr2));        // ptr2 is correspondingly nullptr.
 //   }
 //
-// Notice that if you do not call Pass() when returning from PassThru(), or
+// Notice that if you do not call std::move() when returning from PassThru(), or
 // when invoking TakesOwnership(), the code will not compile because scopers
 // are not copyable; they only implement move semantics which require calling
-// the Pass() function to signify a destructive transfer of state. CreateFoo()
-// is different though because we are constructing a temporary on the return
-// line and thus can avoid needing to call Pass().
+// the std::move() function to signify a destructive transfer of state.
+// CreateFoo() is different though because we are constructing a temporary on
+// the return line and thus can avoid needing to call std::move().
 //
-// Pass() properly handles upcast in initialization, i.e. you can use a
-// scoped_ptr<Child> to initialize a scoped_ptr<Parent>:
+// The conversion move-constructor properly handles upcast in initialization,
+// i.e. you can use a scoped_ptr<Child> to initialize a scoped_ptr<Parent>:
 //
 //   scoped_ptr<Foo> foo(new Foo());
-//   scoped_ptr<FooParent> parent(foo.Pass());
+//   scoped_ptr<FooParent> parent(std::move(foo));
 
 #ifndef BASE_MEMORY_SCOPED_PTR_H_
 #define BASE_MEMORY_SCOPED_PTR_H_

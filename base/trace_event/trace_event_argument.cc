@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_event_argument.h"
 
+#include <utility>
+
 #include "base/bits.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
@@ -439,7 +441,7 @@ scoped_ptr<base::Value> TracedValue::ToBaseValue() const {
     }
   }
   DCHECK(stack.empty());
-  return root.Pass();
+  return std::move(root);
 }
 
 void TracedValue::AppendAsTraceFormat(std::string* out) const {

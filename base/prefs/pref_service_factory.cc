@@ -59,7 +59,7 @@ scoped_ptr<PrefService> PrefServiceFactory::Create(
                       pref_registry,
                       read_error_callback_,
                       async_));
-  return pref_service.Pass();
+  return pref_service;
 }
 
 }  // namespace base

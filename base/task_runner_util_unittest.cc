@@ -4,6 +4,8 @@
 
 #include "base/task_runner_util.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -40,7 +42,7 @@ scoped_ptr<Foo> CreateFoo() {
 
 void ExpectFoo(scoped_ptr<Foo> foo) {
   EXPECT_TRUE(foo.get());
-  scoped_ptr<Foo> local_foo(foo.Pass());
+  scoped_ptr<Foo> local_foo(std::move(foo));
   EXPECT_TRUE(local_foo.get());
   EXPECT_FALSE(foo.get());
 }
@@ -58,7 +60,7 @@ scoped_ptr<Foo, FooDeleter> CreateScopedFoo() {
 
 void ExpectScopedFoo(scoped_ptr<Foo, FooDeleter> foo) {
   EXPECT_TRUE(foo.get());
-  scoped_ptr<Foo, FooDeleter> local_foo(foo.Pass());
+  scoped_ptr<Foo, FooDeleter> local_foo(std::move(foo));
   EXPECT_TRUE(local_foo.get());
   EXPECT_FALSE(foo.get());
 }

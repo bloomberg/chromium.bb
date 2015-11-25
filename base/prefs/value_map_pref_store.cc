@@ -5,6 +5,7 @@
 #include "base/prefs/value_map_pref_store.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -31,7 +32,7 @@ bool ValueMapPrefStore::HasObservers() const {
 void ValueMapPrefStore::SetValue(const std::string& key,
                                  scoped_ptr<base::Value> value,
                                  uint32 flags) {
-  if (prefs_.SetValue(key, value.Pass()))
+  if (prefs_.SetValue(key, std::move(value)))
     FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
 
@@ -53,7 +54,7 @@ void ValueMapPrefStore::ReportValueChanged(const std::string& key,
 void ValueMapPrefStore::SetValueSilently(const std::string& key,
                                          scoped_ptr<base::Value> value,
                                          uint32 flags) {
-  prefs_.SetValue(key, value.Pass());
+  prefs_.SetValue(key, std::move(value));
 }
 
 ValueMapPrefStore::~ValueMapPrefStore() {}

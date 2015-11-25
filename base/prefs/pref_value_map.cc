@@ -5,6 +5,7 @@
 #include "base/prefs/pref_value_map.h"
 
 #include <map>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -40,7 +41,7 @@ bool PrefValueMap::SetValue(const std::string& key,
   if (old_value && value->Equals(old_value))
     return false;
 
-  prefs_.set(key, value.Pass());
+  prefs_.set(key, std::move(value));
   return true;
 }
 

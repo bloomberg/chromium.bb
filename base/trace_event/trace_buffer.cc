@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_buffer.h"
 
+#include <utility>
+
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/trace_event_impl.h"
 
@@ -105,7 +107,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
       TraceBufferChunk* chunk = chunks_[chunk_index];
       cloned_buffer->chunks_.push_back(chunk ? chunk->Clone().release() : NULL);
     }
-    return cloned_buffer.Pass();
+    return std::move(cloned_buffer);
   }
 
   void EstimateTraceMemoryOverhead(
@@ -309,7 +311,7 @@ scoped_ptr<TraceBufferChunk> TraceBufferChunk::Clone() const {
   cloned_chunk->next_free_ = next_free_;
   for (size_t i = 0; i < next_free_; ++i)
     cloned_chunk->chunk_[i].CopyFrom(chunk_[i]);
-  return cloned_chunk.Pass();
+  return cloned_chunk;
 }
 
 void TraceBufferChunk::EstimateTraceMemoryOverhead(

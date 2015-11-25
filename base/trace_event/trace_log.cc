@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -328,7 +329,7 @@ void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
   trace_log_->lock_.AssertAcquired();
   if (trace_log_->CheckGeneration(generation_)) {
     // Return the chunk to the buffer only if the generation matches.
-    trace_log_->logged_events_->ReturnChunk(chunk_index_, chunk_.Pass());
+    trace_log_->logged_events_->ReturnChunk(chunk_index_, std::move(chunk_));
   }
   // Otherwise this method may be called from the destructor, or TraceLog will
   // find the generation mismatch and delete this buffer soon.
@@ -795,7 +796,7 @@ TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
 
   if (thread_shared_chunk_ && thread_shared_chunk_->IsFull()) {
     logged_events_->ReturnChunk(thread_shared_chunk_index_,
-                                thread_shared_chunk_.Pass());
+                                std::move(thread_shared_chunk_));
   }
 
   if (!thread_shared_chunk_) {
@@ -892,7 +893,7 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
 
     if (thread_shared_chunk_) {
       logged_events_->ReturnChunk(thread_shared_chunk_index_,
-                                  thread_shared_chunk_.Pass());
+                                  std::move(thread_shared_chunk_));
     }
 
     if (thread_message_loops_.size()) {
@@ -989,7 +990,7 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
     return;
   }
 
-  ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
+  ConvertTraceEventsToTraceFormat(std::move(previous_logged_events),
                                   flush_output_callback,
                                   argument_filter_predicate);
 }
@@ -1049,9 +1050,9 @@ void TraceLog::FlushButLeaveBufferIntact(
     if (thread_shared_chunk_) {
       // Return the chunk to the main buffer to flush the sampling data.
       logged_events_->ReturnChunk(thread_shared_chunk_index_,
-                                  thread_shared_chunk_.Pass());
+                                  std::move(thread_shared_chunk_));
     }
-    previous_logged_events = logged_events_->CloneForIteration().Pass();
+    previous_logged_events = logged_events_->CloneForIteration();
 
     if (trace_options() & kInternalEnableArgumentFilter) {
       CHECK(!argument_filter_predicate_.is_null());
@@ -1059,7 +1060,7 @@ void TraceLog::FlushButLeaveBufferIntact(
     }
   }  // release lock
 
-  ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
+  ConvertTraceEventsToTraceFormat(std::move(previous_logged_events),
                                   flush_output_callback,
                                   argument_filter_predicate);
 }
@@ -1388,7 +1389,7 @@ void TraceLog::AddMetadataEvent(
       trace_event_internal::kNoId,  // bind_id
       num_args, arg_names, arg_types, arg_values, convertable_values, flags);
   AutoLock lock(lock_);
-  metadata_events_.push_back(trace_event.Pass());
+  metadata_events_.push_back(std::move(trace_event));
 }
 
 // May be called when a COMPELETE event ends and the unfinished event has been

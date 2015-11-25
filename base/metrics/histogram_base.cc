@@ -5,6 +5,7 @@
 #include "base/metrics/histogram_base.h"
 
 #include <climits>
+#include <utility>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -114,8 +115,8 @@ void HistogramBase::WriteJSON(std::string* output) const {
   root.SetInteger("count", count);
   root.SetDouble("sum", static_cast<double>(sum));
   root.SetInteger("flags", flags());
-  root.Set("params", parameters.Pass());
-  root.Set("buckets", buckets.Pass());
+  root.Set("params", std::move(parameters));
+  root.Set("buckets", std::move(buckets));
   root.SetInteger("pid", GetCurrentProcId());
   serializer.Serialize(root);
 }

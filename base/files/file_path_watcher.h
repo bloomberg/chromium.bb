@@ -62,9 +62,8 @@ class BASE_EXPORT FilePathWatcher {
       return task_runner_;
     }
 
-    void set_task_runner(
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-      task_runner_ = task_runner.Pass();
+    void set_task_runner(scoped_refptr<base::SingleThreadTaskRunner> runner) {
+      task_runner_ = std::move(runner);
     }
 
     // Must be called before the PlatformDelegate is deleted.

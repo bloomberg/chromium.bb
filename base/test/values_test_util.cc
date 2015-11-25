@@ -70,7 +70,7 @@ scoped_ptr<Value> ParseJson(base::StringPiece json) {
     ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;
     result = Value::CreateNullValue();
   }
-  return result.Pass();
+  return result;
 }
 
 }  // namespace test

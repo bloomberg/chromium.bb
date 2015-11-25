@@ -4,6 +4,8 @@
 
 #include "base/prefs/testing_pref_store.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
@@ -45,7 +47,7 @@ bool TestingPrefStore::IsInitializationComplete() const {
 void TestingPrefStore::SetValue(const std::string& key,
                                 scoped_ptr<base::Value> value,
                                 uint32 flags) {
-  if (prefs_.SetValue(key, value.Pass())) {
+  if (prefs_.SetValue(key, std::move(value))) {
     committed_ = false;
     NotifyPrefValueChanged(key);
   }
@@ -54,7 +56,7 @@ void TestingPrefStore::SetValue(const std::string& key,
 void TestingPrefStore::SetValueSilently(const std::string& key,
                                         scoped_ptr<base::Value> value,
                                         uint32 flags) {
-  if (prefs_.SetValue(key, value.Pass()))
+  if (prefs_.SetValue(key, std::move(value)))
     committed_ = false;
 }
 

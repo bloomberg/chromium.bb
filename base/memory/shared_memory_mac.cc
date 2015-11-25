@@ -331,7 +331,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   }
   requested_size_ = options.size;
 
-  return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
+  return PrepareMapFile(std::move(fp), std::move(readonly_fd));
 }
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {

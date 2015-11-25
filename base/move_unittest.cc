@@ -24,7 +24,7 @@ class Container {
   Container(const Container& other) = default;
   Container& operator=(const Container& other) = default;
 
-  Container(Container&& other) { value_ = other.value_.Pass(); }
+  Container(Container&& other) { value_ = std::move(other.value_); }
 
   Container& operator=(Container&& other) {
     value_ = other.value_.Pass();

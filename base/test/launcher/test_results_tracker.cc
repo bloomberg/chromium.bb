@@ -4,6 +4,8 @@
 
 #include "base/test/launcher/test_results_tracker.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -226,19 +228,19 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   for (const auto& global_tag : global_tags_) {
     global_tags->AppendString(global_tag);
   }
-  summary_root->Set("global_tags", global_tags.Pass());
+  summary_root->Set("global_tags", std::move(global_tags));
 
   scoped_ptr<ListValue> all_tests(new ListValue);
   for (const auto& test : all_tests_) {
     all_tests->AppendString(test);
   }
-  summary_root->Set("all_tests", all_tests.Pass());
+  summary_root->Set("all_tests", std::move(all_tests));
 
   scoped_ptr<ListValue> disabled_tests(new ListValue);
   for (const auto& disabled_test : disabled_tests_) {
     disabled_tests->AppendString(disabled_test);
   }
-  summary_root->Set("disabled_tests", disabled_tests.Pass());
+  summary_root->Set("disabled_tests", std::move(disabled_tests));
 
   scoped_ptr<ListValue> per_iteration_data(new ListValue);
 
@@ -284,14 +286,14 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
         Base64Encode(test_result.output_snippet, &base64_output_snippet);
         test_result_value->SetString("output_snippet_base64",
                                      base64_output_snippet);
-        test_results->Append(test_result_value.Pass());
+        test_results->Append(std::move(test_result_value));
       }
 
       current_iteration_data->SetWithoutPathExpansion(j->first,
-                                                      test_results.Pass());
+                                                      std::move(test_results));
     }
-    per_iteration_data->Append(current_iteration_data.Pass());
-    summary_root->Set("per_iteration_data", per_iteration_data.Pass());
+    per_iteration_data->Append(std::move(current_iteration_data));
+    summary_root->Set("per_iteration_data", std::move(per_iteration_data));
   }
 
   JSONFileValueSerializer serializer(path);

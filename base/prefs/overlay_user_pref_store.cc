@@ -4,6 +4,8 @@
 
 #include "base/prefs/overlay_user_pref_store.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
@@ -66,11 +68,11 @@ void OverlayUserPrefStore::SetValue(const std::string& key,
                                     scoped_ptr<base::Value> value,
                                     uint32 flags) {
   if (!ShallBeStoredInOverlay(key)) {
-    underlay_->SetValue(GetUnderlayKey(key), value.Pass(), flags);
+    underlay_->SetValue(GetUnderlayKey(key), std::move(value), flags);
     return;
   }
 
-  if (overlay_.SetValue(key, value.Pass()))
+  if (overlay_.SetValue(key, std::move(value)))
     ReportValueChanged(key, flags);
 }
 
@@ -78,11 +80,11 @@ void OverlayUserPrefStore::SetValueSilently(const std::string& key,
                                             scoped_ptr<base::Value> value,
                                             uint32 flags) {
   if (!ShallBeStoredInOverlay(key)) {
-    underlay_->SetValueSilently(GetUnderlayKey(key), value.Pass(), flags);
+    underlay_->SetValueSilently(GetUnderlayKey(key), std::move(value), flags);
     return;
   }
 
-  overlay_.SetValue(key, value.Pass());
+  overlay_.SetValue(key, std::move(value));
 }
 
 void OverlayUserPrefStore::RemoveValue(const std::string& key, uint32 flags) {

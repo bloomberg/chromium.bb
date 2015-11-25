@@ -331,13 +331,13 @@ class scoped_refptr {
   }
 
   scoped_refptr<T>& operator=(scoped_refptr<T>&& r) {
-    scoped_refptr<T>(r.Pass()).swap(*this);
+    scoped_refptr<T>(std::move(r)).swap(*this);
     return *this;
   }
 
   template <typename U>
   scoped_refptr<T>& operator=(scoped_refptr<U>&& r) {
-    scoped_refptr<T>(r.Pass()).swap(*this);
+    scoped_refptr<T>(std::move(r)).swap(*this);
     return *this;
   }
 

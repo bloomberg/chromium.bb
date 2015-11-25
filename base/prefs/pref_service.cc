@@ -5,6 +5,7 @@
 #include "base/prefs/pref_service.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -197,7 +198,7 @@ scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValues() const {
   for (const auto& it : *pref_registry_) {
     out->Set(it.first, GetPreferenceValue(it.first)->CreateDeepCopy());
   }
-  return out.Pass();
+  return out;
 }
 
 scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValuesOmitDefaults()
@@ -210,7 +211,7 @@ scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValuesOmitDefaults()
       continue;
     out->Set(it.first, pref->GetValue()->CreateDeepCopy());
   }
-  return out.Pass();
+  return out;
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -222,7 +223,7 @@ PrefService::GetPreferenceValuesWithoutPathExpansion() const {
     DCHECK(value);
     out->SetWithoutPathExpansion(it.first, value->CreateDeepCopy());
   }
-  return out.Pass();
+  return out;
 }
 
 const PrefService::Preference* PrefService::FindPreference(
@@ -499,7 +500,7 @@ void PrefService::SetUserPrefValue(const std::string& path,
     return;
   }
 
-  user_pref_store_->SetValue(path, owned_value.Pass(), GetWriteFlags(pref));
+  user_pref_store_->SetValue(path, std::move(owned_value), GetWriteFlags(pref));
 }
 
 void PrefService::UpdateCommandLinePrefStore(PrefStore* command_line_store) {

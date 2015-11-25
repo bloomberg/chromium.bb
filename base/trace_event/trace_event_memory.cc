@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_event_memory.h"
 
+#include <utility>
+
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -149,7 +151,7 @@ TraceMemoryController::TraceMemoryController(
     HeapProfilerStartFunction heap_profiler_start_function,
     HeapProfilerStopFunction heap_profiler_stop_function,
     GetHeapProfileFunction get_heap_profile_function)
-    : task_runner_(task_runner.Pass()),
+    : task_runner_(std::move(task_runner)),
       heap_profiler_start_function_(heap_profiler_start_function),
       heap_profiler_stop_function_(heap_profiler_stop_function),
       get_heap_profile_function_(get_heap_profile_function),

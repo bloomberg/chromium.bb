@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/power_monitor/power_monitor.h"
+
+#include <utility>
+
 #include "base/power_monitor/power_monitor_source.h"
 
 namespace base {
@@ -11,7 +14,7 @@ static PowerMonitor* g_power_monitor = NULL;
 
 PowerMonitor::PowerMonitor(scoped_ptr<PowerMonitorSource> source)
     : observers_(new ObserverListThreadSafe<PowerObserver>()),
-      source_(source.Pass()) {
+      source_(std::move(source)) {
   DCHECK(!g_power_monitor);
   g_power_monitor = this;
 }

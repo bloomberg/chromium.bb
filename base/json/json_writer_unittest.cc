@@ -57,10 +57,10 @@ TEST(JSONWriterTest, NestedTypes) {
   scoped_ptr<ListValue> list(new ListValue());
   scoped_ptr<DictionaryValue> inner_dict(new DictionaryValue());
   inner_dict->SetInteger("inner int", 10);
-  list->Append(inner_dict.Pass());
+  list->Append(std::move(inner_dict));
   list->Append(make_scoped_ptr(new ListValue()));
   list->AppendBoolean(true);
-  root_dict.Set("list", list.Pass());
+  root_dict.Set("list", std::move(list));
 
   // Test the pretty-printer.
   EXPECT_TRUE(JSONWriter::Write(root_dict, &output_js));
@@ -92,7 +92,7 @@ TEST(JSONWriterTest, KeysWithPeriods) {
   period_dict.SetIntegerWithoutPathExpansion("c", 2);
   scoped_ptr<DictionaryValue> period_dict2(new DictionaryValue());
   period_dict2->SetIntegerWithoutPathExpansion("g.h.i.j", 1);
-  period_dict.SetWithoutPathExpansion("d.e.f", period_dict2.Pass());
+  period_dict.SetWithoutPathExpansion("d.e.f", std::move(period_dict2));
   EXPECT_TRUE(JSONWriter::Write(period_dict, &output_js));
   EXPECT_EQ("{\"a.b\":3,\"c\":2,\"d.e.f\":{\"g.h.i.j\":1}}", output_js);
 

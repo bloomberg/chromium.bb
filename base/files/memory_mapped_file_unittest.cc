@@ -18,7 +18,7 @@ scoped_ptr<uint8[]> CreateTestBuffer(size_t size, size_t offset) {
   scoped_ptr<uint8[]> buf(new uint8[size]);
   for (size_t i = 0; i < size; ++i)
     buf.get()[i] = static_cast<uint8>((offset + i) % 253);
-  return buf.Pass();
+  return buf;
 }
 
 // Check that the watermark sequence is consistent with the |offset| provided.

@@ -4,6 +4,8 @@
 
 #include "base/prefs/pref_member.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -56,7 +58,7 @@ void PrefMemberBase::MoveToThread(
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
     UpdateValueFromPref(base::Closure());
-  internal()->MoveToThread(task_runner.Pass());
+  internal()->MoveToThread(std::move(task_runner));
 }
 
 void PrefMemberBase::OnPreferenceChanged(PrefService* service,
@@ -124,7 +126,7 @@ void PrefMemberBase::Internal::UpdateValue(
 void PrefMemberBase::Internal::MoveToThread(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   CheckOnCorrectThread();
-  thread_task_runner_ = task_runner.Pass();
+  thread_task_runner_ = std::move(task_runner);
 }
 
 bool PrefMemberVectorStringUpdate(const base::Value& value,

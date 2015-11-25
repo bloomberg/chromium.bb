@@ -5,8 +5,8 @@
 #include "base/files/important_file_writer.h"
 
 #include <stdio.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/critical_closure.h"
@@ -191,7 +191,7 @@ void ImportantFileWriter::DoScheduledWrite() {
   DCHECK(serializer_);
   scoped_ptr<std::string> data(new std::string);
   if (serializer_->SerializeData(data.get())) {
-    WriteNow(data.Pass());
+    WriteNow(std::move(data));
   } else {
     DLOG(WARNING) << "failed to serialize data to be saved in "
                   << path_.value();
