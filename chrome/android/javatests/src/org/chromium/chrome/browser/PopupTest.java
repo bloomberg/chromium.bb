@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -84,7 +85,8 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         }));
         assertEquals(1, selector.getTotalTabCount());
-        ArrayList<InfoBar> infobars = selector.getCurrentTab().getInfoBarContainer().getInfoBars();
+        final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
+        ArrayList<InfoBar> infobars = container.getInfoBars();
         assertEquals(1, infobars.size());
 
         // Wait until the animations are done, then click the "open popups" button.
@@ -92,10 +94,10 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return infobar.areControlsEnabled();
+                return !container.isAnimating();
             }
         }));
-        TouchCommon.singleClickView(infobar.getContentWrapper().findViewById(R.id.button_primary));
+        TouchCommon.singleClickView(infobar.getView().findViewById(R.id.button_primary));
 
         // Document mode popups appear slowly and sequentially to prevent Android from throwing them
         // away, so use a long timeout.  http://crbug.com/498920.

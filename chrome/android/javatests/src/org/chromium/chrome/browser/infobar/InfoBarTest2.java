@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Tests for InfoBars.
  *
- * TODO(newt): merge this with InfoBarTest after upstreaming.
+ * TODO(newt): rename this to InfoBarContainerTest.
  */
 public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
     static class MutableBoolean {

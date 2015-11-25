@@ -88,6 +88,10 @@
     <dimen name="infobar_big_icon_size">48dp</dimen>
     <dimen name="infobar_big_icon_margin">16dp</dimen>
 
+    <dimen name="infobar_shadow_height">10dp</dimen>
+    <dimen name="infobar_peeking_height">10dp</dimen>
+    <dimen name="infobar_peeking_height_with_shadow">20dp</dimen>
+
     <!-- Contextual search dimensions -->
     <dimen name="contextual_search_bar_height">56dp</dimen>
     <dimen name="contextual_search_text_size">18sp</dimen>

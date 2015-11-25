@@ -24,11 +24,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.infobar.AnimationHelper;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -140,12 +140,14 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    private static class InfobarListener implements InfoBarContainer.InfoBarAnimationListener {
+    private static class InfobarListener implements InfoBarAnimationListener {
         private boolean mDoneAnimating;
 
         @Override
         public void notifyAnimationFinished(int animationType) {
-            if (animationType == AnimationHelper.ANIMATION_TYPE_SHOW) mDoneAnimating = true;
+            if (animationType == InfoBarAnimationListener.ANIMATION_TYPE_SHOW) {
+                mDoneAnimating = true;
+            }
         }
     }
 
@@ -218,7 +220,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 if (infobars.size() != 1) return false;
                 if (!(infobars.get(0) instanceof AppBannerInfoBarAndroid)) return false;
 
-                TextView textView = (TextView) infobars.get(0).getContentWrapper().findViewById(
+                TextView textView = (TextView) infobars.get(0).getView().findViewById(
                         R.id.infobar_message);
                 if (textView == null) return false;
                 return TextUtils.equals(textView.getText(), title);
@@ -251,7 +253,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Check that the button asks if the user wants to install the app.
         InfoBar infobar = container.getInfoBars().get(0);
         final Button button =
-                (Button) infobar.getContentWrapper().findViewById(R.id.button_primary);
+                (Button) infobar.getView().findViewById(R.id.button_primary);
         assertEquals(NATIVE_APP_INSTALL_TEXT, button.getText());
 
         // Click the button to trigger the install.
@@ -364,7 +366,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
         }));
         ArrayList<InfoBar> infobars = container.getInfoBars();
-        View close = infobars.get(0).getContentWrapper().findViewById(R.id.infobar_close_button);
+        View close = infobars.get(0).getView().findViewById(R.id.infobar_close_button);
         TouchCommon.singleClickView(close);
         assertTrue(waitUntilNoInfoBarsExist());
 
@@ -487,7 +489,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Click the button to trigger the adding of the shortcut.
         InfoBar infobar = container.getInfoBars().get(0);
         final Button button =
-                (Button) infobar.getContentWrapper().findViewById(R.id.button_primary);
+                (Button) infobar.getView().findViewById(R.id.button_primary);
         TouchCommon.singleClickView(button);
 
         // Make sure that the splash screen icon was downloaded.

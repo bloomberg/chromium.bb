@@ -16,8 +16,6 @@
     <color name="dark_action_bar_color">#263238</color>
 
     <!-- Infobar colors -->
-    <color name="infobar_background">#fff</color>
-    <color name="infobar_background_separator">#afafaf</color>
     <color name="infobar_accent_blue">#4285f4</color>
     <color name="infobar_descriptive_text_color">#646464</color>
 

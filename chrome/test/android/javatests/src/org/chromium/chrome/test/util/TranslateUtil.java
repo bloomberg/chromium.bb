@@ -28,7 +28,7 @@ public class TranslateUtil {
      */
     public static void openLanguagePanel(ActivityInstrumentationTestCase2<?> test,
             InfoBar infoBar) {
-        View view = infoBar.getContentWrapper().findViewById(R.id.infobar_message);
+        View view = infoBar.getView().findViewById(R.id.infobar_message);
         Assert.assertNotNull(view);
 
         TextView text = (TextView) view.findViewById(R.id.infobar_message);
@@ -57,7 +57,7 @@ public class TranslateUtil {
     }
 
     public static void assertInfoBarText(InfoBar infoBar, String expectedText) {
-        View view = infoBar.getContentWrapper().findViewById(R.id.infobar_message);
+        View view = infoBar.getView().findViewById(R.id.infobar_message);
         Assert.assertNotNull(view);
         String actualText = findInfoBarText(view);
         Assert.assertEquals(expectedText, actualText);

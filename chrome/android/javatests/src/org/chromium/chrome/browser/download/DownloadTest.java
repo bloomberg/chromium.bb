@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
-import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
@@ -370,15 +370,13 @@ public class DownloadTest extends DownloadTestBase {
      * @param size The size of info bars to poll for.
      */
     private void assertPollForInfoBarSize(final int size) throws InterruptedException {
+        final InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         assertTrue("There should be " + size + " infobar but there are "
                 + getInfoBars().size() + " infobars.",
                 CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        if (getInfoBars().size() != size) return false;
-                        if (size == 0) return true;
-                        InfoBar infoBar = getInfoBars().get(size - 1);
-                        return infoBar.areControlsEnabled();
+                        return getInfoBars().size() == size && !container.isAnimating();
                     }
                 }));
     }

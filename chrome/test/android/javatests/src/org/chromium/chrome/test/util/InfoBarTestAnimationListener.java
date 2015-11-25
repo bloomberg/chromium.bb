@@ -5,15 +5,14 @@ package org.chromium.chrome.test.util;
 
 import android.os.SystemClock;
 
-import org.chromium.chrome.browser.infobar.AnimationHelper;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * Allow tests to register for animation finished notifications.
  */
-public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAnimationListener {
+public class InfoBarTestAnimationListener implements InfoBarAnimationListener {
 
     private static final long WAIT_MILLIS = TimeUnit.SECONDS.toMillis(5);
 
@@ -69,13 +68,13 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
     @Override
     public void notifyAnimationFinished(int animationType) {
         switch(animationType) {
-            case AnimationHelper.ANIMATION_TYPE_SHOW:
+            case InfoBarAnimationListener.ANIMATION_TYPE_SHOW:
                 mAddAnimationFinished.set(true);
                 break;
-            case AnimationHelper.ANIMATION_TYPE_SWAP:
+            case InfoBarAnimationListener.ANIMATION_TYPE_SWAP:
                 mSwapAnimationFinished.set(true);
                 break;
-            case AnimationHelper.ANIMATION_TYPE_HIDE:
+            case InfoBarAnimationListener.ANIMATION_TYPE_HIDE:
                 mRemoveAnimationFinished.set(true);
                 break;
             default:

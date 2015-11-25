@@ -19,7 +19,7 @@ public class InfoBarUtil {
      * @return True if the View was found.
      */
     private static boolean findButton(InfoBar infoBar, int buttonId, boolean click) {
-        View button = infoBar.getContentWrapper().findViewById(buttonId);
+        View button = infoBar.getView().findViewById(buttonId);
         if (button == null) return false;
         if (click) TouchCommon.singleClickView(button);
         return true;
