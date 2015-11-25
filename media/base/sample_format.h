@@ -22,9 +22,10 @@ enum SampleFormat {
   kSampleFormatPlanarS16,  // Signed 16-bit planar.
   kSampleFormatPlanarF32,  // Float 32-bit planar.
   kSampleFormatPlanarS32,  // Signed 32-bit planar.
+  kSampleFormatS24,        // Signed 24-bit.
 
   // Must always be equal to largest value ever logged.
-  kSampleFormatMax = kSampleFormatPlanarS32,
+  kSampleFormatMax = kSampleFormatS24,
 };
 
 // Returns the number of bytes used per channel for the specified

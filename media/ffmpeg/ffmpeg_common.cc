@@ -74,6 +74,7 @@ static AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
     case AV_CODEC_ID_PCM_U8:
     case AV_CODEC_ID_PCM_S16LE:
     case AV_CODEC_ID_PCM_S24LE:
+    case AV_CODEC_ID_PCM_S32LE:
     case AV_CODEC_ID_PCM_F32LE:
       return kCodecPCM;
     case AV_CODEC_ID_PCM_S16BE:
@@ -117,8 +118,10 @@ static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
           return AV_CODEC_ID_PCM_U8;
         case kSampleFormatS16:
           return AV_CODEC_ID_PCM_S16LE;
-        case kSampleFormatS32:
+        case kSampleFormatS24:
           return AV_CODEC_ID_PCM_S24LE;
+        case kSampleFormatS32:
+          return AV_CODEC_ID_PCM_S32LE;
         case kSampleFormatF32:
           return AV_CODEC_ID_PCM_F32LE;
         default:
@@ -244,14 +247,18 @@ static int VideoCodecProfileToProfileID(VideoCodecProfile profile) {
   return FF_PROFILE_UNKNOWN;
 }
 
-SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format) {
+SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format,
+                                          AVCodecID codec_id) {
   switch (sample_format) {
     case AV_SAMPLE_FMT_U8:
       return kSampleFormatU8;
     case AV_SAMPLE_FMT_S16:
       return kSampleFormatS16;
     case AV_SAMPLE_FMT_S32:
-      return kSampleFormatS32;
+      if (codec_id == AV_CODEC_ID_PCM_S24LE)
+        return kSampleFormatS24;
+      else
+        return kSampleFormatS32;
     case AV_SAMPLE_FMT_FLT:
       return kSampleFormatF32;
     case AV_SAMPLE_FMT_S16P:
@@ -272,6 +279,8 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
       return AV_SAMPLE_FMT_U8;
     case kSampleFormatS16:
       return AV_SAMPLE_FMT_S16;
+    // pcm_s24le is treated as a codec with sample format s32 in ffmpeg
+    case kSampleFormatS24:
     case kSampleFormatS32:
       return AV_SAMPLE_FMT_S32;
     case kSampleFormatF32:
@@ -293,8 +302,8 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);
 
-  SampleFormat sample_format =
-      AVSampleFormatToSampleFormat(codec_context->sample_fmt);
+  SampleFormat sample_format = AVSampleFormatToSampleFormat(
+      codec_context->sample_fmt, codec_context->codec_id);
 
   ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
       codec_context->channel_layout, codec_context->channels);

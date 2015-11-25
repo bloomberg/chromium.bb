@@ -123,7 +123,7 @@ MEDIA_EXPORT AVCodecID VideoCodecToCodecID(VideoCodec video_codec);
 
 // Converts FFmpeg's audio sample format to Chrome's SampleFormat.
 MEDIA_EXPORT SampleFormat
-AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
+AVSampleFormatToSampleFormat(AVSampleFormat sample_format, AVCodecID codec_id);
 
 // Converts FFmpeg's pixel formats to its corresponding supported video format.
 MEDIA_EXPORT VideoPixelFormat

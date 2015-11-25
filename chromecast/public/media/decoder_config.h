@@ -45,9 +45,10 @@ enum SampleFormat {
   kSampleFormatPlanarS16,  // Signed 16-bit planar.
   kSampleFormatPlanarF32,  // Float 32-bit planar.
   kSampleFormatPlanarS32,  // Signed 32-bit planar.
+  kSampleFormatS24,        // Signed 24-bit.
 
   kSampleFormatMin = kUnknownSampleFormat,
-  kSampleFormatMax = kSampleFormatPlanarS32,
+  kSampleFormatMax = kSampleFormatS24,
 };
 
 enum VideoCodec {

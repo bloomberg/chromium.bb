@@ -909,6 +909,14 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
             demuxer_->GetTimelineOffset());
 }
 
+TEST_F(PipelineIntegrationTest, S32PlaybackHashed) {
+  ASSERT_EQ(PIPELINE_OK, Start("sfx_s32le.wav", kHashed));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(std::string(kNullVideoHash), GetVideoHash());
+  EXPECT_HASH_EQ("3.03,2.86,2.99,3.31,3.57,4.06,", GetAudioHash());
+}
+
 TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
   ASSERT_EQ(PIPELINE_OK, Start("sfx_f32le.wav", kHashed));
   Play();

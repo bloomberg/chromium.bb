@@ -463,6 +463,7 @@ static scoped_refptr<AudioBuffer> MakeReadFramesInterleavedTestBuffer(
                                     1,
                                     frames,
                                     base::TimeDelta::FromSeconds(0));
+    case kSampleFormatS24:
     case kSampleFormatS32:
       return MakeAudioBuffer<int32>(kSampleFormatS32,
                                     channel_layout,

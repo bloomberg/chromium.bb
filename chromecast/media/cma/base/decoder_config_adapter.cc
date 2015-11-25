@@ -44,6 +44,8 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
       return kSampleFormatU8;
     case ::media::kSampleFormatS16:
       return kSampleFormatS16;
+    case ::media::kSampleFormatS24:
+      return kSampleFormatS24;
     case ::media::kSampleFormatS32:
       return kSampleFormatS32;
     case ::media::kSampleFormatF32:
@@ -131,6 +133,8 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
       return ::media::kSampleFormatU8;
     case kSampleFormatS16:
       return ::media::kSampleFormatS16;
+    case kSampleFormatS24:
+      return ::media::kSampleFormatS24;
     case kSampleFormatS32:
       return ::media::kSampleFormatS32;
     case kSampleFormatF32:

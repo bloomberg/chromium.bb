@@ -470,18 +470,14 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
       audio_sent_ts_->SetBaseTimestamp(base_ts);
     }
 
-    scoped_refptr<AudioBuffer> buffer =
-        AudioBuffer::CopyFrom(
-            AVSampleFormatToSampleFormat(
-                av_audio_context()->sample_fmt),
-            ChannelLayoutToChromeChannelLayout(
-                av_audio_context()->channel_layout,
-                av_audio_context()->channels),
-            av_audio_context()->channels,
-            av_audio_context()->sample_rate,
-            frames_read,
-            &avframe->data[0],
-            PtsToTimeDelta(avframe->pkt_pts, av_audio_stream()->time_base));
+    scoped_refptr<AudioBuffer> buffer = AudioBuffer::CopyFrom(
+        AVSampleFormatToSampleFormat(av_audio_context()->sample_fmt,
+                                     av_audio_context()->codec_id),
+        ChannelLayoutToChromeChannelLayout(av_audio_context()->channel_layout,
+                                           av_audio_context()->channels),
+        av_audio_context()->channels, av_audio_context()->sample_rate,
+        frames_read, &avframe->data[0],
+        PtsToTimeDelta(avframe->pkt_pts, av_audio_stream()->time_base));
     audio_algo_.EnqueueBuffer(buffer);
     av_frame_unref(avframe);
   } while (packet_temp.size > 0);

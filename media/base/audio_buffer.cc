@@ -315,6 +315,7 @@ void ReadFramesInterleaved(const std::vector<uint8*>& channel_data,
       InterleaveAndConvert<int16, Dest>(
           channel_data, frames_to_copy * channel_count, trim_start, dest_data);
       break;
+    case kSampleFormatS24:
     case kSampleFormatS32:
       InterleaveAndConvert<int32, Dest>(
           channel_data, frames_to_copy * channel_count, trim_start, dest_data);
@@ -402,6 +403,7 @@ void AudioBuffer::TrimRange(int start, int end) {
         break;
       case kSampleFormatU8:
       case kSampleFormatS16:
+      case kSampleFormatS24:
       case kSampleFormatS32:
       case kSampleFormatF32: {
         // Interleaved data can be shifted all at once.

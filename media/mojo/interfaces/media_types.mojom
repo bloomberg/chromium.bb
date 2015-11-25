@@ -86,7 +86,8 @@ enum SampleFormat {
   PlanarS16,
   PlanarF32,
   PlanarS32,
-  Max = PlanarS32,
+  S24,
+  Max = S24,
 };
 
 // See media/base/video_types.h for descriptions.

@@ -17,6 +17,7 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
     case kSampleFormatS16:
     case kSampleFormatPlanarS16:
       return 2;
+    case kSampleFormatS24:
     case kSampleFormatS32:
     case kSampleFormatF32:
     case kSampleFormatPlanarF32:
@@ -36,6 +37,8 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Unsigned 8-bit with bias of 128";
     case kSampleFormatS16:
       return "Signed 16-bit";
+    case kSampleFormatS24:
+      return "Signed 24-bit";
     case kSampleFormatS32:
       return "Signed 32-bit";
     case kSampleFormatF32:
