@@ -6,23 +6,6 @@
 
 namespace net {
 
-SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id)
-    : SpdyFrameWithFinIR(stream_id) {}
-
-SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() {}
-
-SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data)
-    : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {
-  SetDataDeep(data);
-}
-
-SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
-    : SpdyFrameWithFinIR(stream_id),
-      padded_(false),
-      padding_payload_len_(0) {}
-
-SpdyDataIR::~SpdyDataIR() {}
-
 bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
                                      int frame_type_field) {
   switch (version) {
@@ -589,48 +572,6 @@ SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion version,
   return GOAWAY_PROTOCOL_ERROR;
 }
 
-SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {
-  switch (version_number) {
-    case 2:
-      return SPDY2;
-    case 3:
-      return SPDY3;
-    case 4:
-      return HTTP2;
-    default:
-      LOG(DFATAL) << "Unsupported SPDY version number: " << version_number;
-      return SPDY3;
-  }
-}
-
-int SpdyConstants::SerializeMajorVersion(SpdyMajorVersion version) {
-  switch (version) {
-    case SPDY2:
-      return 2;
-    case SPDY3:
-      return 3;
-    case HTTP2:
-      return 4;
-    default:
-      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
-      return -1;
-  }
-}
-
-std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
-  switch (version) {
-    case SPDY2:
-      return "spdy/2";
-    case SPDY3:
-      return "spdy/3";
-    case HTTP2:
-      return "h2";
-    default:
-      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
-      return "spdy/3";
-  }
-}
-
 int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
                                          SpdyGoAwayStatus status) {
   switch (version) {
@@ -759,6 +700,63 @@ int32 SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
   return (version <= SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
 }
 
+SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {
+  switch (version_number) {
+    case 2:
+      return SPDY2;
+    case 3:
+      return SPDY3;
+    case 4:
+      return HTTP2;
+    default:
+      LOG(DFATAL) << "Unsupported SPDY version number: " << version_number;
+      return SPDY3;
+  }
+}
+
+int SpdyConstants::SerializeMajorVersion(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+      return 2;
+    case SPDY3:
+      return 3;
+    case HTTP2:
+      return 4;
+    default:
+      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
+      return -1;
+  }
+}
+
+std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+      return "spdy/2";
+    case SPDY3:
+      return "spdy/3";
+    case HTTP2:
+      return "h2";
+    default:
+      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
+      return "spdy/3";
+  }
+}
+
+SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id)
+    : SpdyFrameWithFinIR(stream_id) {}
+
+SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() {}
+
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data)
+    : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {
+  SetDataDeep(data);
+}
+
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
+    : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {}
+
+SpdyDataIR::~SpdyDataIR() {}
+
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
 }
@@ -806,10 +804,6 @@ SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
 }
 
 SpdyGoAwayIR::~SpdyGoAwayIR() {}
-
-const base::StringPiece& SpdyGoAwayIR::description() const {
-  return description_;
-}
 
 void SpdyGoAwayIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitGoAway(*this);
