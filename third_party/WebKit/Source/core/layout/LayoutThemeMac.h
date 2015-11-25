@@ -156,8 +156,8 @@ public:
     static constexpr float menuListBaseArrowHeight = 4.0f;
     static constexpr float menuListBaseArrowWidth = 5.0f;
     static constexpr float menuListBaseSpaceBetweenArrows = 2.0f;
-    static const int menuListArrowPaddingLeft = 6;
-    static const int menuListArrowPaddingRight = 6;
+    static const int menuListArrowPaddingLeft = 4;
+    static const int menuListArrowPaddingRight = 4;
     static const int sliderThumbWidth = 15;
     static const int sliderThumbHeight = 15;
     static const int sliderThumbShadowBlur = 1;

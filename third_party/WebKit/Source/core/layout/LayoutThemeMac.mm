@@ -812,7 +812,6 @@ void LayoutThemeMac::adjustMenuListStyle(ComputedStyle& style, Element* e) const
     setFontFromControlSize(style, controlSize);
 }
 
-static const int paddingBeforeSeparator = 4;
 static const int baseBorderRadius = 5;
 static const int styledPopupPaddingLeft = 8;
 static const int styledPopupPaddingTop = 1;
@@ -836,7 +835,7 @@ int LayoutThemeMac::popupInternalPaddingRight(const ComputedStyle& style) const
     if (style.appearance() == MenulistButtonPart) {
         float fontScale = style.fontSize() / baseFontSize;
         float arrowWidth = menuListBaseArrowWidth * fontScale;
-        return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingLeft + menuListArrowPaddingRight + paddingBeforeSeparator) * style.effectiveZoom()));
+        return static_cast<int>(ceilf(arrowWidth + (menuListArrowPaddingLeft + menuListArrowPaddingRight) * style.effectiveZoom()));
     }
     return 0;
 }
