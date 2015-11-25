@@ -89,7 +89,8 @@ function ImageLoader() {
  */
 ImageLoader.ALLOWED_CLIENTS = [
   'hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager's extension id.
-  'nlkncpkkdoccmpiclbokaimcnedabhhm'  // Gallery extension id.
+  'nlkncpkkdoccmpiclbokaimcnedabhhm',  // Gallery's extension id.
+  'jcgeabjmjgoblfofpppfkcoakmfobdko',  // Video Player's extension id.
 ];
 
 /**

@@ -314,16 +314,26 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
     var media = new MediaManager(video);
 
-    Promise.all([media.getThumbnail(), media.getToken(false)])
-        .then(function(results) {
-          var url = results[0];
-          var token = results[1];
-          if (url && token) {
-            getRequiredElement('thumbnail').style.backgroundImage =
-                'url(' + url + '&access_token=' + token + ')';
-          } else {
-            getRequiredElement('thumbnail').style.backgroundImage = '';
-          }
+    // Show video's thumbnail if available while loading the video.
+    media.getThumbnail()
+        .then(function(thumbnailUrl) {
+          if (!thumbnailUrl)
+            return Promise.reject();
+
+          return new Promise(function(resolve, reject) {
+            ImageLoaderClient.getInstance().load(
+                thumbnailUrl,
+                function(result) {
+                  if (result.data)
+                    resolve(result.data);
+                  else
+                    reject();
+                });
+          });
+        })
+        .then(function(dataUrl) {
+          getRequiredElement('thumbnail').style.backgroundImage =
+              'url(' + dataUrl + ')';
         })
         .catch(function() {
           // Shows no image on error.
