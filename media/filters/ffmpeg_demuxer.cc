@@ -606,17 +606,23 @@ void FFmpegDemuxerStream::ResetBitstreamConverter() {
 
 void FFmpegDemuxerStream::InitBitstreamConverter() {
 #if defined(USE_PROPRIETARY_CODECS)
-  if (stream_->codec->codec_id == AV_CODEC_ID_H264) {
-    bitstream_converter_.reset(
-        new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
+  switch (stream_->codec->codec_id) {
+    case AV_CODEC_ID_H264:
+      bitstream_converter_.reset(
+          new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
+      break;
 #if defined(ENABLE_HEVC_DEMUXING)
-  } else if (stream_->codec->codec_id == AV_CODEC_ID_HEVC) {
-    bitstream_converter_.reset(
-        new FFmpegH265ToAnnexBBitstreamConverter(stream_->codec));
+    case AV_CODEC_ID_HEVC:
+      bitstream_converter_.reset(
+          new FFmpegH265ToAnnexBBitstreamConverter(stream_->codec));
+      break;
 #endif
-  } else if (stream_->codec->codec_id == AV_CODEC_ID_AAC) {
-    bitstream_converter_.reset(
-        new FFmpegAACBitstreamConverter(stream_->codec));
+    case AV_CODEC_ID_AAC:
+      bitstream_converter_.reset(
+          new FFmpegAACBitstreamConverter(stream_->codec));
+      break;
+    default:
+      break;
   }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 }
