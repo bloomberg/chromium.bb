@@ -983,9 +983,9 @@ host:localhost:$HOST_PORT to device:localhost:$TARGET_PORT!"
 log "Starting gdbserver in the background:"
 GDBSERVER_LOG=$TMPDIR/gdbserver-$TMP_ID.log
 log "adb shell $COMMAND_PREFIX $TARGET_GDBSERVER :$TARGET_PORT \
---attach $PID $COMMAND_SUFFIX"
-("$ADB" shell $COMMAND_PREFIX $TARGET_GDBSERVER :$TARGET_PORT \
- --attach $PID $COMMAND_SUFFIX > $GDBSERVER_LOG 2>&1) &
+  --attach $PID $COMMAND_SUFFIX"
+"$ADB" shell $COMMAND_PREFIX $TARGET_GDBSERVER :$TARGET_PORT \
+  --attach $PID $COMMAND_SUFFIX > $GDBSERVER_LOG 2>&1 &
 GDBSERVER_PID=$!
 echo "$GDBSERVER_PID" > $GDBSERVER_PIDFILE
 log "background job pid: $GDBSERVER_PID"
