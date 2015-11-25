@@ -13,6 +13,7 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
+        'chrome_common_features',
         'browser/devtools/webrtc_device_provider_resources.gyp:webrtc_device_provider_resources',
         'browser/devtools/devtools_protocol_constants.gyp:devtools_protocol_constants',
       ],

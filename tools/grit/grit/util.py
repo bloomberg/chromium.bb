@@ -483,7 +483,8 @@ def ParseDefine(define):
   '''Parses a define argument and returns the name and value.
 
   The format is either "NAME=VAL" or "NAME", using True as the default value.
-  Values of "1" and "0" are transformed to True and False respectively.
+  Values of "1"/"true" and "0"/"false" are transformed to True and False
+  respectively.
 
   Args:
     define: a string of the form "NAME=VAL" or "NAME".
@@ -497,8 +498,8 @@ def ParseDefine(define):
   val = True
   if len(parts) > 1:
     val = parts[1]
-  if val == "1": val = True
-  elif val == "0": val = False
+  if val == "1" or val == "true": val = True
+  elif val == "0" or val == "false": val = False
   return (name, val)
 
 

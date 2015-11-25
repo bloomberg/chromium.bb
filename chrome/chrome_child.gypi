@@ -9,6 +9,7 @@
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
+        'chrome_common_features',
         '../base/base.gyp:base',
         '../content/content.gyp:content_child',
       ],

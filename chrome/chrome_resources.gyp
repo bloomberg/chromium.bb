@@ -2,8 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    'chrome_features.gypi',
+  ],
   'variables': {
+    # Apply Chrome-specific grit settings to all grit actions in this file.
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+    'grit_additional_defines': [ '<@(chrome_grit_defines)' ],
+
     'additional_modules_list_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/internal/additional_modules_list.txt',
   },
   'targets': [

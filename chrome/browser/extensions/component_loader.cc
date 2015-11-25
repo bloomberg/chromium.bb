@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
@@ -382,7 +383,7 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 }
 
 void ComponentLoader::AddGoogleNowExtension() {
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
   const char kEnablePrefix[] = "Enable";
   const char kFieldTrialName[] = "GoogleNow";
   std::string enable_prefix(kEnablePrefix);
@@ -418,7 +419,7 @@ void ComponentLoader::AddGoogleNowExtension() {
   } else {
     DeleteData(google_now_manifest_id, root_directory);
   }
-#endif  // defined(ENABLE_GOOGLE_NOW)
+#endif  // BUILDFLAG(ENABLE_GOOGLE_NOW)
 }
 
 #if defined(OS_CHROMEOS)
