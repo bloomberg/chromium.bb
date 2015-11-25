@@ -121,6 +121,13 @@ source_set("cdm_service") {
     "mojo_type_trait.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "mojo_provision_fetcher.cc",
+      "mojo_provision_fetcher.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 

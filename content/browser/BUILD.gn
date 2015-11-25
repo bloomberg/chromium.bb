@@ -388,6 +388,7 @@ source_set("browser") {
     deps += [
       "//content/public/android:jni",
       "//media",
+      "//media/mojo/interfaces",
       "//mojo/android:libsystem_java",
     ]
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]

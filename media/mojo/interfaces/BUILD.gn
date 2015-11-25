@@ -18,6 +18,10 @@ mojom("interfaces") {
     sources += [ "platform_verification.mojom" ]
   }
 
+  if (is_android) {
+    sources += [ "provision_fetcher.mojom" ]
+  }
+
   deps = [
     "//ui/mojo/geometry:interfaces",
   ]
