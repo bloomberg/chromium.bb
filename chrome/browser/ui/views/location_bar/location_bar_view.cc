@@ -144,7 +144,6 @@ LocationBarView::LocationBarView(Browser* browser,
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
-      dropdown_animation_offset_(0),
       web_contents_null_at_last_refresh_(true) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -1379,10 +1378,6 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
-}
-
-void LocationBarView::SetAnimationOffset(int offset) {
-  dropdown_animation_offset_ = offset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
