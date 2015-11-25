@@ -21,7 +21,7 @@ namespace syncer_v2 {
 // Here is an example:
 // ===
 // void OnReadData(const ModelTypeStore::IdList& id_list,
-//                 const ModelTypeStore::ReadRecordsCallback& callback) {
+//                 const ModelTypeStore::ReadAllDataCallback& callback) {
 //   // Verify id_list here.
 //   // Prepare fake response.
 //   scoped_ptr<ModelTypeStore::RecordList> record_list(
@@ -43,10 +43,9 @@ namespace syncer_v2 {
 class MockModelTypeStore : public ModelTypeStore {
  public:
   // Signatures for all ModelTypeStore virtual functions.
-  typedef base::Callback<void(const ReadRecordsCallback&)>
-      ReadAllRecordsSignature;
-  typedef base::Callback<void(const IdList&, const ReadRecordsCallback&)>
-      ReadRecordsSignature;
+  typedef base::Callback<void(const ReadAllDataCallback&)> ReadAllDataSignature;
+  typedef base::Callback<void(const IdList&, const ReadDataCallback&)>
+      ReadDataSignature;
   typedef base::Callback<void(const ReadMetadataCallback& callback)>
       ReadAllMetadataSignature;
   typedef base::Callback<void(scoped_ptr<WriteBatch>, CallbackWithResult)>
@@ -65,8 +64,8 @@ class MockModelTypeStore : public ModelTypeStore {
 
   // ModelTypeStore implementation.
   void ReadData(const IdList& id_list,
-                const ReadRecordsCallback& callback) override;
-  void ReadAllData(const ReadRecordsCallback& callback) override;
+                const ReadDataCallback& callback) override;
+  void ReadAllData(const ReadAllDataCallback& callback) override;
   void ReadAllMetadata(const ReadMetadataCallback& callback) override;
 
   scoped_ptr<WriteBatch> CreateWriteBatch() override;
@@ -86,8 +85,8 @@ class MockModelTypeStore : public ModelTypeStore {
   void DeleteGlobalMetadata(WriteBatch* write_batch) override;
 
   // Register handler functions.
-  void RegisterReadDataHandler(const ReadRecordsSignature& handler);
-  void RegisterReadAllDataHandler(const ReadAllRecordsSignature& handler);
+  void RegisterReadDataHandler(const ReadDataSignature& handler);
+  void RegisterReadAllDataHandler(const ReadAllDataSignature& handler);
   void RegisterReadAllMetadataHandler(const ReadAllMetadataSignature& handler);
   void RegisterCommitWriteBatchHandler(
       const CommitWriteBatchSignature& handler);
@@ -101,8 +100,8 @@ class MockModelTypeStore : public ModelTypeStore {
       const DeleteGlobalMetadataSignature& handler);
 
  private:
-  ReadRecordsSignature read_data_handler_;
-  ReadAllRecordsSignature read_all_data_handler_;
+  ReadDataSignature read_data_handler_;
+  ReadAllDataSignature read_all_data_handler_;
   ReadAllMetadataSignature read_all_metadata_handler_;
   CommitWriteBatchSignature commit_write_batch_handler_;
   WriteRecordSignature write_data_handler_;

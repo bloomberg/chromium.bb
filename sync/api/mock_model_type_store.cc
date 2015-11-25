@@ -17,17 +17,18 @@ MockModelTypeStore::MockModelTypeStore() {}
 MockModelTypeStore::~MockModelTypeStore() {}
 
 void MockModelTypeStore::ReadData(const IdList& id_list,
-                                  const ReadRecordsCallback& callback) {
+                                  const ReadDataCallback& callback) {
   if (!read_data_handler_.is_null()) {
     read_data_handler_.Run(id_list, callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, Result::SUCCESS,
-                              base::Passed(scoped_ptr<RecordList>())));
+                              base::Passed(scoped_ptr<RecordList>()),
+                              base::Passed(scoped_ptr<IdList>())));
   }
 }
 
-void MockModelTypeStore::ReadAllData(const ReadRecordsCallback& callback) {
+void MockModelTypeStore::ReadAllData(const ReadAllDataCallback& callback) {
   if (!read_all_data_handler_.is_null()) {
     read_all_data_handler_.Run(callback);
   } else {
@@ -107,12 +108,12 @@ void MockModelTypeStore::DeleteGlobalMetadata(WriteBatch* write_batch) {
 }
 
 void MockModelTypeStore::RegisterReadDataHandler(
-    const ReadRecordsSignature& handler) {
+    const ReadDataSignature& handler) {
   read_data_handler_ = handler;
 }
 
 void MockModelTypeStore::RegisterReadAllDataHandler(
-    const ReadAllRecordsSignature& handler) {
+    const ReadAllDataSignature& handler) {
   read_all_data_handler_ = handler;
 }
 

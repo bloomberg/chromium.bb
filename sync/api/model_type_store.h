@@ -70,13 +70,20 @@ class SYNC_EXPORT ModelTypeStore {
   typedef std::vector<Record> RecordList;
   typedef std::vector<std::string> IdList;
 
-  typedef base::Callback<void(Result, scoped_ptr<ModelTypeStore>)> InitCallback;
-  typedef base::Callback<void(Result)> CallbackWithResult;
-  typedef base::Callback<void(Result, scoped_ptr<RecordList>)>
-      ReadRecordsCallback;
-  typedef base::Callback<void(Result,
-                              scoped_ptr<RecordList>,
-                              const std::string&)> ReadMetadataCallback;
+  typedef base::Callback<void(Result result, scoped_ptr<ModelTypeStore> store)>
+      InitCallback;
+  typedef base::Callback<void(Result result)> CallbackWithResult;
+  typedef base::Callback<void(Result result,
+                              scoped_ptr<RecordList> data_records,
+                              scoped_ptr<IdList> missing_id_list)>
+      ReadDataCallback;
+  typedef base::Callback<void(Result result,
+                              scoped_ptr<RecordList> data_records)>
+      ReadAllDataCallback;
+  typedef base::Callback<void(Result result,
+                              scoped_ptr<RecordList> metadata_records,
+                              const std::string& global_metadata)>
+      ReadMetadataCallback;
 
   // Creates store object backed by in-memory leveldb database. It is used in
   // tests.
@@ -90,9 +97,11 @@ class SYNC_EXPORT ModelTypeStore {
   // and RecordList contains some records that were read successfully. There is
   // no guarantee that RecordList will contain all successfully read records in
   // this case.
+  // Callback for ReadData (ReadDataCallback) in addition receives list of ids
+  // that were not found in store (missing_id_list).
   virtual void ReadData(const IdList& id_list,
-                        const ReadRecordsCallback& callback) = 0;
-  virtual void ReadAllData(const ReadRecordsCallback& callback) = 0;
+                        const ReadDataCallback& callback) = 0;
+  virtual void ReadAllData(const ReadAllDataCallback& callback) = 0;
   // ReadMetadataCallback will be invoked with three parameters: result of
   // operation, list of metadata records and global metadata.
   virtual void ReadAllMetadata(const ReadMetadataCallback& callback) = 0;
