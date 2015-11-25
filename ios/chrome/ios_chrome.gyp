@@ -155,8 +155,6 @@
         'browser/autocomplete/in_memory_url_index_factory.h',
         'browser/autocomplete/shortcuts_backend_factory.cc',
         'browser/autocomplete/shortcuts_backend_factory.h',
-        'browser/autofill/autofill_agent_utils.h',
-        'browser/autofill/autofill_agent_utils.mm',
         'browser/autofill/form_input_accessory_view.h',
         'browser/autofill/form_input_accessory_view.mm',
         'browser/autofill/form_input_accessory_view_controller.h',
