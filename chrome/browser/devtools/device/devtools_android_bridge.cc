@@ -266,7 +266,7 @@ DevToolsAndroidBridge::Factory* DevToolsAndroidBridge::Factory::GetInstance() {
 DevToolsAndroidBridge* DevToolsAndroidBridge::Factory::GetForProfile(
     Profile* profile) {
   return static_cast<DevToolsAndroidBridge*>(GetInstance()->
-          GetServiceForBrowserContext(profile, true));
+          GetServiceForBrowserContext(profile->GetOriginalProfile(), true));
 }
 
 DevToolsAndroidBridge::Factory::Factory()
