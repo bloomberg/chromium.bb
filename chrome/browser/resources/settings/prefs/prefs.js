@@ -300,8 +300,9 @@
       if (opt_settingsApi)
         this.settingsApi_ = opt_settingsApi;
 
-      this.settingsApi_.onPrefsChanged.addListener(
-          this.onSettingsPrivatePrefsChanged_.bind(this));
+      /** @private {function(!Array<!chrome.settingsPrivate.PrefObject>)} */
+      this.boundPrefsChanged_ = this.onSettingsPrivatePrefsChanged_.bind(this);
+      this.settingsApi_.onPrefsChanged.addListener(this.boundPrefsChanged_);
       this.settingsApi_.getAllPrefs(
           this.onSettingsPrivatePrefsFetched_.bind(this));
     },
@@ -430,6 +431,8 @@
       this.prefs = undefined;
       this.lastPrefValues_ = {};
       this.initialized_ = false;
+      // Remove the listener added in initialize().
+      this.settingsApi_.onPrefsChanged.removeListener(this.boundPrefsChanged_);
       this.settingsApi_ =
           /** @type {SettingsPrivate} */(chrome.settingsPrivate);
     },
