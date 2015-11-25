@@ -319,7 +319,7 @@ bin_PROGRAMS += \
 	src/tools/linux/md2core/minidump-2-core \
 	src/tools/linux/symupload/minidump_upload \
 	src/tools/linux/symupload/sym_upload \
-	src/tools/mac/dump_syms/dump_syms
+	src/tools/mac/dump_syms/dump_syms_mac
 endif
 endif LINUX_HOST
 
@@ -549,7 +549,7 @@ src_tools_linux_symupload_sym_upload_SOURCES = \
 	src/tools/linux/symupload/sym_upload.cc
 src_tools_linux_symupload_sym_upload_LDADD = -ldl
 
-src_tools_mac_dump_syms_dump_syms_SOURCES = \
+src_tools_mac_dump_syms_dump_syms_mac_SOURCES = \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
 	src/common/dwarf_line_to_module.cc \
@@ -569,7 +569,7 @@ src_tools_mac_dump_syms_dump_syms_SOURCES = \
 	src/common/mac/macho_utilities.cc \
 	src/common/mac/macho_walker.cc \
 	src/tools/mac/dump_syms/dump_syms_tool.cc
-src_tools_mac_dump_syms_dump_syms_CXXFLAGS= \
+src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS= \
 	-I$(top_srcdir)/src/third_party/mac_headers \
 	-DHAVE_MACH_O_NLIST_H
 
