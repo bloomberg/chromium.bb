@@ -11,6 +11,7 @@
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
+#include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,18 +25,14 @@ const char kRendererMain[] = "RendererMain";
 const char kCreateWidget[] = "CreateWidget";
 const char kInitialize[] = "Initialize";
 
+const char kInt[] = "int";
+const char kBool[] = "bool";
+const char kString[] = "string";
+
 }  // namespace
 
 namespace base {
 namespace trace_event {
-
-void AssertStringEq(const DictionaryValue* entry,
-                    const char* key,
-                    const char* expected_value) {
-  std::string str;
-  ASSERT_TRUE(entry->GetString(key, &str));
-  ASSERT_EQ(expected_value, str);
-}
 
 // Asserts that an integer stored in the json as a string has the correct value.
 void AssertIntEq(const DictionaryValue* entry,
@@ -53,45 +50,46 @@ scoped_ptr<Value> DumpAndReadBack(HeapDumpWriter* writer) {
   return JSONReader::Read(json);
 }
 
-TEST(HeapDumpWriterTest, BacktraceTypeIdTable) {
-  auto deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
-  HeapDumpWriter writer(deduplicator.get());
+TEST(HeapDumpWriterTest, BacktraceTypeNameTable) {
+  auto sf_deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
+  auto tn_deduplicator = make_scoped_refptr(new TypeNameDeduplicator);
+  HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
 
   AllocationContext ctx = AllocationContext::Empty();
   ctx.backtrace.frames[0] = kBrowserMain;
   ctx.backtrace.frames[1] = kCreateWidget;
-  ctx.type_id = 1;
+  ctx.type_name = kInt;
 
-  // 10 bytes with context { type: 1, bt: [BrowserMain, CreateWidget] }.
+  // 10 bytes with context { type: int, bt: [BrowserMain, CreateWidget] }.
   writer.InsertAllocation(ctx, 2);
   writer.InsertAllocation(ctx, 3);
   writer.InsertAllocation(ctx, 5);
 
-  ctx.type_id = 2;
+  ctx.type_name = kBool;
 
-  // 18 bytes with context { type: 2, bt: [BrowserMain, CreateWidget] }.
+  // 18 bytes with context { type: bool, bt: [BrowserMain, CreateWidget] }.
   writer.InsertAllocation(ctx, 7);
   writer.InsertAllocation(ctx, 11);
 
   ctx.backtrace.frames[0] = kRendererMain;
   ctx.backtrace.frames[1] = kInitialize;
 
-  // 30 bytes with context { type: 2, bt: [RendererMain, Initialize] }.
+  // 30 bytes with context { type: bool, bt: [RendererMain, Initialize] }.
   writer.InsertAllocation(ctx, 13);
   writer.InsertAllocation(ctx, 17);
 
-  ctx.type_id = 3;
+  ctx.type_name = kString;
 
-  // 19 bytes with context { type: 3, bt: [RendererMain, Initialize] }.
+  // 19 bytes with context { type: string, bt: [RendererMain, Initialize] }.
   writer.InsertAllocation(ctx, 19);
 
   // At this point the heap looks like this:
   //
   // |        | CrWidget <- BrMain | Init <- RenMain | Sum |
   // +--------+--------------------+-----------------+-----+
-  // | Type 1 |                 10 |               0 |  10 |
-  // | Type 2 |                 18 |              30 |  48 |
-  // | Type 3 |                  0 |              19 |  19 |
+  // | int    |                 10 |               0 |  10 |
+  // | bool   |                 18 |              30 |  48 |
+  // | string |                  0 |              19 |  19 |
   // +--------+--------------------+-----------------+-----+
   // | Sum    |                 28 |              49 |  77 |
 
@@ -103,18 +101,21 @@ TEST(HeapDumpWriterTest, BacktraceTypeIdTable) {
   //     { "size": "4d" },                                    // 77 = 0x4d.
   //     { "size": "31", "bt": "id_of(Init <- RenMain)" },    // 49 = 0x31.
   //     { "size": "1c", "bt": "id_of(CrWidget <- BrMain)" }, // 28 = 0x1c.
-  //     { "size": "30", "type": "2" },                       // 48 = 0x30.
-  //     { "size": "13", "type": "3" },                       // 19 = 0x13.
-  //     { "size": "a", "type": "1" }                         // 10 = 0xa.
+  //     { "size": "30", "type": "id_of(bool)" },             // 48 = 0x30.
+  //     { "size": "13", "type": "id_of(string)" },           // 19 = 0x13.
+  //     { "size": "a", "type": "id_of(int)" }                // 10 = 0xa.
   //   ]
   // }
 
-  // Get the indices of the backtraces by adding them again to the deduplicator.
-  // Because they were added before, the same number is returned.
+  // Get the indices of the backtraces and types by adding them again to the
+  // deduplicator. Because they were added before, the same number is returned.
   int bt_renderer_main_initialize =
-      deduplicator->Insert({{kRendererMain, kInitialize}});
+      sf_deduplicator->Insert({{kRendererMain, kInitialize}});
   int bt_browser_main_create_widget =
-      deduplicator->Insert({{kBrowserMain, kCreateWidget}});
+      sf_deduplicator->Insert({{kBrowserMain, kCreateWidget}});
+  int type_id_int = tn_deduplicator->Insert(kInt);
+  int type_id_bool = tn_deduplicator->Insert(kBool);
+  int type_id_string = tn_deduplicator->Insert(kString);
 
   const DictionaryValue* dictionary;
   ASSERT_TRUE(heap_dump->GetAsDictionary(&dictionary));
@@ -154,19 +155,19 @@ TEST(HeapDumpWriterTest, BacktraceTypeIdTable) {
       AssertIntEq(entry, "bt", bt_browser_main_create_widget);
       x1c_seen++;
     } else if (size == "30") {
-      // Entry for type ID 2.
+      // Entry for type bool.
       ASSERT_EQ(2u, entry->size());  // Dictionary must have two elements.
-      AssertStringEq(entry, "type", "2");
+      AssertIntEq(entry, "type", type_id_bool);
       x30_seen++;
     } else if (size == "13") {
-      // Entry for type ID 3.
+      // Entry for type string.
       ASSERT_EQ(2u, entry->size());  // Dictionary must have two elements.
-      AssertStringEq(entry, "type", "3");
+      AssertIntEq(entry, "type", type_id_string);
       x13_seen++;
     } else if (size == "a") {
-      // Entry for type ID 1.
+      // Entry for type int.
       ASSERT_EQ(2u, entry->size());  // Dictionary must have two elements.
-      AssertStringEq(entry, "type", "1");
+      AssertIntEq(entry, "type", type_id_int);
       xa_seen++;
     }
   }
@@ -180,14 +181,15 @@ TEST(HeapDumpWriterTest, BacktraceTypeIdTable) {
 }
 
 // Test that the entry for the empty backtrace ends up in the json with the
-// "bt" field set to the empty string. Also test that the entry for "unknown
-// type" (type ID 0) ends up in the json with the "type" field set to the empty
-// string.
-TEST(HeapDumpWriterTest, EmptyBacktraceIndexAndUnknownTypeIdAreEmptyString) {
-  auto deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
-  HeapDumpWriter writer(deduplicator.get());
+// "bt" field set to the empty string. Also test that an entry for "unknown
+// type" (nullptr type name) does not dereference the null pointer when writing
+// the type names, and that the type ID is 0.
+TEST(HeapDumpWriterTest, EmptyBacktraceIndexIsEmptyString) {
+  auto sf_deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
+  auto tn_deduplicator = make_scoped_refptr(new TypeNameDeduplicator);
+  HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
 
-  // A context with empty backtrace and type ID 0 (unknown type).
+  // A context with empty backtrace and unknown type (nullptr).
   AllocationContext ctx = AllocationContext::Empty();
 
   writer.InsertAllocation(ctx, 1);
@@ -218,7 +220,7 @@ TEST(HeapDumpWriterTest, EmptyBacktraceIndexAndUnknownTypeIdAreEmptyString) {
     if (entry->HasKey("type") && entry->size() == 2) {
       std::string type_id;
       ASSERT_TRUE(entry->GetString("type", &type_id));
-      ASSERT_EQ("", type_id);
+      ASSERT_EQ("0", type_id);
       unknown_type_seen++;
     }
   }

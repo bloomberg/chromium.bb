@@ -76,7 +76,8 @@ bool WebMemoryDumpProviderAdapter::OnMemoryDump(
   if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED &&
       web_memory_dump_provider_->supportsHeapProfiling() &&
       g_heap_profiling_enabled) {
-    HeapDumpWriter writer(pmd->session_state()->stack_frame_deduplicator());
+    HeapDumpWriter writer(pmd->session_state()->stack_frame_deduplicator(),
+                          pmd->session_state()->type_name_deduplicator());
     TraceEventMemoryOverhead overhead;
 
     {

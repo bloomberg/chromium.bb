@@ -52,17 +52,16 @@ bool BASE_EXPORT operator==(const Backtrace& lhs, const Backtrace& rhs);
 // static lifetime.
 struct BASE_EXPORT AllocationContext {
  public:
-  // A type ID is a number that is unique for every C++ type. A type ID is
-  // stored instead of the type name to avoid inflating the binary with type
-  // name strings. There is an out of band lookup table mapping IDs to the type
-  // names. A value of 0 means that the type is not known.
-  using TypeId = uint16_t;
-
-  // An allocation context with empty backtrace and type ID 0 (unknown type).
+  // An allocation context with empty backtrace and unknown type.
   static AllocationContext Empty();
 
   Backtrace backtrace;
-  TypeId type_id;
+
+  // Type name of the type stored in the allocated memory. A null pointer
+  // indicates "unknown type". Grouping is done by comparing pointers, not by
+  // deep string comparison. In a component build, where a type name can have a
+  // string literal in several dynamic libraries, this may distort grouping.
+  const char* type_name;
 
  private:
   friend class AllocationContextTracker;

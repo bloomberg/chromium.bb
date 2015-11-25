@@ -12,12 +12,11 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
+#include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 namespace trace_event {
-
-using TypeId = AllocationContext::TypeId;
 
 namespace {
 
@@ -41,9 +40,11 @@ std::vector<std::pair<T, size_t>> SortBySizeDescending(
 
 }  // namespace
 
-HeapDumpWriter::HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator)
+HeapDumpWriter::HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator,
+                               TypeNameDeduplicator* type_name_deduplicator)
     : traced_value_(new TracedValue()),
-      stack_frame_deduplicator_(stack_frame_deduplicator) {}
+      stack_frame_deduplicator_(stack_frame_deduplicator),
+      type_name_deduplicator_(type_name_deduplicator) {}
 
 HeapDumpWriter::~HeapDumpWriter() {}
 
@@ -57,12 +58,12 @@ scoped_refptr<TracedValue> HeapDumpWriter::WriteHeapDump() {
   // iterating anyway.
   size_t total_size = 0;
   hash_map<Backtrace, size_t> bytes_by_backtrace;
-  hash_map<TypeId, size_t> bytes_by_type;
+  hash_map<const char*, size_t> bytes_by_type;
 
   for (auto context_size : bytes_by_context_) {
     total_size += context_size.second;
     bytes_by_backtrace[context_size.first.backtrace] += context_size.second;
-    bytes_by_type[context_size.first.type_id] += context_size.second;
+    bytes_by_type[context_size.first.type_name] += context_size.second;
   }
 
   auto sorted_bytes_by_backtrace = SortBySizeDescending(bytes_by_backtrace);
@@ -90,7 +91,9 @@ scoped_refptr<TracedValue> HeapDumpWriter::WriteHeapDump() {
   // Entries with the size per type.
   for (const auto& entry : sorted_bytes_by_type) {
     traced_value_->BeginDictionary();
-    WriteTypeId(entry.first);
+    // Insert a forward reference to the type name that will be written to the
+    // trace when it is flushed.
+    WriteTypeId(type_name_deduplicator_->Insert(entry.first));
     WriteSize(entry.second);
     traced_value_->EndDictionary();
   }
@@ -113,17 +116,10 @@ void HeapDumpWriter::WriteStackFrameIndex(int index) {
   }
 }
 
-void HeapDumpWriter::WriteTypeId(TypeId type_id) {
-  if (type_id == 0) {
-    // Type ID 0 represents "unknown type". Instead of writing it as "0" which
-    // could be mistaken for an actual type ID, an unknown type is represented
-    // by the empty string.
-    traced_value_->SetString("type", "");
-  } else {
-    // Format the type ID as a string.
-    SStringPrintf(&buffer_, "%" PRIu16, type_id);
-    traced_value_->SetString("type", buffer_);
-  }
+void HeapDumpWriter::WriteTypeId(int type_id) {
+  // Format the type ID as a string.
+  SStringPrintf(&buffer_, "%i", type_id);
+  traced_value_->SetString("type", buffer_);
 }
 
 void HeapDumpWriter::WriteSize(size_t size) {

@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
+#include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
@@ -519,19 +520,26 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   DCHECK(delegate_);  // At this point we must have a delegate.
 
   scoped_refptr<StackFrameDeduplicator> stack_frame_deduplicator = nullptr;
+  scoped_refptr<TypeNameDeduplicator> type_name_deduplicator = nullptr;
 
   if (heap_profiling_enabled_) {
-    // If heap profiling is enabled, the stack frame deduplicator will be in
-    // use. Add a metadata event to write its frames.
+    // If heap profiling is enabled, the stack frame deduplicator and type name
+    // deduplicator will be in use. Add a metadata events to write the frames
+    // and type IDs.
     stack_frame_deduplicator = new StackFrameDeduplicator;
+    type_name_deduplicator = new TypeNameDeduplicator;
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         "stackFrames", "stackFrames",
         scoped_refptr<ConvertableToTraceFormat>(stack_frame_deduplicator));
+    TRACE_EVENT_API_ADD_METADATA_EVENT(
+        "typeNames", "typeNames",
+        scoped_refptr<ConvertableToTraceFormat>(type_name_deduplicator));
   }
 
   DCHECK(!dump_thread_);
   dump_thread_ = std::move(dump_thread);
-  session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator);
+  session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator,
+                                              type_name_deduplicator);
 
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
     it->disabled = false;

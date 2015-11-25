@@ -106,7 +106,7 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
     std::fill(dst, dst_end, nullptr);
   }
 
-  ctx.type_id = 0;
+  ctx.type_name = nullptr;
 
   return ctx;
 }

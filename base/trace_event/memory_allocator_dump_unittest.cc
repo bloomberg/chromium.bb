@@ -125,7 +125,7 @@ TEST(MemoryAllocatorDumpTest, GuidGeneration) {
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr));
+  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr, nullptr));
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
 
   fmadp.OnMemoryDump(dump_args, &pmd);
@@ -172,7 +172,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
 #if !defined(NDEBUG) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST(MemoryAllocatorDumpTest, ForbidDuplicatesDeathTest) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr));
+  ProcessMemoryDump pmd(new MemoryDumpSessionState(nullptr, nullptr));
   pmd.CreateAllocatorDump("foo_allocator");
   pmd.CreateAllocatorDump("bar_allocator/heap");
   ASSERT_DEATH(pmd.CreateAllocatorDump("foo_allocator"), "");

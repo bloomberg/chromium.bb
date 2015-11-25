@@ -8,8 +8,10 @@ namespace base {
 namespace trace_event {
 
 MemoryDumpSessionState::MemoryDumpSessionState(
-    const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator)
-    : stack_frame_deduplicator_(stack_frame_deduplicator) {}
+    const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator,
+    const scoped_refptr<TypeNameDeduplicator>& type_name_deduplicator)
+    : stack_frame_deduplicator_(stack_frame_deduplicator),
+      type_name_deduplicator_(type_name_deduplicator) {}
 
 MemoryDumpSessionState::~MemoryDumpSessionState() {
 }

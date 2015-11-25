@@ -16,8 +16,9 @@
 namespace base {
 namespace trace_event {
 
-class TracedValue;
 class StackFrameDeduplicator;
+class TracedValue;
+class TypeNameDeduplicator;
 
 // Helper class to dump a snapshot of an |AllocationRegister| or other heap
 // bookkeeping structure into a |TracedValue|. This class is intended to be
@@ -26,9 +27,11 @@ class StackFrameDeduplicator;
 // to do the processing and generate a heap dump value for the trace log.
 class BASE_EXPORT HeapDumpWriter {
  public:
-  // The |StackFrameDeduplicator| is not owned. The heap dump writer assumes
-  // exclusive access to it during the lifetime of the dump writer.
-  HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator);
+  // The |StackFrameDeduplicator| and |TypeNameDeduplicator| are not owned. The
+  // heap dump writer assumes exclusive access to them during the lifetime of
+  // the dump writer.
+  HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator,
+                 TypeNameDeduplicator* type_name_deduplicator);
   ~HeapDumpWriter();
 
   // Inserts information from which the heap dump will be generated. This method
@@ -45,7 +48,7 @@ class BASE_EXPORT HeapDumpWriter {
   void WriteStackFrameIndex(int index);
 
   // Writes a "type" key with the stringified type ID.
-  void WriteTypeId(AllocationContext::TypeId type_id);
+  void WriteTypeId(int type_id);
 
   // Writes a "size" key with value |size| as a hexidecimal string to the traced
   // value.
@@ -57,6 +60,10 @@ class BASE_EXPORT HeapDumpWriter {
   // Helper for generating the |stackFrames| dictionary. Not owned, must outlive
   // this heap dump writer instance.
   StackFrameDeduplicator* const stack_frame_deduplicator_;
+
+  // Helper for converting type names to IDs. Not owned, must outlive this heap
+  // dump writer instance.
+  TypeNameDeduplicator* const type_name_deduplicator_;
 
   // A map of allocation context to the number of bytes allocated for that
   // context.
