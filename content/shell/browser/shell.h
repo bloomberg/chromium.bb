@@ -107,8 +107,6 @@ class Shell : public WebContentsDelegate,
 #endif
 
   // WebContentsDelegate
-  WebContents* OpenURLFromTab(WebContents* source,
-                              const OpenURLParams& params) override;
   void AddNewContents(WebContents* source,
                       WebContents* new_contents,
                       WindowOpenDisposition disposition,

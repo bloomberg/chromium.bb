@@ -266,32 +266,6 @@ gfx::NativeView Shell::GetContentView() {
   return web_contents_->GetNativeView();
 }
 
-WebContents* Shell::OpenURLFromTab(WebContents* source,
-                                   const OpenURLParams& params) {
-  // CURRENT_TAB is the only one we implement for now.
-  if (params.disposition != CURRENT_TAB)
-      return NULL;
-  NavigationController::LoadURLParams load_url_params(params.url);
-  load_url_params.source_site_instance = params.source_site_instance;
-  load_url_params.referrer = params.referrer;
-  load_url_params.frame_tree_node_id = params.frame_tree_node_id;
-  load_url_params.transition_type = params.transition;
-  load_url_params.extra_headers = params.extra_headers;
-  load_url_params.should_replace_current_entry =
-      params.should_replace_current_entry;
-
-  if (params.transferred_global_request_id != GlobalRequestID()) {
-    load_url_params.is_renderer_initiated = params.is_renderer_initiated;
-    load_url_params.transferred_global_request_id =
-        params.transferred_global_request_id;
-  } else if (params.is_renderer_initiated) {
-    load_url_params.is_renderer_initiated = true;
-  }
-
-  source->GetController().LoadURLWithParams(load_url_params);
-  return source;
-}
-
 void Shell::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   UpdateNavigationControls(to_different_document);
