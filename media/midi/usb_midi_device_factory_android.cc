@@ -56,12 +56,12 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
 // Called from the Java world.
 void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
     JNIEnv* env,
-    jobject caller,
-    jobjectArray devices) {
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobjectArray>& devices) {
   size_t size = env->GetArrayLength(devices);
   ScopedVector<UsbMidiDevice> devices_to_pass;
   for (size_t i = 0; i < size; ++i) {
-    UsbMidiDeviceAndroid::ObjectRef raw_device(
+    base::android::ScopedJavaLocalRef<jobject> raw_device(
         env, env->GetObjectArrayElement(devices, i));
     devices_to_pass.push_back(new UsbMidiDeviceAndroid(raw_device, delegate_));
   }
@@ -72,18 +72,16 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
 // Called from the Java world.
 void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
     JNIEnv* env,
-    jobject caller,
-    jobject device) {
-  UsbMidiDeviceAndroid::ObjectRef raw_device(env, device);
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& device) {
   delegate_->OnDeviceAttached(
-      scoped_ptr<UsbMidiDevice>(
-          new UsbMidiDeviceAndroid(raw_device, delegate_)));
+      scoped_ptr<UsbMidiDevice>(new UsbMidiDeviceAndroid(device, delegate_)));
 }
 
 // Called from the Java world.
 void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceDetached(
     JNIEnv* env,
-    jobject caller,
+    const JavaParamRef<jobject>& caller,
     jint index) {
   delegate_->OnDeviceDetached(index);
 }

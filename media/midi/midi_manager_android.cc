@@ -83,9 +83,10 @@ void MidiManagerAndroid::OnReceivedData(MidiInputPortAndroid* port,
   ReceiveMidiData(i->second, data, size, timestamp);
 }
 
-void MidiManagerAndroid::OnInitialized(JNIEnv* env,
-                                       jobject caller,
-                                       jobjectArray devices) {
+void MidiManagerAndroid::OnInitialized(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobjectArray>& devices) {
   jsize length = env->GetArrayLength(devices);
 
   for (jsize i = 0; i < length; ++i) {
@@ -96,14 +97,14 @@ void MidiManagerAndroid::OnInitialized(JNIEnv* env,
 }
 
 void MidiManagerAndroid::OnAttached(JNIEnv* env,
-                                    jobject caller,
-                                    jobject raw_device) {
+                                    const JavaParamRef<jobject>& caller,
+                                    const JavaParamRef<jobject>& raw_device) {
   AddDevice(make_scoped_ptr(new MidiDeviceAndroid(env, raw_device, this)));
 }
 
 void MidiManagerAndroid::OnDetached(JNIEnv* env,
-                                    jobject caller,
-                                    jobject raw_device) {
+                                    const JavaParamRef<jobject>& caller,
+                                    const JavaParamRef<jobject>& raw_device) {
   for (const auto& device : devices_) {
     if (device->HasRawDevice(env, raw_device)) {
       for (const auto& port : device->input_ports()) {

@@ -46,9 +46,15 @@ class MidiManagerAndroid final : public MidiManager,
                       base::TimeTicks timestamp) override;
 
   // Called from the Java world.
-  void OnInitialized(JNIEnv* env, jobject caller, jobjectArray devices);
-  void OnAttached(JNIEnv* env, jobject caller, jobject device);
-  void OnDetached(JNIEnv* env, jobject caller, jobject device);
+  void OnInitialized(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& caller,
+                     const base::android::JavaParamRef<jobjectArray>& devices);
+  void OnAttached(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& caller,
+                  const base::android::JavaParamRef<jobject>& device);
+  void OnDetached(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& caller,
+                  const base::android::JavaParamRef<jobject>& device);
 
   static bool Register(JNIEnv* env);
 

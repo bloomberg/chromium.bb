@@ -29,11 +29,18 @@ class USB_MIDI_EXPORT UsbMidiDeviceFactoryAndroid
   void EnumerateDevices(UsbMidiDeviceDelegate* delegate,
                         Callback callback) override;
 
-  void OnUsbMidiDeviceRequestDone(JNIEnv* env,
-                                  jobject caller,
-                                  jobjectArray devices);
-  void OnUsbMidiDeviceAttached(JNIEnv* env, jobject caller, jobject device);
-  void OnUsbMidiDeviceDetached(JNIEnv* env, jobject caller, jint index);
+  void OnUsbMidiDeviceRequestDone(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jobjectArray>& devices);
+  void OnUsbMidiDeviceAttached(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jobject>& device);
+  void OnUsbMidiDeviceDetached(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      jint index);
 
   static bool RegisterUsbMidiDeviceFactory(JNIEnv* env);
 

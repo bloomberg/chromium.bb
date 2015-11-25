@@ -20,11 +20,10 @@ namespace midi {
 
 class USB_MIDI_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
  public:
-  typedef base::android::ScopedJavaLocalRef<jobject> ObjectRef;
-
   static scoped_ptr<Factory> CreateFactory();
 
-  UsbMidiDeviceAndroid(ObjectRef raw_device, UsbMidiDeviceDelegate* delegate);
+  UsbMidiDeviceAndroid(const base::android::JavaRef<jobject>& raw_device,
+                       UsbMidiDeviceDelegate* delegate);
   ~UsbMidiDeviceAndroid() override;
 
   // UsbMidiDevice implementation.
@@ -36,9 +35,9 @@ class USB_MIDI_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
 
   // Called by the Java world.
   void OnData(JNIEnv* env,
-              jobject caller,
+              const base::android::JavaParamRef<jobject>& caller,
               jint endpoint_number,
-              jbyteArray data);
+              const base::android::JavaParamRef<jbyteArray>& data);
 
   static bool RegisterUsbMidiDevice(JNIEnv* env);
 

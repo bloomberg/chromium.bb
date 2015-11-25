@@ -15,8 +15,9 @@
 namespace media {
 namespace midi {
 
-UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(ObjectRef raw_device,
-                                           UsbMidiDeviceDelegate* delegate)
+UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(
+    const base::android::JavaRef<jobject>& raw_device,
+    UsbMidiDeviceDelegate* delegate)
     : raw_device_(raw_device), delegate_(delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_UsbMidiDeviceAndroid_registerSelf(env, raw_device_.obj(),
@@ -59,9 +60,9 @@ void UsbMidiDeviceAndroid::Send(int endpoint_number,
 }
 
 void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
-                                  jobject caller,
+                                  const JavaParamRef<jobject>& caller,
                                   jint endpoint_number,
-                                  jbyteArray data) {
+                                  const JavaParamRef<jbyteArray>& data) {
   std::vector<uint8> bytes;
   base::android::JavaByteArrayToByteVector(env, data, &bytes);
 
