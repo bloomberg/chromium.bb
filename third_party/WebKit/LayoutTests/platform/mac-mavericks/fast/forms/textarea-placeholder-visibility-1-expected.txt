@@ -15,4 +15,4 @@ layer at (8,42) size 161x32 clip at (9,43) size 159x30
       LayoutText {#text} at (0,0) size 62x13
         text run at (0,0) width 62: "Placeholder"
     LayoutBlockFlow {DIV} at (3,3) size 155x13
-caret: position 0 of child 0 {DIV} of {#document-fragment} of child 1 {TEXTAREA} of child 3 {DIV} of body
+caret: position 0 of child 1 {DIV} of {#document-fragment} of child 1 {TEXTAREA} of child 3 {DIV} of body
