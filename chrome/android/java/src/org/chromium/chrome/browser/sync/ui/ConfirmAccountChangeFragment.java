@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -104,12 +105,16 @@ public class ConfirmAccountChangeFragment extends DialogFragment
         dismiss();
     }
 
-    private static void signIn(Activity activity, String accountName) {
+    private static void signIn(final Activity activity, String accountName) {
         if (activity == null) return;
-        Account account = AccountManagerHelper.get(activity).getAccountFromName(accountName);
-        if (account == null) return;
-        SigninManager.get(activity).signInToSelectedAccount(activity, account,
-                SigninManager.SIGNIN_TYPE_INTERACTIVE, SigninManager.SIGNIN_SYNC_IMMEDIATELY,
-                false, null);
+        AccountManagerHelper.get(activity).getAccountFromName(accountName, new Callback<Account>() {
+            @Override
+            public void onResult(Account account) {
+                if (account == null) return;
+                SigninManager.get(activity).signInToSelectedAccount(activity, account,
+                        SigninManager.SIGNIN_TYPE_INTERACTIVE,
+                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, false, null);
+            }
+        });
     }
 }

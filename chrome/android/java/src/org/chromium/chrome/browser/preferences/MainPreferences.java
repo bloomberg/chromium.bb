@@ -12,6 +12,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordUIView;
@@ -28,6 +29,8 @@ import org.chromium.chrome.browser.sync.ui.ChooseAccountFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
+
+import java.util.List;
 
 /**
  * The main settings screen, shown when the user first opens Settings.
@@ -159,42 +162,69 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         }
     }
 
+    private void displayAccountPicker() {
+        displayAccountPicker(new Callback<DialogFragment>() {
+            @Override
+            public void onResult(DialogFragment fragment) {}
+        });
+    }
+
     /**
      * Displays the account picker or the add account dialog and signs the user in.
      *
-     * @return The fragment that was shown.
+     * @param callback Called with the fragment that was shown, or null. Used for testing.
      */
     @VisibleForTesting
-    public DialogFragment displayAccountPicker() {
+    public void displayAccountPicker(final Callback<DialogFragment> callback) {
         Context context = getActivity();
-        if (context == null) return null;
+        if (context == null) {
+            postCallback(callback, null);
+            return;
+        }
 
         if (!SigninManager.get(context).isSignInAllowed()) {
             if (SigninManager.get(context).isSigninDisabledByPolicy()) {
                 ManagedPreferencesUtils.showManagedByAdministratorToast(context);
             }
-            return null;
+            postCallback(callback, null);
+            return;
         }
 
-        if (AccountManagerHelper.get(context).hasGoogleAccounts()) {
-            if (getFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
-                return null;
-            }
-            ChooseAccountFragment chooserFragment = new ChooseAccountFragment();
-            chooserFragment.show(getFragmentManager(), ACCOUNT_PICKER_DIALOG_TAG);
-            return chooserFragment;
-        } else {
-            AddGoogleAccountDialogFragment dialog = new AddGoogleAccountDialogFragment();
-            dialog.setListener(new AddGoogleAccountListener() {
-                @Override
-                public void onAddAccountClicked() {
-                    AccountAdder.getInstance().addAccount(MainPreferences.this,
-                            AccountAdder.ADD_ACCOUNT_RESULT);
+        AccountManagerHelper.get(context).getGoogleAccountNames(new Callback<List<String>>() {
+            @Override
+            public void onResult(List<String> accountNames) {
+                if (!accountNames.isEmpty()) {
+                    if (getFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
+                        callback.onResult(null);
+                    } else {
+                        ChooseAccountFragment chooserFragment =
+                                new ChooseAccountFragment(accountNames);
+                        chooserFragment.show(getFragmentManager(), ACCOUNT_PICKER_DIALOG_TAG);
+                        callback.onResult(chooserFragment);
+                    }
+                } else {
+                    AddGoogleAccountDialogFragment dialog = new AddGoogleAccountDialogFragment();
+                    dialog.setListener(new AddGoogleAccountListener() {
+                        @Override
+                        public void onAddAccountClicked() {
+                            AccountAdder.getInstance().addAccount(
+                                    MainPreferences.this, AccountAdder.ADD_ACCOUNT_RESULT);
+                        }
+                    });
+                    dialog.show(getFragmentManager(), null);
+                    callback.onResult(dialog);
                 }
-            });
-            dialog.show(getFragmentManager(), null);
-            return dialog;
-        }
+            }
+        });
+    }
+
+    private <V> void postCallback(final Callback<V> callback, final V result) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(result);
+            }
+        });
     }
 
     // SignInStateObserver

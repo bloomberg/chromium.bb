@@ -32,12 +32,12 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.MockAccountManager;
+import org.chromium.sync.test.util.SimpleFuture;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Tests for the Settings menu.
@@ -239,12 +239,15 @@ public class PreferencesTest extends NativeLibraryTestBase {
         assertNull(fragment2);
     }
 
-    private DialogFragment displayAccountPicker(final MainPreferences mainPrefs) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<DialogFragment>() {
-            public DialogFragment call() {
-                return mainPrefs.displayAccountPicker();
+    private DialogFragment displayAccountPicker(final MainPreferences mainPrefs)
+            throws InterruptedException {
+        final SimpleFuture<DialogFragment> result = new SimpleFuture<DialogFragment>();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mainPrefs.displayAccountPicker(result.createCallback());
             }
         });
+        return result.get();
     }
 
     private void setUpTestAccount() {

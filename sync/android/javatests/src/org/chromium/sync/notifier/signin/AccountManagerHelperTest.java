@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
+import org.chromium.sync.test.util.SimpleFuture;
 
 /**
  * Test class for {@link AccountManagerHelper}.
@@ -31,6 +32,25 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         mHelper = AccountManagerHelper.get(context);
     }
 
+    @SmallTest
+    public void testCanonicalAccount() throws InterruptedException {
+        addTestAccount("test@gmail.com", "password");
+
+        assertTrue(hasAccountForName("test@gmail.com"));
+        assertTrue(hasAccountForName("Test@gmail.com"));
+        assertTrue(hasAccountForName("te.st@gmail.com"));
+    }
+
+    @SmallTest
+    public void testNonCanonicalAccount() throws InterruptedException {
+        addTestAccount("test.me@gmail.com", "password");
+
+        assertTrue(hasAccountForName("test.me@gmail.com"));
+        assertTrue(hasAccountForName("testme@gmail.com"));
+        assertTrue(hasAccountForName("Testme@gmail.com"));
+        assertTrue(hasAccountForName("te.st.me@gmail.com"));
+    }
+
     private Account addTestAccount(String accountName, String password) {
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
@@ -39,22 +59,9 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         return account;
     }
 
-    @SmallTest
-    public void testCanonicalAccount() throws InterruptedException {
-        addTestAccount("test@gmail.com", "password");
-
-        assertTrue(mHelper.hasAccountForName("test@gmail.com"));
-        assertTrue(mHelper.hasAccountForName("Test@gmail.com"));
-        assertTrue(mHelper.hasAccountForName("te.st@gmail.com"));
-    }
-
-    @SmallTest
-    public void testNonCanonicalAccount() throws InterruptedException {
-        addTestAccount("test.me@gmail.com", "password");
-
-        assertTrue(mHelper.hasAccountForName("test.me@gmail.com"));
-        assertTrue(mHelper.hasAccountForName("testme@gmail.com"));
-        assertTrue(mHelper.hasAccountForName("Testme@gmail.com"));
-        assertTrue(mHelper.hasAccountForName("te.st.me@gmail.com"));
+    private boolean hasAccountForName(String accountName) throws InterruptedException {
+        SimpleFuture<Boolean> result = new SimpleFuture<Boolean>();
+        mHelper.hasAccountForName(accountName, result.createCallback());
+        return result.get();
     }
 }

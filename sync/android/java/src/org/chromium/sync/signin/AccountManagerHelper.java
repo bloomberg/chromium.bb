@@ -277,6 +277,8 @@ public class AccountManagerHelper {
     /**
      * Asynchronously returns whether an account exists with the given name.
      */
+    // TODO(maxbogue): Remove once this function is used outside of tests.
+    @VisibleForTesting
     public void hasAccountForName(String accountName, final Callback<Boolean> callback) {
         getAccountFromName(accountName, new Callback<Account>() {
             @Override
