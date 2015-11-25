@@ -4,13 +4,86 @@
 
 #include "media/mojo/services/media_type_converters.h"
 
+#include <string.h>
+
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
+#include "media/base/sample_format.h"
+#include "media/base/test_helpers.h"
+#include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+
+namespace {
+
+void CompareBytes(uint8* original_data, uint8* result_data, size_t length) {
+  EXPECT_GT(length, 0u);
+  EXPECT_EQ(memcmp(original_data, result_data, length), 0);
+}
+
+void CompareAudioBuffers(SampleFormat sample_format,
+                         const scoped_refptr<AudioBuffer>& original,
+                         const scoped_refptr<AudioBuffer>& result) {
+  EXPECT_EQ(original->frame_count(), result->frame_count());
+  EXPECT_EQ(original->timestamp(), result->timestamp());
+  EXPECT_EQ(original->duration(), result->duration());
+  EXPECT_EQ(original->sample_rate(), result->sample_rate());
+  EXPECT_EQ(original->channel_count(), result->channel_count());
+  EXPECT_EQ(original->channel_layout(), result->channel_layout());
+  EXPECT_EQ(original->end_of_stream(), result->end_of_stream());
+
+  // Compare bytes in buffer.
+  int bytes_per_channel =
+      original->frame_count() * SampleFormatToBytesPerChannel(sample_format);
+  if (IsPlanar(sample_format)) {
+    for (int i = 0; i < original->channel_count(); ++i) {
+      CompareBytes(original->channel_data()[i], result->channel_data()[i],
+                   bytes_per_channel);
+    }
+    return;
+  }
+
+  DCHECK(IsInterleaved(sample_format)) << sample_format;
+  CompareBytes(original->channel_data()[0], result->channel_data()[0],
+               bytes_per_channel * original->channel_count());
+}
+
+void CompareVideoPlane(size_t plane,
+                       const scoped_refptr<VideoFrame>& original,
+                       const scoped_refptr<VideoFrame>& result) {
+  EXPECT_EQ(original->stride(plane), result->stride(plane));
+  EXPECT_EQ(original->row_bytes(plane), result->row_bytes(plane));
+  EXPECT_EQ(original->rows(plane), result->rows(plane));
+  CompareBytes(original->data(plane), result->data(plane),
+               original->rows(plane) * original->row_bytes(plane));
+}
+
+void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
+                        const scoped_refptr<VideoFrame>& result) {
+  if (original->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
+    EXPECT_TRUE(
+        result->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM));
+    return;
+  }
+
+  EXPECT_EQ(original->format(), result->format());
+  EXPECT_EQ(original->coded_size().height(), result->coded_size().height());
+  EXPECT_EQ(original->coded_size().width(), result->coded_size().width());
+  EXPECT_EQ(original->visible_rect().height(), result->visible_rect().height());
+  EXPECT_EQ(original->visible_rect().width(), result->visible_rect().width());
+  EXPECT_EQ(original->natural_size().height(), result->natural_size().height());
+  EXPECT_EQ(original->natural_size().width(), result->natural_size().width());
+
+  CompareVideoPlane(media::VideoFrame::kYPlane, original, result);
+  CompareVideoPlane(media::VideoFrame::kUPlane, original, result);
+  CompareVideoPlane(media::VideoFrame::kVPlane, original, result);
+}
+
+}  // namespace
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   const uint8 kData[] = "hello, world";
@@ -170,6 +243,90 @@ TEST(MediaTypeConvertersTest, ConvertCdmConfig) {
             result.allow_distinctive_identifier);
   EXPECT_EQ(config.allow_persistent_state, result.allow_persistent_state);
   EXPECT_EQ(config.use_hw_secure_codecs, result.use_hw_secure_codecs);
+}
+
+TEST(MediaTypeConvertersTest, ConvertAudioBuffer_EOS) {
+  // Original.
+  scoped_refptr<AudioBuffer> buffer(AudioBuffer::CreateEOSBuffer());
+
+  // Convert to and back.
+  interfaces::AudioBufferPtr ptr(interfaces::AudioBuffer::From(buffer));
+  scoped_refptr<AudioBuffer> result(ptr.To<scoped_refptr<AudioBuffer>>());
+
+  // Compare.
+  EXPECT_TRUE(result->end_of_stream());
+}
+
+TEST(MediaTypeConvertersTest, ConvertAudioBuffer_MONO) {
+  // Original.
+  const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
+  const int kSampleRate = 48000;
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8>(
+      kSampleFormatU8, kChannelLayout,
+      ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 1, 1,
+      kSampleRate / 100, base::TimeDelta());
+
+  // Convert to and back.
+  interfaces::AudioBufferPtr ptr(interfaces::AudioBuffer::From(buffer));
+  scoped_refptr<AudioBuffer> result(ptr.To<scoped_refptr<AudioBuffer>>());
+
+  // Compare.
+  CompareAudioBuffers(kSampleFormatU8, buffer, result);
+}
+
+TEST(MediaTypeConvertersTest, ConvertAudioBuffer_FLOAT) {
+  // Original.
+  const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_4_0;
+  const int kSampleRate = 48000;
+  const base::TimeDelta start_time = base::TimeDelta::FromSecondsD(1000.0);
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
+      kSampleFormatPlanarF32, kChannelLayout,
+      ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 0.0f, 1.0f,
+      kSampleRate / 10, start_time);
+  // Convert to and back.
+  interfaces::AudioBufferPtr ptr(interfaces::AudioBuffer::From(buffer));
+  scoped_refptr<AudioBuffer> result(ptr.To<scoped_refptr<AudioBuffer>>());
+
+  // Compare.
+  CompareAudioBuffers(kSampleFormatPlanarF32, buffer, result);
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoFrame_EOS) {
+  // Original.
+  scoped_refptr<VideoFrame> buffer(VideoFrame::CreateEOSFrame());
+
+  // Convert to and back.
+  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(buffer));
+  scoped_refptr<VideoFrame> result(ptr.To<scoped_refptr<VideoFrame>>());
+
+  // Compare.
+  CompareVideoFrames(buffer, result);
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoFrame_BlackFrame) {
+  // Original.
+  scoped_refptr<VideoFrame> buffer(
+      VideoFrame::CreateBlackFrame(gfx::Size(100, 100)));
+
+  // Convert to and back.
+  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(buffer));
+  scoped_refptr<VideoFrame> result(ptr.To<scoped_refptr<VideoFrame>>());
+
+  // Compare.
+  CompareVideoFrames(buffer, result);
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoFrame_ColorFrame) {
+  // Original.
+  scoped_refptr<VideoFrame> buffer(VideoFrame::CreateColorFrame(
+      gfx::Size(50, 100), 255, 128, 128, base::TimeDelta::FromSeconds(26)));
+
+  // Convert to and back.
+  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(buffer));
+  scoped_refptr<VideoFrame> result(ptr.To<scoped_refptr<VideoFrame>>());
+
+  // Compare.
+  CompareVideoFrames(buffer, result);
 }
 
 }  // namespace media

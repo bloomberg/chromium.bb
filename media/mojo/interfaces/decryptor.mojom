@@ -7,10 +7,6 @@ module media.interfaces;
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 
-// TODO(xhwang): Add mojo types for AudioBuffer and VideoFrame.
-struct AudioBuffer {};
-struct VideoFrame {};
-
 // Interface for decrypting (and decoding) encrypted streams.
 // See media/base/decryptor.h for details.
 interface Decryptor {
