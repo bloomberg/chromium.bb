@@ -433,6 +433,8 @@ class Rietveld(object):
             raise
           if (not 'Name or service not known' in e.reason and
               not 'EOF occurred in violation of protocol' in e.reason and
+              not 'Connection timed out' in e.reason and
+              not 'The handshake operation timed out' in e.reason and
               # On windows we hit weird bug http://crbug.com/537417
               # with message '[Errno 10060] A connection attempt failed...'
               not (sys.platform.startswith('win') and
