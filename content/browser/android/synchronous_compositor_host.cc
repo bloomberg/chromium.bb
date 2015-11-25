@@ -5,6 +5,8 @@
 #include "content/browser/android/synchronous_compositor_host.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/memory/shared_memory.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -13,6 +15,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace content {
 
@@ -85,8 +92,64 @@ void SynchronousCompositorHost::UpdateFrameMetaData(
 }
 
 bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
-  // TODO(boliu): Implement.
-  return false;
+  SyncCompositorDemandDrawSwParams params;
+  params.size = gfx::Size(canvas->getBaseLayerSize().width(),
+                          canvas->getBaseLayerSize().height());
+  SkIRect canvas_clip;
+  canvas->getClipDeviceBounds(&canvas_clip);
+  params.clip = gfx::SkIRectToRect(canvas_clip);
+  params.transform.matrix() = canvas->getTotalMatrix();
+  if (params.size.IsEmpty())
+    return true;
+
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
+  DCHECK_EQ(kRGBA_8888_SkColorType, info.colorType());
+  size_t stride = info.minRowBytes();
+  size_t buffer_size = info.getSafeSize(stride);
+  if (!buffer_size)
+    return false;  // Overflow.
+
+  base::SharedMemory shm;
+  {
+    TRACE_EVENT1("browser", "AllocateSharedMemory", "buffer_size", buffer_size);
+    if (!shm.CreateAndMapAnonymous(buffer_size))
+      return false;
+  }
+  base::ProcessHandle renderer_process_handle =
+      rwhva_->GetRenderWidgetHost()->GetProcess()->GetHandle();
+  if (!shm.ShareToProcess(renderer_process_handle, &params.shm_handle))
+    return false;
+
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  SyncCompositorCommonRendererParams common_renderer_params;
+  bool success = false;
+  if (!sender_->Send(new SyncCompositorMsg_DemandDrawSw(
+          routing_id_, common_browser_params, params, &success,
+          &common_renderer_params, frame.get()))) {
+    return false;
+  }
+  if (!success)
+    return false;
+
+  ProcessCommonParams(common_renderer_params);
+  UpdateFrameMetaData(frame->metadata);
+
+  SkBitmap bitmap;
+  if (!bitmap.installPixels(info, shm.memory(), stride))
+    return false;
+
+  {
+    TRACE_EVENT0("browser", "DrawBitmap");
+    canvas->save();
+    canvas->resetMatrix();
+    canvas->drawBitmap(bitmap, 0, 0);
+    canvas->restore();
+  }
+
+  return true;
 }
 
 void SynchronousCompositorHost::ReturnResources(

@@ -33,6 +33,7 @@ class SynchronousCompositorOutputSurface;
 struct SyncCompositorCommonBrowserParams;
 struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
+struct SyncCompositorDemandDrawSwParams;
 
 class SynchronousCompositorProxy
     : public ui::SynchronousInputHandler,
@@ -87,6 +88,11 @@ class SynchronousCompositorProxy
       SyncCompositorCommonRendererParams* common_renderer_params);
   void DemandDrawHw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawHwParams& params,
+                    SyncCompositorCommonRendererParams* common_renderer_params,
+                    cc::CompositorFrame* frame);
+  void DemandDrawSw(const SyncCompositorCommonBrowserParams& common_params,
+                    const SyncCompositorDemandDrawSwParams& params,
+                    bool* result,
                     SyncCompositorCommonRendererParams* common_renderer_params,
                     cc::CompositorFrame* frame);
 

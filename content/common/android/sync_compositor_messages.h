@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/shared_memory_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -46,6 +47,16 @@ struct SyncCompositorDemandDrawHwParams {
   gfx::Transform transform_for_tile_priority;
 };
 
+struct SyncCompositorDemandDrawSwParams {
+  SyncCompositorDemandDrawSwParams();
+  ~SyncCompositorDemandDrawSwParams();
+
+  gfx::Size size;
+  gfx::Rect clip;
+  gfx::Transform transform;
+  base::SharedMemoryHandle shm_handle;
+};
+
 struct SyncCompositorCommonRendererParams {
   SyncCompositorCommonRendererParams();
   ~SyncCompositorCommonRendererParams();
@@ -88,6 +99,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorDemandDrawHwParams)
   IPC_STRUCT_TRAITS_MEMBER(transform_for_tile_priority)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorDemandDrawSwParams)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(clip)
+  IPC_STRUCT_TRAITS_MEMBER(transform)
+  IPC_STRUCT_TRAITS_MEMBER(shm_handle)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonRendererParams)
   IPC_STRUCT_TRAITS_MEMBER(version)
   IPC_STRUCT_TRAITS_MEMBER(total_scroll_offset)
@@ -101,6 +119,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonRendererParams)
   IPC_STRUCT_TRAITS_MEMBER(need_begin_frame)
   IPC_STRUCT_TRAITS_MEMBER(did_activate_pending_tree)
 IPC_STRUCT_TRAITS_END()
+
+// Messages sent from the browser to the renderer.
 
 IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_HandleInputEvent,
                            content::SyncCompositorCommonBrowserParams,
@@ -124,8 +144,18 @@ IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorCommonRendererParams,
                            cc::CompositorFrame)
 
+IPC_SYNC_MESSAGE_ROUTED2_3(SyncCompositorMsg_DemandDrawSw,
+                           content::SyncCompositorCommonBrowserParams,
+                           content::SyncCompositorDemandDrawSwParams,
+                           bool /* result */,
+                           content::SyncCompositorCommonRendererParams,
+                           cc::CompositorFrame)
+
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_UpdateState,
                     content::SyncCompositorCommonBrowserParams)
+
+// -----------------------------------------------------------------------------
+// Messages sent from the renderer to the browser.
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)

@@ -5,11 +5,17 @@
 #include "content/renderer/android/synchronous_compositor_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/cc_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/skia_util.h"
 
 namespace content {
 
@@ -147,6 +153,7 @@ void SynchronousCompositorProxy::OnMessageReceived(
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawHw, DemandDrawHw)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawSw, DemandDrawSw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_UpdateState, ProcessCommonParams)
   IPC_END_MESSAGE_MAP()
 }
@@ -190,6 +197,46 @@ void SynchronousCompositorProxy::DemandDrawHw(
       params.viewport_rect_for_tile_priority,
       params.transform_for_tile_priority);
   if (frame_ptr) {
+    frame_ptr->AssignTo(frame);
+    DeliverMessages();
+  }
+  PopulateCommonParams(common_renderer_params);
+}
+
+void SynchronousCompositorProxy::DemandDrawSw(
+    const SyncCompositorCommonBrowserParams& common_params,
+    const SyncCompositorDemandDrawSwParams& params,
+    bool* result,
+    SyncCompositorCommonRendererParams* common_renderer_params,
+    cc::CompositorFrame* frame) {
+  DCHECK(frame);
+  ProcessCommonParams(common_params);
+  *result = false;  // Early out ok.
+  if (!base::SharedMemory::IsHandleValid(params.shm_handle))
+    return;
+
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
+  size_t stride = info.minRowBytes();
+  size_t buffer_size = info.getSafeSize(stride);
+  DCHECK(buffer_size);
+
+  base::SharedMemory shm(params.shm_handle, false);
+  if (!shm.Map(buffer_size))
+    return;
+  DCHECK(shm.memory());
+
+  SkBitmap bitmap;
+  if (!bitmap.installPixels(info, shm.memory(), stride))
+    return;
+  SkCanvas canvas(bitmap);
+  canvas.setMatrix(params.transform.matrix());
+  canvas.setClipRegion(SkRegion(gfx::RectToSkIRect(params.clip)));
+
+  scoped_ptr<cc::CompositorFrame> frame_ptr =
+      output_surface_->DemandDrawSw(&canvas);
+  if (frame_ptr) {
+    *result = true;
     frame_ptr->AssignTo(frame);
     DeliverMessages();
   }

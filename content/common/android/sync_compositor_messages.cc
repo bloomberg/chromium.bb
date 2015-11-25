@@ -29,6 +29,10 @@ SyncCompositorDemandDrawHwParams::SyncCompositorDemandDrawHwParams(
 
 SyncCompositorDemandDrawHwParams::~SyncCompositorDemandDrawHwParams() {}
 
+SyncCompositorDemandDrawSwParams::SyncCompositorDemandDrawSwParams() {}
+
+SyncCompositorDemandDrawSwParams::~SyncCompositorDemandDrawSwParams() {}
+
 SyncCompositorCommonRendererParams::SyncCompositorCommonRendererParams()
     : version(0u),
       page_scale_factor(0.f),
