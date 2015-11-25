@@ -52,7 +52,7 @@ void LoadWhitelistFromDisk(const base::FilePath& whitelist_path,
     return;
   }
 
-  VLOG(0) << "EV whitelist: Successfully loaded.";
+  VLOG(1) << "EV whitelist: Successfully loaded.";
   packed_ct_ev_whitelist::SetEVCertsWhitelist(new_whitelist);
 }
 
@@ -93,7 +93,7 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     scoped_ptr<base::DictionaryValue> manifest) {
-  VLOG(0) << "Component ready, version " << version.GetString() << " in "
+  VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << install_dir.value();
 
   if (!content::BrowserThread::PostBlockingPoolTask(
