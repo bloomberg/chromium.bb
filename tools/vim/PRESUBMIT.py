@@ -21,6 +21,7 @@ def CheckChangeOnUpload(input_api, output_api):
   # test requires access to 'ninja' and hasn't been tested on platforms other
   # than Linux.
   if 'chromium.ycm_extra_conf.py' in affected_files or \
+      'ninja_output.py' in affected_files or \
       any([input_api.re.match(r'tests(/|\\)',f) for f in affected_files]):
     results += input_api.RunTests(
         input_api.canned_checks.GetUnitTests(

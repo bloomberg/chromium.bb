@@ -163,6 +163,18 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[OUT]/tag-one'
         ])
 
+  def testOutDirNames(self):
+    out_root = os.path.join(self.chrome_root, 'out_with_underscore')
+    out_dir = os.path.join(out_root, 'Debug')
+    shutil.move(os.path.join(self.chrome_root, 'out'),
+        out_root)
+
+    clang_options = \
+        self.ycm_extra_conf.GetClangOptionsFromNinjaForFilename(
+            self.chrome_root, os.path.join(self.chrome_root, 'one.cpp'))
+    self.assertIn('-I%s/a' % out_dir, clang_options)
+    self.assertIn('-I%s/tag-one' % out_dir, clang_options)
+
   def testGetFlagsForFileForKnownCppFile(self):
     result = self.ycm_extra_conf.FlagsForFile(
         os.path.join(self.chrome_root, 'one.cpp'))
