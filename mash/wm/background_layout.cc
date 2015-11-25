@@ -6,6 +6,9 @@
 
 #include "components/mus/public/cpp/window.h"
 
+namespace mash {
+namespace wm {
+
 BackgroundLayout::BackgroundLayout(mus::Window* owner) : LayoutManager(owner) {}
 BackgroundLayout::~BackgroundLayout() {}
 
@@ -16,3 +19,6 @@ void BackgroundLayout::WindowAdded(mus::Window* window) {
 void BackgroundLayout::LayoutWindow(mus::Window* window) {
   window->SetBounds(gfx::Rect(owner()->bounds().size()));
 }
+
+}  // namespace wm
+}  // namespace mash

@@ -10,6 +10,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace mash {
+namespace wm {
+
 mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
   if (window->HasSharedProperty(
           mus::mojom::WindowManager::kShowState_Property)) {
@@ -53,13 +56,12 @@ gfx::Size GetWindowPreferredSize(const mus::Window* window) {
   return gfx::Size();
 }
 
-mash::wm::mojom::Container GetRequestedContainer(const mus::Window* window) {
-  if (window->HasSharedProperty(mash::wm::mojom::kWindowContainer_Property)) {
-    return static_cast<mash::wm::mojom::Container>(
-        window->GetSharedProperty<int32_t>(
-            mash::wm::mojom::kWindowContainer_Property));
+mojom::Container GetRequestedContainer(const mus::Window* window) {
+  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
+    return static_cast<mojom::Container>(
+        window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
   }
-  return mash::wm::mojom::CONTAINER_USER_WINDOWS;
+  return mojom::CONTAINER_USER_WINDOWS;
 }
 
 mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window) {
@@ -85,3 +87,6 @@ gfx::Rect GetRestoreBounds(const mus::Window* window) {
   }
   return gfx::Rect();
 }
+
+}  // namespace wm
+}  // namespace mash

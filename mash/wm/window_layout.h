@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "mash/wm/layout_manager.h"
 
+namespace mash {
+namespace wm {
+
 // Responsible for layout of top level windows.
 class WindowLayout : public LayoutManager {
  public:
@@ -28,5 +31,8 @@ class WindowLayout : public LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(WindowLayout);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_WINDOW_LAYOUT_H_

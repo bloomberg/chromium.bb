@@ -20,11 +20,6 @@
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 
-class BackgroundLayout;
-class ShelfLayout;
-class WindowLayout;
-class WindowManagerImpl;
-
 namespace ui {
 namespace mojo {
 class UIInit;
@@ -34,6 +29,14 @@ class UIInit;
 namespace views {
 class AuraInit;
 }
+
+namespace mash {
+namespace wm {
+
+class BackgroundLayout;
+class ShelfLayout;
+class WindowLayout;
+class WindowManagerImpl;
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
@@ -52,7 +55,7 @@ class WindowManagerApplication
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
 
-  mus::Window* GetWindowForContainer(mash::wm::mojom::Container container);
+  mus::Window* GetWindowForContainer(mojom::Container container);
   mus::Window* GetWindowById(mus::Id id);
 
   mojo::ApplicationImpl* app() { return app_; }
@@ -115,5 +118,8 @@ class WindowManagerApplication
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_WINDOW_MANAGER_APPLICATION_H_

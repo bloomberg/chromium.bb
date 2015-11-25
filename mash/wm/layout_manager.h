@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
 
+namespace mash {
+namespace wm {
+
 // Base class for container layout managers. Derived classes override
 // LayoutWindow() to perform layout and register properties to which
 // changes trigger layout.
@@ -49,5 +52,8 @@ class LayoutManager : public mus::WindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(LayoutManager);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_LAYOUT_MANAGER_H_

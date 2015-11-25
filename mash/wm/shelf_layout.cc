@@ -10,6 +10,9 @@
 #include "mash/wm/property_util.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace mash {
+namespace wm {
+
 ShelfLayout::ShelfLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
 }
@@ -27,3 +30,6 @@ void ShelfLayout::LayoutWindow(mus::Window* window) {
       gfx::Point(0, container_bounds.height() - preferred_size.height()));
   window->SetBounds(container_bounds);
 }
+
+}  // namespace wm
+}  // namespace mash

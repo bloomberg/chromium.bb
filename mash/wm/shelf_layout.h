@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "mash/wm/layout_manager.h"
 
+namespace mash {
+namespace wm {
+
 // Lays out the shelf within shelf containers.
 class ShelfLayout : public LayoutManager {
  public:
@@ -21,5 +24,8 @@ class ShelfLayout : public LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayout);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_SHELF_LAYOUT_H_

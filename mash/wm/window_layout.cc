@@ -9,6 +9,9 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "mash/wm/property_util.h"
 
+namespace mash {
+namespace wm {
+
 WindowLayout::WindowLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
   AddLayoutProperty(mus::mojom::WindowManager::kShowState_Property);
@@ -78,3 +81,6 @@ void WindowLayout::CenterWindow(mus::Window* window,
       preferred_size.width(), preferred_size.height());
   window->SetBounds(bounds);
 }
+
+}  // namespace wm
+}  // namespace mash

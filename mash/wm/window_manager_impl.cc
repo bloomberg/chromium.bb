@@ -28,12 +28,15 @@ struct TypeConverter<const std::vector<uint8_t>, Array<uint8_t>> {
 
 }  // namespace mojo
 
+namespace mash {
+namespace wm {
+
 WindowManagerImpl::WindowManagerImpl(WindowManagerApplication* state)
     : state_(state) {}
 
 WindowManagerImpl::~WindowManagerImpl() {
   mus::Window* parent =
-      state_->GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS);
+      state_->GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
   if (!parent)
     return;
 
@@ -109,6 +112,9 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
 }
 
 mus::Window* WindowManagerImpl::GetContainerForChild(mus::Window* child) {
-  mash::wm::mojom::Container container = GetRequestedContainer(child);
+  mojom::Container container = GetRequestedContainer(child);
   return state_->GetWindowForContainer(container);
 }
+
+}  // namespace wm
+}  // namespace mash

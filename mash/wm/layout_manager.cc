@@ -8,6 +8,9 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 
+namespace mash {
+namespace wm {
+
 LayoutManager::~LayoutManager() {
   owner_->RemoveObserver(this);
   for (auto child : owner_->children())
@@ -64,3 +67,6 @@ void LayoutManager::WindowRemoved(mus::Window* window) {}
 void LayoutManager::AddLayoutProperty(const std::string& name) {
   layout_properties_.insert(name);
 }
+
+}  // namespace wm
+}  // namespace mash

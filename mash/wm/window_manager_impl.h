@@ -10,6 +10,9 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 
+namespace mash {
+namespace wm {
+
 class WindowManagerApplication;
 
 using WindowManagerErrorCodeCallback =
@@ -37,5 +40,8 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_WINDOW_MANAGER_IMPL_H_

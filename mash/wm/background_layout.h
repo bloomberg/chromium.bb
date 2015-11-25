@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "mash/wm/layout_manager.h"
 
+namespace mash {
+namespace wm {
+
 // Lays out the desktop background within background containers.
 class BackgroundLayout : public LayoutManager {
  public:
@@ -21,5 +24,8 @@ class BackgroundLayout : public LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLayout);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_BACKGROUND_LAYOUT_H_

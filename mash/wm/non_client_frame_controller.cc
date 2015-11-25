@@ -10,6 +10,9 @@
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
 
+namespace mash {
+namespace wm {
+
 namespace {
 
 class WmNativeWidgetMus : public views::NativeWidgetMus {
@@ -27,8 +30,8 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   views::NonClientFrameView* CreateNonClientFrameView() override {
     views::Widget* widget =
         static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
-    mash::wm::NonClientFrameViewMash* frame_view =
-        new mash::wm::NonClientFrameViewMash(widget, window());
+    NonClientFrameViewMash* frame_view =
+        new NonClientFrameViewMash(widget, window());
     return frame_view;
   }
   void CenterWindow(const gfx::Size& size) override {
@@ -59,7 +62,7 @@ NonClientFrameController::NonClientFrameController(mojo::Shell* shell,
 
 // static
 gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
-  return mash::wm::NonClientFrameViewMash::GetPreferredClientAreaInsets();
+  return NonClientFrameViewMash::GetPreferredClientAreaInsets();
 }
 
 NonClientFrameController::~NonClientFrameController() {
@@ -102,3 +105,6 @@ void NonClientFrameController::OnWindowDestroyed(mus::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
 }
+
+}  // namespace wm
+}  // namespace mash

@@ -21,6 +21,9 @@ namespace mus {
 class Window;
 }
 
+namespace mash {
+namespace wm {
+
 // Provides the non-client frame for mus Windows.
 class NonClientFrameController : public views::WidgetDelegateView,
                                  public mus::WindowObserver {
@@ -56,5 +59,8 @@ class NonClientFrameController : public views::WidgetDelegateView,
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_NON_CLIENT_FRAME_CONTROLLER_H_

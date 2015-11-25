@@ -11,6 +11,9 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 
+namespace mash {
+namespace wm {
+
 class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
                              public mus::WindowTreeDelegate {
  public:
@@ -48,3 +51,6 @@ TEST_F(WindowManagerAppTest, OpenWindow) {
 
   ASSERT_TRUE(OpenWindow(connection.get()));
 }
+
+}  // namespace wm
+}  // namespace mash

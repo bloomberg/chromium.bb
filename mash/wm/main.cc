@@ -7,6 +7,6 @@
 #include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new WindowManagerApplication);
+  mojo::ApplicationRunner runner(new mash::wm::WindowManagerApplication);
   return runner.Run(shell_handle);
 }

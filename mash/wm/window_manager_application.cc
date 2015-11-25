@@ -19,6 +19,8 @@
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
 
+namespace mash {
+namespace wm {
 namespace {
 const uint32_t kWindowSwitchCmd = 1;
 }  // namespace
@@ -32,7 +34,7 @@ WindowManagerApplication::WindowManagerApplication()
 WindowManagerApplication::~WindowManagerApplication() {}
 
 mus::Window* WindowManagerApplication::GetWindowForContainer(
-    mash::wm::mojom::Container container) {
+    mojom::Container container) {
   const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
                             static_cast<uint16_t>(container);
   return root_->GetChildById(window_id);
@@ -83,14 +85,13 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_->AddObserver(this);
   CreateContainers();
   background_layout_.reset(new BackgroundLayout(
-      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_BACKGROUND)));
-  shelf_layout_.reset(new ShelfLayout(
-      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_SHELF)));
+      GetWindowForContainer(mojom::CONTAINER_USER_BACKGROUND)));
+  shelf_layout_.reset(
+      new ShelfLayout(GetWindowForContainer(mojom::CONTAINER_USER_SHELF)));
 
-  mus::Window* window =
-      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS);
-  window_layout_.reset(new WindowLayout(
-      GetWindowForContainer(mash::wm::mojom::CONTAINER_USER_WINDOWS)));
+  mus::Window* window = GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
+  window_layout_.reset(
+      new WindowLayout(GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS)));
   host_->AddActivationParent(window->id());
 
   AddAccelerators();
@@ -149,10 +150,9 @@ bool WindowManagerApplication::OnWmSetProperty(
 }
 
 void WindowManagerApplication::CreateContainers() {
-  for (uint16_t container = static_cast<uint16_t>(
-           mash::wm::mojom::CONTAINER_ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(mash::wm::mojom::CONTAINER_COUNT);
-       ++container) {
+  for (uint16_t container =
+           static_cast<uint16_t>(mojom::CONTAINER_ALL_USER_BACKGROUND);
+       container < static_cast<uint16_t>(mojom::CONTAINER_COUNT); ++container) {
     mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)
         << "Containers must be created before other windows!";
@@ -161,3 +161,6 @@ void WindowManagerApplication::CreateContainers() {
     root_->AddChild(window);
   }
 }
+
+}  // namespace wm
+}  // namespace mash

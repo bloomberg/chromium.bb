@@ -18,6 +18,9 @@ namespace mus {
 class Window;
 }
 
+namespace mash {
+namespace wm {
+
 // Utility functions to read values from properties & convert them to the
 // appropriate types.
 
@@ -29,11 +32,14 @@ gfx::Rect GetWindowUserSetBounds(const mus::Window* window);
 void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(const mus::Window* window);
 
-mash::wm::mojom::Container GetRequestedContainer(const mus::Window* window);
+mojom::Container GetRequestedContainer(const mus::Window* window);
 
 mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
 
 void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetRestoreBounds(const mus::Window* window);
+
+}  // namespace wm
+}  // namespace mash
 
 #endif  // MASH_WM_PROPERTY_UTIL_H_
