@@ -102,6 +102,8 @@ class CONTENT_EXPORT CacheStorage {
   void CompleteAsyncOperationForTesting();
 
  private:
+  friend class TestCacheStorage;
+
   class MemoryLoader;
   class SimpleCacheLoader;
   class CacheLoader;
@@ -112,6 +114,12 @@ class CONTENT_EXPORT CacheStorage {
   // CacheStorageCache has been deleted, creates a new one.
   scoped_refptr<CacheStorageCache> GetLoadedCache(
       const std::string& cache_name);
+
+  // Holds a reference to a cache for thirty seconds.
+  void TemporarilyPreserveCache(const scoped_refptr<CacheStorageCache>& cache);
+  virtual void SchedulePreservedCacheRemoval(
+      const base::Closure& callback);  // Virtual for testing.
+  void RemovePreservedCache(const CacheStorageCache* cache);
 
   // Initializer and its callback are below.
   void LazyInit();
@@ -216,6 +224,11 @@ class CONTENT_EXPORT CacheStorage {
 
   // Performs backend specific operations (memory vs disk).
   scoped_ptr<CacheLoader> cache_loader_;
+
+  // Holds ref pointers to recently opened caches so that they can be reused
+  // without having the open the cache again.
+  std::map<const CacheStorageCache*, scoped_refptr<CacheStorageCache>>
+      preserved_caches_;
 
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 

@@ -35,6 +35,8 @@ namespace content {
 
 namespace {
 
+const int kCachePreservationInSecs = 30;
+
 std::string HexedHash(const std::string& value) {
   std::string value_hash = base::SHA1HashString(value);
   std::string valued_hexed_hash = base::ToLowerASCII(
@@ -671,6 +673,8 @@ void CacheStorage::CreateCacheDidCreateCache(
   cache_map_.insert(std::make_pair(cache_name, cache->AsWeakPtr()));
   ordered_cache_names_.push_back(cache_name);
 
+  TemporarilyPreserveCache(cache);
+
   cache_loader_->WriteIndex(
       ordered_cache_names_,
       base::Bind(&CacheStorage::CreateCacheDidWriteIndex,
@@ -853,10 +857,39 @@ scoped_refptr<CacheStorageCache> CacheStorage::GetLoadedCache(
     scoped_refptr<CacheStorageCache> new_cache =
         cache_loader_->CreateCache(cache_name);
     map_iter->second = new_cache->AsWeakPtr();
+
+    TemporarilyPreserveCache(new_cache);
     return new_cache;
   }
 
   return make_scoped_refptr(cache.get());
+}
+
+void CacheStorage::TemporarilyPreserveCache(
+    const scoped_refptr<CacheStorageCache>& cache) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!ContainsKey(preserved_caches_, cache.get()));
+
+  preserved_caches_[cache.get()] = cache;
+  SchedulePreservedCacheRemoval(base::Bind(&CacheStorage::RemovePreservedCache,
+                                           weak_factory_.GetWeakPtr(),
+                                           base::Unretained(cache.get())));
+}
+
+void CacheStorage::SchedulePreservedCacheRemoval(
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, callback,
+      base::TimeDelta::FromSeconds(kCachePreservationInSecs));
+}
+
+void CacheStorage::RemovePreservedCache(const CacheStorageCache* cache) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ContainsKey(preserved_caches_, cache));
+
+  preserved_caches_.erase(cache);
 }
 
 void CacheStorage::CloseAllCachesImpl(const base::Closure& callback) {
