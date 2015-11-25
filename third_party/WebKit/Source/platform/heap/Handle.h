@@ -1047,14 +1047,14 @@ class PLATFORM_EXPORT DummyBase<void> { };
 
 template<typename T> T* adoptRefWillBeNoop(T* ptr)
 {
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, RefCounted>::value;
     static_assert(notRefCounted, "you must adopt");
     return ptr;
 }
 
 template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 {
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, RefCounted>::value;
     static_assert(notRefCounted, "you must adopt");
     return ptr;
 }
