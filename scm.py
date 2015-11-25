@@ -1040,10 +1040,10 @@ class SVN(object):
       auth_dir = os.path.join(os.environ['APPDATA'], 'Subversion', 'auth',
                               'svn.simple')
     else:
-      if not 'HOME' in os.environ:
+      auth_dir = os.path.expanduser(
+          os.path.join('~', '.subversion', 'auth', 'svn.simple'))
+      if not os.path.exists(auth_dir):
         return None
-      auth_dir = os.path.join(os.environ['HOME'], '.subversion', 'auth',
-                              'svn.simple')
     for credfile in os.listdir(auth_dir):
       cred_info = SVN.ReadSimpleAuth(os.path.join(auth_dir, credfile))
       if regexp.match(cred_info.get('svn:realmstring')):

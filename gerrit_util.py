@@ -97,7 +97,7 @@ class NetrcAuthenticator(Authenticator):
   @staticmethod
   def _get_netrc():
     path = '_netrc' if sys.platform.startswith('win') else '.netrc'
-    path = os.path.join(os.environ['HOME'], path)
+    path = os.path.expanduser(os.path.join('~', path))
     try:
       return netrc.netrc(path)
     except IOError:

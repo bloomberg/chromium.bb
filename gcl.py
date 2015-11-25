@@ -71,15 +71,9 @@ def CheckHomeForFile(filename):
   """Checks the users home dir for the existence of the given file.  Returns
   the path to the file if it's there, or None if it is not.
   """
-  home_vars = ['HOME']
-  if sys.platform in ('cygwin', 'win32'):
-    home_vars.append('USERPROFILE')
-  for home_var in home_vars:
-    home = os.getenv(home_var)
-    if home != None:
-      full_path = os.path.join(home, filename)
-      if os.path.exists(full_path):
-        return full_path
+  full_path = os.path.expanduser(os.path.join('~', filename))
+  if os.path.exists(full_path):
+    return full_path
   return None
 
 

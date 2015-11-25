@@ -233,7 +233,7 @@ if (ver[0], ver[1]) < MIN_PYTHON_VERSION:
          % sys.version.split(' ')[0], file=sys.stderr)
   sys.exit(1)
 
-home_dot_repo = os.path.expanduser('~/.repoconfig')
+home_dot_repo = os.path.expanduser(os.path.join('~','.repoconfig'))
 gpg_dir = os.path.join(home_dot_repo, 'gnupg')
 
 extra_args = []

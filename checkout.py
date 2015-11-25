@@ -255,7 +255,8 @@ class SvnConfig(object):
       if sys.platform == 'win32':
         self.svn_config_dir = os.path.join(os.environ['APPDATA'], 'Subversion')
       else:
-        self.svn_config_dir = os.path.join(os.environ['HOME'], '.subversion')
+        self.svn_config_dir = os.path.expanduser(
+            os.path.join('~', '.subversion'))
     svn_config_file = os.path.join(self.svn_config_dir, 'config')
     parser = ConfigParser.SafeConfigParser()
     if os.path.isfile(svn_config_file):

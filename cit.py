@@ -22,7 +22,7 @@ import re
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 GCLIENT = os.path.join(SCRIPT_DIR, 'gclient.py')
-TARGET_DIR = os.path.expanduser('~/.chrome-infra')
+TARGET_DIR = os.path.expanduser(os.path.join('~', '.chrome-infra'))
 INFRA_DIR = os.path.join(TARGET_DIR, 'infra')
 
 
