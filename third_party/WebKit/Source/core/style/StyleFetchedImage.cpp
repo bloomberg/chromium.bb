@@ -126,10 +126,10 @@ void StyleFetchedImage::notifyFinished(Resource* resource)
 
 PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject*, const IntSize& containerSize, float zoom) const
 {
-    RefPtr<Image> image = m_image->image();
-    if (image->isSVGImage())
-        return SVGImageForContainer::create(toSVGImage(image.get()), containerSize, zoom, m_url);
-    return image;
+    if (!m_image->image()->isSVGImage())
+        return m_image->image();
+
+    return SVGImageForContainer::create(toSVGImage(m_image->image()), containerSize, zoom, m_url);
 }
 
 bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
