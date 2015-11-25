@@ -338,8 +338,7 @@ void ModuleSystem::RegisterNativeHandler(
     const std::string& name,
     scoped_ptr<NativeHandler> native_handler) {
   ClobberExistingNativeHandler(name);
-  native_handler_map_[name] =
-      linked_ptr<NativeHandler>(native_handler.release());
+  native_handler_map_[name] = std::move(native_handler);
 }
 
 void ModuleSystem::OverrideNativeHandlerForTest(const std::string& name) {
@@ -747,7 +746,7 @@ void ModuleSystem::OnModuleLoaded(
 void ModuleSystem::ClobberExistingNativeHandler(const std::string& name) {
   NativeHandlerMap::iterator existing_handler = native_handler_map_.find(name);
   if (existing_handler != native_handler_map_.end()) {
-    clobbered_native_handlers_.push_back(existing_handler->second);
+    clobbered_native_handlers_.push_back(std::move(existing_handler->second));
     native_handler_map_.erase(existing_handler);
   }
 }
