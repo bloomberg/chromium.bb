@@ -102,10 +102,11 @@ DownloadItemModelData::DownloadItemModelData()
       is_being_revived_(false) {
 }
 
-base::string16 InterruptReasonStatusMessage(int reason) {
+base::string16 InterruptReasonStatusMessage(
+    content::DownloadInterruptReason reason) {
   int string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
 
-  switch (static_cast<content::DownloadInterruptReason>(reason)) {
+  switch (reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED;
       break;
@@ -182,11 +183,11 @@ base::string16 InterruptReasonStatusMessage(int reason) {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-base::string16 InterruptReasonMessage(int reason) {
+base::string16 InterruptReasonMessage(content::DownloadInterruptReason reason) {
   int string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   base::string16 status_text;
 
-  switch (static_cast<content::DownloadInterruptReason>(reason)) {
+  switch (reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED;
       break;
