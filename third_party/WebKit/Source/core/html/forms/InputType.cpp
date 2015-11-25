@@ -562,7 +562,6 @@ bool InputType::shouldDispatchFormControlChangeEvent(String& oldValue, String& n
 void InputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     element().setValueInternal(sanitizedValue, eventBehavior);
-    element().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     if (!valueChanged)
         return;
     switch (eventBehavior) {

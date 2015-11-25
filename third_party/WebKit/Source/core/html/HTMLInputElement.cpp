@@ -1103,6 +1103,10 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
 {
     m_valueIfDirty = sanitizedValue;
     setNeedsValidityCheck();
+    if (m_inputType->isSteppable()) {
+        pseudoStateChanged(CSSSelector::PseudoInRange);
+        pseudoStateChanged(CSSSelector::PseudoOutOfRange);
+    }
     if (document().focusedElement() == this)
         document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput();
 }
