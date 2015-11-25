@@ -782,8 +782,7 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
 
-# TODO(fmalita): re-enable after http://crrev.com/1457783005
-# crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
+crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
 # TODO(mlamouri): re-enable after 3d-point-mapping-preserve-3d.html rebaseline lands.
 #crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
@@ -1184,8 +1183,7 @@ crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context.
 crbug.com/521730 [ Win10 ] svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ Failure ]
 crbug.com/521730 [ Win10 ] svg/carto.net/combobox.svg [ Failure ]
-# TODO(fmalita): re-enable after http://crrev.com/521730
-# crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ Failure ]
+crbug.com/521730 [ Win10 ] svg/css/text-gradient-shadow.svg [ Failure ]
 crbug.com/521730 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 crbug.com/521730 [ Win10 ] printing/iframe-print.html [ Failure ]
 crbug.com/521730 [ Win10 ] printing/quirks-percentage-height-body.html [ Failure ]
@@ -1221,8 +1219,7 @@ crbug.com/521730 [ Win10 ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Failure ]
 crbug.com/521730 [ Win10 ] fast/css/line-height-determined-by-primary-font.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-pseudo-elements.html [ Failure ]
-# TODO(fmalita): re-enable after http://crrev.com/521730
-# crbug.com/521730 [ Win10 ] fast/forms/search/search-appearance-basic.html [ Failure ]
+crbug.com/521730 [ Win10 ] fast/forms/search/search-appearance-basic.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/ruby/nested-ruby.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text-autosizing/display-type-change.html [ Failure ]
