@@ -39,7 +39,8 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       cancel_button_text.obj(), first_run_experience_message.obj());
 }
 
-void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB);
 }
 

@@ -30,11 +30,14 @@ class JavascriptAppModalDialogAndroid
   bool IsShowing() const override;
 
   // Called when java confirms or cancels the dialog.
-  void DidAcceptAppModalDialog(JNIEnv* env,
-                               jobject obj,
-                               jstring prompt_text,
+  void DidAcceptAppModalDialog(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& prompt_text,
+      bool suppress_js_dialogs);
+  void DidCancelAppModalDialog(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>&,
                                bool suppress_js_dialogs);
-  void DidCancelAppModalDialog(JNIEnv* env, jobject, bool suppress_js_dialogs);
 
   const base::android::ScopedJavaGlobalRef<jobject>& GetDialogObject() const;
 

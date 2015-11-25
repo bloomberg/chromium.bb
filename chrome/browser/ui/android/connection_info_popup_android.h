@@ -24,11 +24,14 @@ class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
                              jobject java_website_settings,
                              content::WebContents* web_contents);
   ~ConnectionInfoPopupAndroid() override;
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Revokes any current user exceptions for bypassing SSL error interstitials
   // on this page.
-  void ResetCertDecisions(JNIEnv* env, jobject obj, jobject java_web_contents);
+  void ResetCertDecisions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& java_web_contents);
 
   // WebsiteSettingsUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;

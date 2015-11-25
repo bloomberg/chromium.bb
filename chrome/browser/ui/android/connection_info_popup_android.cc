@@ -104,14 +104,15 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
 ConnectionInfoPopupAndroid::~ConnectionInfoPopupAndroid() {
 }
 
-void ConnectionInfoPopupAndroid::Destroy(JNIEnv* env, jobject obj) {
+void ConnectionInfoPopupAndroid::Destroy(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
 void ConnectionInfoPopupAndroid::ResetCertDecisions(
     JNIEnv* env,
-    jobject obj,
-    jobject java_web_contents) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& java_web_contents) {
   presenter_->OnRevokeSSLErrorBypassButtonPressed();
 }
 

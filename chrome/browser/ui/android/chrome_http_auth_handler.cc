@@ -62,9 +62,9 @@ void ChromeHttpAuthHandler::OnAutofillDataAvailable(
 }
 
 void ChromeHttpAuthHandler::SetAuth(JNIEnv* env,
-                                    jobject,
-                                    jstring username,
-                                    jstring password) {
+                                    const JavaParamRef<jobject>&,
+                                    const JavaParamRef<jstring>& username,
+                                    const JavaParamRef<jstring>& password) {
   if (observer_) {
     base::string16 username16 = ConvertJavaStringToUTF16(env, username);
     base::string16 password16 = ConvertJavaStringToUTF16(env, password);
@@ -72,13 +72,15 @@ void ChromeHttpAuthHandler::SetAuth(JNIEnv* env,
   }
 }
 
-void ChromeHttpAuthHandler::CancelAuth(JNIEnv* env, jobject) {
+void ChromeHttpAuthHandler::CancelAuth(JNIEnv* env,
+                                       const JavaParamRef<jobject>&) {
   if (observer_)
     observer_->CancelAuth();
 }
 
 ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetMessageBody(
-    JNIEnv* env, jobject) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
   return ConvertUTF16ToJavaString(env, explanation_);
 }
 

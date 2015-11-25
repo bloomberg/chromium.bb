@@ -29,10 +29,13 @@ class ContextMenuHelper
   void SetPopulator(jobject jpopulator);
 
   // Methods called from Java via JNI ------------------------------------------
-  void OnStartDownload(
-      JNIEnv* env, jobject obj, jboolean jis_link, jstring jheaders);
-  void SearchForImage(JNIEnv* env, jobject obj);
-  void ShareImage(JNIEnv* env, jobject obj);
+  void OnStartDownload(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       jboolean jis_link,
+                       const base::android::JavaParamRef<jstring>& jheaders);
+  void SearchForImage(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
+  void ShareImage(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
   explicit ContextMenuHelper(content::WebContents* web_contents);

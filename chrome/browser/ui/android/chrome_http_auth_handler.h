@@ -41,14 +41,18 @@ class ChromeHttpAuthHandler {
   // --------------------------------------------------------------
 
   // Submits the username and password to the observer.
-  void SetAuth(JNIEnv* env, jobject, jstring username, jstring password);
+  void SetAuth(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>&,
+               const base::android::JavaParamRef<jstring>& username,
+               const base::android::JavaParamRef<jstring>& password);
 
   // Cancels the authentication attempt of the observer.
-  void CancelAuth(JNIEnv* env, jobject);
+  void CancelAuth(JNIEnv* env, const base::android::JavaParamRef<jobject>&);
 
   // These functions return the strings needed to display a login form.
   base::android::ScopedJavaLocalRef<jstring> GetMessageBody(
-      JNIEnv* env, jobject);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&);
   // Registers the ChromeHttpAuthHandler native methods.
   static bool RegisterChromeHttpAuthHandler(JNIEnv* env);
  private:

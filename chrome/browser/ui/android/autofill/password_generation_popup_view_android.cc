@@ -26,12 +26,15 @@ PasswordGenerationPopupViewAndroid::PasswordGenerationPopupViewAndroid(
     : controller_(controller) {}
 
 void PasswordGenerationPopupViewAndroid::SavedPasswordsLinkClicked(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (controller_)
     controller_->OnSavedPasswordsLinkClicked();
 }
 
-void PasswordGenerationPopupViewAndroid::Dismissed(JNIEnv* env, jobject obj) {
+void PasswordGenerationPopupViewAndroid::Dismissed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (controller_)
     controller_->ViewDestroyed();
 
@@ -39,7 +42,8 @@ void PasswordGenerationPopupViewAndroid::Dismissed(JNIEnv* env, jobject obj) {
 }
 
 void PasswordGenerationPopupViewAndroid::PasswordSelected(
-    JNIEnv* env, jobject object) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object) {
   if (controller_)
     controller_->PasswordAccepted();
 }

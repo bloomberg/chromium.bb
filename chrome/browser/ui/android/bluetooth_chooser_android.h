@@ -28,17 +28,26 @@ class BluetoothChooserAndroid : public content::BluetoothChooser {
 
   // Report the dialog's result.
   void OnDialogFinished(JNIEnv* env,
-                        jobject obj,
+                        const base::android::JavaParamRef<jobject>& obj,
                         jint event_type,
-                        jstring device_id);
+                        const base::android::JavaParamRef<jstring>& device_id);
 
   // Notify bluetooth stack that the search needs to be re-issued.
-  void RestartSearch(JNIEnv* env, jobject obj);
+  void RestartSearch(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj);
 
-  void ShowBluetoothOverviewLink(JNIEnv* env, jobject obj);
-  void ShowBluetoothPairingLink(JNIEnv* env, jobject obj);
-  void ShowBluetoothAdapterOffLink(JNIEnv* env, jobject obj);
-  void ShowNeedLocationPermissionLink(JNIEnv* env, jobject obj);
+  void ShowBluetoothOverviewLink(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void ShowBluetoothPairingLink(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void ShowBluetoothAdapterOffLink(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void ShowNeedLocationPermissionLink(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   static bool Register(JNIEnv* env);
 

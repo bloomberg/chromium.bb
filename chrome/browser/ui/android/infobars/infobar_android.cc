@@ -53,12 +53,13 @@ bool InfoBarAndroid::HasSetJavaInfoBar() const {
 }
 
 void InfoBarAndroid::OnButtonClicked(JNIEnv* env,
-                                     jobject obj,
+                                     const JavaParamRef<jobject>& obj,
                                      jint action) {
   ProcessButton(action);
 }
 
-void InfoBarAndroid::OnCloseButtonClicked(JNIEnv* env, jobject obj) {
+void InfoBarAndroid::OnCloseButtonClicked(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   if (!owner())
     return; // We're closing; don't call anything, it might access the owner.
   delegate()->InfoBarDismissed();

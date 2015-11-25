@@ -102,7 +102,8 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
       base::android::ToJavaIntArray(env, content_settings).obj());
 }
 
-void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+void ConfirmInfoBar::OnLinkClicked(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
   if (!owner())
       return; // We're closing; don't call anything, it might access the owner.
 

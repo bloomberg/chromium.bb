@@ -37,7 +37,9 @@ AutoSigninFirstRunInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       auto_signin_infobar_delegate->message_link_range().end());
 }
 
-void AutoSigninFirstRunInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+void AutoSigninFirstRunInfoBar::OnLinkClicked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB);
 }
 

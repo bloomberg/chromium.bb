@@ -64,14 +64,16 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
 
 WebsiteSettingsPopupAndroid::~WebsiteSettingsPopupAndroid() {}
 
-void WebsiteSettingsPopupAndroid::Destroy(JNIEnv* env, jobject obj) {
+void WebsiteSettingsPopupAndroid::Destroy(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void WebsiteSettingsPopupAndroid::OnPermissionSettingChanged(JNIEnv* env,
-                                                             jobject obj,
-                                                             jint type,
-                                                             jint setting) {
+void WebsiteSettingsPopupAndroid::OnPermissionSettingChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint type,
+    jint setting) {
   ContentSettingsType content_setting_type =
       static_cast<ContentSettingsType>(type);
   ContentSetting content_setting = static_cast<ContentSetting>(setting);

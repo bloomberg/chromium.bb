@@ -27,25 +27,29 @@ ToolbarModelAndroid::ToolbarModelAndroid(JNIEnv* env, jobject jdelegate)
 ToolbarModelAndroid::~ToolbarModelAndroid() {
 }
 
-void ToolbarModelAndroid::Destroy(JNIEnv* env, jobject obj) {
+void ToolbarModelAndroid::Destroy(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(JNIEnv* env,
-                                                         jobject obj) {
+ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return base::android::ConvertUTF16ToJavaString(env,
                                                  toolbar_model_->GetText());
 }
 
 ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetCorpusChipText(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   return base::android::ConvertUTF16ToJavaString(
       env,
       toolbar_model_->GetCorpusNameForMobile());
 }
 
-jboolean ToolbarModelAndroid::WouldReplaceURL(JNIEnv* env, jobject obj) {
+jboolean ToolbarModelAndroid::WouldReplaceURL(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return toolbar_model_->WouldReplaceURL();
 }
 

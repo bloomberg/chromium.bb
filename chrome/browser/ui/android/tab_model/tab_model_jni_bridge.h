@@ -27,16 +27,19 @@ class WebContents;
 class TabModelJniBridge : public TabModel {
  public:
   TabModelJniBridge(JNIEnv* env, jobject obj, bool is_incognito);
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   ~TabModelJniBridge() override;
 
   // Registers the JNI bindings.
   static bool Register(JNIEnv* env);
 
   // Called by JNI
-  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
-                                                               jobject obj);
-  void TabAddedToModel(JNIEnv* env, jobject obj, jobject jtab);
+  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void TabAddedToModel(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& jtab);
 
   // TabModel::
   int GetTabCount() const override;
@@ -57,7 +60,9 @@ class TabModelJniBridge : public TabModel {
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
-  void BroadcastSessionRestoreComplete(JNIEnv* env, jobject obj);
+  void BroadcastSessionRestoreComplete(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
  protected:
   JavaObjectWeakGlobalRef java_object_;

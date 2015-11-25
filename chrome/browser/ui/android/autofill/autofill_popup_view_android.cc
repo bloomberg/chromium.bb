@@ -95,17 +95,19 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
       env, java_object_.obj(), data_array.obj(), controller_->IsRTL());
 }
 
-void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
-                                                  jobject obj,
-                                                  jint list_index) {
+void AutofillPopupViewAndroid::SuggestionSelected(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint list_index) {
   // Race: Hide() may have already run.
   if (controller_)
     controller_->AcceptSuggestion(list_index);
 }
 
-void AutofillPopupViewAndroid::DeletionRequested(JNIEnv* env,
-                                                jobject obj,
-                                                jint list_index) {
+void AutofillPopupViewAndroid::DeletionRequested(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint list_index) {
   if (!controller_)
     return;
 
@@ -125,8 +127,9 @@ void AutofillPopupViewAndroid::DeletionRequested(JNIEnv* env,
           env, confirmation_body).obj());
 }
 
-void AutofillPopupViewAndroid::DeletionConfirmed(JNIEnv* env,
-                                                 jobject obj) {
+void AutofillPopupViewAndroid::DeletionConfirmed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!controller_)
     return;
 
@@ -134,7 +137,9 @@ void AutofillPopupViewAndroid::DeletionConfirmed(JNIEnv* env,
   controller_->RemoveSuggestion(deleting_index_);
 }
 
-void AutofillPopupViewAndroid::PopupDismissed(JNIEnv* env, jobject obj) {
+void AutofillPopupViewAndroid::PopupDismissed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (controller_)
     controller_->ViewDestroyed();
 

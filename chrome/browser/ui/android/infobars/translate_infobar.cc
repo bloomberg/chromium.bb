@@ -86,7 +86,7 @@ void TranslateInfoBar::SetJavaInfoBar(
 }
 
 void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
-                                             jobject obj,
+                                             const JavaParamRef<jobject>& obj,
                                              int source_language_index,
                                              int target_language_index,
                                              bool always_translate,

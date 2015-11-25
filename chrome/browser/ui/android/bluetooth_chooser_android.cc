@@ -98,10 +98,11 @@ void BluetoothChooserAndroid::RemoveDevice(const std::string& device_id) {
                                            java_device_id.obj());
 }
 
-void BluetoothChooserAndroid::OnDialogFinished(JNIEnv* env,
-                                               jobject obj,
-                                               jint event_type,
-                                               jstring device_id) {
+void BluetoothChooserAndroid::OnDialogFinished(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint event_type,
+    const JavaParamRef<jstring>& device_id) {
   // Values are defined in BluetoothChooserDialog as DIALOG_FINISHED constants.
   switch (event_type) {
     case 0:
@@ -119,27 +120,32 @@ void BluetoothChooserAndroid::OnDialogFinished(JNIEnv* env,
   NOTREACHED();
 }
 
-void BluetoothChooserAndroid::RestartSearch(JNIEnv* env, jobject obj) {
+void BluetoothChooserAndroid::RestartSearch(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   event_handler_.Run(Event::RESCAN, "");
 }
 
-void BluetoothChooserAndroid::ShowBluetoothOverviewLink(JNIEnv* env,
-                                                        jobject obj) {
+void BluetoothChooserAndroid::ShowBluetoothOverviewLink(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   event_handler_.Run(Event::SHOW_OVERVIEW_HELP, "");
 }
 
-void BluetoothChooserAndroid::ShowBluetoothPairingLink(JNIEnv* env,
-                                                       jobject obj) {
+void BluetoothChooserAndroid::ShowBluetoothPairingLink(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   event_handler_.Run(Event::SHOW_PAIRING_HELP, "");
 }
 
-void BluetoothChooserAndroid::ShowBluetoothAdapterOffLink(JNIEnv* env,
-                                                          jobject obj) {
+void BluetoothChooserAndroid::ShowBluetoothAdapterOffLink(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   event_handler_.Run(Event::SHOW_ADAPTER_OFF_HELP, "");
 }
 
-void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(JNIEnv* env,
-                                                             jobject obj) {
+void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   event_handler_.Run(Event::SHOW_NEED_LOCATION_HELP, "");
 }
 

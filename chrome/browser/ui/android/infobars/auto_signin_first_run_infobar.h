@@ -24,7 +24,8 @@ class AutoSigninFirstRunInfoBar : public ConfirmInfoBar {
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-  void OnLinkClicked(JNIEnv* env, jobject obj) override;
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj) override;
 
   DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunInfoBar);
 };

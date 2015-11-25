@@ -110,17 +110,19 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
       env, java_object_.obj(), data_array.obj(), controller_->IsRTL());
 }
 
-void AutofillKeyboardAccessoryView::SuggestionSelected(JNIEnv* env,
-                                                       jobject obj,
-                                                       jint list_index) {
+void AutofillKeyboardAccessoryView::SuggestionSelected(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint list_index) {
   // Race: Hide() may have already run.
   if (controller_)
     controller_->AcceptSuggestion(positions_[list_index]);
 }
 
-void AutofillKeyboardAccessoryView::DeletionRequested(JNIEnv* env,
-                                                      jobject obj,
-                                                      jint list_index) {
+void AutofillKeyboardAccessoryView::DeletionRequested(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint list_index) {
   if (!controller_)
     return;
 
@@ -137,8 +139,9 @@ void AutofillKeyboardAccessoryView::DeletionRequested(JNIEnv* env,
       base::android::ConvertUTF16ToJavaString(env, confirmation_body).obj());
 }
 
-void AutofillKeyboardAccessoryView::DeletionConfirmed(JNIEnv* env,
-                                                      jobject obj) {
+void AutofillKeyboardAccessoryView::DeletionConfirmed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!controller_)
     return;
 
@@ -146,7 +149,9 @@ void AutofillKeyboardAccessoryView::DeletionConfirmed(JNIEnv* env,
   controller_->RemoveSuggestion(deleting_index_);
 }
 
-void AutofillKeyboardAccessoryView::ViewDismissed(JNIEnv* env, jobject obj) {
+void AutofillKeyboardAccessoryView::ViewDismissed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (controller_)
     controller_->ViewDestroyed();
 

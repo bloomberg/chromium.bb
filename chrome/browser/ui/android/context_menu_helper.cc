@@ -103,9 +103,9 @@ ContextMenuHelper::CreateJavaContextMenuParams(
 }
 
 void ContextMenuHelper::OnStartDownload(JNIEnv* env,
-                                        jobject obj,
+                                        const JavaParamRef<jobject>& obj,
                                         jboolean jis_link,
-                                        jstring jheaders) {
+                                        const JavaParamRef<jstring>& jheaders) {
   std::string headers(ConvertJavaStringToUTF8(env, jheaders));
   content::DownloadControllerAndroid::Get()->StartContextMenuDownload(
       context_menu_params_,
@@ -114,12 +114,14 @@ void ContextMenuHelper::OnStartDownload(JNIEnv* env,
       headers);
 }
 
-void ContextMenuHelper::SearchForImage(JNIEnv* env, jobject obj) {
+void ContextMenuHelper::SearchForImage(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   CoreTabHelper::FromWebContents(web_contents_)->SearchByImageInNewTab(
       context_menu_params_.src_url);
 }
 
-void ContextMenuHelper::ShareImage(JNIEnv* env, jobject obj) {
+void ContextMenuHelper::ShareImage(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
   CoreTabHelper::FromWebContents(web_contents_)->
       RequestThumbnailForContextNode(
           0,

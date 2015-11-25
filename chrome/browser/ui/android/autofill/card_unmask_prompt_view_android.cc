@@ -53,19 +53,21 @@ void CardUnmaskPromptViewAndroid::Show() {
   Java_CardUnmaskBridge_show(env, java_object_.obj());
 }
 
-bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(JNIEnv* env,
-                                                         jobject obj,
-                                                         jstring response) {
+bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& response) {
   return controller_->InputCvcIsValid(
       base::android::ConvertJavaStringToUTF16(env, response));
 }
 
-void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
-                                              jobject obj,
-                                              jstring cvc,
-                                              jstring month,
-                                              jstring year,
-                                              jboolean should_store_locally) {
+void CardUnmaskPromptViewAndroid::OnUserInput(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& cvc,
+    const JavaParamRef<jstring>& month,
+    const JavaParamRef<jstring>& year,
+    jboolean should_store_locally) {
   controller_->OnUnmaskResponse(
       base::android::ConvertJavaStringToUTF16(env, cvc),
       base::android::ConvertJavaStringToUTF16(env, month),
@@ -73,8 +75,9 @@ void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
       should_store_locally);
 }
 
-void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(JNIEnv* env,
-                                                       jobject obj) {
+void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   controller_->NewCardLinkClicked();
   Java_CardUnmaskBridge_update(env, java_object_.obj(),
       base::android::ConvertUTF16ToJavaString(
@@ -84,7 +87,9 @@ void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(JNIEnv* env,
       controller_->ShouldRequestExpirationDate());
 }
 
-void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {
+void CardUnmaskPromptViewAndroid::PromptDismissed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   delete this;
 }
 

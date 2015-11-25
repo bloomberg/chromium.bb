@@ -18,7 +18,8 @@ class ConfirmInfoBar : public InfoBarAndroid {
  protected:
   base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
   ConfirmInfoBarDelegate* GetDelegate();
-  void OnLinkClicked(JNIEnv* env, jobject obj) override;
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj) override;
 
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

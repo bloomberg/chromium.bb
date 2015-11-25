@@ -22,7 +22,7 @@ class TranslateInfoBar : public InfoBarAndroid {
 
   // JNI methods specific to translate.
   void ApplyTranslateOptions(JNIEnv* env,
-                             jobject obj,
+                             const base::android::JavaParamRef<jobject>& obj,
                              int source_language_index,
                              int target_language_index,
                              bool always_translate,

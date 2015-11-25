@@ -33,14 +33,16 @@ class CreditCardScannerViewAndroid : public CreditCardScannerView {
   ~CreditCardScannerViewAndroid() override;
 
   // Called by JNI when user cancelled credit card scan.
-  void ScanCancelled(JNIEnv* env, jobject object);
+  void ScanCancelled(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& object);
 
   // Called by JNI when credit card scan completed successfully.
   void ScanCompleted(JNIEnv* env,
-                     jobject object,
-                     jstring card_number,
+                     const base::android::JavaParamRef<jobject>& object,
+                     const base::android::JavaParamRef<jstring>& card_number,
                      jint expiration_month,
                      jint expiration_year);
+
  private:
   // CreditCardScannerView implementation.
   void Show() override;

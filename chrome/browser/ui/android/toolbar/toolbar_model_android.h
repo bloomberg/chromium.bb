@@ -23,14 +23,15 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
   explicit ToolbarModelAndroid(JNIEnv* env, jobject jdelegate);
   ~ToolbarModelAndroid() override;
 
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetText(
       JNIEnv* env,
-      jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetCorpusChipText(
       JNIEnv* env,
-      jobject obj);
-  jboolean WouldReplaceURL(JNIEnv* env, jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean WouldReplaceURL(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
 
   // ToolbarDelegate:
   content::WebContents* GetActiveWebContents() const override;

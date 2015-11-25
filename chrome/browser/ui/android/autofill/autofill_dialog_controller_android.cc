@@ -428,8 +428,9 @@ bool AutofillDialogControllerAndroid::
   return RegisterNativesImpl(env);
 }
 
-void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
-                                                   jobject obj) {
+void AutofillDialogControllerAndroid::DialogCancel(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   LogOnCancelMetrics();
   callback_.Run(AutofillClient::AutocompleteResultErrorCancel,
                 base::string16(),
@@ -438,13 +439,13 @@ void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
 
 void AutofillDialogControllerAndroid::DialogContinue(
     JNIEnv* env,
-    jobject obj,
-    jobject wallet,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& wallet,
     jboolean jlast_used_choice_is_autofill,
-    jstring jlast_used_account_name,
-    jstring jlast_used_billing,
-    jstring jlast_used_shipping,
-    jstring jlast_used_card) {
+    const JavaParamRef<jstring>& jlast_used_account_name,
+    const JavaParamRef<jstring>& jlast_used_billing,
+    const JavaParamRef<jstring>& jlast_used_shipping,
+    const JavaParamRef<jstring>& jlast_used_card) {
   const base::string16 email =
       AutofillDialogResult::GetWalletEmail(env, wallet);
   const std::string google_transaction_id =

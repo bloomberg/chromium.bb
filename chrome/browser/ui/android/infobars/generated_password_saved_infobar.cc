@@ -42,7 +42,9 @@ GeneratedPasswordSavedInfoBar::CreateRenderInfoBar(JNIEnv* env) {
           env, infobar_delegate->button_label()).obj());
 }
 
-void GeneratedPasswordSavedInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+void GeneratedPasswordSavedInfoBar::OnLinkClicked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!owner())
     return;
 

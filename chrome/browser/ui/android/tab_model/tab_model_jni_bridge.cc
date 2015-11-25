@@ -47,12 +47,13 @@ TabModelJniBridge::TabModelJniBridge(JNIEnv* env,
   TabModelList::AddTabModel(this);
 }
 
-void TabModelJniBridge::Destroy(JNIEnv* env, jobject obj) {
+void TabModelJniBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-ScopedJavaLocalRef<jobject> TabModelJniBridge::GetProfileAndroid(JNIEnv* env,
-                                                                 jobject obj) {
+ScopedJavaLocalRef<jobject> TabModelJniBridge::GetProfileAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   ProfileAndroid* profile_android = ProfileAndroid::FromProfile(GetProfile());
   if (!profile_android)
     return ScopedJavaLocalRef<jobject>();
@@ -60,8 +61,8 @@ ScopedJavaLocalRef<jobject> TabModelJniBridge::GetProfileAndroid(JNIEnv* env,
 }
 
 void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
-                                        jobject obj,
-                                        jobject jtab) {
+                                        const JavaParamRef<jobject>& obj,
+                                        const JavaParamRef<jobject>& jtab) {
   // Tab#initialize() should have been called by now otherwise we can't push
   // the window id.
   TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
@@ -145,8 +146,9 @@ bool TabModelJniBridge::IsSessionRestoreInProgress() const {
       env, java_object_.get(env).obj());
 }
 
-void TabModelJniBridge::BroadcastSessionRestoreComplete(JNIEnv* env,
-                                                        jobject obj) {
+void TabModelJniBridge::BroadcastSessionRestoreComplete(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   TabModel::BroadcastSessionRestoreComplete();
 }
 

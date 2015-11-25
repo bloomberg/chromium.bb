@@ -38,15 +38,17 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   void TabActivated() override;
 
   // JNI bindings for Java-side AutofillDialogDelegate:
-  void DialogCancel(JNIEnv* env, jobject obj);
-  void DialogContinue(JNIEnv* env,
-                      jobject obj,
-                      jobject full_wallet,
-                      jboolean last_used_choice_is_autofill,
-                      jstring last_used_account_name,
-                      jstring last_used_billing,
-                      jstring last_used_shipping,
-                      jstring last_used_credit_card);
+  void DialogCancel(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
+  void DialogContinue(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& full_wallet,
+      jboolean last_used_choice_is_autofill,
+      const base::android::JavaParamRef<jstring>& last_used_account_name,
+      const base::android::JavaParamRef<jstring>& last_used_billing,
+      const base::android::JavaParamRef<jstring>& last_used_shipping,
+      const base::android::JavaParamRef<jstring>& last_used_credit_card);
 
   // Establishes JNI bindings.
   static bool RegisterAutofillDialogControllerAndroid(JNIEnv* env);
