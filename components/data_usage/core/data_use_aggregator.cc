@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
 #include "components/data_usage/core/data_use.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
@@ -32,10 +31,6 @@ DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
 
 DataUseAggregator::~DataUseAggregator() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-
-  // Reset the callbacks to remove any WeakPtr references to |this| inside them.
-  annotation_callback_.Reset();
-  amortization_callback_.Reset();
 }
 
 void DataUseAggregator::AddObserver(Observer* observer) {
@@ -127,14 +122,7 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
 void DataUseAggregator::OnAmortizationComplete(
     scoped_ptr<DataUse> amortized_data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Pass Observers a sequence of const DataUse pointers instead of using the
-  // buffer directly in order to prevent Observers from modifying the DataUse
-  // objects.
-  // TODO(sclittle): Change the observer interface to take in a const DataUse&.
-  std::vector<const DataUse*> const_sequence(1, amortized_data_use.get());
-  DCHECK(!ContainsValue(const_sequence, nullptr));
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(const_sequence));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(*amortized_data_use));
 }
 
 }  // namespace data_usage

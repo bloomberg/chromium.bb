@@ -108,8 +108,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ChangeRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           AtMostOneDataUseSubmitRequest);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
@@ -207,14 +205,13 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Maximum buffer size. If an entry needs to be added to the buffer that has
   // size |kMaxBufferSize|, then the oldest entry will be removed.
-  static const size_t kMaxBufferSize = 100;
+  static const size_t kMaxBufferSize;
 
   // Creates Java object. Must be called on the UI thread.
   void CreateJavaObjectOnUIThread();
 
   // data_usage::DataUseAggregator::Observer implementation:
-  void OnDataUse(const std::vector<const data_usage::DataUse*>&
-                     data_use_sequence) override;
+  void OnDataUse(const data_usage::DataUse& data_use) override;
 
   // Fetches matching rules from Java. Must be called on the UI thread. Returns
   // result asynchronously on UI thread via FetchMatchingRulesDone.
@@ -222,11 +219,11 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Called by FetchMatchingRulesDone on IO thread when new matching rules
   // Adds |data_use| to buffered reports. |data_use| is the data use report
-  // received from DataUseAggregator. |data_use| should not be null. |label| is
-  // a non-empty label that applies to |data_use|. |start_time| and |end_time|
-  // are the start, and end times of the interval during which bytes reported in
-  // |data_use| went over the network.
-  void BufferDataUseReport(const data_usage::DataUse* data_use,
+  // received from DataUseAggregator. |label| is a non-empty label that applies
+  // to |data_use|. |start_time| and |end_time| are the start, and end times of
+  // the interval during which bytes reported in |data_use| went over the
+  // network.
+  void BufferDataUseReport(const data_usage::DataUse& data_use,
                            const std::string& label,
                            const base::Time& start_time,
                            const base::Time& end_time);

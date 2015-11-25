@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,10 +34,7 @@ class DataUseAggregator
   class Observer {
    public:
     virtual ~Observer() {}
-    // Each of the elements of |data_use_sequence| are guaranteed to be
-    // non-NULL.
-    virtual void OnDataUse(
-        const std::vector<const DataUse*>& data_use_sequence) = 0;
+    virtual void OnDataUse(const DataUse& data_use) = 0;
   };
 
   // Constructs a new DataUseAggregator with the given |annotator| and

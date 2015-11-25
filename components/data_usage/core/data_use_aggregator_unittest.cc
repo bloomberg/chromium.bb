@@ -206,30 +206,23 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
 class TestObserver : public DataUseAggregator::Observer {
  public:
   explicit TestObserver(DataUseAggregator* data_use_aggregator)
-      : data_use_aggregator_(data_use_aggregator),
-        on_data_use_called_count_(0) {
+      : data_use_aggregator_(data_use_aggregator) {
     data_use_aggregator_->AddObserver(this);
   }
 
   ~TestObserver() override { data_use_aggregator_->RemoveObserver(this); }
 
-  void OnDataUse(
-      const std::vector<const DataUse*>& data_use_sequence) override {
-    ++on_data_use_called_count_;
-    for (const DataUse* data_use : data_use_sequence)
-      observed_data_use_.push_back(*data_use);
+  void OnDataUse(const DataUse& data_use) override {
+    observed_data_use_.push_back(data_use);
   }
 
   const std::vector<DataUse>& observed_data_use() const {
     return observed_data_use_;
   }
 
-  int on_data_use_called_count() const { return on_data_use_called_count_; }
-
  private:
   DataUseAggregator* data_use_aggregator_;
   std::vector<DataUse> observed_data_use_;
-  int on_data_use_called_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
