@@ -50,8 +50,9 @@ struct WindowProperty;
 class Window {
  public:
   using Children = std::vector<Window*>;
-  using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
   using EmbedCallback = base::Callback<void(bool, ConnectionSpecificId)>;
+  using PropertyDeallocator = void (*)(int64_t value);
+  using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
 
   // Destroys this window and all its children. Destruction is allowed for
   // windows that were created by this connection, or the root window. For
@@ -75,6 +76,10 @@ class Window {
   // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
+
+  // A Window is drawn if the Window and all its ancestors are visible and the
+  // Window is attached to the root.
+  bool IsDrawn() const;
 
   const mojom::ViewportMetrics& viewport_metrics() {
     return *viewport_metrics_;
@@ -123,13 +128,6 @@ class Window {
   template <typename T>
   void ClearLocalProperty(const WindowProperty<T>* property);
 
-  // Type of a function to delete a property that this window owns.
-  typedef void (*PropertyDeallocator)(int64_t value);
-
-  // A Window is drawn if the Window and all its ancestors are visible and the
-  // Window is attached to the root.
-  bool IsDrawn() const;
-
   // Observation.
   void AddObserver(WindowObserver* observer);
   void RemoveObserver(WindowObserver* observer);
@@ -137,14 +135,6 @@ class Window {
   // Tree.
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
-  const Children& children() const { return children_; }
-
-  // TODO(fsamuel): Figure out if we want to refactor transient window
-  // management into a separate class.
-  // Transient tree.
-  Window* transient_parent() { return transient_parent_; }
-  const Window* transient_parent() const { return transient_parent_; }
-  const Children& transient_children() const { return transient_children_; }
 
   Window* GetRoot() {
     return const_cast<Window*>(const_cast<const Window*>(this)->GetRoot());
@@ -153,15 +143,24 @@ class Window {
 
   void AddChild(Window* child);
   void RemoveChild(Window* child);
-
-  void AddTransientWindow(Window* transient_window);
-  void RemoveTransientWindow(Window* transient_window);
+  const Children& children() const { return children_; }
 
   void Reorder(Window* relative, mojom::OrderDirection direction);
   void MoveToFront();
   void MoveToBack();
 
+  // Returns true if |child| is this or a descendant of this.
   bool Contains(Window* child) const;
+
+  void AddTransientWindow(Window* transient_window);
+  void RemoveTransientWindow(Window* transient_window);
+
+  // TODO(fsamuel): Figure out if we want to refactor transient window
+  // management into a separate class.
+  // Transient tree.
+  Window* transient_parent() { return transient_parent_; }
+  const Window* transient_parent() const { return transient_parent_; }
+  const Children& transient_children() const { return transient_children_; }
 
   Window* GetChildById(Id id);
 
