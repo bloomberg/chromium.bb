@@ -8,9 +8,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Surface;
 
+import org.chromium.base.annotations.MainDex;
+
 /**
  * A wrapper for marshalling a Surface without self-destruction.
  */
+@MainDex
 public class SurfaceWrapper implements Parcelable {
     private final Surface mSurface;
 
