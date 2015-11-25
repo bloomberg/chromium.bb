@@ -981,6 +981,8 @@
       'browser/media/android/media_session_uma_helper.h',
       'browser/media/android/media_throttler.cc',
       'browser/media/android/media_throttler.h',
+      'browser/media/android/provision_fetcher_impl.cc',
+      'browser/media/android/provision_fetcher_impl.h',
       'browser/media/android/url_provision_fetcher.cc',
       'browser/media/android/url_provision_fetcher.h',
       'browser/media/audio_stream_monitor.cc',
@@ -2026,6 +2028,7 @@
     ['OS=="android"', {
       'dependencies': [
         '../media/media.gyp:media',
+        '../media/mojo/interfaces/mojo_bindings.gyp:provision_fetcher_api',
         '../mojo/mojo_base.gyp:libmojo_system_java',
         '../ui/android/ui_android.gyp:ui_android',
         'content.gyp:content_jni_headers',

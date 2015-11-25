@@ -16,6 +16,10 @@
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+#if defined(OS_ANDROID) && defined(ENABLE_MOJO_MEDIA)
+#include "content/browser/media/android/provision_fetcher_impl.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -40,6 +44,14 @@ class ServiceRegistryWrapper : public mojo::ServiceProvider {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRegistryWrapper);
 };
+
+void RegisterFrameMojoShellServices(ServiceRegistry* registry,
+                                    RenderFrameHost* render_frame_host) {
+#if defined(OS_ANDROID) && defined(ENABLE_MOJO_MEDIA)
+  registry->AddService(
+      base::Bind(&ProvisionFetcherImpl::Create, render_frame_host));
+#endif
+}
 
 }  // namespace
 
@@ -84,6 +96,10 @@ void FrameMojoShell::QuitApplication() {
 mojo::ServiceProvider* FrameMojoShell::GetServiceProvider() {
   if (!service_provider_) {
     scoped_ptr<ServiceRegistryImpl> registry(new ServiceRegistryImpl());
+    // TODO(rockot/xhwang): Currently all applications connected share the same
+    // set of services registered in the |registry|. We may want to provide
+    // different services for different apps for better isolation.
+    RegisterFrameMojoShellServices(registry.get(), frame_host_);
     GetContentClient()->browser()->RegisterFrameMojoShellServices(
         registry.get(), frame_host_);
     service_provider_.reset(new ServiceRegistryWrapper(std::move(registry)));
