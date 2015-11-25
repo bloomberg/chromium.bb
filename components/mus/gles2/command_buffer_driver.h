@@ -19,6 +19,8 @@ namespace gpu {
 class CommandBufferService;
 class GpuScheduler;
 class GpuControlService;
+class SyncPointClient;
+class SyncPointOrderData;
 namespace gles2 {
 class GLES2Decoder;
 }
@@ -70,6 +72,9 @@ class CommandBufferDriver {
   void DestroyImage(int32_t id);
   bool IsScheduled() const;
   bool HasUnprocessedCommands() const;
+  gpu::SyncPointOrderData* sync_point_order_data() {
+    return sync_point_order_data_.get();
+  }
 
  private:
   bool MakeCurrent();
@@ -85,12 +90,15 @@ class CommandBufferDriver {
   void OnContextLost(uint32_t reason);
   void DestroyDecoder();
 
+  const uint64_t command_buffer_id_;
   scoped_ptr<Client> client_;
   mojom::CommandBufferSyncClientPtr sync_client_;
   mojom::CommandBufferLostContextObserverPtr loss_observer_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
+  scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
+  scoped_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<GpuState> gpu_state_;

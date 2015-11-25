@@ -19,7 +19,10 @@ struct CommandBufferState {
 
 interface CommandBufferSyncClient {
   // |capabilities| is null if |success| is false.
-  DidInitialize(bool success, GpuCapabilities? capabilities);
+  DidInitialize(bool success,
+                int32 command_buffer_namespace,
+                uint64 command_buffer_id,
+                GpuCapabilities? capabilities);
   DidMakeProgress(CommandBufferState state);
 };
 

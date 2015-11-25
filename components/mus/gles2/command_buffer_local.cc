@@ -4,11 +4,13 @@
 
 #include "components/mus/gles2/command_buffer_local.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "components/mus/gles2/command_buffer_local_client.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -26,12 +28,19 @@
 
 namespace mus {
 
+namespace {
+
+base::StaticAtomicSequenceNumber g_next_command_buffer_id;
+
+}
+
 const unsigned int GL_READ_WRITE_CHROMIUM = 0x78F2;
 
 CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
                                        gfx::AcceleratedWidget widget,
                                        const scoped_refptr<GpuState>& gpu_state)
-    : widget_(widget),
+    : command_buffer_id_(g_next_command_buffer_id.GetNext()),
+      widget_(widget),
       gpu_state_(gpu_state),
       client_(client),
       next_fence_sync_release_(1),
@@ -90,6 +99,9 @@ bool CommandBufferLocal::Initialize() {
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group.get()));
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), decoder_.get(),
                                          decoder_.get()));
+  sync_point_order_data_ = gpu::SyncPointOrderData::Create();
+  sync_point_client_ = gpu_state_->sync_point_manager()->CreateSyncPointClient(
+      sync_point_order_data_, GetNamespaceID(), GetCommandBufferID());
   decoder_->set_engine(scheduler_.get());
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&CommandBufferLocal::OnWaitSyncPoint, base::Unretained(this)));
@@ -214,13 +226,11 @@ bool CommandBufferLocal::IsGpuChannelLost() {
 }
 
 gpu::CommandBufferNamespace CommandBufferLocal::GetNamespaceID() const {
-  NOTIMPLEMENTED();
-  return gpu::CommandBufferNamespace::INVALID;
+  return gpu::CommandBufferNamespace::MOJO_LOCAL;
 }
 
 uint64_t CommandBufferLocal::GetCommandBufferID() const {
-  NOTIMPLEMENTED();
-  return 0;
+  return command_buffer_id_;
 }
 
 uint64_t CommandBufferLocal::GenerateFenceSyncRelease() {
@@ -247,8 +257,9 @@ bool CommandBufferLocal::IsFenceSyncFlushReceived(uint64_t release) {
 
 bool CommandBufferLocal::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken* sync_token) {
-  // All sync tokens must be flushed before being waited on.
-  return false;
+  // Right now, MOJO_LOCAL is only used by trusted code, so it is safe to wait
+  // on a sync token in MOJO_LOCAL command buffer.
+  return sync_token->namespace_id() == gpu::CommandBufferNamespace::MOJO_LOCAL;
 }
 
 void CommandBufferLocal::PumpCommands() {
@@ -257,7 +268,12 @@ void CommandBufferLocal::PumpCommands() {
     command_buffer_->SetParseError(::gpu::error::kLostContext);
     return;
   }
+  gpu::SyncPointManager* sync_point_manager = gpu_state_->sync_point_manager();
+  const uint32_t order_num = sync_point_order_data_
+      ->GenerateUnprocessedOrderNumber(sync_point_manager);
+  sync_point_order_data_->BeginProcessingOrderNumber(order_num);
   scheduler_->PutChanged();
+  sync_point_order_data_->FinishProcessingOrderNumber(order_num);
 }
 
 void CommandBufferLocal::OnUpdateVSyncParameters(
@@ -272,29 +288,24 @@ bool CommandBufferLocal::OnWaitSyncPoint(uint32_t sync_point) {
   if (!sync_point)
     return true;
 
-  bool context_changed = false;
-  while (!gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point)) {
+  if (gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point))
+    return true;
+
+  do {
     gpu_state_->command_buffer_task_runner()->RunOneTask();
-    context_changed = true;
-  }
+  } while (!gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point));
 
   // RunOneTask() changes the current GL context, so we have to recover it.
-  if (context_changed) {
-    if (!decoder_->MakeCurrent()) {
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-      command_buffer_->SetParseError(::gpu::error::kLostContext);
-    }
+  if (!decoder_->MakeCurrent()) {
+    command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+    command_buffer_->SetParseError(::gpu::error::kLostContext);
   }
   return true;
 }
 
 void CommandBufferLocal::OnFenceSyncRelease(uint64_t release) {
-  // TODO(dyen): Implement once CommandBufferID has been figured out and
-  // we have a SyncPointClient. It would probably look like what is commented
-  // out below:
-  // if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
-  //   sync_point_client_->ReleaseFenceSync(release);
-  NOTIMPLEMENTED();
+  if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
+    sync_point_client_->ReleaseFenceSync(release);
 }
 
 bool CommandBufferLocal::OnWaitFenceSync(
@@ -314,17 +325,16 @@ bool CommandBufferLocal::OnWaitFenceSync(
   if (release_state->IsFenceSyncReleased(release))
     return true;
 
-  // TODO(dyen): Implement once CommandBufferID has been figured out and
-  // we have a SyncPointClient. It would probably look like what is commented
-  // out below:
-  // scheduler_->SetScheduled(false);
-  // sync_point_client_->Wait(
-  //     release_state.get(),
-  //     release,
-  //     base::Bind(&CommandBufferLocal::OnSyncPointRetired,
-  //                weak_factory_.GetWeakPtr()));
-  NOTIMPLEMENTED();
-  return scheduler_->scheduled();
+  do {
+    gpu_state_->command_buffer_task_runner()->RunOneTask();
+  } while (!release_state->IsFenceSyncReleased(release));
+
+  // RunOneTask() changes the current GL context, so we have to recover it.
+  if (!decoder_->MakeCurrent()) {
+    command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+    command_buffer_->SetParseError(::gpu::error::kLostContext);
+  }
+  return true;
 }
 
 void CommandBufferLocal::OnParseError() {

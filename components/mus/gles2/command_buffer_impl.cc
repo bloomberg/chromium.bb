@@ -84,10 +84,13 @@ void CommandBufferImpl::SetGetBuffer(int32_t buffer) {
 }
 
 void CommandBufferImpl::Flush(int32_t put_offset) {
+  gpu::SyncPointManager* sync_point_manager = gpu_state_->sync_point_manager();
+  const uint32_t order_num = driver_->sync_point_order_data()
+      ->GenerateUnprocessedOrderNumber(sync_point_manager);
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
       base::Bind(&CommandBufferImpl::FlushHelper,
-                 base::Unretained(this), put_offset));
+                 base::Unretained(this), put_offset, order_num));
 }
 
 void CommandBufferImpl::MakeProgress(int32_t last_get_offset) {
@@ -191,13 +194,18 @@ bool CommandBufferImpl::SetGetBufferHelper(int32_t buffer) {
   return true;
 }
 
-bool CommandBufferImpl::FlushHelper(int32_t put_offset) {
+bool CommandBufferImpl::FlushHelper(int32_t put_offset,
+                                    uint32_t order_num) {
   DCHECK(driver_->IsScheduled());
+  driver_->sync_point_order_data()->BeginProcessingOrderNumber(order_num);
   driver_->Flush(put_offset);
 
   // Return false if the Flush is not finished, so the CommandBufferTaskRunner
   // will not remove this task from the task queue.
-  return !driver_->HasUnprocessedCommands();
+  const bool complete = !driver_->HasUnprocessedCommands();
+  if (complete)
+    driver_->sync_point_order_data()->FinishProcessingOrderNumber(order_num);
+  return complete;
 }
 
 bool CommandBufferImpl::MakeProgressHelper(int32_t last_get_offset) {

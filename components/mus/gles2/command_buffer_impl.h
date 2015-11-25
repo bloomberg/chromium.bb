@@ -66,7 +66,7 @@ class CommandBufferImpl : public mojom::CommandBuffer {
       mojo::ScopedSharedBufferHandle shared_state,
       mojo::Array<int32_t> attribs);
   bool SetGetBufferHelper(int32_t buffer);
-  bool FlushHelper(int32_t put_offset);
+  bool FlushHelper(int32_t put_offset, uint32_t order_num);
   bool MakeProgressHelper(int32_t last_get_offset);
   bool RegisterTransferBufferHelper(
       int32_t id,

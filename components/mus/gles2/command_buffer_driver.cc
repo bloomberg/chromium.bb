@@ -4,6 +4,7 @@
 
 #include "components/mus/gles2/command_buffer_driver.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
@@ -35,10 +36,19 @@
 
 namespace mus {
 
+namespace {
+
+base::StaticAtomicSequenceNumber g_next_command_buffer_id;
+
+}
+
 CommandBufferDriver::Client::~Client() {}
 
 CommandBufferDriver::CommandBufferDriver(scoped_refptr<GpuState> gpu_state)
-    : client_(nullptr), gpu_state_(gpu_state), weak_factory_(this) {}
+    : command_buffer_id_(g_next_command_buffer_id.GetNext()),
+      client_(nullptr),
+      gpu_state_(gpu_state),
+      weak_factory_(this) {}
 
 CommandBufferDriver::~CommandBufferDriver() {
   DestroyDecoder();
@@ -56,7 +66,10 @@ void CommandBufferDriver::Initialize(
   mojom::GpuCapabilitiesPtr capabilities =
       success ? mojom::GpuCapabilities::From(decoder_->GetCapabilities())
               : nullptr;
-  sync_client_->DidInitialize(success, capabilities.Pass());
+  sync_client_->DidInitialize(success,
+                              gpu::CommandBufferNamespace::MOJO,
+                              command_buffer_id_,
+                              capabilities.Pass());
 }
 
 bool CommandBufferDriver::MakeCurrent() {
@@ -113,6 +126,10 @@ bool CommandBufferDriver::DoInitialize(
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group.get()));
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), decoder_.get(),
                                          decoder_.get()));
+  sync_point_order_data_ = gpu::SyncPointOrderData::Create();
+  sync_point_client_ = gpu_state_->sync_point_manager()->CreateSyncPointClient(
+      sync_point_order_data_, gpu::CommandBufferNamespace::MOJO,
+      command_buffer_id_);
   decoder_->set_engine(scheduler_.get());
   decoder_->SetWaitSyncPointCallback(base::Bind(
       &CommandBufferDriver::OnWaitSyncPoint, base::Unretained(this)));
@@ -299,12 +316,8 @@ bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {
 }
 
 void CommandBufferDriver::OnFenceSyncRelease(uint64_t release) {
-  // TODO(dyen): Implement once CommandBufferID has been figured out and
-  // we have a SyncPointClient. It would probably look like what is commented
-  // out below:
-  // if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
-  //   sync_point_client_->ReleaseFenceSync(release);
-  NOTIMPLEMENTED();
+  if (!sync_point_client_->client_state()->IsFenceSyncReleased(release))
+    sync_point_client_->ReleaseFenceSync(release);
 }
 
 bool CommandBufferDriver::OnWaitFenceSync(
@@ -324,16 +337,13 @@ bool CommandBufferDriver::OnWaitFenceSync(
   if (release_state->IsFenceSyncReleased(release))
     return true;
 
-  // TODO(dyen): Implement once CommandBufferID has been figured out and
-  // we have a SyncPointClient. It would probably look like what is commented
-  // out below:
-  // scheduler_->SetScheduled(false);
-  // sync_point_client_->Wait(
-  //     release_state.get(),
-  //     release,
-  //     base::Bind(&CommandBufferDriver::OnSyncPointRetired,
-  //                weak_factory_.GetWeakPtr()));
-  NOTIMPLEMENTED();
+
+  scheduler_->SetScheduled(false);
+  sync_point_client_->Wait(
+      release_state.get(),
+      release,
+      base::Bind(&CommandBufferDriver::OnSyncPointRetired,
+                 weak_factory_.GetWeakPtr()));
   return scheduler_->scheduled();
 }
 
