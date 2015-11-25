@@ -13,10 +13,10 @@ namespace WTF {
 // std::forward from <utility>.
 
 template <typename T>
-T&& forward(typename RemoveReference<T>::Type& t) { return static_cast<T&&>(t); }
+T&& forward(typename std::remove_reference<T>::type& t) { return static_cast<T&&>(t); }
 
 template <typename T>
-T&& forward(typename RemoveReference<T>::Type&& t) { return static_cast<T&&>(t); }
+T&& forward(typename std::remove_reference<T>::type&& t) { return static_cast<T&&>(t); }
 
 } // namespace WTF
 

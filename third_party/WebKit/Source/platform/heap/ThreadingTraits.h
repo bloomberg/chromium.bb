@@ -35,8 +35,8 @@ class Node;
 class NodeList;
 
 template<typename T,
-    bool mainThreadOnly = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, Node>::value
-        || WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, NodeList>::value> struct DefaultThreadingTrait;
+    bool mainThreadOnly = WTF::IsSubclass<typename std::remove_const<T>::type, Node>::value
+        || WTF::IsSubclass<typename std::remove_const<T>::type, NodeList>::value> struct DefaultThreadingTrait;
 
 template<typename T>
 struct DefaultThreadingTrait<T, false> {

@@ -141,30 +141,7 @@ static_assert((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value)
 static_assert((IsPointerConvertible<TestDerivedClass, TestBaseClass<int>>::Value), "Derived class pointers should be convertible to base class pointers");
 static_assert((!IsPointerConvertible<TestBaseClass<int>, TestDerivedClass>::Value), "Base class pointers should not be convertible to derived class pointers");
 
-static_assert((IsSameType<bool, RemoveConst<const bool>::Type>::value), "RemoveConst should produce the corresponding non-const type");
-static_assert((!IsSameType<bool, RemoveConst<volatile bool>::Type>::value), "RemoveConst of volatile types should not remove volatility");
-
-static_assert((IsSameType<bool, RemoveVolatile<bool>::Type>::value), "RemoveVolatile should not modify the type of non-volatile types");
-static_assert((!IsSameType<bool, RemoveVolatile<const bool>::Type>::value), "RemoveVolatile should not remove const-ness");
-static_assert((IsSameType<bool, RemoveVolatile<volatile bool>::Type>::value), "RemoveVolatile should produce the equivalent non-volatile type");
-
-static_assert((IsSameType<bool, RemoveConstVolatile<bool>::Type>::value), "RemoveConstVolatile should not modify the type of non-const non-volatile types");
-static_assert((IsSameType<bool, RemoveConstVolatile<const bool>::Type>::value), "RemoveConstVolatile should remove const-ness");
-static_assert((IsSameType<bool, RemoveConstVolatile<volatile bool>::Type>::value), "RemoveConstVolatile should remove volatility");
-static_assert((IsSameType<bool, RemoveConstVolatile<const volatile bool>::Type>::value), "RemoveConstVolatile should remove both constness and volatility");
-
-static_assert((IsSameType<int, RemovePointer<int>::Type>::value), "RemovePointer should not modify non-pointer types");
-static_assert((IsSameType<int, RemovePointer<int*>::Type>::value), "RemovePointer should produce the corresponding non-pointer type");
-static_assert((!IsSameType<int, RemovePointer<int**>::Type>::value), "RemovePointer should only remove one pointer level");
-
-static_assert((IsSameType<int, RemoveReference<int>::Type>::value), "RemoveReference should not modify non-reference types");
-static_assert((IsSameType<int, RemoveReference<int&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
-static_assert((IsSameType<int, RemoveReference<int&&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
-
 typedef int IntArray[];
 typedef int IntArraySized[4];
-
-static_assert((IsSameType<int, RemoveExtent<IntArray>::Type>::value), "RemoveExtent should return the array element type of an array");
-static_assert((IsSameType<int, RemoveExtent<IntArraySized>::Type>::value), "RemoveExtent should return the array element type of a sized array");
 
 } // namespace WTF

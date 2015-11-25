@@ -53,7 +53,7 @@ struct FinalizerTraitImpl<T, false> {
 // behavior is not desired.
 template<typename T>
 struct FinalizerTrait {
-    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollectedFinalized>::value;
+    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, GarbageCollectedFinalized>::value;
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
 };
 
@@ -180,7 +180,7 @@ struct GCInfoAtBaseType {
     }
 };
 
-template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedType;
+template<typename T, bool = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, GarbageCollected>::value> struct GetGarbageCollectedType;
 
 template<typename T>
 struct GetGarbageCollectedType<T, true> {

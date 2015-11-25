@@ -35,7 +35,7 @@ template <typename T> class PassOwnPtr;
 template <typename T> class OwnPtr {
     WTF_MAKE_NONCOPYABLE(OwnPtr);
 public:
-    typedef typename RemoveExtent<T>::Type ValueType;
+    typedef typename std::remove_extent<T>::type ValueType;
     typedef ValueType* PtrType;
 
     OwnPtr() : m_ptr(nullptr) {}

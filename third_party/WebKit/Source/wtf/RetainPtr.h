@@ -64,7 +64,7 @@ inline void adoptNSReference(id ptr)
 
 template <typename T> class RetainPtr {
 public:
-    typedef typename RemovePointer<T>::Type ValueType;
+    typedef typename std::remove_pointer<T>::type ValueType;
     typedef ValueType* PtrType;
 
     RetainPtr() : m_ptr(nullptr) {}

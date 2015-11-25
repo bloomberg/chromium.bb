@@ -43,7 +43,7 @@
     if (!WTF::acquireLoad(&name##Pointer)) {                            \
         LOCK;                                                           \
         if (!WTF::acquireLoad(&name##Pointer)) {                        \
-            WTF::RemoveConst<T>::Type* initializerResult = initializer; \
+            std::remove_const<T>::type* initializerResult = initializer; \
             WTF::releaseStore(&name##Pointer, initializerResult);       \
         }                                                               \
         UNLOCK;                                                         \

@@ -332,7 +332,7 @@ template <typename T> struct RemoveHeapPointerWrapperTypes {
 // raw pointer types. To remove these tests, we may need support for
 // instantiating a template with a RawPtrOrMember'ish template.
 template<typename T>
-struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
+struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename std::remove_pointer<T>::type>::Type>::value> { };
 
 } // namespace blink
 

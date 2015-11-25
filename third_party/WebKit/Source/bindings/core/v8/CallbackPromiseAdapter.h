@@ -113,7 +113,7 @@ struct CallbackPromiseAdapterTrivialWebTypeHolder<void> {
 
 class CallbackPromiseAdapterInternal {
 private:
-    template <typename T> static T webTypeHolderMatcher(typename WTF::RemoveReference<typename T::WebType>::Type*);
+    template <typename T> static T webTypeHolderMatcher(typename std::remove_reference<typename T::WebType>::type*);
     template <typename T> static CallbackPromiseAdapterTrivialWebTypeHolder<T> webTypeHolderMatcher(...);
     template <typename T> using WebTypeHolder = decltype(webTypeHolderMatcher<T>(nullptr));
 

@@ -38,7 +38,7 @@ template <typename T> PassOwnPtr<T[]> adoptArrayPtr(T*);
 
 template <typename T> class PassOwnPtr {
 public:
-    typedef typename RemoveExtent<T>::Type ValueType;
+    typedef typename std::remove_extent<T>::type ValueType;
     typedef ValueType* PtrType;
 
     PassOwnPtr() : m_ptr(nullptr) {}

@@ -79,7 +79,7 @@ namespace blink {
     template<typename T> struct CrossThreadCopierBase<false, true, false, T> {
         typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
         typedef typename WTF::RemoveTemplate<TypeWithoutRefPtr, PassRefPtr>::Type TypeWithoutPassRefPtr;
-        typedef typename WTF::RemovePointer<TypeWithoutPassRefPtr>::Type RefCountedType;
+        typedef typename std::remove_pointer<TypeWithoutPassRefPtr>::type RefCountedType;
 
         // Verify that only one of the above did a change.
         static_assert((WTF::IsSameType<RefPtr<RefCountedType>, T>::value
@@ -136,7 +136,7 @@ namespace blink {
     };
 
     template<typename T> struct CrossThreadCopierBase<false, false, true, T> {
-        typedef typename WTF::RemovePointer<T>::Type TypeWithoutPointer;
+        typedef typename std::remove_pointer<T>::type TypeWithoutPointer;
         typedef RawPtr<TypeWithoutPointer> Type;
         static Type copy(const T& ptr)
         {
@@ -170,9 +170,9 @@ namespace blink {
 
     template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<WTF::IsConvertibleToInteger<T>::value,
         WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
-            || WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, ThreadSafeRefCounted>::value
+            || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
-        WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, GarbageCollected>::value
+        WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, GarbageCollected>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RawPtr>::Type, GarbageCollected>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, Member>::Type, GarbageCollected>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, WeakMember>::Type, GarbageCollected>::value,
