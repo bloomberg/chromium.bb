@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -63,6 +64,23 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
   return host->provider_type() ==
              ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WINDOW &&
          host->document_url().GetOrigin() == origin;
+}
+
+// Returns true if any of the frames specified by |frames| is a top-level frame.
+// |frames| is a vector of (render process id, frame id) pairs.
+bool FrameListContainsMainFrameOnUI(
+    scoped_ptr<std::vector<std::pair<int, int>>> frames) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (const auto& frame : *frames) {
+    RenderFrameHostImpl* render_frame_host =
+        RenderFrameHostImpl::FromID(frame.first, frame.second);
+    if (!render_frame_host)
+      continue;
+    if (!render_frame_host->GetParent())
+      return true;
+  }
+  return false;
 }
 
 class ClearAllServiceWorkersHelper
@@ -288,11 +306,35 @@ ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
       providers_.get(), base::Bind(IsSameOriginClientProviderHost, origin)));
 }
 
-bool ServiceWorkerContextCore::HasWindowProviderHost(const GURL& origin) const {
+void ServiceWorkerContextCore::HasMainFrameProviderHost(
+    const GURL& origin,
+    const BoolCallback& callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProviderHostIterator provider_host_iterator(
       providers_.get(), base::Bind(IsSameOriginWindowProviderHost, origin));
-  return !provider_host_iterator.IsAtEnd();
+
+  if (provider_host_iterator.IsAtEnd()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
+    return;
+  }
+
+  scoped_ptr<std::vector<std::pair<int, int>>> render_frames(
+      new std::vector<std::pair<int, int>>());
+
+  while (!provider_host_iterator.IsAtEnd()) {
+    ServiceWorkerProviderHost* provider_host =
+        provider_host_iterator.GetProviderHost();
+    render_frames->push_back(
+        std::make_pair(provider_host->process_id(), provider_host->frame_id()));
+    provider_host_iterator.Advance();
+  }
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FrameListContainsMainFrameOnUI,
+                 base::Passed(render_frames.Pass())),
+      callback);
 }
 
 void ServiceWorkerContextCore::RegisterProviderHostByClientID(

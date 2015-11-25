@@ -44,6 +44,7 @@ class ServiceWorkerContextWrapper;
 class CONTENT_EXPORT BackgroundSyncManager
     : NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
  public:
+  using BoolCallback = base::Callback<void(bool)>;
   using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
   using StatusAndRegistrationCallback =
       base::Callback<void(BackgroundSyncStatus,
@@ -146,6 +147,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       const ServiceWorkerVersion::StatusCallback& callback);
   virtual void ScheduleDelayedTask(const base::Closure& callback,
                                    base::TimeDelta delay);
+  virtual void HasMainFrameProviderHost(const GURL& origin,
+                                        const BoolCallback& callback);
 
  private:
   friend class BackgroundSyncManagerTest;
@@ -238,9 +241,17 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerStatusCode status);
 
   // Register callbacks
+  void RegisterCheckIfHasMainFrame(
+      int64 sw_registration_id,
+      const BackgroundSyncRegistrationOptions& options,
+      const StatusAndRegistrationCallback& callback);
+  void RegisterDidCheckIfMainFrame(
+      int64 sw_registration_id,
+      const BackgroundSyncRegistrationOptions& options,
+      const StatusAndRegistrationCallback& callback,
+      bool has_main_frame_client);
   void RegisterImpl(int64 sw_registration_id,
                     const BackgroundSyncRegistrationOptions& options,
-                    bool requested_from_service_worker,
                     const StatusAndRegistrationCallback& callback);
   void RegisterDidStore(
       int64 sw_registration_id,

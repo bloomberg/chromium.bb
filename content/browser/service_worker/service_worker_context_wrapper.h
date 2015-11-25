@@ -42,6 +42,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
+  using BoolCallback = base::Callback<void(bool)>;
   using FindRegistrationCallback =
       ServiceWorkerStorage::FindRegistrationCallback;
   using GetRegistrationsInfosCallback =
@@ -103,7 +104,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
-  bool HasWindowProviderHost(const GURL& origin) const;
+  void HasMainFrameProviderHost(const GURL& origin,
+                                const BoolCallback& callback) const;
 
   // Returns the registration whose scope longest matches |document_url|.
   // Returns ERROR_NOT_FOUND if it is not found.

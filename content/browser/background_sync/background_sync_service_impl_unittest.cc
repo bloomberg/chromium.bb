@@ -27,10 +27,8 @@ namespace {
 
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
-const int kProviderId = 1;
 
 // Callbacks from SetUp methods
-
 void RegisterServiceWorkerCallback(bool* called,
                                    int64* store_registration_id,
                                    ServiceWorkerStatusCode status,
@@ -171,21 +169,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
         base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_);
-
-    // Register window client for the service worker
-    ServiceWorkerProviderHost* provider_host = new ServiceWorkerProviderHost(
-        embedded_worker_helper_->mock_render_process_id(),
-        MSG_ROUTING_NONE /* render_frame_id */, kProviderId,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        embedded_worker_helper_->context()->AsWeakPtr(), nullptr);
-    provider_host->SetDocumentUrl(GURL(kServiceWorkerPattern));
-    embedded_worker_helper_->context()->AddProviderHost(
-        make_scoped_ptr(provider_host));
-  }
-
-  void RemoveWindowClient() {
-    embedded_worker_helper_->context()->RemoveAllProviderHostsForProcess(
-        embedded_worker_helper_->mock_render_process_id());
   }
 
   void CreateBackgroundSyncServiceImpl() {
@@ -203,14 +186,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   // Helpers for testing BackgroundSyncServiceImpl methods
   void RegisterOneShot(
-      SyncRegistrationPtr sync,
-      const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->Register(sync.Pass(), sw_registration_id_,
-                            true /* requested_from_service_worker */, callback);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void RegisterOneShotFromDocument(
       SyncRegistrationPtr sync,
       const BackgroundSyncService::RegisterCallback& callback) {
     service_impl_->Register(sync.Pass(), sw_registration_id_,
@@ -271,54 +246,6 @@ TEST_F(BackgroundSyncServiceImplTest, Register) {
   BackgroundSyncError error;
   SyncRegistrationPtr reg;
   RegisterOneShot(
-      default_sync_registration_.Clone(),
-      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
-  EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
-  EXPECT_EQ("", reg->tag);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromServiceWorkerWithWindow) {
-  bool called = false;
-  BackgroundSyncError error;
-  SyncRegistrationPtr reg;
-  RegisterOneShot(
-      default_sync_registration_.Clone(),
-      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
-  EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromServiceWorkerWithoutWindow) {
-  bool called = false;
-  BackgroundSyncError error;
-  SyncRegistrationPtr reg;
-  RemoveWindowClient();
-  RegisterOneShot(
-      default_sync_registration_.Clone(),
-      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
-  EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_ALLOWED, error);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromDocumentWithWindow) {
-  bool called = false;
-  BackgroundSyncError error;
-  SyncRegistrationPtr reg;
-  RegisterOneShotFromDocument(
-      default_sync_registration_.Clone(),
-      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
-  EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
-  EXPECT_EQ("", reg->tag);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, RegisterFromDocumentWithoutWindow) {
-  bool called = false;
-  BackgroundSyncError error;
-  SyncRegistrationPtr reg;
-  RemoveWindowClient();
-  RegisterOneShotFromDocument(
       default_sync_registration_.Clone(),
       base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
   EXPECT_TRUE(called);

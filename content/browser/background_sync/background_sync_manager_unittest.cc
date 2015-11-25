@@ -39,8 +39,6 @@ const char kPattern1[] = "https://example.com/a";
 const char kPattern2[] = "https://example.com/b";
 const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
-const int kProviderId1 = 1;
-const int kProviderId2 = 2;
 
 void RegisterServiceWorkerCallback(bool* called,
                                    int64* store_registration_id,
@@ -201,6 +199,10 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   BackgroundSyncEventLastChance last_chance() const { return last_chance_; }
 
+  void set_has_main_frame_provider_host(bool value) {
+    has_main_frame_provider_host_ = value;
+  }
+
  protected:
   void StoreDataInBackend(
       int64 sw_registration_id,
@@ -261,9 +263,15 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     delayed_task_delta_ = delay;
   }
 
+  void HasMainFrameProviderHost(const GURL& origin,
+                                const BoolCallback& callback) override {
+    callback.Run(has_main_frame_provider_host_);
+  }
+
  private:
   bool corrupt_backend_ = false;
   bool delay_backend_ = false;
+  bool has_main_frame_provider_host_ = true;
   BackgroundSyncEventLastChance last_chance_ =
       BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_NOT_LAST_CHANCE;
   base::Closure continuation_;
@@ -348,24 +356,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_TRUE(called_1);
     EXPECT_TRUE(called_2);
 
-    // Register window clients for the service workers
-    ServiceWorkerProviderHost* host_1 = new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(),
-        MSG_ROUTING_NONE /* render_frame_id */, kProviderId1,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
-        nullptr);
-    host_1->SetDocumentUrl(GURL(kPattern1));
-
-    ServiceWorkerProviderHost* host_2 = new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(),
-        MSG_ROUTING_NONE /* render_frame_id */, kProviderId2,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
-        nullptr);
-    host_2->SetDocumentUrl(GURL(kPattern2));
-
-    helper_->context()->AddProviderHost(make_scoped_ptr(host_1));
-    helper_->context()->AddProviderHost(make_scoped_ptr(host_2));
-
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
@@ -378,11 +368,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_1_);
     EXPECT_TRUE(sw_registration_2_);
-  }
-
-  void RemoveWindowClients() {
-    helper_->context()->RemoveAllProviderHostsForProcess(
-        helper_->mock_render_process_id());
   }
 
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
@@ -472,7 +457,6 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void DeleteBackgroundSyncManager() {
     ClearRegistrationHandles();
-    RemoveWindowClients();
     background_sync_manager_.reset();
     test_background_sync_manager_ = nullptr;
     test_clock_ = nullptr;
@@ -646,7 +630,6 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void DeleteServiceWorkerAndStartOver() {
     helper_->context()->ScheduleDeleteAndStartOver();
-    RemoveWindowClients();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1703,37 +1686,28 @@ TEST_F(BackgroundSyncManagerTest, KillManagerMidSync) {
   EXPECT_EQ(2, sync_events_called_);
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterWithClientWindowForWrongOrigin) {
-  RemoveWindowClients();
-  ServiceWorkerProviderHost* host = new ServiceWorkerProviderHost(
-      helper_->mock_render_process_id(), MSG_ROUTING_NONE /* render_frame_id */,
-      kProviderId1, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      helper_->context()->AsWeakPtr(), nullptr);
-  host->SetDocumentUrl(GURL("http://example.com:9999"));
-  helper_->context()->AddProviderHost(make_scoped_ptr(host));
+TEST_F(BackgroundSyncManagerTest, RegisterFromServiceWorkerWithoutMainFrame) {
+  test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_FALSE(Register(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest,
+       RegisterFromDocumentWithoutMainFrameProviderHost) {
+  test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
                                                       sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterWithNoClientWindows) {
-  RemoveWindowClients();
-  EXPECT_FALSE(Register(sync_options_1_));
-  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
-                                                      sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegisterExistingWithNoClientWindows) {
+TEST_F(BackgroundSyncManagerTest,
+       RegisterExistingFromServiceWorkerWithoutMainFrame) {
   EXPECT_TRUE(Register(sync_options_1_));
-  RemoveWindowClients();
+  test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_FALSE(Register(sync_options_1_));
-  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
-                                                      sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutWindow) {
+TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutMainFrame) {
   EXPECT_TRUE(Register(sync_options_1_));
-  RemoveWindowClients();
+  test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }

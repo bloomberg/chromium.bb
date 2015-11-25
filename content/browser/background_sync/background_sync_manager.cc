@@ -181,10 +181,18 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::RegisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      sw_registration_id, options, requested_from_service_worker,
-      MakeStatusAndRegistrationCompletion(callback)));
+  if (requested_from_service_worker) {
+    op_scheduler_.ScheduleOperation(
+        base::Bind(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
+                   weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                   MakeStatusAndRegistrationCompletion(callback)));
+    return;
+  }
+
+  op_scheduler_.ScheduleOperation(
+      base::Bind(&BackgroundSyncManager::RegisterImpl,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                 MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::GetRegistration(
@@ -392,10 +400,47 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
                                                 base::Bind(callback));
 }
 
+void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
+    int64 sw_registration_id,
+    const BackgroundSyncRegistrationOptions& options,
+    const StatusAndRegistrationCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ServiceWorkerRegistration* sw_registration =
+      service_worker_context_->GetLiveRegistration(sw_registration_id);
+  if (!sw_registration || !sw_registration->active_version()) {
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
+    PostErrorResponse(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback);
+    return;
+  }
+
+  HasMainFrameProviderHost(
+      sw_registration->pattern().GetOrigin(),
+      base::Bind(&BackgroundSyncManager::RegisterDidCheckIfMainFrame,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                 callback));
+}
+
+void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
+    int64 sw_registration_id,
+    const BackgroundSyncRegistrationOptions& options,
+    const StatusAndRegistrationCallback& callback,
+    bool has_main_frame_client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!has_main_frame_client) {
+    BackgroundSyncMetrics::CountRegisterFailure(
+        options.periodicity, BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    return;
+  }
+  RegisterImpl(sw_registration_id, options, callback);
+}
+
 void BackgroundSyncManager::RegisterImpl(
     int64 sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    bool requested_from_service_worker,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -426,13 +471,6 @@ void BackgroundSyncManager::RegisterImpl(
     BackgroundSyncMetrics::CountRegisterFailure(
         options.periodicity, BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback);
-    return;
-  }
-
-  if (requested_from_service_worker &&
-      !service_worker_context_->HasWindowProviderHost(
-          sw_registration->pattern().GetOrigin())) {
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }
 
@@ -736,6 +774,12 @@ void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,
                                                 base::TimeDelta delay) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, callback,
                                                        delay);
+}
+
+void BackgroundSyncManager::HasMainFrameProviderHost(
+    const GURL& origin,
+    const BoolCallback& callback) {
+  service_worker_context_->HasMainFrameProviderHost(origin, callback);
 }
 
 scoped_ptr<BackgroundSyncRegistrationHandle>
@@ -1231,11 +1275,11 @@ void BackgroundSyncManager::EventCompleteImpl(
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(service_worker_id);
   if (sw_registration) {
-    bool foreground = service_worker_context_->HasWindowProviderHost(
-        sw_registration->pattern().GetOrigin());
-    BackgroundSyncMetrics::RecordEventResult(
-        registration->options()->periodicity, status_code == SERVICE_WORKER_OK,
-        foreground);
+    HasMainFrameProviderHost(
+        sw_registration->pattern().GetOrigin(),
+        base::Bind(&BackgroundSyncMetrics::RecordEventResult,
+                   registration->options()->periodicity,
+                   status_code == SERVICE_WORKER_OK));
   }
 
   if (registration->options()->periodicity == SYNC_ONE_SHOT) {

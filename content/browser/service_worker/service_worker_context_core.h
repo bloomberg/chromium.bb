@@ -56,6 +56,7 @@ class ServiceWorkerStorage;
 class CONTENT_EXPORT ServiceWorkerContextCore
     : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
  public:
+  using BoolCallback = base::Callback<void(bool)>;
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
@@ -161,9 +162,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ProviderHostIterator> GetClientProviderHostIterator(
       const GURL& origin);
 
-  // Returns true if there is a ProviderHost for |origin| of type
-  // SERVICE_WORKER_PROVIDER_FOR_WINDOW.
-  bool HasWindowProviderHost(const GURL& origin) const;
+  // Runs the callback with true if there is a ProviderHost for |origin| of type
+  // SERVICE_WORKER_PROVIDER_FOR_WINDOW which is a main (top-level) frame.
+  void HasMainFrameProviderHost(const GURL& origin,
+                                const BoolCallback& callback) const;
 
   // Maintains a map from Client UUID to ProviderHost.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use

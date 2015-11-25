@@ -46,6 +46,14 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
 
+    if (scriptState->executionContext()->isDocument()) {
+        Document* document = toDocument(scriptState->executionContext());
+        if (!document->domWindow() || !document->frame())
+            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
+        if (!document->frame()->isMainFrame())
+            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - not called from a main frame."));
+    }
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 

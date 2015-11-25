@@ -105,7 +105,7 @@ this.onsync = function(event) {
 };
 
 function sendMessageToClients(type, data) {
-  clients.matchAll().then(function(clients) {
+  clients.matchAll({ includeUncontrolled: true }).then(function(clients) {
     clients.forEach(function(client) {
       client.postMessage({type, data});
     });

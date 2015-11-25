@@ -115,6 +115,62 @@ function rejectDelayedOneShot() {
     .catch(sendErrorToTest);
 }
 
+function createFrame(url) {
+  return new Promise(function(resolve) {
+    var frame = document.createElement('iframe');
+    frame.src = url;
+    frame.onload = function() { resolve(frame); };
+    document.body.appendChild(frame);
+  });
+}
+
+function registerOneShotFromLocalFrame(frame_url) {
+  var frameWindow;
+  return createFrame(frame_url)
+    .then(function(frame) {
+      frameWindow = frame.contentWindow;
+      return frameWindow.navigator.serviceWorker.register('service_worker.js');
+    })
+    .then(function() {
+      return frameWindow.navigator.serviceWorker.ready;
+    })
+    .then(function(frame_registration) {
+      return frame_registration.sync.register('foo');
+    })
+    .then(function() {
+      sendResultToTest('error - iframe registered sync');
+    }, function(e) {
+      if (e.name != 'AbortError' || e.message !== 'Registration failed - not ' +
+          'called from a main frame.') {
+        sendErrorToTest(e);
+        return;
+      }
+      sendResultToTest('ok - iframe failed to register sync');
+    });
+}
+
+function receiveMessage() {
+  return new Promise(function(resolve) {
+    window.addEventListener('message', function(message) {
+      resolve(message.data);
+    });
+  });
+}
+
+function registerOneShotFromCrossOriginServiceWorker(cross_frame_url) {
+  return createFrame(cross_frame_url)
+    .then(function(frame) {
+      return receiveMessage();
+    })
+    .then(function(message) {
+      console.log(message);
+      if (message !== 'registration failed') {
+        sendResultToTest('failed - ' + message);
+        return;
+      }
+      sendResultToTest('ok - worker failed to register sync');
+    });
+}
 
 // Queue storing asynchronous results received from the Service Worker. Results
 // are sent to the test when requested.

@@ -481,12 +481,16 @@ ServiceWorkerContextWrapper::GetAllLiveVersionInfo() {
   return context_core_->GetAllLiveVersionInfo();
 }
 
-bool ServiceWorkerContextWrapper::HasWindowProviderHost(
-    const GURL& origin) const {
+void ServiceWorkerContextWrapper::HasMainFrameProviderHost(
+    const GURL& origin,
+    const BoolCallback& callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_)
-    return false;
-  return context_core_->HasWindowProviderHost(origin);
+  if (!context_core_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
+    return;
+  }
+  context_core_->HasMainFrameProviderHost(origin, callback);
 }
 
 void ServiceWorkerContextWrapper::FindRegistrationForDocument(

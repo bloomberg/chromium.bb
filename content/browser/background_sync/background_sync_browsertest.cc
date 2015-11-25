@@ -38,6 +38,8 @@ namespace content {
 namespace {
 
 const char kDefaultTestURL[] = "/background_sync/test.html";
+const char kEmptyURL[] = "/background_sync/empty.html";
+const char kRegisterSyncURL[] = "/background_sync/register_sync.html";
 
 const char kSuccessfulOperationPrefix[] = "ok - ";
 
@@ -187,6 +189,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
       const std::vector<std::string>& expected_tags);
   bool CompleteDelayedOneShot();
   bool RejectDelayedOneShot();
+
+  net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
  private:
   scoped_ptr<net::EmbeddedTestServer> https_server_;
@@ -618,6 +622,33 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, VerifyRetry) {
 
   // Verify that the oneshot is still around and waiting to try again.
   EXPECT_TRUE(OneShotPending("delay"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, RegisterFromNonMainFrame) {
+  std::string script_result;
+  GURL url = https_server()->GetURL(kEmptyURL);
+  EXPECT_TRUE(
+      RunScript(BuildScriptString("registerOneShotFromLocalFrame", url.spec()),
+                &script_result));
+  EXPECT_EQ(BuildExpectedResult("iframe", "failed to register sync"),
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       RegisterFromServiceWorkerWithoutMainFrameHost) {
+  // Start a second https server to use as a second origin.
+  net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  alt_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(alt_server.Start());
+
+  std::string script_result;
+  GURL url = alt_server.GetURL(kRegisterSyncURL);
+  EXPECT_TRUE(
+      RunScript(BuildScriptString("registerOneShotFromCrossOriginServiceWorker",
+                                  url.spec()),
+                &script_result));
+  EXPECT_EQ(BuildExpectedResult("worker", "failed to register sync"),
+            script_result);
 }
 
 }  // namespace content
