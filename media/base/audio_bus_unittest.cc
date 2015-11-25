@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -247,15 +251,17 @@ TEST_F(AudioBusTest, Zero) {
 // Each test vector represents two channels of data in the following arbitrary
 // layout: <min, zero, max, min, max / 2, min / 2, zero, max, zero, zero>.
 static const int kTestVectorSize = 10;
-static const uint8 kTestVectorUint8[kTestVectorSize] = {
-    0, -kint8min, kuint8max, 0, kint8max / 2 + 128, kint8min / 2 + 128,
-    -kint8min, kuint8max, -kint8min, -kint8min };
-static const int16 kTestVectorInt16[kTestVectorSize] = {
-    kint16min, 0, kint16max, kint16min, kint16max / 2, kint16min / 2,
-    0, kint16max, 0, 0 };
-static const int32 kTestVectorInt32[kTestVectorSize] = {
-    kint32min, 0, kint32max, kint32min, kint32max / 2, kint32min / 2,
-    0, kint32max, 0, 0 };
+static const uint8_t kTestVectorUint8[kTestVectorSize] = {
+    0,         -INT8_MIN,          UINT8_MAX,
+    0,         INT8_MAX / 2 + 128, INT8_MIN / 2 + 128,
+    -INT8_MIN, UINT8_MAX,          -INT8_MIN,
+    -INT8_MIN};
+static const int16_t kTestVectorInt16[kTestVectorSize] = {
+    INT16_MIN,     0, INT16_MAX, INT16_MIN, INT16_MAX / 2,
+    INT16_MIN / 2, 0, INT16_MAX, 0,         0};
+static const int32_t kTestVectorInt32[kTestVectorSize] = {
+    INT32_MIN,     0, INT32_MAX, INT32_MIN, INT32_MAX / 2,
+    INT32_MIN / 2, 0, INT32_MAX, 0,         0};
 
 // Expected results.
 static const int kTestVectorFrames = kTestVectorSize / 2;
@@ -278,23 +284,26 @@ TEST_F(AudioBusTest, FromInterleaved) {
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorUint8, kTestVectorFrames, sizeof(*kTestVectorUint8));
-    // Biased uint8 calculations have poor precision, so the epsilon here is
-    // slightly more permissive than int16 and int32 calculations.
-    VerifyBusWithEpsilon(bus.get(), expected.get(), 1.0f / (kuint8max - 1));
+    // Biased uint8_t calculations have poor precision, so the epsilon here is
+    // slightly more permissive than int16_t and int32_t calculations.
+    VerifyBusWithEpsilon(bus.get(), expected.get(),
+                         1.0f / (std::numeric_limits<uint8_t>::max() - 1));
   }
   {
     SCOPED_TRACE("int16");
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorInt16, kTestVectorFrames, sizeof(*kTestVectorInt16));
-    VerifyBusWithEpsilon(bus.get(), expected.get(), 1.0f / (kuint16max + 1.0f));
+    VerifyBusWithEpsilon(bus.get(), expected.get(),
+                         1.0f / (std::numeric_limits<uint16_t>::max() + 1.0f));
   }
   {
     SCOPED_TRACE("int32");
     bus->Zero();
     bus->FromInterleaved(
         kTestVectorInt32, kTestVectorFrames, sizeof(*kTestVectorInt32));
-    VerifyBusWithEpsilon(bus.get(), expected.get(), 1.0f / (kuint32max + 1.0f));
+    VerifyBusWithEpsilon(bus.get(), expected.get(),
+                         1.0f / (std::numeric_limits<uint32_t>::max() + 1.0f));
   }
 }
 
@@ -334,28 +343,28 @@ TEST_F(AudioBusTest, ToInterleaved) {
   }
   {
     SCOPED_TRACE("uint8");
-    uint8 test_array[arraysize(kTestVectorUint8)];
+    uint8_t test_array[arraysize(kTestVectorUint8)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorUint8), test_array);
     ASSERT_EQ(memcmp(
         test_array, kTestVectorUint8, sizeof(kTestVectorUint8)), 0);
   }
   {
     SCOPED_TRACE("int16");
-    int16 test_array[arraysize(kTestVectorInt16)];
+    int16_t test_array[arraysize(kTestVectorInt16)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorInt16), test_array);
     ASSERT_EQ(memcmp(
         test_array, kTestVectorInt16, sizeof(kTestVectorInt16)), 0);
   }
   {
     SCOPED_TRACE("int32");
-    int32 test_array[arraysize(kTestVectorInt32)];
+    int32_t test_array[arraysize(kTestVectorInt32)];
     bus->ToInterleaved(bus->frames(), sizeof(*kTestVectorInt32), test_array);
 
     // Some compilers get better precision than others on the half-max test, so
     // let the test pass with an off by one check on the half-max.
-    int32 fixed_test_array[arraysize(kTestVectorInt32)];
+    int32_t fixed_test_array[arraysize(kTestVectorInt32)];
     memcpy(fixed_test_array, kTestVectorInt32, sizeof(kTestVectorInt32));
-    ASSERT_EQ(fixed_test_array[4], kint32max / 2);
+    ASSERT_EQ(fixed_test_array[4], std::numeric_limits<int32_t>::max() / 2);
     fixed_test_array[4]++;
 
     ASSERT_TRUE(
@@ -378,7 +387,7 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
            kTestVectorFrames * sizeof(*expected->channel(ch)));
   }
 
-  int16 test_array[arraysize(kTestVectorInt16)];
+  int16_t test_array[arraysize(kTestVectorInt16)];
   expected->ToInterleavedPartial(
       kPartialStart, kPartialFrames, sizeof(*kTestVectorInt16), test_array);
   ASSERT_EQ(memcmp(

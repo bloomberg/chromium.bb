@@ -4,6 +4,10 @@
 
 #include "media/base/audio_bus.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/audio/audio_parameters.h"
@@ -12,7 +16,7 @@
 
 namespace media {
 
-static const uint8 kUint8Bias = 128;
+static const uint8_t kUint8Bias = 128;
 
 static bool IsAligned(void* ptr) {
   return (reinterpret_cast<uintptr_t>(ptr) &
@@ -252,19 +256,22 @@ void AudioBus::FromInterleavedPartial(const void* source, int start_frame,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      FromInterleavedInternal<uint8, int16, kUint8Bias>(
+      FromInterleavedInternal<uint8_t, int16_t, kUint8Bias>(
           source, start_frame, frames, this,
-          1.0f / kint8min, 1.0f / kint8max);
+          1.0f / std::numeric_limits<int8_t>::min(),
+          1.0f / std::numeric_limits<int8_t>::max());
       break;
     case 2:
-      FromInterleavedInternal<int16, int16, 0>(
+      FromInterleavedInternal<int16_t, int16_t, 0>(
           source, start_frame, frames, this,
-          1.0f / kint16min, 1.0f / kint16max);
+          1.0f / std::numeric_limits<int16_t>::min(),
+          1.0f / std::numeric_limits<int16_t>::max());
       break;
     case 4:
-      FromInterleavedInternal<int32, int32, 0>(
+      FromInterleavedInternal<int32_t, int32_t, 0>(
           source, start_frame, frames, this,
-          1.0f / kint32min, 1.0f / kint32max);
+          1.0f / std::numeric_limits<int32_t>::min(),
+          1.0f / std::numeric_limits<int32_t>::max());
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
@@ -295,16 +302,19 @@ void AudioBus::ToInterleavedPartial(int start_frame, int frames,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      ToInterleavedInternal<uint8, int16, kUint8Bias>(
-          this, start_frame, frames, dest, kint8min, kint8max);
+      ToInterleavedInternal<uint8_t, int16_t, kUint8Bias>(
+          this, start_frame, frames, dest, std::numeric_limits<int8_t>::min(),
+          std::numeric_limits<int8_t>::max());
       break;
     case 2:
-      ToInterleavedInternal<int16, int16, 0>(
-          this, start_frame, frames, dest, kint16min, kint16max);
+      ToInterleavedInternal<int16_t, int16_t, 0>(
+          this, start_frame, frames, dest, std::numeric_limits<int16_t>::min(),
+          std::numeric_limits<int16_t>::max());
       break;
     case 4:
-      ToInterleavedInternal<int32, int32, 0>(
-          this, start_frame, frames, dest, kint32min, kint32max);
+      ToInterleavedInternal<int32_t, int32_t, 0>(
+          this, start_frame, frames, dest, std::numeric_limits<int32_t>::min(),
+          std::numeric_limits<int32_t>::max());
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
