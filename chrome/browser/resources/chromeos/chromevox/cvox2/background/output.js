@@ -645,7 +645,7 @@ Output.prototype = {
    */
   withLocation: function(range, prevRange, type) {
     this.formatOptions_ = {speech: false, braille: false};
-    this.render_(range, prevRange, type, this.speechBuffer_);
+    this.render_(range, prevRange, type, [] /*unused output*/);
     return this;
   },
 
