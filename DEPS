@@ -13,8 +13,6 @@ vars = {
   "build_overrides_rev": "794be476f56f5af4aa08752cc06bfa562dda8a66", # from cr commit position 357577
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "libcxx_static_rev": "17acece915b87b2d53da5e8cbc2028b1300783e2", # from cr commit position 356325
-  "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
-  "tools_valgrind_rev": "53d44c2f4eb0405c0531e82ead0b7c3ce7ced664", # from cr commit position 358174
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
   "clang_rev": "66f5328417331216569e8beb244fd887f62e8997", # from cr commit position 355905
@@ -83,15 +81,10 @@ deps = {
   "third_party/lss":
     Var("chromium_git") + "/external/linux-syscall-support/lss.git@" +
     Var("lss_revision"),
-  "third_party/valgrind":
-    Var("chromium_git") + "/chromium/deps/valgrind.git@" + Var("valgrind_rev"),
   "tools/clang":
     Var("chromium_git") + "/chromium/src/tools/clang.git@" + Var("clang_rev"),
   "tools/gyp":
     Var("chromium_git") + "/external/gyp.git@" + Var("gyp_rev"),
-  "tools/valgrind":
-    Var("chromium_git") + "/chromium/src/tools/valgrind.git@" +
-    Var("tools_valgrind_rev"),
 }
 
 deps_os = {
