@@ -25,6 +25,7 @@ declare_args() {
   # Multicast DNS.
   enable_mdns = is_win || is_linux
 
+  enable_extensions = !is_android && !is_ios
   enable_plugins = (!is_android && !is_ios) || is_chromecast
   enable_pdf = !is_android && !is_ios && !is_chromecast
 
@@ -161,8 +162,6 @@ enable_notifications = !is_ios
 enable_web_speech = !is_android && !is_ios
 
 use_dbus = is_linux && !is_chromecast && !is_headless
-
-enable_extensions = !is_android && !is_ios
 
 enable_task_manager = !is_ios && !is_android
 
