@@ -4862,6 +4862,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Renderer.CALayerResult" enum="CALayerResult">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The outcome of attempting to replace all renderer tiles with CALayers.
+    Either success, or the first reason why a DrawQuad couldn't be replaced by a
+    CALayer.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Renderer.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
@@ -56262,6 +56271,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="DISK_CACHE_ENTRY_CORRUPT"/>
   <int value="3" label="DISK_CACHE_ERROR"/>
   <int value="4" label="CACHE_MISS"/>
+</enum>
+
+<enum name="CALayerResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown failure"/>
+  <int value="2" label="IOSurface resource not overlay candidate"/>
+  <int value="3" label="StreamVideo resource not overlay candidate"/>
+  <int value="4" label="StreamVideo texture not identity"/>
+  <int value="5" label="Texture resource not overlay candidate"/>
+  <int value="6" label="Texture resource Y flipping not supported"/>
+  <int value="7" label="Tile resource not overlay candidate"/>
+  <int value="8" label="Unsupported quad blend mode"/>
+  <int value="9" label="Unsupported quad transform"/>
+  <int value="10" label="Unsupported quad clipping"/>
+  <int value="11" label="DebugBorder quads not supported"/>
+  <int value="12" label="PictureContent quads not supported"/>
+  <int value="13" label="RenderPass quads not supported"/>
+  <int value="14" label="SurfaceContent quads not supported"/>
+  <int value="15" label="YUVVideo quads not supported"/>
 </enum>
 
 <enum name="CanvasContextType" type="int">
