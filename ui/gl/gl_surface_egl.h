@@ -88,6 +88,11 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   VSyncProvider* GetVSyncProvider() override;
+  bool ScheduleOverlayPlane(int z_order,
+                            OverlayTransform transform,
+                            gl::GLImage* image,
+                            const Rect& bounds_rect,
+                            const RectF& crop_rect) override;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
   // Takes ownership of the VSyncProvider.

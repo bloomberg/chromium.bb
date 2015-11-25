@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_switches.h"
@@ -756,6 +757,23 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
 
 VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
   return vsync_provider_.get();
+}
+
+bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(int z_order,
+                                                  OverlayTransform transform,
+                                                  gl::GLImage* image,
+                                                  const Rect& bounds_rect,
+                                                  const RectF& crop_rect) {
+#if defined(OS_ANDROID)
+  // Overlay planes are used on Android for fullscreen video. The image is
+  // expected to update the plane as soon as possible to display the video frame
+  // chosen for this vsync interval.
+  return image->ScheduleOverlayPlane(window_, z_order, transform, bounds_rect,
+                                     crop_rect);
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 void NativeViewGLSurfaceEGL::OnSetSwapInterval(int interval) {

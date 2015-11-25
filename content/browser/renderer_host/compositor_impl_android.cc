@@ -39,6 +39,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/browser/android/child_process_launcher_android.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -85,7 +86,9 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
-                       base::Unretained(this))) {
+                       base::Unretained(this))),
+        overlay_candidate_validator_(
+            new BrowserCompositorOverlayCandidateValidatorAndroid()) {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -112,6 +115,10 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
     compositor_->AddObserver(this);
 
     return true;
+  }
+
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return overlay_candidate_validator_.get();
   }
 
  private:
@@ -141,6 +148,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
+  scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
 };
 
 static bool g_initialized = false;

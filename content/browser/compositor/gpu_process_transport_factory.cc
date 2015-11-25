@@ -72,6 +72,8 @@
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#elif defined(OS_ANDROID)
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_android.h"
 #endif
 
 using cc::ContextProvider;
@@ -180,6 +182,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 
 scoped_ptr<BrowserCompositorOverlayCandidateValidator>
 CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
+  scoped_ptr<BrowserCompositorOverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   scoped_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
       ui::OzonePlatform::GetInstance()
@@ -189,18 +192,19 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   if (overlay_candidates &&
       (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
        command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
-    return scoped_ptr<BrowserCompositorOverlayCandidateValidator>(
-        new BrowserCompositorOverlayCandidateValidatorOzone(
-            widget, overlay_candidates.Pass()));
+    validator.reset(new BrowserCompositorOverlayCandidateValidatorOzone(
+        widget, overlay_candidates.Pass()));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
   if (ui::RemoteLayerAPISupported()) {
-    return make_scoped_ptr(
-        new BrowserCompositorOverlayCandidateValidatorMac(widget));
+    validator.reset(new BrowserCompositorOverlayCandidateValidatorMac(widget));
   }
+#elif defined(OS_ANDROID)
+  validator.reset(new BrowserCompositorOverlayCandidateValidatorAndroid());
 #endif
-  return scoped_ptr<BrowserCompositorOverlayCandidateValidator>();
+
+  return validator.Pass();
 }
 
 static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
