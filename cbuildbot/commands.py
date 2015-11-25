@@ -63,6 +63,9 @@ _SWARMING_EXPIRATION = 20 * 60
 _RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
 _MAX_HWTEST_CMD_RETRY = 10
+# For json_dump json dictionary marker
+JSON_DICT_START = '#JSON_START#'
+JSON_DICT_END = '#JSON_END#'
 
 
 # =========================== Command Helpers =================================
@@ -1174,12 +1177,14 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
       error_check=swarming_lib.SwarmingRetriableErrorCheck,
       cmd=dump_json_cmd, capture_output=True, combine_stdout_stderr=True,
       **kwargs)
-  json_str = ''
   for output in result.task_summary_json['shards'][0]['outputs']:
-    json_str += output
     sys.stdout.write(output)
+  sys.stdout.write('\n')
   sys.stdout.flush()
-  return json.loads(json_str)
+  dump_output = ''.join(result.task_summary_json['shards'][0]['outputs'])
+  i = dump_output.find(JSON_DICT_START) + len(JSON_DICT_START)
+  j = dump_output.find(JSON_DICT_END)
+  return json.loads(dump_output[i:j])
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):

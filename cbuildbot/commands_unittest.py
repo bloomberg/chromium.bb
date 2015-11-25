@@ -221,7 +221,7 @@ ERROR: Encountered swarming internal error
 The suite job has another 3:09:50.012887 till timeout.
 The suite job has another 2:39:39.789250 till timeout.
 '''
-  JSON_OUTPUT = '''
+  JSON_DICT = '''
 {"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite",
                                                      "subsystem:light",
                                                      "subsystem:bluetooth"]},
@@ -229,6 +229,8 @@ The suite job has another 2:39:39.789250 till timeout.
                                                       "subsystem:network"]}
 }}
 '''
+  JSON_OUTPUT = ('%s%s%s' % (commands.JSON_DICT_START, JSON_DICT,
+                             commands.JSON_DICT_END))
   SWARMING_TIMEOUT_DEFAULT = str(
       commands._DEFAULT_HWTEST_TIMEOUT_MINS * 60 +
       commands._SWARMING_ADDITIONAL_TIMEOUT)
@@ -437,7 +439,7 @@ The suite job has another 2:39:39.789250 till timeout.
                                        minimum_duts=self._minimum_duts,
                                        suite_min_duts=self._suite_min_duts,
                                        subsystems=self._subsystems)
-    expect_result = json.loads(self.JSON_OUTPUT)
+    expect_result = json.loads(self.JSON_DICT)
     self.assertEqual(cmd_result, (None, expect_result))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True)
