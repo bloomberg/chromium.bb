@@ -4,7 +4,7 @@
 
 #include "extensions/browser/verified_contents.h"
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
@@ -66,29 +66,6 @@ DictionaryValue* FindDictionaryWithValue(const ListValue* list,
 }  // namespace
 
 namespace extensions {
-
-// static
-bool VerifiedContents::FixupBase64Encoding(std::string* input) {
-  for (std::string::iterator i = input->begin(); i != input->end(); ++i) {
-    if (*i == '-')
-      *i = '+';
-    else if (*i == '_')
-      *i = '/';
-  }
-  switch (input->size() % 4) {
-    case 0:
-      break;
-    case 2:
-      input->append("==");
-      break;
-    case 3:
-      input->append("=");
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
 
 VerifiedContents::VerifiedContents(const uint8* public_key, int public_key_size)
     : public_key_(public_key),
@@ -181,8 +158,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
       if (!data->GetString(kPathKey, &file_path_string) ||
           !base::IsStringUTF8(file_path_string) ||
           !data->GetString(kRootHashKey, &encoded_root_hash) ||
-          !FixupBase64Encoding(&encoded_root_hash) ||
-          !base::Base64Decode(encoded_root_hash, &root_hash))
+          !base::Base64UrlDecode(encoded_root_hash,
+                                 base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                 &root_hash))
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
@@ -301,8 +279,9 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   std::string decoded_signature;
   if (!signature_dict->GetString(kProtectedKey, &protected_value) ||
       !signature_dict->GetString(kSignatureKey, &encoded_signature) ||
-      !FixupBase64Encoding(&encoded_signature) ||
-      !base::Base64Decode(encoded_signature, &decoded_signature))
+      !base::Base64UrlDecode(encoded_signature,
+                             base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                             &decoded_signature))
     return false;
 
   std::string encoded_payload;
@@ -314,8 +293,9 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   if (!valid_signature_ && !ignore_invalid_signature)
     return false;
 
-  if (!FixupBase64Encoding(&encoded_payload) ||
-      !base::Base64Decode(encoded_payload, payload))
+  if (!base::Base64UrlDecode(encoded_payload,
+                             base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                             payload))
     return false;
 
   return true;

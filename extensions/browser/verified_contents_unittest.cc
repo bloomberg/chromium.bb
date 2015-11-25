@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -19,13 +19,15 @@ namespace extensions {
 
 namespace {
 
+const char kContentVerifierDirectory[] = "content_verifier/";
+const char kPublicKeyPem[] = "public_key.pem";
+
 std::string DecodeBase64Url(const std::string& encoded) {
-  std::string fixed_up_base64 = encoded;
-  if (!VerifiedContents::FixupBase64Encoding(&fixed_up_base64))
-    return std::string();
   std::string decoded;
-  if (!base::Base64Decode(fixed_up_base64, &decoded))
+  if (!base::Base64UrlDecode(
+          encoded, base::Base64UrlDecodePolicy::IGNORE_PADDING, &decoded))
     return std::string();
+
   return decoded;
 }
 
@@ -44,11 +46,11 @@ TEST(VerifiedContents, Simple) {
   // Figure out our test data directory.
   base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
-  path = path.AppendASCII("content_verifier/");
+  path = path.AppendASCII(kContentVerifierDirectory);
 
   // Initialize the VerifiedContents object.
   std::string public_key;
-  ASSERT_TRUE(GetPublicKey(path.AppendASCII("public_key.pem"), &public_key));
+  ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
   VerifiedContents contents(reinterpret_cast<const uint8*>(public_key.data()),
                             public_key.size());
   base::FilePath verified_contents_path =
@@ -124,6 +126,26 @@ TEST(VerifiedContents, Simple) {
   EXPECT_TRUE(contents.TreeHashRootEquals(
       base::FilePath::FromUTF8Unsafe("MixedCase.Html"),
       DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
+}
+
+TEST(VerifiedContents, FailsOnBase64) {
+  // Accepting base64-encoded input where base64url-encoded input is expected
+  // will be considered to be invalid data. Verify that it gets rejected.
+
+  base::FilePath path;
+  PathService::Get(DIR_TEST_DATA, &path);
+  path = path.AppendASCII(kContentVerifierDirectory);
+
+  // Initialize the VerifiedContents object.
+  std::string public_key;
+  ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
+  VerifiedContents contents(reinterpret_cast<const uint8*>(public_key.data()),
+                            public_key.size());
+
+  base::FilePath verified_contents_path =
+      path.AppendASCII("verified_contents_base64.json");
+
+  ASSERT_FALSE(contents.InitFrom(verified_contents_path, false));
 }
 
 }  // namespace extensions
