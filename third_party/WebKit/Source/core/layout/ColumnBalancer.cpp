@@ -6,6 +6,7 @@
 
 #include "core/layout/ColumnBalancer.h"
 
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
@@ -269,6 +270,19 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
             // last column boundary, in case it crosses more than one.
             LayoutUnit spaceUsedInLastColumn = bottomInFlowThread - group().columnLogicalTopForOffset(bottomInFlowThread);
             recordSpaceShortage(spaceUsedInLastColumn);
+        }
+    }
+
+    // If this is an inner multicol container, look for space shortage inside it.
+    if (!box.isLayoutBlockFlow())
+        return;
+    LayoutMultiColumnFlowThread* flowThread = toLayoutBlockFlow(box).multiColumnFlowThread();
+    if (!flowThread)
+        return;
+    for (const LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet()) {
+        for (const MultiColumnFragmentainerGroup& row : columnSet->fragmentainerGroups()) {
+            MinimumSpaceShortageFinder innerFinder(row);
+            recordSpaceShortage(innerFinder.minimumSpaceShortage());
         }
     }
 }

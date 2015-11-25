@@ -73,6 +73,7 @@ public:
         return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
     }
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtVisualPoint(const LayoutPoint&) const;
+    const MultiColumnFragmentainerGroupList& fragmentainerGroups() const { return m_fragmentainerGroups; }
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutBlockFlow::isOfType(type); }
     bool canHaveChildren() const final { return false; }
