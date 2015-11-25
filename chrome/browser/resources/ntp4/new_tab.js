@@ -333,8 +333,10 @@ cr.define('ntp', function() {
 
   /**
    * Called when the theme has changed.
+   * @param {Object} opt_themeData Not used; only exists to match equivalent
+   *     function in incognito NTP.
    */
-  function themeChanged() {
+  function themeChanged(opt_themeData) {
     $('themecss').href = 'chrome://theme/css/new_tab_theme.css?' + Date.now();
   }
 

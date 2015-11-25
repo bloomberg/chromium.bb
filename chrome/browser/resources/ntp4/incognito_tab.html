@@ -1,5 +1,6 @@
 <!doctype html>
 <html i18n-values="dir:textdirection;
+                   hascustombackground:hasCustomBackground;
                    bookmarkbarattached:bookmarkbarattached;
                    lang:language">
 <head>
@@ -21,13 +22,13 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
   <span>
     <h1 i18n-content="incognitoTabHeading"></h1>
     <p>
-      <span i18n-values=".innerHTML:incognitoTabDescription"></span>
-      <a i18n-content="learnMore" i18n-values=".href:learnMoreLink"></a>
+      <span i18n-content="incognitoTabDescription"></span>
     </p>
     <p>
-      <strong i18n-content="incognitoTabWarning"></strong>
+      <span i18n-content="incognitoTabWarning"></span>
     </p>
   </span>
+  <a i18n-content="learnMore" i18n-values=".href:learnMoreLink"></a>
 </div>
 </body>
 <script src="chrome://resources/js/cr.js"></script>
@@ -42,7 +43,10 @@ cr.define('ntp', function() {
     document.documentElement.setAttribute('bookmarkbarattached', !!attached);
   }
 
-  function themeChanged() {
+  /** @param {!{hasCustomBackground: boolean}} themeData */
+  function themeChanged(themeData) {
+    document.documentElement.setAttribute('hascustombackground',
+                                          themeData.hasCustomBackground);
     document.getElementById('incognitothemecss').href =
         'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
   }

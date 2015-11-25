@@ -81,7 +81,6 @@ class NTPResourceCache : public content::NotificationObserver,
   void CreateNewTabIncognitoCSS();
 
   void CreateNewTabGuestHTML();
-  void CreateNewTabGuestCSS();
 
   void CreateNewTabCSS();
 

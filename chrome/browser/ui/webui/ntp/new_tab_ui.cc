@@ -108,7 +108,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // The theme handler can require some CPU, so do it after hooking up the most
   // visited handler. This allows the DB query for the new tab thumbs to happen
   // earlier.
-  web_ui->AddMessageHandler(new ThemeHandler());
+  if (!profile->IsGuestSession())
+    web_ui->AddMessageHandler(new ThemeHandler());
 #endif
 
   scoped_ptr<NewTabHTMLSource> html_source(

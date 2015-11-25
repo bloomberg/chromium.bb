@@ -11239,11 +11239,11 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_NEW_TAB_OTR_DESCRIPTION"
                  desc="Used when a person opens an OTR window">
-          Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
+          Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.
         </message>
         <message name="IDS_NEW_TAB_OTR_LEARN_MORE_LINK"
                  desc="OTR window link text to learn more">
-          Learn more about incognito browsing
+          Learn more
         </message>
         <message name="IDS_NEW_TAB_OTR_MESSAGE_WARNING"
                  desc="OTR window warning message">
@@ -11255,7 +11255,7 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK"
               desc="Guest Session link text to learn more">
-          Learn more about Guest browsing
+          Learn more
         </message>
         <if expr="chromeos">
           <message name="IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION"

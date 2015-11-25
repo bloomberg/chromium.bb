@@ -68,8 +68,9 @@ void ProcessResourceOnUIThread(int resource_id,
 
 ThemeSource::ThemeSource(Profile* profile)
     : profile_(profile->GetOriginalProfile()) {
+  // NB: it's important that this is |profile| and not |profile_|.
   NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
-      profile_, NULL);
+      profile, NULL);
   css_bytes_ =
       NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(win_type);
 }

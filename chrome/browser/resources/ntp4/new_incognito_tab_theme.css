@@ -6,17 +6,20 @@
 html {
   background-attachment: fixed;
   background-color: ${colorBackground};
-  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?${themeId});
   background-position: ${backgroundBarDetached};
   background-repeat: ${backgroundTiling};
   height: 100%;
   overflow: auto;
 }
 
-#attribution-img {
-  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
+html[hascustombackground='true'] {
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?${themeId});
 }
 
 html[bookmarkbarattached='true'] {
   background-position: ${backgroundBarAttached};
+}
+
+#attribution-img {
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
 }

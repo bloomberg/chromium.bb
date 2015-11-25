@@ -39,7 +39,11 @@ void ThemeHandler::Observe(int type,
                            const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
   InitializeCSSCaches();
-  web_ui()->CallJavascriptFunction("ntp.themeChanged");
+  bool has_custom_bg = ThemeServiceFactory::GetForProfile(GetProfile())
+                           ->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
+  base::DictionaryValue dictionary;
+  dictionary.SetBoolean("hasCustomBackground", has_custom_bg);
+  web_ui()->CallJavascriptFunction("ntp.themeChanged", dictionary);
 }
 
 void ThemeHandler::InitializeCSSCaches() {
