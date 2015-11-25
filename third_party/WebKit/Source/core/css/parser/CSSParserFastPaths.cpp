@@ -589,6 +589,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueButt || valueID == CSSValueRound || valueID == CSSValueSquare;
     case CSSPropertyTableLayout: // auto | fixed
         return valueID == CSSValueAuto || valueID == CSSValueFixed;
+    case CSSPropertyTextAlign:
+        return (valueID >= CSSValueWebkitAuto && valueID <= CSSValueWebkitMatchParent) || valueID == CSSValueStart || valueID == CSSValueEnd;
     case CSSPropertyTextAlignLast:
         // auto | start | end | left | right | center | justify
         return (valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto;
@@ -606,6 +608,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone;
     case CSSPropertyTextOrientation: // mixed | upright | sideways | sideways-right
         return valueID == CSSValueMixed || valueID == CSSValueUpright || valueID == CSSValueSideways || valueID == CSSValueSidewaysRight;
+    case CSSPropertyWebkitTextOrientation:
+        return valueID == CSSValueSideways || valueID == CSSValueSidewaysRight || valueID == CSSValueVerticalRight || valueID == CSSValueUpright;
     case CSSPropertyTextOverflow: // clip | ellipsis
         return valueID == CSSValueClip || valueID == CSSValueEllipsis;
     case CSSPropertyTextRendering: // auto | optimizeSpeed | optimizeLegibility | geometricPrecision
@@ -621,6 +625,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueNone || valueID == CSSValueNonScalingStroke;
     case CSSPropertyVisibility: // visible | hidden | collapse
         return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse;
+    case CSSPropertyWebkitAppRegion:
+        return valueID >= CSSValueDrag && valueID <= CSSValueNoDrag;
     case CSSPropertyWebkitAppearance:
         return (valueID >= CSSValueCheckbox && valueID <= CSSValueTextarea) || valueID == CSSValueNone;
     case CSSPropertyBackfaceVisibility:
@@ -764,18 +770,21 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyStrokeLinecap:
     case CSSPropertyStrokeLinejoin:
     case CSSPropertyTableLayout:
+    case CSSPropertyTextAlign:
     case CSSPropertyTextAlignLast:
     case CSSPropertyTextAnchor:
     case CSSPropertyTextCombineUpright:
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextJustify:
     case CSSPropertyTextOrientation:
+    case CSSPropertyWebkitTextOrientation:
     case CSSPropertyTextOverflow:
     case CSSPropertyTextRendering:
     case CSSPropertyTextTransform:
     case CSSPropertyUnicodeBidi:
     case CSSPropertyVectorEffect:
     case CSSPropertyVisibility:
+    case CSSPropertyWebkitAppRegion:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBorderAfterStyle:

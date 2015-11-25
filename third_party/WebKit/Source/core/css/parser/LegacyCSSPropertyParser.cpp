@@ -395,15 +395,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
      * correctly and allows optimization in blink::applyRule(..)
      */
 
-    case CSSPropertyTextAlign:
-        // left | right | center | justify | -webkit-left | -webkit-right | -webkit-center | -webkit-match-parent
-        // | start | end | <string> | inherit | -webkit-auto (converted to start)
-        // FIXME: <string> not supported right now
-        if ((id >= CSSValueWebkitAuto && id <= CSSValueWebkitMatchParent) || id == CSSValueStart || id == CSSValueEnd) {
-            validPrimitive = true;
-        }
-        break;
-
     case CSSPropertyBackgroundColor: // <color> | inherit
     case CSSPropertyBorderTopColor: // <color> | inherit
     case CSSPropertyBorderRightColor:
@@ -895,13 +886,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridShorthand(important);
 
-    // End of CSS3 properties
-
-    case CSSPropertyWebkitAppRegion:
-        if (id >= CSSValueDrag && id <= CSSValueNoDrag)
-            validPrimitive = true;
-        break;
-
         /* shorthand properties */
     case CSSPropertyBackground: {
         // Position must come before color in this array because a plain old "0" is a legal color
@@ -954,13 +938,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parseShorthand(propId, webkitColumnRuleShorthand(), important);
     case CSSPropertyInvalid:
         return false;
-    // CSS Text Layout Module Level 3: Vertical writing support
-    case CSSPropertyWebkitTextOrientation:
-        // FIXME: For now just support sideways, sideways-right, upright and vertical-right.
-        if (id == CSSValueSideways || id == CSSValueSidewaysRight || id == CSSValueVerticalRight || id == CSSValueUpright)
-            validPrimitive = true;
-        break;
-
     case CSSPropertyWebkitClipPath:
         if (id == CSSValueNone) {
             validPrimitive = true;
