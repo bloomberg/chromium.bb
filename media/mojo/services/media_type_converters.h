@@ -12,10 +12,12 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace media {
+class AudioBuffer;
 class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
 class VideoDecoderConfig;
+class VideoFrame;
 struct CdmConfig;
 struct CdmKeyInformation;
 struct SubsampleEntry;
@@ -110,6 +112,32 @@ struct TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig> {
 template <>
 struct TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr> {
   static media::CdmConfig Convert(const media::interfaces::CdmConfigPtr& input);
+};
+
+template <>
+struct TypeConverter<media::interfaces::AudioBufferPtr,
+                     scoped_refptr<media::AudioBuffer>> {
+  static media::interfaces::AudioBufferPtr Convert(
+      const scoped_refptr<media::AudioBuffer>& input);
+};
+template <>
+struct TypeConverter<scoped_refptr<media::AudioBuffer>,
+                     media::interfaces::AudioBufferPtr> {
+  static scoped_refptr<media::AudioBuffer> Convert(
+      const media::interfaces::AudioBufferPtr& input);
+};
+
+template <>
+struct TypeConverter<media::interfaces::VideoFramePtr,
+                     scoped_refptr<media::VideoFrame>> {
+  static media::interfaces::VideoFramePtr Convert(
+      const scoped_refptr<media::VideoFrame>& input);
+};
+template <>
+struct TypeConverter<scoped_refptr<media::VideoFrame>,
+                     media::interfaces::VideoFramePtr> {
+  static scoped_refptr<media::VideoFrame> Convert(
+      const media::interfaces::VideoFramePtr& input);
 };
 
 }  // namespace mojo

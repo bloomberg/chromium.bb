@@ -231,3 +231,58 @@ struct DecoderBuffer {
   // Indicates this buffer is part of a splice around |splice_timestamp_usec|.
   int64 splice_timestamp_usec;
 };
+
+// This defines a mojo transport format for media::AudioBuffer.
+struct AudioBuffer {
+  // Format of the audio.
+  SampleFormat sample_format;
+
+  // How the channels are laid out.
+  ChannelLayout channel_layout;
+
+  // Number of channels.
+  int32 channel_count;
+
+  // Sample rate of the buffer.
+  int32 sample_rate;
+
+  // Number of frames in the buffer.
+  int32 frame_count;
+
+  // True if end of stream.
+  bool end_of_stream;
+
+  // Timestamp in microseconds of the first frame.
+  int64 timestamp_usec;
+
+  // Channel data. Will be null for EOS buffers.
+  array<uint8>? data;
+};
+
+// This defines a mojo transport format for media::VideoFrame.
+// TODO(jrummell): Support shared memory based VideoFrame to avoid copying
+// the data multiple times.
+struct VideoFrame {
+  // Format of the frame.
+  VideoFormat format;
+
+  // Width and height of the video frame, in pixels.
+  mojo.Size coded_size;
+
+  // Visible size of the frame.
+  mojo.Rect visible_rect;
+
+  // Natural size of the frame.
+  mojo.Size natural_size;
+
+  // True if end of stream.
+  bool end_of_stream;
+
+  // Timestamp in microseconds of the associated frame.
+  int64 timestamp_usec;
+
+  // Frame data for each plane. Will be null for EOS buffers.
+  array<uint8>? y_data;
+  array<uint8>? u_data;
+  array<uint8>? v_data;
+};
