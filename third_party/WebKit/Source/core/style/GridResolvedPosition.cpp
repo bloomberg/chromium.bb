@@ -110,8 +110,9 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromStyle(const ComputedStyle
     GridResolvedPosition resolvedInitialPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
     GridResolvedPosition resolvedFinalPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
 
-    // If 'grid-after' specifies a line at or before that specified by 'grid-before', it computes to 'span 1'.
-    if (resolvedFinalPosition <= resolvedInitialPosition)
+    if (resolvedFinalPosition < resolvedInitialPosition)
+        std::swap(resolvedFinalPosition, resolvedInitialPosition);
+    else if (resolvedFinalPosition == resolvedInitialPosition)
         resolvedFinalPosition = resolvedInitialPosition.next();
 
     return GridSpan::definiteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
