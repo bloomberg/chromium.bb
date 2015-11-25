@@ -225,6 +225,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['linux', 'nvidia'], bug=544989) # Too flaky to retry
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
                ['linux', 'nvidia'], bug=524144)
+    # AMD
+    self.Flaky('conformance/more/functions/uniformi.html',
+               ['linux', 'amd'], bug=550989)
     # AMD Radeon 5450
     self.Fail('conformance/programs/program-test.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
