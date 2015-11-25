@@ -13,9 +13,13 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
         'keyed_service_core',
       ],
       'sources': [
+        'ntp_snippets/inner_iterator.h',
+        'ntp_snippets/ntp_snippet.cc',
+        'ntp_snippets/ntp_snippet.h',
         'ntp_snippets/ntp_snippets_service.cc',
         'ntp_snippets/ntp_snippets_service.h',
       ],

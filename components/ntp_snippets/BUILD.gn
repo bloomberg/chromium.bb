@@ -5,6 +5,9 @@
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 source_set("ntp_snippets") {
   sources = [
+    "inner_iterator.h",
+    "ntp_snippet.cc",
+    "ntp_snippet.h",
     "ntp_snippets_service.cc",
     "ntp_snippets_service.h",
   ]
@@ -12,5 +15,19 @@ source_set("ntp_snippets") {
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "inner_iterator_unittest.cc",
+    "ntp_snippets_service_unittest.cc",
+  ]
+
+  deps = [
+    ":ntp_snippets",
+    "//testing/gtest",
   ]
 }
