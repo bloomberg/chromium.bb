@@ -38,7 +38,8 @@
 
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
-    const base::CommandLine& command_line)
+    const base::CommandLine& command_line,
+    const std::string& locale)
     : local_state_task_runner_(local_state_task_runner),
       was_last_shutdown_clean_(false),
       created_local_state_(false) {
@@ -48,6 +49,8 @@ ApplicationContextImpl::ApplicationContextImpl(
   net_log_.reset(new net_log::ChromeNetLog(
       base::FilePath(), net::NetLogCaptureMode::Default(),
       command_line.GetCommandLineString(), GetChannelString()));
+
+  SetApplicationLocale(locale);
 }
 
 ApplicationContextImpl::~ApplicationContextImpl() {
@@ -196,11 +199,9 @@ void ApplicationContextImpl::CreateLocalState() {
   local_state_ = ::CreateLocalState(
       local_state_path, local_state_task_runner_.get(), pref_registry);
 
-  const int max_per_proxy =
-      local_state_->GetInteger(ios::prefs::kMaxConnectionsPerProxy);
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL,
-      std::max(std::min(max_per_proxy, 99),
+      std::max(std::min<int>(net::kDefaultMaxSocketsPerProxyServer, 99),
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 

@@ -23,16 +23,17 @@ class SequencedTaskRunner;
 class ApplicationContextImpl : public ApplicationContext {
  public:
   ApplicationContextImpl(base::SequencedTaskRunner* local_state_task_runner,
-                         const base::CommandLine& command_line);
+                         const base::CommandLine& command_line,
+                         const std::string& locale);
   ~ApplicationContextImpl() override;
 
   // Registers local state prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+ private:
   // Sets the locale used by the application.
   void SetApplicationLocale(const std::string& locale);
 
- private:
   // ApplicationContext implementation.
   void OnAppEnterForeground() override;
   void OnAppEnterBackground() override;
