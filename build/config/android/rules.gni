@@ -2168,9 +2168,14 @@ template("proto_java_library") {
   action("${_template_name}__protoc_java") {
     srcjar_path = "$target_gen_dir/$target_name.srcjar"
     script = "//build/protoc_java.py"
+
     deps = [
       _protoc_dep,
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
     sources = invoker.sources
     depfile = "$target_gen_dir/$target_name.d"
     outputs = [

@@ -19,11 +19,22 @@ if (enable_configuration_policy) {
   configuration_policy = 0
 }
 
-jinja_variables = [
+chrome_public_jinja_variables = [
   "channel=$android_channel",
   "manifest_package=$manifest_package",
   "configuration_policy=$configuration_policy",
 ]
+
+chrome_sync_shell_jinja_variables = [
+  "channel=$android_channel",
+  "manifest_package=org.chromium.chrome.sync_shell",
+  "configuration_policy=$configuration_policy",
+]
+
+chrome_apk_gypi = exec_script("//build/gypi_to_gn.py",
+                              [ rebase_path("chrome_apk.gyp") ],
+                              "scope",
+                              [ "chrome_apk.gyp" ])
 
 chrome_android_paks_gypi =
     exec_script("//build/gypi_to_gn.py",
@@ -364,21 +375,42 @@ android_assets("chrome_public_apk_assets") {
 jinja_template("chrome_public_apk_manifest") {
   input = "java/AndroidManifest.xml"
   output = "$root_gen_dir/chrome_public_apk_manifest/AndroidManifest.xml"
-  variables = jinja_variables
+  variables = chrome_public_jinja_variables
   variables += [
     "min_sdk_version=16",
     "target_sdk_version=23",
   ]
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:chrome_public_template_resources
-jinja_template_resources("chrome_public_template_resources") {
+# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_apk_manifest
+jinja_template("chrome_sync_shell_apk_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = "$root_gen_dir/chrome_sync_shell_apk_manifest/AndroidManifest.xml"
+  variables = chrome_sync_shell_jinja_variables
+  variables += [
+    "min_sdk_version=16",
+    "target_sdk_version=22",
+  ]
+}
+
+# GYP: //chrome/android/chrome_apk.gyp:chrome_public_apk_template_resources
+jinja_template_resources("chrome_public_apk_template_resources") {
   resources = [
     "java/res_template/xml/searchable.xml",
     "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
-  variables = jinja_variables
+  variables = chrome_public_jinja_variables
+}
+
+# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_apk_template_resources
+jinja_template_resources("chrome_sync_shell_apk_template_resources") {
+  resources = [
+    "java/res_template/xml/searchable.xml",
+    "java/res_template/xml/syncadapter.xml",
+  ]
+  res_dir = "java/res_template"
+  variables = chrome_sync_shell_jinja_variables
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_public
@@ -387,54 +419,95 @@ shared_library("chrome_public") {
     "//build/config/sanitizers:deps",
     "//chrome:chrome_android_core",
   ]
-  gypi_values = exec_script(
-          "//build/gypi_to_gn.py",
-          [
-            rebase_path("chrome_apk.gyp"),
-            "--replace=<(chrome_native_sources_dir)=../browser/android/",
-          ],
-          "scope",
-          [ "chrome_apk.gyp" ])
-  sources = gypi_values.chrome_public_app_native_sources
+  sources = chrome_apk_gypi.chrome_public_app_native_sources
 }
 
-chrome_public_apk_tmpl("chrome_public_apk") {
-  version_name = "Developer Build"
-  version_code = "1"
+# GYP: //chrome/android/chrome_apk.gyp:libchrome_sync_shell
+shared_library("chrome_sync_shell") {
+  testonly = true
+  deps = [
+    "//build/config/sanitizers:deps",
+    "//chrome:chrome_android_core",
+    "//sync",
+    "//sync:test_support_sync_fake_server_android",
+  ]
+  sources = chrome_apk_gypi.chrome_sync_shell_app_native_sources
+}
+
+# Contains rules common to chrome_public_apk and chrome_sync_shell_apk
+template("chrome_public_apk_tmpl_shared") {
+  chrome_public_apk_tmpl(target_name) {
+    forward_variables_from(invoker, "*")
+
+    native_lib_version_rule = "//build/util:chrome_version_json"
+
+    # Only attempt loading the library from the APK for 64 bit devices
+    # until the number of 32 bit devices which don't support this
+    # approach falls to a minimal level -  http://crbug.com/390618.
+    if (chromium_linker_supported &&
+        (target_cpu == "arm64" || target_cpu == "x64")) {
+      load_library_from_apk = chrome_public_apk_load_library_from_apk
+    }
+
+    deps += [
+      ":chrome_java",
+      ":chrome_public_apk_assets",
+      ":chrome_public_apk_resources",
+      "//base:base_java",
+      google_play_services_resources,
+    ]
+  }
+}
+
+chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
   android_manifest = android_manifest[1]
   apk_name = "ChromePublic"
   native_libs = [ "libchrome_public.so" ]
-  native_lib_version_rule = "//build/util:chrome_version_json"
-
-  # Only attempt loading the library from the APK for 64 bit devices
-  # until the number of 32 bit devices which don't support this
-  # approach falls to a minimal level -  http://crbug.com/390618.
-  if (chromium_linker_supported &&
-      (target_cpu == "arm64" || target_cpu == "x64")) {
-    load_library_from_apk = chrome_public_apk_load_library_from_apk
-  }
 
   deps = [
-    ":chrome_java",
     ":chrome_public",
-    ":chrome_public_apk_assets",
     ":chrome_public_apk_manifest",
-    ":chrome_public_apk_resources",
-    ":chrome_public_template_resources",
-    "//base:base_java",
-    google_play_services_resources,
+    ":chrome_public_apk_template_resources",
+  ]
+}
+
+chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
+  testonly = true
+  android_manifest = get_target_outputs(":chrome_sync_shell_apk_manifest")
+  android_manifest = android_manifest[1]
+  apk_name = "ChromeSyncShell"
+  native_libs = [ "libchrome_sync_shell.so" ]
+
+  deps = [
+    ":chrome_sync_shell",
+    ":chrome_sync_shell_apk_manifest",
+    ":chrome_sync_shell_apk_template_resources",
+
+    # This exists here because com.google.protobuf.nano is needed in tests,
+    # but that code is stripped out via proguard. Adding this deps adds
+    # usages and prevents removal of the proto code.
+    "//sync:test_support_sync_proto_java",
   ]
 }
 
 chrome_public_test_apk_manifest =
     "$root_gen_dir/chrome_public_test_apk_manifest/AndroidManifest.xml"
+chrome_sync_shell_test_apk_manifest =
+    "$root_gen_dir/chrome_sync_shell_test_apk_manifest/AndroidManifest.xml"
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk_manifest
 jinja_template("chrome_public_test_apk_manifest") {
   input = "javatests/AndroidManifest.xml"
   output = chrome_public_test_apk_manifest
-  variables = jinja_variables
+  variables = chrome_public_jinja_variables
+}
+
+# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk_manifest
+jinja_template("chrome_sync_shell_test_apk_manifest") {
+  input = "sync_shell/javatests/AndroidManifest.xml"
+  output = chrome_sync_shell_test_apk_manifest
+  variables = chrome_sync_shell_jinja_variables
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk
@@ -444,8 +517,45 @@ instrumentation_test_apk("chrome_public_test_apk") {
   android_manifest = chrome_public_test_apk_manifest
   deps = [
     ":chrome_public_test_apk_manifest",
-    "//chrome/android:chrome_shared_test_java",
+    ":chrome_shared_test_java",
   ]
   isolate_file = "../chrome_public_test_apk.isolate"
+  proguard_enabled = !is_debug
+}
+
+android_library("chrome_sync_shell_test_apk_java") {
+  testonly = true
+  DEPRECATED_java_in_dir = "sync_shell/javatests/src"
+
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/android:chrome_java_resources",
+    "//chrome/test/android:chrome_java_test_support",
+    "//components/bookmarks/common/android:bookmarks_java",
+    "//components/policy/android:policy_java",
+    "//content/public/android:content_java",
+    "//content/public/test/android:content_java_test_support",
+    "//sync:sync_java_test_support",
+    "//sync:test_support_sync_proto_java",
+    "//sync/android:sync_java",
+    "//third_party/android_protobuf:protobuf_nano_javalib",
+    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//ui/android:ui_java",
+  ]
+}
+
+# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk
+instrumentation_test_apk("chrome_sync_shell_test_apk") {
+  apk_name = "ChromeSyncShellTest"
+  apk_under_test = ":chrome_sync_shell_apk"
+  android_manifest = chrome_sync_shell_test_apk_manifest
+  deps = [
+    ":chrome_sync_shell_test_apk_java",
+    ":chrome_sync_shell_test_apk_manifest",
+  ]
+  isolate_file = "../chrome_sync_shell_test_apk.isolate"
   proguard_enabled = !is_debug
 }

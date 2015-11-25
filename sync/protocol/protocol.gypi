@@ -11,9 +11,6 @@
 
     # The list of sync protocol buffer definitions.
     'sync_proto_source_paths': [
-      # NOTE: If you add a file to this list, also add it to
-      # sync/protocol/BUILD.gn
-      # TODO(pvalenzuela): Eliminate the requirement to update the GN file.
       '<(sync_proto_sources_dir)/app_notification_specifics.proto',
       '<(sync_proto_sources_dir)/app_setting_specifics.proto',
       '<(sync_proto_sources_dir)/app_specifics.proto',

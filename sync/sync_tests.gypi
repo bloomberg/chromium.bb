@@ -439,8 +439,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          # TODO(pvalenzuela): Create GN version of this target.
-          # http://crbug.com/475612
+          # GN: //sync:test_support_sync_proto_java
           'target_name': 'test_support_sync_proto_java',
           'type': 'none',
           'variables': {

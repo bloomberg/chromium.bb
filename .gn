@@ -318,6 +318,7 @@ exec_script_whitelist = [
   "//remoting/remoting_srcs.gni",
   "//remoting/remoting_version.gni",
   "//skia/BUILD.gn",
+  "//sync/protocol/protocol_sources.gni",
   "//third_party/android_platform/BUILD.gn",
   "//third_party/angle/BUILD.gn",
   "//third_party/angle/src/tests/BUILD.gn",
