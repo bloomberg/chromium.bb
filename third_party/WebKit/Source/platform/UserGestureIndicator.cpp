@@ -47,8 +47,8 @@ public:
     ~GestureToken() override {}
     bool hasGestures() const override
     {
-        // Do not enforce timeouts for gestures which spawned javascript prompts.
-        if (m_consumableGestures < 1 || (WTF::currentTime() - m_timestamp > (m_outOfProcess ? userGestureOutOfProcessTimeout : userGestureTimeout) && !m_javascriptPrompt))
+        // Do not enforce timeouts for gestures which spawned javascript prompts or debugger pause.
+        if (m_consumableGestures < 1 || (WTF::currentTime() - m_timestamp > (m_outOfProcess ? userGestureOutOfProcessTimeout : userGestureTimeout) && !m_javascriptPrompt && !m_pauseInDebugger))
             return false;
         return true;
     }
@@ -88,12 +88,21 @@ public:
             m_javascriptPrompt = true;
     }
 
+    void setPauseInDebugger() override
+    {
+        if (WTF::currentTime() - m_timestamp > userGestureTimeout)
+            return;
+        if (hasGestures())
+            m_pauseInDebugger = true;
+    }
+
 private:
     GestureToken()
         : m_consumableGestures(0)
         , m_timestamp(0)
         , m_outOfProcess(false)
         , m_javascriptPrompt(false)
+        , m_pauseInDebugger(false)
     {
     }
 
@@ -101,6 +110,7 @@ private:
     double m_timestamp;
     bool m_outOfProcess;
     bool m_javascriptPrompt;
+    bool m_pauseInDebugger;
 };
 
 }

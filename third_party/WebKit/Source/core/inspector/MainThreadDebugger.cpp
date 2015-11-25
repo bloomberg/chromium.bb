@@ -34,6 +34,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "platform/UserGestureIndicator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -109,6 +110,9 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
     if (!pausedFrame)
         return;
     ASSERT(pausedFrame == pausedFrame->localFrameRoot());
+
+    if (UserGestureToken* token = UserGestureIndicator::currentToken())
+        token->setPauseInDebugger();
     // Wait for continue or step command.
     m_clientMessageLoop->run(pausedFrame);
 }

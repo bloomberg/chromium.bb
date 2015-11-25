@@ -48,6 +48,7 @@ public:
     virtual bool hasGestures() const = 0;
     virtual void setOutOfProcess() = 0;
     virtual void setJavascriptPrompt() = 0;
+    virtual void setPauseInDebugger() = 0;
 };
 
 class PLATFORM_EXPORT UserGestureIndicator {
