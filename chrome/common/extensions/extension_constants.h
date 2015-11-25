@@ -62,9 +62,6 @@ extern const char kGoogleDocAppId[];
 // The extension id of the Google Play Music application.
 extern const char kGooglePlayMusicAppId[];
 
-// The extension id of the Google Search application.
-extern const char kGoogleSearchAppId[];
-
 // The extension id of the Google Sheets application.
 extern const char kGoogleSheetsAppId[];
 

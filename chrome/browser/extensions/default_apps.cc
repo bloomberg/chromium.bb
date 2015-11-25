@@ -25,7 +25,6 @@ namespace {
 // Returns true if the app was a default app in Chrome 22
 bool IsOldDefaultApp(const std::string& extension_id) {
   return extension_id == extension_misc::kGmailAppId ||
-         extension_id == extension_misc::kGoogleSearchAppId ||
          extension_id == extension_misc::kYoutubeAppId;
 }
 

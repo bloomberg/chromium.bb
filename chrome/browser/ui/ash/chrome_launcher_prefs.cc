@@ -16,7 +16,6 @@ namespace {
 // App ID of default pinned apps.
 const char* kDefaultPinnedApps[] = {
   extension_misc::kGmailAppId,
-  extension_misc::kGoogleSearchAppId,
   extension_misc::kGoogleDocAppId,
   extension_misc::kYoutubeAppId,
 };

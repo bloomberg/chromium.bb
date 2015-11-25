@@ -333,11 +333,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                                     extension_misc::kGmailAppId,
                                     &error);
 
-    // Fake search extension.
+    // Fake google docs extension.
     extension4_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest,
                                     Extension::NO_FLAGS,
-                                    extension_misc::kGoogleSearchAppId,
+                                    extension_misc::kGoogleDocAppId,
                                     &error);
     extension5_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest,
