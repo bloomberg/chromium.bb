@@ -354,23 +354,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     CSSValueID id = value->id;
 
-    if (id == CSSValueInherit) {
-        if (m_valueList->size() != 1)
-            return false;
-        addExpandedPropertyForValue(propId, cssValuePool().createInheritedValue(), important);
-        return true;
-    } else if (id == CSSValueInitial) {
-        if (m_valueList->size() != 1)
-            return false;
-        addExpandedPropertyForValue(propId, cssValuePool().createExplicitInitialValue(), important);
-        return true;
-    } else if (id == CSSValueUnset) {
-        if (m_valueList->size() != 1)
-            return false;
-        addExpandedPropertyForValue(propId, cssValuePool().createUnsetValue(), important);
-        return true;
-    }
-
+    // TODO(timloh): Move to parseValueStart
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && value->id == CSSValueInternalVariableValue) {
         // We don't expand the shorthand here because crazypants.
         m_parsedProperties.append(CSSProperty(propId, CSSVariableReferenceValue::create(value->variableData), important, false, 0, m_implicitShorthand));
@@ -378,6 +362,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return true;
     }
 
+    // TODO(timloh): Move to parseSingleValue
     if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
             return false;

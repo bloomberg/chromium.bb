@@ -32,10 +32,9 @@
 
 namespace blink {
 
-CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList, const CSSParserTokenRange& range,
+CSSPropertyParser::CSSPropertyParser(const CSSParserTokenRange& range,
     const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>& parsedProperties)
-    : m_valueList(valueList)
-    , m_range(range)
+    : m_range(range)
     , m_context(context)
     , m_parsedProperties(parsedProperties)
     , m_inParseShorthand(0)
@@ -64,10 +63,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return false;
     int parsedPropertiesSize = parsedProperties.size();
 
-    CSSParserValueList valueList(range);
-    if (!valueList.size())
-        return false; // Parser error
-    CSSPropertyParser parser(&valueList, range, context, parsedProperties);
+    CSSPropertyParser parser(range, context, parsedProperties);
     CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
     bool parseSuccess;
 
@@ -77,7 +73,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     } else if (ruleType == StyleRule::FontFace) {
         parseSuccess = parser.parseFontFaceDescriptor(resolvedProperty);
     } else {
-        parseSuccess = parser.parseValue(unresolvedProperty, important);
+        parseSuccess = parser.parseValueStart(unresolvedProperty, important);
     }
 
     // This doesn't count UA style sheets
@@ -95,6 +91,40 @@ bool CSSPropertyParser::isValidNumericValue(double value)
     return std::isfinite(value)
         && value >= -std::numeric_limits<float>::max()
         && value <= std::numeric_limits<float>::max();
+}
+
+bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool important)
+{
+    if (consumeCSSWideKeyword(unresolvedProperty, important))
+        return true;
+
+    CSSParserValueList valueList(m_range);
+    if (!valueList.size())
+        return false;
+    m_valueList = &valueList;
+    return parseValue(unresolvedProperty, important);
+}
+
+bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important)
+{
+    CSSParserTokenRange rangeCopy = m_range;
+    CSSValueID id = rangeCopy.consumeIncludingWhitespace().id();
+    if (!rangeCopy.atEnd())
+        return false;
+
+    RefPtrWillBeRawPtr<CSSValue> value;
+    if (id == CSSValueInitial)
+        value = cssValuePool().createExplicitInitialValue();
+    else if (id == CSSValueInherit)
+        value = cssValuePool().createInheritedValue();
+    else if (id == CSSValueUnset)
+        value = cssValuePool().createUnsetValue();
+    else
+        return false;
+
+    addExpandedPropertyForValue(resolveCSSPropertyID(unresolvedProperty), value.release(), important);
+    m_range = rangeCopy;
+    return true;
 }
 
 // Helper methods for consuming tokens starts here.
