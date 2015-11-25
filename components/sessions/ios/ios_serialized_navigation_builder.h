@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 
 namespace web {
 class NavigationItem;
@@ -30,6 +31,13 @@ class IOSSerializedNavigationBuilder {
   // PAGE_TRANSITION_RELOAD and a new unique ID.
   static scoped_ptr<web::NavigationItem> ToNavigationItem(
       const SerializedNavigationEntry* navigation);
+
+  // Converts a set of SerializedNavigationEntrys into a list of
+  // NavigationItems with sequential page IDs.
+  // TODO(crbug.com/561329): Change this API to return a
+  // std::vector<scoped_ptr> in coordination with changing downstream clients.
+  static ScopedVector<web::NavigationItem> ToNavigationItems(
+      const std::vector<SerializedNavigationEntry>& navigations);
 };
 
 }  // namespace sessions
