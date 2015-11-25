@@ -372,18 +372,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return true;
     }
 
-    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-    if ((parsedValue = parseSingleValue(unresolvedProperty))) {
-        if (!m_range.atEnd())
-            return false;
-        addProperty(propId, parsedValue.release(), important);
-        return true;
-    }
-    if (parseShorthand(unresolvedProperty, important))
-        return true;
-
     bool validPrimitive = false;
     Units unitless = FUnknown;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
     case CSSPropertyContent:              // [ <string> | <uri> | <counter> | attr(X) | open-quote |

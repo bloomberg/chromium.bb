@@ -98,6 +98,18 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     if (consumeCSSWideKeyword(unresolvedProperty, important))
         return true;
 
+    CSSPropertyID propertyId = resolveCSSPropertyID(unresolvedProperty);
+
+    if (RefPtrWillBeRawPtr<CSSValue> parsedValue = parseSingleValue(unresolvedProperty)) {
+        if (!m_range.atEnd())
+            return false;
+        addProperty(propertyId, parsedValue.release(), important);
+        return true;
+    }
+
+    if (parseShorthand(unresolvedProperty, important))
+        return true;
+
     CSSParserValueList valueList(m_range);
     if (!valueList.size())
         return false;
