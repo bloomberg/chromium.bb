@@ -1307,7 +1307,6 @@
       'base/sdch_dictionary_unittest.cc',
       'base/sdch_manager_unittest.cc',
       'base/static_cookie_policy_unittest.cc',
-      'base/stale_while_revalidate_experiment_domains_unittest.cc',
       'base/test_completion_callback_unittest.cc',
       'base/upload_bytes_element_reader_unittest.cc',
       'base/upload_file_element_reader_unittest.cc',
