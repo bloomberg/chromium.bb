@@ -486,6 +486,10 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
   // to the discard.
   RecordDiscardStatistics();
 
+  UMA_HISTOGRAM_BOOLEAN(
+      "TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler",
+      old_contents->NeedToFireBeforeUnload());
+
   WebContents* null_contents =
       WebContents::Create(WebContents::CreateParams(model->profile()));
   // Copy over the state from the navigation controller to preserve the

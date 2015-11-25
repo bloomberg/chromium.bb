@@ -48644,6 +48644,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler"
+    units="Boolean">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Recorded for each discarding, allowing us to know whether the discarded tab
+    had a before unload handler or not.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.DiscardToReloadTime" units="ms">
   <owner>georgesak@chromium.org</owner>
   <summary>
