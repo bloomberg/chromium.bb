@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
@@ -84,6 +85,15 @@ class ServiceWorkerDispatcherTest : public testing::Test {
                                               should_notify_controllerchange);
   }
 
+  void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params) {
+    dispatcher_->OnPostMessage(params);
+  }
+
+  scoped_ptr<ServiceWorkerHandleReference> Adopt(
+      const ServiceWorkerObjectInfo& info) {
+    return dispatcher_->Adopt(info);
+  }
+
   ServiceWorkerDispatcher* dispatcher() { return dispatcher_.get(); }
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
   IPC::TestSink* ipc_sink() { return &ipc_sink_; }
@@ -115,17 +125,28 @@ class MockWebServiceWorkerProviderClientImpl
       bool shouldNotifyControllerChange) {
     // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
     // The destruction releases ServiceWorkerHandleReference.
+    is_set_controlled_called_ = true;
   }
 
   void dispatchMessageEvent(
       blink::WebPassOwnPtr<blink::WebServiceWorker::Handle> handle,
       const blink::WebString& message,
       const blink::WebMessagePortChannelArray& channels) override {
-    NOTREACHED();
+    // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
+    // The destruction releases ServiceWorkerHandleReference.
+    is_dispatch_message_event_called_ = true;
+  }
+
+  bool is_set_controlled_called() const { return is_set_controlled_called_; }
+
+  bool is_dispatch_message_event_called() const {
+    return is_dispatch_message_event_called_;
   }
 
  private:
   const int provider_id_;
+  bool is_set_controlled_called_ = false;
+  bool is_dispatch_message_event_called_ = false;
   ServiceWorkerDispatcher* dispatcher_;
 };
 
@@ -139,7 +160,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnAssociateRegistration_NoProviderContext) {
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
-  // The passed references should be adopted but immediately destroyed because
+  // The passed references should be adopted but immediately released because
   // there is no provider context to own the references.
   const int kProviderId = 10;
   OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
@@ -234,7 +255,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
 
   // (1) In the case there are no SWProviderContext and WebSWProviderClient for
   // the provider, the passed reference to the active worker should be adopted
-  // but immediately destroyed because there is no provider context to own it.
+  // but immediately released because there is no provider context to own it.
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
                                should_notify_controllerchange);
   ASSERT_EQ(1UL, ipc_sink()->message_count());
@@ -267,14 +288,16 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
 
   // (3) In the case there is no SWProviderContext but WebSWProviderClient for
   // the provider, the new reference should be created and owned by the provider
-  // client (but the reference is immediately destroyed due to limitation of the
+  // client (but the reference is immediately released due to limitation of the
   // mock provider client. See the comment on setController() of the mock).
   // In addition, the passed reference should be adopted but immediately
-  // destroyed because there is no provider context to own it.
+  // released because there is no provider context to own it.
   scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
+  ASSERT_FALSE(provider_client->is_set_controlled_called());
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
                                should_notify_controllerchange);
+  EXPECT_TRUE(provider_client->is_set_controlled_called());
   ASSERT_EQ(3UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -288,16 +311,18 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   // (4) In the case there are both SWProviderContext and SWProviderClient for
   // the provider, the passed referecence should be adopted and owned by the
   // provider context. In addition, the new reference should be created for the
-  // provider client and immediately destroyed due to limitation of the mock
+  // provider client and immediately released due to limitation of the mock
   // implementation.
   provider_context = new ServiceWorkerProviderContext(
       kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW, thread_safe_sender());
   OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
   provider_client.reset(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
+  ASSERT_FALSE(provider_client->is_set_controlled_called());
   ipc_sink()->ClearMessages();
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
                                should_notify_controllerchange);
+  EXPECT_TRUE(provider_client->is_set_controlled_called());
   ASSERT_EQ(2UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -305,52 +330,66 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
             ipc_sink()->GetMessageAt(1)->type());
 }
 
+TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
+  const int kProviderId = 10;
+
+  // Assume that these objects are passed from the browser process and own
+  // references to browser-side registration/worker representations.
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  CreateObjectInfoAndVersionAttributes(&info, &attrs);
+
+  ServiceWorkerMsg_MessageToDocument_Params params;
+  params.thread_id = kDocumentMainThreadId;
+  params.provider_id = kProviderId;
+  params.service_worker_info = attrs.active;
+
+  // The passed reference should be adopted but immediately released because
+  // there is no provider client.
+  OnPostMessage(params);
+  ASSERT_EQ(1UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+  ipc_sink()->ClearMessages();
+
+  scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
+      new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
+  ASSERT_FALSE(provider_client->is_dispatch_message_event_called());
+
+  // The passed reference should be owned by the provider client (but the
+  // reference is immediately released due to limitation of the mock provider
+  // client. See the comment on dispatchMessageEvent() of the mock).
+  OnPostMessage(params);
+  EXPECT_TRUE(provider_client->is_dispatch_message_event_called());
+  ASSERT_EQ(1UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+}
+
 TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
   ServiceWorkerRegistrationObjectInfo info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
-  // Should return a worker object newly created with incrementing refcount.
+  // Should return a worker object newly created with the given reference.
   scoped_refptr<WebServiceWorkerImpl> worker(
-      dispatcher()->GetOrCreateServiceWorker(attrs.installing));
+      dispatcher()->GetOrCreateServiceWorker(Adopt(attrs.installing)));
   EXPECT_TRUE(worker);
   EXPECT_TRUE(ContainsServiceWorker(attrs.installing.handle_id));
-  EXPECT_EQ(1UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(0)->type());
-
-  ipc_sink()->ClearMessages();
-
-  // Should return the existing worker object.
-  scoped_refptr<WebServiceWorkerImpl> existing_worker =
-      dispatcher()->GetOrCreateServiceWorker(attrs.installing);
-  EXPECT_EQ(worker, existing_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
-  // Should return the existing worker object with adopting refcount.
-  existing_worker = dispatcher()->GetOrAdoptServiceWorker(attrs.installing);
+  // Should return the same worker object and release the given reference.
+  scoped_refptr<WebServiceWorkerImpl> existing_worker =
+      dispatcher()->GetOrCreateServiceWorker(Adopt(attrs.installing));
   EXPECT_EQ(worker, existing_worker);
   ASSERT_EQ(1UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
-
   ipc_sink()->ClearMessages();
-
-  // Should return another worker object newly created with adopting refcount.
-  scoped_refptr<WebServiceWorkerImpl> another_worker(
-      dispatcher()->GetOrAdoptServiceWorker(attrs.waiting));
-  EXPECT_NE(worker.get(), another_worker.get());
-  EXPECT_TRUE(ContainsServiceWorker(attrs.waiting.handle_id));
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Should return nullptr when a given object is invalid.
   scoped_refptr<WebServiceWorkerImpl> invalid_worker =
-      dispatcher()->GetOrCreateServiceWorker(ServiceWorkerObjectInfo());
-  EXPECT_FALSE(invalid_worker);
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
-
-  invalid_worker =
-      dispatcher()->GetOrAdoptServiceWorker(ServiceWorkerObjectInfo());
+      dispatcher()->GetOrCreateServiceWorker(Adopt(ServiceWorkerObjectInfo()));
   EXPECT_FALSE(invalid_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 }

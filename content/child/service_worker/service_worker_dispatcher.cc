@@ -10,7 +10,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -22,9 +21,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/url_utils.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using blink::WebServiceWorkerError;
 using blink::WebServiceWorkerProvider;
@@ -266,30 +263,12 @@ void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {
 
 scoped_refptr<WebServiceWorkerImpl>
 ServiceWorkerDispatcher::GetOrCreateServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
-  if (info.handle_id == kInvalidServiceWorkerHandleId)
+    scoped_ptr<ServiceWorkerHandleReference> handle_ref) {
+  if (handle_ref->handle_id() == kInvalidServiceWorkerHandleId)
     return nullptr;
 
-  WorkerObjectMap::iterator found = service_workers_.find(info.handle_id);
-  if (found != service_workers_.end())
-    return found->second;
-
-  // WebServiceWorkerImpl constructor calls AddServiceWorker.
-  return new WebServiceWorkerImpl(
-      ServiceWorkerHandleReference::Create(info, thread_safe_sender_.get()),
-      thread_safe_sender_.get());
-}
-
-scoped_refptr<WebServiceWorkerImpl>
-ServiceWorkerDispatcher::GetOrAdoptServiceWorker(
-    const ServiceWorkerObjectInfo& info) {
-  if (info.handle_id == kInvalidServiceWorkerHandleId)
-    return nullptr;
-
-  scoped_ptr<ServiceWorkerHandleReference> handle_ref =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
-
-  WorkerObjectMap::iterator found = service_workers_.find(info.handle_id);
+  WorkerObjectMap::iterator found =
+      service_workers_.find(handle_ref->handle_id());
   if (found != service_workers_.end())
     return found->second;
 
@@ -312,9 +291,15 @@ ServiceWorkerDispatcher::GetOrCreateRegistration(
           ServiceWorkerRegistrationHandleReference::Create(
               info, thread_safe_sender_.get())));
 
-  registration->SetInstalling(GetOrCreateServiceWorker(attrs.installing));
-  registration->SetWaiting(GetOrCreateServiceWorker(attrs.waiting));
-  registration->SetActive(GetOrCreateServiceWorker(attrs.active));
+  registration->SetInstalling(
+      GetOrCreateServiceWorker(ServiceWorkerHandleReference::Create(
+          attrs.installing, thread_safe_sender_.get())));
+  registration->SetWaiting(
+      GetOrCreateServiceWorker(ServiceWorkerHandleReference::Create(
+          attrs.waiting, thread_safe_sender_.get())));
+  registration->SetActive(
+      GetOrCreateServiceWorker(ServiceWorkerHandleReference::Create(
+          attrs.active, thread_safe_sender_.get())));
   return registration.Pass();
 }
 
@@ -322,29 +307,24 @@ scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::GetOrAdoptRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_ref =
+      Adopt(info);
+  scoped_ptr<ServiceWorkerHandleReference> installing_ref =
+      Adopt(attrs.installing);
+  scoped_ptr<ServiceWorkerHandleReference> waiting_ref = Adopt(attrs.waiting);
+  scoped_ptr<ServiceWorkerHandleReference> active_ref = Adopt(attrs.active);
+
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
-  if (found != registrations_.end()) {
-    ServiceWorkerHandleReference::Adopt(attrs.installing,
-                                        thread_safe_sender_.get());
-    ServiceWorkerHandleReference::Adopt(attrs.waiting,
-                                        thread_safe_sender_.get());
-    ServiceWorkerHandleReference::Adopt(attrs.active,
-                                        thread_safe_sender_.get());
-    ServiceWorkerRegistrationHandleReference::Adopt(info,
-                                                    thread_safe_sender_.get());
+  if (found != registrations_.end())
     return found->second;
-  }
 
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
-      new WebServiceWorkerRegistrationImpl(
-          ServiceWorkerRegistrationHandleReference::Adopt(
-              info, thread_safe_sender_.get())));
-
-  registration->SetInstalling(GetOrAdoptServiceWorker(attrs.installing));
-  registration->SetWaiting(GetOrAdoptServiceWorker(attrs.waiting));
-  registration->SetActive(GetOrAdoptServiceWorker(attrs.active));
+      new WebServiceWorkerRegistrationImpl(registration_ref.Pass()));
+  registration->SetInstalling(GetOrCreateServiceWorker(installing_ref.Pass()));
+  registration->SetWaiting(GetOrCreateServiceWorker(waiting_ref.Pass()));
+  registration->SetActive(GetOrCreateServiceWorker(active_ref.Pass()));
   return registration.Pass();
 }
 
@@ -663,17 +643,23 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
                "ServiceWorkerDispatcher::OnSetVersionAttributes",
                "Thread ID", thread_id);
 
+  // Adopt the references sent from the browser process and pass it to the
+  // registration if it exists.
+  scoped_ptr<ServiceWorkerHandleReference> installing = Adopt(attrs.installing);
+  scoped_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
+  scoped_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
+
   RegistrationObjectMap::iterator found =
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
-    // Populate the version fields (eg. .installing) with new worker objects.
+    // Populate the version fields (eg. .installing) with worker objects.
     ChangedVersionAttributesMask mask(changed_mask);
     if (mask.installing_changed())
-      found->second->SetInstalling(GetOrAdoptServiceWorker(attrs.installing));
+      found->second->SetInstalling(GetOrCreateServiceWorker(installing.Pass()));
     if (mask.waiting_changed())
-      found->second->SetWaiting(GetOrAdoptServiceWorker(attrs.waiting));
+      found->second->SetWaiting(GetOrCreateServiceWorker(waiting.Pass()));
     if (mask.active_changed())
-      found->second->SetActive(GetOrAdoptServiceWorker(attrs.active));
+      found->second->SetActive(GetOrCreateServiceWorker(active.Pass()));
   }
 }
 
@@ -700,8 +686,7 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
 
   // Adopt the reference sent from the browser process and pass it to the
   // provider context if it exists.
-  scoped_ptr<ServiceWorkerHandleReference> handle_ref =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
+  scoped_ptr<ServiceWorkerHandleReference> handle_ref = Adopt(info);
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end())
     provider->second->OnSetControllerServiceWorker(handle_ref.Pass());
@@ -710,7 +695,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   if (found != provider_clients_.end()) {
     // Get the existing worker object or create a new one with a new reference
     // to populate the .controller field.
-    scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorker(info);
+    scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorker(
+        ServiceWorkerHandleReference::Create(info, thread_safe_sender_.get()));
     found->second->setController(WebServiceWorkerImpl::CreateHandle(worker),
                                  should_notify_controllerchange);
   }
@@ -720,9 +706,14 @@ void ServiceWorkerDispatcher::OnPostMessage(
     const ServiceWorkerMsg_MessageToDocument_Params& params) {
   // Make sure we're on the main document thread. (That must be the only
   // thread we get this message)
-  DCHECK(ChildThreadImpl::current());
+  DCHECK_EQ(kDocumentMainThreadId, params.thread_id);
   TRACE_EVENT1("ServiceWorker", "ServiceWorkerDispatcher::OnPostMessage",
                "Thread ID", params.thread_id);
+
+  // Adopt the reference sent from the browser process and get the corresponding
+  // worker object.
+  scoped_refptr<WebServiceWorkerImpl> worker =
+      GetOrCreateServiceWorker(Adopt(params.service_worker_info));
 
   ProviderClientMap::iterator found =
       provider_clients_.find(params.provider_id);
@@ -737,8 +728,6 @@ void ServiceWorkerDispatcher::OnPostMessage(
           params.message_ports, params.new_routing_ids,
           base::ThreadTaskRunnerHandle::Get());
 
-  scoped_refptr<WebServiceWorkerImpl> worker =
-      GetOrAdoptServiceWorker(params.service_worker_info);
   found->second->dispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker), params.message, ports);
 }

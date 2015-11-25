@@ -113,17 +113,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
                          blink::WebServiceWorkerProviderClient* client);
   void RemoveProviderClient(int provider_id);
 
-  // Returns the existing service worker or a newly created one. When a new one
-  // is created, increments an interprocess reference to the service worker via
-  // ServiceWorkerHandleReference. Returns nullptr if the given info is invalid.
+  // Returns the existing service worker or a newly created one with the given
+  // handle reference. Returns nullptr if the given reference is invalid.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
-      const ServiceWorkerObjectInfo& info);
-
-  // Returns the existing service worker or a newly created one. Always adopts
-  // an interprocess reference to the service worker via
-  // ServiceWorkerHandleReference. Returns nullptr if the given info is invalid.
-  scoped_refptr<WebServiceWorkerImpl> GetOrAdoptServiceWorker(
-      const ServiceWorkerObjectInfo& info);
+      scoped_ptr<ServiceWorkerHandleReference> handle_ref);
 
   // Returns the existing registration or a newly created one. When a new one is
   // created, increments interprocess references to the registration and its

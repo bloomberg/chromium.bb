@@ -47,7 +47,9 @@ void WebServiceWorkerProviderImpl::setClient(
   if (!context_->controller())
     return;
   scoped_refptr<WebServiceWorkerImpl> controller =
-      GetDispatcher()->GetOrCreateServiceWorker(context_->controller()->info());
+      GetDispatcher()->GetOrCreateServiceWorker(
+          ServiceWorkerHandleReference::Create(context_->controller()->info(),
+                                               thread_safe_sender_.get()));
   client->setController(WebServiceWorkerImpl::CreateHandle(controller),
                         false /* shouldNotifyControllerChange */);
 }

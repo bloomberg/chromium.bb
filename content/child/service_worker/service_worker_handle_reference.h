@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
@@ -16,7 +17,7 @@ class ThreadSafeSender;
 // Represents an interprocess reference to ServiceWorkerHandle managed in the
 // browser process. The constructor and destructor sends a message to increment
 // or decrement the reference count to the browser process.
-class ServiceWorkerHandleReference {
+class CONTENT_EXPORT ServiceWorkerHandleReference {
  public:
   // Creates a new ServiceWorkerHandleReference and increments ref-count.
   static scoped_ptr<ServiceWorkerHandleReference> Create(
