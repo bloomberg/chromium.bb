@@ -72,10 +72,11 @@ void CronetUploadDataStreamAdapter::OnUploadDataStreamDestroyed() {
       env, jupload_data_stream_.obj());
 }
 
-void CronetUploadDataStreamAdapter::OnReadSucceeded(JNIEnv* env,
-                                                    jobject jcaller,
-                                                    int bytes_read,
-                                                    bool final_chunk) {
+void CronetUploadDataStreamAdapter::OnReadSucceeded(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    int bytes_read,
+    bool final_chunk) {
   DCHECK(!network_task_runner_->BelongsToCurrentThread());
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
 
@@ -85,8 +86,9 @@ void CronetUploadDataStreamAdapter::OnReadSucceeded(JNIEnv* env,
                             upload_data_stream_, bytes_read, final_chunk));
 }
 
-void CronetUploadDataStreamAdapter::OnRewindSucceeded(JNIEnv* env,
-                                                      jobject jcaller) {
+void CronetUploadDataStreamAdapter::OnRewindSucceeded(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_task_runner_->BelongsToCurrentThread());
 
   network_task_runner_->PostTask(

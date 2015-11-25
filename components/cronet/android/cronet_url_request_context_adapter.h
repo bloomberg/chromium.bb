@@ -56,11 +56,14 @@ class CronetURLRequestContextAdapter
   ~CronetURLRequestContextAdapter() override;
 
   // Called on main Java thread to initialize URLRequestContext.
-  void InitRequestContextOnMainThread(JNIEnv* env, jobject jcaller);
+  void InitRequestContextOnMainThread(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
   // Releases all resources for the request context and deletes the object.
   // Blocks until network thread is destroyed after running all pending tasks.
-  void Destroy(JNIEnv* env, jobject jcaller);
+  void Destroy(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller);
 
   // Posts a task that might depend on the context being initialized
   // to the network thread.
@@ -71,10 +74,13 @@ class CronetURLRequestContextAdapter
 
   net::URLRequestContext* GetURLRequestContext();
 
-  void StartNetLogToFile(JNIEnv* env, jobject jcaller, jstring jfile_name,
+  void StartNetLogToFile(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         const base::android::JavaParamRef<jstring>& jfile_name,
                          jboolean jlog_all);
 
-  void StopNetLog(JNIEnv* env, jobject jcaller);
+  void StopNetLog(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jcaller);
 
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const { return default_load_flags_; }
@@ -85,15 +91,22 @@ class CronetURLRequestContextAdapter
   // Enables the network quality estimator and optionally configures it to
   // observe localhost requests, and to consider smaller responses when
   // observing throughput. It is recommended that both options be set to false.
-  void EnableNetworkQualityEstimator(JNIEnv* env,
-                                     jobject jcaller,
-                                     jboolean use_local_host_requests,
-                                     jboolean use_smaller_responses);
+  void EnableNetworkQualityEstimator(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jboolean use_local_host_requests,
+      jboolean use_smaller_responses);
 
   // Request that RTT and/or throughput observations should or should not be
   // provided by the network quality estimator.
-  void ProvideRTTObservations(JNIEnv* env, jobject jcaller, bool should);
-  void ProvideThroughputObservations(JNIEnv* env, jobject jcaller, bool should);
+  void ProvideRTTObservations(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      bool should);
+  void ProvideThroughputObservations(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      bool should);
 
  private:
   // Initializes |context_| on the Network thread.

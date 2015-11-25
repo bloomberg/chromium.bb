@@ -156,7 +156,7 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
 
 void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
     JNIEnv* env,
-    jobject jcaller) {
+    const JavaParamRef<jobject>& jcaller) {
   base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
   jcaller_ref.Reset(env, jcaller);
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
@@ -189,7 +189,7 @@ void CronetURLRequestContextAdapter::
 
 void CronetURLRequestContextAdapter::EnableNetworkQualityEstimator(
     JNIEnv* env,
-    jobject jcaller,
+    const JavaParamRef<jobject>& jcaller,
     jboolean use_local_host_requests,
     jboolean use_smaller_responses) {
   PostTaskToNetworkThread(
@@ -211,9 +211,10 @@ void CronetURLRequestContextAdapter::ProvideRTTObservationsOnNetworkThread(
   }
 }
 
-void CronetURLRequestContextAdapter::ProvideRTTObservations(JNIEnv* env,
-                                                            jobject jcaller,
-                                                            bool should) {
+void CronetURLRequestContextAdapter::ProvideRTTObservations(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    bool should) {
   PostTaskToNetworkThread(FROM_HERE,
                           base::Bind(&CronetURLRequestContextAdapter::
                                          ProvideRTTObservationsOnNetworkThread,
@@ -234,7 +235,7 @@ void CronetURLRequestContextAdapter::
 
 void CronetURLRequestContextAdapter::ProvideThroughputObservations(
     JNIEnv* env,
-    jobject jcaller,
+    const JavaParamRef<jobject>& jcaller,
     bool should) {
   PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&CronetURLRequestContextAdapter::
@@ -391,7 +392,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 }
 
-void CronetURLRequestContextAdapter::Destroy(JNIEnv* env, jobject jcaller) {
+void CronetURLRequestContextAdapter::Destroy(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   DCHECK(!GetNetworkTaskRunner()->BelongsToCurrentThread());
   // Stick network_thread_ in a local, as |this| may be destroyed from the
   // network thread before delete network_thread is called.
@@ -437,10 +440,11 @@ CronetURLRequestContextAdapter::GetNetworkTaskRunner() const {
   return network_thread_->task_runner();
 }
 
-void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
-                                                       jobject jcaller,
-                                                       jstring jfile_name,
-                                                       jboolean jlog_all) {
+void CronetURLRequestContextAdapter::StartNetLogToFile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jfile_name,
+    jboolean jlog_all) {
   PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(
@@ -449,7 +453,9 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
           base::android::ConvertJavaStringToUTF8(env, jfile_name), jlog_all));
 }
 
-void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
+void CronetURLRequestContextAdapter::StopNetLog(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::StopNetLogOnNetworkThread,

@@ -46,10 +46,11 @@ class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
 
   // Callbacks from Java, called on some Java thread.
   void OnReadSucceeded(JNIEnv* env,
-                       jobject obj,
+                       const base::android::JavaParamRef<jobject>& obj,
                        int bytes_read,
                        bool final_chunk);
-  void OnRewindSucceeded(JNIEnv* env, jobject obj);
+  void OnRewindSucceeded(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
  private:
   // Initialized on construction, effectively constant.

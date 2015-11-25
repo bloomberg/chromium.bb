@@ -58,39 +58,50 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Methods called prior to Start are never called on network thread.
 
   // Sets the request method GET, POST etc.
-  jboolean SetHttpMethod(JNIEnv* env, jobject jcaller, jstring jmethod);
+  jboolean SetHttpMethod(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         const base::android::JavaParamRef<jstring>& jmethod);
 
   // Adds a header to the request before it starts.
   jboolean AddRequestHeader(JNIEnv* env,
-                            jobject jcaller,
-                            jstring jname,
-                            jstring jvalue);
+                            const base::android::JavaParamRef<jobject>& jcaller,
+                            const base::android::JavaParamRef<jstring>& jname,
+                            const base::android::JavaParamRef<jstring>& jvalue);
 
   // Bypasses cache. If context is not set up to use cache, this call has no
   // effect.
-  void DisableCache(JNIEnv* env, jobject jcaller);
+  void DisableCache(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& jcaller);
 
   // Adds a request body to the request before it starts.
   void SetUpload(scoped_ptr<net::UploadDataStream> upload);
 
   // Starts the request.
-  void Start(JNIEnv* env, jobject jcaller);
+  void Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& jcaller);
 
-  void GetStatus(JNIEnv* env, jobject jcaller, jobject jstatus_listener) const;
+  void GetStatus(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jstatus_listener) const;
 
   // Follows redirect.
-  void FollowDeferredRedirect(JNIEnv* env, jobject jcaller);
+  void FollowDeferredRedirect(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
   // Reads more data.
-  jboolean ReadData(JNIEnv* env, jobject jcaller,
-                    jobject jbyte_buffer,
+  jboolean ReadData(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& jcaller,
+                    const base::android::JavaParamRef<jobject>& jbyte_buffer,
                     jint jposition,
                     jint jcapacity);
 
   // Releases all resources for the request and deletes the object itself.
   // |jsend_on_canceled| indicates if Java onCanceled callback should be
   // issued to indicate when no more callbacks will be issued.
-  void Destroy(JNIEnv* env, jobject jcaller, jboolean jsend_on_canceled);
+  void Destroy(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller,
+               jboolean jsend_on_canceled);
 
   // When called during a OnRedirect or OnResponseStarted callback, these
   // methods return the corresponding response information. These methods
@@ -99,20 +110,22 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Gets http status text from the response headers.
   base::android::ScopedJavaLocalRef<jstring> GetHttpStatusText(
       JNIEnv* env,
-      jobject jcaller) const;
+      const base::android::JavaParamRef<jobject>& jcaller) const;
 
   // Gets NPN or ALPN Negotiated Protocol (if any) from HttpResponseInfo.
   base::android::ScopedJavaLocalRef<jstring> GetNegotiatedProtocol(
       JNIEnv* env,
-      jobject jcaller) const;
+      const base::android::JavaParamRef<jobject>& jcaller) const;
 
   // Returns the host and port of the proxy server, if one was used.
   base::android::ScopedJavaLocalRef<jstring> GetProxyServer(
       JNIEnv* env,
-      jobject jcaller) const;
+      const base::android::JavaParamRef<jobject>& jcaller) const;
 
   // Returns true if response is coming from the cache.
-  jboolean GetWasCached(JNIEnv* env, jobject jcaller) const;
+  jboolean GetWasCached(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller) const;
 
   // net::URLRequest::Delegate implementations:
 
