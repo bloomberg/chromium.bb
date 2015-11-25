@@ -313,6 +313,12 @@ GURL RenderFrameHostImpl::GetLastCommittedURL() {
   return frame_tree_node_->current_url();
 }
 
+url::Origin RenderFrameHostImpl::GetLastCommittedOrigin() {
+  // Origin is stored per-FTN, so it's incorrect to call for a non-current RFH.
+  CHECK(this == frame_tree_node_->current_frame_host());
+  return frame_tree_node_->current_origin();
+}
+
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)

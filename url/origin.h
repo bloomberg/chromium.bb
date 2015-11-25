@@ -117,7 +117,7 @@ class URL_EXPORT Origin {
   // matches; and neither is unique.
   bool IsSameOriginWith(const Origin& other) const;
 
-  // Allows SchemeHostPort to used as a key in STL (for example, a std::set or
+  // Allows Origin to be used as a key in STL (for example, a std::set or
   // std::map).
   bool operator<(const Origin& other) const;
 

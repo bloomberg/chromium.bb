@@ -19,6 +19,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "url/url_constants.h"
 
 // For fine-grained suppression on flaky tests.
 #if defined(OS_WIN)
@@ -35,6 +36,15 @@ class FrameTreeBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     SetupCrossSiteRedirector(embedded_test_server());
+  }
+
+ protected:
+  std::string GetOriginFromRenderer(FrameTreeNode* node) {
+    std::string origin;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        node->current_frame_host(),
+        "window.domAutomationController.send(document.origin);", &origin));
+    return origin;
   }
 
  private:
@@ -205,36 +215,82 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
 
 // Ensure that origins are correctly set on navigations.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
-  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  GURL about_blank(url::kAboutBlankURL);
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContents* contents = shell()->web_contents();
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
 
   // Extra '/' is added because the replicated origin is serialized in RFC 6454
   // format, which dictates no trailing '/', whereas GURL::GetOrigin does put a
   // '/' at the end.
-  EXPECT_EQ(root->current_origin().Serialize() + '/',
-            main_url.GetOrigin().spec());
+  EXPECT_EQ(main_url.GetOrigin().spec(),
+            root->current_origin().Serialize() + '/');
+  EXPECT_EQ(
+      main_url.GetOrigin().spec(),
+      root->current_frame_host()->GetLastCommittedOrigin().Serialize() + '/');
 
-  GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
+  // The iframe is inititially same-origin.
+  EXPECT_TRUE(
+      root->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
+          root->child_at(0)->current_frame_host()->GetLastCommittedOrigin()));
+  EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
+  EXPECT_EQ(root->child_at(0)->current_origin().Serialize(),
+            GetOriginFromRenderer(root->child_at(0)));
+
+  // Navigate the iframe cross-origin.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_EQ(frame_url, root->child_at(0)->current_url());
+  EXPECT_EQ(frame_url.GetOrigin().spec(),
+            root->child_at(0)->current_origin().Serialize() + '/');
+  EXPECT_FALSE(
+      root->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
+          root->child_at(0)->current_frame_host()->GetLastCommittedOrigin()));
+  EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
+  EXPECT_EQ(root->child_at(0)->current_origin().Serialize(),
+            GetOriginFromRenderer(root->child_at(0)));
 
-  EXPECT_EQ(root->child_at(0)->current_origin().Serialize() + '/',
-            frame_url.GetOrigin().spec());
+  // Parent-initiated about:blank navigation should inherit the parent's a.com
+  // origin.
+  NavigateIframeToURL(contents, "1-1-id", about_blank);
+  EXPECT_EQ(about_blank, root->child_at(0)->current_url());
+  EXPECT_EQ(main_url.GetOrigin().spec(),
+            root->child_at(0)->current_origin().Serialize() + '/');
+  EXPECT_EQ(root->current_frame_host()->GetLastCommittedOrigin().Serialize(),
+            root->child_at(0)
+                ->current_frame_host()
+                ->GetLastCommittedOrigin()
+                .Serialize());
+  EXPECT_TRUE(
+      root->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
+          root->child_at(0)->current_frame_host()->GetLastCommittedOrigin()));
+  EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
+  EXPECT_EQ(root->child_at(0)->current_origin().Serialize(),
+            GetOriginFromRenderer(root->child_at(0)));
 
   GURL data_url("data:text/html,foo");
   EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
   // Navigating to a data URL should set a unique origin.  This is represented
   // as "null" per RFC 6454.
-  EXPECT_EQ(root->current_origin().Serialize(), "null");
+  EXPECT_EQ("null", root->current_origin().Serialize());
+  EXPECT_TRUE(contents->GetMainFrame()->GetLastCommittedOrigin().unique());
+  EXPECT_EQ("null", GetOriginFromRenderer(root));
 
   // Re-navigating to a normal URL should update the origin.
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  EXPECT_EQ(root->current_origin().Serialize() + '/',
-            main_url.GetOrigin().spec());
+  EXPECT_EQ(main_url.GetOrigin().spec(),
+            root->current_origin().Serialize() + '/');
+  EXPECT_EQ(
+      main_url.GetOrigin().spec(),
+      contents->GetMainFrame()->GetLastCommittedOrigin().Serialize() + '/');
+  EXPECT_FALSE(contents->GetMainFrame()->GetLastCommittedOrigin().unique());
+  EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
 }
 
 // Ensure that sandbox flags are correctly set when child frames are created.

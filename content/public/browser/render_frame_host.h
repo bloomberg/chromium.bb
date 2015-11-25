@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Value;
@@ -76,7 +77,22 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool IsCrossProcessSubframe() = 0;
 
   // Returns the last committed URL of the frame.
+  //
+  // The URL is only accurate if this RenderFrameHost is current in the frame
+  // tree -- i.e., it would be visited by WebContents::ForEachFrame. In
+  // particular, this method may return a misleading value if called from
+  // WebContentsObserver::RenderFrameCreated, since non-current frames can be
+  // passed to that observer method.
   virtual GURL GetLastCommittedURL() = 0;
+
+  // Returns the last committed origin of the frame.
+  //
+  // The origin is only available if this RenderFrameHost is current in the
+  // frame tree -- i.e., it would be visited by WebContents::ForEachFrame. In
+  // particular, this method may CHECK if called from
+  // WebContentsObserver::RenderFrameCreated, since non-current frames can be
+  // passed to that observer method.
+  virtual url::Origin GetLastCommittedOrigin() = 0;
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;

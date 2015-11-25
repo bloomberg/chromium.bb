@@ -116,8 +116,8 @@ class URL_EXPORT SchemeHostPort {
   // themselves). Unique origins, on the other hand, would not.
   bool Equals(const SchemeHostPort& other) const;
 
-  // Allows SchemeHostPort to used as a key in STL (for example, a std::set or
-  // std::map).
+  // Allows SchemeHostPort to be used as a key in STL (for example, a std::set
+  // or std::map).
   bool operator<(const SchemeHostPort& other) const;
 
  private:
