@@ -22,7 +22,7 @@ FontLoader::FontLoader(mojo::Shell* shell) {
   request->url = mojo::String::From("mojo:font_service");
   FontServicePtr font_service;
   shell->ConnectToApplication(request.Pass(), GetProxy(&font_service_provider),
-                              nullptr, nullptr,
+                              nullptr, mojo::CreatePermissiveCapabilityFilter(),
                               base::Bind(&OnGotContentHandlerID));
   mojo::ConnectToService(font_service_provider.get(), &font_service);
 
