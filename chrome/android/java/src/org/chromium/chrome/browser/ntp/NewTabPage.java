@@ -49,7 +49,9 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -88,6 +90,7 @@ public class NewTabPage
     private final int mThemeColor;
     private final NewTabPageView mNewTabPageView;
 
+    private TabObserver mTabObserver;
     private MostVisitedSites mMostVisitedSites;
     private FaviconHelper mFaviconHelper;
     private LargeIconBridge mLargeIconBridge;
@@ -101,6 +104,9 @@ public class NewTabPage
 
     // The timestamp at which the constructor was called.
     private final long mConstructedTimeNs;
+
+    // The timestamp at which this NTP was last shown to the user.
+    private long mLastShownTimeNs;
 
     private boolean mIsLoaded;
 
@@ -203,7 +209,7 @@ public class NewTabPage
             NewTabPageUma.recordExplicitUserNavigation(
                     item.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
             RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
-                    System.nanoTime() - mConstructedTimeNs, TimeUnit.NANOSECONDS);
+                    System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
             mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex(), item.getTileType());
         }
 
@@ -405,6 +411,8 @@ public class NewTabPage
 
             if (mIsDestroyed) return;
 
+            recordNTPShown();
+
             int tileTypes[] = new int[items.length];
             for (int i = 0; i < items.length; i++) {
                 tileTypes[i] = items[i].getTileType();
@@ -438,6 +446,14 @@ public class NewTabPage
         // value initially and ignore further updates.
         mOptOutPromoShown = mNewTabPageManager.shouldShowOptOutPromo();
 
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onShown(Tab tab) {
+                // Showing the NTP is only meaningful when the page has been loaded already.
+                if (mIsLoaded) recordNTPShown();
+            }
+        };
+        mTab.addObserver(mTabObserver);
         mMostVisitedSites = buildMostVisitedSites(mProfile);
         mLogoBridge = new LogoBridge(mProfile);
         updateSearchProviderHasLogo();
@@ -550,6 +566,15 @@ public class NewTabPage
     }
 
     /**
+     * Records UMA for the NTP being shown. This includes a fresh page load or being brought to the
+     * foreground.
+     */
+    private void recordNTPShown() {
+        mLastShownTimeNs = System.nanoTime();
+        RecordUserAction.record("MobileNTPShown");
+    }
+
+    /**
      * @return Whether the NTP has finished loaded.
      */
     @VisibleForTesting
@@ -587,6 +612,8 @@ public class NewTabPage
             mLogoBridge = null;
         }
         TemplateUrlService.getInstance().removeObserver(this);
+        mTab.removeObserver(mTabObserver);
+        mTabObserver = null;
         mIsDestroyed = true;
     }
 

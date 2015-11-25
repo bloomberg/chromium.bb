@@ -8127,6 +8127,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileNTPShown">
+  <owner>knn@chromium.org</owner>
+  <description>
+    The New Tab Page (NTP) was loaded or brought to foreground by the user.
+  </description>
+</action>
+
 <action name="MobileNTPSwitchToBookmarks">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
