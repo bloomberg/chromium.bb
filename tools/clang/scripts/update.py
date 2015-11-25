@@ -317,8 +317,9 @@ def UpdateClang(args):
     print 'Trying to download prebuilt clang'
 
     try:
+      if os.path.exists(LLVM_BUILD_DIR):
+        RmTree(LLVM_BUILD_DIR)
       DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR)
-      # TODO(thakis): Delete LLVM_BUILD_DIR before extracting.
       print 'clang %s unpacked' % PACKAGE_VERSION
       # Download the gold plugin if requested to by an environment variable.
       # This is used by the CFI ClusterFuzz bot.
