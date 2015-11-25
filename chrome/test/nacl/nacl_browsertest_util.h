@@ -173,13 +173,11 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #  define MAYBE_PNACL(test_name) test_name
 #endif
 
-// NaCl glibc tests are included for x86 only, as there is no glibc support
-// for other architectures (ARM/MIPS).
-#if defined(ARCH_CPU_X86_FAMILY) && \
-    !defined(DISABLE_NACL_BROWSERTESTS)
-#  define MAYBE_GLIBC(test_name) test_name
-#else
+// NaCl glibc toolchain is not available on MIPS
+#if defined(ARCH_CPU_MIPS_FAMILY) || defined(DISABLE_NACL_BROWSERTESTS)
 #  define MAYBE_GLIBC(test_name) DISABLED_##test_name
+#else
+#  define MAYBE_GLIBC(test_name) test_name
 #endif
 
 // Currently, we only support it on x86-32 or ARM architecture.
