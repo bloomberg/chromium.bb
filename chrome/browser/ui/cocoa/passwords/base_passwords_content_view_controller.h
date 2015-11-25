@@ -7,18 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Cocoa UI constants.
-namespace password_manager {
-namespace mac {
-namespace ui {
-const CGFloat kDesiredBubbleWidth = 370;
-const CGFloat kFramePadding = 16;
-const CGFloat kRelatedControlHorizontalPadding = 2;
-const CGFloat kUnrelatedControlVerticalPadding = 15;
-}  // namespace ui
-}  // namespace mac
-}  // namespace password_manager
-
 // Handles user interaction with the content view.
 @protocol ManagePasswordsBubbleContentViewDelegate<NSObject>
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -74,7 +75,7 @@ const int kAutoSigninToastTimeoutSeconds = 3;
 
 - (void)loadView {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
-  const CGFloat kPadding = password_manager::mac::ui::kFramePadding;
+  const CGFloat kPadding = kFramePadding;
   [view setFrameSize:NSMakeSize(
                          2 * kPadding + NSWidth([credentialView_ frame]),
                          2 * kPadding + NSHeight([credentialView_ frame]))];

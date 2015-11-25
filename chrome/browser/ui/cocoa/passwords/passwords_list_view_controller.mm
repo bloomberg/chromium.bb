@@ -9,13 +9,13 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string16.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "grit/components_strings.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -24,40 +24,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 
-using namespace password_manager::mac::ui;
-
 namespace {
-
-// Constants shared with toolkit-views layout_constants.h.
-const CGFloat kItemLabelSpacing = 10;
-const CGFloat kRelatedControlVerticalSpacing = 8;
-const CGFloat kDesiredRowWidth = kDesiredBubbleWidth - 2 * kFramePadding;
-
-NSFont* LabelFont() {
-  return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-}
-
-NSSize LabelSize(int resourceID) {
-  return [l10n_util::GetNSString(resourceID)
-      sizeWithAttributes:@{NSFontAttributeName : LabelFont()}];
-}
-
-std::pair<CGFloat, CGFloat> GetResizedColumns(
-    CGFloat maxWidth, std::pair<CGFloat, CGFloat> columnsWidth) {
-  // Free space can be negative.
-  CGFloat freeSpace =
-      maxWidth - (columnsWidth.first + columnsWidth.second + kItemLabelSpacing);
-  if (freeSpace >= 0) {
-    return std::make_pair(columnsWidth.first + freeSpace / 2,
-                          columnsWidth.second + freeSpace / 2);
-  }
-  // Make sure that the sizes are nonnegative.
-  CGFloat firstColumnPercent =
-      columnsWidth.first / (columnsWidth.first + columnsWidth.second);
-  return std::make_pair(
-      columnsWidth.first + freeSpace * firstColumnPercent,
-      columnsWidth.second + freeSpace * (1 - firstColumnPercent));
-}
 
 CGFloat ManagePasswordItemWidth() {
   const CGFloat undoExplanationWidth =
@@ -65,17 +32,6 @@ CGFloat ManagePasswordItemWidth() {
   const CGFloat undoLinkWidth = LabelSize(IDS_MANAGE_PASSWORDS_UNDO).width;
   return std::max(kDesiredRowWidth,
                   undoExplanationWidth + kItemLabelSpacing + undoLinkWidth);
-}
-
-void InitLabel(NSTextField* textField, const base::string16& text) {
-  [textField setStringValue:base::SysUTF16ToNSString(text)];
-  [textField setEditable:NO];
-  [textField setSelectable:NO];
-  [textField setDrawsBackground:NO];
-  [textField setBezeled:NO];
-  [textField setFont:LabelFont()];
-  [[textField cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-  [textField sizeToFit];
 }
 
 NSTextField* Label(const base::string16& text) {
@@ -89,21 +45,8 @@ NSTextField* UsernameLabel(const base::string16& text) {
   return Label(text);
 }
 
-NSSecureTextField* PasswordLabel(const base::string16& text) {
-  base::scoped_nsobject<NSSecureTextField> textField(
-      [[NSSecureTextField alloc] initWithFrame:NSZeroRect]);
-  InitLabel(textField, text);
-  return textField.autorelease();
-}
-
 NSTextField* FederationLabel(const base::string16& text) {
   return Label(text);
-}
-
-base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
-  return form.username_value.empty()
-             ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
-             : form.username_value;
 }
 
 }  // namespace
@@ -284,8 +227,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 - (void)layoutWithFirstColumn:(CGFloat)firstWidth
                  secondColumn:(CGFloat)secondWidth {
   std::pair<CGFloat, CGFloat> sizes = GetResizedColumns(
-      kDesiredRowWidth,
-      std::make_pair(firstWidth, secondWidth));
+      kDesiredRowWidth, std::make_pair(firstWidth, secondWidth));
   [usernameField_
       setFrameSize:NSMakeSize(sizes.first, NSHeight([usernameField_ frame]))];
   [passwordField_

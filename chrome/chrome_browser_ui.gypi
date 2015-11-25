@@ -1163,6 +1163,8 @@
       'browser/ui/cocoa/passwords/passwords_bubble_cocoa.mm',
       'browser/ui/cocoa/passwords/passwords_bubble_controller.h',
       'browser/ui/cocoa/passwords/passwords_bubble_controller.mm',
+      'browser/ui/cocoa/passwords/passwords_bubble_utils.h',
+      'browser/ui/cocoa/passwords/passwords_bubble_utils.mm',
       'browser/ui/cocoa/passwords/passwords_list_view_controller.h',
       'browser/ui/cocoa/passwords/passwords_list_view_controller.mm',
       'browser/ui/cocoa/passwords/pending_password_view_controller.h',

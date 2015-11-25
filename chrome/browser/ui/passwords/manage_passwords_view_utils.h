@@ -7,6 +7,10 @@
 
 #include "base/strings/string16.h"
 
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace gfx {
 class ImageSkia;
 class Range;
@@ -81,5 +85,8 @@ void GetBrandedTextAndLinkRange(
     int default_string_id,
     base::string16* out_string,
     gfx::Range* link_range);
+
+// Returns an username in the form that should be shown in the bubble.
+base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_

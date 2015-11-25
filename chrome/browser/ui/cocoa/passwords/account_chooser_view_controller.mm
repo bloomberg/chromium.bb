@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/account_chooser_more_combobox_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -150,51 +151,42 @@
   const CGFloat width =
       std::max(NSWidth([title frame]), NSWidth([credentialsView_ frame]));
   [cancelButton_
-      setFrameOrigin:NSMakePoint(
-                         base::i18n::IsRTL()
-                             ? password_manager::mac::ui::kFramePadding
-                             : password_manager::mac::ui::kFramePadding +
-                                   width - NSWidth([cancelButton_ frame]),
-                         password_manager::mac::ui::kFramePadding)];
+      setFrameOrigin:NSMakePoint(base::i18n::IsRTL()
+                                     ? kFramePadding
+                                     : kFramePadding + width -
+                                           NSWidth([cancelButton_ frame]),
+                                 kFramePadding)];
   [moreButton_
-      setFrameOrigin:NSMakePoint(
-                         base::i18n::IsRTL()
-                             ? NSMaxX([cancelButton_ frame]) +
-                                   password_manager::mac::ui::
-                                       kRelatedControlHorizontalPadding
-                             : NSMinX([cancelButton_ frame]) -
-                                   password_manager::mac::ui::
-                                       kRelatedControlHorizontalPadding -
-                                   NSWidth([moreButton_ frame]),
-                         std::ceil(password_manager::mac::ui::kFramePadding +
-                                   (NSHeight([cancelButton_ frame]) -
-                                    NSHeight([moreButton_ frame])) /
-                                       2.0f))];
+      setFrameOrigin:NSMakePoint(base::i18n::IsRTL()
+                                     ? NSMaxX([cancelButton_ frame]) +
+                                           kRelatedControlHorizontalPadding
+                                     : NSMinX([cancelButton_ frame]) -
+                                           kRelatedControlHorizontalPadding -
+                                           NSWidth([moreButton_ frame]),
+                                 std::ceil(kFramePadding +
+                                           (NSHeight([cancelButton_ frame]) -
+                                            NSHeight([moreButton_ frame])) /
+                                               2.0f))];
 
   // The credentials TableView expands to fill available space.
   [column setMaxWidth:width];
   [credentialsView
       setFrameSize:NSMakeSize(width, NSHeight([credentialsView_ frame]))];
   [credentialsView_
-      setFrameOrigin:NSMakePoint(password_manager::mac::ui::kFramePadding,
+      setFrameOrigin:NSMakePoint(kFramePadding,
                                  NSMaxY([cancelButton_ frame]) +
-                                     password_manager::mac::ui::
-                                         kUnrelatedControlVerticalPadding)];
+                                     kUnrelatedControlVerticalPadding)];
 
   [title setFrameOrigin:NSMakePoint(
                             base::i18n::IsRTL()
-                                ? password_manager::mac::ui::kFramePadding +
-                                      width - NSWidth([title frame])
-                                : password_manager::mac::ui::kFramePadding,
+                                ? kFramePadding + width - NSWidth([title frame])
+                                : kFramePadding,
                             NSMaxY([credentialsView_ frame]) +
-                                password_manager::mac::ui::
-                                    kUnrelatedControlVerticalPadding)];
+                                kUnrelatedControlVerticalPadding)];
 
   // Compute the frame to hold all the views.
-  const CGFloat frameWidth =
-      width + 2 * password_manager::mac::ui::kFramePadding;
-  const CGFloat frameHeight =
-      NSMaxY([title frame]) + password_manager::mac::ui::kFramePadding;
+  const CGFloat frameWidth = width + 2 * kFramePadding;
+  const CGFloat frameHeight = NSMaxY([title frame]) + kFramePadding;
   [view setFrame:NSMakeRect(0, 0, frameWidth, frameHeight)];
 
   [self setView:view];
