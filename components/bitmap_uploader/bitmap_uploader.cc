@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -56,7 +57,8 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   request2->url = mojo::String::From("mojo:mus");
   shell->ConnectToApplication(request2.Pass(),
                               mojo::GetProxy(&gpu_service_provider), nullptr,
-                              nullptr, base::Bind(&OnGotContentHandlerID));
+                              mojo::CreatePermissiveCapabilityFilter(),
+                              base::Bind(&OnGotContentHandlerID));
   ConnectToService(gpu_service_provider.get(), &gpu_service_);
 
   mus::mojom::CommandBufferPtr gles2_client;
