@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -508,7 +509,7 @@ const ImageSkia* Image::ToImageSkia() const {
     }
     CHECK(scoped_rep);
     rep = scoped_rep.get();
-    AddRepresentation(scoped_rep.Pass());
+    AddRepresentation(std::move(scoped_rep));
   }
   return rep->AsImageRepSkia()->image();
 }
@@ -539,7 +540,7 @@ UIImage* Image::ToUIImage() const {
     }
     CHECK(scoped_rep);
     rep = scoped_rep.get();
-    AddRepresentation(scoped_rep.Pass());
+    AddRepresentation(std::move(scoped_rep));
   }
   return rep->AsImageRepCocoaTouch()->image();
 }
@@ -573,7 +574,7 @@ NSImage* Image::ToNSImage() const {
     }
     CHECK(scoped_rep);
     rep = scoped_rep.get();
-    AddRepresentation(scoped_rep.Pass());
+    AddRepresentation(std::move(scoped_rep));
   }
   return rep->AsImageRepCocoa()->image();
 }
