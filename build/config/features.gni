@@ -82,6 +82,8 @@ declare_args() {
 
   enable_autofill_dialog = !is_ios
 
+  enable_google_now = !is_ios && !is_android
+
   enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 
   enable_remoting = !is_ios && !is_android && !is_chromecast && !is_headless

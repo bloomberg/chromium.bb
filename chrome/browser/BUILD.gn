@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chrome/common/features.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -958,7 +957,6 @@ if (is_win) {
 # (generate_browser_resources action)
 grit("resources") {
   source = "browser_resources.grd"
-  defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/browser_resources.h",

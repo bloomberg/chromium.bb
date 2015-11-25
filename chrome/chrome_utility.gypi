@@ -126,7 +126,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
-        'chrome_common_features',
         'common',
       ],
       'include_dirs': [

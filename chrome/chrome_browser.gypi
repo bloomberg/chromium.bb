@@ -3066,7 +3066,6 @@
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
         'browser_ui',
-        'chrome_common_features',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',

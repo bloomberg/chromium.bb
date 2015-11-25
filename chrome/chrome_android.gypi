@@ -14,7 +14,6 @@
         'chrome.gyp:browser',
         'chrome.gyp:browser_ui',
         'chrome.gyp:child',
-        'chrome.gyp:chrome_common_features',
         'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
