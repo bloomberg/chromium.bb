@@ -30,6 +30,19 @@ class ApplicationContextImpl : public ApplicationContext {
   // Registers local state prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Called before the browser threads are created.
+  void PreCreateThreads();
+
+  // Called after the threads have been created but before the message loops
+  // starts running. Allows the ApplicationContext to do any initialization
+  // that requres all threads running.
+  void PreMainMessageLoopRun();
+
+  // Most cleanup is done by these functions, driven from IOSChromeMainParts
+  // rather than in the destructor, so that we can interleave cleanup with
+  // threads being stopped.
+  void StartTearDown();
+  void PostDestroyThreads();
 
   // ApplicationContext implementation.
   void OnAppEnterForeground() override;

@@ -68,6 +68,22 @@ void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
 }
 
+void ApplicationContextImpl::PreCreateThreads() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void ApplicationContextImpl::PreMainMessageLoopRun() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void ApplicationContextImpl::StartTearDown() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void ApplicationContextImpl::PostDestroyThreads() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
 void ApplicationContextImpl::OnAppEnterForeground() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
