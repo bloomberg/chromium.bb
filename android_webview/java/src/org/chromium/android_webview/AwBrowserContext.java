@@ -25,7 +25,6 @@ public class AwBrowserContext {
     private SharedPreferences mSharedPreferences;
 
     private AwGeolocationPermissions mGeolocationPermissions;
-    private AwCookieManager mCookieManager;
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
     private DefaultAndroidKeyStore mLocalKeyStore;
@@ -41,13 +40,6 @@ public class AwBrowserContext {
             mGeolocationPermissions = new AwGeolocationPermissions(mSharedPreferences);
         }
         return mGeolocationPermissions;
-    }
-
-    public AwCookieManager getCookieManager() {
-        if (mCookieManager == null) {
-            mCookieManager = new AwCookieManager();
-        }
-        return mCookieManager;
     }
 
     public AwFormDatabase getFormDatabase() {
