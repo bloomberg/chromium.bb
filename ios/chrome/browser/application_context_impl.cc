@@ -68,13 +68,6 @@ void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
 }
 
-void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  application_locale_ = locale;
-  translate::TranslateDownloadManager::GetInstance()->set_application_locale(
-      application_locale_);
-}
-
 void ApplicationContextImpl::OnAppEnterForeground() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -182,6 +175,13 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
         make_scoped_ptr(new base::DefaultTickClock), GetLocalState()));
   }
   return network_time_tracker_.get();
+}
+
+void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  application_locale_ = locale;
+  translate::TranslateDownloadManager::GetInstance()->set_application_locale(
+      application_locale_);
 }
 
 void ApplicationContextImpl::CreateLocalState() {

@@ -30,9 +30,6 @@ class ApplicationContextImpl : public ApplicationContext {
   // Registers local state prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
- private:
-  // Sets the locale used by the application.
-  void SetApplicationLocale(const std::string& locale);
 
   // ApplicationContext implementation.
   void OnAppEnterForeground() override;
@@ -48,6 +45,11 @@ class ApplicationContextImpl : public ApplicationContext {
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
 
+ private:
+  // Sets the locale used by the application.
+  void SetApplicationLocale(const std::string& locale);
+
+  // Create the local state.
   void CreateLocalState();
 
   base::ThreadChecker thread_checker_;
