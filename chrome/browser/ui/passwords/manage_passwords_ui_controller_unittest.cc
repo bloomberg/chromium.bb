@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -11,6 +12,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -18,6 +20,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -123,11 +126,23 @@ void TestManagePasswordsUIController::NeverSavePasswordInternal() {
   OnLoginsChanged(list);
 }
 
+void CreateSmartBubbleFieldTrial() {
+  using password_bubble_experiment::kSmartBubbleExperimentName;
+  using password_bubble_experiment::kSmartBubbleThresholdParam;
+  std::map<std::string, std::string> params;
+  params[kSmartBubbleThresholdParam] =
+      base::IntToString(kGreatDissmisalCount / 2);
+  variations::AssociateVariationParams(kSmartBubbleExperimentName, "A", params);
+  ASSERT_TRUE(
+      base::FieldTrialList::CreateFieldTrial(kSmartBubbleExperimentName, "A"));
+}
+
 }  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  ManagePasswordsUIControllerTest() : password_manager_(&client_) {}
+  ManagePasswordsUIControllerTest()
+      : password_manager_(&client_), field_trial_list_(nullptr) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -194,6 +209,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   autofill::PasswordForm test_local_form_;
   autofill::PasswordForm test_federated_form_;
   scoped_ptr<password_manager::CredentialInfo> credential_info_;
+  base::FieldTrialList field_trial_list_;
 };
 
 scoped_ptr<password_manager::PasswordFormManager>
@@ -279,6 +295,7 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
+  CreateSmartBubbleFieldTrial();
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   password_manager::InteractionsStats stats;
@@ -299,9 +316,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
   EXPECT_EQ(stats, *controller()->GetCurrentInteractionStats());
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+  variations::testing::ClearAllVariationParams();
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
+  CreateSmartBubbleFieldTrial();
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   password_manager::InteractionsStats stats;
@@ -321,6 +340,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
   EXPECT_FALSE(controller()->GetCurrentInteractionStats());
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+  variations::testing::ClearAllVariationParams();
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {

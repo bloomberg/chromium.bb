@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_BUBBLE_EXPERIMENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_BUBBLE_EXPERIMENT_H_
 
-#include "base/macros.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
-
 class PrefRegistrySimple;
 class PrefService;
 
@@ -18,19 +15,19 @@ class SyncService;
 namespace password_bubble_experiment {
 
 extern const char kBrandingExperimentName[];
+extern const char kSmartBubbleExperimentName[];
+extern const char kSmartBubbleThresholdParam[];
 extern const char kSmartLockBrandingGroupName[];
 extern const char kSmartLockBrandingSavePromptOnlyGroupName[];
-
-// Should be called when user dismisses the "Save Password?" dialog. It stores
-// the statistics about interactions with the bubble.
-void RecordBubbleClosed(
-    PrefService* prefs,
-    password_manager::metrics_util::UIDismissalReason reason);
 
 // Registers prefs which controls appearance of the first run experience for the
 // Smart Lock UI, namely was first run experience shown for save prompt or auto
 // sign-in prompt.
 void RegisterPrefs(PrefRegistrySimple* registry);
+
+// Returns the number of times the "Save password" bubble can be dismissed by
+// user before it's not shown automatically.
+int GetSmartBubbleDismissalThreshold();
 
 // A Smart Lock user is a sync user without a custom passphrase.
 bool IsSmartLockUser(const sync_driver::SyncService* sync_service);

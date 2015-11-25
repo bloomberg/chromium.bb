@@ -43,10 +43,6 @@ namespace {
 // Minimal time span the bubble should survive implicit navigations.
 const int kBubbleMinTime = 5;
 
-// For given site and username the password save bubble is suppressed after
-// the user dismissed it |kMaxShowSaveBubble| times.
-const int kMaxShowSaveBubble = 3;
-
 password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
@@ -78,7 +74,9 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   passwords_data_.OnPendingPassword(form_manager.Pass());
   if (show_bubble) {
     password_manager::InteractionsStats* stats = GetCurrentInteractionStats();
-    if (stats && stats->dismissal_count > kMaxShowSaveBubble)
+    const int show_threshold =
+        password_bubble_experiment::GetSmartBubbleDismissalThreshold();
+    if (stats && show_threshold > 0 && stats->dismissal_count >= show_threshold)
       show_bubble = false;
   }
   timer_.reset(new base::ElapsedTimer);
