@@ -48,10 +48,13 @@ const size_t kLargeSize = kSmallSize * 16;
 
 // The GUID used to identify this client to the crash system.
 #if defined(OS_MACOSX)
-// On Mac OS X, the crash reporting client ID is the responsibility of Crashpad.
-// It is not set directly by Chrome. To make the metrics client ID available on
-// the server, it's stored in a distinct key.
+// When using Crashpad, the crash reporting client ID is the responsibility of
+// Crashpad. It is not set directly by Chrome. To make the metrics client ID
+// available on the server, it's stored in a distinct key.
 extern const char kMetricsClientId[];
+#elif defined(OS_WIN)
+extern const char kMetricsClientId[];
+extern const char kClientId[];
 #else
 // When using Breakpad instead of Crashpad, the crash reporting client ID is the
 // same as the metrics client ID.

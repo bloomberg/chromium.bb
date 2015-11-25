@@ -7,12 +7,14 @@
 #include <shellscalingapi.h>
 #include <tchar.h>
 
+#include <algorithm>
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/main_dll_loader_win.h"
@@ -22,7 +24,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "third_party/crashpad/crashpad/handler/handler_main.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace {
@@ -121,6 +125,35 @@ void SwitchToLFHeap() {
   }
 }
 
+bool RunAsCrashpadHandler(wchar_t* command_line, int* rc) {
+  const base::CommandLine cmdline = base::CommandLine::FromString(command_line);
+  if (cmdline.GetSwitchValueASCII(switches::kProcessType) ==
+      switches::kCrashpadHandler) {
+    std::vector<base::string16> argv = cmdline.argv();
+    base::string16 process_type =
+        L"--" + base::UTF8ToUTF16(switches::kProcessType) + L"=";
+    argv.erase(std::remove_if(argv.begin(), argv.end(),
+                              [&process_type](const base::string16& str) {
+                                return str.compare(0, process_type.size(),
+                                                   process_type) == 0;
+                              }),
+               argv.end());
+
+    scoped_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
+    std::vector<std::string> storage;
+    storage.reserve(argv.size());
+    for (size_t i = 0; i < argv.size(); ++i) {
+      storage.push_back(base::UTF16ToUTF8(argv[i]));
+      argv_as_utf8[i] = &storage[i][0];
+    }
+    argv_as_utf8[argv.size()] = nullptr;
+    *rc = crashpad::HandlerMain(static_cast<int>(argv.size()),
+                                argv_as_utf8.get());
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 #if !defined(WIN_CONSOLE_APP)
@@ -129,6 +162,10 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 int main() {
   HINSTANCE instance = GetModuleHandle(NULL);
 #endif
+  int rc;
+  if (RunAsCrashpadHandler(GetCommandLine(), &rc))
+    return rc;
+
   SwitchToLFHeap();
 
   startup_metric_utils::RecordExeMainEntryPointTime(base::Time::Now());
@@ -153,7 +190,7 @@ int main() {
   // Load and launch the chrome dll. *Everything* happens inside.
   VLOG(1) << "About to load main DLL.";
   MainDllLoader* loader = MakeMainDllLoader();
-  int rc = loader->Launch(instance);
+  rc = loader->Launch(instance);
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
   return rc;

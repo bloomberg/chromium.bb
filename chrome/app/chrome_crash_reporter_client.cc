@@ -292,17 +292,7 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
 }
 
 size_t ChromeCrashReporterClient::RegisterCrashKeys() {
-  // Note: On Windows this only affects the EXE. A separate invocation from
-  // child_process_logging_win.cc registers crash keys for Chrome.dll.
-#if defined(OS_WIN) && defined(COMPONENT_BUILD)
-  // On Windows, this is not called in a component build, as in that case a
-  // single copy of 'base' is shared by the EXE and the various DLLs, and that
-  // copy is configured by child_process_logging_win.cc.
-  NOTREACHED();
-  return 0;
-#else
   return crash_keys::RegisterChromeCrashKeys();
-#endif
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {

@@ -28,24 +28,27 @@ source_set("lib") {
 # GYP version: components/crash.gypi:crash_component
 source_set("app") {
   sources = [
-    "crashpad_mac.h",
+    "crashpad.h",
     "crashpad_mac.mm",
+    "crashpad_win.cc",
   ]
+
+  if (is_mac || is_win) {
+    sources += [ "crashpad.cc" ]
+  }
 
   defines = [ "CRASH_IMPLEMENTATION" ]
 
   public_deps = [
-    ":app_non_mac",
+    ":app_non_mac_win",
   ]
   deps = [
     "//base",
   ]
 
-  if (is_mac) {
-    deps += [
-      ":lib",
-      "//third_party/crashpad/crashpad/client",
-    ]
+  deps += [ ":lib" ]
+  if (is_mac || is_win) {
+    deps += [ "//third_party/crashpad/crashpad/client" ]
   }
 }
 
@@ -71,7 +74,7 @@ source_set("app") {
 # crash_component_breakpad_mac_to_be_deleted for old Breakpad behavior on
 # all platforms, or preferably, depend on crash_component to get Breakpad
 # everywhere except for Mac, where you will get Crashpad.
-source_set("app_non_mac") {
+source_set("app_non_mac_win") {
   visibility = [
     ":*",
     "//components/crash/content/browser",
@@ -79,8 +82,6 @@ source_set("app_non_mac") {
 
   sources = [
     "breakpad_linux_impl.h",
-    "breakpad_win.cc",
-    "breakpad_win.h",
     "hard_error_handler_win.cc",
     "hard_error_handler_win.h",
   ]
@@ -132,15 +133,17 @@ source_set("app_non_mac") {
 # removed shortly and all consumers will be expected to use Crashpad as
 # the Mac crash-reporting client. See the comment in the
 # crash_component_non_mac target for more details.
-source_set("app_breakpad_mac_to_be_deleted") {
+source_set("app_breakpad_mac_win_to_be_deleted") {
   deps = [
-    ":app_non_mac",
+    ":app_non_mac_win",
   ]
 
-  if (is_mac) {
+  if (is_mac || is_win) {
     sources = [
       "breakpad_mac.h",
       "breakpad_mac.mm",
+      "breakpad_win.cc",
+      "breakpad_win.h",
     ]
 
     defines = [ "CRASH_IMPLEMENTATION" ]
@@ -149,9 +152,18 @@ source_set("app_breakpad_mac_to_be_deleted") {
       ":lib",
       "//base",
       "//base:base_static",
-      "//breakpad",
       "//breakpad:client",
       "//components/crash/core/common",
+      "//content/public/common:result_codes",
+      "//sandbox",
     ]
+
+    if (is_mac) {
+      deps += [ "//breakpad" ]
+    }
+
+    if (is_win) {
+      deps += [ "//breakpad:breakpad_handler" ]
+    }
   }
 }
