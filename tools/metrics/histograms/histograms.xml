@@ -30882,6 +30882,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OSX.RendererHost.SurfaceWaitTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2015.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     This event records the amount of time that the browser process main thread

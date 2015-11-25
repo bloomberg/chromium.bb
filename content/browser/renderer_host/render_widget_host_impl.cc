@@ -913,11 +913,6 @@ void RenderWidgetHostImpl::WaitForSurface() {
       break;
     }
   }
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("OSX.RendererHost.SurfaceWaitTime",
-                             TimeTicks::Now() - start_time,
-                             TimeDelta::FromMilliseconds(1),
-                             TimeDelta::FromMilliseconds(200), 50);
 }
 #endif
 
