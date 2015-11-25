@@ -918,8 +918,17 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowT
     // Check if we need another fragmentainer group. If we've run out of columns in the last
     // fragmentainer group (column row), we need to insert another fragmentainer group to hold more
     // columns.
-    if (!multiColumnBlockFlow()->isInsideFlowThread())
-        return; // Early bail. We're not nested, so waste no more time on this.
+
+    // First figure out if there's any chance that we're nested at all. If we can be sure that
+    // we're not, bail early. This code is run very often, and since locating a containing flow
+    // thread has some cost (depending on tree depth), avoid calling enclosingFlowThread() right
+    // away. This test may give some false positives (hence the "mayBe"), if we're in an
+    // out-of-flow subtree and have an outer multicol container that doesn't affect us, but that's
+    // okay. We'll discover that further down the road when trying to locate our enclosing flow
+    // thread for real.
+    bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread();
+    if (!mayBeNested)
+        return;
     if (!isInInitialLayoutPass()) {
         // We only insert additional fragmentainer groups in the initial layout pass. We only want
         // to balance columns in the last fragmentainer group (if we need to balance at all), so we
