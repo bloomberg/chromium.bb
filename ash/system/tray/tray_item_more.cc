@@ -98,8 +98,9 @@ void TrayItemMore::Layout() {
 }
 
 void TrayItemMore::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
-  state->name = accessible_name_;
+  ActionableView::GetAccessibleState(state);
+  if (!accessible_name_.empty())
+    state->name = accessible_name_;
 }
 
 }  // namespace ash

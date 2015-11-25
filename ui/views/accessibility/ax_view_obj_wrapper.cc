@@ -54,6 +54,8 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->state |= 1 << ui::AX_STATE_FOCUSED;
   if (view_->IsFocusable())
     out_node_data->state |= 1 << ui::AX_STATE_FOCUSABLE;
+  if (!view_->visible())
+    out_node_data->state |= 1 << ui::AX_STATE_INVISIBLE;
 
   out_node_data->location = view_->GetBoundsInScreen();
 

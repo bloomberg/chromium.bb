@@ -62,6 +62,7 @@ class VolumeView : public ActionableView,
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   SystemTrayItem* owner_;
   system::TrayAudioDelegate* audio_delegate_;
@@ -80,4 +81,3 @@ class VolumeView : public ActionableView,
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_AUDIO_VOLUME_VIEW_H_
-

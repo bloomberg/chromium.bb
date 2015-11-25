@@ -281,5 +281,10 @@ void VolumeView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   separator_->SetSize(gfx::Size(kSeparatorSize, bounds().height()));
 }
 
+void VolumeView::GetAccessibleState(ui::AXViewState* state) {
+  // Intentionally overrides ActionableView, leaving |state| unset. A slider
+  // childview exposes accessibility data.
+}
+
 }  // namespace tray
 }  // namespace ash

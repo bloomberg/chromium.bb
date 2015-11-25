@@ -331,7 +331,7 @@ void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void TrayBackgroundView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_BUTTON;
+  ActionableView::GetAccessibleState(state);
   state->name = GetAccessibleNameForTray();
 }
 

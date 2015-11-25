@@ -188,6 +188,10 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.shouldIgnoreLeaf = function(node) {
+  if (node.state.invisible ||
+      (node.location.height == 0 && node.location.width == 0))
+    return true;
+
   if (node.name || node.value)
     return false;
 
