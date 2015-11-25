@@ -765,7 +765,7 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
 
-crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
+# crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
 crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
@@ -1363,5 +1363,7 @@ crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failu
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/558622 [ XP Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/558622 svg/hixie/perf/005.xml [ NeedsRebaseline ]
+crbug.com/558622 svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ NeedsRebaseline ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
