@@ -21,30 +21,30 @@ class SaveCardBubbleControllerImpl
       public content::WebContentsObserver,
       public content::WebContentsUserData<SaveCardBubbleControllerImpl> {
  public:
-  // Sets up the controller for local save. |save_card_callback| will be invoked
-  // if and when the Save button is pressed.
-  void InitializeForLocalSave(const base::Closure& save_card_callback);
+  // Sets up the controller for local save and shows the bubble.
+  // |save_card_callback| will be invoked if and when the Save button is
+  // pressed.
+  void ShowBubbleForLocalSave(const base::Closure& save_card_callback);
 
-  // Sets up the controller for upload. |save_card_callback| will be invoked if
-  // and when the Save button is pressed. The contents of |legal_message| will
-  // be displayed in the bubble.
-  void InitializeForUpload(const base::Closure& save_card_callback,
-                           scoped_ptr<base::DictionaryValue> legal_message);
-
-  // TODO(bondd): Combine SetLegalMessage() with InitializeForUpload().
-  // Example of valid |lines| data:
-  // [ {
-  //   "template" : "The legal documents are: {0} and {1}",
-  //   "template_parameter" : [ {
-  //     "display_text" : "Terms of Service",
-  //     "url": "http://www.example.com/tos"
-  //    }, {
-  //     "display_text" : "Privacy Policy",
-  //     "url": "http://www.example.com/pp"
-  //    } ],
-  // }, {
-  //   "template" : "This is the second line and it has no parameters"
-  // } ]
+  // Sets up the controller for upload and shows the bubble.
+  // |save_card_callback| will be invoked if and when the Save button is
+  // pressed. The contents of |legal_message| will be displayed in the bubble.
+  //
+  // Example of valid |legal_message| data:
+  // {
+  //   "line" : [ {
+  //     "template" : "The legal documents are: {0} and {1}",
+  //     "template_parameter" : [ {
+  //       "display_text" : "Terms of Service",
+  //       "url": "http://www.example.com/tos"
+  //     }, {
+  //       "display_text" : "Privacy Policy",
+  //       "url": "http://www.example.com/pp"
+  //     } ],
+  //   }, {
+  //     "template" : "This is the second line and it has no parameters"
+  //   } ]
+  // }
   //
   // Caveats:
   // 1. '{' and '}' may be displayed by escaping them with an apostrophe in the
@@ -56,12 +56,10 @@ class SaveCardBubbleControllerImpl
   //    string, can be used to separate paragraphs. It is not possible to create
   //    a completely blank line by using two consecutive newlines (they will be
   //    treated as a single newline by views::StyledLabel).
-  //
-  // Returns false if contents of |lines| are invalid.
-  bool SetLegalMessage(const base::ListValue& lines);
+  void ShowBubbleForUpload(const base::Closure& save_card_callback,
+                           scoped_ptr<base::DictionaryValue> legal_message);
 
-  // InitializeForLocalSave() or InitializeForUpload() must be called first.
-  void ShowBubble(bool user_action);
+  void ReshowBubble();
 
   // Returns true if Omnibox save credit card icon should be visible.
   bool IsIconVisible() const;
@@ -85,6 +83,8 @@ class SaveCardBubbleControllerImpl
 
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
   ~SaveCardBubbleControllerImpl() override;
+
+  void ShowBubble(bool user_action);
 
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();

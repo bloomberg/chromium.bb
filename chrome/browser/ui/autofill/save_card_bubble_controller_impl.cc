@@ -149,54 +149,41 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
     save_card_bubble_view_->Hide();
 }
 
-void SaveCardBubbleControllerImpl::InitializeForLocalSave(
+void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
     const base::Closure& save_card_callback) {
   is_uploading_ = false;
   save_card_callback_ = save_card_callback;
+  ShowBubble(false);
 }
 
-void SaveCardBubbleControllerImpl::InitializeForUpload(
+void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     const base::Closure& save_card_callback,
     scoped_ptr<base::DictionaryValue> legal_message) {
-  is_uploading_ = true;
-  save_card_callback_ = save_card_callback;
-  // TODO(bondd): Store legal_message here.
-}
+  const base::ListValue* lines;
+  if (!legal_message->GetList("line", &lines)) {
+    legal_message_lines_.clear();
+    return;
+  }
 
-bool SaveCardBubbleControllerImpl::SetLegalMessage(
-    const base::ListValue& lines) {
-  // Process all lines of the message. See comment in header file for example
-  // of valid |lines| data.
-  legal_message_lines_.resize(lines.GetSize());
-  for (size_t i = 0; i < lines.GetSize(); ++i) {
+  // Process all lines of the legal message. See comment in header file for
+  // example of valid |legal_message| data.
+  legal_message_lines_.resize(lines->GetSize());
+  for (size_t i = 0; i < lines->GetSize(); ++i) {
     const base::DictionaryValue* single_line;
-    if (!lines.GetDictionary(i, &single_line) ||
+    if (!lines->GetDictionary(i, &single_line) ||
         !ParseLegalMessageLine(*single_line, &legal_message_lines_[i])) {
       legal_message_lines_.clear();
-      return false;
+      return;
     }
   }
 
-  return true;
+  is_uploading_ = true;
+  save_card_callback_ = save_card_callback;
+  ShowBubble(false);
 }
 
-void SaveCardBubbleControllerImpl::ShowBubble(bool user_action) {
-  DCHECK(!save_card_callback_.is_null());
-
-  // Need to create location bar icon before bubble, otherwise bubble will be
-  // unanchored.
-  UpdateIcon();
-
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  save_card_bubble_view_ = browser->window()->ShowSaveCreditCardBubble(
-      web_contents(), this, user_action);
-  DCHECK(save_card_bubble_view_);
-
-  // Update icon after creating |save_card_bubble_view_| so that icon will show
-  // its "toggled on" state.
-  UpdateIcon();
-
-  timer_.reset(new base::ElapsedTimer());
+void SaveCardBubbleControllerImpl::ReshowBubble() {
+  ShowBubble(true);
 }
 
 bool SaveCardBubbleControllerImpl::IsIconVisible() const {
@@ -245,6 +232,25 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed() {
 const SaveCardBubbleController::LegalMessageLines&
 SaveCardBubbleControllerImpl::GetLegalMessageLines() const {
   return legal_message_lines_;
+}
+
+void SaveCardBubbleControllerImpl::ShowBubble(bool user_action) {
+  DCHECK(!save_card_callback_.is_null());
+
+  // Need to create location bar icon before bubble, otherwise bubble will be
+  // unanchored.
+  UpdateIcon();
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  save_card_bubble_view_ = browser->window()->ShowSaveCreditCardBubble(
+      web_contents(), this, user_action);
+  DCHECK(save_card_bubble_view_);
+
+  // Update icon after creating |save_card_bubble_view_| so that icon will show
+  // its "toggled on" state.
+  UpdateIcon();
+
+  timer_.reset(new base::ElapsedTimer());
 }
 
 void SaveCardBubbleControllerImpl::UpdateIcon() {
