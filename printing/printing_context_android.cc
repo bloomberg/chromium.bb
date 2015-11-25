@@ -103,9 +103,10 @@ void PrintingContextAndroid::AskUserForSettings(
   }
 }
 
-void PrintingContextAndroid::AskUserForSettingsReply(JNIEnv* env,
-                                                     jobject obj,
-                                                     jboolean success) {
+void PrintingContextAndroid::AskUserForSettingsReply(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean success) {
   if (!success) {
     // TODO(cimamoglu): Differentiate between FAILED And CANCEL.
     callback_.Run(FAILED);
@@ -137,8 +138,9 @@ void PrintingContextAndroid::AskUserForSettingsReply(JNIEnv* env,
   callback_.Run(OK);
 }
 
-void PrintingContextAndroid::ShowSystemDialogDone(JNIEnv* env,
-                                                  jobject obj) {
+void PrintingContextAndroid::ShowSystemDialogDone(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   // Settings are not updated, callback is called only to unblock javascript.
   callback_.Run(CANCEL);
 }

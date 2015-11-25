@@ -27,10 +27,13 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
 
   // Called from Java, when printing settings from the user are ready or the
   // printing operation is canceled.
-  void AskUserForSettingsReply(JNIEnv* env, jobject obj, jboolean success);
+  void AskUserForSettingsReply(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               jboolean success);
 
   // Called from Java, when a printing process initiated by a script finishes.
-  void ShowSystemDialogDone(JNIEnv* env, jobject obj);
+  void ShowSystemDialogDone(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
 
   // PrintingContext implementation.
   void AskUserForSettings(int max_pages,
