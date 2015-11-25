@@ -96,10 +96,8 @@ CheckNavigationPolicyOnUI(GURL real_url, int process_id, int render_frame_id) {
   // Without a valid RFH against which to check, we must cancel the request,
   // to prevent the resource at |url| from being delivered to a potentially
   // unsuitable renderer process.
-  // TODO(nick): Switch this back to NavigationDecision::CANCEL once we fix
-  // existing transfer unittests that don't specify a valid rfh ID.
   if (!rfh)
-    return CrossSiteResourceHandler::NavigationDecision::USE_EXISTING_RENDERER;
+    return CrossSiteResourceHandler::NavigationDecision::CANCEL_REQUEST;
 
   RenderFrameHostManager* manager = rfh->frame_tree_node()->render_manager();
   if (manager->IsRendererTransferNeededForNavigation(rfh, real_url))

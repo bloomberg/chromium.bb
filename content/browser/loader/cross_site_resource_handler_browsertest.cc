@@ -239,10 +239,8 @@ void SimulateMaliciousFrameDetachOnUIThread(int render_process_id,
 
 // Regression test for https://crbug.com/538784 -- ensures that one can't
 // sidestep CrossSiteResourceHandler by detaching a frame mid-request.
-//
-// TODO(nick): Disabled until we re-land the fix for https://crbug.com/538784.
 IN_PROC_BROWSER_TEST_F(CrossSiteResourceHandlerTest,
-                       DISABLED_NoDeliveryToDetachedFrame) {
+                       NoDeliveryToDetachedFrame) {
   GURL attacker_page = embedded_test_server()->GetURL(
       "evil.com", "/cross_site_iframe_factory.html?evil(evil)");
   EXPECT_TRUE(NavigateToURL(shell(), attacker_page));

@@ -948,6 +948,9 @@ class ResourceDispatcherHostTest : public testing::Test,
                                        ResourceType type);
 
   void MakeWebContentsAssociatedTestRequest(int request_id, const GURL& url);
+  void MakeWebContentsAssociatedTestRequestWithResourceType(int request_id,
+                                                            const GURL& url,
+                                                            ResourceType type);
 
   // Generates a request with the given priority.
   void MakeTestRequestWithPriority(int render_view_id,
@@ -1072,8 +1075,15 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
 void ResourceDispatcherHostTest::MakeWebContentsAssociatedTestRequest(
     int request_id,
     const GURL& url) {
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_SUB_RESOURCE, url);
+  MakeWebContentsAssociatedTestRequestWithResourceType(
+      request_id, url, RESOURCE_TYPE_SUB_RESOURCE);
+}
+
+void ResourceDispatcherHostTest::
+    MakeWebContentsAssociatedTestRequestWithResourceType(int request_id,
+                                                         const GURL& url,
+                                                         ResourceType type) {
+  ResourceHostMsg_Request request = CreateResourceRequest("GET", type, url);
   request.origin_pid = web_contents_->GetRenderProcessHost()->GetID();
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
   ResourceHostMsg_RequestResource msg(web_contents_->GetRoutingID(), request_id,
@@ -2437,7 +2447,6 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
 TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   EXPECT_EQ(0, host_.pending_requests());
 
-  int render_view_id = 0;
   int request_id = 1;
 
   std::string raw_headers("HTTP/1.1 200 OK\n"
@@ -2447,17 +2456,16 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   SetResponse(raw_headers, response_data);
   HandleScheme("http");
 
-  MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
-                                  GURL("http://example.com/blah"),
-                                  RESOURCE_TYPE_MAIN_FRAME);
+  MakeWebContentsAssociatedTestRequestWithResourceType(
+      request_id, GURL("http://example.com/blah"), RESOURCE_TYPE_MAIN_FRAME);
 
-
-  GlobalRequestID global_request_id(filter_->child_id(), request_id);
+  GlobalRequestID global_request_id(web_contents_filter_->child_id(),
+                                    request_id);
   host_.MarkAsTransferredNavigation(global_request_id);
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  host_.OnMessageReceived(msg, filter_.get());
+  host_.OnMessageReceived(msg, web_contents_filter_.get());
 
   // Since the request is marked as being transferred,
   // the cancellation above should have been ignored and the request
@@ -2465,11 +2473,11 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by other methods shouldn't work either.
-  host_.CancelRequestsForProcess(render_view_id);
+  host_.CancelRequestsForProcess(web_contents_->GetRoutingID());
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by context should work.
-  host_.CancelRequestsForContext(filter_->resource_context());
+  host_.CancelRequestsForContext(web_contents_filter_->resource_context());
   EXPECT_EQ(0, host_.pending_requests());
 }
 
