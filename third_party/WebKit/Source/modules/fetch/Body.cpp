@@ -110,7 +110,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 
     // When the main thread sends a V8::TerminateExecution() signal to a worker
     // thread, any V8 API on the worker thread starts returning an empty
-    // handle. This can happen in Body::readAsync. To avoid the situation, we
+    // handle. This can happen in this function. To avoid the situation, we
     // first check the ExecutionContext and return immediately if it's already
     // gone (which means that the V8::TerminateExecution() signal has been sent
     // to this worker thread).
