@@ -12,7 +12,6 @@
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace media {
 
@@ -21,10 +20,10 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::ServiceProvider* service_provider,
     scoped_refptr<MediaLog> media_log,
     scoped_ptr<mojo::AppRefCount> parent_app_refcount)
-    : binding_(this, std::move(request)),
+    : binding_(this, request.Pass()),
       service_provider_(service_provider),
       media_log_(media_log),
-      parent_app_refcount_(std::move(parent_app_refcount)) {
+      parent_app_refcount_(parent_app_refcount.Pass()) {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -37,14 +36,14 @@ void ServiceFactoryImpl::CreateRenderer(
     mojo::InterfaceRequest<interfaces::Renderer> request) {
   // The created object is owned by the pipe.
   new MojoRendererService(cdm_service_context_.GetWeakPtr(),
-                          GetRendererFactory(), media_log_, std::move(request));
+                          GetRendererFactory(), media_log_, request.Pass());
 }
 
 void ServiceFactoryImpl::CreateCdm(
     mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request) {
   // The created object is owned by the pipe.
   new MojoCdmService(cdm_service_context_.GetWeakPtr(), service_provider_,
-                     GetCdmFactory(), std::move(request));
+                     GetCdmFactory(), request.Pass());
 }
 
 RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
@@ -56,7 +55,7 @@ RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
 
 CdmFactory* ServiceFactoryImpl::GetCdmFactory() {
   if (!cdm_factory_)
-    cdm_factory_ = MojoMediaClient::Get()->CreateCdmFactory(service_provider_);
+    cdm_factory_ = MojoMediaClient::Get()->CreateCdmFactory();
   return cdm_factory_.get();
 }
 

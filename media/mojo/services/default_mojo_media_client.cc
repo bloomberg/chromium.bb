@@ -59,8 +59,7 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
     return audio_hardware_config_.get();
   }
 
-  scoped_ptr<CdmFactory> CreateCdmFactory(
-      mojo::ServiceProvider* /* service_provider */) override {
+  scoped_ptr<CdmFactory> CreateCdmFactory() override {
     return make_scoped_ptr(new DefaultCdmFactory());
   }
 

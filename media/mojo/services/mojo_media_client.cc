@@ -41,8 +41,7 @@ const AudioHardwareConfig* PlatformMojoMediaClient::GetAudioHardwareConfig() {
   return nullptr;
 }
 
-scoped_ptr<CdmFactory> PlatformMojoMediaClient::CreateCdmFactory(
-    mojo::ServiceProvider* service_provider) {
+scoped_ptr<CdmFactory> PlatformMojoMediaClient::CreateCdmFactory() {
   return nullptr;
 }
 
@@ -88,13 +87,12 @@ const AudioHardwareConfig* MojoMediaClient::GetAudioHardwareConfig() {
   return mojo_media_client_->GetAudioHardwareConfig();
 }
 
-scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
-    mojo::ServiceProvider* service_provider) {
-  return mojo_media_client_->CreateCdmFactory(service_provider);
+scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory() {
+  return mojo_media_client_->CreateCdmFactory();
 }
 
 MojoMediaClient::MojoMediaClient()
-    : mojo_media_client_(internal::CreatePlatformMojoMediaClient()) {
+    : mojo_media_client_(internal::CreatePlatformMojoMediaClient().Pass()) {
   DCHECK(mojo_media_client_);
 }
 
