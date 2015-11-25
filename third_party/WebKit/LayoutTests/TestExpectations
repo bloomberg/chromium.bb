@@ -328,6 +328,12 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/548904 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
+crbug.com/561394 inspector/console/console-call-getter-on-proto.html [ NeedsManualRebaseline ]
+crbug.com/561394 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
+crbug.com/561394 inspector/console/console-format-es6-2.html [ NeedsManualRebaseline ]
+crbug.com/561394 inspector/console/console-log-document-proto.html [ NeedsManualRebaseline ]
+crbug.com/561394 inspector/console/console-object-constructor-name.html [ NeedsManualRebaseline ]
+
 crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Failure Pass ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure Pass ]

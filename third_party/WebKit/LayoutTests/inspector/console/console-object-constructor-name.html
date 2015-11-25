@@ -7,6 +7,7 @@
 function Parent() { }
 function Child() { }
 Child.prototype = new Parent();
+Child.prototype.constructor = Child;
 var outer = { inner: function() { } };
 console.log(new Parent());
 console.log(new Child());

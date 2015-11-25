@@ -7,6 +7,7 @@ function logObject()
 {
     var A = function() { this.value = 239; }
     A.prototype = {
+        constructor: A,
         get foo()
         {
             return this.value;
@@ -14,6 +15,7 @@ function logObject()
     }
     var B = function() { A.call(this); }
     B.prototype = {
+        constructor: B,
         __proto__: A.prototype
     }
     console.log(new B());
