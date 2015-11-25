@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
@@ -126,9 +125,8 @@ void WebSocketMockClientSocketFactoryMaker::SetExpectations(
                           kHttpStreamParserBufferSize),
                  sequence++));
   }
-  scoped_ptr<SequencedSocketData> socket_data(
-      new SequencedSocketData(vector_as_array(&detail_->reads),
-                              detail_->reads.size(), &detail_->write, 1));
+  scoped_ptr<SequencedSocketData> socket_data(new SequencedSocketData(
+      detail_->reads.data(), detail_->reads.size(), &detail_->write, 1));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   AddRawExpectations(socket_data.Pass());
 }

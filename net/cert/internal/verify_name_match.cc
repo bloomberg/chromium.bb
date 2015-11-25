@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -213,7 +212,7 @@ WARN_UNUSED_RESULT bool NormalizeUniversalStringValue(const der::Input& in,
 
   std::vector<uint32_t> in_32bit(in.Length() / 4);
   if (in.Length())
-    memcpy(vector_as_array(&in_32bit), in.UnsafeData(), in.Length());
+    memcpy(in_32bit.data(), in.UnsafeData(), in.Length());
   for (const uint32_t c : in_32bit) {
     // UniversalString is UCS-4 in big-endian order.
     uint32_t codepoint = base::NetToHost32(c);

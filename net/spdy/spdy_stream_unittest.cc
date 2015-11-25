@@ -8,7 +8,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
@@ -111,17 +110,13 @@ class SpdyStreamTest : public ::testing::Test,
     reads_.push_back(MockRead(ASYNC, 0, offset_++));
   }
 
-  MockRead* GetReads() {
-    return vector_as_array(&reads_);
-  }
+  MockRead* GetReads() { return reads_.data(); }
 
   size_t GetNumReads() const {
     return reads_.size();
   }
 
-  MockWrite* GetWrites() {
-    return vector_as_array(&writes_);
-  }
+  MockWrite* GetWrites() { return writes_.data(); }
 
   int GetNumWrites() const {
     return writes_.size();

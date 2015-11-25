@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_file_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -5972,8 +5971,8 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   writes.push_back(
       CreateMockWrite(*stream_window_update, writes.size() + reads.size()));
 
-  SequencedSocketData data(vector_as_array(&reads), reads.size(),
-                           vector_as_array(&writes), writes.size());
+  SequencedSocketData data(reads.data(), reads.size(), writes.data(),
+                           writes.size());
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -6279,8 +6278,8 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 
   // Force all writes to happen before any read, last write will not
   // actually queue a frame, due to window size being 0.
-  DeterministicSocketData data(vector_as_array(&reads), reads.size(),
-                               vector_as_array(&writes), writes.size());
+  DeterministicSocketData data(reads.data(), reads.size(), writes.data(),
+                               writes.size());
 
   ScopedVector<UploadElementReader> element_readers;
   std::string upload_data_string(initial_window_size, 'a');
@@ -6400,8 +6399,8 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 
   // Force all writes to happen before any read, last write will not
   // actually queue a frame, due to window size being 0.
-  DeterministicSocketData data(vector_as_array(&reads), reads.size(),
-                               vector_as_array(&writes), writes.size());
+  DeterministicSocketData data(reads.data(), reads.size(), writes.data(),
+                               writes.size());
 
   ScopedVector<UploadElementReader> element_readers;
   std::string upload_data_string(initial_window_size, 'a');

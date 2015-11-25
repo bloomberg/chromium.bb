@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -11186,8 +11185,8 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
     ScopedVector<StaticSocketDataProvider> data_providers;
     for (size_t i = 0; i < mock_reads.size(); ++i) {
       data_providers.push_back(new StaticSocketDataProvider(
-          vector_as_array(&mock_reads[i]), mock_reads[i].size(),
-          vector_as_array(&mock_writes[i]), mock_writes[i].size()));
+          mock_reads[i].data(), mock_reads[i].size(), mock_writes[i].data(),
+          mock_writes[i].size()));
       session_deps_.socket_factory->AddSocketDataProvider(
           data_providers.back());
     }
@@ -12943,8 +12942,8 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
       reads.push_back(MockRead(ASYNC, OK, 3));
     }
 
-    SequencedSocketData data(vector_as_array(&reads), reads.size(),
-                             vector_as_array(&writes), writes.size());
+    SequencedSocketData data(reads.data(), reads.size(), writes.data(),
+                             writes.size());
     session_deps_.socket_factory->AddSocketDataProvider(&data);
 
     // Connection to the origin fails.

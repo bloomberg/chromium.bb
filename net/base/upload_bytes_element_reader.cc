@@ -5,7 +5,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -59,10 +58,9 @@ int UploadBytesElementReader::Read(IOBuffer* buf,
   return num_bytes_to_read;
 }
 
-
 UploadOwnedBytesElementReader::UploadOwnedBytesElementReader(
     std::vector<char>* data)
-    : UploadBytesElementReader(vector_as_array(data), data->size()) {
+    : UploadBytesElementReader(data->data(), data->size()) {
   data_.swap(*data);
 }
 

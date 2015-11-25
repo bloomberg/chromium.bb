@@ -8,7 +8,6 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/openssl_util.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -110,12 +109,11 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
   }
   std::vector<uint8_t> signature(len);
   // Sign it.
-  if (!EVP_DigestSignFinal(sign_context.get(), vector_as_array(&signature),
-                           &len)) {
+  if (!EVP_DigestSignFinal(sign_context.get(), signature.data(), &len)) {
     return false;
   }
   signature.resize(len);
-  out_signature->assign(reinterpret_cast<const char*>(&signature[0]),
+  out_signature->assign(reinterpret_cast<const char*>(signature.data()),
                         signature.size());
   *out_certs = &certificates_;
   VLOG(1) << "signature: "

@@ -23,7 +23,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
@@ -1871,8 +1870,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
       }
     }
 
-    SSL_set_private_key_digest_prefs(ssl_, vector_as_array(&digests),
-                                     digests.size());
+    SSL_set_private_key_digest_prefs(ssl_, digests.data(), digests.size());
 
     int cert_count = 1 + sk_X509_num(chain.get());
     net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
@@ -2146,7 +2144,7 @@ ssl_private_key_result_t SSLClientSocketOpenSSL::PrivateKeySignCompleteCallback(
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return ssl_private_key_failure;
   }
-  memcpy(out, vector_as_array(&signature_), signature_.size());
+  memcpy(out, signature_.data(), signature_.size());
   *out_len = signature_.size();
   signature_.clear();
   return ssl_private_key_success;

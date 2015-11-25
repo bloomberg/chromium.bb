@@ -21,7 +21,6 @@
 #include "base/memory/scoped_policy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
 #include "crypto/openssl_util.h"
@@ -199,7 +198,7 @@ class SSLPlatformKeyMac : public ThreadedSSLPrivateKey::Delegate {
     signature->resize(GetMaxSignatureLengthInBytes());
     CSSM_DATA signature_data;
     signature_data.Length = signature->size();
-    signature_data.Data = vector_as_array(signature);
+    signature_data.Data = signature->data();
 
     if (CSSM_SignData(cssm_signature.get(), &hash_data, 1, CSSM_ALGID_NONE,
                       &signature_data) != CSSM_OK) {

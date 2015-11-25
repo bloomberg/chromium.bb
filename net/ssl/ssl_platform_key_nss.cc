@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_certificate.h"
@@ -111,7 +110,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
     }
     signature->resize(len);
     SECItem signature_item;
-    signature_item.data = vector_as_array(signature);
+    signature_item.data = signature->data();
     signature_item.len = signature->size();
 
     SECStatus rv = PK11_Sign(key_.get(), &signature_item, &digest_item);
@@ -132,9 +131,8 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
 
       // Convert the RAW ECDSA signature to a DER-encoded ECDSA-Sig-Value.
       crypto::ScopedECDSA_SIG sig(ECDSA_SIG_new());
-      if (!sig || !BN_bin2bn(vector_as_array(signature), order_len, sig->r) ||
-          !BN_bin2bn(vector_as_array(signature) + order_len, order_len,
-                     sig->s)) {
+      if (!sig || !BN_bin2bn(signature->data(), order_len, sig->r) ||
+          !BN_bin2bn(signature->data() + order_len, order_len, sig->s)) {
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
       }
 
@@ -142,7 +140,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
       if (len <= 0)
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
       signature->resize(len);
-      uint8_t* ptr = vector_as_array(signature);
+      uint8_t* ptr = signature->data();
       len = i2d_ECDSA_SIG(sig.get(), &ptr);
       if (len <= 0)
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;

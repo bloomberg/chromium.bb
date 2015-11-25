@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/test_data_directory.h"
@@ -56,11 +55,11 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     ASSERT_TRUE(base::ReadFileToString(key_path, key_data));
     ASSERT_TRUE(base::ReadFileToString(cert_path, cert_data));
     std::vector<uint8> private_key(key_data->size());
-    memcpy(vector_as_array(&private_key), key_data->data(), key_data->size());
+    memcpy(private_key.data(), key_data->data(), key_data->size());
     base::StringPiece spki;
     ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(*cert_data, &spki));
     std::vector<uint8> public_key(spki.size());
-    memcpy(vector_as_array(&public_key), spki.data(), spki.size());
+    memcpy(public_key.data(), spki.data(), spki.size());
     key->reset(crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
         ChannelIDService::kEPKIPassword, private_key, public_key));
   }

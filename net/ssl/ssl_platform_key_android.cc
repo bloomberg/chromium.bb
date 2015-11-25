@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/openssl_client_key_store.h"
@@ -80,19 +79,16 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
 
-    uint8_t* input_ptr =
-        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(input.data()));
+    const uint8_t* input_ptr = reinterpret_cast<const uint8_t*>(input.data());
     size_t input_len = input.size();
     size_t sig_len = 0;
     if (!EVP_PKEY_sign(ctx.get(), NULL, &sig_len, input_ptr, input_len))
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     signature->resize(sig_len);
-    uint8_t* sig = const_cast<uint8_t*>(
-        reinterpret_cast<const uint8_t*>(vector_as_array(signature)));
-    if (!sig)
+    if (!EVP_PKEY_sign(ctx.get(), signature->data(), &sig_len, input_ptr,
+                       input_len)) {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    if (!EVP_PKEY_sign(ctx.get(), sig, &sig_len, input_ptr, input_len))
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
 
     signature->resize(sig_len);
 

@@ -5,7 +5,6 @@
 #include "net/base/chunked_upload_data_stream.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -79,8 +78,7 @@ int ChunkedUploadDataStream::ReadChunk(IOBuffer* buf, int buf_len) {
     size_t bytes_to_read =
         std::min(static_cast<size_t>(buf_len - bytes_read),
                  data->size() - read_offset_);
-    memcpy(buf->data() + bytes_read,
-           vector_as_array(data) + read_offset_,
+    memcpy(buf->data() + bytes_read, data->data() + read_offset_,
            bytes_to_read);
     bytes_read += bytes_to_read;
     read_offset_ += bytes_to_read;

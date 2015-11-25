@@ -1357,7 +1357,7 @@ TEST_P(SpdySessionTest, OnSettings) {
       MockRead(ASYNC, 0, ++seq),
   };
 
-  SequencedSocketData data(reads, arraysize(reads), vector_as_array(&writes),
+  SequencedSocketData data(reads, arraysize(reads), writes.data(),
                            writes.size());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -1557,8 +1557,8 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
     writes.push_back(CreateMockWrite(*server_settings_frame));
   }
 
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                vector_as_array(&writes), writes.size());
+  StaticSocketDataProvider data(reads, arraysize(reads), writes.data(),
+                                writes.size());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   CreateNetworkSession();
