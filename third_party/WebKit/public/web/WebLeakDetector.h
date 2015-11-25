@@ -53,15 +53,38 @@ public:
     virtual void onLeakDetectionComplete(const Result&) = 0;
 };
 
+// |WebLeakDetector| detects leaks of various Blink objects, counting
+// the ones remaining after having reset Blink's global state and
+// collected all garbage. See |WebLeakDetectorClient::Results|
+// for the kinds of objects supported.
 class WebLeakDetector {
 public:
     virtual ~WebLeakDetector() { }
 
     BLINK_EXPORT static WebLeakDetector* create(WebLeakDetectorClient*);
 
-    // Cleans up the DOM objects and counts them. |WebLeakDetectorClient::onLeakDetectionComplete()| is called when done.
-    // This is supposed to be used for detecting DOM-object leaks.
-    virtual void collectGarbageAndGetDOMCounts(WebLocalFrame*) = 0;
+    // Leak detection is performed in two stages,
+    // |prepareForLeakDetection()| and |collectGarbageAndReport()|.
+    //
+    // The first clearing out various global resources that a frame
+    // keeps, with the second clearing out all garbage in Blink's
+    // managed heaps before reporting leak counts.
+    //
+    // |WebLeakDetectorClient::onLeakDetectionComplete()| is called
+    // with the result of the (leaked) resource counting.
+    //
+    // By separating into two, the caller is able to inject any
+    // additional releasing of resources needed before the garbage
+    // collections go ahead.
+
+    // Perform initial stage of preparing for leak detection,
+    // releasing references to resources held globally.
+    virtual void prepareForLeakDetection(WebLocalFrame*) = 0;
+
+    // Garbage collect Blink's heaps and report leak counts.
+    // |WebLeakDetectorClient::onLeakDetectionComplete()| is called
+    // upon completion.
+    virtual void collectGarbageAndReport() = 0;
 };
 
 } // namespace blink

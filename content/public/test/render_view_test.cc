@@ -293,7 +293,7 @@ void RenderViewTest::TearDown() {
   scoped_ptr<blink::WebLeakDetector> leak_detector =
       make_scoped_ptr(blink::WebLeakDetector::create(this));
 
-  leak_detector->collectGarbageAndGetDOMCounts(GetMainFrame());
+  leak_detector->prepareForLeakDetection(GetMainFrame());
 
   view_ = NULL;
   mock_process_.reset();
@@ -307,6 +307,8 @@ void RenderViewTest::TearDown() {
   // Needs to run before blink::shutdown().
   autorelease_pool_.reset(NULL);
 #endif
+
+  leak_detector->collectGarbageAndReport();
 
   blink_platform_impl_.Shutdown();
   blink::shutdown();
