@@ -238,6 +238,12 @@ function assertNotEquals(expected, actual) {
   }
 }
 
+function assertTrue(booleanExpression, description) {
+  if (!booleanExpression) {
+    failTest(description);
+  }
+}
+
 // Returns has-video-input-device to the test if there's a webcam available on
 // the system.
 function hasVideoInputDeviceOnSystem() {

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MediaStream Recoder Browser Test (w/ MediaSource)</title>
+</head>
+<body>
+  <div> Record Real-Time video content browser test.</div>
+  <video id="video" autoplay></video>
+</body>
+<script type="text/javascript" src="mediarecorder_test_utils.js"></script>
+<script type="text/javascript" src="webrtc_test_utilities.js"></script>
+<script>
+
+'use strict';
+
+// This test must be run with experimental GetUserMedia flag on.
+
+const DEFAULT_CONSTRAINTS= {audio:true, video:true};
+const DEFAULT_RECORDER_MIME_TYPE = 'video/vp8';
+const DEFAULT_TIME_SLICE = 100;
+
+function createAndStartMediaRecorder(stream, mimeType) {
+  return new Promise(function(resolve, reject) {
+    console.log('Starting MediaRecorder instance');
+    document.getElementById("video").src = URL.createObjectURL(stream);
+    var recorder = new MediaRecorder(stream, mimeType);
+    console.log('Recorder object created.');
+    recorder.start();
+    resolve(recorder);
+  });
+}
+
+function createAndStartWithTimeSliceMediaRecorder(stream, mimeType, slice) {
+  return new Promise(function(resolve, reject) {
+    console.log('Starting MediaRecorder instance');
+    document.getElementById("video").src = URL.createObjectURL(stream);
+    var recorder = new MediaRecorder(stream, mimeType);
+    console.log('Recorder object created.');
+    recorder.start(slice);
+    console.log('Recorder started with time slice', slice);
+    resolve(recorder);
+  });
+}
+
+function testStartAndRecorderState() {
+  console.log('testStartAndRecorderState started.');
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        assertEquals('recording', recorder.state);
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testStartStopAndRecorderState() {
+  console.log('testStartStopAndRecorderState started.');
+  var theRecorder;
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        theRecorder = recorder;
+        theRecorder.stop();
+      })
+      .then(function() {
+        assertEquals('inactive', theRecorder.state);
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testStartAndDataAvailable() {
+  console.log('testStartAndDataAvailable started.');
+  var videoSize = 0;
+  var emptyBlobs = 0;
+  var timeStamps = [];
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        // Save history of Blobs received via dataavailable.
+        recorder.ondataavailable = function(event) {
+          timeStamps.push(event.timeStamp);
+          if (event.data.size > 0)
+            videoSize  += event.data.size;
+          else
+            emptyBlobs += 1;
+        };
+      })
+      .then(function() {
+        return waitFor('Make sure the recording has data',
+            function() {
+              return videoSize > 0;
+            });
+      })
+      .then(function() {
+        assertTrue(emptyBlobs == 0, 'Recording has ' + emptyBlobs +
+            ' empty blobs, there should be no such empty blobs.');
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testStartWithTimeSlice() {
+  console.log('testStartWithTimeSlice started.');
+  var videoSize = 0;
+  var emptyBlobs = 0;
+  var timeStamps = [];
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartWithTimeSliceMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE, DEFAULT_TIME_SLICE);
+      })
+      .then(function(recorder) {
+        recorder.ondataavailable = function(event) {
+          timeStamps.push(event.timeStamp);
+          if (event.data.size > 0)
+            videoSize  += event.data.size;
+          else
+            emptyBlobs += 1;
+        };
+      })
+      .then(function() {
+        return waitFor('Making sure the recording has data',
+            function() {
+              return videoSize > 0;
+            });
+      })
+      .then(function() {
+        // Gather more data for 1000 milliseconds, in order to make
+        // calculation of time stamps.
+        return waitDuration(1000);
+      })
+      .then(function() {
+        var timeDeltas = getTimeStampDeltas(timeStamps);
+        assertTrue(timeDeltas.length > 0, 'Could not compute time deltas ' +
+          'because media recorder did not provide data');
+        timeDeltas.forEach(function(timeDelta) {
+          assertTrue(timeDelta >= DEFAULT_TIME_SLICE, 'A time slice was ' +
+              timeDelta + ' ms which is shorter than the expected minimum '
+              + DEFAULT_TIME_SLICE + 'ms');
+          });
+        assertTrue(emptyBlobs == 0, 'Recording has ' + emptyBlobs +
+            ' empty blobs, there should be no such empty blobs.');
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+</script>
+</body>
+</html>

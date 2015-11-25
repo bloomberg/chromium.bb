@@ -7,11 +7,13 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -56,8 +58,6 @@ void WebRtcContentBrowserTest::TearDown() {
 }
 
 void WebRtcContentBrowserTest::AppendUseFakeUIForMediaStreamFlag() {
-  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeUIForMediaStream));
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kUseFakeUIForMediaStream);
 }
@@ -71,6 +71,16 @@ std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
       shell()->web_contents(), javascript, &result))
           << "Failed to execute javascript " << javascript << ".";
   return result;
+}
+
+void WebRtcContentBrowserTest::MakeTypicalCall(const std::string& javascript,
+                                               const std::string& html_file) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL(html_file));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(javascript);
 }
 
 void WebRtcContentBrowserTest::ExecuteJavascriptAndWaitForOk(
