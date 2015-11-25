@@ -80,8 +80,6 @@ private:
     void removeLeftoverAnonymousBlock(LayoutBlock*) final { }
     bool avoidsFloats() const final { return true; }
 
-    void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) final;
-
     void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const final;
 
     bool canBeProgramaticallyScrolled() const final { return true; }

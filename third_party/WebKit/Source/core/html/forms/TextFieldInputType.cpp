@@ -465,7 +465,7 @@ void TextFieldInputType::updatePlaceholderText()
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
         Node* previous = container ? container : element().innerEditorElement();
-        previous->parentNode()->insertBefore(placeholder, previous->nextSibling());
+        previous->parentNode()->insertBefore(placeholder, previous);
         ASSERT_WITH_SECURITY_IMPLICATION(placeholder->parentNode() == previous->parentNode());
     }
     placeholder->setTextContent(placeholderText);

@@ -628,7 +628,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         placeholder->setInlineStyleProperty(CSSPropertyDisplay, isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
-        userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement()->nextSibling());
+        userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement());
     }
     placeholder->setTextContent(placeholderText);
 }

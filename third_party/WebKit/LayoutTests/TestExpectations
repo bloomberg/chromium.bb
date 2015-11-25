@@ -189,6 +189,10 @@ crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.
 crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
+crbug.com/560649 fast/forms/input-placeholder-visibility-1.html [ NeedsRebaseline ]
+crbug.com/560649 fast/forms/input-placeholder-visibility-3.html [ NeedsRebaseline ]
+crbug.com/560649 fast/forms/textarea-placeholder-visibility-1.html [ NeedsRebaseline ]
+crbug.com/560649 fast/forms/textarea-placeholder-visibility-2.html [ NeedsRebaseline ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
