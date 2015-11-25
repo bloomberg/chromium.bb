@@ -4,7 +4,6 @@
 
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

@@ -80,11 +80,6 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
 
   void OnUploadStateStopped(const UniqueId& unique_id);
 
-  // Encodes |input| into |output| using URL safe base64, no padding.
-  // NOTE: Safe to use the same variable for both |input| and |output|.
-  static void Base64URLSafeEncode(const std::string& input,
-                                  std::string* output);
-
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::string account_id_;

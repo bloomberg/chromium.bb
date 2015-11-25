@@ -5,13 +5,13 @@
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
 #include "base/base64.h"
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/non_thread_safe.h"
@@ -381,7 +381,9 @@ void AttachmentUploaderImpl::ConfigureURLFetcherCommon(
   // Encode the birthday.  Birthday is opaque so we assume it could contain
   // anything.  Encode it so that it's safe to pass as an HTTP header value.
   std::string encoded_store_birthday;
-  Base64URLSafeEncode(raw_store_birthday, &encoded_store_birthday);
+  base::Base64UrlEncode(
+      raw_store_birthday, base::Base64UrlEncodePolicy::OMIT_PADDING,
+      &encoded_store_birthday);
   fetcher->AddExtraRequestHeader(base::StringPrintf(
       "%s: %s", kSyncStoreBirthday, encoded_store_birthday.c_str()));
 
@@ -390,14 +392,6 @@ void AttachmentUploaderImpl::ConfigureURLFetcherCommon(
   const int field_number = GetSpecificsFieldNumberFromModelType(model_type);
   fetcher->AddExtraRequestHeader(
       base::StringPrintf("%s: %d", kSyncDataTypeId, field_number));
-}
-
-void AttachmentUploaderImpl::Base64URLSafeEncode(const std::string& input,
-                                                 std::string* output) {
-  base::Base64Encode(input, output);
-  base::ReplaceChars(*output, "+", "-", output);
-  base::ReplaceChars(*output, "/", "_", output);
-  base::TrimString(*output, "=", output);
 }
 
 }  // namespace syncer
