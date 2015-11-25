@@ -80,7 +80,9 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerUnbindOnUnload) {
+// Flaky. http://crbug.com/561474
+IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest,
+                       DISABLED_SocketTCPServerUnbindOnUnload) {
   std::string path("sockets_tcp_server/unload");
   ResultCatcher catcher;
   const Extension* extension = LoadApp(path);
