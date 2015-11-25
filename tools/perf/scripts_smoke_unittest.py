@@ -48,11 +48,6 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('optional arguments:', stdout)
     self.assertEquals(return_code, 0)
 
-  def testRunRecordWprList(self):
-    return_code, stdout = self.RunPerfScript('record_wpr --list-benchmarks')
-    self.assertIn('kraken', stdout)
-    self.assertEquals(return_code, 0)
-
   def testRunBenchmarkListJSONListsOutBenchmarks(self):
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     tmp_file_name = tmp_file.name
