@@ -58,10 +58,11 @@ New Procedures and Functions
     converts <fence_sync> which is only visible to the current context to a
     sync token which may be waited upon by any contexts on the same server.
     The <fence_sync> command must be flushed before this function may be
-    called, otherwise an INVALID_OPERATION error is generated. The generated
-    <sync_token> must be generated on the same context as when
-    InsertFenceSyncCHROMIUM was called. The <sync_token> can be passed and
-    used by any context on the same server, including other context groups.
+    called, otherwise an INVALID_OPERATION error is generated. The use of
+    ShallowFlushCHROMIUM is enough for the command to be flushed to the
+    server. The generated <sync_token> must be generated on the same context
+    as when InsertFenceSyncCHROMIUM was called. The <sync_token> can be passed
+    and used by any context on the same server, including other context groups.
 
     <sync_token> returns a GL_SYNC_TOKEN_SIZE_CHROMIUM byte sized name.
 
@@ -76,9 +77,11 @@ New Procedures and Functions
     the two contexts are on the same channel but on different streams, flush
     order guarantee is enough to guarantee that the server will receive the
     release command before the wait command. The <fence_sync> command must be
-    flushed before this function may be called, otherwise an INVALID_OPERATION
-    error is generated. The generated <sync_token> must be generated on the
-    same context as when InsertFenceSyncCHROMIUM was called.
+    flushed or separated by an ordering barrier before this function may be
+    called, otherwise an INVALID_OPERATION error is generated. For chromium
+    specific flushes and ordering barriers, see ShallowFlushCHROMIUM and
+    OrderingBarrierCHROMIUM. The generated <sync_token> must be generated on
+    the same context as when InsertFenceSyncCHROMIUM was called.
 
     The command
 
@@ -101,11 +104,19 @@ New Tokens
 
 Errors
 
+    INVALID_VALUE is generated if the <sync_token> parameter of
+    GenSyncTokenCHROMIUM or GenUnverifiedSyncTokenCHROMIUM is NULL.
+
     INVALID_VALUE is generated if the <fence_sync> parameter of
-    GenSyncTokenCHROMIUM is not a valid local fence sync name.
+    GenSyncTokenCHROMIUM or GenUnverifiedSyncTokenCHROMIUM is not a
+    valid local fence sync name.
 
     INVALID_OPERATION is generated if the <fence_sync> parameter of
-    GenSyncTokenCHROMIUM has not been flushed to the server.
+    GenSyncTokenCHROMIUM or has not been flushed to the server.
+
+    INVALID_OPERATION is generated if the <fence_sync> parameter of
+    GenUnverifiedSyncTokenCHROMIUM or has not been flushed to the server
+    or queued to be flushed using an ordering barrier.
 
     INVALID_OPERATION is generated if the <sync_token> parameter of
     WaitSyncTokenCHROMIUM was generated using GenUnverifiedSyncTokenCHROMIUM,
@@ -123,3 +134,6 @@ Revision History
     GenSyncTokenCHROMIUM, and WaitSyncTokenCHROMIUM.
 
     10/12/2015   Added function GenUnverifiedSyncTokenCHROMIUM.
+
+    11/24/2015   Clarified that GenUnverifiedSyncTokenCHROMIUM only needs an
+    ordering barrier and added proper error values.
