@@ -10,13 +10,10 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/url_request/redirect_info.h"
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -57,29 +54,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       next_index_(0),
       navigation_start_(navigation_start) {
   DCHECK(!navigation_start.is_null());
-  // PlzNavigate
-  // Initialize the ServiceWorkerNavigationHandle if it can be created for this
-  // frame.
-  bool can_create_service_worker =
-      (frame_tree_node_->current_replication_state().sandbox_flags &
-       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      can_create_service_worker) {
-    BrowserContext* browser_context =
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext();
-    // TODO(clamy): Picking the partition based on the URL is incorrect.
-    // See crbug.com/513539
-    StoragePartition* partition =
-        BrowserContext::GetStoragePartitionForSite(browser_context, url_);
-    DCHECK(partition);
-    ServiceWorkerContextWrapper* service_worker_context =
-        static_cast<ServiceWorkerContextWrapper*>(
-            partition->GetServiceWorkerContext());
-    service_worker_handle_.reset(
-        new ServiceWorkerNavigationHandle(service_worker_context));
-  }
-
   GetDelegate()->DidStartNavigation(this);
 }
 
@@ -233,6 +207,14 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
   return result;
+}
+
+void NavigationHandleImpl::InitServiceWorkerHandle(
+    ServiceWorkerContextWrapper* service_worker_context) {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  service_worker_handle_.reset(
+      new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
 void NavigationHandleImpl::WillStartRequest(

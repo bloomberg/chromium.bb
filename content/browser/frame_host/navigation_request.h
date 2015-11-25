@@ -162,6 +162,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnStartChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnRedirectChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
+  // Called when the navigation is about to be sent to the IO thread.
+  void InitializeServiceWorkerHandleIfNeeded();
+
   FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when

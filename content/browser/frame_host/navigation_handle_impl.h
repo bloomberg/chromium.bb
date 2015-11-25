@@ -19,6 +19,7 @@
 namespace content {
 
 class NavigatorDelegate;
+class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 struct NavigationRequestInfo;
 
@@ -126,6 +127,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   }
 
   // PlzNavigate
+  void InitServiceWorkerHandle(
+      ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
     return service_worker_handle_.get();
   }
