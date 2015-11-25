@@ -5274,23 +5274,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Name of the 'Enable Native Client' lab.">
+      <message name="IDS_FLAGS_NACL_NAME" desc="Name of the 'Native Client' lab.">
         Native Client
       </message>
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Mobile: Description of the 'Enable Native Client' lab.">
+        <message name="IDS_FLAGS_NACL_DESCRIPTION" desc="Mobile: Description of the 'Native Client' lab.">
           Enable support for Native Client.
         </message>
       </if>
       <if expr="not is_android">
-        <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
-          Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.
+        <message name="IDS_FLAGS_NACL_DESCRIPTION" desc="Description of the 'Native Client' lab.">
+          Support Native Client for all web applications, even those that were not installed from the Chrome Web Store.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_NACL_DEBUG_NAME" desc="Name of the 'NaCl GDB debug stub' lab.">
+      <message name="IDS_FLAGS_NACL_DEBUG_NAME" desc="Name of the 'NaCl GDB debug stub' lab.">
         Native Client GDB-based debugging
       </message>
-      <message name="IDS_FLAGS_ENABLE_NACL_DEBUG_DESCRIPTION" desc="Description of the 'NaCl GDB debug stub' lab.">
+      <message name="IDS_FLAGS_NACL_DEBUG_DESCRIPTION" desc="Description of the 'NaCl GDB debug stub' lab.">
         Enable GDB debug stub. This will stop a Native Client application on startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.
       </message>
       <message name="IDS_FLAGS_NACL_DEBUG_MASK_NAME" desc="Name of the 'Restrict NaCl GDB debugging' lab.">
@@ -5333,33 +5333,39 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Device discovery notifications on local network.
       </message>
       <if expr="is_win">
-        <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME">
-          Enable XPS in Google Cloud Print
+        <message name="IDS_FLAGS_CLOUD_PRINT_XPS_NAME">
+          XPS in Google Cloud Print
         </message>
-        <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_DESCRIPTION">
+        <message name="IDS_FLAGS_CLOUD_PRINT_XPS_DESCRIPTION">
           XPS enables advanced options for classic printers connected to the Cloud Print with Chrome. Printers must be re-connected after changing this flag.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_MEDIA_ROUTER_NAME" desc="Title of the flag to enable media router.">
-        Enable Media Router
+      <message name="IDS_FLAGS_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag for iframe-based sign-in flows.">
+        iframe-based sign-in flows
       </message>
-      <message name="IDS_FLAGS_ENABLE_MEDIA_ROUTER_DESCRIPTION" desc="Description of the flag to enable media router.">
+      <message name="IDS_FLAGS_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag for iframe-based sign-in flows">
+        Uses an iframe-based sign-in flow instead of a webview-based flow.
+      </message>
+      <message name="IDS_FLAGS_MEDIA_ROUTER_NAME" desc="Title of the flag for the media router.">
+        Media Router
+      </message>
+      <message name="IDS_FLAGS_MEDIA_ROUTER_DESCRIPTION" desc="Description of the flag for the media router.">
         Enables Chrome to access external presentation-type displays and use them for presenting web content.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
-        Enable Print Preview Registration Promos
+      <message name="IDS_FLAGS_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
+        Print Preview Registration Promos
       </message>
-      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION">
+      <message name="IDS_FLAGS_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION">
         Enable registering unregistered cloud printers from print preview.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME">
-        Enable Save Password Bubble UI
+      <message name="IDS_FLAGS_SAVE_PASSWORD_BUBBLE_NAME">
+        Save Password Bubble UI
       </message>
-      <message name="IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_DESCRIPTION">
+      <message name="IDS_FLAGS_SAVE_PASSWORD_BUBBLE_DESCRIPTION">
         Enable experimental bubble-based UI for saving passwords; replaces the existing infobar.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME" desc="Title of the flag which enables scroll prediction.">
-        Enable scroll prediction
+      <message name="IDS_FLAGS_SCROLL_PREDICTION_NAME" desc="Title of the flag which enables scroll prediction.">
+        Scroll prediction
       </message>
       <message name="IDS_FLAGS_TOP_CHROME_MD" desc="Title of the flag which enables or disables material design in the top chrome of the browser.">
         Material design in the browser's top chrome
@@ -5376,13 +5382,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL" desc="Top Chrome non-material design option.">
         Non-material
       </message>
-      <message name="IDS_FLAGS_ENABLE_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
+      <message name="IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
         Predicts the finger's future position during scrolls allowing time to render the frame before the finger is there.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ADD_TO_SHELF_NAME" desc="Title of the flag which enables add to shelf banners.">
-        Enable add to shelf
+      <message name="IDS_FLAGS_ADD_TO_SHELF_NAME" desc="Title of the flag for add to shelf banners.">
+        Add to shelf
       </message>
-      <message name="IDS_FLAGS_ENABLE_ADD_TO_SHELF_DESCRIPTION" desc="Description of the flag which enables add to shelf banners.">
+      <message name="IDS_FLAGS_ADD_TO_SHELF_DESCRIPTION" desc="Description of the flag for add to shelf banners.">
         Enable the display of add to shelf banners, which prompt a user to add a web app to their shelf, or other platform-specific equivalent.
       </message>
       <message name="IDS_FLAGS_BYPASS_APP_BANNER_ENGAGEMENT_CHECKS_NAME" desc="Title of the flag which bypasses the user engagement checks for app banners.">
@@ -5392,10 +5398,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Bypasses user engagement checks for displaying app banners, such as requiring that users have visited the site before and that the banner hasn't been shown recently. This allows developers to test that other eligibility requirements for showing app banners, such as having a manifest, are met.
       </message>
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_NAME" desc="Name of the flag to enable the accessibility tab switcher.">
-          Enable Accessibility Tab Switcher.
+        <message name="IDS_FLAGS_ACCESSIBILITY_TAB_SWITCHER_NAME" desc="Name of the flag to enable the accessibility tab switcher.">
+          Accessibility Tab Switcher
         </message>
-        <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION" desc="Description of the flag to enable the accessibility tab switcher.">
+        <message name="IDS_FLAGS_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION" desc="Description of the flag to enable the accessibility tab switcher.">
           Enable the accessibility tab switcher for Android.
         </message>
         <message name="IDS_FLAGS_ENABLE_PHYSICAL_WEB_NAME" desc="Name of the flag to enable the physical web feature.">
@@ -5405,17 +5411,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable scanning for URLs from Physical Web objects.
         </message>
       </if>
-      <message name="IDS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
+      <message name="IDS_FLAGS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
         Enable touch events
       </message>
-      <message name="IDS_TOUCH_EVENTS_DESCRIPTION" desc="Description of the touch-events flag.">
+      <message name="IDS_FLAGS_TOUCH_EVENTS_DESCRIPTION" desc="Description of the touch-events flag.">
         Force touchscreen support to always be enabled or disabled, or to be enabled when a touchscreen is detected on startup (Automatic, the default).
       </message>
-      <message name="IDS_DISABLE_TOUCH_ADJUSTMENT_NAME" desc="Title of the disable touch adjustment flag.">
-        Disable touch adjustment.
+      <message name="IDS_FLAGS_TOUCH_ADJUSTMENT_NAME" desc="Title of the disable touch adjustment flag.">
+        Touch adjustment
       </message>
-      <message name="IDS_DISABLE_TOUCH_ADJUSTMENT_DESCRIPTION" desc="Description of the disable touch adjustment flag.">
-        Disables touch adjustment support.  Touch adjustment is the process of refining the position of a touch gesture in order to compensate for touches having poor resolution compared to a mouse.
+      <message name="IDS_FLAGS_TOUCH_ADJUSTMENT_DESCRIPTION" desc="Description of the disable touch adjustment flag.">
+        Refine the position of a touch gesture in order to compensate for touches having poor resolution compared to a mouse.
       </message>
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS" desc="Name of the 'Composited layer borders' lab.">
         Composited render layer borders
@@ -5451,29 +5457,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
         When possible, puts the scrolling contents of an overflow scrolling element onto a composited layer for faster scrolling.
       </message>
       <if expr="is_win">
-        <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_NAME" desc="Name of the 'Disable DirectWrite' lab.">
-          Disable DirectWrite
+        <message name="IDS_FLAGS_DIRECT_WRITE_NAME" desc="Name of the 'DirectWrite' lab.">
+          DirectWrite
         </message>
-        <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Disable DirectWrite' lab.">
-          Disables the use of experimental DirectWrite font rendering system.
+        <message name="IDS_FLAGS_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'DirectWrite' lab.">
+          Enables the use of experimental DirectWrite font rendering system.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
-        Enable experimental canvas features
+      <message name="IDS_FLAGS_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
+        Experimental canvas features
       </message>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental canvas features' lab.">
+      <message name="IDS_FLAGS_EXPERIMENTAL_CANVAS_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental canvas features' lab.">
         Enables the use of experimental canvas features which are still in development.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_NAME" desc="Name of the 'Disable accelerated 2D canvas' lab.">
-        Disable accelerated 2D canvas
+      <message name="IDS_FLAGS_ACCELERATED_2D_CANVAS_NAME" desc="Name of the 'Accelerated 2D canvas' lab.">
+        Accelerated 2D canvas
       </message>
-      <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable accelerated 2D canvas' lab.">
-        Disables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
+      <message name="IDS_FLAGS_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Accelerated 2D canvas' lab.">
+        Enables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_NAME" desc="Name of the 'Enable display list 2D canvas' lab.">
-        Enable display list 2D canvas
+      <message name="IDS_FLAGS_DISPLAY_LIST_2D_CANVAS_NAME" desc="Name of the 'Enable display list 2D canvas' lab.">
+        Display list 2D canvas
       </message>
-      <message name="IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_DESCRIPTION" desc="Description of the 'Enable display list 2D canvas' lab.">
+      <message name="IDS_FLAGS_DISPLAY_LIST_2D_CANVAS_DESCRIPTION" desc="Description of the 'Enable display list 2D canvas' lab.">
         Enables the use of display lists to record 2D canvas commands. This allows 2D canvas rasterization to be performed on separate thread.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
@@ -5488,22 +5494,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_DESCRIPTION" desc="Description of the 'Extensions on chrome:// URLs' lab">
         Enables running extensions on chrome:// URLs, where extensions explicitly request this permission.
       </message>
-      <message name="IDS_FLAGS_ENABLE_FAST_UNLOAD_DESCRIPTION" desc="Description of the 'Fast Unload' lab.">
+      <message name="IDS_FLAGS_FAST_UNLOAD_NAME" desc="Name of the 'Fast Unload' lab">
+        Fast tab/window close
+      </message>
+      <message name="IDS_FLAGS_FAST_UNLOAD_DESCRIPTION" desc="Description of the 'Fast Unload' lab.">
         Enables fast tab/window closing - runs a tab's onunload js handler independently of the GUI.
       </message>
-      <message name="IDS_FLAGS_ENABLE_FAST_UNLOAD_NAME" desc="Name of the 'Extensions on chrome:// URLs' lab">
-        Enable fast tab/window close
+      <message name="IDS_FLAGS_DISTILLER_IN_PRINT_PREVIEW_NAME" desc="Name of the 'enable simplify on print preview' lab">
+        Simplify page on print preview
       </message>
-      <message name="IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_NAME" desc="Name of the 'enable simplify on print preview' lab">
-        Enable simplify page on print preview
+      <message name="IDS_FLAGS_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'enable simplify on print preview' lab">
+        Enables the simplify page check box on the print preview dialog
       </message>
-      <message name="IDS_FLAGS_ENABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'enable simplify on print preview' lab">
-        Enable the simplify page check box on the print preview dialog
+      <message name="IDS_FLAGS_APP_WINDOW_CONTROLS_NAME" desc="Name of the 'Enable 'window-controls' element' lab.">
+        'Window-controls' element
       </message>
-      <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME" desc="Name of the 'Enable 'window-controls' element' lab.">
-        Enable 'window-controls' element
-      </message>
-      <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION" desc="Description of the 'Enable 'window-controls' element' lab.">
+      <message name="IDS_FLAGS_APP_WINDOW_CONTROLS_DESCRIPTION" desc="Description of the 'Enable 'window-controls' element' lab.">
         Enables using 'window-controls' HTML elements in packaged apps.
       </message>
       <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME" desc="Name of the 'User consent for extension scripts' lab.">
@@ -5512,36 +5518,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_DESCRIPTION" desc="Description of the 'User consent for extension scripts' lab">
         Require user consent for an extension running a script on the page, if the extension requested permission to run on all urls.
       </message>
-      <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME" desc="Name of the 'Disable hyperlink auditing' lab.">
-        Disable hyperlink auditing
+      <message name="IDS_FLAGS_HYPERLINK_AUDITING_NAME" desc="Name of the 'Disable hyperlink auditing' lab.">
+        Hyperlink auditing
       </message>
-      <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION" desc="Description of the 'Disable hyperlink auditing' lab.">
-        Disable sending hyperlink auditing pings.
+      <message name="IDS_FLAGS_HYPERLINK_AUDITING_DESCRIPTION" desc="Description of the 'Disable hyperlink auditing' lab.">
+        Sends hyperlink auditing pings.
       </message>
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
-          Enable Contextual Search.
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
+          Contextual Search
         </message>
-        <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
+        <message name="IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
           Whether or not Contextual Search is enabled.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
+      <message name="IDS_FLAGS_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
       </message>
-      <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION" desc="Description for the flag to turn on gesture tap highlighting">
+      <message name="IDS_FLAGS_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION" desc="Description for the flag to turn on gesture tap highlighting">
         Enable the experimental gesture tap highlight implementation.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME" desc="Title for the flag to turn on smooth scrolling">
+      <message name="IDS_FLAGS_SMOOTH_SCROLLING_NAME" desc="Title for the flag to turn on smooth scrolling">
         Smooth Scrolling
       </message>
-      <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION" desc="Description for the flag to turn on smooth scrolling">
+      <message name="IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION" desc="Description for the flag to turn on smooth scrolling">
         Enable the experimental smooth scrolling implementation.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_NAME" desc="Title for the flag to turn on overlay scrollbars">
+      <message name="IDS_FLAGS_OVERLAY_SCROLLBARS_NAME" desc="Title for the flag to turn on overlay scrollbars">
         Overlay Scrollbars
       </message>
-      <message name="IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION" desc="Description for the flag to turn on overlay scrollbars">
+      <message name="IDS_FLAGS_OVERLAY_SCROLLBARS_DESCRIPTION" desc="Description for the flag to turn on overlay scrollbars">
         Enable the experimental overlay scrollbars implementation. You must also enable threaded compositing to have the scrollbars animate.
       </message>
       <if expr="is_android">
@@ -5555,16 +5561,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
-        Enable TCP Fast Open
+      <message name="IDS_FLAGS_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
+        TCP Fast Open
       </message>
-      <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_DESCRIPTION" desc="Description of the flag that enables TCP Fast Open.">
+      <message name="IDS_FLAGS_TCP_FAST_OPEN_DESCRIPTION" desc="Description of the flag that enables TCP Fast Open.">
         Enable the option to send extra authentication information in the initial SYN packet for a previously connected client, allowing faster data send start.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME" desc="Name of the flag that enables touch initiated drag drop.">
-        Enable touch initiated drag and drop
+      <message name="IDS_FLAGS_TOUCH_DRAG_DROP_NAME" desc="Name of the flag that enables touch initiated drag drop.">
+        Touch initiated drag and drop
       </message>
-      <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION" desc="Description of the flag to enable touch initiated drag drop.">
+      <message name="IDS_FLAGS_TOUCH_DRAG_DROP_DESCRIPTION" desc="Description of the flag to enable touch initiated drag drop.">
         Touch drag and drop can be initiated through long press on a draggable element.
       </message>
       <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_NAME" desc="Name of the flag that controls touch based text selection strategy.">
@@ -5600,54 +5606,54 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SCROLL_END_EFFECT_DESCRIPTION" desc="Description for the flag that controls scroll end effect from vertical overscroll.">
         Experimental scroll end effect in response to vertical overscroll.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PANELS_NAME" desc="Name of the 'Enable Panels' lab.">
-        Enable Panels
+      <message name="IDS_FLAGS_PANELS_NAME" desc="Name of the 'Enable Panels' lab.">
+        Panels
       </message>
-      <message name="IDS_FLAGS_ENABLE_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
+      <message name="IDS_FLAGS_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
         Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead if not enabled. Panels are always enabled on the dev and canary channels.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
-        Enable WebGL Draft Extensions
+      <message name="IDS_FLAGS_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
+        WebGL Draft Extensions
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_DESCRIPTION" desc="Description for the flag to enable WebGL Draft Extensions.">
+      <message name="IDS_FLAGS_WEBGL_DRAFT_EXTENSIONS_DESCRIPTION" desc="Description for the flag to enable WebGL Draft Extensions.">
         Enabling this option allows web applications to access the WebGL Extensions that are still in draft status.
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video decoding support.">
-        Disable support for WebRTC hardware video decoding.
+      <message name="IDS_FLAGS_WEBRTC_HW_DECODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video decoding support.">
+        WebRTC hardware video decoding
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video decoding support.">
-        This option disables support in WebRTC for decoding video streams using platform hardware.
+      <message name="IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video decoding support.">
+        Support in WebRTC for decoding video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        Disable support for WebRTC hardware video encoding.
+      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video encoding support.">
+        WebRTC hardware video encoding
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        This option disables support in WebRTC for encoding video streams using platform hardware.
+      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
+        Support in WebRTC for encoding video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBRTC_DTLS12_NAME" desc="Name of chrome:flags option to enable DTLS 1.2 for WebRTC">
-        Enable negotiation with DTLS 1.2 for WebRTC.
+      <message name="IDS_FLAGS_WEBRTC_DTLS12_NAME" desc="Name of chrome:flags option to enable DTLS 1.2 for WebRTC">
+        Negotiation with DTLS 1.2 for WebRTC
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBRTC_DTLS12_DESCRIPTION" desc="Description of chrome:flags option to enable DTLS 1.2 for WebRTC">
+      <message name="IDS_FLAGS_WEBRTC_DTLS12_DESCRIPTION" desc="Description of chrome:flags option to enable DTLS 1.2 for WebRTC">
         When enabled, WebRTC will try to negotiate DTLS 1.2.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages">
-        Enable support for WebRTC Stun origin header.
+      <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages">
+        WebRTC Stun origin header
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBRTC_STUN_ORIGIN_DESCRIPTION" desc="Description of chrome:flags option to turn on Origin header for WebRTC STUN messages">
+      <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION" desc="Description of chrome:flags option to turn on Origin header for WebRTC STUN messages">
         When enabled, Stun messages generated by WebRTC will contain the Origin header.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBVR_NAME" desc="Name of the 'Enable WebVR' flag.">
-        Enable WebVR
+      <message name="IDS_FLAGS_WEBVR_NAME" desc="Name of the 'Enable WebVR' flag.">
+        WebVR
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBVR_DESCRIPTION" desc="Description for the flag to enable WebVR APIs.">
+      <message name="IDS_FLAGS_WEBVR_DESCRIPTION" desc="Description for the flag to enable WebVR APIs.">
         Enabling this option allows web applications to access experimental Virtual Reality APIs.
       </message>
       <if expr="is_android">
-        <message name="IDS_FLAGS_DISABLE_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
-          Disable WebAudio
+        <message name="IDS_FLAGS_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
+          WebAudio
         </message>
-        <message name="IDS_FLAGS_DISABLE_WEBAUDIO_DESCRIPTION" desc="Description for the flag to disable WebAudio.">
-          Enabling this option prevents web sites from accessing the WebAudio API.
+        <message name="IDS_FLAGS_WEBAUDIO_DESCRIPTION" desc="Description for the flag for WebAudio.">
+          Allows web sites to access the WebAudio API.
         </message>
       </if>
       <message name="IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME" desc="Name of the 'Compositing for fixed position elements' lab.">
@@ -5665,57 +5671,57 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_DESCRIPTION" desc="Description for the flag to all fixed root backgrounds to be put in separate, composited layers.">
         If this option is enabled, and if the body is styled with background-attachment:fixed, the background will have its own compositied layer.
       </message>
-      <message name="IDS_FLAGS_ENABLE_QUIC_NAME" desc="Title for the flag to enable QUIC.">
-        Experimental QUIC protocol.
+      <message name="IDS_FLAGS_QUIC_NAME" desc="Title for the flag to enable QUIC.">
+        Experimental QUIC protocol
       </message>
-      <message name="IDS_FLAGS_ENABLE_QUIC_DESCRIPTION" desc="Description for the flag to enable QUIC.">
+      <message name="IDS_FLAGS_QUIC_DESCRIPTION" desc="Description for the flag to enable QUIC.">
         Enable experimental QUIC protocol support.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ALTSVC_NAME" desc="Title for the flag to enable Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
-        Alternative Services.
+      <message name="IDS_FLAGS_ALTSVC_NAME" desc="Title for the flag for Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
+        Alternative services
       </message>
-      <message name="IDS_FLAGS_ENABLE_ALTSVC_DESCRIPTION" desc="Description for the flag to enable Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
+      <message name="IDS_FLAGS_ALTSVC_DESCRIPTION" desc="Description for the flag for Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
         Enable support for Alternative Services, an experimental HTTP feature.
       </message>
-      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the Media Source API.">
-        Disable Media Source API.
+      <message name="IDS_FLAGS_MEDIA_SOURCE_NAME" desc="Title for the flag for the Media Source API.">
+        Media Source API
       </message>
-      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the Media Source API.">
-        Disable the MediaSource object. This object allows JavaScript to send media data directly to a video element.
+      <message name="IDS_FLAGS_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag for the Media Source API.">
+        The MediaSource object allows JavaScript to send media data directly to a video element.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to disable the Encrypted Media Extensions APIs.">
-        Disable Encrypted Media Extensions.
+      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_NAME" desc="Title for the flag for the Encrypted Media Extensions APIs.">
+        Encrypted Media Extensions
       </message>
-      <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the Encrypted Media Extensions APIs.">
-        Disable Encrypted Media Extensions on video and audio elements.
+      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag for the Encrypted Media Extensions APIs.">
+        Encrypted Media Extensions on video and audio elements.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Enable prefixed Encrypted Media Extensions.
+      <message name="IDS_FLAGS_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag for the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Prefixed Encrypted Media Extensions
       </message>
-      <message name="IDS_FLAGS_ENABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to enable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Enable the deprecated version of Encrypted Media Extensions on video and audio elements.
+      <message name="IDS_FLAGS_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag for the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Deprecated version of Encrypted Media Extensions on video and audio elements.
       </message>
-      <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
-        Disable gesture requirement for media playback.
+      <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag for gesture requiment for media playback">
+        Gesture requirement for media playback
       </message>
-      <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag to disable gesture requiment for media playback">
-        Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.
+      <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag for gesture requiment for media playback">
+        User gesture requirement for playing media elements. Disabling this will allow autoplay to work.
       </message>
       <if expr="use_ash">
-        <message name="IDS_FLAGS_ASH_DISABLE_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used to disable window backdrops in TouchView.">
-          Disable window backdrops in TouchView
+        <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used for window backdrops in TouchView.">
+          Window backdrops in TouchView
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_MAXIMIZE_MODE_WINDOW_BACKDROP_DESCRIPTION" desc="Description for the flag which can be used to disable window backdrops in TouchView.">
-          Disables the grey window backdrops used in TouchView (maximize mode) behind windows which cannot be maximized.
+        <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_DESCRIPTION" desc="Description for the flag which can be used for window backdrops in TouchView.">
+          Show grey window backdrops used in TouchView (maximize mode) behind windows which cannot be maximized.
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_SCREEN_ORIENTATION_LOCK_NAME" desc="Title for the flag which can be used to disable support for javascript locking rotation.">
-          Disable Screen Orientation locking.
+        <message name="IDS_FLAGS_ASH_SCREEN_ORIENTATION_LOCK_NAME" desc="Title for the flag which can be used for support for javascript locking rotation.">
+          Screen Orientation locking
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used to disable support for javascript locking rotation">
-          Disables the ability for javascript to lock the screen orienation.
+        <message name="IDS_FLAGS_ASH_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used for support for javascript locking rotation">
+          Allows javascript to lock the screen orienation.
         </message>
         <message name="IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME" desc="Title for the flag which enables a stable window order in overview mode.">
-          Use a stable window order in overview.
+          Use a stable window order in overview
         </message>
         <message name="IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_DESCRIPTION" desc="Description for the flag to enable a stable window order in overview mode.">
           Uses a stable window ordering in overview mode which attempts to minimize movement of windows when entering / exiting overview and between overview sessions.
@@ -5732,17 +5738,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION" desc="Description for the flag to enable the mirrored screen mode.">
           Enable the mirrored screen mode. This mode flips the screen image horizontally.
         </message>
-        <message name="IDS_FLAGS_ENABLE_TOUCH_FEEDBACK_NAME" desc="Title for the flag to enable additional visual feedback for touch.">
-          Enable additional touch feedback on UI components.
+        <message name="IDS_FLAGS_TOUCH_FEEDBACK_NAME" desc="Title for the flag for additional visual feedback for touch.">
+          Additional touch feedback on UI components
         </message>
-        <message name="IDS_FLAGS_ENABLE_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable additional visual feedback for touch.">
+        <message name="IDS_FLAGS_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag that disables additional visual feedback for touch.">
           Certain UI components will display visual feedback upon touch interactions.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_TOUCH_FEEDBACK_NAME" desc="Title for the flag that disables additional visual feedback for touch.">
-          Disable additional touch feedback on UI components.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag that disables additional visual feedback for touch.">
-          Certain UI components will stop displaying visual feedback upon touch interactions.
         </message>
         <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST" desc="Description for the flag that sets material design ink drop animation speed of fast.">
           Fast
@@ -5756,57 +5756,57 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_DESCRIPTION" desc="Description for the flag that sets the material design ink drop animtion speed.">
           Sets the speed of the experimental visual feedback animations for material design.
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_TEXT_FILTERING_IN_OVERVIEW_MODE_NAME" desc="Title for the flag to disable window filtering in overview mode by inputing text">
-          Disable text filtering in Overview Mode.
+        <message name="IDS_FLAGS_ASH_TEXT_FILTERING_IN_OVERVIEW_MODE_NAME" desc="Title for the flag for window filtering in overview mode by inputing text">
+          Text filtering in Overview Mode
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_TEXT_FILTERING_IN_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to disable window filtering in overview mode by inputing text">
-          Disables filtering the windows shown in overview mode by entering text.
+        <message name="IDS_FLAGS_ASH_TEXT_FILTERING_IN_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag for window filtering in overview mode by inputing text">
+          Allows filtering the windows shown in overview mode by entering text.
         </message>
       </if>
 
-      <message name="IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_NAME" desc="Title for the flag to disable latest (non-experimental) JavaScript fatures">
-        Disable latest stable JavaScript features
+      <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_SHIPPING_NAME" desc="Title for the flag for latest (non-experimental) JavaScript fatures">
+        Latest stable JavaScript features
       </message>
-      <message name="IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_DESCRIPTION" desc="Description for the flag to disable latest (non-experimental) JavaScript fatures">
-        Some web pages use legacy or non-standard JavaScript extensions that may conflict with the latest JavaScript features. This flag disables support of those features for compatibility with such pages.
+      <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_SHIPPING_DESCRIPTION" desc="Description for the flag for latest (non-experimental) JavaScript fatures">
+        Some web pages use legacy or non-standard JavaScript extensions that may conflict with the latest JavaScript features. This flag allows disabling support of those features for compatibility with such pages.
       </message>
-      <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME" desc="Title for the flag to enable JavaScript Harmony features.">
-        Enable Experimental JavaScript
+      <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_NAME" desc="Title for the flag to enable JavaScript Harmony features.">
+        Experimental JavaScript
       </message>
-      <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
+      <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
-        Enable Download Resumption
+      <message name="IDS_FLAGS_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
+        Download Resumption
       </message>
-      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_DESCRIPTION" desc="Description for the flag to enable the download resume feature.">
+      <message name="IDS_FLAGS_DOWNLOAD_RESUMPTION_DESCRIPTION" desc="Description for the flag to enable the download resume feature.">
         Allow downloads that have been interrupted to be continued or restarted, using the Resume context menu item.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_NAME" desc="Title for the flag to enable experimental download notification feature.">
+      <message name="IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME" desc="Title for the flag to enable experimental download notification feature.">
         Download Status in Notification Center
       </message>
-      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable experimental download notification feature.">
-        If enabled, download status is displayed as a notification, instead of an item in download bar.
+      <message name="IDS_FLAGS_DOWNLOAD_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable experimental download notification feature.">
+        Download status is displayed as a notification, instead of an item in download bar.
       </message>
-      <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag to disable using a software rasterizer.">
-        Disable 3D software rasterizer
+      <message name="IDS_FLAGS_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag for using a software rasterizer.">
+        3D software rasterizer
       </message>
-      <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
-        Don't fall back to a 3D software rasterizer when the GPU cannot be used.
+      <message name="IDS_FLAGS_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag for using a software renderer.">
+        Fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
-      <message name="IDS_FLAGS_ENABLE_GPU_RASTERIZATION_NAME" desc="Title for the flag to enable GPU rasterization.">
-        Enable GPU rasterization.
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_NAME" desc="Title for the flag to enable GPU rasterization.">
+        GPU rasterization
       </message>
-      <message name="IDS_FLAGS_ENABLE_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable GPU rasterizer.">
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable GPU rasterizer.">
         Use GPU to rasterize web content. Requires impl-side painting.
       </message>
       <message name="IDS_FLAGS_FORCE_GPU_RASTERIZATION" desc="Description of the 'Force GPU rasterization' experiment">
         Force-enabled for all layers
       </message>
-      <message name="IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_NAME" desc="Title for the flag to enable threaded GPU rasterization.">
-        Enable threaded GPU rasterization.
+      <message name="IDS_FLAGS_THREADED_GPU_RASTERIZATION_NAME" desc="Title for the flag to enable threaded GPU rasterization.">
+        Threaded GPU rasterization
       </message>
-      <message name="IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable threaded GPU rasterizer.">
+      <message name="IDS_FLAGS_THREADED_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable threaded GPU rasterizer.">
         Use secondary thread for GPU rasterization of web content. Requires GPU rasterization to be enabled.
       </message>
       <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME" desc="Name of about:flags option for number of GPU rasterization MSAA samples.">
@@ -5837,43 +5837,43 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable slimming paint phase 2 (display list based layerization, sub-tree painting optimization, etc.)
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
-        Enable potentially annoying security features.
+        Potentially annoying security features
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental security features.">
         Enables several security features that will likely break one or more pages that you visit on a daily basis. Strict mixed content checking, for example. And locking powerful features to secure contexts. This flag will probably annoy you.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME" desc="Name for the flag to enable experimental Web Platform features.">
-        Enable experimental Web Platform features.
+        Experimental Web Platform features
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
-        Enable experimental Web Platform features that are in development.
+        Enables experimental Web Platform features that are in development.
       </message>
       <message name="IDS_FLAGS_WEB_BLUETOOTH_NAME" desc="Name for the flag to enable Web Bluetooth.">
-        Enable Web Bluetooth.
+        Web Bluetooth
       </message>
       <message name="IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable Web Bluetooth.">
         Enables Web Bluetooth which could allow websites to connect to and control Bluetooth devices around you. Including keyboards, cameras, microphones, etc.
       </message>
-      <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME" desc="Name for the flag to enable BLE Advertising">
-        Enable BLE Advertising in Chrome Apps.
+      <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_NAME" desc="Name for the flag for BLE Advertising">
+        BLE Advertising in Chrome Apps
       </message>
       <message name="IDS_FLAGS_BLE_ADVERTISING_IN_EXTENSIONS_DESCRIPTION" desc="Description of the flag to enable BLE Advertising">
         Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere with regular use of Bluetooth Low Energy features.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
-        Enable Developer Tools experiments.
+      <message name="IDS_FLAGS_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
+        Developer Tools experiments
       </message>
-      <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
-        Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
+      <message name="IDS_FLAGS_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
+        Enables Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
       </message>
       <message name="IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_NAME" desc="Name for the flag to enable silent debugging via chrome.debugger extension API.">
-        Enable Silent Debugging.
+        Silent Debugging
       </message>
       <message name="IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_DESCRIPTION" desc="Description for the flag to enable silent debugging via chrome.debugger extension API.">
-        Do not show the infobar when an extension attaches to a page via chrome.debugger API. This flag is required to debug extension background pages.
+        Do not show the infobar when an extension attaches to a page via chrome.debugger API. This is required to debug extension background pages.
       </message>
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT" desc="Title for the flag to turn on text autocorrection.">
-        Enable Automatic Spelling Correction
+        Automatic Spelling Correction
       </message>
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
         Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.
@@ -5885,11 +5885,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Turn on support for spellchecking in multiple languages at the same time.
       </message>
       <if expr="use_ash">
-        <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-          Disallow shelf to minimize-on-click.
+        <message name="IDS_FLAGS_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+          Shelf minimize-on-click
         </message>
-        <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-          Disallow the shelf to minimize a window if a shelf item gets clicked which has only a single, already active, window associated with it.
+        <message name="IDS_FLAGS_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+          Allows the shelf to minimize a window if a shelf item gets clicked which has only a single, already active, window associated with it.
         </message>
       </if>
 
@@ -5905,20 +5905,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION" desc="Description for the NaCl Socket API feature.">
         Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PINCH_SCALE_NAME" desc="Name of the flag to turn on experiental pinch to scale.">
-        Enable pinch scale.
+      <message name="IDS_FLAGS_PINCH_SCALE_NAME" desc="Name of the flag to turn on experiental pinch to scale.">
+        Pinch scale
       </message>
-      <message name="IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION" desc="Description of the flag to turn on experiental pinch to scale.">
+      <message name="IDS_FLAGS_PINCH_SCALE_DESCRIPTION" desc="Description of the flag to turn on experiental pinch to scale.">
         Enables experimental support for scale using pinch.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_NAME" desc="Name of the flag to turn on experimental pinch virtual viewport.">
-        Enable pinch virtual viewport.
+      <message name="IDS_FLAGS_PINCH_VIRTUAL_VIEWPORT_NAME" desc="Name of the flag to turn on experimental pinch virtual viewport.">
+        Pinch virtual viewport
       </message>
-      <message name="IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to turn on experimental pinch virtual viewport.">
+      <message name="IDS_FLAGS_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to turn on experimental pinch virtual viewport.">
         When zoomed in, fixed-position elements and scaled scrollbars attach to this viewport.
       </message>
       <message name="IDS_FLAGS_CREDENTIAL_MANAGER_API_NAME" desc="Name for the flag to enable 'navigator.credentials'.">
-        Enable the experimental Credential Manager API.
+        Experimental Credential Manager API
       </message>
       <message name="IDS_FLAGS_CREDENTIAL_MANAGER_API_DESCRIPTION" desc="Description for the flag to enable 'navigator.credentials'.">
         Enables an experimental implementation of the Credential Manager API. Don't enable this unless you know what you're doing.
@@ -5932,92 +5932,92 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <if expr="chromeos">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">
-          Enable touchpad three-finger-click.
+          Touchpad three-finger-click
         </message>
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION" desc="Description for the flag to enable touchpad three finger click as middle button.">
           Enables touchpad three-finger-click as middle button.
         </message>
         <message name="IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_NAME" desc="Name for the flag to enable unified desktop mode.">
-          Enable unified desktop mode.
+          Unified desktop mode
         </message>
         <message name="IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_DESCRIPTION" desc="Description for the flag to enable unified desktop mode.">
           Enable unified desktop mode which allows a window to span multiple displays.
         </message>
-        <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION" desc="Name for the flag to disable wallpaper boot animation (except for OOBE).">
-          Disable boot animation.
+        <message name="IDS_FLAGS_BOOT_ANIMATION" desc="Name for the flag for wallpaper boot animation (except for OOBE).">
+          Boot animation
         </message>
-        <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION" desc="Description for the flag to disable wallpaper boot animation (except for OOBE).">
-          Disables wallpaper boot animation (except for OOBE case).
+        <message name="IDS_FLAGS_BOOT_ANIMATION_DESCRIPTION" desc="Description for the flag for wallpaper boot animation (except for OOBE).">
+          Wallpaper boot animation (except for OOBE case).
         </message>
       </if>
       <message name="IDS_FLAGS_CHILD_ACCOUNT_DETECTION_NAME" desc="Name of the flag to enable detection of child accounts.">
-        Enable child account detection.
+        Child account detection
       </message>
       <message name="IDS_FLAGS_CHILD_ACCOUNT_DETECTION_DESCRIPTION" desc="Description for the flag to enable detection of child accounts.">
         Enable detection of child accounts on sign-in and startup, as well as periodically.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
-        Disable hardware-accelerated video decode.
+      <message name="IDS_FLAGS_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag for accelerated video decode where available.">
+        Hardware-accelerated video decode
       </message>
-      <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated video decode where available.">
-        Disables hardware-accelerated video decode where available.
+      <message name="IDS_FLAGS_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag for accelerated video decode where available.">
+        Hardware-accelerated video decode where available.
       </message>
-      <message name="IDS_FLAGS_DISABLE_CLOUD_IMPORT" desc="Name for the flag to disable cloud import feature.">
-        Disable Cloud Import.
+      <message name="IDS_FLAGS_CLOUD_IMPORT" desc="Name for the flag for cloud import feature.">
+        Cloud Import
       </message>
-      <message name="IDS_FLAGS_DISABLE_CLOUD_IMPORT_DESCRIPTION" desc="Description for the flag to disable cloud import.">
-        Allows the user to easily disable the cloud-import feature.
+      <message name="IDS_FLAGS_CLOUD_IMPORT_DESCRIPTION" desc="Description for the flag for cloud import.">
+        Allows the cloud-import feature.
       </message>
-      <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_NAME" desc="Name for the flag to set to enable Request Tablet Site in the wrench menu.">
-        Enables the request tablet site option in the settings menu.
+      <message name="IDS_FLAGS_REQUEST_TABLET_SITE_NAME" desc="Name for the flag to set to enable Request Tablet Site in the wrench menu.">
+        Request tablet site option in the settings menu
       </message>
-      <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_DESCRIPTION" desc="Description for the flag to set to enable Request Tablet Site in the wrench menu.">
+      <message name="IDS_FLAGS_REQUEST_TABLET_SITE_DESCRIPTION" desc="Description for the flag to set to enable Request Tablet Site in the wrench menu.">
         Allows the user to request tablet site. Web content is often optimized for tablet devices. When this option is selected the user agent string is changed to indicate a tablet device. Web content optimized for tablets is received there after for the current tab.
       </message>
       <message name="IDS_FLAGS_DEBUG_PACKED_APP_NAME" desc="Name of the flag to enable debugging context menu options for packed apps.">
-        Enable debugging for packed apps.
+        Debugging for packed apps
       </message>
       <message name="IDS_FLAGS_DEBUG_PACKED_APP_DESCRIPTION" desc="Description of the flag to enable debugging context menu options for packed apps.">
         Enables debugging context menu options such as Inspect Element for packed applications.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_NAME" desc="Name of the flag to enable drop sync credential">
-        Drop sync credentials from password manager.
+      <message name="IDS_FLAGS_DROP_SYNC_CREDENTIAL_NAME" desc="Name of the flag to enable drop sync credential">
+        Drop sync credentials from password manager
       </message>
-      <message name="IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag to enable drop sync credential">
-        If enabled, the password manager will not offer to save the credential used to sync.
+      <message name="IDS_FLAGS_DROP_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag to enable drop sync credential">
+        The password manager will not offer to save the credential used to sync.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME" desc="Name of the flag to enable password generation.">
-        Enable password generation.
+      <message name="IDS_FLAGS_PASSWORD_GENERATION_NAME" desc="Name of the flag to enable password generation.">
+        Password generation
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION" desc="Description of flag to enable password generation.">
+      <message name="IDS_FLAGS_PASSWORD_GENERATION_DESCRIPTION" desc="Description of flag to enable password generation.">
         Allow the user to have Chrome generate passwords when it detects account creation pages.
       </message>
-      <message name="IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_NAME" desc="Name of the flag to automatically save password.">
-        Save passwords automatically.
+      <message name="IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_NAME" desc="Name of the flag to automatically save password.">
+        Save passwords automatically
       </message>
-      <message name="IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION" desc="Description of the flag to automatically save password.">
+      <message name="IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION" desc="Description of the flag to automatically save password.">
         Skip the passwords prompt and save passwords automatically.
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME" desc="Name of the flag for the password manager reauthentication option.">
-        Disable Password Manager Reauthentication
+        Password Manager Reauthentication
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION" desc="Description of the flag for the password manager reauthentication option.">
         Disable prompting the user for their OS password before revealing passwords on the passwords page.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_CHANGE_SUPPORT_NAME" desc="Name of the flag for the password manager's password change support option.">
-        Enable change password support.
+      <message name="IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_NAME" desc="Name of the flag for the password manager's password change support option.">
+        Change password support
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_CHANGE_SUPPORT_DESCRIPTION" desc="Description of the flag for the password manager's change password support option.">
+      <message name="IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_DESCRIPTION" desc="Description of the flag for the password manager's change password support option.">
         Enable updating a password in the password manager after submitting a "change password" form.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_NAME" desc="Name of the flag for the password manager's force-saving option.">
-        Enable force-saving of passwords
+      <message name="IDS_FLAGS_PASSWORD_FORCE_SAVING_NAME" desc="Name of the flag for the password manager's force-saving option.">
+        Force-saving of passwords
       </message>
-      <message name="IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_DESCRIPTION" desc="Description of the flag for the password manager's force-saving option.">
+      <message name="IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION" desc="Description of the flag for the password manager's force-saving option.">
         Allow the user to manually enforce password saving instead of relying on password manager's heuristics.
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME" desc="Name of the flag to enable showing a link to account central on password settings page">
-        Enable remote password management link
+        Remote password management link
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_DESCRIPTION" desc="Description of the flag to enable showing a link to account central on password settings page">
         Show a link in the password manager settings page to manage your synced passwords online.
@@ -6048,16 +6048,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           https://passwords.google.com/?hl=[GRITLANGCODE]
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME" desc="Name of the flag to enable substring matching for Autofill suggestions.">
-        Substring matching for Autofill suggestions.
+      <message name="IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME" desc="Name of the flag for substring matching for Autofill suggestions.">
+        Substring matching for Autofill suggestions
       </message>
-      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION" desc="Description of the flag to enable substring matching for Autofill suggestions.">
+      <message name="IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION" desc="Description of the flag for substring matching for Autofill suggestions.">
         Match Autofill suggestions based on substrings (token prefixes) rather than just prefixes.
       </message>
-      <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME" desc="Name of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
-        Enable affiliation based matching in password manager.
+      <message name="IDS_FLAGS_AFFILIATION_BASED_MATCHING_NAME" desc="Name of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
+        Affiliation based matching in password manager
       </message>
-      <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_DESCRIPTION" desc="Description of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
+      <message name="IDS_FLAGS_AFFILIATION_BASED_MATCHING_DESCRIPTION" desc="Description of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
         Allow credentials stored for Android applications to be filled into corresponding websites.
       </message>
       <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME" desc="Name of the flag specifying how the browser will handle autofilling the users sync credential.">
@@ -6066,16 +6066,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag specifying how the browser will handle autofilling the users sync credential.">
         How the password manager handles autofill for the sync credential.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ICON_NTP_NAME" desc="Name of the flag to enable large icons on the NTP.">
-        Enable large icons on the New Tab page
+      <message name="IDS_FLAGS_ICON_NTP_NAME" desc="Name of the flag to enable large icons on the NTP.">
+        Large icons on the New Tab page
       </message>
-      <message name="IDS_FLAGS_ENABLE_ICON_NTP_DESCRIPTION" desc="Description for the flag to enable large icons on the NTP.">
+      <message name="IDS_FLAGS_ICON_NTP_DESCRIPTION" desc="Description for the flag to enable large icons on the NTP.">
         Enable the experimental New Tab page using large icons.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PUSH_API_BACKGROUND_MODE_NAME" desc="Name of the flag to enable background mode for the Push API.">
+      <message name="IDS_FLAGS_PUSH_API_BACKGROUND_MODE_NAME" desc="Name of the flag to enable background mode for the Push API.">
         Enable Push API background mode
       </message>
-      <message name="IDS_FLAGS_ENABLE_PUSH_API_BACKGROUND_MODE_DESCRIPTION" desc="Description for the flag to enable background mode for the Push API.">
+      <message name="IDS_FLAGS_PUSH_API_BACKGROUND_MODE_DESCRIPTION" desc="Description for the flag to enable background mode for the Push API.">
         Enable background mode for the Push API. This allows Chrome to continue running after the last window is closed, and to launch at OS startup, if the Push API needs it.
       </message>
       <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME" desc="Name of the flag to enable the stale-while-revalidate cache directive.">
@@ -6107,39 +6107,39 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_TESTING">
         Testing
       </message>
-      <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description for the flag to enable the stale-while-revalidate cache directive.">
+      <message name="IDS_FLAGS_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description for the flag to enable the stale-while-revalidate cache directive.">
         Enable the experimental implementation of the Cache-Control: stale-while-revalidate directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users.">
-        Enable managed bookmarks for supervised users
+      <message name="IDS_FLAGS_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users.">
+        Managed bookmarks for supervised users
       </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION" desc="Description for the flag to enable the managed bookmarks folder for supervised users.">
+      <message name="IDS_FLAGS_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION" desc="Description for the flag to enable the managed bookmarks folder for supervised users.">
         Enable the managed bookmarks folder for supervised users.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
-        Enable App Launcher sync
+      <message name="IDS_FLAGS_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
+        App Launcher sync
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
+      <message name="IDS_FLAGS_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
         Enable App Launcher sync. This also enables Folders where available (non OSX).
       </message>
-      <message name="IDS_FLAGS_ENABLE_DRIVE_SEARCH_IN_CHROME_LAUNCHER" desc="Name of the flag to enable drive search in chrome launcher.">
-        Enable Drive Search in Chrome App Launcher.
+      <message name="IDS_FLAGS_DRIVE_SEARCH_IN_CHROME_LAUNCHER" desc="Name of the flag for drive search in chrome launcher.">
+        Drive Search in Chrome App Launcher
       </message>
-      <message name="IDS_FLAGS_ENABLE_DRIVE_SEARCH_IN_CHROME_LAUNCHER_DESCRIPTION" desc="Description for the flag to enable drive search in chrome launcher.">
+      <message name="IDS_FLAGS_DRIVE_SEARCH_IN_CHROME_LAUNCHER_DESCRIPTION" desc="Description for the flag for drive search in chrome launcher.">
         Files from Drive will show up when searching the Chrome App Launcher.
       </message>
       <if expr="is_macosx">
-        <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
-          Enable use of Mac OS X AVFoundation APIs, instead of QTKit.
+        <message name="IDS_FLAGS_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
+          Use of Mac OS X AVFoundation APIs, instead of QTKit
         </message>
-        <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_DESCRIPTION" desc="Description of flag to enable Mac AVFoundation.">
+        <message name="IDS_FLAGS_AVFOUNDATION_DESCRIPTION" desc="Description of flag to enable Mac AVFoundation.">
           Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_NAME" desc="Name of the flag to disable DA-AEC in WebRTC.">
-        Disable Delay Agnostic AEC in WebRTC.
+      <message name="IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_NAME" desc="Name of the flag for DA-AEC in WebRTC.">
+        Disable delay Agnostic AEC in WebRTC
       </message>
-      <message name="IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION" desc="Description for the flag to disable DA-AEC in WebRTC.">
+      <message name="IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION" desc="Description for the flag for DA-AEC in WebRTC.">
         Disable Delay Agnostic AEC in WebRTC. Use if reported system delays are very trusted, or if others experience echo from your machine.
       </message>
       <message name="IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_NAME" desc="Name of the flag to enable DA-AEC in WebRTC.">
@@ -6149,7 +6149,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable Delay Agnostic AEC in WebRTC. Use if reported system delays are untrusted. Specifically applies to Mac OS X and CrOS, but also if audio is routed through a different device like TV. enable-delay-agnostic-aec overrides disable-delay-agnostic-aec.
       </message>
       <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME" desc="Name of the flag to enable out-of-process V8 proxy resolver.">
-        Enable Out-of-process V8 Proxy Resolver.
+        Out-of-process V8 Proxy Resolver.
       </message>
       <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION" desc="Description for the flag to enable out-of-process V8 proxy resolver.">
         Enable Out-of-process V8 Proxy Resolver. Runs the V8 proxy resolver in a utility process instead of inside the browser process.
@@ -6169,16 +6169,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy" translateable="false">
-          Enable Experiment Data Reduction Proxy
+        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy" translateable="false">
+          Experiment Data Reduction Proxy
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy" translateable="false">
+        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy" translateable="false">
          Enable or disable using the development version of the data reduction proxy.
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME" desc="Name of the flag to enable using data reduction proxy warnings" translateable="false">
+        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME" desc="Name of the flag to enable using data reduction proxy warnings" translateable="false">
           Data Saver proxy bypass warnings
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION" desc="Description of the flag to enable using data reduction proxy warnings" translateable="false">
+        <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION" desc="Description of the flag to enable using data reduction proxy warnings" translateable="false">
           Use Data Saver with bypass warnings. The proxy must be enabled in settings for this flag to take effect.
         </message>
       </if>
@@ -6188,13 +6188,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi" translateable="false">
          Forces Data Saver Lo-Fi mode to be always enabled, enabled only on cellular connections, or disabled. Data Saver must be enabled for Lo-Fi mode to be used.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on" translateable="false">
          Always on
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on celluar connections" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on celluar connections" translateable="false">
          Cellular only
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi" translateable="false">
          Disable
       </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
@@ -6212,10 +6212,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clears data savings obtained by using data reduction proxy when chrome starts.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy" translateable="false">
         Enable a carrier-specific Data Reduction Proxy for testing.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy" translateable="false">
         Use a carrier-specific Data Reduction Proxy for testing.
       </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
@@ -6231,16 +6231,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If disabled, text is rendered with grayscale antialiasing instead of LCD (subpixel) when doing accelerated compositing.
       </message>
       <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_NAME" desc="Name of about:flags option for distance field text.">
-        Enable distance field text
+        Distance field text
       </message>
       <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION" desc="Description of about:flags option for distance field text.">
-        If enabled, text is rendered with signed distance fields rather than bitmap alpha masks.
+        Text is rendered with signed distance fields rather than bitmap alpha masks.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ZERO_COPY_NAME" desc="Name of about:flags option for zero-copy rasterizer.">
-        Enable zero-copy rasterizer
+      <message name="IDS_FLAGS_ZERO_COPY_NAME" desc="Name of about:flags option for zero-copy rasterizer.">
+        Zero-copy rasterizer
       </message>
-      <message name="IDS_FLAGS_ENABLE_ZERO_COPY_DESCRIPTION" desc="Description of about:flags option for zero-copy rasterizer.">
-        If enabled, raster threads write directly to GPU memory associated with tiles.
+      <message name="IDS_FLAGS_ZERO_COPY_DESCRIPTION" desc="Description of about:flags option for zero-copy rasterizer.">
+        Raster threads write directly to GPU memory associated with tiles.
       </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_NAME" desc="">
         Tab capture upscaling quality.
@@ -6263,11 +6263,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST" desc="">
         best
       </message>
-      <message name="IDS_FLAGS_DISABLE_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_NAME" desc="">
-        Disable hiding close buttons on inactive tabs when stacked
+      <message name="IDS_FLAGS_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_NAME" desc="">
+        Hiding close buttons on inactive tabs when stacked
       </message>
-      <message name="IDS_FLAGS_DISABLE_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_DESCRIPTION" desc="">
-        Disables hiding the close buttons of inactive tabs when the tabstrip is in stacked mode.
+      <message name="IDS_FLAGS_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_DESCRIPTION" desc="">
+        Hides the close buttons of inactive tabs when the tabstrip is in stacked mode.
       </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME" desc="Name of about:flags option for default tile width.">
         Default tile width
@@ -6330,116 +6330,116 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reset the App Launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the App Launcher install flow.
       </message>
       <if expr="enable_app_list">
-        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_NAME" desc="Name of the flag to enable the experimental app launcher.">
-          Enable the experimental App Launcher.
+        <message name="IDS_FLAGS_EXPERIMENTAL_APP_LIST_NAME" desc="Name of the flag to enable the experimental app launcher.">
+          Experimental App Launcher
         </message>
-        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the experimental app launcher.">
+        <message name="IDS_FLAGS_EXPERIMENTAL_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the experimental app launcher.">
           Enable the experimental version of the App Launcher.
         </message>
-        <message name="IDS_FLAGS_ENABLE_CENTERED_APP_LIST_NAME" desc="Name of the flag to center the app launcher.">
+        <message name="IDS_FLAGS_CENTERED_APP_LIST_NAME" desc="Name of the flag to center the app launcher.">
           Center the App Launcher.
         </message>
-        <message name="IDS_FLAGS_ENABLE_CENTERED_APP_LIST_DESCRIPTION" desc="Description of the flag to center the app launcher and make it wide instead of tall.">
+        <message name="IDS_FLAGS_CENTERED_APP_LIST_DESCRIPTION" desc="Description of the flag to center the app launcher and make it wide instead of tall.">
           Positions the App Launcher in the center of the screen with a landscape aspect.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_NAME" desc="Name of the flag to enable the new mixing algorithm in the app launcher.">
-          Enable the new App Launcher mixer algorithm.
+        <message name="IDS_FLAGS_NEW_APP_LIST_MIXER_NAME" desc="Name of the flag to enable the new mixing algorithm in the app launcher.">
+          New App Launcher mixer algorithm
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_DESCRIPTION" desc="Description of the flag to enable the new mixing algorithm in the app launcher.">
+        <message name="IDS_FLAGS_NEW_APP_LIST_MIXER_DESCRIPTION" desc="Description of the flag to enable the new mixing algorithm in the app launcher.">
           This enables a new search result selecting and ranking algorithm in the App Launcher.
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_NAME" desc="Name of the flag to enable animated transitions for the first-run tutorial.">
-          Enable animated transitions in the first-run tutorial.
+        <message name="IDS_FLAGS_FIRST_RUN_UI_TRANSITIONS_NAME" desc="Name of the flag to enable animated transitions for the first-run tutorial.">
+          Animated transitions in the first-run tutorial
         </message>
-        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION" desc="Description for the flag to enable animated transition in the first-run tutorial.">
-          If enabled, transitions during first-run tutorial are animated.
+        <message name="IDS_FLAGS_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION" desc="Description for the flag to enable animated transition in the first-run tutorial.">
+          Transitions during first-run tutorial are animated.
         </message>
       </if>
       <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_NAME" desc="Name of the flag to enable the new bookmark app system.">
-        Enable the new bookmark app system.
+        The new bookmark app system
       </message>
       <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION" desc="Description for the flag to enable the new bookmark app system.">
         Enables the new system for creating bookmark apps.
       </message>
       <if expr="is_macosx">
-        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_NAME" desc="Name of the flag to enable hosted apps opening in windows.">
-          Enable hosted apps to be opened in windows.
+        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_NAME" desc="Name of the flag to allow hosted apps opening in windows.">
+          Allow hosted apps to be opened in windows
         </message>
-        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION" desc="Description for the flag to enable hosted apps opening in windows">
-          Enable hosted apps to be opened in windows instead of being limited to tabs.
+        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION" desc="Description for the flag to allow hosted apps opening in windows">
+          Allows hosted apps to be opened in windows instead of being limited to tabs.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
-        Disable creation of app shims for hosted apps on Mac.
+      <message name="IDS_FLAGS_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
+        Creation of app shims for hosted apps on Mac
       </message>
-      <message name="IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION" desc="Description for the flag to enable creation of app shims for hosted apps on Mac.">
-        Disables the creation of app shims on Mac when creating a hosted app.
+      <message name="IDS_FLAGS_HOSTED_APP_SHIM_CREATION_DESCRIPTION" desc="Description for the flag to enable creation of app shims for hosted apps on Mac.">
+        Create app shims on Mac when creating a hosted app.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HOSTED_APP_QUIT_NOTIFICATION_NAME" desc="Name of the flag to enable a notification when quitting with hosted apps.">
-        Enable quit notification for hosted apps.
+      <message name="IDS_FLAGS_HOSTED_APP_QUIT_NOTIFICATION_NAME" desc="Name of the flag to enable a notification when quitting with hosted apps.">
+        Quit notification for hosted apps
       </message>
-      <message name="IDS_FLAGS_ENABLE_HOSTED_APP_QUIT_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable a notification when quitting with hosted apps.">
+      <message name="IDS_FLAGS_HOSTED_APP_QUIT_NOTIFICATION_DESCRIPTION" desc="Description for the flag to enable a notification when quitting with hosted apps.">
         Display a notification when quitting Chrome if hosted apps are currently running.
       </message>
       <if expr="is_android">
-        <message name="IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME" desc="Name of the flag to disable the pull-to-refresh effect.">
-          Disable the pull-to-refresh effect.
+        <message name="IDS_FLAGS_PULL_TO_REFRESH_EFFECT_NAME" desc="Name of the flag for the pull-to-refresh effect.">
+          The pull-to-refresh effect
         </message>
-        <message name="IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_DESCRIPTION" desc="Description of the flag to disable the pull-to-refresh effect.">
-          Disable page reloads triggered by vertically overscrolling content.
+        <message name="IDS_FLAGS_PULL_TO_REFRESH_EFFECT_DESCRIPTION" desc="Description of the flag for the pull-to-refresh effect.">
+          Page reloads triggered by vertically overscrolling content.
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
-          Enable the new Translate UX.
+        <message name="IDS_FLAGS_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
+          New Translate UX
         </message>
-        <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
+        <message name="IDS_FLAGS_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
           Enable the new Translate bubble UX is offered instead of the infobar.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option to disable rect-based targeting in views">
-        Disable rect-based targeting in views
+      <message name="IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option for rect-based targeting in views">
+        Rect-based targeting in views
       </message>
-      <message name="IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option to disable rect-based targeting in views">
-        Disables rect-based targeting in views. Rect-based targeting uses a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
+      <message name="IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option for rect-based targeting in views">
+        Rect-based targeting uses a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
       </message>
-      <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME" desc="Name of the flag to enable show-on-first-paint for apps.">
-        Enable show-on-first-paint for apps.
+      <message name="IDS_FLAGS_APPS_SHOW_ON_FIRST_PAINT_NAME" desc="Name of the flag to enable show-on-first-paint for apps.">
+        Show-on-first-paint for apps
       </message>
-      <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION" desc="Description of flag to enable show-on-first-paint for apps.">
+      <message name="IDS_FLAGS_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION" desc="Description of flag to enable show-on-first-paint for apps.">
         Show apps windows after the first paint. Windows will be shown significantly later for heavy apps loading resources synchronously but it will be insignificant for apps that load most of their resources asynchronously.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME" desc="Name of about:flags option to enable Enhanced Bookmarks extension.">
-        Enable Enhanced Bookmarks
+      <message name="IDS_FLAGS_ENHANCED_BOOKMARKS_NAME" desc="Name of about:flags option to enable Enhanced Bookmarks extension.">
+        Enhanced Bookmarks
       </message>
-      <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
+      <message name="IDS_FLAGS_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
         Provides an off switch for enhanced bookmarks experiment
       </message>
-      <message name="IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
-        Enable Site Engagement Service
+      <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
+        Site Engagement Service
       </message>
-      <message name="IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_DESCRIPTION" desc="Description for the flag to enable the site engagement service.">
+      <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_DESCRIPTION" desc="Description for the flag to enable the site engagement service.">
         Enables the Site Engagement Service, which records interaction with sites and allocates resources accordingly.
       </message>
       <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME" desc="Title for the flag to enable out of process PDF.">
-        Enable out of process PDF.
+        Out of process PDF
       </message>
       <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION" desc="Description for the flag to enable out of process PDF.">
         Enable the out of process PDF plugin.
       </message>
       <message name="IDS_FLAGS_PDF_MATERIAL_UI_NAME" desc="Title for the flag to enable the new material UI in the PDF Viewer.">
-        Enable material UI for PDF.
+        Material UI for PDF
       </message>
       <message name="IDS_FLAGS_PDF_MATERIAL_UI_DESCRIPTION" desc="Description for the flag to enable the new material UI in the PDF Viewer.">
         Enable the new material UI in the PDF Viewer.
       </message>
-      <message name="IDS_FLAGS_DISABLE_THREADED_SCROLLING_NAME" desc="Title for the flag to disable threaded scrolling.">
-        Disable threaded scrolling.
+      <message name="IDS_FLAGS_THREADED_SCROLLING_NAME" desc="Title for the flag for threaded scrolling.">
+        Threaded scrolling
       </message>
-      <message name="IDS_FLAGS_DISABLE_THREADED_SCROLLING_DESCRIPTION" desc="Description for the flag to disable threaded scrolling.">
-        Disabled threaded handling of scroll-related input events, forcing all such scroll events to be handled on the main thread. Note that this can dramatically hurt scrolling performance of most websites and is intended for testing purposes only.
+      <message name="IDS_FLAGS_THREADED_SCROLLING_DESCRIPTION" desc="Description for the flag for threaded scrolling.">
+        Threaded handling of scroll-related input events. Disabling this will force all such scroll events to be handled on the main thread. Note that this can dramatically hurt scrolling performance of most websites and is intended for testing purposes only.
       </message>
       <message name="IDS_FLAGS_BLEEDING_RENDERER_NAME" desc="Name of the 'Stacked Tabs' lab.">
         Bleeding Edge Renderer Paths - LIKELY TO CRASH YOUR BROWSER
@@ -6448,68 +6448,68 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use bleeding-edge code to make Chrome draw content faster. The changes
         behind this path are very likely to break lots of content.
       </message>
-      <message name="IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_NAME" desc="Name for file associations for Chrome Apps.">
-        Apps file associations.
+      <message name="IDS_FLAGS_APPS_FILE_ASSOCIATIONS_NAME" desc="Name for file associations for Chrome Apps.">
+        Apps file associations
       </message>
-      <message name="IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_DESCRIPTION" desc="Description for a flag to enable file associations for Chrome Apps.">
+      <message name="IDS_FLAGS_APPS_FILE_ASSOCIATIONS_DESCRIPTION" desc="Description for a flag to enable file associations for Chrome Apps.">
         Enable OS integration of file associations for Chrome Apps.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_NAME" desc="Name of the about:flags HarfBuzz RenderText experiment.">
-        Enable HarfBuzz for UI text.
+      <message name="IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME" desc="Name of the about:flags HarfBuzz RenderText experiment.">
+        HarfBuzz for UI text
       </message>
-      <message name="IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_DESCRIPTION" desc="Description of the about:flags HarfBuzz RenderText experiment.">
+      <message name="IDS_FLAGS_HARFBUZZ_RENDERTEXT_DESCRIPTION" desc="Description of the about:flags HarfBuzz RenderText experiment.">
         Enable cross-platform HarfBuzz layout engine for UI text. Doesn't affect web content.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME" desc="Name of the flag that enables embedding extension options in chrome://extensions.">
-        Enable embedded extension options.
+      <message name="IDS_FLAGS_EMBEDDED_EXTENSION_OPTIONS_NAME" desc="Name of the flag that enables embedding extension options in chrome://extensions.">
+        Embedded extension options
       </message>
-      <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION" desc="Description of the flag that enables embedding extension options in chrome://extensions.">
+      <message name="IDS_FLAGS_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION" desc="Description of the flag that enables embedding extension options in chrome://extensions.">
         Display extension options as an embedded element in chrome://extensions rather than opening a new tab.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_NAME" desc="Name of the flag to enable the extension toolbar redesign">
-        Enable extension toolbar redesign.
+      <message name="IDS_FLAGS_EXTENSION_ACTION_REDESIGN_NAME" desc="Name of the flag to enable the extension toolbar redesign">
+        Extension toolbar redesign
       </message>
-      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION" desc="Description for the flag to enable the extension toolbar redesign">
+      <message name="IDS_FLAGS_EXTENSION_ACTION_REDESIGN_DESCRIPTION" desc="Description for the flag to enable the extension toolbar redesign">
         Enables the (in development) new extension toolbar toolbar design.
       </message>
       <if expr="use_ash">
-        <message name="IDS_FLAGS_ENABLE_WEB_APP_FRAME_NAME" desc="Name of the flag that enables the web app style frame for hosted apps.">
-          Enables the web app style frame for hosted apps.
+        <message name="IDS_FLAGS_WEB_APP_FRAME_NAME" desc="Name of the flag that enables the web app style frame for hosted apps.">
+          Enables the web app style frame for hosted apps
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_WEB_APP_FRAME_DESCRIPTION" desc="Description of the flag that enables the web app style frame for hosted apps.">
+      <message name="IDS_FLAGS_WEB_APP_FRAME_DESCRIPTION" desc="Description of the flag that enables the web app style frame for hosted apps.">
         Enables the web app style frame for hosted apps, including bookmark apps. This is currently only available for Ash.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_NAME" desc="Name of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
-        Enable tab audio muting UI control.
+      <message name="IDS_FLAGS_TAB_AUDIO_MUTING_NAME" desc="Name of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
+        Tab audio muting UI control
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION" desc="Description of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
+      <message name="IDS_FLAGS_TAB_AUDIO_MUTING_DESCRIPTION" desc="Description of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
         When enabled, the audio indicators in the tab strip double as tab audio mute controls.  This also adds commands in the tab context menu for quickly muting multiple selected tabs.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_NAME" desc="Title for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
-        Enable Smart Lock Bluetooth Low Energy Discovery.
+      <message name="IDS_FLAGS_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_NAME" desc="Title for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
+        Smart Lock Bluetooth Low Energy Discovery
       </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_DESCRIPTION" desc="Description for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
+      <message name="IDS_FLAGS_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_DESCRIPTION" desc="Description for the flag for Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
         Enables a Smart Lock setting that allows Chromebook to discover phones over Bluetooth Low Energy in order to unlock the Chromebook when the phone is in its proximity.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME" desc="Title for the flag to enable Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
-        Enable Smart Lock proximity detection.
+      <message name="IDS_FLAGS_EASY_UNLOCK_PROXIMITY_DETECTION_NAME" desc="Title for the flag to enable Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
+        Smart Lock proximity detection
       </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION" desc="Description for the flag that enables Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
+      <message name="IDS_FLAGS_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION" desc="Description for the flag that enables Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
         Enables a Smart Lock setting that restricts unlocking to only work when your phone is very close to (roughly, within an arm's length of) the Chrome device.
       </message>
       <if expr="toolkit_views">
-        <message name="IDS_FLAGS_ENABLE_LINK_DISAMBIGUATION_POPUP_NAME" desc="Title for the flag to enable the Link Disambiguation Popup, a bubble that appears over the web content screen when the user uses a touchscreen to touch a link but accidentally touches more than one link in a single gesture. The bubble appears with a zoomed-in view of the area around their touch, allowing them to more easily select the element they wanted.">
-          Enable Link Disambiguation Popup.
+        <message name="IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_NAME" desc="Title for the flag to enable the Link Disambiguation Popup, a bubble that appears over the web content screen when the user uses a touchscreen to touch a link but accidentally touches more than one link in a single gesture. The bubble appears with a zoomed-in view of the area around their touch, allowing them to more easily select the element they wanted.">
+          Link Disambiguation Popup
         </message>
-        <message name="IDS_FLAGS_ENABLE_LINK_DISAMBIGUATION_POPUP_DESCRIPTION" desc="Description for the flag to enable the Link Disambiguation Popup, a feature on touchscreens that when enabled will cause a small zoomed popup to appear over a group of links the user has touched, allowing for selection of links on pages not yet optimized for touch input.">
+        <message name="IDS_FLAGS_LINK_DISAMBIGUATION_POPUP_DESCRIPTION" desc="Description for the flag to enable the Link Disambiguation Popup, a feature on touchscreens that when enabled will cause a small zoomed popup to appear over a group of links the user has touched, allowing for selection of links on pages not yet optimized for touch input.">
           Enable the zoomed bubble that appears on touchscreens when accidentally touching more than one link at a time.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_NAME" desc="Title for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
-        Enable WiFi credential sync.
+      <message name="IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME" desc="Title for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
+        WiFi credential sync
       </message>
-      <message name="IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_DESCRIPTION" desc="Decription for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
+      <message name="IDS_FLAGS_WIFI_CREDENTIAL_SYNC_DESCRIPTION" desc="Decription for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
         Enables synchronizing WiFi network settings across devices. When enabled, the WiFi credential datatype is registered with Chrome Sync, and WiFi credentials are synchronized subject to user preferences. (See also, chrome://settings/syncSetup.)
       </message>
       <message name="IDS_FLAGS_SYNC_SANDBOX_NAME" desc="Name for the flag that causes Chrome to use the sandbox (testing) server for Sync.">
@@ -6527,7 +6527,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_FLAGS_DATASAVER_PROMPT_NAME" desc="Title for the flag to enable a prompt to install Data Saver when a cellular network is detected." translateable="false">
-        Enable cellular Data Saver Prompt.
+        Cellular Data Saver Prompt
       </message>
       <message name="IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION" desc="Decription for the flag to enable a prompt to install Data Saver when a cellular network is detected." translateable="false">
         Enables a prompt, which appears when a cellular network connection is detected, to take the user to the Data Saver extension page on Chrome Web Store.
@@ -6547,11 +6547,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY" desc="Description for the choice to enable only the online check in the supervised user SafeSites filtering feature.">
         Online check only
       </message>
-      <message name="IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_NAME" desc="Title for the flag to disable the new video rendering path for video elements.">
-        Disables the new video rendering path for video elements.
+      <message name="IDS_FLAGS_NEW_VIDEO_RENDERER_NAME" desc="Title for the flag for the new video rendering path for video elements.">
+        New video rendering path for video elements
       </message>
-      <message name="IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_DESCRIPTION" desc="Description for the flag to disable the new video rendering path for video elements.">
-        Disables the new compositor driven video rendering path for video elements.
+      <message name="IDS_FLAGS_NEW_VIDEO_RENDERER_DESCRIPTION" desc="Description for the flag for the new video rendering path for video elements.">
+        New compositor driven video rendering path for video elements.
       </message>
       <message name="IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_NAME" desc="Title for the flag to enable scrollTop interoperability">
         Document scrolling element interoperability.
@@ -6593,11 +6593,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to disable accelerated mjpeg decode for captured frame where available.">
-          Disable hardware-accelerated mjpeg decode for captured frame.
+        <message name="IDS_FLAGS_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to enable accelerated mjpeg decode for captured frame where available.">
+          Hardware-accelerated mjpeg decode for captured frame
         </message>
-        <message name="IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated mjpeg decode for captured frame where available.">
-          Disable hardware-accelerated mjpeg decode for captured frame where available.
+        <message name="IDS_FLAGS_ACCELERATED_MJPEG_DECODE_DESCRIPTION" desc="Description for the flag to enable accelerated mjpeg decode for captured frame where available.">
+          Enable hardware-accelerated mjpeg decode for captured frame where available.
         </message>
       </if>
       <message name="IDS_FLAGS_RESTRICT_IFRAME_PERMISSIONS_NAME" desc="Name of the flag to enable the restricted iframe permissions model.">
@@ -6607,11 +6607,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.
       </message>
       <if expr="enable_task_manager">
-        <message name="IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_NAME" desc="Name of the flag to disable the new implementation of the task manager.">
-          Disable the new task manager.
+        <message name="IDS_FLAGS_NEW_TASK_MANAGER_NAME" desc="Name of the flag for the new implementation of the task manager.">
+          New task manager
         </message>
-        <message name="IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag to disable the new implementation of the task manager.">
-          Disables the use of the new and optimized implementation of the chrome task manager.
+        <message name="IDS_FLAGS_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag for the new implementation of the task manager.">
+          Use the new and optimized implementation of the chrome task manager.
         </message>
       </if>
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">
@@ -6712,7 +6712,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Custom dictionary page -->
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling">
-        Edit custom dictionary
+        Custom spelling dictionary
       </message>
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_ADD_WORD_LABEL" desc="Label for adding a new word to the dictionary on the chrome://settings/editDictionary page">
         Add a new word
@@ -6943,11 +6943,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SESSION_CRASHED_BUBBLE_UMA_LINK_TEXT" desc="The text attached to the link that explains UMA optin option">
         usage statistics
       </message>
-      <message name="IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_NAME" desc="Title for the flag to enable showing session restore request in bubbles.">
-        Enable session restore bubble UI.
+      <message name="IDS_FLAGS_SESSION_CRASHED_BUBBLE_NAME" desc="Title for the flag to enable showing session restore request in bubbles.">
+        Session restore bubble UI
       </message>
-      <message name="IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_DESCRIPTION" desc="Description for the flag to enable showing session restore request in bubbles.">
-        If enabled, the session restore UI will be shown in a bubble instead of an info bar.
+      <message name="IDS_FLAGS_SESSION_CRASHED_BUBBLE_DESCRIPTION" desc="Description for the flag to enable showing session restore request in bubbles.">
+        The session restore UI will be shown in a bubble instead of an info bar.
       </message>
 
 
@@ -13906,16 +13906,16 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Dark Theme
       </message>
 
-      <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag to enable the new profile management.">
-        Enable new profile management system
+      <message name="IDS_FLAGS_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag for the new profile management.">
+        New profile management system
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management.">
+      <message name="IDS_FLAGS_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag for the new profile management.">
         Enables the new profile management system, including profile lock and the new avatar menu UI.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_NAME" desc="Title for the flag to enable the account consistency between browser and cookie jar.">
-        Enable identity consistency between browser and cookie jar
+      <message name="IDS_FLAGS_ACCOUNT_CONSISTENCY_NAME" desc="Title for the flag for account consistency between browser and cookie jar.">
+        Identity consistency between browser and cookie jar
       </message>
-      <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_DESCRIPTION" desc="Description for the flag to enable the account consistency between browser and cookie jar.">
+      <message name="IDS_FLAGS_ACCOUNT_CONSISTENCY_DESCRIPTION" desc="Description for the flag for account consistency between browser and cookie jar.">
         When enabled, the browser manages signing in and out of Google accounts.
       </message>
       <message name="IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_NAME" desc="Title for the flag to enable the new gaia password-separated sign in flow.">
@@ -13925,32 +13925,32 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         When enabled, signing in to the browser will use a new gaia password-separated sign in flow.
       </message>
 
-      <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
-        Enable Google profile name and icon
+      <message name="IDS_FLAGS_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
+        Google profile name and icon
       </message>
-      <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the google profile information">
+      <message name="IDS_FLAGS_GOOGLE_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the google profile information">
         Enables using Google information to populate the profile name and icon in the avatar menu.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
-        Enable Google Payments card saving checkbox
+      <message name="IDS_FLAGS_OFFER_STORE_UNMASKED_WALLET_CARDS" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
+        Google Payments card saving checkbox
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
+      <message name="IDS_FLAGS_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
         Show the checkbox to offer local saving of a credit card downloaded from the server.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
-        Enable Offline Auto-Reload Mode
+      <message name="IDS_FLAGS_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
+        Offline Auto-Reload Mode
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make pages which failed to load while offline auto-reload">
+      <message name="IDS_FLAGS_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make pages which failed to load while offline auto-reload">
         Pages that fail to load while the browser is offline will be auto-reloaded when the browser is online again.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_NAME" desc="Name of the flag to only enable auto-reload on visible tabs">
+      <message name="IDS_FLAGS_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_NAME" desc="Name of the flag to only enable auto-reload on visible tabs">
         Only Auto-Reload Visible Tabs
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION" desc="Description of the flag to only auto-reload visible tabs">
+      <message name="IDS_FLAGS_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION" desc="Description of the flag to only auto-reload visible tabs">
         Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.
       </message>
       <message name="IDS_FLAGS_SHOW_SAVED_COPY_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs." translateable="false">
-        Enable Show Saved Copy Button
+        Show Saved Copy Button
       </message>
       <message name="IDS_FLAGS_SHOW_SAVED_COPY_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs." translateable="false">
         When a page fails to load, if a stale copy of the page exists in the browser cache, a button will be presented to allow the user to load that stale copy.  The primary enabling choice puts the button in the most salient position on the error page; the secondary enabling choice puts it secondary to the reload button.
@@ -13973,52 +13973,52 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Enable/Disable smart deployment of the virtual keyboard.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
+        <message name="IDS_FLAGS_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
           Virtual Keyboard
         </message>
-        <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on the virtual keyboard">
+        <message name="IDS_FLAGS_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on the virtual keyboard">
           Enable virtual keyboard support.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the virtual keyboard">
+        <message name="IDS_FLAGS_VIRTUAL_KEYBOARD_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the virtual keyboard">
           Virtual Keyboard Overscroll
         </message>
-        <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
+        <message name="IDS_FLAGS_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
           Enable virtual keyboard overscroll support.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
-          Enable input views.
+        <message name="IDS_FLAGS_INPUT_VIEW_NAME" desc="Name of about::flags option to enable IME extensions to override the virtual keyboard view">
+          Input views
         </message>
-        <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
+        <message name="IDS_FLAGS_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
           Enable IME extensions to supply custom views for user input such as  virtual keyboards.
         </message>
 
-        <message name="IDS_FLAGS_DISABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to disable the new Korean IME">
-          Disable new Korean IME.
+        <message name="IDS_FLAGS_NEW_KOREAN_IME_NAME" desc="Name of about::flags option for the new Korean IME">
+          New Korean IME
         </message>
-        <message name="IDS_FLAGS_DISABLE_NEW_KOREAN_IME_DESCRIPTION" desc="Description of about::flags option to disable the new Korean IME">
-          Disable new Korean IME, which is based on Google Input Tools' HMM engine.
+        <message name="IDS_FLAGS_NEW_KOREAN_IME_DESCRIPTION" desc="Description of about::flags option for the new Korean IME">
+          New Korean IME, which is based on Google Input Tools' HMM engine.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to enable physical keyboard autocorrect for US keyboard">
-          Enable physical keyboard autocorrect.
+        <message name="IDS_FLAGS_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to enable physical keyboard autocorrect for US keyboard">
+          Physical keyboard autocorrect
         </message>
-        <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION" desc="Description of about::flags option to enable physical keyboard autocorrect for US keyboard">
+        <message name="IDS_FLAGS_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION" desc="Description of about::flags option to enable physical keyboard autocorrect for US keyboard">
           Enable physical keyboard autocorrect for US keyboard, which can provide suggestions as typing on physical keyboard.
         </message>
 
-        <message name="IDS_FLAGS_DISABLE_VOICE_INPUT_NAME" desc="Name of about::flags option to disable voice input on virtual keyboard">
-          Disable voice input on virtual keyboard.
+        <message name="IDS_FLAGS_VOICE_INPUT_NAME" desc="Name of about::flags option for voice input on virtual keyboard">
+          Voice input on virtual keyboard
         </message>
-        <message name="IDS_FLAGS_DISABLE_VOICE_INPUT_DESCRIPTION" desc="Description of about::flags option to disable voice input on virtual keyboard">
-          Disable voice input on virtual keyboard.
+        <message name="IDS_FLAGS_VOICE_INPUT_DESCRIPTION" desc="Description of about::flags option for voice input on virtual keyboard">
+          Enables voice input on virtual keyboard.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME" desc="Name of about::flags option to enable experimental features for IME input-views">
-          Experimental input view features.
+        <message name="IDS_FLAGS_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME" desc="Name of about::flags option to enable experimental features for IME input-views">
+          Experimental input view features
         </message>
-        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
+        <message name="IDS_FLAGS_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
           Enable experimental features for IME input views.
         </message>
         <message name="IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_NAME" desc="Name of about::flags option to toggle floating virtual keyboard">
@@ -14039,54 +14039,54 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_FLAGS_GESTURE_EDITING_DESCRIPTION" desc="Description of about::flags option to toggle gesture editing in the settings page for the virtual keyboard">
           Enable/Disable gesture editing option in the settings page for the virtual keyboard.
         </message>
-        <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
-          Disable bypass proxy for Captive Portal Authorization
+        <message name="IDS_FLAGS_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option for bypass proxy for captive portal authorization on Chrome OS.">
+          Bypass proxy for Captive Portal Authorization
         </message>
-        <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
-          If proxy is configured, it usually prevents from authorization on different captive portals. This flag disables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
+        <message name="IDS_FLAGS_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option for bypass proxy for captive portal authorization on Chrome OS.">
+          If proxy is configured, it usually prevents from authorization on different captive portals. This enables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
         </message>
       </if>
 
       <!-- Strings for controlling credit card scanning feature in about:flags. -->
-      <message name="IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME" desc="The name of about:flags option to enable scanning of credit cards using device camera.">
+      <message name="IDS_FLAGS_CREDIT_CARD_SCAN_NAME" desc="The name of about:flags option to enable scanning of credit cards using device camera.">
         Credit card scanning
       </message>
-      <message name="IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_DESCRIPTION" desc="The description of about:flags option to enable scanning of credit cards using device camera.">
+      <message name="IDS_FLAGS_CREDIT_CARD_SCAN_DESCRIPTION" desc="The description of about:flags option to enable scanning of credit cards using device camera.">
         Enable scanning a new credit card number when filling out a credit card form.
       </message>
 
       <!-- Simple Cache Backend experiment. -->
-      <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
-        Simple Cache for HTTP.
+      <message name="IDS_FLAGS_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
+        Simple Cache for HTTP
       </message>
-      <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_DESCRIPTION" desc="Description of about:flags option to turn on the Simple Cache Backend">
+      <message name="IDS_FLAGS_SIMPLE_CACHE_BACKEND_DESCRIPTION" desc="Description of about:flags option to turn on the Simple Cache Backend">
         The Simple Cache for HTTP is a new cache. It relies on the filesystem for disk space allocation.
       </message>
 
       <!-- Spelling feedback field trial. -->
-      <message name="IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_NAME" desc="Name of about:flags option to enable the field trial for sending feedback to spelling service.">
-        Spelling Feedback Field Trial.
+      <message name="IDS_FLAGS_SPELLING_FEEDBACK_FIELD_TRIAL_NAME" desc="Name of about:flags option to enable the field trial for sending feedback to spelling service.">
+        Spelling Feedback Field Trial
       </message>
-      <message name="IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_DESCRIPTION" desc="Description of about:flags option to enable the field trial for sending feedback to spelling service.">
+      <message name="IDS_FLAGS_SPELLING_FEEDBACK_FIELD_TRIAL_DESCRIPTION" desc="Description of about:flags option to enable the field trial for sending feedback to spelling service.">
         Enable the field trial for sending user feedback to spelling service.
       </message>
 
       <!-- Web MIDI API. -->
-      <message name="IDS_FLAGS_ENABLE_WEB_MIDI_NAME"
+      <message name="IDS_FLAGS_WEB_MIDI_NAME"
                desc="Name of about:flag option to turn on Web MIDI API">
-        Enable Web MIDI API
+        Web MIDI API
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION"
+      <message name="IDS_FLAGS_WEB_MIDI_DESCRIPTION"
                desc="Description of about:flag option to turn on Web MIDI API">
         Enable Web MIDI API experimental support.
       </message>
 
       <!-- Site per process mode -->
-      <message name="IDS_FLAGS_ENABLE_SITE_PER_PROCESS_NAME"
+      <message name="IDS_FLAGS_SITE_PER_PROCESS_NAME"
                desc="Name of about:flag option to turn on experimental out-of-process iframe support">
-        Enable out of process iframes
+        Out of process iframes
       </message>
-      <message name="IDS_FLAGS_ENABLE_SITE_PER_PROCESS_DESCRIPTION"
+      <message name="IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION"
                desc="Description of about:flag option to turn on experimental out-of-process iframe support">
         Highly experimental support for rendering cross-site iframes in separate processes.
       </message>
@@ -14562,10 +14562,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
       <!-- Autofill experiment flags -->
-      <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_NAME" desc="Name of the single click autofill lab">
-        Enable single-click autofill
+      <message name="IDS_FLAGS_SINGLE_CLICK_AUTOFILL_NAME" desc="Name of the single click autofill lab">
+        Single-click autofill
       </message>
-      <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_DESCRIPTION" desc="Description of the single click autofill lab">
+      <message name="IDS_FLAGS_SINGLE_CLICK_AUTOFILL_DESCRIPTION" desc="Description of the single click autofill lab">
         Make autofill suggestions on initial mouse click on a form element.
       </message>
 
@@ -14602,7 +14602,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Enable Reader Mode Button Animation
         </message>
         <message name="IDS_FLAGS_READER_MODE_BUTTON_ANIMATION_DESCRIPTION" desc="Describes the flag to enable reading mode UI button animation">
-          If enabled, a reader mode button click slides up the reader mode version of a web page instead of navigating to it
+          A reader mode button click slides up the reader mode version of a web page instead of navigating to it
         </message>
       </if>
 
@@ -14611,15 +14611,15 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Prefetch search results
       </message>
       <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION" desc="Describes an about:flags experiment for prefetching search results">
-        If enabled, prefetch search results for the typed omnibox query and reuse prerendered search base page to commit any search query (not just prefetch query).
+        Prefetch search results for the typed omnibox query and reuse prerendered search base page to commit any search query (not just prefetch query).
       </message>
 
       <!-- Settings window flags -->
-      <message name="IDS_FLAGS_ENABLE_SETTINGS_WINDOW_NAME" desc="An about::flags experiment title to show settings in a separate window">
+      <message name="IDS_FLAGS_SETTINGS_WINDOW_NAME" desc="An about::flags experiment title to show settings in a separate window">
         Show settings in a window
       </message>
-      <message name="IDS_FLAGS_ENABLE_SETTINGS_WINDOW_DESCRIPTION" desc="Describes an about:flags experiment to show settings in a separate window">
-        If enabled, Settings will be shown in a dedicated window instead of as a browser tab.
+      <message name="IDS_FLAGS_SETTINGS_WINDOW_DESCRIPTION" desc="Describes an about:flags experiment to show settings in a separate window">
+        Settings will be shown in a dedicated window instead of as a browser tab.
       </message>
 
       <!-- Mixed content issue workaround flags -->
@@ -14632,19 +14632,19 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
 
       <if expr="is_android">
         <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
-        <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
-          Enable EmbeddedSearch API
+        <message name="IDS_FLAGS_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
+          EmbeddedSearch API
         </message>
-        <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
-         If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
+        <message name="IDS_FLAGS_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
+         EmbeddedSearch API will be used to submit search queries in the search results page.
         </message>
 
         <!-- Flag strings for seccomp-bpf sandbox flag. -->
-        <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
-          Enable seccomp-bpf renderer sandbox
+        <message name="IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
+          Seccomp-bpf renderer sandbox
         </message>
-        <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION" desc="Description for the flag to enable the seccomp-bpf sandbox on Android.">
-          If enabled, renderers will have a second-layer sandbox provided by seccomp-bpf. This requires kernel features only available on select Android versions.
+        <message name="IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION" desc="Description for the flag to enable the seccomp-bpf sandbox on Android.">
+          Renderers will have a second-layer sandbox provided by seccomp-bpf. This requires kernel features only available on select Android versions.
         </message>
       </if>
 
@@ -14970,18 +14970,18 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
     <!-- Built-in hotword detection display strings -->
-    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_NAME" desc="Name of about:flags option for hotword hardware detection.">
-      Enable simulated hardware 'Ok Google' features.
+    <message name="IDS_FLAGS_EXPERIMENTAL_HOTWORD_HARDWARE_NAME" desc="Name of about:flags option for hotword hardware detection.">
+      Simulated hardware 'Ok Google' features
     </message>
-    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_DESCRIPTION" desc="Description of about:flags option for hotword hardware detection.">
+    <message name="IDS_FLAGS_EXPERIMENTAL_HOTWORD_HARDWARE_DESCRIPTION" desc="Description of about:flags option for hotword hardware detection.">
       Enables an experimental version of 'Ok Google' hotword detection features that have a hardware dependency.
     </message>
 
       <!-- Message center strings -->
-      <message name="IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME" desc="Name of about:flags option for message center always scroll up experiment.">
-        Enable experiments that message center always scroll up upon notification removal.
+      <message name="IDS_FLAGS_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME" desc="Name of about:flags option for message center always scroll up experiment.">
+        Experiments that message center always scroll up upon notification removal
       </message>
-      <message name="IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_DESCRIPTION" desc="Description of about:flags option for message center always scroll up experiment.">
+      <message name="IDS_FLAGS_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_DESCRIPTION" desc="Description of about:flags option for message center always scroll up experiment.">
         Enables experiment that message center always scroll up when a notification is removed.
       </message>
 
@@ -14995,11 +14995,11 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SELECT" desc="Button confirming the devices selected for access by the app.">
         Select
       </message>
-      <message name="IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off Cast Streaming hardware video encoding support.">
-        Disable support for Cast Streaming hardware video encoding.
+      <message name="IDS_FLAGS_CAST_STREAMING_HW_ENCODING_NAME" desc="Name of chrome:flags option for Cast Streaming hardware video encoding support.">
+        Cast Streaming hardware video encoding
       </message>
-      <message name="IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off Cast Streaming hardware video encoding support.">
-        This option disables support in Cast Streaming for encoding video streams using platform hardware.
+      <message name="IDS_FLAGS_CAST_STREAMING_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option for Cast Streaming hardware video encoding support.">
+        This option enables support in Cast Streaming for encoding video streams using platform hardware.
       </message>
 
       <!-- Hotword Audio Verification (opt-in) App strings. -->
@@ -15115,10 +15115,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enable "Ok Google"
       </message>
 
-      <message name="IDS_FLAGS_ENABLE_TOUCH_HOVER_NAME" desc="Name of the 'Enable support for hover capable touchscreens' flag.">
-        Enable support for hover capable touchscreens.
+      <message name="IDS_FLAGS_TOUCH_HOVER_NAME" desc="Name of the 'Enable support for hover capable touchscreens' flag.">
+        Support for hover capable touchscreens
       </message>
-      <message name="IDS_FLAGS_ENABLE_TOUCH_HOVER_DESCRIPTION" desc="Description of the 'Enable support for hover capable touchscreens' flag.">
+      <message name="IDS_FLAGS_TOUCH_HOVER_DESCRIPTION" desc="Description of the 'Enable support for hover capable touchscreens' flag.">
         Enables hover feature by holding your finger just over the screen to experience a mouseover event.
       </message>
 

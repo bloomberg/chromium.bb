@@ -555,12 +555,6 @@ Chromium is unable to recover your settings.
       </if>
 
       <!-- about:flags -->
-      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
-        Enables iframe-based Chromium sign-in flows. This flag overrides --enable-web-based-signin.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable iframe-based sign-in flows">
-        When enabled, will use an iframe-based Chromium sign-in flow; otherwise uses a webview-based flow.
-      </message>
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
         Enables additional keyboard shortcuts that are useful for debugging Chromium.
       </message>

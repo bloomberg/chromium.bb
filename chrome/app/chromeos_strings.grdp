@@ -70,23 +70,23 @@ Press any key to continue exploring.
   </message>
 
   <!-- File Manager -->
-  <message name="IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_NAME" desc="Name of the about:flag option to enable MTP support in file manager.">
-    Enable MTP support in File Manager.
+  <message name="IDS_FLAGS_FILE_MANAGER_MTP_NAME" desc="Name of the about:flag option for MTP support in file manager.">
+    MTP support in File Manager
   </message>
-  <message name="IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_DESCRIPTION" desc="Description of the about:flag option to the enable MTP support in file manager.">
+  <message name="IDS_FLAGS_FILE_MANAGER_MTP_DESCRIPTION" desc="Description of the about:flag option for MTP support in file manager.">
     Show MTP devices as a file storage in the file manager.
   </message>
-  <message name="IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_NAME" desc="Name of the about:flag option to enable the chromecast support for video app.">
+  <message name="IDS_FLAGS_VIDEO_PLAYER_CHROMECAST_SUPPORT_NAME" desc="Name of the about:flag option to enable the chromecast support for video app.">
     Experimental Chromecast support for Video Player
   </message>
-  <message name="IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_DESCRIPTION" desc="Description of the about:flag option to the enable the chromecast support for video app.">
+  <message name="IDS_FLAGS_VIDEO_PLAYER_CHROMECAST_SUPPORT_DESCRIPTION" desc="Description of the about:flag option to the enable the chromecast support for video app.">
     This option enables experimental Chromecast support for Video Player app on ChromeOS.
   </message>
-  <message name="IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_NAME" desc="Name of about::flags option to disable the new ZIP unpacker based on the File System Provider API.">
-    Disable the new ZIP unpacker.
+  <message name="IDS_FLAGS_NEW_ZIP_UNPACKER_NAME" desc="Name of about::flags option for the new ZIP unpacker based on the File System Provider API.">
+    New ZIP unpacker
   </message>
-  <message name="IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_DESCRIPTION" desc="Description of about::flags option to disable the new ZIP unpacker based on the File System Provider API.">
-    Disable the new ZIP unpacker flow, based on the File System Provider API.
+  <message name="IDS_FLAGS_NEW_ZIP_UNPACKER_DESCRIPTION" desc="Description of about::flags option for the new ZIP unpacker based on the File System Provider API.">
+    New ZIP unpacker flow, based on the File System Provider API.
   </message>
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">
     An operation is taking longer than expected. Do you want to abort it?
@@ -1212,17 +1212,17 @@ Press any key to continue exploring.
   <message name="IDS_ECHO_CONSENT_DISMISS_BUTTON" desc="Dismiss dialog button label for disabled echo dialog.">
     Dismiss
   </message>
-  <message name="IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_NAME" desc="Name for the flag to disable Office Editing for Docs, Sheets &amp; Slides component extension.">
-    Disable Office Editing for Docs, Sheets &amp; Slides
+  <message name="IDS_FLAGS_OFFICE_EDITING_COMPONENT_APP_NAME" desc="Name for the flag for Office Editing for Docs, Sheets &amp; Slides component extension.">
+    Office Editing for Docs, Sheets &amp; Slides
   </message>
-  <message name="IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_DESCRIPTION" desc="Description for the flag to disable Office Editing for Docs, Sheets &amp; Slides component extension.">
-    Disable Office Editing for Docs, Sheets &amp; Slides for testing purposes
+  <message name="IDS_FLAGS_OFFICE_EDITING_COMPONENT_APP_DESCRIPTION" desc="Description for the flag for Office Editing for Docs, Sheets &amp; Slides component extension.">
+    Office Editing for Docs, Sheets &amp; Slides for testing purposes.
   </message>
-  <message name="IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_NAME" desc="Name for the flag to disable the color calibration of the display.">
-    Disable the color calibration of the display.
+  <message name="IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_NAME" desc="Name for the flag for the color calibration of the display.">
+    Color calibration of the display
   </message>
-  <message name="IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_DESCRIPTION" desc="Description for the flag to disable the color calibration of the display.">
-    Disable calibrating the color of the display even if the display supports the feature.
+  <message name="IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_DESCRIPTION" desc="Description for the flag for the color calibration of the display.">
+    Allow color calibration of the display if the display supports the feature.
   </message>
   <message name="IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME" desc="Name for the flag which specifies which memory pressure strategy should be used on ChromeOS.">
     Memory discard strategy for advanced pressure handling
@@ -6310,11 +6310,11 @@ All users must sign out to continue.
     System time
   </message>
 
-  <message name="IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME" desc="Title for the flag to disable automatic timezone update on user location change.">
-    Disable automatic timezone update by geolocation
+  <message name="IDS_FLAGS_RESOLVE_TIMEZONE_BY_GEOLOCATION_NAME" desc="Title for the flag for automatic timezone update on user location change.">
+    Automatic timezone update by geolocation
   </message>
-  <message name="IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag to disable user setting to automatically update timezone by user geolocation.">
-    If set, automatic timezone update by the current geolocation is turned off.
+  <message name="IDS_FLAGS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag for user setting to automatically update timezone by user geolocation.">
+    Enables the user setting to automatically select timezone by the current geolocation.
   </message>
   <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
     Set time zone automatically using your location
@@ -6334,11 +6334,11 @@ All users must sign out to continue.
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON" desc="Label on the button to reject permissions.">
     Deny
   </message>
-  <message name="IDS_FLAG_DISABLE_MTP_WRITE_SUPPORT_NAME" desc="Name of the option to enable mtp write support.">
-    Disable MTP write support
+  <message name="IDS_FLAGS_MTP_WRITE_SUPPORT_NAME" desc="Name of the option for mtp write support.">
+    MTP write support
   </message>
-  <message name="IDS_FLAG_DISABLE_MTP_WRITE_SUPPORT_DESCRIPTION" desc="Description of the option to enable mtp write support.">
-    Disable MTP write support in File System API (and file manager). In-place editing operations are not supported.
+  <message name="IDS_FLAGS_MTP_WRITE_SUPPORT_DESCRIPTION" desc="Description of the option for mtp write support.">
+    MTP write support in File System API (and file manager). In-place editing operations are not supported.
   </message>
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_MESSAGE" desc="Message in a notification about granted read-only pemissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
     Read-only access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
