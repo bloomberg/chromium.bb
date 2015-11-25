@@ -7,7 +7,7 @@ m4_define([wayland_protocols_version],
 
 AC_INIT([wayland-protocols],
         [wayland_protocols_version],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=protocols&version=wayland-protocols_version],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=wayland&version=unspecified],
         [wayland-protocols],
         [http://wayland.freedesktop.org/])
 
