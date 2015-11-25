@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=247874
+CLANG_REVISION=254049
 
 # This is incremented when pushing a new build of Clang at the same revision.
 CLANG_SUB_REVISION=1
@@ -485,6 +485,10 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   CXXFLAGS="${CXXFLAGS} -DLLVM_FORCE_HEAD_REVISION"
 fi
 
+# Pin MSan to the old ABI.
+# TODO(eugenis): Remove when MSan migrates to new ABI (crbug.com/560589).
+CXXFLAGS="${CXXFLAGS} -DMSAN_LINUX_X86_64_OLD_MAPPING"
+
 # Hook the Chromium tools into the LLVM build. Several Chromium tools have
 # dependencies on LLVM/Clang libraries. The LLVM build detects implicit tools
 # in the tools subdirectory, so install a shim CMakeLists.txt that forwards to
@@ -548,12 +552,34 @@ mkdir -p "${COMPILER_RT_BUILD_DIR}"
 pushd "${COMPILER_RT_BUILD_DIR}"
 
 rm -fv CMakeCache.txt
-MACOSX_DEPLOYMENT_TARGET=${deployment_target} CC="" CXX="" cmake -GNinja \
+if [[ -z "${bootstrap}" ]]; then
+  # compiler_rt doesn't build with Xcode 6's clang, but not all bots have
+  # Xcode 7 yet.  So use the just-built clang for building compiler-rt.
+  # However, in bootstrap builds, we delete libc++ to work around PR24068 -- so
+  # compiler_rt's CMake checks can't find <iostream> and decide that no arch
+  # is supported.  So use the installed bootstrap compiler in bootstrap builds,
+  # it has the libc++ headers installed (CXX is already set to that in
+  # bootstrap builds).
+  CC="${ABS_LLVM_BUILD_DIR}/bin/clang"
+  CXX="${ABS_LLVM_BUILD_DIR}/bin/clang++"
+elif [[ "${OS}" = "Darwin" ]]; then
+  # ...except that compiler-rt currently doesn't build with the bootstrap
+  # compiler on Darwin either! So use the system compiler there.
+  # TOOD(thakis): Remove this once http://llvm.org/PR25465 is fixed.
+  CC=cc
+  CXX=c++
+fi
+
+# Pin MSan to the old ABI.
+COMPILER_RT_CXXFLAGS="-DMSAN_LINUX_X86_64_OLD_MAPPING"
+
+MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_ENABLE_THREADS=OFF \
-    -DCMAKE_C_COMPILER="${ABS_LLVM_BUILD_DIR}/bin/clang" \
-    -DCMAKE_CXX_COMPILER="${ABS_LLVM_BUILD_DIR}/bin/clang++" \
+    -DCMAKE_C_COMPILER="${CC}" \
+    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_CXX_FLAGS="${COMPILER_RT_CXXFLAGS}" \
     -DSANITIZER_MIN_OSX_VERSION="10.7" \
     -DLLVM_CONFIG_PATH="${ABS_LLVM_BUILD_DIR}/bin/llvm-config" \
     "${ABS_COMPILER_RT_DIR}"
