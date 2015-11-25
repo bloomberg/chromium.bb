@@ -1477,3 +1477,4 @@ crbug.com/558622 [ XP ] virtual/display_list_2d_canvas/fast/canvas/fillrect_grad
 crbug.com/558622 [ XP ] virtual/display_list_2d_canvas/fast/canvas/gradient-add-second-start-end-stop.html [ NeedsRebaseline ]
 crbug.com/558622 [ XP ] virtual/spv2/paint/invalidation/spv2/background-resize-width.html [ NeedsRebaseline ]
 crbug.com/558622 [ XP ] virtual/spv2/paint/invalidation/spv2/background-resize-height.html [ NeedsRebaseline ]
+crbug.com/558622 [ XP Linux Mac ] svg/hixie/perf/005.xml [ NeedsRebaseline ]
