@@ -7,5 +7,5 @@
 
 partial interface Console {
     // We can't make the attribute readonly as it breaks existing code that relies on being able to assign to console.memory in strict mode. Instead, the setter just ignores the passed value.  http://crbug.com/468611
-    [Measure] attribute MemoryInfo memory;
+    [Measure, LegacyInterfaceTypeChecking] attribute MemoryInfo memory;
 };

@@ -36,6 +36,5 @@
     Constructor(Element? target, sequence<Dictionary> keyframes, KeyframeEffectOptions timing),
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
-    TypeChecking=Interface,
 ] interface KeyframeEffect : AnimationEffectReadOnly {
 };

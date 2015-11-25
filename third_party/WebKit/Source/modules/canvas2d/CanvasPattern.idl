@@ -26,6 +26,6 @@
     GarbageCollected,
 ] interface CanvasPattern {
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void setTransform(SVGMatrix transform);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, LegacyInterfaceTypeChecking] void setTransform(SVGMatrix transform);
 
 };

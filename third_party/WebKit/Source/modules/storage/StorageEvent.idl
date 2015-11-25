@@ -34,14 +34,14 @@
     readonly attribute DOMString url;
     readonly attribute Storage? storageArea;
 
-    [Measure] void initStorageEvent([Default=Undefined] optional DOMString typeArg,
-                                    [Default=Undefined] optional boolean canBubbleArg,
-                                    [Default=Undefined] optional boolean cancelableArg,
-                                    [Default=Undefined] optional DOMString keyArg,
-                                    [Default=Undefined] optional DOMString? oldValueArg,
-                                    [Default=Undefined] optional DOMString? newValueArg,
-                                    [Default=Undefined] optional DOMString urlArg,
-                                    [Default=Undefined] optional Storage storageAreaArg);
+    [Measure, LegacyInterfaceTypeChecking] void initStorageEvent([Default=Undefined] optional DOMString typeArg,
+                                                                 [Default=Undefined] optional boolean canBubbleArg,
+                                                                 [Default=Undefined] optional boolean cancelableArg,
+                                                                 [Default=Undefined] optional DOMString keyArg,
+                                                                 [Default=Undefined] optional DOMString? oldValueArg,
+                                                                 [Default=Undefined] optional DOMString? newValueArg,
+                                                                 [Default=Undefined] optional DOMString urlArg,
+                                                                 [Default=Undefined] optional Storage storageAreaArg);
 
     // Needed once we support init<blank>EventNS
     // void initStorageEventNS(DOMString namespaceURI, DOMString typeArg, boolean canBubbleArg, boolean cancelableArg, DOMString keyArg, DOMString oldValueArg, DOMString newValueArg, DOMString urlArg, Storage storageAreaArg);

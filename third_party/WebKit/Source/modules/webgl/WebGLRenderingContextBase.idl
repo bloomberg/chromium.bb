@@ -41,11 +41,10 @@ typedef unrestricted float GLfloat;
 typedef unrestricted float GLclampf;
 
 [
-    // FIXME: [DoNotCheckConstants] and [TypeChecking=Interface] should be applied
-    // to members and not need to be put on implementing interface
+    // FIXME: [DoNotCheckConstants] should be applied to members and not need to
+    // be put on implementing interface
     // DoNotCheckConstants, // need to put on implementing interface
     NoInterfaceObject, // Always used on target of 'implements'
-    // TypeChecking=Interface, // need to put on implementing interface
     WillBeGarbageCollected,
 ] interface WebGLRenderingContextBase {
 

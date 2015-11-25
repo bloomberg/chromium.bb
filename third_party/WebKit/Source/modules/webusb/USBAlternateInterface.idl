@@ -9,6 +9,7 @@
     RaisesException=Constructor,
     GarbageCollected,
     RuntimeEnabled=WebUSB,
+    LegacyInterfaceTypeChecking,
 ] interface USBAlternateInterface {
     readonly attribute octet alternateSetting;
     readonly attribute octet interfaceClass;

@@ -342,7 +342,7 @@ def setter_context(interface, attribute, context):
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Setter'])
-    # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+    # [LegacyInterfaceTypeChecking]
     has_type_checking_interface = (
         not is_legacy_interface_type_checking(interface, attribute) and
         idl_type.is_wrapper_type)

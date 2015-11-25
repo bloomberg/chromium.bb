@@ -7,7 +7,6 @@ typedef unsigned long GLenum;
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    TypeChecking=Interface,
     GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface CHROMIUMSubscribeUniform {

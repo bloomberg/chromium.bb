@@ -25,7 +25,6 @@
 
 [
     NoInterfaceObject,
-    TypeChecking=Interface,
     GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLLoseContext {

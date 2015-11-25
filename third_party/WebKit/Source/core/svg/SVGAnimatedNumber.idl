@@ -30,7 +30,6 @@
     MeasureAs=SVG1DOM,
     RuntimeEnabled=SVG1DOM,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGAnimatedNumber {
     [RaisesException=Setter] attribute float baseVal;

@@ -36,7 +36,7 @@
 
     [SameObject] readonly attribute DataTransferItemList items;
 
-    [RaisesException] void setDragImage(Element image, long x, long y);
+    [RaisesException, LegacyInterfaceTypeChecking] void setDragImage(Element image, long x, long y);
 
     /* old interface */
     [SameObject] readonly attribute DOMString[] types;

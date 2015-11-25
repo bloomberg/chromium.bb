@@ -26,7 +26,6 @@
 // http://www.w3.org/TR/SVG2/coords.html#InterfaceSVGPreserveAspectRatio
 
 [
-    TypeChecking=Interface,
     ImplementedAs=SVGPreserveAspectRatioTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
     RuntimeEnabled=SVG1DOM,

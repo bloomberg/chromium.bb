@@ -6,7 +6,6 @@
 [
     Exposed=ServiceWorker,
     GarbageCollected,
-    TypeChecking=Interface,
     ImplementedAs=ServiceWorkerClients,
 ] interface Clients {
     [CallWith=ScriptState] Promise<sequence<Client>> matchAll(optional ClientQueryOptions options);

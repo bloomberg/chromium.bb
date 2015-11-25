@@ -46,5 +46,5 @@
     const unsigned long SHOW_NOTATION = 0x800; // historical
 
     // FIXME: The node argument should not be optional.
-    [RaisesException] unsigned short acceptNode([Default=Undefined] optional Node node);
+    [RaisesException, LegacyInterfaceTypeChecking] unsigned short acceptNode([Default=Undefined] optional Node node);
 };

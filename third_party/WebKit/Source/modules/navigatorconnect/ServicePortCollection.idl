@@ -6,9 +6,7 @@
 [
     Exposed=(Window,Worker),
     GarbageCollected,
-    TypeChecking=Interface,
     RuntimeEnabled=NavigatorConnect,
-    TypeChecking=Interface,
 ]  interface ServicePortCollection : EventTarget {
     [CallWith=ScriptState, RaisesException] Promise<ServicePort> connect(DOMString url, optional ServicePortConnectOptions options);
     [CallWith=ScriptState] Promise<ServicePort> match(ServicePortMatchOptions options);

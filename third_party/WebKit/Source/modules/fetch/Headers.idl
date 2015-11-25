@@ -12,7 +12,6 @@ typedef Dictionary OpenEndedDictionary;
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface Headers {
     [RaisesException] void append(ByteString name, ByteString value);
     [ImplementedAs=remove, RaisesException] void delete(ByteString key);

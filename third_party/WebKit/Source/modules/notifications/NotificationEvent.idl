@@ -8,7 +8,6 @@
     Constructor(DOMString type, optional NotificationEventInit eventInitDict),
     Exposed=ServiceWorker,
     RuntimeEnabled=Notifications,
-    TypeChecking=Interface,
 ] interface NotificationEvent : ExtendableEvent {
     readonly attribute Notification notification;
     [RuntimeEnabled=NotificationExperimental] readonly attribute DOMString action;

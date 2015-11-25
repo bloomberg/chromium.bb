@@ -13,7 +13,6 @@ enum VREye {
 // http://mozvr.github.io/webvr-spec/webvr.html#hmdvrdevice
 [
     RuntimeEnabled=WebVR,
-    TypeChecking=Interface
 ] interface HMDVRDevice : VRDevice {
     VREyeParameters getEyeParameters(VREye whichEye);
     void setFieldOfView(optional VRFieldOfView leftFov, optional VRFieldOfView rightFov);

@@ -36,7 +36,6 @@
     ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,
     MeasureAs=XSLTProcessor,
-    TypeChecking=Interface,
 ] interface XSLTProcessor {
 
     void importStylesheet(Node style);

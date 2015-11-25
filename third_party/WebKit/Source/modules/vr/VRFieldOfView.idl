@@ -6,7 +6,6 @@
 [
     RuntimeEnabled=WebVR,
     GarbageCollected,
-    TypeChecking=Interface,
     Constructor(optional VRFieldOfViewInit fov),
 ] interface VRFieldOfView {
     attribute double upDegrees;
@@ -14,4 +13,3 @@
     attribute double leftDegrees;
     attribute double rightDegrees;
 };
-

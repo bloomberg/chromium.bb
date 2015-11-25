@@ -7,7 +7,6 @@
 [
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
-    TypeChecking=Interface
 ] interface MediaKeySystemAccess {
     readonly attribute DOMString keySystem;
     MediaKeySystemConfiguration getConfiguration();

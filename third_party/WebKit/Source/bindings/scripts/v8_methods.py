@@ -209,7 +209,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
-    # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+    # [LegacyInterfaceTypeChecking]
     has_type_checking_interface = (
         not is_legacy_interface_type_checking(interface, method) and
         idl_type.is_wrapper_type)

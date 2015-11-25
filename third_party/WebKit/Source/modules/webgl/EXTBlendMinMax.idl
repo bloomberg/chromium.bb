@@ -5,7 +5,6 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    TypeChecking=Interface,
     GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface EXTBlendMinMax {

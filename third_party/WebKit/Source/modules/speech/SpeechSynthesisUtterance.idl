@@ -31,7 +31,7 @@
 ] interface SpeechSynthesisUtterance : EventTarget {
     attribute DOMString text;
     attribute DOMString lang;
-    attribute SpeechSynthesisVoice voice;
+    [LegacyInterfaceTypeChecking] attribute SpeechSynthesisVoice voice;
     attribute float volume;
     attribute float rate;
     attribute float pitch;

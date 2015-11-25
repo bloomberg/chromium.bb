@@ -39,7 +39,6 @@ enum AppendMode {
     ActiveDOMObject,
     NoInterfaceObject,
     RuntimeEnabled=MediaSource,
-    TypeChecking=Interface,
 ] interface SourceBuffer : EventTarget {
 
     // Gets or sets the AppendMode.
@@ -74,4 +73,3 @@ enum AppendMode {
     // the initialization segment algorithm.
     [RaisesException=Setter, RuntimeEnabled=MediaSourceExperimental] attribute TrackDefaultList trackDefaults;
 };
-

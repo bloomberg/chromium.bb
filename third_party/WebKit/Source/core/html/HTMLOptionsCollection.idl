@@ -28,8 +28,8 @@
     // inherits item()
     [RaisesException=Setter] attribute unsigned long length; // shadows inherited length
     // FIXME: The spec has a legacycaller HTMLOptionElement? (DOMString name);
-    [RaisesException, TypeChecking=Interface] setter void (unsigned long index, HTMLOptionElement? option);
-    [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element, optional (HTMLElement or long)? before = null);
+    [RaisesException] setter void (unsigned long index, HTMLOptionElement? option);
+    [RaisesException] void add((HTMLOptionElement or HTMLOptGroupElement) element, optional (HTMLElement or long)? before = null);
     void remove(long index);
     attribute long selectedIndex;
     // FIXME: Neither of these getters are in the spec, and the

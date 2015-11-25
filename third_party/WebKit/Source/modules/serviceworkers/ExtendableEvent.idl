@@ -32,7 +32,6 @@
 [
     Constructor(DOMString type, optional ExtendableEventInit eventInitDict),
     Exposed=ServiceWorker,
-    TypeChecking=Interface,
 ] interface ExtendableEvent : Event {
     [CallWith=ScriptState, RaisesException] void waitUntil(Promise<any> f);
 };

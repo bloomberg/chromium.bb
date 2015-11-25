@@ -38,11 +38,11 @@ interface HTMLSelectElement : HTMLElement {
     [RaisesException=Setter] attribute unsigned long length;
     getter Element? item(unsigned long index);
     HTMLOptionElement? namedItem(DOMString name);
-    [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element,
-                                                       optional (HTMLElement or long)? before = null);
+    [RaisesException] void add((HTMLOptionElement or HTMLOptGroupElement) element,
+                               optional (HTMLElement or long)? before = null);
     [RaisesException] void remove(); // ChildNode overload
     void remove(long index);
-    [RaisesException, TypeChecking=Interface] setter void (unsigned long index, HTMLOptionElement? option);
+    [RaisesException] setter void (unsigned long index, HTMLOptionElement? option);
 
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;

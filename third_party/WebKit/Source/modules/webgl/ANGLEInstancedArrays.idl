@@ -31,7 +31,6 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    TypeChecking=Interface,
     GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface ANGLEInstancedArrays {

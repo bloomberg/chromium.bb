@@ -7,7 +7,6 @@
     Exposed=(Window,Worker),
     ActiveDOMObject,
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface ServiceWorkerRegistration : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? installing;
     [Unforgeable] readonly attribute ServiceWorker? waiting;

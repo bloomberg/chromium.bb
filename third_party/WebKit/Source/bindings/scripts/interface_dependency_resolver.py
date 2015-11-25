@@ -47,7 +47,6 @@ from utilities import idl_filename_to_component, is_valid_component_dependency, 
 DEPENDENCY_EXTENDED_ATTRIBUTES = frozenset([
     'Conditional',
     'RuntimeEnabled',
-    'TypeChecking',
 ])
 
 

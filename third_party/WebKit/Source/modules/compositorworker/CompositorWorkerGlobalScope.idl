@@ -6,7 +6,6 @@
     Exposed=CompositorWorker,
     Global=CompositorWorker,
     RuntimeEnabled=CompositorWorker,
-    TypeChecking=Interface,
 ] interface CompositorWorkerGlobalScope : WorkerGlobalScope {
     [PostMessage, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
     attribute EventHandler onmessage;

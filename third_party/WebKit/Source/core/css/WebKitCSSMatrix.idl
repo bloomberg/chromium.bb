@@ -60,7 +60,7 @@
     [RaisesException] void setMatrixValue([Default=Undefined] optional DOMString string);
 
     // Multiply this matrix by secondMatrix, on the right (result = this * secondMatrix)
-    [Immutable] WebKitCSSMatrix multiply([Default=Undefined] optional WebKitCSSMatrix secondMatrix);
+    [Immutable, LegacyInterfaceTypeChecking] WebKitCSSMatrix multiply([Default=Undefined] optional WebKitCSSMatrix secondMatrix);
 
     // Return the inverse of this matrix. Throw an exception if the matrix is not invertible
     [Immutable, RaisesException] WebKitCSSMatrix inverse();
@@ -103,4 +103,3 @@
 
     [NotEnumerable] stringifier;
 };
-

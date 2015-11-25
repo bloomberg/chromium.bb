@@ -9,6 +9,7 @@
     RaisesException=Constructor,
     GarbageCollected,
     RuntimeEnabled=WebUSB,
+    LegacyInterfaceTypeChecking,
 ] interface USBConfiguration {
     readonly attribute octet configurationValue;
     readonly attribute DOMString? configurationName;

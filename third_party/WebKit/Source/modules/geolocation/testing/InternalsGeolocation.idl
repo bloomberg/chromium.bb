@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    TypeChecking=Interface
-] partial interface Internals {
+partial interface Internals {
     void setGeolocationClientMock(Document document);
     void setGeolocationPosition(Document document, double latitude, double longitude, double accuracy);
     void setGeolocationPositionUnavailableError(Document document, DOMString message);

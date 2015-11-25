@@ -24,7 +24,6 @@ enum RequestRedirect { "follow", "error", "manual" };
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute USVString url;

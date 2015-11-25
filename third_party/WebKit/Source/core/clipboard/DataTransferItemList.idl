@@ -31,7 +31,6 @@
 // https://html.spec.whatwg.org/#the-datatransferitemlist-interface
 
 [
-    TypeChecking=Interface,
     GarbageCollected,
 ] interface DataTransferItemList {
     readonly attribute unsigned long length;

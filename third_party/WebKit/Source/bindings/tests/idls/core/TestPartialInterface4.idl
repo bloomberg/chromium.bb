@@ -4,7 +4,6 @@
 
 [
     Conditional=FOO,
-    TypeChecking=Interface,
 ] partial interface TestInterface3 {
     [Conditional=BAR] static void voidMethodDocument(Document document, double d);
 };

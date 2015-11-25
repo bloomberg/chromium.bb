@@ -22,7 +22,6 @@
 
 [
     SetWrapperReferenceFrom=element,
-    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface NamedNodeMap {
     readonly attribute unsigned long length;

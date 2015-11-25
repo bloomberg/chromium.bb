@@ -38,7 +38,6 @@ enum ChannelInterpretation {
 [
     Conditional=WEB_AUDIO,
     GarbageCollected,
-    TypeChecking=Interface
 ] interface AudioNode : EventTarget {
     [RaisesException] AudioNode connect(AudioNode destination, optional unsigned long output = 0, optional unsigned long input = 0);
     [RaisesException] void connect(AudioParam destination, optional unsigned long output = 0);

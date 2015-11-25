@@ -94,7 +94,7 @@
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-window-interface
     // FIXME: The optional pseudoElt argument should have no default.
-    [NewObject, TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
+    [NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-window-interface
@@ -154,8 +154,8 @@
     [MeasureAs=WindowDefaultStatus] attribute DOMString defaultStatus;
     [MeasureAs=WindowDefaultstatus, ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
-    [DeprecateAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
-                                                                    [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
+    [DeprecateAs=GetMatchedCSSRules, LegacyInterfaceTypeChecking] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
+                                                                                                 [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.

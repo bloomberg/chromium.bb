@@ -37,6 +37,7 @@ typedef (File or USVString) FormDataEntryValue;
     Constructor(optional HTMLFormElement form),
     Exposed=(Window,Worker),
     GarbageCollected,
+    LegacyInterfaceTypeChecking,
 ] interface FormData {
     // TODO(philipj): The value argument should be FormDataEntryValue and there
     // should be no optional filename argument. crbug.com/498790

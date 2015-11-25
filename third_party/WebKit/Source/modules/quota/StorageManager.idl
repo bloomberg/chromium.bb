@@ -8,7 +8,6 @@ enum PersistentStoragePermission { "default", "denied", "granted" };
 
 [
     Exposed=(Window,Worker),
-    TypeChecking=Interface,
     GarbageCollected,
     RuntimeEnabled=DurableStorage,
 ] interface StorageManager {

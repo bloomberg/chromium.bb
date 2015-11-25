@@ -46,12 +46,12 @@
 
     // Indexed property operations with an identifier
     [RaisesException] getter TestInterfaceEmpty item(unsigned long index);
-    [RaisesException, TypeChecking=Interface] setter TestInterfaceEmpty setItem(unsigned long index, TestInterfaceEmpty value);
+    [RaisesException] setter TestInterfaceEmpty setItem(unsigned long index, TestInterfaceEmpty value);
     [RaisesException] deleter boolean deleteItem(unsigned long index);
 
     // Named property operations with an identifier
     [RaisesException] getter TestInterfaceEmpty namedItem(DOMString name);
-    [RaisesException, TypeChecking=Interface] setter TestInterfaceEmpty setNamedItem(DOMString name, TestInterfaceEmpty? value);
+    [RaisesException] setter TestInterfaceEmpty setNamedItem(DOMString name, TestInterfaceEmpty? value);
     [RaisesException] deleter boolean deleteNamedItem(DOMString name);
 
     stringifier DOMString stringifierMethod();

@@ -82,6 +82,10 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     Document* document;
     {
         document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!document) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexed", "parameter 1 is not of type 'Document'."));
+            return;
+        }
     }
     impl->voidMethodDocument(document);
 }

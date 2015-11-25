@@ -27,6 +27,5 @@
 
 [
     ImplementedAs=DOMDataView,
-    TypeChecking=Interface,
 ] interface DataView : ArrayBufferView {
 };

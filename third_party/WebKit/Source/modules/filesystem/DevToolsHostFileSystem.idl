@@ -6,5 +6,5 @@
     RuntimeEnabled=FileSystem,
 ] partial interface DevToolsHost {
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
-    void upgradeDraggedFileSystemPermissions(DOMFileSystem domFileSystem);
+    [LegacyInterfaceTypeChecking] void upgradeDraggedFileSystemPermissions(DOMFileSystem domFileSystem);
 };

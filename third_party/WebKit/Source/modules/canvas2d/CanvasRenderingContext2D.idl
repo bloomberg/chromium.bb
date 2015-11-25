@@ -36,7 +36,6 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
 
 [
     SetWrapperReferenceFrom=canvas,
-    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface CanvasRenderingContext2D {
     // back-reference to the canvas

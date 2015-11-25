@@ -56,8 +56,14 @@ static void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attr1", "TestInterfaceWillBeGarbageCollected", holder, info.GetIsolate());
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(holder);
     TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -79,6 +85,10 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceWillBeGarbageCollected* arg;
     {
         arg = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!arg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("func", "TestInterfaceWillBeGarbageCollected", "parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'."));
+            return;
+        }
     }
     impl->func(arg);
 }

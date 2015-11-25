@@ -1355,7 +1355,7 @@ def property_setter(setter, interface):
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(setter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
+    # [LegacyInterfaceTypeChecking]
     has_type_checking_interface = (
         not is_legacy_interface_type_checking(interface, setter) and
         idl_type.is_wrapper_type)

@@ -6,7 +6,6 @@
 [
     Exposed=ServiceWorker,
     RuntimeEnabled=NavigatorConnect,
-    TypeChecking=Interface,
     Constructor(DOMString type, optional ServicePortConnectEventInit eventInitDict),
 ] interface ServicePortConnectEvent : ExtendableEvent {
     readonly attribute DOMString targetURL;

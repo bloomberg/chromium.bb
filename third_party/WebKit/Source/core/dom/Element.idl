@@ -25,9 +25,7 @@ enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scro
 
 // https://dom.spec.whatwg.org/#interface-element
 
-[
-    TypeChecking=Interface,
-] interface Element : Node {
+interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     readonly attribute DOMString localName;

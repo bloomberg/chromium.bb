@@ -30,9 +30,7 @@
 
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGGeometryElement
 
-[
-    TypeChecking=Interface,
-] interface SVGGeometryElement : SVGGraphicsElement {
+interface SVGGeometryElement : SVGGraphicsElement {
     // TODO(philipj): SVGPoint should be DOMPoint.
     boolean isPointInFill(SVGPoint point);
     boolean isPointInStroke(SVGPoint point);

@@ -358,6 +358,11 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEmpty* value;
     {
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!value) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     bool result = impl->hasForBinding(scriptState, value, exceptionState);

@@ -4,7 +4,6 @@
 
 [
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface PrivateScriptTest {
     [ImplementedInPrivateScript] void doNothing();
     [ImplementedInPrivateScript] short return123();

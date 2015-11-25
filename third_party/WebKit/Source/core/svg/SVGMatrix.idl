@@ -26,7 +26,6 @@
 [
     ImplementedAs=SVGMatrixTearOff,
     SetWrapperReferenceTo(SVGTransform contextTransform),
-    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGMatrix {
     // FIXME: these attributes should all be floats but since we implement

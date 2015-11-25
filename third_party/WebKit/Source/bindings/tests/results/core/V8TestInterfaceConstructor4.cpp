@@ -44,6 +44,10 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceConstructor4* testInterface4Arg;
     {
         testInterface4Arg = V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterface4Arg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor4", "parameter 1 is not of type 'TestInterfaceConstructor4'."));
+            return;
+        }
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(testInterface4Arg);
     v8::Local<v8::Object> wrapper = info.Holder();

@@ -33,7 +33,6 @@
 [
     Exposed=ServiceWorker,
     Global=(Worker,ServiceWorker),
-    TypeChecking=Interface,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
   readonly attribute Clients clients;

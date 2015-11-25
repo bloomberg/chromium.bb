@@ -824,8 +824,14 @@ static void testInterfaceEmptyAttributeAttributeGetterCallback(const v8::Functio
 static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceEmptyAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceEmptyAttribute(WTF::getPtr(cppValue));
 }
 
@@ -854,8 +860,14 @@ static void testObjectAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void testObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testObjectAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestObject* cppValue = V8TestObject::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestObject'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestObjectAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1199,8 +1211,14 @@ static void windowAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "windowAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DOMWindow* cppValue = toDOMWindow(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Window'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setWindowAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1229,8 +1247,14 @@ static void documentAttributeAttributeGetterCallback(const v8::FunctionCallbackI
 static void documentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "documentAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     Document* cppValue = V8Document::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Document'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setDocumentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1259,8 +1283,14 @@ static void documentFragmentAttributeAttributeGetterCallback(const v8::FunctionC
 static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "documentFragmentAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DocumentFragment* cppValue = V8DocumentFragment::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'DocumentFragment'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1289,8 +1319,14 @@ static void documentTypeAttributeAttributeGetterCallback(const v8::FunctionCallb
 static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "documentTypeAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DocumentType* cppValue = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'DocumentType'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setDocumentTypeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1319,8 +1355,14 @@ static void elementAttributeAttributeGetterCallback(const v8::FunctionCallbackIn
 static void elementAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "elementAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     Element* cppValue = V8Element::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Element'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setElementAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1349,8 +1391,14 @@ static void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<
 static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "nodeAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1379,8 +1427,14 @@ static void shadowRootAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "shadowRootAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     ShadowRoot* cppValue = V8ShadowRoot::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'ShadowRoot'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setShadowRootAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1409,8 +1463,14 @@ static void arrayBufferAttributeAttributeGetterCallback(const v8::FunctionCallba
 static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "arrayBufferAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestArrayBuffer* cppValue = v8Value->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(v8Value)) : 0;
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'ArrayBuffer'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setArrayBufferAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1439,8 +1499,14 @@ static void float32ArrayAttributeAttributeGetterCallback(const v8::FunctionCallb
 static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "float32ArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DOMFloat32Array* cppValue = v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(v8Value)) : 0;
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Float32Array'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setFloat32ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1469,8 +1535,14 @@ static void uint8ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "uint8ArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     DOMUint8Array* cppValue = v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(v8Value)) : 0;
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Uint8Array'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setUint8ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1753,8 +1825,14 @@ static void testInterfaceOrNullAttributeAttributeGetterCallback(const v8::Functi
 static void testInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue && !isUndefinedOrNull(v8Value)) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -3499,25 +3577,25 @@ static void locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(cons
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void locationTypeCheckingInterfaceAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void locationLegacyInterfaceTypeCheckingAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->locationTypeCheckingInterface()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->locationLegacyInterfaceTypeChecking()), impl);
 }
 
-static void locationTypeCheckingInterfaceAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void locationLegacyInterfaceTypeCheckingAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::locationTypeCheckingInterfaceAttributeGetter(info);
+    TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void locationTypeCheckingInterfaceAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationTypeCheckingInterface());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationLegacyInterfaceTypeChecking());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3526,11 +3604,11 @@ static void locationTypeCheckingInterfaceAttributeSetter(v8::Local<v8::Value> v8
     impl->setHref(cppValue);
 }
 
-static void locationTypeCheckingInterfaceAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void locationLegacyInterfaceTypeCheckingAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::locationTypeCheckingInterfaceAttributeSetter(v8Value, info);
+    TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -3558,11 +3636,17 @@ static void locationGarbageCollectedAttributeGetterCallback(const v8::FunctionCa
 static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "locationGarbageCollected", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
     RawPtr<TestInterfaceGarbageCollected> impl = WTF::getPtr(proxyImpl->locationGarbageCollected());
     if (!impl)
         return;
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -3598,11 +3682,17 @@ static void locationWillBeGarbageCollectedAttributeGetterCallback(const v8::Func
 static void locationWillBeGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "locationWillBeGarbageCollected", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = WTF::getPtr(proxyImpl->locationWillBeGarbageCollected());
     if (!impl)
         return;
     TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -3747,6 +3837,11 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
     ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setRaisesExceptionTestInterfaceEmptyAttribute(WTF::getPtr(cppValue), exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -3823,8 +3918,14 @@ static void reflectTestInterfaceAttributeAttributeGetterCallback(const v8::Funct
 static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectTestInterfaceAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
 }
@@ -3855,8 +3956,14 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(co
 static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectReflectedNameAttributeTestAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
 }
@@ -4998,108 +5105,96 @@ static void treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetterC
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, impl->typeCheckingInterfaceFloatAttribute());
+    v8SetReturnValue(info, impl->legacyInterfaceTypeCheckingFloatAttribute());
 }
 
-static void typeCheckingInterfaceFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeGetter(info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceFloatAttribute", "TestObject", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "legacyInterfaceTypeCheckingFloatAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    impl->setTypeCheckingInterfaceFloatAttribute(cppValue);
+    impl->setLegacyInterfaceTypeCheckingFloatAttribute(cppValue);
 }
 
-static void typeCheckingInterfaceFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceTestInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->typeCheckingInterfaceTestInterfaceAttribute()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingTestInterfaceAttribute()), impl);
 }
 
-static void typeCheckingInterfaceTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeGetter(info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceTestInterfaceAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setTypeCheckingInterfaceTestInterfaceAttribute(WTF::getPtr(cppValue));
+    impl->setLegacyInterfaceTypeCheckingTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
-static void typeCheckingInterfaceTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->typeCheckingInterfaceTestInterfaceOrNullAttribute()), impl);
+    v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute()), impl);
 }
 
-static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetter(info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "typeCheckingInterfaceTestInterfaceOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue && !isUndefinedOrNull(v8Value)) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setTypeCheckingInterfaceTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
+    impl->setLegacyInterfaceTypeCheckingTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
 }
 
-static void typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -5256,8 +5351,14 @@ static void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void sameObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "sameObjectAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setSameObjectAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5352,8 +5453,14 @@ static void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCall
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5382,8 +5489,14 @@ static void testInterfaceGarbageCollectedAttributeAttributeGetterCallback(const 
 static void testInterfaceGarbageCollectedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceGarbageCollectedAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceGarbageCollectedAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5412,8 +5525,14 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(
 static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceGarbageCollectedOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue && !isUndefinedOrNull(v8Value)) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5442,8 +5561,14 @@ static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback(
 static void testInterfaceWillBeGarbageCollectedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceWillBeGarbageCollectedAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceWillBeGarbageCollectedAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5472,8 +5597,14 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCal
 static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceWillBeGarbageCollectedOrNullAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue && !isUndefinedOrNull(v8Value)) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     impl->setTestInterfaceWillBeGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5593,8 +5724,14 @@ static void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<
 static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "nodeAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     V8TestObject::PrivateScript::nodeAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
@@ -6376,6 +6513,10 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -6403,6 +6544,11 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
         if (exceptionState.throwIfNeeded())
             return;
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!testInterfaceEmptyArg) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
     impl->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
@@ -6563,6 +6709,10 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
     EventTarget* eventTargetArg;
     {
         eventTargetArg = toEventTarget(info.GetIsolate(), info[0]);
+        if (!eventTargetArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", "parameter 1 is not of type 'EventTarget'."));
+            return;
+        }
     }
     impl->voidMethodEventTargetArg(eventTargetArg);
 }
@@ -6605,6 +6755,10 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     Attr* attrArg;
     {
         attrArg = V8Attr::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!attrArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", "parameter 1 is not of type 'Attr'."));
+            return;
+        }
     }
     impl->voidMethodAttrArg(attrArg);
 }
@@ -6626,6 +6780,10 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
     Document* documentArg;
     {
         documentArg = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!documentArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", "parameter 1 is not of type 'Document'."));
+            return;
+        }
     }
     impl->voidMethodDocumentArg(documentArg);
 }
@@ -6647,6 +6805,10 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
     DocumentType* documentTypeArg;
     {
         documentTypeArg = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!documentTypeArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", "parameter 1 is not of type 'DocumentType'."));
+            return;
+        }
     }
     impl->voidMethodDocumentTypeArg(documentTypeArg);
 }
@@ -6668,6 +6830,10 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
     Element* elementArg;
     {
         elementArg = V8Element::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!elementArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", "parameter 1 is not of type 'Element'."));
+            return;
+        }
     }
     impl->voidMethodElementArg(elementArg);
 }
@@ -6689,6 +6855,10 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     Node* nodeArg;
     {
         nodeArg = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!nodeArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", "parameter 1 is not of type 'Node'."));
+            return;
+        }
     }
     impl->voidMethodNodeArg(nodeArg);
 }
@@ -6775,6 +6945,10 @@ static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestArrayBuffer* arrayBufferArg;
     {
         arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
+        if (!arrayBufferArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
+            return;
+        }
     }
     impl->voidMethodArrayBufferArg(arrayBufferArg);
 }
@@ -6796,6 +6970,10 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
     TestArrayBuffer* arrayBufferArg;
     {
         arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
+        if (!arrayBufferArg && !isUndefinedOrNull(info[0])) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
+            return;
+        }
     }
     impl->voidMethodArrayBufferOrNullArg(arrayBufferArg);
 }
@@ -6817,6 +6995,10 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
     TestArrayBufferView* arrayBufferViewArg;
     {
         arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Local<v8::ArrayBufferView>::Cast(info[0])) : 0;
+        if (!arrayBufferViewArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
+            return;
+        }
     }
     impl->voidMethodArrayBufferViewArg(arrayBufferViewArg);
 }
@@ -6838,6 +7020,10 @@ static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbac
     FlexibleArrayBufferView arrayBufferViewArg;
     {
         toFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+        if (!arrayBufferViewArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
+            return;
+        }
     }
     impl->voidMethodFlexibleArrayBufferViewArg(arrayBufferViewArg);
 }
@@ -6859,6 +7045,10 @@ static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCa
     FlexibleFloat32ArrayView typedArrayBufferViewArg;
     {
         toFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+        if (!typedArrayBufferViewArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
+            return;
+        }
     }
     impl->voidMethodFlexibleArrayBufferViewTypedArg(typedArrayBufferViewArg);
 }
@@ -6880,6 +7070,10 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
     DOMFloat32Array* float32ArrayArg;
     {
         float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(info[0])) : 0;
+        if (!float32ArrayArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
+            return;
+        }
     }
     impl->voidMethodFloat32ArrayArg(float32ArrayArg);
 }
@@ -6901,6 +7095,10 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     DOMInt32Array* int32ArrayArg;
     {
         int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Local<v8::Int32Array>::Cast(info[0])) : 0;
+        if (!int32ArrayArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", "parameter 1 is not of type 'Int32Array'."));
+            return;
+        }
     }
     impl->voidMethodInt32ArrayArg(int32ArrayArg);
 }
@@ -6922,6 +7120,10 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     DOMUint8Array* uint8ArrayArg;
     {
         uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(info[0])) : 0;
+        if (!uint8ArrayArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", "parameter 1 is not of type 'Uint8Array'."));
+            return;
+        }
     }
     impl->voidMethodUint8ArrayArg(uint8ArrayArg);
 }
@@ -7515,6 +7717,10 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallba
     TestInterfaceEmpty* nullableTestInterfaceEmptyArg;
     {
         nullableTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!nullableTestInterfaceEmptyArg && !isUndefinedOrNull(info[0])) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->voidMethodTestInterfaceEmptyOrNullArg(nullableTestInterfaceEmptyArg);
 }
@@ -7947,6 +8153,10 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
     RawPtr<XPathNSResolver> xPathNSResolverArg;
     {
         xPathNSResolverArg = toXPathNSResolver(ScriptState::current(info.GetIsolate()), info[0]);
+        if (!xPathNSResolverArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", "parameter 1 is not of type 'XPathNSResolver'."));
+            return;
+        }
     }
     impl->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
 }
@@ -8045,6 +8255,10 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
             return;
         }
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!optionalTestInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
@@ -8246,6 +8460,11 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
             return;
         }
         optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!optionalTestInterfaceEmpty) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
     impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
@@ -8270,6 +8489,11 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
     int longArg;
     {
         optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!optionalTestInterfaceEmpty) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         if (UNLIKELY(info.Length() <= 1)) {
             impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
             return;
@@ -8526,6 +8750,10 @@ static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCa
     {
         if (!info[0]->IsUndefined()) {
             defaultTestInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+            if (!defaultTestInterfaceArg && !isUndefinedOrNull(info[0])) {
+                V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultNullableTestInterfaceArg", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+                return;
+            }
         } else {
             defaultTestInterfaceArg = nullptr;
         }
@@ -8691,6 +8919,11 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
     Vector<RefPtr<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         for (int i = 1; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
                 exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
@@ -8923,6 +9156,10 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->overloadedMethodC(testInterfaceEmptyArg);
 }
@@ -9040,6 +9277,10 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
     {
         testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodE", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->overloadedMethodE(testInterfaceEmptyOrNullArg);
 }
@@ -9174,6 +9415,10 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     {
         if (!info[0]->IsUndefined()) {
             testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+            if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
+                V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodG", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+                return;
+            }
         } else {
             testInterfaceEmptyOrNullArg = nullptr;
         }
@@ -9230,6 +9475,10 @@ static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterfaceImplementation* testInterfaceArg;
     {
         testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+            return;
+        }
     }
     impl->overloadedMethodH(testInterfaceArg);
 }
@@ -9240,6 +9489,10 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->overloadedMethodH(testInterfaceEmptyArg);
 }
@@ -9564,6 +9817,10 @@ static void promiseOverloadMethod2MethodPromise(const v8::FunctionCallbackInfo<v
     double arg2;
     {
         arg1 = toDOMWindow(info.GetIsolate(), info[0]);
+        if (!arg1) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'Window'.");
+            return;
+        }
         arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
         if (exceptionState.hadException())
             return;
@@ -9586,6 +9843,10 @@ static void promiseOverloadMethod3MethodPromise(const v8::FunctionCallbackInfo<v
     double arg2;
     {
         arg1 = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!arg1) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
+            return;
+        }
         arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
         if (exceptionState.hadException())
             return;
@@ -9919,6 +10180,10 @@ static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::Func
     TestInterfaceEmpty* defaultUndefinedTestInterfaceEmptyArg;
     {
         defaultUndefinedTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!defaultUndefinedTestInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultUndefinedTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
@@ -10869,6 +11134,10 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -10890,6 +11159,10 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+            return;
+        }
     }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
@@ -11328,6 +11601,10 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::Functio
     TestInterfaceImplementation* testInterfaceArg;
     {
         testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+            return;
+        }
     }
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterfaceArg);
 }
@@ -11364,6 +11641,11 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
         if (!stringArg.prepare())
             return;
         testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+        if (!testInterfaceArg) {
+            exceptionState.throwTypeError("parameter 3 is not of type 'TestInterface'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg, testInterfaceArg);
 }
@@ -11517,34 +11799,30 @@ static void treatReturnedNullStringAsUndefinedUSVStringMethodMethodCallback(cons
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObject", 1, info.Length()), info.GetIsolate());
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
     }
-    impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+    impl->legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
-static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethod(info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty>> testInterfaceEmptyArg;
     {
@@ -11557,13 +11835,13 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(c
             testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
-    impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
+    impl->legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
 }
 
-static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(info);
+    TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -11896,6 +12174,10 @@ static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8:
     Node* value;
     {
         value = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!value) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", "parameter 1 is not of type 'Node'."));
+            return;
+        }
     }
     RefPtrWillBeRawPtr<Node> result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
@@ -11926,7 +12208,17 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
     V8StringResource<> string;
     {
         document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!document) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+        if (!node) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'Node'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         value1 = toInt16(info.GetIsolate(), info[2], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
@@ -12552,7 +12844,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"locationWithCallWith", TestObjectV8Internal::locationWithCallWithAttributeGetterCallback, TestObjectV8Internal::locationWithCallWithAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationByteString", TestObjectV8Internal::locationByteStringAttributeGetterCallback, TestObjectV8Internal::locationByteStringAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationWithPerWorldBindings", TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationTypeCheckingInterface", TestObjectV8Internal::locationTypeCheckingInterfaceAttributeGetterCallback, TestObjectV8Internal::locationTypeCheckingInterfaceAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationLegacyInterfaceTypeChecking", TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetterCallback, TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationGarbageCollected", TestObjectV8Internal::locationGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationGarbageCollectedAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationWillBeGarbageCollected", TestObjectV8Internal::locationWillBeGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationWillBeGarbageCollectedAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"raisesExceptionLongAttribute", TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -12592,9 +12884,9 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"treatReturnedNullStringAsUndefinedByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"treatReturnedNullStringAsNullUSVStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"treatReturnedNullStringAsUndefinedUSVStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"typeCheckingInterfaceFloatAttribute", TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"typeCheckingInterfaceTestInterfaceAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"typeCheckingInterfaceTestInterfaceOrNullAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingFloatAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingTestInterfaceAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
@@ -12841,8 +13133,8 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"treatReturnedNullStringAsUndefinedByteStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"treatReturnedNullStringAsNullUSVStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"treatReturnedNullStringAsUndefinedUSVStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},

@@ -9,6 +9,7 @@
     GarbageCollected,
     RaisesException=Constructor,
     RuntimeEnabled=CompositorWorker,
+    LegacyInterfaceTypeChecking,
 ] interface CompositorProxy {
     [RaisesException] attribute double opacity;
     [RaisesException] attribute double scrollLeft;

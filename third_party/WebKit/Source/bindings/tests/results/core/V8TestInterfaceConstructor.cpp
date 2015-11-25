@@ -79,6 +79,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!stringArg.prepare())
             return;
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+        if (!testInterfaceEmptyArg) {
+            exceptionState.throwTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
@@ -105,6 +110,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
+        if (!optionalTestInterfaceEmptyArg) {
+            exceptionState.throwTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());

@@ -6,7 +6,6 @@
 [
     Constructor(DOMString type, optional FetchEventInit eventInitDict),
     Exposed=ServiceWorker,
-    TypeChecking=Interface,
 ] interface FetchEvent : ExtendableEvent {
     readonly attribute Request request;
     readonly attribute boolean isReload;

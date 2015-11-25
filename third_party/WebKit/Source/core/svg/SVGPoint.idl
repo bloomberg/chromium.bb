@@ -26,7 +26,6 @@
 [
     ImplementedAs=SVGPointTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface SVGPoint {
     [RaisesException=Setter] attribute unrestricted float x;

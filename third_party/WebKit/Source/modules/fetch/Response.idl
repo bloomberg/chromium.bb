@@ -16,7 +16,6 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface Response {
     [CallWith=ExecutionContext] static Response error();
     [CallWith=ExecutionContext, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);

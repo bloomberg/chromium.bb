@@ -100,6 +100,11 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> optionalStringArg;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyArg) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
         longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;

@@ -6,7 +6,6 @@
 [
     Exposed=ServiceWorker,
     GarbageCollected,
-    TypeChecking=Interface,
     ImplementedAs=ServiceWorkerClient,
 ] interface Client {
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;

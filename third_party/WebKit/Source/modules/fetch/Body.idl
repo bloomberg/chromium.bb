@@ -9,7 +9,6 @@ typedef object JSON;
     NoInterfaceObject,
     ActiveDOMObject,
     GarbageCollected,
-    TypeChecking=Interface,
 ] interface Body {
     readonly attribute boolean bodyUsed;
     [CallWith=ScriptState] Promise<ArrayBuffer> arrayBuffer();
