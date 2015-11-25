@@ -851,8 +851,6 @@ commit_screen_list(struct ivi_layout *layout)
 				ivisurf->surface->output = iviscrn->output;
 			}
 		}
-
-		break;
 	}
 }
 
