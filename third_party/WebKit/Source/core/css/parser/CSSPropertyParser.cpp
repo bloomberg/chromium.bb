@@ -1045,11 +1045,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWidthOrHeight(CSSParserTokenRange
     return consumeLengthOrPercent(range, context.mode(), ValueRangeNonNegative, unitless);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeMarginWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMarginWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
     if (range.peek().id() == CSSValueAuto)
         return consumeIdent(range);
-    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeClipComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -1997,12 +1997,22 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMarginRight:
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:
-        return consumeMarginWidth(m_range, m_context.mode());
+        return consumeMarginWidth(m_range, m_context.mode(), UnitlessQuirk::Allow);
+    case CSSPropertyWebkitMarginStart:
+    case CSSPropertyWebkitMarginEnd:
+    case CSSPropertyWebkitMarginBefore:
+    case CSSPropertyWebkitMarginAfter:
+        return consumeMarginWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyPaddingTop:
     case CSSPropertyPaddingRight:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative, UnitlessQuirk::Allow);
+    case CSSPropertyWebkitPaddingStart:
+    case CSSPropertyWebkitPaddingEnd:
+    case CSSPropertyWebkitPaddingBefore:
+    case CSSPropertyWebkitPaddingAfter:
+        return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeNonNegative, UnitlessQuirk::Forbid);
     case CSSPropertyClip:
         return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:

@@ -9,7 +9,7 @@
 function convert_to_dashes(property) {
     return property.replace(/[A-Z]/g, function(letter) {
         return "-" + letter.toLowerCase();
-    });
+    }).replace('webkit', '-webkit');
 }
 
 function assert_valid_value(property, value, serializedValue, quirksModeOnly) {

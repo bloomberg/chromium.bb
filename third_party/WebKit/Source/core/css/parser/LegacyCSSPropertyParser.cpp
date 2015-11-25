@@ -567,13 +567,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
-    case CSSPropertyWebkitPaddingStart:
-    case CSSPropertyWebkitPaddingEnd:
-    case CSSPropertyWebkitPaddingBefore:
-    case CSSPropertyWebkitPaddingAfter:
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-        break;
-
     case CSSPropertyVerticalAlign:
         // baseline | sub | super | top | text-top | middle | bottom | text-bottom |
         // <percentage> | <length> | inherit
@@ -588,16 +581,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyLeft:                 // <length> | <percentage> | auto | inherit
     case CSSPropertyRight:                // <length> | <percentage> | auto | inherit
     case CSSPropertyTop:                  // <length> | <percentage> | auto | inherit
-        unitless = FUnitlessQuirk;
-        // fall through
-    case CSSPropertyWebkitMarginStart:
-    case CSSPropertyWebkitMarginEnd:
-    case CSSPropertyWebkitMarginBefore:
-    case CSSPropertyWebkitMarginAfter:
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = validUnit(value, FLength | FPercent | unitless);
+            validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
         break;
 
     case CSSPropertyTextUnderlinePosition:
@@ -1092,11 +1079,19 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:
     case CSSPropertyMargin:
+    case CSSPropertyWebkitMarginStart:
+    case CSSPropertyWebkitMarginEnd:
+    case CSSPropertyWebkitMarginBefore:
+    case CSSPropertyWebkitMarginAfter:
     case CSSPropertyPaddingTop:
     case CSSPropertyPaddingRight:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:
     case CSSPropertyPadding:
+    case CSSPropertyWebkitPaddingStart:
+    case CSSPropertyWebkitPaddingEnd:
+    case CSSPropertyWebkitPaddingBefore:
+    case CSSPropertyWebkitPaddingAfter:
     case CSSPropertyMarker:
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
