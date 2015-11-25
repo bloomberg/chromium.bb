@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
@@ -56,8 +56,7 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
 PepperCdmWrapperImpl::PepperCdmWrapperImpl(
     ScopedHelperPlugin helper_plugin,
     const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance)
-    : helper_plugin_(helper_plugin.Pass()),
-      plugin_instance_(plugin_instance) {
+    : helper_plugin_(helper_plugin.Pass()), plugin_instance_(plugin_instance) {
   DCHECK(helper_plugin_);
   DCHECK(plugin_instance_.get());
   // Plugin must be a CDM.

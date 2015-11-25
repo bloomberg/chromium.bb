@@ -86,7 +86,7 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
-#include "content/renderer/media/crypto/render_cdm_factory.h"
+#include "content/renderer/media/cdm/render_cdm_factory.h"
 #include "content/renderer/media/media_permission_dispatcher_impl.h"
 #include "content/renderer/media/media_permission_dispatcher_proxy.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -194,9 +194,9 @@
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #elif defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_
+#ifndef CONTENT_RENDERER_MEDIA_CDM_PROXY_MEDIA_KEYS_H_
+#define CONTENT_RENDERER_MEDIA_CDM_PROXY_MEDIA_KEYS_H_
 
 #include <map>
 #include <string>
@@ -120,4 +120,4 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_
+#endif  // CONTENT_RENDERER_MEDIA_CDM_PROXY_MEDIA_KEYS_H_

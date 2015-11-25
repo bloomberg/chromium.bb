@@ -197,11 +197,11 @@ source_set("renderer") {
 
   if (!enable_pepper_cdms) {
     sources -= [
-      "media/crypto/pepper_cdm_wrapper.h",
-      "media/crypto/pepper_cdm_wrapper_impl.cc",
-      "media/crypto/pepper_cdm_wrapper_impl.h",
-      "media/crypto/ppapi_decryptor.cc",
-      "media/crypto/ppapi_decryptor.h",
+      "media/cdm/pepper_cdm_wrapper.h",
+      "media/cdm/pepper_cdm_wrapper_impl.cc",
+      "media/cdm/pepper_cdm_wrapper_impl.h",
+      "media/cdm/ppapi_decryptor.cc",
+      "media/cdm/ppapi_decryptor.h",
     ]
   }
 
@@ -211,10 +211,10 @@ source_set("renderer") {
 
   if (enable_browser_cdms) {
     sources += [
-      "media/crypto/proxy_media_keys.cc",
-      "media/crypto/proxy_media_keys.h",
-      "media/crypto/renderer_cdm_manager.cc",
-      "media/crypto/renderer_cdm_manager.h",
+      "media/cdm/proxy_media_keys.cc",
+      "media/cdm/proxy_media_keys.h",
+      "media/cdm/renderer_cdm_manager.cc",
+      "media/cdm/renderer_cdm_manager.h",
     ]
   }
 

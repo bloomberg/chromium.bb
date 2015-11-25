@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/proxy_media_keys.h"
+#include "content/renderer/media/cdm/proxy_media_keys.h"
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
@@ -71,9 +71,9 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
   }
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
-  manager_->CreateSessionAndGenerateRequest(
-      cdm_id_, promise_id, session_type, create_session_init_data_type,
-      init_data);
+  manager_->CreateSessionAndGenerateRequest(cdm_id_, promise_id, session_type,
+                                            create_session_init_data_type,
+                                            init_data);
 }
 
 void ProxyMediaKeys::LoadSession(

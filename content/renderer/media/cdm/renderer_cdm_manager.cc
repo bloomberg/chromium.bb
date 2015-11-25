@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#include "content/renderer/media/cdm/renderer_cdm_manager.h"
 
 #include "base/stl_util.h"
 #include "content/common/media/cdm_messages.h"
-#include "content/renderer/media/crypto/proxy_media_keys.h"
+#include "content/renderer/media/cdm/proxy_media_keys.h"
 #include "media/base/cdm_context.h"
 #include "media/base/limits.h"
 
@@ -21,8 +21,7 @@ const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
 RendererCdmManager::RendererCdmManager(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      next_cdm_id_(media::CdmContext::kInvalidCdmId + 1) {
-}
+      next_cdm_id_(media::CdmContext::kInvalidCdmId + 1) {}
 
 RendererCdmManager::~RendererCdmManager() {
   DCHECK(proxy_media_keys_map_.empty())
@@ -43,7 +42,7 @@ bool RendererCdmManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(CdmMsg_ResolvePromiseWithSession,
                         OnPromiseResolvedWithSession)
     IPC_MESSAGE_HANDLER(CdmMsg_RejectPromise, OnPromiseRejected)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -88,11 +87,10 @@ void RendererCdmManager::CreateSessionAndGenerateRequest(
   Send(new CdmHostMsg_CreateSessionAndGenerateRequest(params));
 }
 
-void RendererCdmManager::LoadSession(
-    int cdm_id,
-    uint32_t promise_id,
-    media::MediaKeys::SessionType session_type,
-    const std::string& session_id) {
+void RendererCdmManager::LoadSession(int cdm_id,
+                                     uint32_t promise_id,
+                                     media::MediaKeys::SessionType session_type,
+                                     const std::string& session_id) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_LoadSession(routing_id(), cdm_id, promise_id,
                                   session_type, session_id));
@@ -116,8 +114,8 @@ void RendererCdmManager::CloseSession(int cdm_id,
 }
 
 void RendererCdmManager::RemoveSession(int cdm_id,
-                                      uint32_t promise_id,
-                                      const std::string& session_id) {
+                                       uint32_t promise_id,
+                                       const std::string& session_id) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_RemoveSession(routing_id(), cdm_id, promise_id,
                                     session_id));

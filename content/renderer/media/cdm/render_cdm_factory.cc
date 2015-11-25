@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/render_cdm_factory.h"
+#include "content/renderer/media/cdm/render_cdm_factory.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -17,9 +17,9 @@
 #include "media/cdm/aes_decryptor.h"
 #include "url/gurl.h"
 #if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/ppapi_decryptor.h"
+#include "content/renderer/media/cdm/ppapi_decryptor.h"
 #elif defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/crypto/proxy_media_keys.h"
+#include "content/renderer/media/cdm/proxy_media_keys.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace content {
@@ -27,15 +27,12 @@ namespace content {
 #if defined(ENABLE_PEPPER_CDMS)
 RenderCdmFactory::RenderCdmFactory(
     const CreatePepperCdmCB& create_pepper_cdm_cb)
-    : create_pepper_cdm_cb_(create_pepper_cdm_cb) {
-}
+    : create_pepper_cdm_cb_(create_pepper_cdm_cb) {}
 #elif defined(ENABLE_BROWSER_CDMS)
 RenderCdmFactory::RenderCdmFactory(RendererCdmManager* manager)
-    : manager_(manager) {
-}
+    : manager_(manager) {}
 #else
-RenderCdmFactory::RenderCdmFactory() {
-}
+RenderCdmFactory::RenderCdmFactory() {}
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 RenderCdmFactory::~RenderCdmFactory() {

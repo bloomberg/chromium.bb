@@ -7,7 +7,7 @@
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/cdm_context.h"
 #include "ui/gfx/geometry/rect_f.h"

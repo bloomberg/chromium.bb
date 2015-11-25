@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_RENDER_CDM_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_RENDER_CDM_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_CDM_RENDER_CDM_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_CDM_RENDER_CDM_FACTORY_H_
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_keys.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 #endif
 
 class GURL;
@@ -69,4 +70,4 @@ class RenderCdmFactory : public media::CdmFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_RENDER_CDM_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_CDM_RENDER_CDM_FACTORY_H_

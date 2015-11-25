@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
+#ifndef CONTENT_RENDERER_MEDIA_CDM_PPAPI_DECRYPTOR_H_
+#define CONTENT_RENDERER_MEDIA_CDM_PPAPI_DECRYPTOR_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/decryptor.h"
@@ -162,4 +162,4 @@ class PpapiDecryptor : public media::MediaKeys,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
+#endif  // CONTENT_RENDERER_MEDIA_CDM_PPAPI_DECRYPTOR_H_

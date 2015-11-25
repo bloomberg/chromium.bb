@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/ppapi_decryptor.h"
+#include "content/renderer/media/cdm/ppapi_decryptor.h"
 
 #include <string>
 
@@ -263,8 +263,8 @@ void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void PpapiDecryptor::InitializeAudioDecoder(
-      const media::AudioDecoderConfig& config,
-      const DecoderInitCB& init_cb) {
+    const media::AudioDecoderConfig& config,
+    const DecoderInitCB& init_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
         FROM_HERE, base::Bind(&PpapiDecryptor::InitializeAudioDecoder,
@@ -277,11 +277,10 @@ void PpapiDecryptor::InitializeAudioDecoder(
   DCHECK(config.IsValidConfig());
 
   audio_decoder_init_cb_ = init_cb;
-  if (!CdmDelegate() || !CdmDelegate()->InitializeAudioDecoder(
-                            config,
-                            base::Bind(&PpapiDecryptor::OnDecoderInitialized,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       kAudio))) {
+  if (!CdmDelegate() ||
+      !CdmDelegate()->InitializeAudioDecoder(
+          config, base::Bind(&PpapiDecryptor::OnDecoderInitialized,
+                             weak_ptr_factory_.GetWeakPtr(), kAudio))) {
     base::ResetAndReturn(&audio_decoder_init_cb_).Run(false);
     return;
   }
@@ -302,11 +301,10 @@ void PpapiDecryptor::InitializeVideoDecoder(
   DCHECK(config.IsValidConfig());
 
   video_decoder_init_cb_ = init_cb;
-  if (!CdmDelegate() || !CdmDelegate()->InitializeVideoDecoder(
-                            config,
-                            base::Bind(&PpapiDecryptor::OnDecoderInitialized,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       kVideo))) {
+  if (!CdmDelegate() ||
+      !CdmDelegate()->InitializeVideoDecoder(
+          config, base::Bind(&PpapiDecryptor::OnDecoderInitialized,
+                             weak_ptr_factory_.GetWeakPtr(), kVideo))) {
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
   }
