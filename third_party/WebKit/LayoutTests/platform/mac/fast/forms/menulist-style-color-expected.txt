@@ -15,14 +15,14 @@ layer at (0,0) size 800x600
             text run at (8,2) width 21: "Red"
       LayoutText {#text} at (123,0) size 4x18
         text run at (123,0) width 4: " "
-      LayoutMenuList {SELECT} at (127,1) size 114x18 [bgcolor=#008000] [border: (1px solid #A6A6A6)]
-        LayoutBlockFlow (anonymous) at (1,1) size 112x16
+      LayoutMenuList {SELECT} at (127,1) size 106x18 [bgcolor=#008000] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 104x16
           LayoutText (anonymous) at (8,1) size 83x13
             text run at (8,1) width 83: "Default on green"
-      LayoutText {#text} at (241,0) size 4x18
-        text run at (241,0) width 4: " "
-      LayoutMenuList {SELECT} at (245,1) size 99x18 [color=#FF0000] [bgcolor=#008000] [border: (1px solid #A6A6A6)]
-        LayoutBlockFlow (anonymous) at (1,1) size 97x16
+      LayoutText {#text} at (233,0) size 4x18
+        text run at (233,0) width 4: " "
+      LayoutMenuList {SELECT} at (237,1) size 91x18 [color=#FF0000] [bgcolor=#008000] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 89x16
           LayoutText (anonymous) at (8,1) size 68x13
             text run at (8,1) width 68: "Red on green"
       LayoutText {#text} at (0,0) size 0x0
