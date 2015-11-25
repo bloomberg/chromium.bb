@@ -35,12 +35,6 @@ MEDIA_EXPORT int SampleFormatToBytesPerChannel(SampleFormat sample_format);
 // Returns the name of the sample format as a string
 MEDIA_EXPORT const char* SampleFormatToString(SampleFormat sample_format);
 
-// Returns true if |sample_format| is planar, false otherwise.
-MEDIA_EXPORT bool IsPlanar(SampleFormat sample_format);
-
-// Returns true if |sample_format| is interleaved, false otherwise.
-MEDIA_EXPORT bool IsInterleaved(SampleFormat sample_format);
-
 }  // namespace media
 
 #endif  // MEDIA_BASE_SAMPLE_FORMAT_H
