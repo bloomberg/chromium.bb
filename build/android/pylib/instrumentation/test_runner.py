@@ -288,7 +288,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                                     result['units'])
 
   def _SetupIndividualTestTimeoutScale(self, test):
-    timeout_scale = self._GetIndividualTestTimeoutScale(test)
+    timeout_scale = self.options.timeout_scale or 1
+    timeout_scale *= self._GetIndividualTestTimeoutScale(test)
     valgrind_tools.SetChromeTimeoutScale(self.device, timeout_scale)
 
   def _GetIndividualTestTimeoutScale(self, test):

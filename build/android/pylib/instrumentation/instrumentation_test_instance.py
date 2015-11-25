@@ -227,6 +227,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._driver_name = None
     self._initializeDriverAttributes()
 
+    self._timeout_scale = None
+    self._initializeTestControlAttributes(args)
+
   def _initializeApkAttributes(self, args, error_func):
     if args.apk_under_test.endswith('.apk'):
       self._apk_under_test = args.apk_under_test
@@ -354,6 +357,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     else:
       self._driver_apk = None
 
+  def _initializeTestControlAttributes(self, args):
+    self._timeout_scale = args.timeout_scale or 1
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -413,6 +419,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def test_runner(self):
     return self._test_runner
+
+  @property
+  def timeout_scale(self):
+    return self._timeout_scale
 
   #override
   def TestType(self):

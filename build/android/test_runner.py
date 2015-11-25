@@ -362,6 +362,8 @@ def AddInstrumentationTestOptions(parser):
   group.add_argument('--delete-stale-data', dest='delete_stale_data',
                      action='store_true',
                      help='Delete stale test data on the device.')
+  group.add_argument('--timeout-scale', type=float,
+                     help='Factor by which timeouts should be scaled.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
@@ -421,8 +423,8 @@ def ProcessInstrumentationOptions(args):
       args.device_flags,
       args.isolate_file_path,
       args.set_asserts,
-      args.delete_stale_data
-      )
+      args.delete_stale_data,
+      args.timeout_scale)
 
 
 def AddUIAutomatorTestOptions(parser):
