@@ -5,6 +5,12 @@
   <title>GCM Internals</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="gcm_internals.css">
+
+  <if expr="is_ios">
+    <!-- TODO(crbug.com/487000): Remove this once injected by web. -->
+    <script src="chrome://resources/js/ios/web_ui.js"></script>
+  </if>
+
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/cr/ui.js"></script>
