@@ -367,7 +367,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         if (currentTabId == Tab.INVALID_TAB_ID) return;
 
         if (mReaderModePanel == null || !mTabStatusMap.containsKey(currentTabId)
-                || mTabStatusMap.get(currentTabId).getStatus() == NOT_POSSIBLE
+                || mTabStatusMap.get(currentTabId).getStatus() != POSSIBLE
                 || mTabStatusMap.get(currentTabId).isDismissed()
                 || mIsInfobarContainerShown
                 || mIsFullscreenModeEntered) {
