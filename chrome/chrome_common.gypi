@@ -314,6 +314,7 @@
         # TODO(gregoryd): chrome_resources and chrome_strings could be
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
+        'chrome_common_features',
         'installer_util',
         'safe_browsing_proto',
         '<(DEPTH)/base/base.gyp:base',
@@ -564,6 +565,7 @@
         'common/net/x509_certificate_model_openssl.cc',
       ],
       'dependencies': [
+        'chrome_common_features',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
@@ -652,6 +654,17 @@
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
+    },
+    {
+      # GN version: //chrome/common:features
+      'target_name': 'chrome_common_features',
+      'includes': [ '../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'chrome/common/features.h',
+        'buildflag_flags': [
+          'ENABLE_GOOGLE_NOW=<(enable_google_now)',
+        ],
+      },
     },
   ],
 }

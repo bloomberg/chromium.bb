@@ -46,7 +46,10 @@
       # GN version: //chrome:chrome_initial
       'target_name': 'chrome_initial',
       'type': 'executable',
-      'dependencies' : [ '../chrome/common_constants.gyp:version_header', ],
+      'dependencies' : [
+        '../chrome/common_constants.gyp:version_header',
+        'chrome_common_features',
+      ],
       # Name the exe chrome.exe, not chrome_initial.exe.
       'product_name': 'chrome',
       'mac_bundle': 1,

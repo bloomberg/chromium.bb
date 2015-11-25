@@ -12,6 +12,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -98,7 +99,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
   registry->RegisterBooleanPref(prefs::kGoogleGeolocationAccessEnabled, false);
 #endif
   // This pref is intentionally outside the above #if. That flag corresponds

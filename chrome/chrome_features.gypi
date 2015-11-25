@@ -1,0 +1,31 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+ 
+# This is the GYP equivalent of //chrome/common/features.gni.
+# Please keep in sync!
+
+{
+  'variables': {
+    'variables': {
+      # Conditional variables.
+      'conditions': [
+        ['OS=="android" or OS=="ios"', {
+          'enable_google_now%': 0,
+        }, {
+          'enable_google_now%': 1,
+        }]
+      ],
+    },
+
+    # Anything in the conditions needs to be copied to the outer scope to be
+    # accessible.
+    'enable_google_now%': '<(enable_google_now)',
+
+    # Grit defines based on the feature flags. These must be manually added to
+    # grit targets.
+    'chrome_grit_defines': [
+      '-D', 'enable_google_now=<(enable_google_now)',
+    ]
+  },
+}
