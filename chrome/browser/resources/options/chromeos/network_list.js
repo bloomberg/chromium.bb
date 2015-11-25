@@ -844,7 +844,7 @@ cr.define('options.network', function() {
    * @param {!Element} menu Parent menu.
    * @param {?NetworkProperties} data Description of the network.
    * @param {!string} label Display name for the menu item.
-   * @param {!Function} command Callback function.
+   * @param {Function} command Callback function.
    * @return {!Element} The created menu item.
    * @private
    */
@@ -1561,7 +1561,7 @@ cr.define('options.network', function() {
    * Return whether connecting to or viewing unmanaged networks is allowed.
    * @private
    */
-  function allowUnmanagedNetworks_(item) {
+  function allowUnmanagedNetworks_() {
     if (loadTimeData.valueExists('allowOnlyPolicyNetworksToConnect') &&
         loadTimeData.getBoolean('allowOnlyPolicyNetworksToConnect')) {
       return false;
