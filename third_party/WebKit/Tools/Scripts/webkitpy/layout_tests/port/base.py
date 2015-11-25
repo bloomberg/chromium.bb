@@ -1295,6 +1295,10 @@ class Port(object):
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
         return paths
 
+    def _flag_specific_expectations_files(self):
+        return [self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
+                for flag in self.get_option('additional_driver_flag', [])]
+
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.
         The names are expected to be (but not required to be) paths in the filesystem.
@@ -1342,7 +1346,9 @@ class Port(object):
         return {}
 
     def expectations_files(self):
-        return [self.path_to_generic_test_expectations_file()] + self._port_specific_expectations_files()
+        return ([self.path_to_generic_test_expectations_file()] +
+                self._port_specific_expectations_files() +
+                self._flag_specific_expectations_files())
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""

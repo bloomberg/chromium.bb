@@ -230,6 +230,7 @@ class PortTest(unittest.TestCase):
             '/tmp/additional-expectations-1.txt', 'content1\n')
         port._filesystem.write_text_file(
             '/tmp/additional-expectations-2.txt', 'content2\n')
+        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/special-flag', 'content3')
 
         self.assertEqual('\n'.join(port.expectations_dict().values()), '')
 
@@ -244,6 +245,9 @@ class PortTest(unittest.TestCase):
         port._options.additional_expectations = [
             '/tmp/additional-expectations-1.txt', '/tmp/additional-expectations-2.txt']
         self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n\ncontent2\n')
+
+        port._options.additional_driver_flag = ['--special-flag']
+        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content3\ncontent1\n\ncontent2\n')
 
     def test_additional_env_var(self):
         port = self.make_port(options=optparse.Values({'additional_env_var': ['FOO=BAR', 'BAR=FOO']}))
