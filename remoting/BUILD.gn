@@ -45,7 +45,6 @@ group("remoting_all") {
     deps += [
       #"//remoting:remoting_apk",
       #"//remoting:remoting_test_apk",
-      #"//remoting:remoting_unittests_apk",
     ]
   }
 
@@ -142,10 +141,6 @@ if (!is_mac) {
       "//third_party/webrtc",
     ]
 
-    if (is_android) {
-      deps += [ "//testing/android/native_test:native_test_native_code" ]
-    }
-
     if (enable_remoting_host) {
       deps += [
         "//remoting/codec:unit_tests",
@@ -159,6 +154,10 @@ if (!is_mac) {
         "//third_party/libjingle:libjingle_webrtc",
         "//third_party/libjingle:libpeerconnection",
       ]
+    }
+
+    if (is_android) {
+      apk_deps = [ "//net/android:net_java" ]
     }
   }
 
