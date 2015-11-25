@@ -9,11 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 using base::ASCIIToUTF16;
 
@@ -70,8 +69,7 @@ TEST_F(StatusIconMenuModelTest, SetProperties) {
   menu_model()->AddItem(1, ASCIIToUTF16("foo2"));
 
   ui::Accelerator test_accel(ui::VKEY_A, ui::EF_NONE);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Image test_image1(*rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON));
+  gfx::Image test_image1 = gfx::test::CreateImage(16, 16);
   ui::Accelerator accel_arg;
   gfx::Image image_arg;
 

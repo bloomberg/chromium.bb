@@ -6,15 +6,14 @@
 
 #include <commctrl.h>
 
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
+
+namespace {
 
 class FakeStatusTrayStateChangerProxy : public StatusTrayStateChangerProxy {
  public:
@@ -55,6 +54,14 @@ class FakeStatusIconObserver : public StatusIconObserver {
   bool balloon_clicked_;
 };
 
+StatusIconWin* CreateStatusIcon(StatusTray* tray) {
+  return static_cast<StatusIconWin*>(tray->CreateStatusIcon(
+      StatusTray::OTHER_ICON, gfx::test::CreateImageSkia(16, 16),
+      base::string16()));
+}
+
+}  // namespace
+
 TEST(StatusTrayWinTest, CreateTray) {
   // Just tests creation/destruction.
   StatusTrayWin tray;
@@ -64,10 +71,7 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   // Create an icon, set the images, tooltip, and context menu, then shut it
   // down.
   StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  StatusIcon* icon = tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip"));
+  StatusIcon* icon = CreateStatusIcon(&tray);
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   menu->AddItem(0, L"foo");
   icon->SetContextMenu(menu.Pass());
@@ -77,11 +81,8 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
 TEST(StatusTrayWinTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
 
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
+  StatusIconWin* icon = CreateStatusIcon(&tray);
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.
@@ -95,11 +96,7 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
 TEST(StatusTrayWinTest, ClickOnBalloon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
+  StatusIconWin* icon = CreateStatusIcon(&tray);
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.
@@ -111,11 +108,7 @@ TEST(StatusTrayWinTest, ClickOnBalloon) {
 
 TEST(StatusTrayWinTest, HandleOldIconId) {
   StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
+  StatusIconWin* icon = CreateStatusIcon(&tray);
   UINT message_id = icon->message_id();
   UINT icon_id = icon->icon_id();
 
@@ -126,16 +119,13 @@ TEST(StatusTrayWinTest, HandleOldIconId) {
 
 TEST(StatusTrayWinTest, EnsureVisibleTest) {
   StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
 
   FakeStatusTrayStateChangerProxy* proxy =
       new FakeStatusTrayStateChangerProxy();
   tray.SetStatusTrayStateChangerProxyForTest(
       scoped_ptr<StatusTrayStateChangerProxy>(proxy));
 
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
+  StatusIconWin* icon = CreateStatusIcon(&tray);
 
   icon->ForceVisible();
   // |proxy| is owned by |tray|, and |tray| lives to the end of the scope,

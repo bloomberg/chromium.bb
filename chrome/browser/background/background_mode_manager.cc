@@ -61,6 +61,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/app_icon_win.h"
+#endif
+
 using base::UserMetricsAction;
 using extensions::Extension;
 
@@ -856,6 +860,33 @@ void BackgroundModeManager::OnBackgroundClientInstalled(
   DisplayClientInstalledNotification(name);
 }
 
+// Gets the image for the status tray icon, at the correct size for the current
+// platform and display settings.
+gfx::ImageSkia GetStatusTrayIcon() {
+#if defined(OS_WIN)
+  // On Windows, use GetSmallAppIconSize to get the correct image size. The
+  // user's "text size" setting in Windows determines how large the system tray
+  // icon should be.
+  gfx::Size size = GetSmallAppIconSize();
+
+  // This loads all of the icon images, which is a bit wasteful because we're
+  // going to pick one and throw the rest away, but that is the price of using
+  // the ImageFamily abstraction. Note: We could just use the LoadImage function
+  // from the Windows API, but that does a *terrible* job scaling images.
+  // Therefore, we fetch the images and do our own high-quality scaling.
+  scoped_ptr<gfx::ImageFamily> family = GetAppIconImageFamily();
+  DCHECK(family);
+  if (!family)
+    return gfx::ImageSkia();
+
+  return family->CreateExact(size).AsImageSkia();
+#else
+  // On other platforms, just get a static resource image.
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_STATUS_TRAY_ICON);
+#endif
+}
+
 void BackgroundModeManager::CreateStatusTrayIcon() {
   // Only need status icons on windows/linux. ChromeOS doesn't allow exiting
   // Chrome and Mac can use the dock icon instead.
@@ -872,12 +903,8 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
   if (!status_tray_ || status_icon_)
     return;
 
-  gfx::ImageSkia* image_skia = ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-
   status_icon_ = status_tray_->CreateStatusIcon(
-      StatusTray::BACKGROUND_MODE_ICON,
-      *image_skia,
+      StatusTray::BACKGROUND_MODE_ICON, GetStatusTrayIcon(),
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   if (!status_icon_)
     return;

@@ -3,15 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/notifier_settings.h"
+
+namespace {
 
 class MockStatusIcon : public StatusIcon {
   void SetImage(const gfx::ImageSkia& image) override {}
@@ -35,23 +34,26 @@ class TestStatusTray : public StatusTray {
   const StatusIcons& GetStatusIconsForTest() const { return status_icons(); }
 };
 
+StatusIcon* CreateStatusIcon(StatusTray* tray) {
+  // Just create a dummy icon image; the actual image is irrelevant.
+  return tray->CreateStatusIcon(StatusTray::OTHER_ICON,
+                                gfx::test::CreateImageSkia(16, 16),
+                                base::string16());
+}
+
+}  // namespace
+
 TEST(StatusTrayTest, Create) {
   // Check for creation and leaks.
   TestStatusTray tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip"));
+  CreateStatusIcon(&tray);
   EXPECT_EQ(1U, tray.GetStatusIconsForTest().size());
 }
 
 // Make sure that removing an icon removes it from the list.
 TEST(StatusTrayTest, CreateRemove) {
   TestStatusTray tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  StatusIcon* icon = tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip"));
+  StatusIcon* icon = CreateStatusIcon(&tray);
   EXPECT_EQ(1U, tray.GetStatusIconsForTest().size());
   tray.RemoveStatusIcon(icon);
   EXPECT_EQ(0U, tray.GetStatusIconsForTest().size());
