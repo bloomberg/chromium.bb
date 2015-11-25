@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.15",
+  "version": "10.16",
   "entries": [
     {
       "id": 1,
@@ -1171,6 +1171,19 @@ LONG_STRING_CONST(
                     "0x0d02", "0x0d06", "0x0d0a", "0x0d0b", "0x0d0e"],
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 108,
+      "description": "GPU rasterization image color broken on Vivante",
+      "cr_bugs": [560587],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": ".*Vivante.*",
+      "features": [
+        "gpu_rasterization",
+        "accelerated_2d_canvas"
       ]
     }
   ]
