@@ -48,7 +48,6 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::AUTOFILL);
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
     datatypes.push_back(syncer::AUTOFILL_WALLET_DATA);
-    datatypes.push_back(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
     datatypes.push_back(syncer::FAVICON_TRACKING);
