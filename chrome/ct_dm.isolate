@@ -1,0 +1,23 @@
+# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  'conditions': [
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '../../skia/resources/',
+          '../../skia/out/Debug/dm',
+          '../content/test/ct/run_ct_dm.py',
+          '../content/test/ct/slave<(SLAVE_NUM)/skps/',
+        ],
+        'command': [
+          'python',
+          '../content/test/ct/run_ct_dm.py',
+          '--slave_num=<(SLAVE_NUM)',
+        ],
+      },
+    }],
+  ]
+}
