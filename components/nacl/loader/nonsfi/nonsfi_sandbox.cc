@@ -114,7 +114,7 @@ ResultExpr RestrictPrctl() {
 
 #if defined(__i386__)
 ResultExpr RestrictSocketcall() {
-  // We only allow socketpair, sendmsg, and recvmsg.
+  // We only allow shutdown(), sendmsg(), and recvmsg().
   const Arg<int> call(0);
   return If(
       call == SYS_SHUTDOWN || call == SYS_SENDMSG || call == SYS_RECVMSG,
