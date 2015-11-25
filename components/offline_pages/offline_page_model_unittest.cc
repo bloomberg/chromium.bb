@@ -600,6 +600,8 @@ TEST_F(OfflinePageModelTest, MarkPageForDeletion) {
       base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
+  GURL offline_url = model()->GetAllPages().begin()->GetOfflineURL();
+
   // Delete the page with undo tiggerred.
   model()->MarkPageForDeletion(
       kTestPageBookmarkId1,
@@ -609,6 +611,11 @@ TEST_F(OfflinePageModelTest, MarkPageForDeletion) {
   // GetAllPages will not return the page that is marked for deletion.
   const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
   EXPECT_EQ(0UL, offline_pages.size());
+
+  EXPECT_FALSE(model()->HasOfflinePages());
+  EXPECT_EQ(nullptr, model()->GetPageByOnlineURL(kTestUrl));
+  EXPECT_EQ(nullptr, model()->GetPageByBookmarkId(kTestPageBookmarkId1));
+  EXPECT_EQ(nullptr, model()->GetPageByOfflineURL(offline_url));
 
   // Undo the deletion.
   model()->UndoPageDeletion(kTestPageBookmarkId1);

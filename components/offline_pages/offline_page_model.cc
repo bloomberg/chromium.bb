@@ -253,7 +253,13 @@ void OfflinePageModel::ClearAll(const base::Closure& callback) {
 
 bool OfflinePageModel::HasOfflinePages() const {
   DCHECK(is_loaded_);
-  return !offline_pages_.empty();
+  // Check that at least one page is not marked for deletion. Because we have
+  // pages marked for deletion, we cannot simply invert result of |empty()|.
+  for (const auto& id_page_pair : offline_pages_) {
+    if (!id_page_pair.second.IsMarkedForDeletion())
+      return true;
+  }
+  return false;
 }
 
 const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
@@ -283,7 +289,9 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
 const OfflinePageItem* OfflinePageModel::GetPageByBookmarkId(
     int64 bookmark_id) const {
   const auto iter = offline_pages_.find(bookmark_id);
-  return iter != offline_pages_.end() ? &(iter->second) : nullptr;
+  return iter != offline_pages_.end() && !iter->second.IsMarkedForDeletion()
+             ? &(iter->second)
+             : nullptr;
 }
 
 const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
@@ -291,8 +299,10 @@ const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
   for (auto iter = offline_pages_.begin();
        iter != offline_pages_.end();
        ++iter) {
-    if (iter->second.GetOfflineURL() == offline_url)
+    if (iter->second.GetOfflineURL() == offline_url &&
+        !iter->second.IsMarkedForDeletion()) {
       return &(iter->second);
+    }
   }
   return nullptr;
 }
@@ -301,7 +311,7 @@ const OfflinePageItem* OfflinePageModel::GetPageByOnlineURL(
     const GURL& online_url) const {
   for (auto iter = offline_pages_.begin(); iter != offline_pages_.end();
        ++iter) {
-    if (iter->second.url == online_url)
+    if (iter->second.url == online_url && !iter->second.IsMarkedForDeletion())
       return &(iter->second);
   }
   return nullptr;
