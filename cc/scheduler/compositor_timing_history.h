@@ -50,6 +50,9 @@ class CC_EXPORT CompositorTimingHistory {
 
   void SetRecordingEnabled(bool enabled);
 
+  void WillBeginImplFrame(bool new_active_tree_is_likely);
+  void WillFinishImplFrame(bool needs_redraw);
+  void BeginImplFrameNotExpectedSoon();
   void WillBeginMainFrame(bool on_critical_path);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
@@ -60,16 +63,31 @@ class CC_EXPORT CompositorTimingHistory {
   void WillActivate();
   void DidActivate();
   void WillDraw();
-  void DidDraw();
+  void DidDraw(bool used_new_active_tree);
   void DidSwapBuffers();
   void DidSwapBuffersComplete();
   void DidSwapBuffersReset();
 
  protected:
+  void DidBeginMainFrame();
+
+  void SetBeginMainFrameNeededContinuously(bool active);
+  void SetBeginMainFrameCommittingContinuously(bool active);
+  void SetCompositorDrawingContinuously(bool active);
+
   static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
   virtual base::TimeTicks Now() const;
 
   bool enabled_;
+
+  // Used to calculate frame rates of Main and Impl threads.
+  bool did_send_begin_main_frame_;
+  bool begin_main_frame_needed_continuously_;
+  bool begin_main_frame_committing_continuously_;
+  bool compositor_drawing_continuously_;
+  base::TimeTicks begin_main_frame_end_time_prev_;
+  base::TimeTicks new_active_tree_draw_end_time_prev_;
+  base::TimeTicks draw_end_time_prev_;
 
   RollingTimeDeltaHistory begin_main_frame_sent_to_commit_duration_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_critical_history_;
@@ -83,10 +101,10 @@ class CC_EXPORT CompositorTimingHistory {
   bool begin_main_frame_on_critical_path_;
   base::TimeTicks begin_main_frame_sent_time_;
   base::TimeTicks begin_main_frame_start_time_;
-  base::TimeTicks commit_time_;
-  base::TimeTicks start_prepare_tiles_time_;
-  base::TimeTicks start_activate_time_;
-  base::TimeTicks start_draw_time_;
+  base::TimeTicks begin_main_frame_end_time_;
+  base::TimeTicks prepare_tiles_start_time_;
+  base::TimeTicks activate_start_time_;
+  base::TimeTicks draw_start_time_;
   base::TimeTicks swap_start_time_;
 
   scoped_ptr<UMAReporter> uma_reporter_;

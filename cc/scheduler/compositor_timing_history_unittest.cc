@@ -84,7 +84,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequentialCommit_Critical) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw();
+  timing_history_.DidDraw(true);
 
   EXPECT_EQ(begin_main_frame_queue_duration,
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -143,7 +143,7 @@ TEST_F(CompositorTimingHistoryTest,
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw();
+  timing_history_.DidDraw(true);
 
   EXPECT_EQ(base::TimeDelta(),
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());

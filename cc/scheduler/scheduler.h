@@ -196,6 +196,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
  private:
   void ScheduleBeginImplFrameDeadline();
   void ScheduleBeginImplFrameDeadlineIfNeeded();
+  void BeginImplFrameNotExpectedSoon();
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
   void DrawAndSwapIfPossible();
