@@ -1379,8 +1379,6 @@ crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-
 crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
-
 # Follow-up from https://crrev.com/1457783005
 crbug.com/558622 [ XP ] svg/batik/masking/maskRegions.svg [ NeedsRebaseline ]
 crbug.com/558622 [ XP ] svg/custom/grayscale-gradient-mask.svg [ NeedsRebaseline ]
