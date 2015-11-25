@@ -1323,9 +1323,8 @@ ivi_layout_get_screen_from_id(uint32_t id_screen)
 	struct ivi_layout_screen *iviscrn = NULL;
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
-/* FIXME : select iviscrn from screen_list by id_screen */
-		return iviscrn;
-		break;
+		if (iviscrn->id_screen == id_screen)
+			return iviscrn;
 	}
 
 	return NULL;
