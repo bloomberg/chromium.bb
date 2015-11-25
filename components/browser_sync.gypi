@@ -19,6 +19,7 @@
         'browser_sync_common',
         'components_strings.gyp:components_strings',
         'dom_distiller_core',
+        'generate_version_info',
         'history_core_browser',
         'invalidation_impl',
         'invalidation_public',
