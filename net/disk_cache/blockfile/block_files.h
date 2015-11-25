@@ -7,6 +7,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_BLOCK_FILES_H_
 #define NET_DISK_CACHE_BLOCKFILE_BLOCK_FILES_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -136,7 +138,7 @@ class NET_EXPORT_PRIVATE BlockFiles {
   MappedFile* NextFile(MappedFile* file);
 
   // Creates an empty block file and returns its index.
-  int16 CreateNextBlockFile(FileType block_type);
+  int16_t CreateNextBlockFile(FileType block_type);
 
   // Removes a chained block file that is now empty.
   bool RemoveEmptyFile(FileType block_type);

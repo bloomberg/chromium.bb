@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/test_helpers.h"
@@ -154,15 +158,10 @@ static void TrimRangeTest(SampleFormat sample_format) {
 
 TEST(AudioBufferTest, CopyFrom) {
   const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
-  scoped_refptr<AudioBuffer> original_buffer =
-      MakeAudioBuffer<uint8>(kSampleFormatU8,
-                             kChannelLayout,
-                             ChannelLayoutToChannelCount(kChannelLayout),
-                             kSampleRate,
-                             1,
-                             1,
-                             kSampleRate / 100,
-                             base::TimeDelta());
+  scoped_refptr<AudioBuffer> original_buffer = MakeAudioBuffer<uint8_t>(
+      kSampleFormatU8, kChannelLayout,
+      ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 1, 1,
+      kSampleRate / 100, base::TimeDelta());
   scoped_refptr<AudioBuffer> new_buffer =
       AudioBuffer::CopyFrom(kSampleFormatU8,
                             original_buffer->channel_layout(),
@@ -186,12 +185,12 @@ TEST(AudioBufferTest, CreateEOSBuffer) {
 }
 
 TEST(AudioBufferTest, FrameSize) {
-  const uint8 kTestData[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
-                              15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                              27, 28, 29, 30, 31 };
+  const uint8_t kTestData[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                               11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                               22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
   const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
 
-  const uint8* const data[] = { kTestData };
+  const uint8_t* const data[] = {kTestData};
   scoped_refptr<AudioBuffer> buffer =
       AudioBuffer::CopyFrom(kSampleFormatU8,
                             CHANNEL_LAYOUT_STEREO,
@@ -212,14 +211,9 @@ TEST(AudioBufferTest, ReadU8) {
   const int channels = ChannelLayoutToChannelCount(channel_layout);
   const int frames = 10;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8>(kSampleFormatU8,
-                                                             channel_layout,
-                                                             channels,
-                                                             kSampleRate,
-                                                             128,
-                                                             1,
-                                                             frames,
-                                                             start_time);
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<uint8_t>(kSampleFormatU8, channel_layout, channels,
+                               kSampleRate, 128, 1, frames, start_time);
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 0, 1.0f / 127.0f);
@@ -236,23 +230,20 @@ TEST(AudioBufferTest, ReadS16) {
   const int channels = ChannelLayoutToChannelCount(channel_layout);
   const int frames = 10;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<int16>(kSampleFormatS16,
-                                                             channel_layout,
-                                                             channels,
-                                                             kSampleRate,
-                                                             1,
-                                                             1,
-                                                             frames,
-                                                             start_time);
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<int16_t>(kSampleFormatS16, channel_layout, channels,
+                               kSampleRate, 1, 1, frames, start_time);
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 
   // Now read the same data one frame at a time.
   bus->Zero();
   for (int i = 0; i < frames; ++i)
     buffer->ReadFrames(1, i, i, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 }
 
 TEST(AudioBufferTest, ReadS32) {
@@ -260,22 +251,19 @@ TEST(AudioBufferTest, ReadS32) {
   const int channels = ChannelLayoutToChannelCount(channel_layout);
   const int frames = 20;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<int32>(kSampleFormatS32,
-                                                             channel_layout,
-                                                             channels,
-                                                             kSampleRate,
-                                                             1,
-                                                             1,
-                                                             frames,
-                                                             start_time);
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<int32_t>(kSampleFormatS32, channel_layout, channels,
+                               kSampleRate, 1, 1, frames, start_time);
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint32max, 1.0f / kint32max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int32_t>::max(),
+            1.0f / std::numeric_limits<int32_t>::max());
 
   // Read second 10 frames.
   bus->Zero();
   buffer->ReadFrames(10, 10, 0, bus.get());
-  VerifyBus(bus.get(), 10, 11.0f / kint32max, 1.0f / kint32max);
+  VerifyBus(bus.get(), 10, 11.0f / std::numeric_limits<int32_t>::max(),
+            1.0f / std::numeric_limits<int32_t>::max());
 }
 
 TEST(AudioBufferTest, ReadF32) {
@@ -307,32 +295,31 @@ TEST(AudioBufferTest, ReadS16Planar) {
   const int frames = 20;
   const base::TimeDelta start_time;
   scoped_refptr<AudioBuffer> buffer =
-      MakeAudioBuffer<int16>(kSampleFormatPlanarS16,
-                             channel_layout,
-                             channels,
-                             kSampleRate,
-                             1,
-                             1,
-                             frames,
-                             start_time);
+      MakeAudioBuffer<int16_t>(kSampleFormatPlanarS16, channel_layout, channels,
+                               kSampleRate, 1, 1, frames, start_time);
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(10, 0, 0, bus.get());
-  VerifyBus(bus.get(), 10, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), 10, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 
   // Read all the frames backwards, one by one. ch[0] should be 20, 19, ...
   bus->Zero();
   for (int i = frames - 1; i >= 0; --i)
     buffer->ReadFrames(1, i, i, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 
   // Read 0 frames with different offsets. Existing data in AudioBus should be
   // unchanged.
   buffer->ReadFrames(0, 0, 0, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
   buffer->ReadFrames(0, 0, 10, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
   buffer->ReadFrames(0, 10, 0, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 }
 
 TEST(AudioBufferTest, ReadF32Planar) {
@@ -455,44 +442,24 @@ static scoped_refptr<AudioBuffer> MakeReadFramesInterleavedTestBuffer(
   switch (sample_format) {
     case kSampleFormatS16:
     case kSampleFormatPlanarS16:
-      return MakeAudioBuffer<int16>(sample_format,
-                                    channel_layout,
-                                    channel_count,
-                                    sample_rate,
-                                    0,
-                                    1,
-                                    frames,
-                                    base::TimeDelta::FromSeconds(0));
+      return MakeAudioBuffer<int16_t>(sample_format, channel_layout,
+                                      channel_count, sample_rate, 0, 1, frames,
+                                      base::TimeDelta::FromSeconds(0));
     case kSampleFormatS24:
     case kSampleFormatS32:
-      return MakeAudioBuffer<int32>(kSampleFormatS32,
-                                    channel_layout,
-                                    channel_count,
-                                    sample_rate,
-                                    0,
-                                    65536,
-                                    frames,
-                                    base::TimeDelta::FromSeconds(0));
+      return MakeAudioBuffer<int32_t>(kSampleFormatS32, channel_layout,
+                                      channel_count, sample_rate, 0, 65536,
+                                      frames, base::TimeDelta::FromSeconds(0));
     case kSampleFormatF32:
     case kSampleFormatPlanarF32:
       return MakeAudioBuffer<float>(
-          sample_format,
-          channel_layout,
-          channel_count,
-          sample_rate,
-          0.0f,
-          65536.0f / std::numeric_limits<int32>::max(),
-          frames,
+          sample_format, channel_layout, channel_count, sample_rate, 0.0f,
+          65536.0f / std::numeric_limits<int32_t>::max(), frames,
           base::TimeDelta::FromSeconds(0));
     case kSampleFormatPlanarS32:
-      return MakeAudioBuffer<int32>(
-          sample_format,
-          channel_layout,
-          channel_count,
-          sample_rate,
-          0.0f,
-          65536.0f / std::numeric_limits<int32>::max(),
-          frames,
+      return MakeAudioBuffer<int32_t>(
+          sample_format, channel_layout, channel_count, sample_rate, 0.0f,
+          65536.0f / std::numeric_limits<int32_t>::max(), frames,
           base::TimeDelta::FromSeconds(0));
     case kSampleFormatU8:
     case kUnknownSampleFormat:

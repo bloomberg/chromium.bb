@@ -8,6 +8,9 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_ADDR_H_
 #define NET_DISK_CACHE_BLOCKFILE_ADDR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/disk_format_base.h"
 
@@ -25,9 +28,9 @@ enum FileType {
 };
 
 const int kMaxBlockSize = 4096 * 4;
-const int16 kMaxBlockFile = 255;
+const int16_t kMaxBlockFile = 255;
 const int kMaxNumBlocks = 4;
-const int16 kFirstAdditionalBlockFile = 4;
+const int16_t kFirstAdditionalBlockFile = 4;
 const size_t kFirstAdditionalBlockFileV3 = 7;
 
 // Defines a storage address for a cache record
@@ -165,20 +168,18 @@ class NET_EXPORT_PRIVATE Addr {
   bool SanityCheckForRankings() const;
 
  private:
-  uint32 reserved_bits() const {
-    return value_ & kReservedBitsMask;
-  }
+  uint32_t reserved_bits() const { return value_ & kReservedBitsMask; }
 
-  static const uint32 kInitializedMask    = 0x80000000;
-  static const uint32 kFileTypeMask       = 0x70000000;
-  static const uint32 kFileTypeOffset     = 28;
-  static const uint32 kReservedBitsMask   = 0x0c000000;
-  static const uint32 kNumBlocksMask      = 0x03000000;
-  static const uint32 kNumBlocksOffset    = 24;
-  static const uint32 kFileSelectorMask   = 0x00ff0000;
-  static const uint32 kFileSelectorOffset = 16;
-  static const uint32 kStartBlockMask     = 0x0000FFFF;
-  static const uint32 kFileNameMask       = 0x0FFFFFFF;
+  static const uint32_t kInitializedMask = 0x80000000;
+  static const uint32_t kFileTypeMask = 0x70000000;
+  static const uint32_t kFileTypeOffset = 28;
+  static const uint32_t kReservedBitsMask = 0x0c000000;
+  static const uint32_t kNumBlocksMask = 0x03000000;
+  static const uint32_t kNumBlocksOffset = 24;
+  static const uint32_t kFileSelectorMask = 0x00ff0000;
+  static const uint32_t kFileSelectorOffset = 16;
+  static const uint32_t kStartBlockMask = 0x0000FFFF;
+  static const uint32_t kFileNameMask = 0x0FFFFFFF;
 
   CacheAddr value_;
 };

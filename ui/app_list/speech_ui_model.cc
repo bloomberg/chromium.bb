@@ -4,14 +4,17 @@
 
 #include "ui/app_list/speech_ui_model.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 
 namespace app_list {
 
 namespace {
 
 // The default sound level, just gotten from the developer device.
-const int16 kDefaultSoundLevel = 200;
+const int16_t kDefaultSoundLevel = 200;
 
 }  // namespace
 
@@ -37,7 +40,7 @@ void SpeechUIModel::SetSpeechResult(const base::string16& result,
                     OnSpeechResult(result, is_final));
 }
 
-void SpeechUIModel::UpdateSoundLevel(int16 level) {
+void SpeechUIModel::UpdateSoundLevel(int16_t level) {
   if (sound_level_ == level)
     return;
 
@@ -54,18 +57,17 @@ void SpeechUIModel::UpdateSoundLevel(int16 level) {
 
   if (maximum_sound_level_ < minimum_sound_level_) {
     maximum_sound_level_ = std::max(
-        static_cast<int16>(minimum_sound_level_ + kDefaultSoundLevel),
-        kint16max);
+        static_cast<int16_t>(minimum_sound_level_ + kDefaultSoundLevel),
+        std::numeric_limits<int16_t>::max());
   }
 
-  int16 range = maximum_sound_level_ - minimum_sound_level_;
-  uint8 visible_level = 0;
+  int16_t range = maximum_sound_level_ - minimum_sound_level_;
+  uint8_t visible_level = 0;
   if (range > 0) {
-    int16 visible_level_in_range =
-        std::min(std::max(minimum_sound_level_, sound_level_),
-                 maximum_sound_level_);
-    visible_level =
-        (visible_level_in_range - minimum_sound_level_) * kuint8max / range;
+    int16_t visible_level_in_range = std::min(
+        std::max(minimum_sound_level_, sound_level_), maximum_sound_level_);
+    visible_level = (visible_level_in_range - minimum_sound_level_) *
+                    std::numeric_limits<uint8_t>::max() / range;
   }
 
   FOR_EACH_OBSERVER(SpeechUIModelObserver,

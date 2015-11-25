@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/block_files.h"
 
+#include <limits>
+
 #include "base/atomicops.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,7 +30,7 @@ const char s_types[16] = {4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Returns the type of block (number of consecutive blocks that can be stored)
 // for a given nibble of the bitmap.
-inline int GetMapBlockType(uint32 value) {
+inline int GetMapBlockType(uint32_t value) {
   value &= 0xf;
   return s_types[value];
 }
@@ -75,7 +77,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
   for (int i = 0; i < header_->max_entries / 32; i++, current++) {
     if (current == header_->max_entries / 32)
       current = 0;
-    uint32 map_block = header_->allocation_map[current];
+    uint32_t map_block = header_->allocation_map[current];
 
     for (int j = 0; j < 8; j++, map_block >>= 4) {
       if (GetMapBlockType(map_block) != target)
@@ -85,7 +87,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
       int index_offset = j * 4 + 4 - target;
       *index = current * 32 + index_offset;
       STRESS_DCHECK(*index / 4 == (*index + size - 1) / 4);
-      uint32 to_add = ((1 << size) - 1) << index_offset;
+      uint32_t to_add = ((1 << size) - 1) << index_offset;
       header_->num_entries++;
 
       // Note that there is no race in the normal sense here, but if we enforce
@@ -120,22 +122,22 @@ void BlockHeader::DeleteMapBlock(int index, int size) {
   }
   TimeTicks start = TimeTicks::Now();
   int byte_index = index / 8;
-  uint8* byte_map = reinterpret_cast<uint8*>(header_->allocation_map);
-  uint8 map_block = byte_map[byte_index];
+  uint8_t* byte_map = reinterpret_cast<uint8_t*>(header_->allocation_map);
+  uint8_t map_block = byte_map[byte_index];
 
   if (index % 8 >= 4)
     map_block >>= 4;
 
   // See what type of block will be available after we delete this one.
   int bits_at_end = 4 - size - index % 4;
-  uint8 end_mask = (0xf << (4 - bits_at_end)) & 0xf;
+  uint8_t end_mask = (0xf << (4 - bits_at_end)) & 0xf;
   bool update_counters = (map_block & end_mask) == 0;
-  uint8 new_value = map_block & ~(((1 << size) - 1) << (index % 4));
+  uint8_t new_value = map_block & ~(((1 << size) - 1) << (index % 4));
   int new_type = GetMapBlockType(new_value);
 
   disk_cache::FileLock lock(header_);
   STRESS_DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
-  uint8  to_clear = ((1 << size) - 1) << (index % 8);
+  uint8_t to_clear = ((1 << size) - 1) << (index % 8);
   STRESS_DCHECK((byte_map[byte_index] & to_clear) == to_clear);
   byte_map[byte_index] &= ~to_clear;
 
@@ -157,14 +159,14 @@ bool BlockHeader::UsedMapBlock(int index, int size) {
     return false;
 
   int byte_index = index / 8;
-  uint8* byte_map = reinterpret_cast<uint8*>(header_->allocation_map);
-  uint8 map_block = byte_map[byte_index];
+  uint8_t* byte_map = reinterpret_cast<uint8_t*>(header_->allocation_map);
+  uint8_t map_block = byte_map[byte_index];
 
   if (index % 8 >= 4)
     map_block >>= 4;
 
   STRESS_DCHECK((((1 << size) - 1) << (index % 8)) < 0x100);
-  uint8  to_clear = ((1 << size) - 1) << (index % 8);
+  uint8_t to_clear = ((1 << size) - 1) << (index % 8);
   return ((byte_map[byte_index] & to_clear) == to_clear);
 }
 
@@ -175,7 +177,7 @@ void BlockHeader::FixAllocationCounters() {
   }
 
   for (int i = 0; i < header_->max_entries / 32; i++) {
-    uint32 map_block = header_->allocation_map[i];
+    uint32_t map_block = header_->allocation_map[i];
 
     for (int j = 0; j < 8; j++, map_block >>= 4) {
       int type = GetMapBlockType(map_block);
@@ -279,7 +281,7 @@ bool BlockFiles::Init(bool create_files) {
   thread_checker_.reset(new base::ThreadChecker);
 
   block_files_.resize(kFirstAdditionalBlockFile);
-  for (int16 i = 0; i < kFirstAdditionalBlockFile; i++) {
+  for (int16_t i = 0; i < kFirstAdditionalBlockFile; i++) {
     if (create_files)
       if (!CreateBlockFile(i, static_cast<FileType>(i + 1), true))
         return false;
@@ -457,8 +459,8 @@ bool BlockFiles::CreateBlockFile(int index, FileType file_type, bool force) {
   header.magic = kBlockMagic;
   header.version = kBlockVersion2;
   header.entry_size = Addr::BlockSizeForFileType(file_type);
-  header.this_file = static_cast<int16>(index);
-  DCHECK(index <= kint16max && index >= 0);
+  header.this_file = static_cast<int16_t>(index);
+  DCHECK(index <= std::numeric_limits<int16_t>::max() && index >= 0);
 
   return file->Write(&header, sizeof(header), 0);
 }
@@ -574,7 +576,7 @@ MappedFile* BlockFiles::FileForNewBlock(FileType block_type, int block_count) {
 MappedFile* BlockFiles::NextFile(MappedFile* file) {
   ScopedFlush flush(file);
   BlockFileHeader* header = reinterpret_cast<BlockFileHeader*>(file->buffer());
-  int16 new_file = header->next_file;
+  int16_t new_file = header->next_file;
   if (!new_file) {
     // RANKINGS is not reported as a type for small entries, but we may be
     // extending the rankings block file.
@@ -595,8 +597,8 @@ MappedFile* BlockFiles::NextFile(MappedFile* file) {
   return GetFile(address);
 }
 
-int16 BlockFiles::CreateNextBlockFile(FileType block_type) {
-  for (int16 i = kFirstAdditionalBlockFile; i <= kMaxBlockFile; i++) {
+int16_t BlockFiles::CreateNextBlockFile(FileType block_type) {
+  for (int16_t i = kFirstAdditionalBlockFile; i <= kMaxBlockFile; i++) {
     if (CreateBlockFile(i, block_type, false))
       return i;
   }

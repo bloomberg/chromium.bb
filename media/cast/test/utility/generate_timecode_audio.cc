@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "media/cast/test/utility/audio_utility.h"
 
@@ -19,15 +21,16 @@ int main(int argc, char **argv) {
     exit(1);
   }
   int fps = atoi(argv[1]);
-  const uint32 frames = static_cast<uint32>(std::max(0, atoi(argv[2])));
+  const uint32_t frames = static_cast<uint32_t>(std::max(0, atoi(argv[2])));
   std::vector<float> samples(kSamplingFrequency / fps);
   size_t num_samples = 0;
-  for (uint32 frame_id = 1; frame_id <= frames; frame_id++) {
+  for (uint32_t frame_id = 1; frame_id <= frames; frame_id++) {
     CHECK(media::cast::EncodeTimestamp(
         frame_id, num_samples, samples.size(), &samples.front()));
     num_samples += samples.size();
     for (size_t i = 0; i < samples.size(); ++i) {
-      const int16 sample_s16 = static_cast<int16>(samples[i] * kint16max);
+      const int16_t sample_s16 = static_cast<int16_t>(
+          samples[i] * std::numeric_limits<int16_t>::max());
       putchar(sample_s16 & 0xff);
       putchar(sample_s16 >> 8);
       putchar(sample_s16 & 0xff);

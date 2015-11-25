@@ -20,23 +20,24 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_BASE_H_
 #define NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_BASE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 
 namespace disk_cache {
 
-typedef uint32 CacheAddr;
+typedef uint32_t CacheAddr;
 
-const uint32 kBlockVersion2 = 0x20000;  // Version 2.0.
-const uint32 kBlockCurrentVersion = 0x30000;  // Version 3.0.
+const uint32_t kBlockVersion2 = 0x20000;        // Version 2.0.
+const uint32_t kBlockCurrentVersion = 0x30000;  // Version 3.0.
 
-const uint32 kBlockMagic = 0xC104CAC3;
+const uint32_t kBlockMagic = 0xC104CAC3;
 const int kBlockHeaderSize = 8192;  // Two pages: almost 64k entries
 const int kMaxBlocks = (kBlockHeaderSize - 80) * 8;
 const int kNumExtraBlocks = 1024;  // How fast files grow.
 
 // Bitmap to track used blocks on a block-file.
-typedef uint32 AllocBitmap[kMaxBlocks / 32];
+typedef uint32_t AllocBitmap[kMaxBlocks / 32];
 
 // A block-file is the file used to store information in blocks (could be
 // EntryStore blocks, RankingsNode blocks or user-data blocks).
@@ -47,17 +48,17 @@ typedef uint32 AllocBitmap[kMaxBlocks / 32];
 // from the beginning every time).
 // This Structure is the header of a block-file:
 struct BlockFileHeader {
-  uint32          magic;
-  uint32          version;
-  int16           this_file;    // Index of this file.
-  int16           next_file;    // Next file when this one is full.
-  int32           entry_size;   // Size of the blocks of this file.
-  int32           num_entries;  // Number of stored entries.
-  int32           max_entries;  // Current maximum number of entries.
-  int32           empty[4];     // Counters of empty entries for each type.
-  int32           hints[4];     // Last used position for each entry type.
-  volatile int32  updating;     // Keep track of updates to the header.
-  int32           user[5];
+  uint32_t magic;
+  uint32_t version;
+  int16_t this_file;          // Index of this file.
+  int16_t next_file;          // Next file when this one is full.
+  int32_t entry_size;         // Size of the blocks of this file.
+  int32_t num_entries;        // Number of stored entries.
+  int32_t max_entries;        // Current maximum number of entries.
+  int32_t empty[4];           // Counters of empty entries for each type.
+  int32_t hints[4];           // Last used position for each entry type.
+  volatile int32_t updating;  // Keep track of updates to the header.
+  int32_t user[5];
   AllocBitmap     allocation_map;
 };
 
@@ -103,23 +104,23 @@ static_assert(sizeof(BlockFileHeader) == kBlockHeaderSize, "bad header");
 // to be only partialy filled. In that case, last_block and last_block_len will
 // keep track of that block.
 struct SparseHeader {
-  int64 signature;          // The parent and children signature.
-  uint32 magic;             // Structure identifier (equal to kIndexMagic).
-  int32 parent_key_len;     // Key length for the parent entry.
-  int32 last_block;         // Index of the last written block.
-  int32 last_block_len;     // Lenght of the last written block.
-  int32 dummy[10];
+  int64_t signature;       // The parent and children signature.
+  uint32_t magic;          // Structure identifier (equal to kIndexMagic).
+  int32_t parent_key_len;  // Key length for the parent entry.
+  int32_t last_block;      // Index of the last written block.
+  int32_t last_block_len;  // Lenght of the last written block.
+  int32_t dummy[10];
 };
 
 // The SparseHeader will be followed by a bitmap, as described by this
 // structure.
 struct SparseData {
   SparseHeader header;
-  uint32 bitmap[32];        // Bitmap representation of known children (if this
-                            // is a parent entry), or used blocks (for child
-                            // entries. The size is fixed for child entries but
-                            // not for parents; it can be as small as 4 bytes
-                            // and as large as 8 KB.
+  uint32_t bitmap[32];  // Bitmap representation of known children (if this
+                        // is a parent entry), or used blocks (for child
+                        // entries. The size is fixed for child entries but
+                        // not for parents; it can be as small as 4 bytes
+                        // and as large as 8 KB.
 };
 
 // The number of blocks stored by a child entry.

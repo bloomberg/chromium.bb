@@ -9,6 +9,7 @@
 #include <psapi.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <stdint.h>
 #include <time.h>
 
 #include <algorithm>
@@ -359,7 +360,8 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
     new_dir_name.assign(prefix);
     new_dir_name.append(IntToString16(GetCurrentProcId()));
     new_dir_name.push_back('_');
-    new_dir_name.append(IntToString16(RandInt(0, kint16max)));
+    new_dir_name.append(
+        IntToString16(RandInt(0, std::numeric_limits<int16_t>::max())));
 
     path_to_create = base_dir.Append(new_dir_name);
     if (::CreateDirectory(path_to_create.value().c_str(), NULL)) {

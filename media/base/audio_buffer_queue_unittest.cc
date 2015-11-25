@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -53,12 +56,12 @@ TEST(AudioBufferQueueTest, AppendAndClear) {
   AudioBufferQueue buffer;
   EXPECT_EQ(0, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(8, buffer.frames());
   buffer.Clear();
   EXPECT_EQ(0, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 20, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 20, 1, 8));
   EXPECT_EQ(8, buffer.frames());
 }
 
@@ -66,19 +69,19 @@ TEST(AudioBufferQueueTest, MultipleAppend) {
   const ChannelLayout channel_layout = CHANNEL_LAYOUT_MONO;
   AudioBufferQueue buffer;
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(8, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(16, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(24, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(32, buffer.frames());
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 10, 1, 8));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 10, 1, 8));
   EXPECT_EQ(40, buffer.frames());
 }
 
@@ -191,7 +194,7 @@ TEST(AudioBufferQueueTest, ReadU8) {
 
   // Add 4 frames of data.
   buffer.Append(
-      MakeTestBuffer<uint8>(kSampleFormatU8, channel_layout, 128, 1, frames));
+      MakeTestBuffer<uint8_t>(kSampleFormatU8, channel_layout, 128, 1, frames));
 
   // Read all 4 frames from the buffer.
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
@@ -207,9 +210,9 @@ TEST(AudioBufferQueueTest, ReadS16) {
 
   // Add 24 frames of data.
   buffer.Append(
-      MakeTestBuffer<int16>(kSampleFormatS16, channel_layout, 1, 1, 4));
+      MakeTestBuffer<int16_t>(kSampleFormatS16, channel_layout, 1, 1, 4));
   buffer.Append(
-      MakeTestBuffer<int16>(kSampleFormatS16, channel_layout, 9, 1, 20));
+      MakeTestBuffer<int16_t>(kSampleFormatS16, channel_layout, 9, 1, 20));
   EXPECT_EQ(24, buffer.frames());
 
   // Read 6 frames from the buffer.
@@ -217,8 +220,10 @@ TEST(AudioBufferQueueTest, ReadS16) {
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, buffer.frames());
   EXPECT_EQ(frames, buffer.ReadFrames(frames, 0, bus.get()));
   EXPECT_EQ(18, buffer.frames());
-  VerifyBus(bus.get(), 0, 4, 4, 1.0f / kint16max, 1.0f / kint16max);
-  VerifyBus(bus.get(), 4, 2, 20, 9.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), 0, 4, 4, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
+  VerifyBus(bus.get(), 4, 2, 20, 9.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 }
 
 TEST(AudioBufferQueueTest, ReadS32) {
@@ -228,22 +233,25 @@ TEST(AudioBufferQueueTest, ReadS32) {
 
   // Add 24 frames of data.
   buffer.Append(
-      MakeTestBuffer<int32>(kSampleFormatS32, channel_layout, 1, 1, 4));
+      MakeTestBuffer<int32_t>(kSampleFormatS32, channel_layout, 1, 1, 4));
   buffer.Append(
-      MakeTestBuffer<int32>(kSampleFormatS32, channel_layout, 9, 1, 20));
+      MakeTestBuffer<int32_t>(kSampleFormatS32, channel_layout, 9, 1, 20));
   EXPECT_EQ(24, buffer.frames());
 
   // Read 6 frames from the buffer.
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
   EXPECT_EQ(6, buffer.ReadFrames(6, 0, bus.get()));
   EXPECT_EQ(18, buffer.frames());
-  VerifyBus(bus.get(), 0, 4, 4, 1.0f / kint32max, 1.0f / kint32max);
-  VerifyBus(bus.get(), 4, 2, 20, 9.0f / kint32max, 1.0f / kint32max);
+  VerifyBus(bus.get(), 0, 4, 4, 1.0f / std::numeric_limits<int32_t>::max(),
+            1.0f / std::numeric_limits<int32_t>::max());
+  VerifyBus(bus.get(), 4, 2, 20, 9.0f / std::numeric_limits<int32_t>::max(),
+            1.0f / std::numeric_limits<int32_t>::max());
 
   // Read the next 2 frames.
   EXPECT_EQ(2, buffer.ReadFrames(2, 0, bus.get()));
   EXPECT_EQ(16, buffer.frames());
-  VerifyBus(bus.get(), 0, 2, 20, 11.0f / kint32max, 1.0f / kint32max);
+  VerifyBus(bus.get(), 0, 2, 20, 11.0f / std::numeric_limits<int32_t>::max(),
+            1.0f / std::numeric_limits<int32_t>::max());
 }
 
 TEST(AudioBufferQueueTest, ReadF32Planar) {
@@ -273,17 +281,19 @@ TEST(AudioBufferQueueTest, ReadS16Planar) {
 
   // Add 24 frames of data.
   buffer.Append(
-      MakeTestBuffer<int16>(kSampleFormatPlanarS16, channel_layout, 1, 1, 4));
-  buffer.Append(
-      MakeTestBuffer<int16>(kSampleFormatPlanarS16, channel_layout, 5, 1, 20));
+      MakeTestBuffer<int16_t>(kSampleFormatPlanarS16, channel_layout, 1, 1, 4));
+  buffer.Append(MakeTestBuffer<int16_t>(kSampleFormatPlanarS16, channel_layout,
+                                        5, 1, 20));
   EXPECT_EQ(24, buffer.frames());
 
   // Read 6 frames from the buffer.
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
   EXPECT_EQ(6, buffer.ReadFrames(6, 0, bus.get()));
   EXPECT_EQ(18, buffer.frames());
-  VerifyBus(bus.get(), 0, 4, 4, 1.0f / kint16max, 1.0f / kint16max);
-  VerifyBus(bus.get(), 4, 2, 20, 5.0f / kint16max, 1.0f / kint16max);
+  VerifyBus(bus.get(), 0, 4, 4, 1.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
+  VerifyBus(bus.get(), 4, 2, 20, 5.0f / std::numeric_limits<int16_t>::max(),
+            1.0f / std::numeric_limits<int16_t>::max());
 }
 
 TEST(AudioBufferQueueTest, ReadManyChannels) {
