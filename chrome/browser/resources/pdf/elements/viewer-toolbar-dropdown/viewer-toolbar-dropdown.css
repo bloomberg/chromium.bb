@@ -9,6 +9,16 @@
 
 #container {
   position: absolute;
+  /* Controls the position of the dropdown relative to the right of the screen.
+   * Default is aligned with the right of the toolbar buttons.
+   * TODO(tsergeant): Change the layout of the dropdown so this is not required.
+   */
+  right: var(--viewer-toolbar-dropdown-right-distance, 36px);
+}
+
+:host-context([dir=rtl]) #container {
+  left: var(--viewer-toolbar-dropdown-right-distance, 36px);
+  right: auto;
 }
 
 paper-material {

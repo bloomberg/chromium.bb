@@ -237,8 +237,6 @@ function PDFViewer(browserApi) {
       this.materialToolbar_.addEventListener('print', this.print_.bind(this));
       this.materialToolbar_.addEventListener('rotate-right',
           this.rotateClockwise_.bind(this));
-      this.materialToolbar_.addEventListener('rotate-left',
-          this.rotateCounterClockwise_.bind(this));
       // Must attach to mouseup on the plugin element, since it eats mousedown
       // and click events.
       this.plugin_.addEventListener('mouseup',

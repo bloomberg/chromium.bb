@@ -30,6 +30,21 @@
         </div>
 
         <div id="buttons" class="invisible flex-5">
+          <paper-icon-button id="rotate-right" icon="image:rotate-right"
+              on-click="rotateRight"
+              i18n-values="aria-label:tooltipRotateCW;title:tooltipRotateCW">
+          </paper-icon-button>
+
+          <paper-icon-button id="download" icon="file-download"
+              on-click="download"
+              i18n-values="aria-label:tooltipDownload;title:tooltipDownload">
+          </paper-icon-button>
+
+          <paper-icon-button id="print" icon="print"
+              on-click="print"
+              i18n-values="aria-label:tooltipPrint;title:tooltipPrint">
+          </paper-icon-button>
+
           <viewer-toolbar-dropdown id="bookmarks"
                                    hidden$="[[!bookmarks.length]]"
                                    open-icon="bookmark"
@@ -38,26 +53,6 @@
               <viewer-bookmarks-content bookmarks="{{bookmarks}}">
               </viewer-bookmarks-content>
           </viewer-toolbar-dropdown>
-
-          <paper-icon-button id="rotate-right" icon="image:rotate-right"
-              on-click="rotateRight"
-              i18n-values="aria-label:tooltipRotateCW;title:tooltipRotateCW">
-          </paper-icon-button>
-
-          <paper-icon-button id="rotate-left" icon="image:rotate-left"
-              on-click="rotateLeft"
-              i18n-values="aria-label:tooltipRotateCCW;title:tooltipRotateCCW">
-          </paper-icon-button>
-
-          <paper-icon-button id="save" icon="save"
-              on-click="save"
-              i18n-values="aria-label:tooltipSave;title:tooltipSave">
-          </paper-icon-button>
-
-          <paper-icon-button id="print" icon="print"
-              on-click="print"
-              i18n-values="aria-label:tooltipPrint;title:tooltipPrint">
-          </paper-icon-button>
         </div>
       </div>
       <div class="bottom fit">

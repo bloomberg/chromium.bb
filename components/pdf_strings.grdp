@@ -28,11 +28,8 @@
     <message name="IDS_PDF_TOOLTIP_ROTATE_CW" desc="Button tooltip for the button which rotates a PDF document clockwise">
       Rotate clockwise
     </message>
-    <message name="IDS_PDF_TOOLTIP_ROTATE_CCW" desc="Button tooltip for the button which rotates a PDF document counterclockwise">
-      Rotate counterclockwise
-    </message>
-    <message name="IDS_PDF_TOOLTIP_SAVE" desc="Button tooltip for the button to save a PDF document">
-      Save
+    <message name="IDS_PDF_TOOLTIP_DOWNLOAD" desc="Button tooltip for the button to download a PDF document">
+      Download
     </message>
     <message name="IDS_PDF_TOOLTIP_PRINT" desc="Button tooltip for the button to print a PDF document">
       Print

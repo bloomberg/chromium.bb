@@ -78,7 +78,7 @@
     },
 
     _onAnimationFinished: function() {
-        this.style.transform = this.opened ? 'none' : 'translateY(-100%)';
+      this.style.transform = this.opened ? 'none' : 'translateY(-100%)';
     },
 
     loadProgressChanged: function() {
@@ -127,15 +127,11 @@
       this.$.bookmarks.lowerBound = lowerBound;
     },
 
-    rotateLeft: function() {
-      this.fire('rotate-left');
-    },
-
     rotateRight: function() {
       this.fire('rotate-right');
     },
 
-    save: function() {
+    download: function() {
       this.fire('save');
     },
 

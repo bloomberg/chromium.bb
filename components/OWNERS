@@ -228,6 +228,8 @@ per-file pdf.gypi=gene@chromium.org
 per-file pdf.gypi=jam@chromium.org
 per-file pdf.gypi=raymes@chromium.org
 per-file pdf.gypi=thestig@chromium.org
+per-file pdf_strings.grdp=raymes@chromium.org
+per-file pdf_strings.grdp=tsergeant@chromium.org
 
 per-file plugins.gypi=bauerb@chromium.org
 per-file plugins.gypi=tommycli@chromium.org
