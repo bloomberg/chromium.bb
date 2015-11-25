@@ -72,7 +72,6 @@
       # GN version: //chrome/common:constants
       'target_name': 'common_constants',
       'type': 'static_library',
-      'hard_dependency': 1,  # Because of transitive dep on version_header.
       'sources': [
         '<@(common_constants_sources)'
       ],

@@ -1658,7 +1658,6 @@
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
         'browser',
-        'chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:theme_resources',
@@ -2213,7 +2212,6 @@
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',
-        'chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
       ],

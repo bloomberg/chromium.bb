@@ -547,6 +547,9 @@
       # Enable Chrome browser extensions
       'enable_extensions%': 1,
 
+      # Enable Google Now.
+      'enable_google_now%': 1,
+
       # Enable basic printing support and UI.
       'enable_basic_printing%': 1,
 
@@ -816,6 +819,7 @@
 
         ['OS=="android"', {
           'enable_extensions%': 0,
+          'enable_google_now%': 0,
           'cld2_table_size%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -863,6 +867,7 @@
           'configuration_policy%': 0,
           'disable_ftp_support%': 1,
           'enable_extensions%': 0,
+          'enable_google_now%': 0,
           'cld2_table_size%': 0,
           'enable_basic_printing%': 0,
           'enable_print_preview%': 0,
@@ -1216,6 +1221,7 @@
     'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
     'use_browser_spellchecker%': '<(use_browser_spellchecker)',
+    'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
@@ -2174,6 +2180,9 @@
       ['enable_settings_app==1', {
         'grit_defines': ['-D', 'enable_settings_app'],
       }],
+      ['enable_google_now==1', {
+        'grit_defines': ['-D', 'enable_google_now'],
+      }],
       ['use_concatenated_impulse_responses==1', {
         'grit_defines': ['-D', 'use_concatenated_impulse_responses'],
       }],
@@ -2985,6 +2994,9 @@
       }],
       ['enable_background==1', {
         'defines': ['ENABLE_BACKGROUND=1'],
+      }],
+      ['enable_google_now==1', {
+        'defines': ['ENABLE_GOOGLE_NOW=1'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {
         # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.

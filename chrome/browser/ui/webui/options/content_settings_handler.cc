@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -452,7 +451,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"cookiesShowCookies", IDS_COOKIES_SHOW_COOKIES_BUTTON},
     {"flashStorageSettings", IDS_FLASH_STORAGE_SETTINGS},
     {"flashStorageUrl", IDS_FLASH_STORAGE_URL},
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
+#if defined(ENABLE_GOOGLE_NOW)
     {"googleGeolocationAccessEnable",
      IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX},
 #endif
