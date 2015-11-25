@@ -37,8 +37,7 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
       timestamp_(timestamp),
       duration_(end_of_stream_
                     ? base::TimeDelta()
-                    : CalculateDuration(adjusted_frame_count_, sample_rate_)),
-      data_size_(0) {
+                    : CalculateDuration(adjusted_frame_count_, sample_rate_)) {
   CHECK_GE(channel_count_, 0);
   CHECK_LE(channel_count_, limits::kMaxChannels);
   CHECK_GE(frame_count, 0);
@@ -47,46 +46,49 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
 
   int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
   DCHECK_LE(bytes_per_channel, kChannelAlignment);
+  int data_size = frame_count * bytes_per_channel;
 
   // Empty buffer?
   if (!create_buffer)
     return;
 
-  int data_size_per_channel = frame_count * bytes_per_channel;
-  if (IsPlanar(sample_format)) {
+  if (sample_format == kSampleFormatPlanarF32 ||
+      sample_format == kSampleFormatPlanarS16 ||
+      sample_format == kSampleFormatPlanarS32) {
     // Planar data, so need to allocate buffer for each channel.
     // Determine per channel data size, taking into account alignment.
     int block_size_per_channel =
-        (data_size_per_channel + kChannelAlignment - 1) &
-        ~(kChannelAlignment - 1);
-    DCHECK_GE(block_size_per_channel, data_size_per_channel);
+        (data_size + kChannelAlignment - 1) & ~(kChannelAlignment - 1);
+    DCHECK_GE(block_size_per_channel, data_size);
 
     // Allocate a contiguous buffer for all the channel data.
-    data_size_ = channel_count_ * block_size_per_channel;
-    data_.reset(
-        static_cast<uint8*>(base::AlignedAlloc(data_size_, kChannelAlignment)));
+    data_.reset(static_cast<uint8*>(base::AlignedAlloc(
+        channel_count_ * block_size_per_channel, kChannelAlignment)));
     channel_data_.reserve(channel_count_);
 
     // Copy each channel's data into the appropriate spot.
     for (int i = 0; i < channel_count_; ++i) {
       channel_data_.push_back(data_.get() + i * block_size_per_channel);
       if (data)
-        memcpy(channel_data_[i], data[i], data_size_per_channel);
+        memcpy(channel_data_[i], data[i], data_size);
     }
     return;
   }
 
   // Remaining formats are interleaved data.
-  DCHECK(IsInterleaved(sample_format)) << sample_format_;
+  DCHECK(sample_format_ == kSampleFormatU8 ||
+         sample_format_ == kSampleFormatS16 ||
+         sample_format_ == kSampleFormatS32 ||
+         sample_format_ == kSampleFormatF32) << sample_format_;
   // Allocate our own buffer and copy the supplied data into it. Buffer must
   // contain the data for all channels.
-  data_size_ = data_size_per_channel * channel_count_;
+  data_size *= channel_count_;
   data_.reset(
-      static_cast<uint8*>(base::AlignedAlloc(data_size_, kChannelAlignment)));
+      static_cast<uint8*>(base::AlignedAlloc(data_size, kChannelAlignment)));
   channel_data_.reserve(1);
   channel_data_.push_back(data_.get());
   if (data)
-    memcpy(data_.get(), data[0], data_size_);
+    memcpy(data_.get(), data[0], data_size);
 }
 
 AudioBuffer::~AudioBuffer() {}
