@@ -109,15 +109,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseSimpleLengthValue(CSSPropertyID pro
     }
 
     if (unit == CSSPrimitiveValue::UnitType::Number) {
-        bool quirksMode = isQuirksModeBehavior(cssParserMode);
-        bool svgMode = cssParserMode == SVGAttributeMode;
-        if (number && (!quirksMode && !svgMode))
-            return nullptr;
-        if (svgMode)
+        if (cssParserMode == SVGAttributeMode)
             unit = CSSPrimitiveValue::UnitType::UserUnits;
-        else
+        else if (!number)
             unit = CSSPrimitiveValue::UnitType::Pixels;
+        else
+            return nullptr;
     }
+
     if (number < 0 && !acceptsNegativeNumbers)
         return nullptr;
 

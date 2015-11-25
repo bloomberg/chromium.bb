@@ -12,15 +12,19 @@ function convert_to_dashes(property) {
     });
 }
 
-function assert_valid_value(property, value, serializedValue) {
-    if (arguments.length != 3)
+function assert_valid_value(property, value, serializedValue, quirksModeOnly) {
+    if (arguments.length < 4)
+        quirksModeOnly = false;
+
+    if (arguments.length < 3)
         serializedValue = value;
 
     stringifiedValue = JSON.stringify(value);
+    dashedProperty = convert_to_dashes(property);
 
     test(function(){
-        assert_true(CSS.supports(convert_to_dashes(property), value));
-    }, "CSS.supports('" + property + "', " + stringifiedValue + ") should return true");
+        assert_equals(!quirksModeOnly, CSS.supports(dashedProperty, value));
+    }, "CSS.supports('" + dashedProperty + "', " + stringifiedValue + ") should return " + !quirksModeOnly);
 
     test(function(){
         var div = document.createElement('div');
@@ -40,10 +44,11 @@ function assert_valid_value(property, value, serializedValue) {
 
 function assert_invalid_value(property, value) {
     stringifiedValue = JSON.stringify(value);
+    dashedProperty = convert_to_dashes(property);
 
     test(function(){
-        assert_false(CSS.supports(convert_to_dashes(property), value));
-    }, "CSS.supports('" + property + "', " + stringifiedValue + ") should return false");
+        assert_false(CSS.supports(dashedProperty, value));
+    }, "CSS.supports('" + dashedProperty  + "', " + stringifiedValue + ") should return false");
 
     test(function(){
         var div = document.createElement('div');
