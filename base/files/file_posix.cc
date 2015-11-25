@@ -29,12 +29,12 @@ static_assert(File::FROM_BEGIN == SEEK_SET && File::FROM_CURRENT == SEEK_CUR &&
 namespace {
 
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
-static int CallFstat(int fd, stat_wrapper_t *sb) {
+int CallFstat(int fd, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return fstat(fd, sb);
 }
 #else
-static int CallFstat(int fd, stat_wrapper_t *sb) {
+int CallFstat(int fd, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return fstat64(fd, sb);
 }
@@ -43,15 +43,15 @@ static int CallFstat(int fd, stat_wrapper_t *sb) {
 // NaCl doesn't provide the following system calls, so either simulate them or
 // wrap them in order to minimize the number of #ifdef's in this file.
 #if !defined(OS_NACL)
-static bool IsOpenAppend(PlatformFile file) {
+bool IsOpenAppend(PlatformFile file) {
   return (fcntl(file, F_GETFL) & O_APPEND) != 0;
 }
 
-static int CallFtruncate(PlatformFile file, int64 length) {
+int CallFtruncate(PlatformFile file, int64 length) {
   return HANDLE_EINTR(ftruncate(file, length));
 }
 
-static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
+int CallFutimes(PlatformFile file, const struct timeval times[2]) {
 #ifdef __USE_XOPEN2K8
   // futimens should be available, but futimes might not be
   // http://pubs.opengroup.org/onlinepubs/9699919799/
@@ -68,7 +68,7 @@ static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
 #endif
 }
 
-static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
+File::Error CallFcntlFlock(PlatformFile file, bool do_lock) {
   struct flock lock;
   lock.l_type = F_WRLCK;
   lock.l_whence = SEEK_SET;
@@ -80,24 +80,24 @@ static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
 }
 #else  // defined(OS_NACL)
 
-static bool IsOpenAppend(PlatformFile file) {
+bool IsOpenAppend(PlatformFile file) {
   // NaCl doesn't implement fcntl. Since NaCl's write conforms to the POSIX
   // standard and always appends if the file is opened with O_APPEND, just
   // return false here.
   return false;
 }
 
-static int CallFtruncate(PlatformFile file, int64 length) {
+int CallFtruncate(PlatformFile file, int64 length) {
   NOTIMPLEMENTED();  // NaCl doesn't implement ftruncate.
   return 0;
 }
 
-static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
+int CallFutimes(PlatformFile file, const struct timeval times[2]) {
   NOTIMPLEMENTED();  // NaCl doesn't implement futimes.
   return 0;
 }
 
-static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
+File::Error CallFcntlFlock(PlatformFile file, bool do_lock) {
   NOTIMPLEMENTED();  // NaCl doesn't implement flock struct.
   return File::FILE_ERROR_INVALID_OPERATION;
 }
@@ -360,12 +360,12 @@ bool File::GetInfo(Info* info) {
 
 File::Error File::Lock() {
   SCOPED_FILE_TRACE("Lock");
-  return CallFctnlFlock(file_.get(), true);
+  return CallFcntlFlock(file_.get(), true);
 }
 
 File::Error File::Unlock() {
   SCOPED_FILE_TRACE("Unlock");
-  return CallFctnlFlock(file_.get(), false);
+  return CallFcntlFlock(file_.get(), false);
 }
 
 File File::Duplicate() {
