@@ -24,9 +24,7 @@ TEST(RefPtrTest, MoveAssignmentOperator)
 {
     RefPtr<StringImpl> a = StringImpl::create("a");
     RefPtr<StringImpl> b = StringImpl::create("b");
-    // FIXME: Instead of explicitly casting to RefPtr<StringImpl>&& here, we should use std::move, but that
-    // requires us to have a standard library that supports move semantics.
-    b = static_cast<RefPtr<StringImpl>&&>(a);
+    b = std::move(a);
     EXPECT_TRUE(!!b);
     EXPECT_TRUE(!a);
 }

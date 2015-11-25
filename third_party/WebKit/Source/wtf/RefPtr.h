@@ -116,10 +116,7 @@ template <typename T> inline RefPtr<T>& RefPtr<T>::operator=(const RefPtr& o)
 
 template <typename T> inline RefPtr<T>& RefPtr<T>::operator=(RefPtr&& o)
 {
-    // FIXME: Instead of explicitly casting to RefPtr&& here, we should use
-    // std::move, but that requires us to have a standard library that supports
-    // move semantics.
-    RefPtr ptr = static_cast<RefPtr&&>(o);
+    RefPtr ptr = std::move(o);
     swap(ptr);
     return *this;
 }
