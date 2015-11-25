@@ -55,7 +55,7 @@ class CORE_EXPORT WorkerObjectProxy : public WorkerReportingProxy {
     USING_FAST_MALLOC(WorkerObjectProxy);
     WTF_MAKE_NONCOPYABLE(WorkerObjectProxy);
 public:
-    static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
+    static PassOwnPtr<WorkerObjectProxy> create(WorkerMessagingProxy*);
     ~WorkerObjectProxy() override { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
@@ -75,12 +75,11 @@ public:
     void willDestroyWorkerGlobalScope() override { }
 
 protected:
-    WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);
+    WorkerObjectProxy(WorkerMessagingProxy*);
+    virtual ExecutionContext* executionContext();
 
 private:
-    // These objects always outlive this proxy.
-    GC_PLUGIN_IGNORE("553613")
-    ExecutionContext* m_executionContext;
+    // This object always outlives this proxy.
     WorkerMessagingProxy* m_messagingProxy;
 };
 

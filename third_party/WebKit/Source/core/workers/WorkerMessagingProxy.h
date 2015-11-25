@@ -75,6 +75,8 @@ public:
 
     void workerThreadCreated(PassRefPtr<WorkerThread>);
 
+    ExecutionContext* executionContext() const { return m_executionContext.get(); }
+
 protected:
     WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     ~WorkerMessagingProxy() override;

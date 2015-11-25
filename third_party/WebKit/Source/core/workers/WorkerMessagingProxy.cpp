@@ -74,7 +74,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 
 WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_executionContext(workerObject->executionContext())
-    , m_workerObjectProxy(WorkerObjectProxy::create(m_executionContext.get(), this))
+    , m_workerObjectProxy(WorkerObjectProxy::create(this))
     , m_workerObject(workerObject)
     , m_mayBeDestroyed(false)
     , m_unconfirmedMessageCount(0)

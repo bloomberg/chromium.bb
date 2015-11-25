@@ -80,11 +80,17 @@ public:
     void workerGlobalScopeClosed() override { }
     void workerThreadTerminated() override { }
     void willDestroyWorkerGlobalScope() override { }
+
+    ExecutionContext* executionContext() override { return m_executionContext.get(); }
+
 private:
     TestCompositorWorkerObjectProxy(ExecutionContext* context)
-        : WorkerObjectProxy(context, nullptr)
+        : WorkerObjectProxy(nullptr)
+        , m_executionContext(context)
     {
     }
+
+    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
 } // namespace
