@@ -221,7 +221,13 @@ StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString,
 
     if (isLocalStorage)
         return StorageNamespace::localStorageArea(frame->document()->securityOrigin());
-    return StorageNamespaceController::from(m_page)->sessionStorage()->storageArea(frame->document()->securityOrigin());
+    StorageNamespace* sessionStorage = StorageNamespaceController::from(m_page)->sessionStorage();
+    if (!sessionStorage) {
+        if (errorString)
+            *errorString = "SessionStorage is not supported";
+        return nullptr;
+    }
+    return sessionStorage->storageArea(frame->document()->securityOrigin());
 }
 
 } // namespace blink
