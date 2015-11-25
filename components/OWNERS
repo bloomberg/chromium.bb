@@ -5,6 +5,9 @@ sdefresne@chromium.org
 
 per-file app_modal*=avi@chromium.org
 
+per-file arc.gypi=elijahtaylor@chromium.org
+per-file arc.gypi=hidehiko@chromium.org
+
 per-file audio_modem.gypi=ckehoe@chromium.org
 per-file audio_modem.gypi=rkc@chromium.org
 per-file audio_modem.gypi=xiyuan@chromium.org
