@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 #include "chromeos/dbus/gsm_sms_client.h"
 
+#include <map>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -207,8 +207,8 @@ class GsmSMSClientImpl : public GsmSMSClient {
   void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
-  typedef base::ScopedPtrMap<std::pair<std::string, std::string>,
-                             scoped_ptr<SMSProxy>> ProxyMap;
+  using ProxyMap =
+      std::map<std::pair<std::string, std::string>, scoped_ptr<SMSProxy>>;
 
   // Returns a SMSProxy for the given service name and object path.
   SMSProxy* GetProxy(const std::string& service_name,
@@ -216,12 +216,12 @@ class GsmSMSClientImpl : public GsmSMSClient {
     const ProxyMap::key_type key(service_name, object_path.value());
     ProxyMap::const_iterator it = proxies_.find(key);
     if (it != proxies_.end())
-      return it->second;
+      return it->second.get();
 
     // There is no proxy for the service_name and object_path, create it.
     scoped_ptr<SMSProxy> proxy(new SMSProxy(bus_, service_name, object_path));
     SMSProxy* proxy_ptr = proxy.get();
-    proxies_.insert(key, proxy.Pass());
+    proxies_[key] = std::move(proxy);
     return proxy_ptr;
   }
 

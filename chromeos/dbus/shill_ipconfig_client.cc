@@ -4,8 +4,10 @@
 
 #include "chromeos/dbus/shill_ipconfig_client.h"
 
+#include <map>
+#include <utility>
+
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -58,14 +60,13 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
   void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<ShillClientHelper>>
-      HelperMap;
+  using HelperMap = std::map<std::string, scoped_ptr<ShillClientHelper>>;
 
   // Returns the corresponding ShillClientHelper for the profile.
   ShillClientHelper* GetHelper(const dbus::ObjectPath& ipconfig_path) {
     HelperMap::const_iterator it = helpers_.find(ipconfig_path.value());
     if (it != helpers_.end())
-      return it->second;
+      return it->second.get();
 
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
@@ -73,7 +74,7 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
     scoped_ptr<ShillClientHelper> helper(new ShillClientHelper(object_proxy));
     helper->MonitorPropertyChanged(shill::kFlimflamIPConfigInterface);
     ShillClientHelper* helper_ptr = helper.get();
-    helpers_.insert(ipconfig_path.value(), helper.Pass());
+    helpers_[ipconfig_path.value()] = std::move(helper);
     return helper_ptr;
   }
 

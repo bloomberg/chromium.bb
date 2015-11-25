@@ -4,8 +4,10 @@
 
 #include "chromeos/dbus/shill_profile_client.h"
 
+#include <map>
+#include <utility>
+
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -57,8 +59,7 @@ class ShillProfileClientImpl : public ShillProfileClient {
   void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<ShillClientHelper>>
-      HelperMap;
+  using HelperMap = std::map<std::string, scoped_ptr<ShillClientHelper>>;
 
   // Returns the corresponding ShillClientHelper for the profile.
   ShillClientHelper* GetHelper(const dbus::ObjectPath& profile_path);
@@ -76,7 +77,7 @@ ShillClientHelper* ShillProfileClientImpl::GetHelper(
     const dbus::ObjectPath& profile_path) {
   HelperMap::const_iterator it = helpers_.find(profile_path.value());
   if (it != helpers_.end())
-    return it->second;
+    return it->second.get();
 
   // There is no helper for the profile, create it.
   dbus::ObjectProxy* object_proxy =
@@ -84,7 +85,7 @@ ShillClientHelper* ShillProfileClientImpl::GetHelper(
   scoped_ptr<ShillClientHelper> helper(new ShillClientHelper(object_proxy));
   helper->MonitorPropertyChanged(shill::kFlimflamProfileInterface);
   ShillClientHelper* helper_ptr = helper.get();
-  helpers_.insert(profile_path.value(), helper.Pass());
+  helpers_[profile_path.value()] = std::move(helper);
   return helper_ptr;
 }
 

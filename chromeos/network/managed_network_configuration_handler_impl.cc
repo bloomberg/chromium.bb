@@ -422,7 +422,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     policies = policies_by_user_[userhash].get();
   } else {
     policies = new Policies;
-    policies_by_user_[userhash] = make_linked_ptr(policies);
+    policies_by_user_[userhash] = make_scoped_ptr(policies);
   }
 
   policies->global_network_config.MergeDictionary(&global_network_config);
@@ -515,7 +515,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
                            policies->global_network_config,
                            this,
                            modified_policies);
-  policy_applicators_[userhash] = make_linked_ptr(applicator);
+  policy_applicators_[userhash] = make_scoped_ptr(applicator);
   applicator->Run();
   return true;
 }
