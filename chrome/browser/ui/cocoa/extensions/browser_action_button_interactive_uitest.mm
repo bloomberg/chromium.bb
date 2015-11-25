@@ -211,8 +211,9 @@ void CheckActionIsPoppedOut(BrowserActionsController* actionsController,
 
 // Test that opening a context menu works for both actions on the main bar and
 // actions in the overflow menu.
+// Flaky: http://crbug.com/561461
 IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
-                       ContextMenusOnMainAndOverflow) {
+                       DISABLED_ContextMenusOnMainAndOverflow) {
   // Add an extension with a browser action.
   scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
