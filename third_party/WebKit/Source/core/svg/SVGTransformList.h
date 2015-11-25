@@ -76,6 +76,8 @@ private:
     bool parseInternal(const CharType*& ptr, const CharType* end);
 };
 
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGTransformList);
+
 } // namespace blink
 
 #endif // SVGTransformList_h

@@ -40,8 +40,8 @@
 #include "core/animation/SVGPointListInterpolationType.h"
 #include "core/animation/SVGRectInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
+#include "core/animation/SVGTransformListInterpolationType.h"
 #include "core/animation/SVGValueInterpolationType.h"
-#include "core/animation/TransformSVGInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -309,6 +309,10 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             applicableTypes->append(adoptPtr(new SVGPointListInterpolationType(attribute)));
         } else if (attribute == SVGNames::viewBoxAttr) {
             applicableTypes->append(adoptPtr(new SVGRectInterpolationType(attribute)));
+        } else if (attribute == SVGNames::gradientTransformAttr
+            || attribute == SVGNames::patternTransformAttr
+            || attribute == SVGNames::transformAttr) {
+            applicableTypes->append(adoptPtr(new SVGTransformListInterpolationType(attribute)));
         } else if (attribute == HTMLNames::classAttr
             || attribute == SVGNames::clipPathUnitsAttr
             || attribute == SVGNames::edgeModeAttr
@@ -579,9 +583,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedPath:
         interpolation = PathSVGInterpolation::maybeCreate(fromValue, toValue, attribute);
         break;
-    case AnimatedTransformList:
-        interpolation = ListSVGInterpolation<TransformSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
-        break;
 
     // Handled by SVGInterpolationTypes.
     case AnimatedAngle:
@@ -591,6 +592,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedNumberOptionalNumber:
     case AnimatedPoints:
     case AnimatedRect:
+    case AnimatedTransformList:
         ASSERT_NOT_REACHED();
         // Fallthrough.
 
