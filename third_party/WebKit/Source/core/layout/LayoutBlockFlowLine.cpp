@@ -447,12 +447,12 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 #if OS(MACOSX)
     // FIXME: Having any font feature settings enabled can lead to selection gaps on
     // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
-    bool canUseSimpleFontCodePath = layoutText->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
+    bool canUseCachedWordMeasurements = layoutText->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
 #else
-    bool canUseSimpleFontCodePath = layoutText->canUseSimpleFontCodePath();
+    bool canUseCachedWordMeasurements = layoutText->canUseSimpleFontCodePath();
 #endif
 
-    if (canUseSimpleFontCodePath) {
+    if (canUseCachedWordMeasurements) {
         int lastEndOffset = run->m_start;
         for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
             const WordMeasurement& wordMeasurement = wordMeasurements[i];
@@ -481,13 +481,13 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
         }
         if (lastEndOffset != run->m_stop) {
             // If we don't have enough cached data, we'll measure the run again.
-            canUseSimpleFontCodePath = false;
+            canUseCachedWordMeasurements = false;
             fallbackFonts.clear();
         }
     }
 
-    // Don't put this into 'else' part of the above 'if' because canUseSimpleFontCodePath may be modified in the 'if' block.
-    if (!canUseSimpleFontCodePath)
+    // Don't put this into 'else' part of the above 'if' because canUseCachedWordMeasurements may be modified in the 'if' block.
+    if (!canUseCachedWordMeasurements)
         measuredWidth = layoutText->width(run->m_start, run->m_stop - run->m_start, xPos, run->direction(), lineInfo.isFirstLine(), &fallbackFonts, &glyphBounds);
 
     // Negative word-spacing and/or letter-spacing may cause some glyphs to overflow the left boundary and result
