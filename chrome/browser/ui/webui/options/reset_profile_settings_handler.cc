@@ -73,8 +73,12 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
   TriggeredProfileResetter* triggered_profile_resetter =
       TriggeredProfileResetterFactory::GetForBrowserContext(profile);
   // TriggeredProfileResetter instance will be nullptr for incognito profiles.
-  if (triggered_profile_resetter)
+  if (triggered_profile_resetter) {
     reset_tool_name = triggered_profile_resetter->GetResetToolName();
+
+    // Now that a reset UI has been shown, don't trigger again for this profile.
+    triggered_profile_resetter->ClearResetTrigger();
+  }
 #endif
 
   if (reset_tool_name.empty()) {

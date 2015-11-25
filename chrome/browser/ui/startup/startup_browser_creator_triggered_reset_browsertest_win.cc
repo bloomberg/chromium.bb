@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,11 +47,17 @@ class MockTriggeredProfileResetter : public TriggeredProfileResetter {
   MockTriggeredProfileResetter() : TriggeredProfileResetter(nullptr) {}
 
   void Activate() override {}
-  bool HasResetTrigger() override { return true; }
+  bool HasResetTrigger() override { return has_reset_trigger_; }
+  static void SetHasResetTrigger(bool has_reset_trigger) {
+    has_reset_trigger_ = has_reset_trigger;
+  }
 
  private:
+  static bool has_reset_trigger_;
   DISALLOW_COPY_AND_ASSIGN(MockTriggeredProfileResetter);
 };
+
+bool MockTriggeredProfileResetter::has_reset_trigger_ = false;
 
 scoped_ptr<KeyedService> BuildMockTriggeredProfileResetter(
     content::BrowserContext* context) {
@@ -107,6 +115,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // Close the browser.
   CloseBrowserAsynchronously(browser());
 
+  // Prep the next launch to offer a reset prompt.
+  MockTriggeredProfileResetter::SetHasResetTrigger(true);
+
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
@@ -144,6 +155,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   browser_creator.AddFirstRunTab(
       embedded_test_server()->GetURL("/title1.html"));
 
+  // Prep the next launch to be offered a reset prompt.
+  MockTriggeredProfileResetter::SetHasResetTrigger(true);
+
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
@@ -167,4 +181,75 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
 
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
+                       TestMultiProfile) {
+  SessionStartupPref pref(SessionStartupPref::DEFAULT);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  // Keep the browser process running while browsers are closed.
+  g_browser_process->AddRefModule();
+
+  // Close the browser.
+  CloseBrowserAsynchronously(browser());
+
+  // Prep the next launch to offer a reset prompt.
+  MockTriggeredProfileResetter::SetHasResetTrigger(true);
+
+  // Do a simple non-process-startup browser launch.
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+  {
+    StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
+                                     chrome::startup::IS_NOT_FIRST_RUN);
+    ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false,
+                              browser()->host_desktop_type()));
+  }
+
+  // This should have created a new browser window.  |browser()| is still
+  // around at this point, even though we've closed its window.
+  Browser* new_browser = FindOneOtherBrowser(browser());
+  ASSERT_TRUE(new_browser);
+
+  // Now create a second browser instance pointing to a different profile.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath path =
+      profile_manager->user_data_dir().AppendASCII("test_profile");
+  Profile* other_profile =
+      Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
+  profile_manager->RegisterTestingProfile(other_profile, true, false);
+
+  // Use a couple same-site HTTP URLs.
+  ASSERT_TRUE(test_server()->Start());
+  std::vector<GURL> urls;
+  urls.push_back(test_server()->GetURL("files/title1.html"));
+  urls.push_back(test_server()->GetURL("files/title2.html"));
+
+  // Set the startup preference to open these URLs.
+  SessionStartupPref other_prefs(SessionStartupPref::URLS);
+  other_prefs.urls = urls;
+  SessionStartupPref::SetStartupPref(other_profile, other_prefs);
+
+  // Again prep the next launch to get a reset prompt.
+  MockTriggeredProfileResetter::SetHasResetTrigger(true);
+
+  // Same kind of simple non-process-startup browser launch.
+  {
+    StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
+                                     chrome::startup::IS_NOT_FIRST_RUN);
+    ASSERT_TRUE(launch.Launch(other_profile, std::vector<GURL>(), false,
+                              new_browser->host_desktop_type()));
+  }
+
+  Browser* other_profile_browser =
+      chrome::FindBrowserWithProfile(other_profile,
+                                     new_browser->host_desktop_type());
+  ASSERT_NE(nullptr, other_profile_browser);
+
+  // Check for the expected reset dialog in the second browser too.
+  TabStripModel* other_tab_strip = other_profile_browser->tab_strip_model();
+  ASSERT_LT(0, other_tab_strip->count());
+  EXPECT_EQ(internals::GetTriggeredResetSettingsURL(),
+            other_tab_strip->GetActiveWebContents()->GetURL());
+  g_browser_process->ReleaseModule();
 }

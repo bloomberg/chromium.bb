@@ -158,9 +158,8 @@ class StartupBrowserCreatorImpl {
   // Record Rappor metrics on startup URLs.
   void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
 
-  // Checks whether |profile_| has a reset trigger set and then clears the
-  // reset trigger.
-  bool CheckAndClearProfileResetTrigger() const;
+  // Checks whether |profile_| has a reset trigger set.
+  bool ProfileHasResetTrigger() const;
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;

@@ -905,9 +905,10 @@ void StartupBrowserCreatorImpl::AddSpecialURLs(
 
   // If this Profile is marked for a reset prompt, ensure the reset
   // settings dialog appears.
-  if (CheckAndClearProfileResetTrigger())
+  if (ProfileHasResetTrigger()) {
     url_list->insert(url_list->begin(),
                      internals::GetTriggeredResetSettingsURL());
+  }
 }
 
 // For first-run, the type will be FIRST_RUN_LAST for all systems except for
@@ -989,7 +990,7 @@ void StartupBrowserCreatorImpl::RecordRapporOnStartupURLs(
   }
 }
 
-bool StartupBrowserCreatorImpl::CheckAndClearProfileResetTrigger() const {
+bool StartupBrowserCreatorImpl::ProfileHasResetTrigger() const {
   bool has_reset_trigger = false;
 #if defined(OS_WIN)
   TriggeredProfileResetter* triggered_profile_resetter =
@@ -997,7 +998,6 @@ bool StartupBrowserCreatorImpl::CheckAndClearProfileResetTrigger() const {
   // TriggeredProfileResetter instance will be nullptr for incognito profiles.
   if (triggered_profile_resetter) {
     has_reset_trigger = triggered_profile_resetter->HasResetTrigger();
-    triggered_profile_resetter->ClearResetTrigger();
   }
 #endif  // defined(OS_WIN)
   return has_reset_trigger;
