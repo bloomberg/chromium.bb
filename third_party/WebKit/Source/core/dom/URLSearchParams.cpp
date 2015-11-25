@@ -179,12 +179,10 @@ void URLSearchParams::set(const String& name, const String& value)
 
 PassRefPtr<EncodedFormData> URLSearchParams::encodeFormData() const
 {
-    RefPtr<EncodedFormData> data = EncodedFormData::create();
     Vector<char> encodedData;
     for (const auto& param : m_params)
         FormDataEncoder::addKeyValuePairAsFormData(encodedData, param.first.utf8(), param.second.utf8(), EncodedFormData::FormURLEncoded);
-    data->appendData(encodedData.data(), encodedData.size());
-    return data.release();
+    return EncodedFormData::create(encodedData.data(), encodedData.size());
 }
 
 DEFINE_TRACE(URLSearchParams)

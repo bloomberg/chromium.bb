@@ -12,6 +12,7 @@
 #include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
+#include <base/gtest_prod_util.h>
 #include <utility>
 
 namespace blink {
@@ -51,7 +52,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    friend class URLSearchParamsTest_EncodedFormData_Test;
+    FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);
 
     explicit URLSearchParams(const String&);
     explicit URLSearchParams(URLSearchParams*);
