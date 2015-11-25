@@ -94,9 +94,11 @@ void CompositingDisplayItem::Raster(
 }
 
 void CompositingDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf(
-      "CompositingDisplayItem alpha: %d, xfermode: %d", alpha_, xfermode_));
+      "CompositingDisplayItem alpha: %d, xfermode: %d, visualRect: [%s]",
+      alpha_, xfermode_, visual_rect.ToString().c_str()));
   if (has_bounds_)
     array->AppendString(base::StringPrintf(
         ", bounds: [%f, %f, %f, %f]", static_cast<float>(bounds_.x()),
@@ -128,8 +130,11 @@ void EndCompositingDisplayItem::Raster(
 }
 
 void EndCompositingDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString("EndCompositingDisplayItem");
+  array->AppendString(
+      base::StringPrintf("EndCompositingDisplayItem visualRect: [%s]",
+                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

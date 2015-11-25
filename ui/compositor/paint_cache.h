@@ -7,6 +7,7 @@
 
 #include "cc/playback/drawing_display_item.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 class PaintContext;
@@ -23,7 +24,7 @@ class COMPOSITOR_EXPORT PaintCache {
   // painting output into the PaintContext. If it returns false, the caller
   // needs to do the work of painting, which can be stored into the PaintCache
   // to be used next time.
-  bool UseCache(const PaintContext& context);
+  bool UseCache(const PaintContext& context, const gfx::Size& size_in_layer);
 
  private:
   // Only PaintRecorder can modify these.

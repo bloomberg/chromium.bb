@@ -59,7 +59,7 @@ class MaskContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(clip, DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
 
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
@@ -338,7 +338,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(clip, DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
 
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
@@ -380,7 +380,7 @@ class CircleContentLayerClient : public ContentLayerClient {
 
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(clip, DisplayItemListSettings());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
     item->SetNew(std::move(picture));

@@ -51,9 +51,11 @@ void TransformDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void TransformDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf("TransformDisplayItem transform: [%s]",
-                                         transform_.ToString().c_str()));
+  array->AppendString(base::StringPrintf(
+      "TransformDisplayItem transform: [%s] visualRect: [%s]",
+      transform_.ToString().c_str(), visual_rect.ToString().c_str()));
 }
 
 EndTransformDisplayItem::EndTransformDisplayItem() {
@@ -80,8 +82,11 @@ void EndTransformDisplayItem::Raster(
 }
 
 void EndTransformDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString("EndTransformDisplayItem");
+  array->AppendString(
+      base::StringPrintf("EndTransformDisplayItem visualRect: [%s]",
+                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

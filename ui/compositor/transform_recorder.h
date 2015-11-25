@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class DisplayItem;
@@ -14,6 +15,7 @@ class DisplayItemList;
 }
 
 namespace gfx {
+class Size;
 class Transform;
 }
 
@@ -26,13 +28,17 @@ class PaintContext;
 // PaintRecorders or other TransformRecorders will be transformed.
 class COMPOSITOR_EXPORT TransformRecorder {
  public:
-  explicit TransformRecorder(const PaintContext& context);
+  // |size_in_layer| is the size in layer space dimensions surrounding
+  // everything that's visible.
+  TransformRecorder(const PaintContext& context,
+                    const gfx::Size& size_in_layer);
   ~TransformRecorder();
 
   void Transform(const gfx::Transform& transform);
 
  private:
   const PaintContext& context_;
+  const gfx::Rect bounds_in_layer_;
   bool transformed_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformRecorder);

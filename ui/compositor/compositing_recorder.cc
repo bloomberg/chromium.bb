@@ -12,13 +12,16 @@
 namespace ui {
 
 CompositingRecorder::CompositingRecorder(const PaintContext& context,
+                                         const gfx::Size& size_in_layer,
                                          uint8_t alpha)
-    : context_(context), saved_(alpha < 255) {
+    : context_(context),
+      bounds_in_layer_(context.ToLayerSpaceBounds(size_in_layer)),
+      saved_(alpha < 255) {
   if (!saved_)
     return;
 
-  auto* item =
-      context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>();
+  auto* item = context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
+      bounds_in_layer_);
   item->SetNew(alpha, SkXfermode::kSrcOver_Mode, nullptr /* no bounds */,
                skia::RefPtr<SkColorFilter>());
 }
@@ -27,7 +30,8 @@ CompositingRecorder::~CompositingRecorder() {
   if (!saved_)
     return;
 
-  context_.list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>();
+  context_.list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>(
+      bounds_in_layer_);
 }
 
 }  // namespace ui

@@ -80,6 +80,13 @@ class COMPOSITOR_EXPORT PaintContext {
   // cache contents.
   friend class PaintCache;
 
+  // Returns a rect with the given size in the space of the context's
+  // containing layer.
+  gfx::Rect ToLayerSpaceBounds(const gfx::Size& size_in_layer) const;
+
+  // Returns the given rect translated by the layer space offset.
+  gfx::Rect ToLayerSpaceRect(const gfx::Rect& rect) const;
+
   cc::DisplayItemList* list_;
   scoped_ptr<SkPictureRecorder> owned_recorder_;
   // A pointer to the |owned_recorder_| in this PaintContext, or in another one

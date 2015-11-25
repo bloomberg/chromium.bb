@@ -12,40 +12,42 @@
 #include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "cc/proto/display_item.pb.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
 // static
 DisplayItem* DisplayItemProtoFactory::AllocateAndConstruct(
+    const gfx::Rect& visual_rect,
     DisplayItemList* list,
     const proto::DisplayItem& proto) {
   switch (proto.type()) {
     case proto::DisplayItem::Type_Clip:
-      return list->CreateAndAppendItem<ClipDisplayItem>();
+      return list->CreateAndAppendItem<ClipDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndClip:
-      return list->CreateAndAppendItem<EndClipDisplayItem>();
+      return list->CreateAndAppendItem<EndClipDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_ClipPath:
-      return list->CreateAndAppendItem<ClipPathDisplayItem>();
+      return list->CreateAndAppendItem<ClipPathDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndClipPath:
-      return list->CreateAndAppendItem<EndClipPathDisplayItem>();
+      return list->CreateAndAppendItem<EndClipPathDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_Compositing:
-      return list->CreateAndAppendItem<CompositingDisplayItem>();
+      return list->CreateAndAppendItem<CompositingDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndCompositing:
-      return list->CreateAndAppendItem<EndCompositingDisplayItem>();
+      return list->CreateAndAppendItem<EndCompositingDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_Drawing:
-      return list->CreateAndAppendItem<DrawingDisplayItem>();
+      return list->CreateAndAppendItem<DrawingDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_Filter:
-      return list->CreateAndAppendItem<FilterDisplayItem>();
+      return list->CreateAndAppendItem<FilterDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndFilter:
-      return list->CreateAndAppendItem<EndFilterDisplayItem>();
+      return list->CreateAndAppendItem<EndFilterDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_FloatClip:
-      return list->CreateAndAppendItem<FloatClipDisplayItem>();
+      return list->CreateAndAppendItem<FloatClipDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndFloatClip:
-      return list->CreateAndAppendItem<EndFloatClipDisplayItem>();
+      return list->CreateAndAppendItem<EndFloatClipDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_Transform:
-      return list->CreateAndAppendItem<TransformDisplayItem>();
+      return list->CreateAndAppendItem<TransformDisplayItem>(visual_rect);
     case proto::DisplayItem::Type_EndTransform:
-      return list->CreateAndAppendItem<EndTransformDisplayItem>();
+      return list->CreateAndAppendItem<EndTransformDisplayItem>(visual_rect);
   }
 
   NOTREACHED();

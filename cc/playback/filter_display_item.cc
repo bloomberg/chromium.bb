@@ -77,9 +77,11 @@ void FilterDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void FilterDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf("FilterDisplayItem bounds: [%s]",
-                                         bounds_.ToString().c_str()));
+  array->AppendString(base::StringPrintf(
+      "FilterDisplayItem bounds: [%s] visualRect: [%s]",
+      bounds_.ToString().c_str(), visual_rect.ToString().c_str()));
 }
 
 EndFilterDisplayItem::EndFilterDisplayItem() {
@@ -106,8 +108,11 @@ void EndFilterDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void EndFilterDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString("EndFilterDisplayItem");
+  array->AppendString(
+      base::StringPrintf("EndFilterDisplayItem  visualRect: [%s]",
+                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

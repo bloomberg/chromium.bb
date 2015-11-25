@@ -27,7 +27,8 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void AsValueInto(const gfx::Rect& visual_rect,
+                   base::trace_event::TracedValue* array) const override;
 
  private:
   SkPath clip_path_;
@@ -49,7 +50,8 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void AsValueInto(const gfx::Rect& visual_rect,
+                   base::trace_event::TracedValue* array) const override;
 };
 
 }  // namespace cc

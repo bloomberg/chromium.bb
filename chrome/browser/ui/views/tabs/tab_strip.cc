@@ -1268,7 +1268,8 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     const uint8_t inactive_tab_alpha =
         (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) ?
             GetInactiveAlpha(false) : 255;
-    ui::CompositingRecorder opacity_recorder(context, inactive_tab_alpha);
+    ui::CompositingRecorder opacity_recorder(context, size(),
+                                             inactive_tab_alpha);
 
     PaintClosingTabs(tab_count(), context);
 

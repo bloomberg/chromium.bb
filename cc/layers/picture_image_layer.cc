@@ -83,7 +83,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
 
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
-  auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+  auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
   item->SetNew(std::move(picture));
 
   display_list->Finalize();

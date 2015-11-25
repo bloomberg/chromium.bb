@@ -50,9 +50,11 @@ void FloatClipDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void FloatClipDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf("FloatClipDisplayItem rect: [%s]",
-                                         clip_rect_.ToString().c_str()));
+  array->AppendString(base::StringPrintf(
+      "FloatClipDisplayItem rect: [%s] visualRect: [%s]",
+      clip_rect_.ToString().c_str(), visual_rect.ToString().c_str()));
 }
 
 EndFloatClipDisplayItem::EndFloatClipDisplayItem() {
@@ -79,8 +81,11 @@ void EndFloatClipDisplayItem::Raster(
 }
 
 void EndFloatClipDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString("EndFloatClipDisplayItem");
+  array->AppendString(
+      base::StringPrintf("EndFloatClipDisplayItem visualRect: [%s]",
+                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

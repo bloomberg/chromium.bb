@@ -90,9 +90,17 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void DrawingDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
   array->BeginDictionary();
   array->SetString("name", "DrawingDisplayItem");
+
+  array->BeginArray("visualRect");
+  array->AppendInteger(visual_rect.x());
+  array->AppendInteger(visual_rect.y());
+  array->AppendInteger(visual_rect.width());
+  array->AppendInteger(visual_rect.height());
+  array->EndArray();
 
   array->BeginArray("cullRect");
   array->AppendInteger(picture_->cullRect().x());

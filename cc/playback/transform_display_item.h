@@ -26,7 +26,8 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void AsValueInto(const gfx::Rect& visual_rect,
+                   base::trace_event::TracedValue* array) const override;
 
  private:
   gfx::Transform transform_;
@@ -46,7 +47,8 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void AsValueInto(const gfx::Rect& visual_rect,
+                   base::trace_event::TracedValue* array) const override;
 };
 
 }  // namespace cc

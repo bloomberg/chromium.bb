@@ -10,6 +10,7 @@
 #include "skia/ext/refptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class DisplayItemList;
@@ -47,6 +48,7 @@ class COMPOSITOR_EXPORT PaintRecorder {
   const PaintContext& context_;
   gfx::Canvas canvas_;
   PaintCache* cache_;
+  gfx::Rect bounds_in_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
 };

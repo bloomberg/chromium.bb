@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class DisplayItem;
@@ -15,7 +16,7 @@ class DisplayItemList;
 
 namespace gfx {
 class Path;
-class Rect;
+class Size;
 }
 
 namespace ui {
@@ -27,7 +28,9 @@ class PaintContext;
 // other ClipRecorders will be clipped.
 class COMPOSITOR_EXPORT ClipRecorder {
  public:
-  explicit ClipRecorder(const PaintContext& context);
+  // |size_in_layer| is the size in layer space dimensions surrounding
+  // everything that's visible.
+  ClipRecorder(const PaintContext& context, const gfx::Size& size_in_layer);
   ~ClipRecorder();
 
   void ClipRect(const gfx::Rect& clip_rect);
@@ -40,6 +43,7 @@ class COMPOSITOR_EXPORT ClipRecorder {
     CLIP_PATH,
   };
   const PaintContext& context_;
+  const gfx::Rect bounds_in_layer_;
   // If someone needs to do more than this many operations with a single
   // ClipRecorder then increase the size of the closers_ array.
   Closer closers_[4];

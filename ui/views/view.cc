@@ -781,7 +781,10 @@ void View::Paint(const ui::PaintContext& parent_context) {
   // rather than relative to its parent.
   bool paint_relative_to_parent = !layer();
 
-  ui::ClipRecorder clip_recorder(context);
+  // TODO(wkorman): Rework clip and transform recorders to pass the size in the
+  // individual clip methods rather than in the constructor.
+  ui::ClipRecorder clip_recorder(parent_context,
+                                 parent() ? parent()->size() : size());
   if (paint_relative_to_parent) {
     // Set the clip rect to the bounds of this View. Note that the X (or left)
     // position we pass to ClipRect takes into consideration whether or not the
@@ -795,7 +798,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     clip_recorder.ClipRect(clip_rect_in_parent);
   }
 
-  ui::TransformRecorder transform_recorder(context);
+  ui::TransformRecorder transform_recorder(context, size());
   if (paint_relative_to_parent) {
     // Translate the graphics such that 0,0 corresponds to where
     // this View is located relative to its parent.
@@ -807,7 +810,10 @@ void View::Paint(const ui::PaintContext& parent_context) {
     transform_recorder.Transform(transform_from_parent);
   }
 
-  if (is_invalidated || !paint_cache_.UseCache(context)) {
+  // Note that the cache is not aware of the offset of the view
+  // relative to the parent since painting is always done relative to
+  // the top left of the individual view.
+  if (is_invalidated || !paint_cache_.UseCache(context, size())) {
     ui::PaintRecorder recorder(context, size(), &paint_cache_);
     gfx::Canvas* canvas = recorder.canvas();
 

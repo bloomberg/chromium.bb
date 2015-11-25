@@ -51,7 +51,8 @@ void WebDisplayItemListImpl::appendDrawingItem(
     const SkPicture* picture) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
-        display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>();
+        display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
+            visual_rect);
     item->SetNew(skia::SharePtr(const_cast<SkPicture*>(picture)));
   } else {
     cc::DrawingDisplayItem item;
@@ -69,7 +70,8 @@ void WebDisplayItemListImpl::appendClipItem(
     rounded_rects.push_back(rounded_clip_rects[i]);
   }
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    auto* item = display_item_list_->CreateAndAppendItem<cc::ClipDisplayItem>();
+    auto* item = display_item_list_->CreateAndAppendItem<cc::ClipDisplayItem>(
+        visual_rect);
     item->SetNew(clip_rect, rounded_rects);
   } else {
     cc::ClipDisplayItem item;
@@ -81,7 +83,8 @@ void WebDisplayItemListImpl::appendClipItem(
 void WebDisplayItemListImpl::appendEndClipItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndClipDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndClipDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndClipDisplayItem());
   }
@@ -94,7 +97,8 @@ void WebDisplayItemListImpl::appendClipPathItem(
     bool antialias) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
-        display_item_list_->CreateAndAppendItem<cc::ClipPathDisplayItem>();
+        display_item_list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
+            visual_rect);
     item->SetNew(clip_path, clip_op, antialias);
   } else {
     cc::ClipPathDisplayItem item;
@@ -106,7 +110,8 @@ void WebDisplayItemListImpl::appendClipPathItem(
 void WebDisplayItemListImpl::appendEndClipPathItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndClipPathDisplayItem());
   }
@@ -117,7 +122,8 @@ void WebDisplayItemListImpl::appendFloatClipItem(
     const blink::WebFloatRect& clip_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
-        display_item_list_->CreateAndAppendItem<cc::FloatClipDisplayItem>();
+        display_item_list_->CreateAndAppendItem<cc::FloatClipDisplayItem>(
+            visual_rect);
     item->SetNew(clip_rect);
   } else {
     cc::FloatClipDisplayItem item;
@@ -129,7 +135,8 @@ void WebDisplayItemListImpl::appendFloatClipItem(
 void WebDisplayItemListImpl::appendEndFloatClipItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndFloatClipDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndFloatClipDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndFloatClipDisplayItem());
   }
@@ -143,7 +150,8 @@ void WebDisplayItemListImpl::appendTransformItem(
 
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
-        display_item_list_->CreateAndAppendItem<cc::TransformDisplayItem>();
+        display_item_list_->CreateAndAppendItem<cc::TransformDisplayItem>(
+            visual_rect);
     item->SetNew(transform);
   } else {
     cc::TransformDisplayItem item;
@@ -155,7 +163,8 @@ void WebDisplayItemListImpl::appendTransformItem(
 void WebDisplayItemListImpl::appendEndTransformItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndTransformDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndTransformDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndTransformDisplayItem());
   }
@@ -174,7 +183,8 @@ void WebDisplayItemListImpl::appendCompositingItem(
 
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
-        display_item_list_->CreateAndAppendItem<cc::CompositingDisplayItem>();
+        display_item_list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
+            visual_rect);
     item->SetNew(static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)),
                  xfermode, bounds, skia::SharePtr(color_filter));
   } else {
@@ -188,7 +198,8 @@ void WebDisplayItemListImpl::appendCompositingItem(
 void WebDisplayItemListImpl::appendEndCompositingItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndCompositingDisplayItem());
   }
@@ -202,8 +213,8 @@ void WebDisplayItemListImpl::appendFilterItem(
       static_cast<const WebFilterOperationsImpl&>(filters);
 
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    auto* item =
-        display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>();
+    auto* item = display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>(
+        visual_rect);
     item->SetNew(filters_impl.AsFilterOperations(), bounds);
   } else {
     cc::FilterDisplayItem item;
@@ -215,7 +226,8 @@ void WebDisplayItemListImpl::appendFilterItem(
 void WebDisplayItemListImpl::appendEndFilterItem(
     const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndFilterDisplayItem>();
+    display_item_list_->CreateAndAppendItem<cc::EndFilterDisplayItem>(
+        visual_rect);
   } else {
     display_item_list_->RasterIntoCanvas(cc::EndFilterDisplayItem());
   }

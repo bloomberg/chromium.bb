@@ -8,6 +8,11 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace ui {
 class PaintContext;
@@ -20,12 +25,16 @@ class PaintContext;
 class COMPOSITOR_EXPORT CompositingRecorder {
  public:
   // |alpha| is a value between 0 and 255, where 0 is transparent and 255 is
-  // opaque.
-  CompositingRecorder(const PaintContext& context, uint8_t alpha);
+  // opaque. |size_in_layer| is the size in layer space dimensions surrounding
+  // everything that's visible.
+  CompositingRecorder(const PaintContext& context,
+                      const gfx::Size& size_in_layer,
+                      uint8_t alpha);
   ~CompositingRecorder();
 
  private:
   const PaintContext& context_;
+  const gfx::Rect bounds_in_layer_;
   bool saved_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositingRecorder);

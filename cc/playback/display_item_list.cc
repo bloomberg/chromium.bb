@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
@@ -21,6 +22,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -59,8 +61,8 @@ scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
 
   for (int i = 0; i < proto.items_size(); i++) {
     const proto::DisplayItem& item_proto = proto.items(i);
-    DisplayItem* item =
-        DisplayItemProtoFactory::AllocateAndConstruct(list.get(), item_proto);
+    DisplayItem* item = DisplayItemProtoFactory::AllocateAndConstruct(
+        layer_rect, list.get(), item_proto);
     if (item)
       item->FromProtobuf(item_proto);
   }
@@ -200,6 +202,15 @@ void DisplayItemList::RemoveLast() {
 }
 
 void DisplayItemList::Finalize() {
+  // TODO(wkorman): Uncomment the assert below once we've investigated
+  // and resolved issues. http://crbug.com/557905
+  // DCHECK_EQ(items_.size(), visual_rects_.size());
+
+  // TODO(vmpstr): Build and make use of an RTree from the visual
+  // rects. For now we just clear them out since we won't ever need
+  // them to stick around post-Finalize. http://crbug.com/527245
+  visual_rects_.clear();
+
   ProcessAppendedItems();
 
   if (settings_.use_cached_picture) {
@@ -262,8 +273,13 @@ DisplayItemList::AsValue(bool include_items) const {
   state->BeginDictionary("params");
   if (include_items) {
     state->BeginArray("items");
+    size_t item_index = 0;
     for (const DisplayItem* item : items_) {
-      item->AsValueInto(state.get());
+      item->AsValueInto(visual_rects_.size() >= item_index
+                            ? visual_rects_[item_index]
+                            : gfx::Rect(),
+                        state.get());
+      item_index++;
     }
     state->EndArray();  // "items".
   }

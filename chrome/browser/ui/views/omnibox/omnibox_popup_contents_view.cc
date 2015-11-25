@@ -465,7 +465,7 @@ void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
   contents_bounds.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0,
                         bottom_shadow_->height() - interior);
 
-  ui::ClipRecorder clip_recorder(context);
+  ui::ClipRecorder clip_recorder(context, size());
   clip_recorder.ClipRect(contents_bounds);
   {
     ui::PaintRecorder recorder(context, size());

@@ -36,7 +36,8 @@ class CC_EXPORT DisplayItem {
   virtual void Raster(SkCanvas* canvas,
                       const gfx::Rect& canvas_target_playback_rect,
                       SkPicture::AbortCallback* callback) const = 0;
-  virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
+  virtual void AsValueInto(const gfx::Rect& visual_rect,
+                           base::trace_event::TracedValue* array) const = 0;
 
   bool is_suitable_for_gpu_rasterization() const {
     return is_suitable_for_gpu_rasterization_;

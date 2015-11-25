@@ -509,7 +509,7 @@ CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
     const ui::PaintContext& context) {
-  ui::CompositingRecorder recorder(context, alpha_);
+  ui::CompositingRecorder recorder(context, size(), alpha_);
   views::View::PaintChildren(context);
 }
 

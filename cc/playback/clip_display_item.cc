@@ -76,9 +76,11 @@ void ClipDisplayItem::Raster(SkCanvas* canvas,
   }
 }
 
-void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
-  std::string value = base::StringPrintf("ClipDisplayItem rect: [%s]",
-                                         clip_rect_.ToString().c_str());
+void ClipDisplayItem::AsValueInto(const gfx::Rect& visual_rect,
+                                  base::trace_event::TracedValue* array) const {
+  std::string value = base::StringPrintf(
+      "ClipDisplayItem rect: [%s] visualRect: [%s]",
+      clip_rect_.ToString().c_str(), visual_rect.ToString().c_str());
   for (const SkRRect& rounded_rect : rounded_clip_rects_) {
     base::StringAppendF(
         &value, " rounded_rect: [rect: [%s]",
@@ -125,8 +127,10 @@ void EndClipDisplayItem::Raster(SkCanvas* canvas,
 }
 
 void EndClipDisplayItem::AsValueInto(
+    const gfx::Rect& visual_rect,
     base::trace_event::TracedValue* array) const {
-  array->AppendString("EndClipDisplayItem");
+  array->AppendString(base::StringPrintf("EndClipDisplayItem visualRect: [%s]",
+                                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc
