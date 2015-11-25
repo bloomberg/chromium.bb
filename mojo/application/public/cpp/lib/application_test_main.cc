@@ -16,7 +16,7 @@ MojoResult MojoMain(MojoHandle handle) {
 
   // Initialize the current process Commandline and test timeouts.
   mojo::ApplicationRunner::InitBaseCommandLine();
-  mojo::logging::InitLogging();
+  mojo::InitLogging();
   TestTimeouts::Initialize();
 
   return mojo::test::RunAllTests(handle);

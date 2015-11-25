@@ -5,14 +5,13 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 
-#include <algorithm>
-
+#include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/lib/associated_interface_ptr_internal.h"
+#include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
 
 namespace mojo {
 

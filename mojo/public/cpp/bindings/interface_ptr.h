@@ -5,15 +5,16 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 
-#include <algorithm>
-
+#include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/lib/interface_ptr_internal.h"
+#include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
+
+class AssociatedGroup;
 
 // A pointer to a local proxy of a remote Interface implementation. Uses a
 // message pipe to communicate with the remote implementation, and automatically
@@ -28,7 +29,8 @@ namespace mojo {
 // create and bind a new InterfacePtr from that thread.
 template <typename Interface>
 class InterfacePtr {
-  MOJO_MOVE_ONLY_TYPE(InterfacePtr)
+  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(InterfacePtr)
+
  public:
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
@@ -118,6 +120,9 @@ class InterfacePtr {
   //
   // This method may only be called after the InterfacePtr has been bound to a
   // message pipe.
+  //
+  // NOTE: Not supported (yet) if |Interface| has methods to pass associated
+  // interface pointers/requests.
   bool WaitForIncomingResponse() {
     return internal_state_.WaitForIncomingResponse();
   }
@@ -144,22 +149,33 @@ class InterfacePtr {
   // TODO: fix this restriction, it's not always obvious when there is a
   // pending response.
   InterfacePtrInfo<Interface> PassInterface() {
-    MOJO_DCHECK(!internal_state_.has_pending_callbacks());
+    DCHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
 
     return state.PassInterface();
   }
 
+  // Returns the associated group that this object belongs to. Returns null if:
+  //   - this object is not bound; or
+  //   - the interface doesn't have methods to pass associated interface
+  //     pointers or requests.
+  AssociatedGroup* associated_group() {
+    return internal_state_.associated_group();
+  }
+
   // DO NOT USE. Exposed only for internal use and for testing.
-  internal::InterfacePtrState<Interface>* internal_state() {
+  internal::InterfacePtrState<Interface, Interface::PassesAssociatedKinds_>*
+  internal_state() {
     return &internal_state_;
   }
 
   // Allow InterfacePtr<> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
  private:
-  typedef internal::InterfacePtrState<Interface> InterfacePtr::*Testable;
+  typedef internal::InterfacePtrState<Interface,
+                                      Interface::PassesAssociatedKinds_>
+      InterfacePtr::*Testable;
 
  public:
   operator Testable() const {
@@ -175,7 +191,8 @@ class InterfacePtr {
   template <typename T>
   bool operator!=(const InterfacePtr<T>& other) const = delete;
 
-  typedef internal::InterfacePtrState<Interface> State;
+  typedef internal::InterfacePtrState<Interface,
+                                      Interface::PassesAssociatedKinds_> State;
   mutable State internal_state_;
 };
 

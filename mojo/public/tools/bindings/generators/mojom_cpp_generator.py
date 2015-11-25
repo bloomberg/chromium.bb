@@ -411,6 +411,7 @@ class Generator(generator.Generator):
     "is_string_kind": mojom.IsStringKind,
     "is_struct_kind": mojom.IsStructKind,
     "is_union_kind": mojom.IsUnionKind,
+    "passes_associated_kinds": mojom.PassesAssociatedKinds,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "stylize_method": generator.StudlyCapsToCamel,
     "to_all_caps": generator.CamelCaseToAllCaps,

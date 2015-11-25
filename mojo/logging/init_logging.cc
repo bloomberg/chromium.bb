@@ -8,7 +8,6 @@
 #include "base/logging.h"
 
 namespace mojo {
-namespace logging {
 namespace {
 
 ::logging::LoggingDestination DetermineLogMode(
@@ -45,5 +44,4 @@ void InitLogging() {
                          false);  // enable_tickcount
 }
 
-}  // namespace logging
 }  // namespace mojo

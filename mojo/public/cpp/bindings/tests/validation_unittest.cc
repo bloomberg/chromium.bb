@@ -408,7 +408,7 @@ TEST_F(ValidationTest, ResponseBoundsCheck) {
 TEST_F(ValidationIntegrationTest, InterfacePtr) {
   IntegrationTestInterfacePtr interface_ptr = MakeProxy(
       InterfacePtrInfo<IntegrationTestInterface>(testee_endpoint().Pass(), 0u));
-  interface_ptr.internal_state()->router_for_testing()->EnableTestingMode();
+  interface_ptr.internal_state()->EnableTestingMode();
 
   RunValidationTests("integration_intf_resp", test_message_receiver());
   RunValidationTests("integration_msghdr", test_message_receiver());
@@ -423,7 +423,7 @@ TEST_F(ValidationIntegrationTest, Binding) {
   Binding<IntegrationTestInterface> binding(
       &interface_impl,
       MakeRequest<IntegrationTestInterface>(testee_endpoint().Pass()));
-  binding.internal_router()->EnableTestingMode();
+  binding.EnableTestingMode();
 
   RunValidationTests("integration_intf_rqst", test_message_receiver());
   RunValidationTests("integration_msghdr", test_message_receiver());

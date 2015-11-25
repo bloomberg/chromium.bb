@@ -138,6 +138,12 @@ class MultiplexRouter
     return connector_.is_valid();
   }
 
+  // TODO(yzshen): consider removing this getter.
+  MessagePipeHandle handle() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return connector_.handle();
+  }
+
  private:
   friend class base::RefCountedDeleteOnMessageLoop<MultiplexRouter>;
   friend class base::DeleteHelper<MultiplexRouter>;

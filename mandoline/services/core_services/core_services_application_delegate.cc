@@ -97,7 +97,7 @@ void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
 }
 
 void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  mojo::logging::InitLogging();
+  mojo::InitLogging();
   tracing_.Initialize(app);
 }
 

@@ -618,3 +618,37 @@ def HasCallbacks(interface):
     if method.response_parameters != None:
       return True
   return False
+
+
+# Finds out whether an interface passes associated interfaces and associated
+# interface requests.
+def PassesAssociatedKinds(interface):
+  def _ContainsAssociatedKinds(kind, visited_kinds):
+    if kind in visited_kinds:
+      # No need to examine the kind again.
+      return False
+    visited_kinds.add(kind)
+    if IsAssociatedKind(kind):
+      return True
+    if IsArrayKind(kind):
+      return _ContainsAssociatedKinds(kind.kind, visited_kinds)
+    if IsStructKind(kind) or IsUnionKind(kind):
+      for field in kind.fields:
+        if _ContainsAssociatedKinds(field.kind, visited_kinds):
+          return True
+    if IsMapKind(kind):
+      # No need to examine the key kind, only primitive kinds and non-nullable
+      # string are allowed to be key kinds.
+      return _ContainsAssociatedKinds(kind.value_kind, visited_kinds)
+    return False
+
+  visited_kinds = set()
+  for method in interface.methods:
+    for param in method.parameters:
+      if _ContainsAssociatedKinds(param.kind, visited_kinds):
+        return True
+    if method.response_parameters != None:
+      for param in method.response_parameters:
+        if _ContainsAssociatedKinds(param.kind, visited_kinds):
+          return True
+  return False

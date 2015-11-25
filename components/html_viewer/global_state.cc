@@ -155,7 +155,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
       pak_file_2.Pass(), base::MemoryMappedFile::Region::kWholeFile);
   }
 
-  mojo::logging::InitLogging();
+  mojo::InitLogging();
 
   if (command_line->HasSwitch(kDisableEncryptedMedia))
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);

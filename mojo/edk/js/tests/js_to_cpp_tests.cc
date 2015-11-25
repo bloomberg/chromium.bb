@@ -210,7 +210,7 @@ class CppSideConnection : public js_to_cpp::CppSide {
   void Bind(InterfaceRequest<js_to_cpp::CppSide> request) {
     binding_.Bind(request.Pass());
     // Keep the pipe open even after validation errors.
-    binding_.internal_router()->EnableTestingMode();
+    binding_.EnableTestingMode();
   }
 
   // js_to_cpp::CppSide:
