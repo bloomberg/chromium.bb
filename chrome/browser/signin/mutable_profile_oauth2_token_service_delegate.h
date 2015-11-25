@@ -58,6 +58,9 @@ class MutableProfileOAuth2TokenServiceDelegate
   void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type)
       override;
 
+  // Overridden from OAuth2TokenServiceDelegate.
+  const net::BackoffEntry* BackoffEntry() const override;
+
  private:
   friend class MutableProfileOAuth2TokenServiceDelegateTest;
 

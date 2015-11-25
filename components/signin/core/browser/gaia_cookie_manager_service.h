@@ -206,6 +206,11 @@ class GaiaCookieManagerService : public KeyedService,
     list_accounts_stale_ = stale;
   }
 
+  // Returns a non-NULL pointer to its instance of net::BackoffEntry
+  const net::BackoffEntry* GetBackoffEntry() {
+    return &fetcher_backoff_;
+  }
+
  private:
   net::URLRequestContextGetter* request_context() {
     return signin_client_->GetURLRequestContext();

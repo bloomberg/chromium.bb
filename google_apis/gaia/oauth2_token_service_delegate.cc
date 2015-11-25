@@ -113,3 +113,7 @@ bool OAuth2TokenServiceDelegate::RefreshTokenHasError(
 std::vector<std::string> OAuth2TokenServiceDelegate::GetAccounts() {
   return std::vector<std::string>();
 }
+
+const net::BackoffEntry* OAuth2TokenServiceDelegate::BackoffEntry() const {
+  return nullptr;
+}

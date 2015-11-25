@@ -46,3 +46,7 @@ void ProfileOAuth2TokenService::RevokeCredentials(
     const std::string& account_id) {
   GetDelegate()->RevokeCredentials(account_id);
 }
+
+const net::BackoffEntry* ProfileOAuth2TokenService::GetDelegateBackoffEntry() {
+  return GetDelegate()->BackoffEntry();
+}

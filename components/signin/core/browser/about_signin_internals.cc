@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "net/base/backoff_entry.h"
 
 using base::Time;
 using namespace signin_internals_util;
@@ -270,6 +271,7 @@ void AboutSigninInternals::NotifyObservers() {
                              signin_manager_,
                              signin_error_controller_,
                              token_service_,
+                             cookie_manager_service_,
                              product_version);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
@@ -288,6 +290,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
                                 signin_manager_,
                                 signin_error_controller_,
                                 token_service_,
+                                cookie_manager_service_,
                                 client_->GetProductVersion()).Pass();
 }
 
@@ -498,6 +501,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     SigninManagerBase* signin_manager,
     SigninErrorController* signin_error_controller,
     ProfileOAuth2TokenService* token_service,
+    GaiaCookieManagerService* cookie_manager_service_,
     const std::string& product_version) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -574,6 +578,42 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].first,
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].second);
   }
+
+  const net::BackoffEntry* cookie_manager_backoff_entry =
+      cookie_manager_service_->GetBackoffEntry();
+
+  if (cookie_manager_backoff_entry->ShouldRejectRequest()) {
+    Time next_retry_time = Time::NowFromSystemTime() +
+        cookie_manager_backoff_entry->GetTimeUntilRelease();
+
+    std::string next_retry_time_as_str =
+        base::UTF16ToUTF8(
+            base::TimeFormatShortDateAndTime(next_retry_time));
+
+    AddSectionEntry(detailed_info,
+                    "Cookie Manager Next Retry",
+                    next_retry_time_as_str,
+                    "");
+  }
+
+  const net::BackoffEntry* token_service_backoff_entry = token_service->
+      GetDelegateBackoffEntry();
+
+  if (token_service_backoff_entry &&
+      token_service_backoff_entry->ShouldRejectRequest()) {
+    Time next_retry_time = Time::NowFromSystemTime() +
+        token_service_backoff_entry->GetTimeUntilRelease();
+
+    std::string next_retry_time_as_str =
+        base::UTF16ToUTF8(
+            base::TimeFormatShortDateAndTime(next_retry_time));
+
+    AddSectionEntry(detailed_info,
+                  "Token Service Next Retry",
+                  next_retry_time_as_str,
+                  "");
+  }
+
 #endif // !defined(OS_CHROMEOS)
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is

@@ -519,3 +519,8 @@ void MutableProfileOAuth2TokenServiceDelegate::OnNetworkChanged(
   // by a previous lack of network connectivity don't prevent new requests.
   backoff_entry_.Reset();
 }
+
+const net::BackoffEntry*
+    MutableProfileOAuth2TokenServiceDelegate::BackoffEntry() const {
+  return &backoff_entry_;
+}

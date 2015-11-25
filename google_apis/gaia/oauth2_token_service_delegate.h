@@ -8,6 +8,7 @@
 #include "base/observer_list.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/base/backoff_entry.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -53,6 +54,10 @@ class OAuth2TokenServiceDelegate {
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenService::Observer* observer);
   void RemoveObserver(OAuth2TokenService::Observer* observer);
+
+  // Returns a pointer to its instance of net::BackoffEntry if it has one, or
+  // a nullptr otherwise.
+  virtual const net::BackoffEntry* BackoffEntry() const;
 
  protected:
   // Called by subclasses to notify observers.

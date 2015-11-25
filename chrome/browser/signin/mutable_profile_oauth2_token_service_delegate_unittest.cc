@@ -415,6 +415,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
   EXPECT_EQ(1, access_token_failure_count_);
+  // Expect a positive backoff time.
+  EXPECT_GT(oauth2_service_delegate_->backoff_entry_.GetTimeUntilRelease(),
+      TimeDelta());
 
   // Pretend that backoff has expired and try again.
   oauth2_service_delegate_->backoff_entry_.SetCustomReleaseTime(

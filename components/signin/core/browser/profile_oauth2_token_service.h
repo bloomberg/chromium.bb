@@ -11,6 +11,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "net/base/backoff_entry.h"
 
 // ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -53,6 +54,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
                                  const std::string& refresh_token);
 
   virtual void RevokeCredentials(const std::string& account_id);
+
+  // Returns a pointer to its instance of net::BackoffEntry or nullptr if there
+  // is no such instance.
+  const net::BackoffEntry* GetDelegateBackoffEntry();
 
  private:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
