@@ -9,12 +9,14 @@
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <div class="settings-box" on-tap="onShowResetProfileDialog_">
+    <div class="settings-box" id="resetProfile"
+        on-tap="onShowResetProfileDialog_">
       <div i18n-content="resetPageTitle"></div>
       <div i18n-content="resetPageDescription"></div>
     </div>
 <if expr="chromeos">
-    <div class="settings-box" on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
+    <div class="settings-box" id="powerwash" on-tap="onShowPowerwashDialog_"
+        hidden="[[!allowPowerwash_]]">
       <div i18n-content="powerwashTitle"></div>
       <div i18n-content="powerwashDescription"></div>
     </div>

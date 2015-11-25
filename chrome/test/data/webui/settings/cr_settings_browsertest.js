@@ -34,6 +34,7 @@ CrSettingsBrowserTest.prototype = {
     'pref_util_tests.js',
     'prefs_test_cases.js',
     'prefs_tests.js',
+    'reset_page_test.js',
     'site_list_tests.js',
     'site_settings_category_tests.js',
   ]),
@@ -60,5 +61,11 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   site_settings_category.registerTests();
 
   // Run all registered tests.
+  mocha.run();
+});
+
+
+TEST_F('CrSettingsBrowserTest', 'ResetPage', function() {
+  settings_reset_page.registerTests();
   mocha.run();
 });

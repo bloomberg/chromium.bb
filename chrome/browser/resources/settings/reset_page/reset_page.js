@@ -30,12 +30,12 @@ Polymer({
 
   /** @private */
   onShowResetProfileDialog_: function() {
-     this.showDialog_('settings-reset-profile-dialog');
+    this.showDialog_('settings-reset-profile-dialog');
   },
 
   /** @private */
   onShowPowerwashDialog_: function() {
-     this.showDialog_('settings-powerwash-dialog');
+    this.showDialog_('settings-powerwash-dialog');
   },
 
 
@@ -45,12 +45,12 @@ Polymer({
    * @private
    */
   showDialog_: function(dialogName) {
-     var dialog = document.createElement(dialogName);
-     this.shadowRoot.appendChild(dialog);
-     dialog.open();
+    var dialog = document.createElement(dialogName);
+    this.shadowRoot.appendChild(dialog);
+    dialog.open();
 
-     dialog.addEventListener('iron-overlay-closed', function(event) {
-       dialog.remove();
-     });
+    dialog.addEventListener('iron-overlay-closed', function() {
+      dialog.remove();
+    });
   },
 });
