@@ -900,7 +900,7 @@ bool PaintLayerCompositor::requiresScrollCornerLayer() const
 
 void PaintLayerCompositor::updateOverflowControlsLayers()
 {
-    GraphicsLayer* controlsParent = m_rootTransformLayer.get() ? m_rootTransformLayer.get() : m_overflowControlsHostLayer.get();
+    GraphicsLayer* controlsParent = m_overflowControlsHostLayer.get();
     // Main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
     // make the parent for the scrollbars be the viewport container layer.
     if (m_layoutView.frame()->isMainFrame()) {
@@ -1055,7 +1055,6 @@ void PaintLayerCompositor::destroyRootLayer()
     }
     ASSERT(!m_scrollLayer);
     m_rootContentLayer = nullptr;
-    m_rootTransformLayer = nullptr;
 }
 
 void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
@@ -1180,8 +1179,6 @@ String PaintLayerCompositor::debugName(const GraphicsLayer* graphicsLayer) const
     String name;
     if (graphicsLayer == m_rootContentLayer.get()) {
         name = "Content Root Layer";
-    } else if (graphicsLayer == m_rootTransformLayer.get()) {
-        name = "Root Transform Layer";
     } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
         name = "Frame Overflow Controls Host Layer";
     } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {

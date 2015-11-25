@@ -211,7 +211,6 @@ private:
 
     LayoutView& m_layoutView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
-    OwnPtr<GraphicsLayer> m_rootTransformLayer;
 
     CompositingReasonFinder m_compositingReasonFinder;
 
