@@ -46,7 +46,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         super.setUp();
         String[] commandLineArgs = {
                 CronetTestFramework.CACHE_KEY, CronetTestFramework.CACHE_DISK,
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LIBRARY_INIT_WRAPPER,
+                CronetTestFramework.LIBRARY_INIT_KEY,
+                CronetTestFramework.LibraryInitType.HTTP_URL_CONNECTION,
         };
         startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));

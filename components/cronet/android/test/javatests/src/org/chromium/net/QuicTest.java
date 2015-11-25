@@ -25,6 +25,7 @@ public class QuicTest extends CronetTestBase {
     private static final String TAG = "cr.QuicTest";
     private static final String[] CERTS_USED = {"quic_test.example.com.crt"};
     private CronetTestFramework mTestFramework;
+    private CronetEngine.Builder mBuilder;
 
     @Override
     protected void setUp() throws Exception {
@@ -33,9 +34,9 @@ public class QuicTest extends CronetTestBase {
         System.loadLibrary("cronet_tests");
         QuicTestServer.startQuicTestServer(getContext());
 
-        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        builder.enableQUIC(true);
-        builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
+        mBuilder = new CronetEngine.Builder(getContext());
+        mBuilder.enableQUIC(true);
+        mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
         JSONObject quicParams = new JSONObject()
@@ -45,13 +46,11 @@ public class QuicTest extends CronetTestBase {
                                         .put("max_number_of_lossy_connections", 10)
                                         .put("packet_loss_threshold", 0.5);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
-        builder.setExperimentalOptions(experimentalOptions.toString());
+        mBuilder.setExperimentalOptions(experimentalOptions.toString());
 
-        builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
-        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
-        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
-
-        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
+        mBuilder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
+        mBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        mBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
     }
 
     @Override
@@ -64,6 +63,10 @@ public class QuicTest extends CronetTestBase {
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
     public void testQuicLoadUrl_LegacyAPI() throws Exception {
+        String[] commandLineArgs = {
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
+        mTestFramework = new CronetTestFramework(null, commandLineArgs, getContext(), mBuilder);
+
         long urlRequestContextAdapter = ((ChromiumUrlRequestFactory) mTestFramework.mRequestFactory)
                                                 .getRequestContext()
                                                 .getUrlRequestContextAdapter();
@@ -91,6 +94,10 @@ public class QuicTest extends CronetTestBase {
     @LargeTest
     @Feature({"Cronet"})
     public void testQuicLoadUrl() throws Exception {
+        String[] commandLineArgs = {
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.CRONET};
+        mTestFramework = new CronetTestFramework(null, commandLineArgs, getContext(), mBuilder);
+
         long urlRequestContextAdapter = ((CronetUrlRequestContext) mTestFramework.mCronetEngine)
                                                 .getUrlRequestContextAdapter();
         NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, false);

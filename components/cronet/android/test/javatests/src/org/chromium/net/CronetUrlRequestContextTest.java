@@ -146,7 +146,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
     @SuppressWarnings("deprecation")
     public void testDataReductionProxyEnabled() throws Exception {
-        mTestFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        mTestFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Ensure native code is loaded before trying to start test server.
         new CronetEngine.Builder(getContext()).setLibraryName("cronet_tests").build().shutdown();
@@ -311,7 +311,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testShutdownDuringInit() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to block until shutdown is called to test
@@ -350,7 +350,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitAndShutdownOnMainThread() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to init and shutdown on the main thread.
@@ -688,7 +688,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitEngineAndStartRequest() {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Immediately make a request after initializing the engine.
         CronetEngine cronetEngine = testFramework.initCronetEngine();
@@ -703,7 +703,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitEngineStartTwoRequests() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Make two requests after initializing the context.
         CronetEngine cronetEngine = testFramework.initCronetEngine();
@@ -724,7 +724,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoEnginesSimultaneously() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Threads will block on runBlocker to ensure simultaneous execution.
         ConditionVariable runBlocker = new ConditionVariable(false);
@@ -743,7 +743,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoEnginesInSequence() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         ConditionVariable runBlocker = new ConditionVariable(true);
         RequestThread thread1 = new RequestThread(testFramework, TEST_URL, runBlocker);

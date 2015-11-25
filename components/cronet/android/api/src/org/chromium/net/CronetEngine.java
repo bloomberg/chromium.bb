@@ -382,7 +382,11 @@ public abstract class CronetEngine {
          * Build a {@link CronetEngine} using this builder's configuration.
          */
         public CronetEngine build() {
-            return createContext(this);
+            CronetEngine engine = createContext(this);
+            // Clear MOCK_CERT_VERIFIER reference if there is any, since
+            // the ownership has been transferred to the engine.
+            mConfig.remove(CronetEngineBuilderList.MOCK_CERT_VERIFIER);
+            return engine;
         }
     }
 

@@ -29,8 +29,10 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         builder.addQuicHint("www.google.com", 443, 443);
         builder.addQuicHint("www.youtube.com", 443, 443);
         builder.setLibraryName("cronet_tests");
+        String[] commandLineArgs = {
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
         CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(URL, builder);
+                new CronetTestFramework(URL, commandLineArgs, getContext(), builder);
         HttpUrlRequestFactory factory = testFramework.mRequestFactory;
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is "

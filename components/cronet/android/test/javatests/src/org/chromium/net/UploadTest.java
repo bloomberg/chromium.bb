@@ -27,10 +27,10 @@ public class UploadTest extends CronetTestBase {
 
     private CronetTestFramework mTestFramework;
 
-    // @Override
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestFramework = startCronetTestFramework();
+        mTestFramework = startCronetTestFrameworkForLegacyApi(null);
         assertNotNull(mTestFramework);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }

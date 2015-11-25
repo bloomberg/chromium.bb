@@ -29,7 +29,7 @@ public class ChromiumUrlRequestTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mTestFramework = startCronetTestFramework();
+        mTestFramework = startCronetTestFrameworkForLegacyApi(null);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         MockUrlRequestJobFactory.setUp();
     }

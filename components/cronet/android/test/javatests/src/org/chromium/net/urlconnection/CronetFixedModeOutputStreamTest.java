@@ -37,7 +37,8 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LIBRARY_INIT_WRAPPER,
+                CronetTestFramework.LIBRARY_INIT_KEY,
+                CronetTestFramework.LibraryInitType.HTTP_URL_CONNECTION,
         };
         startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));

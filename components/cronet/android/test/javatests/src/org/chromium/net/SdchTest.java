@@ -44,6 +44,14 @@ public class SdchTest extends CronetTestBase {
             commandLineArgs.add(CronetTestFramework.SDCH_ENABLE);
         }
 
+        if (api == Api.LEGACY) {
+            commandLineArgs.add(CronetTestFramework.LIBRARY_INIT_KEY);
+            commandLineArgs.add(CronetTestFramework.LibraryInitType.LEGACY);
+        } else {
+            commandLineArgs.add(CronetTestFramework.LIBRARY_INIT_KEY);
+            commandLineArgs.add(CronetTestFramework.LibraryInitType.CRONET);
+        }
+
         String[] args = new String[commandLineArgs.size()];
         mTestFramework = startCronetTestFrameworkWithUrlAndCommandLineArgs(
                 null, commandLineArgs.toArray(args));

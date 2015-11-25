@@ -25,7 +25,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryAndStartRequest() {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Immediately make a request after initializing the factory.
         HttpUrlRequestFactory factory = testFramework.initRequestFactory();
@@ -37,7 +37,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryStartRequestAndCancel() {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Make a request and cancel it after initializing the factory.
         HttpUrlRequestFactory factory = testFramework.initRequestFactory();
@@ -54,7 +54,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryStartTwoRequests() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Make two request right after initializing the factory.
         int[] statusCodes = {0, 0};
@@ -91,7 +91,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoFactoriesSimultaneously() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         RequestThread thread1 = new RequestThread(testFramework, URL);
         RequestThread thread2 = new RequestThread(testFramework, URL_404);
@@ -107,7 +107,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoFactoriesInSequence() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipFactoryInit();
+        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         RequestThread thread1 = new RequestThread(testFramework, URL);
         RequestThread thread2 = new RequestThread(testFramework, URL_404);

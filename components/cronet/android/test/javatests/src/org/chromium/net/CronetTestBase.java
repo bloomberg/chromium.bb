@@ -64,12 +64,24 @@ public class CronetTestBase extends AndroidTestCase {
         return mCronetTestFramework;
     }
 
-    // Helper method to tell the framework to skip factory init during construction.
-    protected CronetTestFramework startCronetTestFrameworkAndSkipFactoryInit() {
+    // Helper method to tell the framework to skip library init during construction.
+    protected CronetTestFramework startCronetTestFrameworkAndSkipLibraryInit() {
         String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LIBRARY_INIT_SKIP};
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.NONE};
         mCronetTestFramework =
                 startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
+        return mCronetTestFramework;
+    }
+
+    /**
+     * Starts the CronetTest framework for the legacy API.
+     * @param url if non-null, a request will be made with that url.
+     */
+    protected CronetTestFramework startCronetTestFrameworkForLegacyApi(String url) {
+        String[] commandLineArgs = {
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
+        mCronetTestFramework =
+                startCronetTestFrameworkWithUrlAndCommandLineArgs(url, commandLineArgs);
         return mCronetTestFramework;
     }
 
