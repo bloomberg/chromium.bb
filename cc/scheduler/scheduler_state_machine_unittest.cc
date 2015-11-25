@@ -40,7 +40,7 @@
     EXPECT_IMPL_FRAME_STATE(                                                \
         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE);     \
   }                                                                         \
-  WillPerformAction(&state, action);                                        \
+  PerformAction(&state, action);                                            \
   if (action == SchedulerStateMachine::ACTION_NONE) {                       \
     if (state.begin_impl_frame_state() ==                                   \
         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING) \
@@ -62,57 +62,6 @@ namespace cc {
 
 namespace {
 
-void WillPerformAction(SchedulerStateMachine* sm,
-                       SchedulerStateMachine::Action action) {
-  switch (action) {
-    case SchedulerStateMachine::ACTION_NONE:
-      return;
-
-    case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
-      sm->WillActivate();
-      return;
-
-    case SchedulerStateMachine::ACTION_ANIMATE:
-      sm->WillAnimate();
-      return;
-
-    case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
-      sm->WillSendBeginMainFrame();
-      return;
-
-    case SchedulerStateMachine::ACTION_COMMIT: {
-      bool commit_has_no_updates = false;
-      sm->WillCommit(commit_has_no_updates);
-      return;
-    }
-
-    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
-    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
-      bool did_request_swap = true;
-      sm->WillDraw(did_request_swap);
-      return;
-    }
-
-    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
-      bool did_request_swap = false;
-      sm->WillDraw(did_request_swap);
-      return;
-    }
-
-    case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
-      sm->WillBeginOutputSurfaceCreation();
-      return;
-
-    case SchedulerStateMachine::ACTION_PREPARE_TILES:
-      sm->WillPrepareTiles();
-      return;
-
-    case SchedulerStateMachine::ACTION_INVALIDATE_OUTPUT_SURFACE:
-      sm->WillInvalidateOutputSurface();
-      return;
-  }
-}
-
 const SchedulerStateMachine::BeginImplFrameState all_begin_impl_frame_states[] =
     {SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE,
      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING,
@@ -131,7 +80,8 @@ const SchedulerStateMachine::BeginMainFrameState begin_main_frame_states[] = {
 class StateMachine : public SchedulerStateMachine {
  public:
   explicit StateMachine(const SchedulerSettings& scheduler_settings)
-      : SchedulerStateMachine(scheduler_settings) {}
+      : SchedulerStateMachine(scheduler_settings),
+        draw_result_for_test_(DRAW_SUCCESS) {}
 
   void CreateAndInitializeOutputSurfaceWithActivatedCommit() {
     DidCreateAndInitializeOutputSurface();
@@ -173,6 +123,11 @@ class StateMachine : public SchedulerStateMachine {
 
   void SetNeedsRedraw(bool needs_redraw) { needs_redraw_ = needs_redraw; }
 
+  void SetDrawResultForTest(DrawResult draw_result) {
+    draw_result_for_test_ = draw_result;
+  }
+  DrawResult draw_result_for_test() { return draw_result_for_test_; }
+
   void SetNeedsForcedRedrawForTimeout(bool b) {
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
     active_tree_needs_first_draw_ = true;
@@ -199,7 +154,59 @@ class StateMachine : public SchedulerStateMachine {
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
   using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::WillCommit;
+
+ protected:
+  DrawResult draw_result_for_test_;
 };
+
+void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
+  switch (action) {
+    case SchedulerStateMachine::ACTION_NONE:
+      return;
+
+    case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
+      sm->WillActivate();
+      return;
+
+    case SchedulerStateMachine::ACTION_ANIMATE:
+      sm->WillAnimate();
+      return;
+
+    case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
+      sm->WillSendBeginMainFrame();
+      return;
+
+    case SchedulerStateMachine::ACTION_COMMIT: {
+      bool commit_has_no_updates = false;
+      sm->WillCommit(commit_has_no_updates);
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
+      sm->WillDraw();
+      sm->DidDraw(sm->draw_result_for_test());
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
+      sm->AbortDrawAndSwap();
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
+      sm->WillBeginOutputSurfaceCreation();
+      return;
+
+    case SchedulerStateMachine::ACTION_PREPARE_TILES:
+      sm->WillPrepareTiles();
+      return;
+
+    case SchedulerStateMachine::ACTION_INVALIDATE_OUTPUT_SURFACE:
+      sm->WillInvalidateOutputSurface();
+      return;
+  }
+}
 
 TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   SchedulerSettings default_scheduler_settings;
@@ -406,39 +413,52 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeActivationEnabled) {
 }
 
 TEST(SchedulerStateMachineTest,
-     TestFailedDrawForAnimationCheckerboardSetsNeedsCommitAndDoesNotDrawAgain) {
+     FailedDrawForAnimationCheckerboardSetsNeedsCommitAndRetriesDraw) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
   state.SetNeedsRedraw(true);
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.BeginFrameNeeded());
+
+  // Start a frame.
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.OnBeginImplFrameDeadline();
-
-  // We're drawing now.
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-  state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
+  state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  EXPECT_FALSE(state.RedrawPending());
   EXPECT_FALSE(state.CommitPending());
 
-  // Failing the draw makes us require a commit.
-  state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  // Failing a draw triggers request for a new BeginMainFrame.
+  state.OnBeginImplFrameDeadline();
+  state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_TRUE(state.RedrawPending());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // It's okay to attempt more draws just in case additional raster
+  // finishes and the requested commit wasn't actually necessary.
   EXPECT_TRUE(state.CommitPending());
+  EXPECT_TRUE(state.RedrawPending());
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadlinePending();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawForMissingHighResNeedsCommit) {
+TEST(SchedulerStateMachineTest, FailedDrawForMissingHighResNeedsCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -446,61 +466,62 @@ TEST(SchedulerStateMachineTest, TestFailedDrawForMissingHighResNeedsCommit) {
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.BeginFrameNeeded());
 
+  // Start a frame.
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-  state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
+  state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.RedrawPending());
   EXPECT_FALSE(state.CommitPending());
 
-  // Missing high res content requires a commit (but not a redraw)
-  state.DidDrawIfPossibleCompleted(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT);
-  state.OnBeginImplFrame();
+  // Failing a draw triggers because of high res tiles missing
+  // request for a new BeginMainFrame.
+  state.OnBeginImplFrameDeadline();
+  state.SetDrawResultForTest(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_FALSE(state.RedrawPending());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // It doesn't request a draw until we get a new commit though.
   EXPECT_TRUE(state.CommitPending());
-}
+  EXPECT_FALSE(state.RedrawPending());
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadlinePending();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-TEST(SchedulerStateMachineTest,
-     TestsetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-  state.SetNeedsRedraw(true);
+  // Finish the commit and activation.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.RedrawPending());
-  EXPECT_TRUE(state.BeginFrameNeeded());
+
+  // Verify we draw with the new frame.
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadlinePending();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
-
-  // We're drawing now.
+  state.SetDrawResultForTest(DRAW_SUCCESS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.RedrawPending());
-  EXPECT_FALSE(state.CommitPending());
-
-  // While still in the same BeginMainFrame callback on the main thread,
-  // set needs redraw again. This should not redraw.
-  state.SetNeedsRedraw(true);
+  state.OnBeginImplFrameIdle();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Failing the draw for animation checkerboards makes us require a commit.
-  state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_TRUE(state.RedrawPending());
 }
 
 TEST(SchedulerStateMachineTest,
@@ -519,19 +540,16 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.CommitPending());
 
-  // Then initiate a draw.
+  // Then initiate a draw that fails.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-
-  // Fail the draw.
-  state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.BeginFrameNeeded());
   EXPECT_TRUE(state.RedrawPending());
-  // But the commit is ongoing.
   EXPECT_TRUE(state.CommitPending());
 
   // Finish the commit. Note, we should not yet be forcing a draw, but should
@@ -555,15 +573,18 @@ TEST(SchedulerStateMachineTest,
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
+  state.SetDrawResultForTest(DRAW_SUCCESS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED);
   state.DidSwapBuffers();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.DidSwapBuffersComplete();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   SchedulerSettings scheduler_settings;
-  int draw_limit = 1;
+  int draw_limit = 2;
   scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced =
       draw_limit;
   StateMachine state(scheduler_settings);
@@ -585,11 +606,23 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 
-  // Fail the draw enough times to force a redraw,
-  // then once more for good measure.
-  for (int i = 0; i < draw_limit + 1; ++i)
-    state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // Fail the draw enough times to force a redraw.
+  for (int i = 0; i < draw_limit; ++i) {
+    state.SetNeedsRedraw(true);
+    state.OnBeginImplFrame();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameDeadlinePending();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameDeadline();
+    state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameIdle();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  }
+
   EXPECT_TRUE(state.BeginFrameNeeded());
   EXPECT_TRUE(state.RedrawPending());
   // But the commit is ongoing.
@@ -610,8 +643,21 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
 
   // After failing additional draws, we should still be in a forced
   // redraw, but not back in WAITING_FOR_COMMIT.
-  for (int i = 0; i < draw_limit + 1; ++i)
-    state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
+  for (int i = 0; i < draw_limit; ++i) {
+    state.SetNeedsRedraw(true);
+    state.OnBeginImplFrame();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameDeadlinePending();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameDeadline();
+    state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    state.OnBeginImplFrameIdle();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  }
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.ForcedRedrawState() ==
     SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
@@ -630,11 +676,11 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_TRUE(state.RedrawPending());
+  state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 
   // Failing the draw for animation checkerboards makes us require a commit.
-  state.DidDrawIfPossibleCompleted(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -649,6 +695,7 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
   // We should try to draw again at the end of the next BeginImplFrame on
   // the impl thread.
   state.OnBeginImplFrameDeadline();
+  state.SetDrawResultForTest(DRAW_SUCCESS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
@@ -672,7 +719,6 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -692,7 +738,6 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -931,7 +976,6 @@ TEST(SchedulerStateMachineTest, TestSetNeedsBeginMainFrameIsNotLost) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
@@ -976,7 +1020,6 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
 
   // Should be synchronized, no draw needed, no action needed.
@@ -1115,7 +1158,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
 
   // Now will be able to start main frame.
@@ -1167,7 +1209,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
-  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
   state.DidSwapBuffersComplete();
 
   // Should be synchronized, no draw needed, no action needed.

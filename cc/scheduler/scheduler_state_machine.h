@@ -98,13 +98,18 @@ class CC_EXPORT SchedulerStateMachine {
   static const char* ForcedRedrawOnTimeoutStateToString(
       ForcedRedrawOnTimeoutState state);
 
+  BeginMainFrameState begin_main_frame_state() const {
+    return begin_main_frame_state_;
+  }
+
   bool CommitPending() const {
     return begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_SENT ||
            begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_STARTED ||
            begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT;
   }
-  BeginMainFrameState begin_main_frame_state() const {
-    return begin_main_frame_state_;
+
+  bool NewActiveTreeLikely() const {
+    return needs_begin_main_frame_ || CommitPending() || has_pending_tree_;
   }
 
   bool RedrawPending() const { return needs_redraw_; }
@@ -133,10 +138,14 @@ class CC_EXPORT SchedulerStateMachine {
   void WillSendBeginMainFrame();
   void WillCommit(bool commit_had_no_updates);
   void WillActivate();
-  void WillDraw(bool did_request_swap);
+  void WillDraw();
   void WillBeginOutputSurfaceCreation();
   void WillPrepareTiles();
   void WillInvalidateOutputSurface();
+
+  void DidDraw(DrawResult draw_result);
+
+  void AbortDrawAndSwap();
 
   // Indicates whether the impl thread needs a BeginImplFrame callback in order
   // to make progress.
@@ -206,9 +215,6 @@ class CC_EXPORT SchedulerStateMachine {
   // A function of SetTreePrioritiesAndScrollState and
   // SetCriticalBeginMainFrameToActivateIsFast.
   bool ImplLatencyTakesPriority() const;
-
-  // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
-  void DidDrawIfPossibleCompleted(DrawResult result);
 
   // Indicates that a new begin main frame flow needs to be performed, either
   // to pull updates from the main thread to the impl, or to push deltas from
@@ -298,6 +304,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldPrepareTiles() const;
   bool ShouldInvalidateOutputSurface() const;
 
+  void WillDrawInternal();
+  void DidDrawInternal(DrawResult draw_result);
+
   const SchedulerSettings settings_;
 
   OutputSurfaceState output_surface_state_;
@@ -310,14 +319,14 @@ class CC_EXPORT SchedulerStateMachine {
   int current_frame_number_;
   int last_frame_number_animate_performed_;
   int last_frame_number_swap_performed_;
-  int last_frame_number_swap_requested_;
+  int last_frame_number_draw_performed_;
   int last_frame_number_begin_main_frame_sent_;
   int last_frame_number_invalidate_output_surface_performed_;
 
   // These are used to ensure that an action only happens once per frame,
   // deadline, etc.
   bool animate_funnel_;
-  bool request_swap_funnel_;
+  bool draw_funnel_;
   bool send_begin_main_frame_funnel_;
   bool invalidate_output_surface_funnel_;
   // prepare_tiles_funnel_ is "filled" each time PrepareTiles is called
@@ -352,8 +361,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool video_needs_begin_frames_;
   bool last_commit_had_no_updates_;
   bool wait_for_ready_to_draw_;
-  bool did_request_swap_in_last_frame_;
-  bool did_perform_swap_in_last_draw_;
+  bool did_draw_in_last_frame_;
+  bool did_swap_in_last_frame_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

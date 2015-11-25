@@ -646,16 +646,19 @@ void Scheduler::OnBeginImplFrameDeadline() {
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
+  state_machine_.WillDraw();
   compositor_timing_history_->WillDraw();
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
-  state_machine_.DidDrawIfPossibleCompleted(result);
   compositor_timing_history_->DidDraw();
+  state_machine_.DidDraw(result);
 }
 
 void Scheduler::DrawAndSwapForced() {
+  state_machine_.WillDraw();
   compositor_timing_history_->WillDraw();
-  client_->ScheduledActionDrawAndSwapForced();
+  DrawResult result = client_->ScheduledActionDrawAndSwapForced();
   compositor_timing_history_->DidDraw();
+  state_machine_.DidDraw(result);
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
@@ -720,22 +723,16 @@ void Scheduler::ProcessScheduledActions() {
         tracked_objects::ScopedTracker tracking_profile6(
             FROM_HERE_WITH_EXPLICIT_FUNCTION(
                 "461509 Scheduler::ProcessScheduledActions6"));
-        bool did_request_swap = true;
-        state_machine_.WillDraw(did_request_swap);
         DrawAndSwapIfPossible();
         break;
       }
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED: {
-        bool did_request_swap = true;
-        state_machine_.WillDraw(did_request_swap);
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
         DrawAndSwapForced();
         break;
-      }
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
         // No action is actually performed, but this allows the state machine to
-        // advance out of its waiting to draw state without actually drawing.
-        bool did_request_swap = false;
-        state_machine_.WillDraw(did_request_swap);
+        // drain the pipeline without actually drawing.
+        state_machine_.AbortDrawAndSwap();
         break;
       }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:

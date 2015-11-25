@@ -28,11 +28,11 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       current_frame_number_(0),
       last_frame_number_animate_performed_(-1),
       last_frame_number_swap_performed_(-1),
-      last_frame_number_swap_requested_(-1),
+      last_frame_number_draw_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_invalidate_output_surface_performed_(-1),
       animate_funnel_(false),
-      request_swap_funnel_(false),
+      draw_funnel_(false),
       send_begin_main_frame_funnel_(true),
       invalidate_output_surface_funnel_(false),
       prepare_tiles_funnel_(0),
@@ -62,8 +62,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       video_needs_begin_frames_(false),
       last_commit_had_no_updates_(false),
       wait_for_ready_to_draw_(false),
-      did_request_swap_in_last_frame_(false),
-      did_perform_swap_in_last_draw_(false) {}
+      did_draw_in_last_frame_(false),
+      did_swap_in_last_frame_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -222,12 +222,12 @@ void SchedulerStateMachine::AsValueInto(
                     last_frame_number_animate_performed_);
   state->SetInteger("last_frame_number_swap_performed",
                     last_frame_number_swap_performed_);
-  state->SetInteger("last_frame_number_swap_requested",
-                    last_frame_number_swap_requested_);
+  state->SetInteger("last_frame_number_draw_performed",
+                    last_frame_number_draw_performed_);
   state->SetInteger("last_frame_number_begin_main_frame_sent",
                     last_frame_number_begin_main_frame_sent_);
   state->SetBoolean("funnel: animate_funnel", animate_funnel_);
-  state->SetBoolean("funnel: request_swap_funnel", request_swap_funnel_);
+  state->SetBoolean("funnel: draw_funnel", draw_funnel_);
   state->SetBoolean("funnel: send_begin_main_frame_funnel",
                     send_begin_main_frame_funnel_);
   state->SetInteger("funnel: prepare_tiles_funnel", prepare_tiles_funnel_);
@@ -267,10 +267,8 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
   state->SetBoolean("defer_commits", defer_commits_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
-  state->SetBoolean("did_request_swap_in_last_frame",
-                    did_request_swap_in_last_frame_);
-  state->SetBoolean("did_perform_swap_in_last_draw",
-                    did_perform_swap_in_last_draw_);
+  state->SetBoolean("did_draw_in_last_frame", did_draw_in_last_frame_);
+  state->SetBoolean("did_swap_in_last_frame", did_swap_in_last_frame_);
   state->EndDictionary();
 }
 
@@ -350,7 +348,7 @@ bool SchedulerStateMachine::ShouldDraw() const {
   // Do not draw too many times in a single frame. It's okay that we don't check
   // this before checking for aborted draws because aborted draws do not request
   // a swap.
-  if (request_swap_funnel_)
+  if (draw_funnel_)
     return false;
 
   // Don't draw if we are waiting on the first commit after a surface.
@@ -492,7 +490,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     // make it conditional on ImplLatencyTakesPriority.
     bool just_swapped_in_deadline =
         begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
-        did_perform_swap_in_last_draw_;
+        did_swap_in_last_frame_;
     if (SwapThrottled() && !just_swapped_in_deadline)
       return false;
   }
@@ -668,22 +666,76 @@ void SchedulerStateMachine::WillActivate() {
   needs_redraw_ = true;
 }
 
-void SchedulerStateMachine::WillDraw(bool did_request_swap) {
+void SchedulerStateMachine::WillDrawInternal() {
+  // We need to reset needs_redraw_ before we draw since the
+  // draw itself might request another draw.
+  needs_redraw_ = false;
+
+  draw_funnel_ = true;
+  active_tree_needs_first_draw_ = false;
+  did_draw_in_last_frame_ = true;
+  last_frame_number_draw_performed_ = current_frame_number_;
+
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
 
   if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW)
     begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+}
 
-  needs_redraw_ = false;
-  active_tree_needs_first_draw_ = false;
+void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
+  switch (draw_result) {
+    case INVALID_RESULT:
+    case DRAW_ABORTED_CANT_DRAW:
+    case DRAW_ABORTED_CONTEXT_LOST:
+      NOTREACHED() << "Invalid return DrawResult:" << draw_result;
+      break;
+    case DRAW_ABORTED_DRAINING_PIPELINE:
+    case DRAW_SUCCESS:
+      consecutive_checkerboard_animations_ = 0;
+      forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
+      break;
+    case DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
+      DCHECK(!did_swap_in_last_frame_);
+      needs_begin_main_frame_ = true;
+      needs_redraw_ = true;
+      consecutive_checkerboard_animations_++;
 
-  if (did_request_swap) {
-    DCHECK(!request_swap_funnel_);
-    request_swap_funnel_ = true;
-    did_request_swap_in_last_frame_ = true;
-    last_frame_number_swap_requested_ = current_frame_number_;
+      if (consecutive_checkerboard_animations_ >=
+              settings_.maximum_number_of_failed_draws_before_draw_is_forced &&
+          forced_redraw_state_ == FORCED_REDRAW_STATE_IDLE &&
+          settings_.timeout_and_draw_when_animation_checkerboards) {
+        // We need to force a draw, but it doesn't make sense to do this until
+        // we've committed and have new textures.
+        forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
+      }
+      break;
+    case DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
+      DCHECK(!did_swap_in_last_frame_);
+      // It's not clear whether this missing content is because of missing
+      // pictures (which requires a commit) or because of memory pressure
+      // removing textures (which might not).  To be safe, request a commit
+      // anyway.
+      needs_begin_main_frame_ = true;
+      break;
   }
+}
+
+void SchedulerStateMachine::WillDraw() {
+  DCHECK(!draw_funnel_);
+  WillDrawInternal();
+}
+
+void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
+  DidDrawInternal(draw_result);
+}
+
+void SchedulerStateMachine::AbortDrawAndSwap() {
+  // Pretend like the draw was successful.
+  // Note: We may abort at any time and cannot DCHECK that
+  // we haven't drawn in or swapped in the last frame here.
+  WillDrawInternal();
+  DidDrawInternal(DRAW_ABORTED_DRAINING_PIPELINE);
 }
 
 void SchedulerStateMachine::WillPrepareTiles() {
@@ -799,12 +851,12 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (needs_prepare_tiles_)
     return true;
 
-  // If we just sent a swap request, it's likely that we are going to produce
+  // If we just tried to DrawAndSwap, it's likely that we are going to produce
   // another frame soon. This helps avoid negative glitches in our
   // SetNeedsBeginFrame requests, which may propagate to the BeginImplFrame
   // provider and get sampled at an inopportune time, delaying the next
   // BeginImplFrame.
-  if (did_request_swap_in_last_frame_)
+  if (did_draw_in_last_frame_)
     return true;
 
   // If the last commit was aborted because of early out (no updates), we should
@@ -820,7 +872,8 @@ void SchedulerStateMachine::OnBeginImplFrame() {
   current_frame_number_++;
 
   last_commit_had_no_updates_ = false;
-  did_request_swap_in_last_frame_ = false;
+  did_draw_in_last_frame_ = false;
+  did_swap_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 
   // Clear funnels for any actions we perform during the frame.
@@ -840,10 +893,8 @@ void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {
 void SchedulerStateMachine::OnBeginImplFrameDeadline() {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE;
 
-  did_perform_swap_in_last_draw_ = false;
-
   // Clear funnels for any actions we perform during the deadline.
-  request_swap_funnel_ = false;
+  draw_funnel_ = false;
 
   // Allow one PrepareTiles per draw for synchronous compositor.
   if (settings_.using_synchronous_renderer_compositor) {
@@ -979,12 +1030,12 @@ void SchedulerStateMachine::SetNeedsPrepareTiles() {
 }
 void SchedulerStateMachine::DidSwapBuffers() {
   TRACE_EVENT_ASYNC_BEGIN0("cc", "Scheduler:pending_swaps", this);
+  DCHECK_LT(pending_swaps_, kMaxPendingSwaps);
+
   pending_swaps_++;
   swaps_with_current_output_surface_++;
 
-  DCHECK_LE(pending_swaps_, kMaxPendingSwaps);
-
-  did_perform_swap_in_last_draw_ = true;
+  did_swap_in_last_frame_ = true;
   last_frame_number_swap_performed_ = current_frame_number_;
 }
 
@@ -1018,49 +1069,6 @@ bool SchedulerStateMachine::ImplLatencyTakesPriority() const {
     return true;
 
   return false;
-}
-
-void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
-  switch (result) {
-    case INVALID_RESULT:
-      NOTREACHED() << "Uninitialized DrawResult.";
-      break;
-    case DRAW_ABORTED_CANT_DRAW:
-    case DRAW_ABORTED_CONTEXT_LOST:
-      NOTREACHED() << "Invalid return value from DrawAndSwapIfPossible:"
-                   << result;
-      break;
-    case DRAW_SUCCESS:
-      consecutive_checkerboard_animations_ = 0;
-      forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
-      break;
-    case DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
-      needs_redraw_ = true;
-
-      // If we're already in the middle of a redraw, we don't need to
-      // restart it.
-      if (forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
-        return;
-
-      needs_begin_main_frame_ = true;
-      consecutive_checkerboard_animations_++;
-      if (settings_.timeout_and_draw_when_animation_checkerboards &&
-          consecutive_checkerboard_animations_ >=
-              settings_.maximum_number_of_failed_draws_before_draw_is_forced) {
-        consecutive_checkerboard_animations_ = 0;
-        // We need to force a draw, but it doesn't make sense to do this until
-        // we've committed and have new textures.
-        forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
-      }
-      break;
-    case DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
-      // It's not clear whether this missing content is because of missing
-      // pictures (which requires a commit) or because of memory pressure
-      // removing textures (which might not).  To be safe, request a commit
-      // anyway.
-      needs_begin_main_frame_ = true;
-      break;
-  }
 }
 
 void SchedulerStateMachine::SetNeedsBeginMainFrame() {
