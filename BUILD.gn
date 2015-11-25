@@ -4,6 +4,7 @@
 
 import("ffmpeg_options.gni")
 import("ffmpeg_generated.gni")
+import("//build/config/win/visual_studio_version.gni")
 
 # Path to platform configuration files.
 platform_config_root =
@@ -252,16 +253,23 @@ source_set("ffmpeg_internal") {
 
     defines += [ "_DARWIN_C_SOURCE" ]
   } else if (is_win) {
+    if ((visual_studio_version == "2013") || (visual_studio_version == "2013e")) {
+      defines += [
+        # VS 2015 supports these natively so they cannot be #defines.
+        "inline=__inline",
+        "strtoll=_strtoi64",
+        "strtod=avpriv_strtod",
+        "snprintf=avpriv_snprintf",
+        "vsnprintf=avpriv_vsnprintf",
+        # This leads to duplicate avpriv_snprintf definitions due to inline
+        # _snprintf in VC++ 2015 stdio.h.
+        "_snprintf=avpriv_snprintf",
+      ]
+    }
     defines += [
-      "inline=__inline",
-      "strtoll=_strtoi64",
       "_ISOC99_SOURCE",
       "_LARGEFILE_SOURCE",
       "HAVE_AV_CONFIG_H",
-      "strtod=avpriv_strtod",
-      "snprintf=avpriv_snprintf",
-      "_snprintf=avpriv_snprintf",
-      "vsnprintf=avpriv_vsnprintf",
     ]
 
     if (is_component_ffmpeg) {
