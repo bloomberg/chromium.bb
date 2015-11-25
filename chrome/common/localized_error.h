@@ -15,6 +15,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace blink {
@@ -51,6 +52,13 @@ class LocalizedError {
   static const char kHttpErrorDomain[];
 
  private:
+  // Sets up the Google Cached Copy button experiment if part of the
+  // field trial. This promotes the Google cached copy suggestion from under
+  // the details section to a blue button. Also experiments with the
+  // button label.
+  static void EnableGoogleCachedCopyButtonExperiment(
+      base::ListValue* suggestions,
+      base::DictionaryValue* error_strings);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalizedError);
 };
