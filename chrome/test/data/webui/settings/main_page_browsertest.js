@@ -16,7 +16,16 @@ SettingsMainPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype
 };
 
-TEST_F('SettingsMainPageBrowserTest', 'Main', function() {
+// Times out on debug builders and may time out on memory bots because
+// the Settings page can take several seconds to load in a Release build
+// and several times that in a Debug build. See https://crbug.com/558434.
+GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
+GEN('#define MAYBE_Main DISABLED_Main');
+GEN('#else');
+GEN('#define MAYBE_Main Main');
+GEN('#endif');
+
+TEST_F('SettingsMainPageBrowserTest', 'MAYBE_Main', function() {
   // Assign |self| to |this| instead of binding since 'this' in suite()
   // and test() will be a Mocha 'Suite' or 'Test' instance.
   var self = this;
