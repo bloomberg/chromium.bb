@@ -2226,6 +2226,10 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     IntSize offsetFromAnchorLayoutObject;
     const LayoutBoxModelObject* anchorLayoutObject;
     if (graphicsLayer == m_squashingLayer) {
+        // TODO(chrishtr): this is a speculative fix for crbug.com/561306. However, it should never be the case that
+        // m_squashingLayer exists yet m_squashedLayers.size() == 0. There must be a bug elsewhere.
+        if (m_squashedLayers.size() == 0)
+            return IntRect();
         // All squashed layers have the same clip and transform space, so we can use the first squashed layer's
         // layoutObject to map the squashing layer's bounds into viewport space, with offsetFromAnchorLayoutObject
         // to translate squashing layer's bounds into the first squashed layer's space.
