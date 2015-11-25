@@ -26,6 +26,7 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
@@ -70,6 +71,8 @@ void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void ApplicationContextImpl::PreCreateThreads() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  ios_chrome_io_thread_.reset(
+      new IOSChromeIOThread(GetLocalState(), GetNetLog()));
 }
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
@@ -82,6 +85,14 @@ void ApplicationContextImpl::StartTearDown() {
 
 void ApplicationContextImpl::PostDestroyThreads() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Resets associated state right after actual thread is stopped as
+  // IOSChromeIOThread::Globals cleanup happens in CleanUp on the IO
+  // thread, i.e. as the thread exits its message loop.
+  //
+  // This is important because in various places, the IOSChromeIOThread
+  // object being NULL is considered synonymous with the IO thread
+  // having stopped.
+  ios_chrome_io_thread_.reset();
 }
 
 void ApplicationContextImpl::OnAppEnterForeground() {
@@ -148,7 +159,7 @@ PrefService* ApplicationContextImpl::GetLocalState() {
 net::URLRequestContextGetter*
 ApplicationContextImpl::GetSystemURLRequestContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetSystemURLRequestContext();
+  return ios_chrome_io_thread_->system_url_request_context_getter();
 }
 
 const std::string& ApplicationContextImpl::GetApplicationLocale() {
@@ -191,6 +202,12 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
         make_scoped_ptr(new base::DefaultTickClock), GetLocalState()));
   }
   return network_time_tracker_.get();
+}
+
+IOSChromeIOThread* ApplicationContextImpl::GetIOSChromeIOThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ios_chrome_io_thread_.get());
+  return ios_chrome_io_thread_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {

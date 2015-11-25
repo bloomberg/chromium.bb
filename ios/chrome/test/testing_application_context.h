@@ -41,6 +41,7 @@ class TestingApplicationContext : public ApplicationContext {
   rappor::RapporService* GetRapporService() override;
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
+  IOSChromeIOThread* GetIOSChromeIOThread() override;
 
  private:
   base::ThreadChecker thread_checker_;

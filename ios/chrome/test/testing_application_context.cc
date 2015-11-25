@@ -64,7 +64,7 @@ PrefService* TestingApplicationContext::GetLocalState() {
 net::URLRequestContextGetter*
 TestingApplicationContext::GetSystemURLRequestContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetSystemURLRequestContext();
+  return nullptr;
 }
 
 const std::string& TestingApplicationContext::GetApplicationLocale() {
@@ -109,4 +109,9 @@ TestingApplicationContext::GetNetworkTimeTracker() {
         make_scoped_ptr(new base::DefaultTickClock), local_state_));
   }
   return network_time_tracker_.get();
+}
+
+IOSChromeIOThread* TestingApplicationContext::GetIOSChromeIOThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
 }

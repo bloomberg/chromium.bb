@@ -82,8 +82,6 @@ class ChromeBrowserProvider {
   ChromeBrowserProvider();
   virtual ~ChromeBrowserProvider();
 
-  // Gets the system URL request context.
-  virtual net::URLRequestContextGetter* GetSystemURLRequestContext();
   // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
   // Registers all prefs that will be used via the local state PrefService.

@@ -35,11 +35,6 @@ ChromeBrowserProvider::~ChromeBrowserProvider() {
 ChromeBrowserProvider::ChromeBrowserProvider() {
 }
 
-net::URLRequestContextGetter*
-ChromeBrowserProvider::GetSystemURLRequestContext() {
-  return nullptr;
-}
-
 void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {
 }
 

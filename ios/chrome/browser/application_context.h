@@ -38,6 +38,7 @@ class VariationsService;
 }
 
 class ApplicationContext;
+class IOSChromeIOThread;
 class PrefService;
 
 // Gets the global application context. Cannot return null.
@@ -87,6 +88,9 @@ class ApplicationContext {
 
   // Gets the NetworkTimeTracker.
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
+
+  // Gets the IOSChromeIOThread.
+  virtual IOSChromeIOThread* GetIOSChromeIOThread() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.
