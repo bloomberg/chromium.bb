@@ -171,8 +171,14 @@ void CastDeviceProvider::OnDeviceChanged(
           << service_description.service_name;
   if (service_description.service_type() != kCastServiceType)
     return;
+  net::IPAddressNumber ip_address = service_description.ip_address;
+  if (ip_address.size() != net::kIPv4AddressSize &&
+      ip_address.size() != net::kIPv6AddressSize) {
+    // An invalid IP address is not queryable.
+    return;
+  }
   std::string name = service_description.service_name;
-  std::string host = net::IPAddressToString(service_description.ip_address);
+  std::string host = net::IPAddressToString(ip_address);
   service_hostname_map_[name] = host;
   device_info_map_[host] = ServiceDescriptionToDeviceInfo(service_description);
 }
