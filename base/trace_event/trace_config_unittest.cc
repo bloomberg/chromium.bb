@@ -448,6 +448,12 @@ TEST(TraceConfigTest, IsCategoryGroupEnabled) {
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("disabled-by-default-cc"));
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("included"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("other_included"));
+
+  // Excluding categories won't enable disabled-by-default ones with the
+  // excluded category is also present in the group.
+  tc = TraceConfig("-excluded", "");
+  EXPECT_STREQ("-excluded", tc.ToCategoryFilterString().c_str());
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("excluded,disabled-by-default-cc"));
 }
 
 TEST(TraceConfigTest, IsEmptyOrContainsLeadingOrTrailingWhitespace) {

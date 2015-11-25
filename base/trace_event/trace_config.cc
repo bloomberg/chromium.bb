@@ -211,9 +211,13 @@ bool TraceConfig::IsCategoryGroupEnabled(
         break;
       }
       // One of the category of category_group_name is not present in
-      // excluded_ list. So, it has to be included_ list. Enable the
-      // category_group_name for recording.
-      category_group_disabled = false;
+      // excluded_ list. So, if it's not a disabled-by-default category,
+      // it has to be included_ list. Enable the category_group_name
+      // for recording.
+      if (!base::MatchPattern(category_group_token.c_str(),
+                              TRACE_DISABLED_BY_DEFAULT("*"))) {
+        category_group_disabled = false;
+      }
     }
     // One of the categories present in category_group_name is not present in
     // excluded_ list. Implies this category_group_name group can be enabled
