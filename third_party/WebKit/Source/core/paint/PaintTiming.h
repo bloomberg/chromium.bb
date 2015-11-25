@@ -5,12 +5,12 @@
 #ifndef PaintTiming_h
 #define PaintTiming_h
 
+#include "core/dom/Document.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class Document;
 class LocalFrame;
 
 class PaintTiming final : public NoBaseWillBeGarbageCollectedFinalized<PaintTiming>, public WillBeHeapSupplement<Document> {
