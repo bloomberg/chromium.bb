@@ -7,7 +7,7 @@
 }
 </style>
 <p>Editable text should be centered vertically.</p>
-<div><input style="border: solid 1px black; line-height:18px; height:18px; font-size:16px; font-family:NotoSansCJK;" value="&#x3075; ABCgjy"></div>
+<div id="webfont"><input style="font-family:NotoSansCJK;"value="ABCgjy"></div>
 <div><input style="border: solid 1px black; line-height:16px; height:24px; font-size:24px;" value="ABCgjy"></div>
 
 <!-- crbug.com/539858 -->
@@ -15,7 +15,12 @@
 <script>
 if (window.testRunner)
     testRunner.waitUntilDone();
+
 document.fonts.ready.then(function() {
-    testRunner.notifyDone();
+    document.getElementById('webfont').innerHTML = '<input style="border:' +
+        'solid 1px black; font-size:16px; font-family:NotoSansCJK;"' + 
+        'value="&#x3075; ABCgjy">';
+    if (window.testRunner)
+        testRunner.notifyDone();
 });
 </script>
