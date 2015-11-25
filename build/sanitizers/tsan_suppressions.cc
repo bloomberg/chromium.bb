@@ -164,9 +164,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/329225
 "race:blink::currentTimeFunction\n"
 
-// http://crbug.com/329460
-"race:extensions::InfoMap::AddExtension\n"
-
 // http://crbug.com/333244
 "race:content::"
     "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
