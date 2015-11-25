@@ -5,6 +5,7 @@
 #include "components/history/core/browser/typed_url_syncable_service.h"
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -214,10 +215,10 @@ class TypedUrlSyncableServiceTest : public testing::Test {
 
   void SetUp() override {
     fake_history_backend_ = new TestHistoryBackend();
-    ASSERT_TRUE(base::CreateNewTempDirectory(
-        FILE_PATH_LITERAL("TypedUrlSyncableServiceTest"), &test_dir_));
-    fake_history_backend_->Init(std::string(), false,
-                                TestHistoryDatabaseParamsForPath(test_dir_));
+    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
+    fake_history_backend_->Init(
+        std::string(), false,
+        TestHistoryDatabaseParamsForPath(test_dir_.path()));
     typed_url_sync_service_.reset(
         new TypedUrlSyncableService(fake_history_backend_.get()));
     fake_change_processor_.reset(new syncer::FakeSyncChangeProcessor);
@@ -285,7 +286,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  base::FilePath test_dir_;
+  base::ScopedTempDir test_dir_;
   scoped_refptr<TestHistoryBackend> fake_history_backend_;
   scoped_ptr<TypedUrlSyncableService> typed_url_sync_service_;
   scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
