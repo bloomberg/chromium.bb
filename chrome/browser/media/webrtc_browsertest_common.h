@@ -42,6 +42,7 @@ extern const base::FilePath::CharType kReferenceFileName360p[];
 extern const base::FilePath::CharType kReferenceFileName720p[];
 extern const base::FilePath::CharType kYuvFileExtension[];
 extern const base::FilePath::CharType kY4mFileExtension[];
+extern const char kAdviseOnGclientSolution[];
 
 // Executes javascript code which will sleep for |timeout_msec| milliseconds.
 // Returns true on success.
