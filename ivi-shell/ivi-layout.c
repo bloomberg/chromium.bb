@@ -805,6 +805,9 @@ commit_screen_list(struct ivi_layout *layout)
 	struct ivi_layout_surface *ivisurf  = NULL;
 	struct weston_view *tmpview = NULL;
 
+	/* Clear view list of layout ivi_layer */
+	wl_list_init(&layout->layout_layer.view_list.link);
+
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		if (iviscrn->order.dirty) {
 			wl_list_for_each_safe(ivilayer, next,
@@ -830,9 +833,6 @@ commit_screen_list(struct ivi_layout *layout)
 
 			iviscrn->order.dirty = 0;
 		}
-
-		/* Clear view list of layout ivi_layer */
-		wl_list_init(&layout->layout_layer.view_list.link);
 
 		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
 			if (ivilayer->prop.visibility == false)
