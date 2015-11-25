@@ -40,17 +40,35 @@ If your class needs finalization (i.e. some work needs to be done on destruction
 [GarbageCollectedFinalized](#GarbageCollectedFinalized) instead.
 
 `GarbageCollected<T>` or any class deriving from `GarbageCollected<T>`, directly or indirectly, must be the first
-element in a base class list (left-most deviation rule).
+element in its base class list (called "leftmost derivation rule"). This rule is needed to assure each on-heap object
+has its own canonical address.
 
 ```c++
-class A : public GarbageCollected<A>, public P { // OK, GarbageCollected<A> is left-most.
+class A : public GarbageCollected<A>, public P { // OK, GarbageCollected<A> is leftmost.
 };
 
-class B : public A, public Q { // OK, A is left-most.
+class B : public A, public Q { // OK, A is leftmost.
 };
 
 // class C : public R, public A { // BAD, A must be the first base class.
 // };
+```
+
+If a non-leftmost base class needs to retain an on-heap object, that base class needs to inherit from
+[GarbageCollectedMixin](#GarbageCollectedMixin). It's generally recommended to make *any* non-leftmost base class
+inherit from `GarbageCollectedMixin`, because it's dangerous to save a pointer to a non-leftmost
+non-`GarbageCollectedMixin` subclass of an on-heap object.
+
+```c++
+void someFunction(P*);
+
+class A : public GarbageCollected<A>, public P {
+public:
+    void someMemberFunction()
+    {
+        someFunction(this); // DANGEROUS, a raw pointer to an on-heap object.
+    }
+};
 ```
 
 ### GarbageCollectedFinalized
@@ -79,12 +97,70 @@ Any destructor executed within the finalization period must not touch any other 
 can be executed in any order. If there is a need of having such destructor, consider using
 [EAGERLY_FINALIZE](#EAGERLY_FINALIZE).
 
-Because `GarbageCollectedFinalized<T>` is a special case of `GarbageCollected<T>`, all other restrictions that apply
-to `GarbageCollected<T>` objects also apply to `GarbageCollectedFinalized<T>`.
+Because `GarbageCollectedFinalized<T>` is a special case of `GarbageCollected<T>`, all the restrictions that apply
+to `GarbageCollected<T>` classes also apply to `GarbageCollectedFinalized<T>`.
 
 ### GarbageCollectedMixin
 
+A non-leftmost base class of a garbage-collected class may derive from `GarbageCollectedMixin`. If a direct child
+class of `GarbageCollected<T>` or `GarbageCollectedFinalized<T>` has a non-leftmost base class deriving from
+`GarbageCollectedMixin`, the garbage-collected class must declare the `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` macro
+in its class declaration.
+
+A class deriving from `GarbageCollectedMixin` can be treated similarly as garbage-collected classes. Specifically, it
+can have `Member<T>`s and `WeakMember<T>`s, and a tracing method. A pointer to such a class must be retained in the
+same smart pointer wrappers as a pointer to a garbage-collected class, such as `Member<T>` or `Persistent<T>`.
+The tracing method of a garbage-collected class, if any, must contain a delegating call for each mixin base class.
+
+```c++
+class P : public GarbageCollectedMixin {
+public:
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_q); } // OK, needs to trace m_q.
+private:
+    Member<Q> m_q; // OK, allowed to have Member<T>.
+};
+
+class A : public GarbageCollected<A>, public P {
+    USING_GARBAGE_COLLECTED_MIXIN(A);
+public:
+    DEFINE_INLINE_VIRTUAL_TRACE() { ...; P::trace(visitor); } // Delegating call for P is needed.
+    ...
+};
+```
+
+Internally, `GarbageCollectedMixin` defines pure virtual functions, and `USING_GARBAGE_COLLECTED_MIXIN(ClassName)`
+implements these virtual functions. Therefore, you cannot instantiate a class that is a descendant of
+`GarbageCollectedMixin` but not a descendant of `GarbageCollected<T>`. Two or more base classes inheritng from
+`GarbageCollectedMixin` can be resolved with a single `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` declaration.
+
+```c++
+class P : public GarbageCollectedMixin { };
+class Q : public GarbageCollectedMixin { };
+class R : public Q { };
+
+class A : public GarbageCollected<A>, public P, public R {
+    USING_GARBAGE_COLLECTED_MIXIN(A); // OK, resolving pure virtual functions of P and R.
+};
+
+class B : public GarbageCollected<B>, public P {
+    USING_GARBAGE_COLLECTED_MIXIN(B); // OK, different garbage-collected classes may inherit from the same mixin (P).
+};
+
+void someFunction()
+{
+    new A; // OK, A can be instantiated.
+    // new R; // BAD, R has pure virtual functions.
+}
+```
+
 ## Class properties
+
+### USING_GARBAGE_COLLECTED_MIXIN
+
+`USING_GARBAGE_COLLECTED_MIXIN(ClassName)` is a macro that must be declared in a garbage-collected class, if any of
+its base classes is a descendant of `GarbageCollectedMixin`.
+
+See [GarbageCollectedMixin](#GarbageCollectedMixin) for the use of `GarbageCollectedMixin` and this macro.
 
 ### USING_PRE_FINALIZER
 
@@ -128,8 +204,6 @@ all registered pre-finalizers at every GC. Therefore, a pre-finalizer should be 
 Especially, avoid defining a pre-finalizer in a class that can be allocated a lot.
 
 ### EAGERLY_FINALIZE
-
-### USING_GARBAGE_COLLECTED_MIXIN
 
 ### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 
