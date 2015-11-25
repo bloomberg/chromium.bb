@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

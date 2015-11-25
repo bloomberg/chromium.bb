@@ -6,6 +6,7 @@
 
 #include <sys/system_properties.h>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"

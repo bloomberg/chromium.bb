@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/media_resource_getter_impl.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"

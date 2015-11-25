@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/background_sync_launcher_android.h"
 
+#include "base/android/context_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BackgroundSyncLauncher_jni.h"
 

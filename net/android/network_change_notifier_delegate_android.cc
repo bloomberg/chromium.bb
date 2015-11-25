@@ -4,6 +4,7 @@
 
 #include "net/android/network_change_notifier_delegate_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "jni/NetworkChangeNotifier_jni.h"

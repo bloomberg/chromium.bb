@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

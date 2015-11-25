@@ -10,9 +10,6 @@
 
 #include <string>
 
-// TODO(torne): remove this when callers of GetApplicationContext have been
-// fixed to include context_utils.h. http://crbug.com/552419
-#include "base/android/context_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
 #include "base/base_export.h"

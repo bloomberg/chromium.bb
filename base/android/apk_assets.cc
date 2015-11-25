@@ -6,6 +6,7 @@
 
 #include "base/android/apk_assets.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

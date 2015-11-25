@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/media_throttler.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/MediaThrottler_jni.h"
 

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/android/context_utils.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalEstimateProviderAndroid_jni.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/accessibility_util.h"
 #include "jni/AccessibilityUtil_jni.h"

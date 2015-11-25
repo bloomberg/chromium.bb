@@ -4,6 +4,7 @@
 
 #include "chromecast/base/android/system_time_change_notifier_android.h"
 
+#include "base/android/context_utils.h"
 #include "jni/SystemTimeChangeNotifierAndroid_jni.h"
 
 namespace chromecast {

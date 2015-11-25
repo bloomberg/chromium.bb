@@ -30,7 +30,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
+#include "base/android/context_utils.h"
 #include "components/invalidation/impl/invalidation_service_android.h"
 #endif  // defined(OS_ANDROID)
 

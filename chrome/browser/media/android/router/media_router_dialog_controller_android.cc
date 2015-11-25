@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/router/media_router_android.h"

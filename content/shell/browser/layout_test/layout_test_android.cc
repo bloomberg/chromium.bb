@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/layout_test/layout_test_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/fifo_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/android/background_sync_network_observer_android.h"
 
+#include "base/android/context_utils.h"
 #include "jni/BackgroundSyncNetworkObserver_jni.h"
 
 namespace content {

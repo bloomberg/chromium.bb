@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"

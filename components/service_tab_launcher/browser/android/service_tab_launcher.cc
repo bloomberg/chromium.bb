@@ -4,6 +4,7 @@
 
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_context.h"

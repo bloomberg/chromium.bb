@@ -4,6 +4,7 @@
 
 #include "chromecast/base/chromecast_config_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/lazy_instance.h"
 #include "jni/ChromecastConfigAndroid_jni.h"

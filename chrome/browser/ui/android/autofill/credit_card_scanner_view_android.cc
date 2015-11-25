@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/autofill/credit_card_scanner_view_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_ptr.h"

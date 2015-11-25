@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/media_session.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "content/browser/media/android/media_session_observer.h"
 #include "content/browser/web_contents/web_contents_impl.h"

@@ -4,7 +4,7 @@
 
 #include "components/invalidation/impl/invalidation_service_android.h"
 
-#include "base/android/jni_android.h"
+#include "base/android/context_utils.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "testing/gtest/include/gtest/gtest.h"

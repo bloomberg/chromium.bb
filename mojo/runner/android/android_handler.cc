@@ -4,6 +4,7 @@
 
 #include "mojo/runner/android/android_handler.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"

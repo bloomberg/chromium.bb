@@ -4,6 +4,7 @@
 
 #include "ui/base/touch/touch_device.h"
 
+#include "base/android/context_utils.h"
 #include "base/logging.h"
 #include "jni/TouchDevice_jni.h"
 

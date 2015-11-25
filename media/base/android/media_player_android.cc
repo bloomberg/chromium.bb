@@ -4,7 +4,7 @@
 
 #include "media/base/android/media_player_android.h"
 
-#include "base/android/jni_android.h"
+#include "base/android/context_utils.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

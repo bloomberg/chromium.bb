@@ -4,6 +4,7 @@
 
 #include "base/android/content_uri_utils.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "jni/ContentUriUtils_jni.h"

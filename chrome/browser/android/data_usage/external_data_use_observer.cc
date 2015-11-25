@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"

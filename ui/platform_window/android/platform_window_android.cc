@@ -7,6 +7,7 @@
 #include <android/input.h>
 #include <android/native_window_jni.h>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "jni/PlatformWindowAndroid_jni.h"
 #include "ui/events/event.h"

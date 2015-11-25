@@ -7,6 +7,7 @@
 #include <pwd.h>
 #include <cstring>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/bind.h"

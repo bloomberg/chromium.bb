@@ -4,6 +4,7 @@
 
 #include "content/browser/mojo/service_registrar_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "content/browser/mojo/service_registry_android.h"
 #include "jni/ServiceRegistrar_jni.h"

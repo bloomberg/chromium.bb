@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/profiles/profile.h"

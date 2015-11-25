@@ -5,6 +5,7 @@
 #include "media/midi/midi_manager_android.h"
 
 #include "base/android/build_info.h"
+#include "base/android/context_utils.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
