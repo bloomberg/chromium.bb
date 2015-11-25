@@ -114,8 +114,10 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 #if ENABLE(OILPAN)
     unregisterAsRenderlessIfNeeded();
     registerAsRenderless(widget);
-    if (m_persistedPluginWidget)
+    if (m_persistedPluginWidget) {
+        m_persistedPluginWidget->hide();
         m_persistedPluginWidget->dispose();
+    }
 #endif
     m_persistedPluginWidget = widget;
 }
