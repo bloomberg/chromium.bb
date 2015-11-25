@@ -364,6 +364,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For CookieSource histogram enum.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, CookieSourceHistogram);
 
+  // For kSafeFromGlobalPurgeDays in CookieStore
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterSecureCookiesRequireSecureSchemeTest,
+                           EvictSecureCookies);
+
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.
   //
@@ -399,6 +403,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
     // value. However, we used to allow them, so we are now evicting any such
     // cookies as we load them. See http://crbug.com/238041.
     DELETE_COOKIE_CONTROL_CHAR,
+
+    // When strict secure cookies is enabled, non-secure cookies are evicted
+    // right after expired cookies.
+    DELETE_COOKIE_NON_SECURE,
 
     DELETE_COOKIE_LAST_ENTRY
   };
@@ -617,23 +625,41 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // constants for details.
   //
   // Returns the number of cookies deleted (useful for debugging).
-  int GarbageCollect(const base::Time& current, const std::string& key);
+  size_t GarbageCollect(const base::Time& current,
+                        const std::string& key,
+                        bool enforce_strict_secure);
 
-  // Helper for GarbageCollect(); can be called directly as well.  Deletes
-  // all expired cookies in |itpair|.  If |cookie_its| is non-NULL, it is
-  // populated with all the non-expired cookies from |itpair|.
+  // Helper for GarbageCollect(); can be called directly as well.  Deletes all
+  // expired cookies in |itpair|.  If |cookie_its| is non-NULL, all the
+  // non-expired cookies from |itpair| are appended to |cookie_its|.
   //
   // Returns the number of cookies deleted.
-  int GarbageCollectExpired(const base::Time& current,
-                            const CookieMapItPair& itpair,
-                            std::vector<CookieMap::iterator>* cookie_its);
+  size_t GarbageCollectExpired(const base::Time& current,
+                               const CookieMapItPair& itpair,
+                               CookieItVector* cookie_its);
+
+  // Helper for GarbageCollect(). Deletes all cookies not marked Secure in
+  // |valid_cookies_its|.  If |cookie_its| is non-NULL, all the Secure cookies
+  // from |itpair| are appended to |cookie_its|.
+  //
+  // Returns the numeber of cookies deleted.
+  size_t GarbageCollectNonSecure(const CookieItVector& valid_cookies,
+                                 CookieItVector* cookie_its);
 
   // Helper for GarbageCollect(). Deletes all cookies in the range specified by
   // [|it_begin|, |it_end|). Returns the number of cookies deleted.
-  int GarbageCollectDeleteRange(const base::Time& current,
-                                DeletionCause cause,
-                                CookieItVector::iterator cookie_its_begin,
-                                CookieItVector::iterator cookie_its_end);
+  size_t GarbageCollectDeleteRange(const base::Time& current,
+                                   DeletionCause cause,
+                                   CookieItVector::iterator cookie_its_begin,
+                                   CookieItVector::iterator cookie_its_end);
+
+  // Helper for GarbageCollect(). Deletes cookies in |cookie_its| from least to
+  // most recently used, but only before |safe_date|. Also will stop deleting
+  // when the number of remaining cookies hits |purge_goal|.
+  size_t GarbageCollectLeastRecentlyAccessed(const base::Time& current,
+                                             const base::Time& safe_date,
+                                             size_t purge_goal,
+                                             CookieItVector cookie_its);
 
   // Find the key (for lookup in cookies_) based on the given domain.
   // See comment on keys before the CookieMap typedef.

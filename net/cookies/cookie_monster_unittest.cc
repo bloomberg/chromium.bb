@@ -103,7 +103,7 @@ struct CookieMonsterTestTraits {
   static const bool enforce_strict_secure = false;
 };
 
-struct CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits {
+struct CookieMonsterEnforcingStrictSecure {
   static scoped_refptr<CookieStore> Create() {
     return new CookieMonster(NULL, NULL);
   }
@@ -126,10 +126,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
                               MultiThreadedCookieStoreTest,
                               CookieMonsterTestTraits);
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    CookieMonsterSecureCookiesRequireSecureScheme,
-    CookieStoreTest,
-    CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(CookieMonsterSecureCookiesRequireSecureScheme,
+                              CookieStoreTest,
+                              CookieMonsterEnforcingStrictSecure);
 
 template <typename T>
 class CookieMonsterTestBase : public CookieStoreTest<T> {
@@ -526,6 +525,68 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     }
   }
 
+  // Represents a number of cookies to create, if they are Secure cookies, and
+  // a url to add them to.
+  struct CookiesEntry {
+    size_t num_cookies;
+    bool is_secure;
+  };
+  // A number of secure and a number of non-secure alternative hosts to create
+  // for testing.
+  typedef std::pair<size_t, size_t> AltHosts;
+  // Takes an array of CookieEntries which specify the number, type, and order
+  // of cookies to create. Cookies are created in the order they appear in
+  // cookie_entries. The value of cookie_entries[x].num_cookies specifies how
+  // many cookies of that type to create consecutively, while if
+  // cookie_entries[x].is_secure is |true|, those cookies will be marke as
+  // Secure.
+  void TestSecureCookieEviction(const CookiesEntry* cookie_entries,
+                                size_t num_cookie_entries,
+                                size_t expected_secure_cookies,
+                                size_t expected_non_secure_cookies,
+                                const AltHosts* alt_host_entries) {
+    scoped_refptr<CookieMonster> cm;
+
+    if (alt_host_entries == nullptr) {
+      cm = new CookieMonster(nullptr, nullptr);
+    } else {
+      // When generating all of these cookies on alternate hosts, they need to
+      // be all older than the max "safe" date for GC, which is currently 30
+      // days, so we set them to 60.
+      cm = CreateMonsterFromStoreForGC(
+          alt_host_entries->first, alt_host_entries->first,
+          alt_host_entries->second, alt_host_entries->second, 60);
+    }
+
+    int next_cookie_id = 0;
+    for (size_t i = 0; i < num_cookie_entries; i++) {
+      for (size_t j = 0; j < cookie_entries[i].num_cookies; j++) {
+        std::string cookie;
+        if (cookie_entries[i].is_secure)
+          cookie = base::StringPrintf("a%d=b; Secure", next_cookie_id);
+        else
+          cookie = base::StringPrintf("a%d=b", next_cookie_id);
+        EXPECT_TRUE(SetCookie(cm.get(), https_www_google_.url(), cookie));
+        ++next_cookie_id;
+      }
+    }
+
+    CookieList cookies = this->GetAllCookies(cm.get());
+    EXPECT_EQ(expected_secure_cookies + expected_non_secure_cookies,
+              cookies.size());
+    size_t total_secure_cookies = 0;
+    size_t total_non_secure_cookies = 0;
+    for (const auto& cookie : cookies) {
+      if (cookie.IsSecure())
+        ++total_secure_cookies;
+      else
+        ++total_non_secure_cookies;
+    }
+
+    EXPECT_EQ(expected_secure_cookies, total_secure_cookies);
+    EXPECT_EQ(expected_non_secure_cookies, total_non_secure_cookies);
+  }
+
   void TestPriorityAwareGarbageCollectHelper() {
     // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
     DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
@@ -606,8 +667,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 };
 
 using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;
-using CookieMonsterSecureCookiesRequireSecureSchemeTest = CookieMonsterTestBase<
-    CookieMonsterEnforcingSecureCookiesRequireSecureSchemeTestTraits>;
+using CookieMonsterSecureCookiesRequireSecureSchemeTest =
+    CookieMonsterTestBase<CookieMonsterEnforcingStrictSecure>;
 
 // TODO(erikwright): Replace the other callbacks and synchronous helper methods
 // in this test suite with these Mocks.
@@ -2110,7 +2171,7 @@ TEST_F(CookieMonsterTest, MAYBE_GarbageCollectionTriggers) {
   for (int ci = 0; ci < static_cast<int>(arraysize(test_cases)); ++ci) {
     const TestCase* test_case = &test_cases[ci];
     scoped_refptr<CookieMonster> cm(CreateMonsterFromStoreForGC(
-        test_case->num_cookies, test_case->num_old_cookies,
+        test_case->num_cookies, test_case->num_old_cookies, 0, 0,
         CookieMonster::kSafeFromGlobalPurgeDays * 2));
     EXPECT_EQ(test_case->expected_initial_cookies,
               GetAllCookies(cm.get()).size())
@@ -3065,6 +3126,132 @@ TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, SetSecureCookies) {
   // Note that the lack of an explicit options object below uses the default,
   // which in this case includes "exclude_httponly = true".
   EXPECT_FALSE(SetCookie(cm.get(), https_url, "C=E; Secure"));
+}
+
+// Tests for behavior if strict secure cookies is enabled.
+TEST_F(CookieMonsterSecureCookiesRequireSecureSchemeTest, EvictSecureCookies) {
+  // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
+  DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
+  DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
+                      CookieMonster::kDomainPurgeCookies);
+  DCHECK_EQ(3300U, CookieMonster::kMaxCookies);
+  DCHECK_EQ(30, CookieMonster::kSafeFromGlobalPurgeDays);
+
+  // If secure cookies for one domain hit the per domain limit (180), a
+  // non-secure cookie will not evict them (and, in fact, the non-secure cookie
+  // will be removed right after creation).
+  const CookiesEntry test1[] = {{180U, true}, {1U, false}};
+  TestSecureCookieEviction(test1, arraysize(test1), 180U, 0U, nullptr);
+
+  // If non-secure cookies for one domain hit the per domain limit (180), the
+  // creation of secure cookies will evict all of the non-secure cookies, and
+  // the secure cookies will still be created.
+  const CookiesEntry test2[] = {{180U, false}, {20U, true}};
+  TestSecureCookieEviction(test2, arraysize(test2), 20U, 0U, nullptr);
+
+  // If secure cookies for one domain go past the per domain limit (180), they
+  // will be evicted as normal by the per domain purge amount (30) down to a
+  // lower amount (150), and then will continue to create the remaining cookies
+  // (19 more to 169).
+  const CookiesEntry test3[] = {{200U, true}};
+  TestSecureCookieEviction(test3, arraysize(test3), 169U, 0U, nullptr);
+
+  // If a non-secure cookie is created, and a number of secure cookies exceeds
+  // the per domain limit (18), the total cookies will be evicted down to a
+  // lower amount (150), enforcing the eviction of the non-secure cookie, and
+  // the remaining secure cookies will be created (another 18 to 168).
+  const CookiesEntry test4[] = {{1U, false}, {199U, true}};
+  TestSecureCookieEviction(test4, arraysize(test4), 168U, 0U, nullptr);
+
+  // If an even number of non-secure and secure cookies are created below the
+  // per-domain limit (180), all will be created and none evicted.
+  const CookiesEntry test5[] = {{75U, false}, {75U, true}};
+  TestSecureCookieEviction(test5, arraysize(test5), 75U, 75U, nullptr);
+
+  // If the same number of secure and non-secure cookies are created (50 each)
+  // below the per domain limit (180), and then another set of secure cookies
+  // are created to bring the total above the per-domain limit, all of the
+  // non-secure cookies will be evicted but none of the secure ones will be
+  // evicted.
+  const CookiesEntry test6[] = {{50U, true}, {50U, false}, {81U, true}};
+  TestSecureCookieEviction(test6, arraysize(test6), 131U, 0U, nullptr);
+
+  // If the same number of non-secure and secure cookies are created (50 each)
+  // below the per domain limit (180), and then another set of non-secure
+  // cookies are created to bring the total above the per-domain limit, all of
+  // the non-secure cookies will be evicted but none of the secure ones will be
+  // evicted.
+  const CookiesEntry test7[] = {{50U, false}, {50U, true}, {81U, false}};
+  TestSecureCookieEviction(test7, arraysize(test7), 50U, 0U, nullptr);
+
+  // If the same number of non-secure and secure cookies are created (50 each)
+  // below the per domain limit (180), and then another set of non-secure
+  // cookies are created to bring the total above the per-domain limit, all of
+  // the non-secure cookies will be evicted but none of the secure ones will be
+  // evicted, and then the remaining non-secure cookies will be created (9).
+  const CookiesEntry test8[] = {{50U, false}, {50U, true}, {90U, false}};
+  TestSecureCookieEviction(test8, arraysize(test8), 50U, 9U, nullptr);
+
+  // If a number of non-secure cookies are created on other hosts (20) and are
+  // past the global 'safe' date, and then the number of non-secure cookies for
+  // a single domain are brought to the per-domain limit (180), followed by
+  // another set of secure cookies on that same domain (20), all of the
+  // non-secure cookies for that domain should be evicted, but the non-secure
+  // cookies for other domains should remain, as should the secure cookies for
+  // that domain.
+  const CookiesEntry test9[] = {{180U, false}, {20U, true}};
+  const AltHosts test9_alt_hosts(0, 20);
+  TestSecureCookieEviction(test9, arraysize(test9), 20U, 20U, &test9_alt_hosts);
+
+  // If a number of secure cookies are created on other hosts and hit the global
+  // cookie limit (3300) and are past the global 'safe' date, and then a single
+  // non-secure cookie is created now, the secure cookies are removed so that
+  // the global total number of cookies is at the global purge goal (3000), but
+  // the non-secure cookie is not evicted since it is too young.
+  const CookiesEntry test10[] = {{1U, false}};
+  const AltHosts test10_alt_hosts(3300, 0);
+  TestSecureCookieEviction(test10, arraysize(test10), 2999U, 1U,
+                           &test10_alt_hosts);
+
+  // If a number of non-secure cookies are created on other hosts and hit the
+  // global cookie limit (3300) and are past the global 'safe' date, and then a
+  // single non-secure cookie is created now, the non-secure cookies are removed
+  // so that the global total number of cookies is at the global purge goal
+  // (3000).
+  const CookiesEntry test11[] = {{1U, false}};
+  const AltHosts test11_alt_hosts(0, 3300);
+  TestSecureCookieEviction(test11, arraysize(test11), 0U, 3000U,
+                           &test11_alt_hosts);
+
+  // If a number of non-secure cookies are created on other hosts and hit the
+  // global cookie limit (3300) and are past the global 'safe' date, and then a
+  // single ecure cookie is created now, the non-secure cookies are removed so
+  // that the global total number of cookies is at the global purge goal (3000),
+  // but the secure cookie is not evicted.
+  const CookiesEntry test12[] = {{1U, true}};
+  const AltHosts test12_alt_hosts(0, 3300);
+  TestSecureCookieEviction(test12, arraysize(test12), 1U, 2999U,
+                           &test12_alt_hosts);
+
+  // If a total number of secure and non-secure cookies are created on other
+  // hosts and hit the global cookie limit (3300) and are past the global 'safe'
+  // date, and then a single non-secure cookie is created now, the global
+  // non-secure cookies are removed so that the global total number of cookies
+  // is at the global purge goal (3000), but the secure cookies are not evicted.
+  const CookiesEntry test13[] = {{1U, false}};
+  const AltHosts test13_alt_hosts(1500, 1800);
+  TestSecureCookieEviction(test13, arraysize(test13), 1500U, 1500,
+                           &test13_alt_hosts);
+
+  // If a total number of secure and non-secure cookies are created on other
+  // hosts and hit the global cookie limit (3300) and are past the global 'safe'
+  // date, and then a single secure cookie is created now, the global non-secure
+  // cookies are removed so that the global total number of cookies is at the
+  // global purge goal (3000), but the secure cookies are not evicted.
+  const CookiesEntry test14[] = {{1U, true}};
+  const AltHosts test14_alt_hosts(1500, 1800);
+  TestSecureCookieEviction(test14, arraysize(test14), 1501U, 1499,
+                           &test14_alt_hosts);
 }
 
 class CookieMonsterNotificationTest : public CookieMonsterTest {

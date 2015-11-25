@@ -233,6 +233,23 @@ void SortLeastRecentlyAccessed(CookieMonster::CookieItVector::iterator it_begin,
   std::partial_sort(it_begin, it_begin + num_sort + 1, it_end, LRACookieSorter);
 }
 
+// Given a single cookie vector |cookie_its|, pushs all of the secure cookies in
+// |cookie_its| into |secure_cookie_its| and all of the non-secure cookies into
+// |non_secure_cookie_its|. Both |secure_cookie_its| and |non_secure_cookie_its|
+// must be non-NULL.
+void SplitCookieVectorIntoSecureAndNonSecure(
+    const CookieMonster::CookieItVector& cookie_its,
+    CookieMonster::CookieItVector* secure_cookie_its,
+    CookieMonster::CookieItVector* non_secure_cookie_its) {
+  DCHECK(secure_cookie_its && non_secure_cookie_its);
+  for (const auto& curit : cookie_its) {
+    if (curit->second->IsSecure())
+      secure_cookie_its->push_back(curit);
+    else
+      non_secure_cookie_its->push_back(curit);
+  }
+}
+
 // Predicate to support PartitionCookieByPriority().
 struct CookiePriorityEqualsTo
     : std::unary_function<const CookieMonster::CookieMap::iterator, bool> {
@@ -305,6 +322,8 @@ ChangeCausePair ChangeCauseMapping[] = {
     // DELETE_COOKIE_EXPIRED_OVERWRITE
     {CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED_OVERWRITE, true},
     // DELETE_COOKIE_CONTROL_CHAR
+    {CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true},
+    // DELETE_COOKIE_NON_SECURE
     {CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true},
     // DELETE_COOKIE_LAST_ENTRY
     {CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, false}};
@@ -1956,7 +1975,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   // make sure that we garbage collect...  We can also make the assumption that
   // if a cookie was set, in the common case it will be used soon after,
   // and we will purge the expired cookies in GetCookies().
-  GarbageCollect(creation_time, key);
+  GarbageCollect(creation_time, key, options.enforce_strict_secure());
 
   return true;
 }
@@ -2028,34 +2047,69 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   delete cc;
 }
 
+size_t CookieMonster::GarbageCollectLeastRecentlyAccessed(
+    const base::Time& current,
+    const base::Time& safe_date,
+    size_t purge_goal,
+    CookieItVector cookie_its) {
+  // Sorts up to *and including* |cookie_its[purge_goal]|, so
+  // |earliest_access_time| will be properly assigned even if
+  // |global_purge_it| == |cookie_its.begin() + purge_goal|.
+  SortLeastRecentlyAccessed(cookie_its.begin(), cookie_its.end(), purge_goal);
+  // Find boundary to cookies older than safe_date.
+  CookieItVector::iterator global_purge_it = LowerBoundAccessDate(
+      cookie_its.begin(), cookie_its.begin() + purge_goal, safe_date);
+  // Only delete the old cookies, and if strict secure is enabled, delete
+  // non-secure ones first.
+  size_t num_deleted =
+      GarbageCollectDeleteRange(current, DELETE_COOKIE_EVICTED_GLOBAL,
+                                cookie_its.begin(), global_purge_it);
+  // Set access day to the oldest cookie that wasn't deleted.
+  earliest_access_time_ = (*global_purge_it)->second->LastAccessDate();
+  return num_deleted;
+}
+
 // Domain expiry behavior is unchanged by key/expiry scheme (the
 // meaning of the key is different, but that's not visible to this routine).
-int CookieMonster::GarbageCollect(const Time& current, const std::string& key) {
+size_t CookieMonster::GarbageCollect(const Time& current,
+                                     const std::string& key,
+                                     bool enforce_strict_secure) {
   lock_.AssertAcquired();
 
-  int num_deleted = 0;
+  size_t num_deleted = 0;
   Time safe_date(Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays));
 
   // Collect garbage for this key, minding cookie priorities.
   if (cookies_.count(key) > kDomainMaxCookies) {
     VLOG(kVlogGarbageCollection) << "GarbageCollect() key: " << key;
 
-    CookieItVector cookie_its;
-    num_deleted +=
-        GarbageCollectExpired(current, cookies_.equal_range(key), &cookie_its);
+    CookieItVector* cookie_its;
 
-    if (cookie_its.size() > kDomainMaxCookies) {
+    CookieItVector non_expired_cookie_its;
+    cookie_its = &non_expired_cookie_its;
+    num_deleted +=
+        GarbageCollectExpired(current, cookies_.equal_range(key), cookie_its);
+
+    CookieItVector secure_cookie_its;
+    if (enforce_strict_secure && cookie_its->size() > kDomainMaxCookies) {
+      VLOG(kVlogGarbageCollection) << "Garbage collecting non-Secure cookies.";
+      num_deleted +=
+          GarbageCollectNonSecure(non_expired_cookie_its, &secure_cookie_its);
+      cookie_its = &secure_cookie_its;
+    }
+
+    if (cookie_its->size() > kDomainMaxCookies) {
       VLOG(kVlogGarbageCollection) << "Deep Garbage Collect domain.";
       size_t purge_goal =
-          cookie_its.size() - (kDomainMaxCookies - kDomainPurgeCookies);
+          cookie_its->size() - (kDomainMaxCookies - kDomainPurgeCookies);
       DCHECK(purge_goal > kDomainPurgeCookies);
 
       // Boundary iterators into |cookie_its| for different priorities.
       CookieItVector::iterator it_bdd[4];
       // Intialize |it_bdd| while sorting |cookie_its| by priorities.
       // Schematic: [MLLHMHHLMM] => [LLL|MMMM|HHH], with 4 boundaries.
-      it_bdd[0] = cookie_its.begin();
-      it_bdd[3] = cookie_its.end();
+      it_bdd[0] = cookie_its->begin();
+      it_bdd[3] = cookie_its->end();
       it_bdd[1] =
           PartitionCookieByPriority(it_bdd[0], it_bdd[3], COOKIE_PRIORITY_LOW);
       it_bdd[2] = PartitionCookieByPriority(it_bdd[1], it_bdd[3],
@@ -2109,36 +2163,47 @@ int CookieMonster::GarbageCollect(const Time& current, const std::string& key) {
   if (cookies_.size() > kMaxCookies && earliest_access_time_ < safe_date) {
     VLOG(kVlogGarbageCollection) << "GarbageCollect() everything";
     CookieItVector cookie_its;
+
     num_deleted += GarbageCollectExpired(
         current, CookieMapItPair(cookies_.begin(), cookies_.end()),
         &cookie_its);
+
     if (cookie_its.size() > kMaxCookies) {
       VLOG(kVlogGarbageCollection) << "Deep Garbage Collect everything.";
       size_t purge_goal = cookie_its.size() - (kMaxCookies - kPurgeCookies);
       DCHECK(purge_goal > kPurgeCookies);
-      // Sorts up to *and including* |cookie_its[purge_goal]|, so
-      // |earliest_access_time| will be properly assigned even if
-      // |global_purge_it| == |cookie_its.begin() + purge_goal|.
-      SortLeastRecentlyAccessed(cookie_its.begin(), cookie_its.end(),
-                                purge_goal);
-      // Find boundary to cookies older than safe_date.
-      CookieItVector::iterator global_purge_it = LowerBoundAccessDate(
-          cookie_its.begin(), cookie_its.begin() + purge_goal, safe_date);
-      // Only delete the old cookies.
-      num_deleted +=
-          GarbageCollectDeleteRange(current, DELETE_COOKIE_EVICTED_GLOBAL,
-                                    cookie_its.begin(), global_purge_it);
-      // Set access day to the oldest cookie that wasn't deleted.
-      earliest_access_time_ = (*global_purge_it)->second->LastAccessDate();
+
+      if (enforce_strict_secure) {
+        CookieItVector secure_cookie_its;
+        CookieItVector non_secure_cookie_its;
+        SplitCookieVectorIntoSecureAndNonSecure(cookie_its, &secure_cookie_its,
+                                                &non_secure_cookie_its);
+        size_t non_secure_purge_goal =
+            std::min<size_t>(purge_goal, non_secure_cookie_its.size() - 1);
+
+        size_t just_deleted = GarbageCollectLeastRecentlyAccessed(
+            current, safe_date, non_secure_purge_goal, non_secure_cookie_its);
+        num_deleted += just_deleted;
+
+        if (just_deleted < purge_goal) {
+          size_t secure_purge_goal = std::min<size_t>(
+              purge_goal - just_deleted, secure_cookie_its.size() - 1);
+          num_deleted += GarbageCollectLeastRecentlyAccessed(
+              current, safe_date, secure_purge_goal, secure_cookie_its);
+        }
+      } else {
+        num_deleted += GarbageCollectLeastRecentlyAccessed(
+            current, safe_date, purge_goal, cookie_its);
+      }
     }
   }
 
   return num_deleted;
 }
 
-int CookieMonster::GarbageCollectExpired(const Time& current,
-                                         const CookieMapItPair& itpair,
-                                         CookieItVector* cookie_its) {
+size_t CookieMonster::GarbageCollectExpired(const Time& current,
+                                            const CookieMapItPair& itpair,
+                                            CookieItVector* cookie_its) {
   if (keep_expired_cookies_)
     return 0;
 
@@ -2160,10 +2225,29 @@ int CookieMonster::GarbageCollectExpired(const Time& current,
   return num_deleted;
 }
 
-int CookieMonster::GarbageCollectDeleteRange(const Time& current,
-                                             DeletionCause cause,
-                                             CookieItVector::iterator it_begin,
-                                             CookieItVector::iterator it_end) {
+size_t CookieMonster::GarbageCollectNonSecure(
+    const CookieItVector& valid_cookies,
+    CookieItVector* cookie_its) {
+  lock_.AssertAcquired();
+
+  size_t num_deleted = 0;
+  for (const auto& curr_cookie_it : valid_cookies) {
+    if (!curr_cookie_it->second->IsSecure()) {
+      InternalDeleteCookie(curr_cookie_it, true, DELETE_COOKIE_NON_SECURE);
+      ++num_deleted;
+    } else if (cookie_its) {
+      cookie_its->push_back(curr_cookie_it);
+    }
+  }
+
+  return num_deleted;
+}
+
+size_t CookieMonster::GarbageCollectDeleteRange(
+    const Time& current,
+    DeletionCause cause,
+    CookieItVector::iterator it_begin,
+    CookieItVector::iterator it_end) {
   for (CookieItVector::iterator it = it_begin; it != it_end; it++) {
     histogram_evicted_last_access_minutes_->Add(
         (current - (*it)->second->LastAccessDate()).InMinutes());

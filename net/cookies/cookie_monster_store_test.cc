@@ -196,25 +196,40 @@ void MockSimplePersistentCookieStore::Flush(const base::Closure& callback) {
 void MockSimplePersistentCookieStore::SetForceKeepSessionState() {
 }
 
-CookieMonster* CreateMonsterFromStoreForGC(int num_cookies,
-                                           int num_old_cookies,
+CookieMonster* CreateMonsterFromStoreForGC(int num_secure_cookies,
+                                           int num_old_secure_cookies,
+                                           int num_non_secure_cookies,
+                                           int num_old_non_secure_cookies,
                                            int days_old) {
   base::Time current(base::Time::Now());
   base::Time past_creation(base::Time::Now() - base::TimeDelta::FromDays(1000));
   scoped_refptr<MockSimplePersistentCookieStore> store(
       new MockSimplePersistentCookieStore);
+  int total_cookies = num_secure_cookies + num_non_secure_cookies;
+  int base = 0;
   // Must expire to be persistent
-  for (int i = 0; i < num_cookies; i++) {
+  for (int i = 0; i < total_cookies; i++) {
+    int num_old_cookies;
+    bool secure;
+    if (i < num_secure_cookies) {
+      num_old_cookies = num_old_secure_cookies;
+      secure = true;
+    } else {
+      base = num_secure_cookies;
+      num_old_cookies = num_old_non_secure_cookies;
+      secure = false;
+    }
     base::Time creation_time =
         past_creation + base::TimeDelta::FromMicroseconds(i);
     base::Time expiration_time = current + base::TimeDelta::FromDays(30);
     base::Time last_access_time =
-        (i < num_old_cookies) ? current - base::TimeDelta::FromDays(days_old)
-                              : current;
+        ((i - base) < num_old_cookies)
+            ? current - base::TimeDelta::FromDays(days_old)
+            : current;
 
     CanonicalCookie cc(GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i),
                        "/path", creation_time, expiration_time,
-                       last_access_time, false, false, false,
+                       last_access_time, secure, false, false,
                        COOKIE_PRIORITY_DEFAULT);
     store->AddCookie(cc);
   }

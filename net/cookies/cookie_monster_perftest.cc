@@ -371,7 +371,7 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
   for (int ci = 0; ci < static_cast<int>(arraysize(test_cases)); ++ci) {
     const TestCase& test_case(test_cases[ci]);
     scoped_refptr<CookieMonster> cm(CreateMonsterFromStoreForGC(
-        test_case.num_cookies, test_case.num_old_cookies,
+        test_case.num_cookies, test_case.num_old_cookies, 0, 0,
         CookieMonster::kSafeFromGlobalPurgeDays * 2));
 
     GURL gurl("http://google.com");
