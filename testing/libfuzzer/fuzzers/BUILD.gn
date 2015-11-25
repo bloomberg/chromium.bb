@@ -206,3 +206,14 @@ test("base_json_reader_fuzzer") {
     "//testing/libfuzzer:libfuzzer_main",
   ]
 }
+
+test("gfx_png_image_fuzzer") {
+  sources = [
+    "gfx_png_image_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/libfuzzer:libfuzzer_main",
+    "//ui/gfx",
+  ]
+}
