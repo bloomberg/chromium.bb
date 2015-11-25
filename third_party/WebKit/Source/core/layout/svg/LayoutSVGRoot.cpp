@@ -361,9 +361,6 @@ void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject
 void LayoutSVGRoot::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG layout tree.
-    // We used to have this ASSERT here, but we removed it when enabling layer squashing.
-    // See http://crbug.com/364901
-    // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
 
     LayoutReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
