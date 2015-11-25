@@ -10,11 +10,11 @@
 // A test version of CRWWebViewContentView.
 @interface TestWebViewContentView : CRWWebViewContentView
 
-// Initializes the CRWTestWebContentView.  Since |webView| and |scrollView| may
+// Initializes the TestWebViewContentView.  Since |webView| and |scrollView| may
 // be mock objects, they will not be added as subviews.
 - (instancetype)initWithMockWebView:(id)webView scrollView:(id)scrollView;
 
-// CRWTestWebViewContentViews should be initialized via |-initWithMockWebView:
+// TestWebViewContentViews should be initialized via |-initWithMockWebView:
 // scrollView:|.
 - (instancetype)initWithWebView:(UIView*)webView
                      scrollView:(UIScrollView*)scrollView NS_UNAVAILABLE;
