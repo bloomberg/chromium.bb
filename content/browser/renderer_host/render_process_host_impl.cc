@@ -2445,12 +2445,21 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #endif
 
 #if defined(OS_WIN)
+  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk") &&
       child_process_launcher_.get()) {
-    HANDLE process_handle = child_process_launcher_->GetProcess().Handle();
-    HANDLE client_pipe = mojo::embedder::ChildProcessLaunched(process_handle);
+    base::ProcessHandle process_handle =
+        child_process_launcher_->GetProcess().Handle();
+    mojo::embedder::ScopedPlatformHandle client_pipe =
+        mojo::embedder::ChildProcessLaunched(process_handle);
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
-        IPC::GetFileHandleForProcess(client_pipe, process_handle, true)));
+        IPC::GetFileHandleForProcess(
+#if defined(OS_WIN)
+                                     client_pipe.release().handle,
+#else
+                                     client_pipe.release().fd,
+#endif
+                                     process_handle, true)));
   }
 #endif
 

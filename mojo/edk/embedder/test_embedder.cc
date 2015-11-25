@@ -9,12 +9,9 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_support.h"
+#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/handle_table.h"
-
-#if defined(OS_WIN)
-#include "mojo/edk/system/token_serializer_win.h"
-#endif
 
 namespace mojo {
 
@@ -51,11 +48,9 @@ bool Shutdown() {
   delete internal::g_platform_support;
   internal::g_platform_support = nullptr;
 
-#if defined(OS_WIN)
-  CHECK(internal::g_token_serializer);
-  delete internal::g_token_serializer;
-  internal::g_token_serializer = nullptr;
-#endif
+  CHECK(internal::g_broker);
+  delete internal::g_broker;
+  internal::g_broker = nullptr;
 
   return rv;
 }

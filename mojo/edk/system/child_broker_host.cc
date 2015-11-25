@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/parent_token_serializer_win.h"
+#include "mojo/edk/system/child_broker_host.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/system/broker_messages.h"
+#include "mojo/edk/system/broker_state.h"
 #include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/parent_token_serializer_state_win.h"
-#include "mojo/edk/system/token_serializer_messages_win.h"
 
 namespace mojo {
 namespace edk {
@@ -18,33 +18,43 @@ namespace {
 static const int kDefaultReadBufferSize = 256;
 }
 
-ParentTokenSerializer::ParentTokenSerializer(HANDLE child_process,
-                                             ScopedPlatformHandle pipe)
+ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
+                                 ScopedPlatformHandle pipe)
     : child_process_(child_process),
       pipe_(pipe.Pass()),
       num_bytes_read_(0) {
+#if defined(OS_WIN)
   memset(&read_context_.overlapped, 0, sizeof(read_context_.overlapped));
   read_context_.handler = this;
   memset(&write_context_.overlapped, 0, sizeof(write_context_.overlapped));
   write_context_.handler = this;
+#else
+  // TODO(jam)
+  (void)child_process_; // Suppress -Wunused-private-field.
+  (void)num_bytes_read_; // Suppress -Wunused-private-field.
+#endif
 
   read_data_.resize(kDefaultReadBufferSize);
-  ParentTokenSerializerState::GetInstance()->token_serialize_thread()->PostTask(
+  BrokerState::GetInstance()->broker_thread()->PostTask(
       FROM_HERE,
-      base::Bind(&ParentTokenSerializer::RegisterIOHandler,
-                 base::Unretained(this)));
+      base::Bind(&ChildBrokerHost::RegisterIOHandler, base::Unretained(this)));
 }
 
-ParentTokenSerializer::~ParentTokenSerializer() {
+ChildBrokerHost::~ChildBrokerHost() {
 }
 
-void ParentTokenSerializer::RegisterIOHandler() {
+void ChildBrokerHost::RegisterIOHandler() {
+#if defined(OS_WIN)
   base::MessageLoopForIO::current()->RegisterIOHandler(
       pipe_.get().handle, this);
   BeginRead();
+#elif defined(OS_POSIX)
+  // TOOD(jam): setup
+#endif
 }
 
-void ParentTokenSerializer::BeginRead() {
+void ChildBrokerHost::BeginRead() {
+#if defined(OS_WIN)
   BOOL rv = ReadFile(pipe_.get().handle, &read_data_[num_bytes_read_],
                      static_cast<int>(read_data_.size() - num_bytes_read_),
                      nullptr, &read_context_.overlapped);
@@ -56,13 +66,14 @@ void ParentTokenSerializer::BeginRead() {
     return;
   }
 
-  NOTREACHED() << "Unknown error in ParentTokenSerializer " << rv;
+  NOTREACHED() << "Unknown error in ChildBrokerHost " << rv;
+#endif
 }
 
-void ParentTokenSerializer::OnIOCompleted(
-    base::MessageLoopForIO::IOContext* context,
-    DWORD bytes_transferred,
-    DWORD error) {
+#if defined(OS_WIN)
+void ChildBrokerHost::OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                                    DWORD bytes_transferred,
+                                    DWORD error) {
   if (context != &read_context_)
     return;
 
@@ -72,15 +83,14 @@ void ParentTokenSerializer::OnIOCompleted(
   }
 
   if (error != ERROR_SUCCESS) {
-    NOTREACHED() << "Error " << error << " in ParentTokenSerializer.";
+    NOTREACHED() << "Error " << error << " in ChildBrokerHost.";
     delete this;
     return;
   }
 
   num_bytes_read_ += bytes_transferred;
   CHECK_GE(num_bytes_read_, sizeof(uint32_t));
-  TokenSerializerMessage* message =
-      reinterpret_cast<TokenSerializerMessage*>(&read_data_[0]);
+  BrokerMessage* message = reinterpret_cast<BrokerMessage*>(&read_data_[0]);
   if (num_bytes_read_ < message->size) {
     read_data_.resize(message->size);
     BeginRead();
@@ -98,7 +108,7 @@ void ParentTokenSerializer::OnIOCompleted(
         channel_pair.PassClientHandle().release().handle);
   } else if (message->id == HANDLE_TO_TOKEN) {
     uint32_t count =
-        (message->size - kTokenSerializerMessageHeaderSize) / sizeof(HANDLE);
+        (message->size - kBrokerMessageHeaderSize) / sizeof(HANDLE);
     if (count > GetConfiguration().max_message_num_handles) {
       NOTREACHED() << "Too many handles from child process. Closing channel.";
       delete this;
@@ -112,12 +122,11 @@ void ParentTokenSerializer::OnIOCompleted(
       duplicated_handles[i] =
           PlatformHandle(DuplicateFromChild(message->handles[i]));
     }
-    ParentTokenSerializerState::GetInstance()->HandleToToken(
+    BrokerState::GetInstance()->HandleToToken(
         &duplicated_handles[0], count, tokens);
   } else if (message->id == TOKEN_TO_HANDLE) {
     uint32_t count =
-        (message->size - kTokenSerializerMessageHeaderSize) /
-        sizeof(uint64_t);
+        (message->size - kBrokerMessageHeaderSize) / sizeof(uint64_t);
     if (count > GetConfiguration().max_message_num_handles) {
       NOTREACHED() << "Too many tokens from child process. Closing channel.";
       delete this;
@@ -127,7 +136,7 @@ void ParentTokenSerializer::OnIOCompleted(
     write_data_.resize(response_size);
     HANDLE* handles = reinterpret_cast<HANDLE*>(&write_data_[0]);
     std::vector<PlatformHandle> temp_handles(count);
-    ParentTokenSerializerState::GetInstance()->TokenToHandle(
+    BrokerState::GetInstance()->TokenToHandle(
         &message->tokens[0], count, &temp_handles[0]);
     for (uint32_t i = 0; i < count; ++i) {
       if (temp_handles[i].is_valid()) {
@@ -153,8 +162,7 @@ void ParentTokenSerializer::OnIOCompleted(
   BeginRead();
 }
 
-
-HANDLE ParentTokenSerializer::DuplicateToChild(HANDLE handle) {
+HANDLE ChildBrokerHost::DuplicateToChild(HANDLE handle) {
   HANDLE rv = INVALID_HANDLE_VALUE;
   BOOL result = DuplicateHandle(base::GetCurrentProcessHandle(), handle,
                                 child_process_, &rv, 0, FALSE,
@@ -163,7 +171,7 @@ HANDLE ParentTokenSerializer::DuplicateToChild(HANDLE handle) {
   return rv;
 }
 
-HANDLE ParentTokenSerializer::DuplicateFromChild(HANDLE handle) {
+HANDLE ChildBrokerHost::DuplicateFromChild(HANDLE handle) {
   HANDLE rv = INVALID_HANDLE_VALUE;
   BOOL result = DuplicateHandle(child_process_, handle,
                                 base::GetCurrentProcessHandle(), &rv, 0, FALSE,
@@ -171,6 +179,7 @@ HANDLE ParentTokenSerializer::DuplicateFromChild(HANDLE handle) {
   DCHECK(result);
   return rv;
 }
+#endif
 
 }  // namespace edk
 }  // namespace mojo

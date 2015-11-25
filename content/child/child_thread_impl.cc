@@ -56,6 +56,7 @@
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -731,12 +732,12 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
 #endif  // defined(MOJO_SHELL_CLIENT)
 }
 
-#if defined(OS_WIN)
 void ChildThreadImpl::OnSetMojoParentPipeHandle(
     const IPC::PlatformFileForTransit& file) {
-  mojo::embedder::SetParentPipeHandle(file);
+  mojo::embedder::SetParentPipeHandle(
+      mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+          IPC::PlatformFileForTransitToPlatformFile(file))));
 }
-#endif
 
 ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_tls.Pointer()->Get();

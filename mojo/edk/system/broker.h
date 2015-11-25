@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_WIN_H_
-#define MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_WIN_H_
+#ifndef MOJO_EDK_SYSTEM_BROKER_H_
+#define MOJO_EDK_SYSTEM_BROKER_H_
 
 #include <stdint.h>
 #include <vector>
@@ -13,12 +13,16 @@
 namespace mojo {
 namespace edk {
 
-// An interface for serializing a Mojo handle to memory. A child process will
-// have to make sync calls to the parent process. It is safe to call from any
-// thread.
-class MOJO_SYSTEM_IMPL_EXPORT TokenSerializer {
+// An interface for communicating to a central "broker" process from each
+// process using the EDK. This is needed because child processes are sandboxed.
+// It is safe to call from any thread.
+class MOJO_SYSTEM_IMPL_EXPORT Broker {
  public:
-  virtual ~TokenSerializer() {}
+  virtual ~Broker() {}
+
+#if defined(OS_WIN)
+  // All these methods are needed because sandboxed Windows processes can't
+  // create named pipes or duplicate handles.
 
   // Create a PlatformChannelPair.
   virtual void CreatePlatformChannelPair(ScopedPlatformHandle* server,
@@ -35,9 +39,10 @@ class MOJO_SYSTEM_IMPL_EXPORT TokenSerializer {
   virtual void TokenToHandle(const uint64_t* tokens,
                              size_t count,
                              PlatformHandle* handles) = 0;
+#endif
 };
 
 }  // namespace edk
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_WIN_H_
+#endif  // MOJO_EDK_SYSTEM_BROKER_H_

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
@@ -19,23 +20,19 @@
 #include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
-namespace edk {
-class TokenSerializer;
-}
 
 namespace embedder {
 
 class ProcessDelegate;
 
-#if defined(OS_WIN)
 // Wrapper functions around the ones in src/mojo/edk for component builds.
 MOJO_SYSTEM_IMPL_EXPORT void PreInitializeParentProcess();
 MOJO_SYSTEM_IMPL_EXPORT void PreInitializeChildProcess();
-MOJO_SYSTEM_IMPL_EXPORT HANDLE ChildProcessLaunched(HANDLE child_process);
-MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(HANDLE child_process,
-                                                  HANDLE server_pipe);
-MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(HANDLE pipe);
-#endif
+MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle ChildProcessLaunched(
+    base::ProcessHandle child_process);
+MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
+    base::ProcessHandle child_process, ScopedPlatformHandle server_pipe);
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
 
 // Basic configuration/initialization ------------------------------------------
 

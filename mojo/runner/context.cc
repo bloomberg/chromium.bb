@@ -54,10 +54,7 @@ namespace {
 class Setup {
  public:
   Setup() {
-#if defined(OS_WIN)
     embedder::PreInitializeParentProcess();
-#endif
-
     embedder::Init();
   }
 

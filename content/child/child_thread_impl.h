@@ -232,11 +232,9 @@ class CONTENT_EXPORT ChildThreadImpl
   void OnGetChildProfilerData(int sequence_number, int current_profiling_phase);
   void OnProfilingPhaseCompleted(int profiling_phase);
   void OnBindExternalMojoShellHandle(const IPC::PlatformFileForTransit& file);
+  void OnSetMojoParentPipeHandle(const IPC::PlatformFileForTransit& file);
 #ifdef IPC_MESSAGE_LOG_ENABLED
   void OnSetIPCLoggingEnabled(bool enable);
-#endif
-#if defined(OS_WIN)
-  void OnSetMojoParentPipeHandle(const IPC::PlatformFileForTransit& file);
 #endif
 
   void EnsureConnected();

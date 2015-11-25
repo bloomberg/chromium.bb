@@ -19,7 +19,7 @@
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/system/token_serializer_win.h"
+#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -604,8 +604,7 @@ class RawChannelWin final : public RawChannel {
 
     const uint64_t* tokens =
         static_cast<const uint64_t*>(platform_handle_table);
-    internal::g_token_serializer->TokenToHandle(
-        tokens, num_platform_handles, &rv->at(0));
+    internal::g_broker->TokenToHandle(tokens, num_platform_handles, &rv->at(0));
     return rv.Pass();
   }
 
@@ -622,7 +621,7 @@ class RawChannelWin final : public RawChannel {
     DCHECK_GT(num_platform_handles, 0u);
     DCHECK(platform_handles);
 
-    internal::g_token_serializer->HandleToToken(
+    internal::g_broker->HandleToToken(
         &platform_handles[0], num_platform_handles, tokens);
     for (size_t i = 0; i < num_platform_handles; i++)
       platform_handles[i] = PlatformHandle();

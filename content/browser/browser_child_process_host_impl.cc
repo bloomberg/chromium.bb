@@ -402,12 +402,22 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK(process.IsValid());
 
 #if defined(OS_WIN)
+  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
-    HANDLE client_pipe = mojo::embedder::ChildProcessLaunched(process.Handle());
+    mojo::embedder::ScopedPlatformHandle client_pipe =
+        mojo::embedder::ChildProcessLaunched(process.Handle());
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
-        IPC::GetFileHandleForProcess(client_pipe, process.Handle(), true)));
+        IPC::GetFileHandleForProcess(
+#if defined(OS_WIN)
+                                     client_pipe.release().handle,
+#else
+                                     client_pipe.release().fd,
+#endif
+                                     process.Handle(), true)));
   }
+#endif
 
+#if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the
   // child process exits. This watcher is stopped once the IPC channel is
   // connected and the exit of the child process is detecter by an error on the

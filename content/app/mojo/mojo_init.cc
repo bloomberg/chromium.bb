@@ -18,7 +18,6 @@ namespace {
 class MojoInitializer {
  public:
   MojoInitializer() {
-#if defined(OS_WIN)
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch("use-new-edk")) {
@@ -30,7 +29,6 @@ class MojoInitializer {
         mojo::embedder::PreInitializeChildProcess();
       }
     }
-#endif
 
     mojo::embedder::SetMaxMessageSize(IPC::Channel::kMaximumMessageSize);
     mojo::embedder::Init();

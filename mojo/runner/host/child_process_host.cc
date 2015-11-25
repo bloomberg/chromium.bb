@@ -40,6 +40,7 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       start_child_process_event_(false, false),
       weak_factory_(this) {
 #if defined(OS_WIN)
+  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
     serializer_platform_channel_pair_.reset(new edk::PlatformChannelPair(true));
 #endif
@@ -210,9 +211,14 @@ void ChildProcessHost::DoLaunch() {
       serializer_platform_channel_pair_->ChildProcessLaunched();
       mojo::embedder::ChildProcessLaunched(
           child_process_.Handle(),
-          serializer_platform_channel_pair_->PassServerHandle()
-              .release()
-              .handle);
+          mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+              serializer_platform_channel_pair_->PassServerHandle().release().
+#if defined(OS_WIN)
+                  handle
+#else
+                  fd
+#endif
+            )));
     }
 #endif
   }

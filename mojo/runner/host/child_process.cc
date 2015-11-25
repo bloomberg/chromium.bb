@@ -108,10 +108,7 @@ class AppContext : public embedder::ProcessDelegate {
   ~AppContext() override {}
 
   void Init() {
-#if defined(OS_WIN)
     embedder::PreInitializeChildProcess();
-#endif
-
     // Initialize Mojo before starting any threads.
     embedder::Init();
 
@@ -315,24 +312,34 @@ ScopedMessagePipeHandle InitializeHostMessagePipe(
     // platform handle to setup the communication channel by which we exchange
     // handles to/from tokens, which is needed for sandboxed Windows
     // processes.
-    char token_serializer_handle[10];
+    char broker_handle[10];
     MojoHandleSignalsState state;
     MojoResult rv =
         MojoWait(host_message_pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
                  MOJO_DEADLINE_INDEFINITE, &state);
     CHECK_EQ(MOJO_RESULT_OK, rv);
-    uint32_t num_bytes = arraysize(token_serializer_handle);
+    uint32_t num_bytes = arraysize(broker_handle);
     rv = MojoReadMessage(host_message_pipe.get().value(),
-                         token_serializer_handle, &num_bytes, nullptr, 0,
+                         broker_handle, &num_bytes, nullptr, 0,
                          MOJO_READ_MESSAGE_FLAG_NONE);
     CHECK_EQ(MOJO_RESULT_OK, rv);
 
-    edk::ScopedPlatformHandle token_serializer_channel =
+    edk::ScopedPlatformHandle broker_channel =
         edk::PlatformChannelPair::PassClientHandleFromParentProcessFromString(
-            std::string(token_serializer_handle, num_bytes));
-    CHECK(token_serializer_channel.is_valid());
-    embedder::SetParentPipeHandle(token_serializer_channel.release().handle);
+            std::string(broker_handle, num_bytes));
+    CHECK(broker_channel.is_valid());
+    embedder::SetParentPipeHandle(
+        mojo::embedder::ScopedPlatformHandle(mojo::embedder::PlatformHandle(
+            broker_channel.release().
+#if defined(OS_WIN)
+                                    handle
+#else
+                                    fd
+#endif
+            )));
   }
+#else
+  // TODO(jam): hook up on POSIX
 #endif
 
   return host_message_pipe.Pass();

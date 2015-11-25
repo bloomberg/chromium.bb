@@ -128,11 +128,9 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIOSurfaceManagerToken,
                      content::IOSurfaceManagerToken /* token */)
 #endif
 
-#if defined(OS_WIN)
 // Sends a pipe used by the child process to broker passing of Mojo handles.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetMojoParentPipeHandle,
                      IPC::PlatformFileForTransit /* handle */)
-#endif
 
 #if defined(USE_OZONE)
 // Sent to child processes to initialize ClientNativePixmapFactory using

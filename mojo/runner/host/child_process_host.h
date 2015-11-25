@@ -83,11 +83,9 @@ class ChildProcessHost {
   ChildController::StartAppCallback on_app_complete_;
   embedder::HandlePassingInformation handle_passing_info_;
 
-#if defined(OS_WIN)
   // Used only when --use-new-edk is specified, as a communication channel for
-  // TokenSerializer.
+  // Broker.
   scoped_ptr<edk::PlatformChannelPair> serializer_platform_channel_pair_;
-#endif
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.

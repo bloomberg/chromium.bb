@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_MESSAGES_WIN_H_
-#define MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_MESSAGES_WIN_H_
+#ifndef MOJO_EDK_SYSTEM_BROKER_MESSAGES_H_
+#define MOJO_EDK_SYSTEM_BROKER_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 namespace mojo {
 namespace edk {
 
-// This header defines the message format between ChildTokenSerializer and
-// ParentTokenSerializer.
+// This header defines the message format between ChildBroker and
+// ChildBrokerHost.
 
 enum MessageId {
   // The reply is two HANDLEs.
@@ -24,23 +24,23 @@ enum MessageId {
   TOKEN_TO_HANDLE,
 };
 
-// Definitions of the raw bytes sent between ChildTokenSerializer and
-// ParentTokenSerializer.
+// Definitions of the raw bytes sent in messages.
 
-struct ALIGNAS(4) TokenSerializerMessage {
+struct ALIGNAS(4) BrokerMessage {
   uint32_t size;
   MessageId id;
   // Data, if any, follows.
   union {
+#if defined(OS_WIN)
     HANDLE handles[1];  // If HANDLE_TO_TOKEN.
     uint64_t tokens[1];  // If TOKEN_TO_HANDLE.
+#endif
   };
 };
 
-const int kTokenSerializerMessageHeaderSize =
-    sizeof(uint32_t) + sizeof(MessageId);
+const int kBrokerMessageHeaderSize = sizeof(uint32_t) + sizeof(MessageId);
 
 }  // namespace edk
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_TOKEN_SERIALIZER_MESSAGES_WIN_H_
+#endif  // MOJO_EDK_SYSTEM_BROKER_MESSAGES_H_

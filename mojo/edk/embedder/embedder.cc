@@ -16,17 +16,14 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
+#include "mojo/edk/system/broker_state.h"
+#include "mojo/edk/system/child_broker.h"
+#include "mojo/edk/system/child_broker_host.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
-
-#if defined(OS_WIN)
-#include "mojo/edk/system/child_token_serializer_win.h"
-#include "mojo/edk/system/parent_token_serializer_state_win.h"
-#include "mojo/edk/system/parent_token_serializer_win.h"
-#include "mojo/edk/system/simple_token_serializer_win.h"
-#endif
+#include "mojo/edk/system/simple_broker.h"
 
 namespace mojo {
 namespace edk {
@@ -57,9 +54,7 @@ void ShutdownIPCSupportHelper(bool wait_for_no_more_channels) {
 namespace internal {
 
 // Declared in embedder_internal.h.
-#if defined(OS_WIN)
-TokenSerializer* g_token_serializer = nullptr;
-#endif
+Broker* g_broker = nullptr;
 PlatformSupport* g_platform_support = nullptr;
 Core* g_core = nullptr;
 
@@ -93,39 +88,38 @@ void SetMaxMessageSize(size_t bytes) {
   GetMutableConfiguration()->max_message_num_bytes = bytes;
 }
 
-#if defined(OS_WIN)
 void PreInitializeParentProcess() {
-  ParentTokenSerializerState::GetInstance();
+  BrokerState::GetInstance();
 }
 
 void PreInitializeChildProcess() {
-  ChildTokenSerializer::GetInstance();
+  ChildBroker::GetInstance();
 }
 
-HANDLE ChildProcessLaunched(HANDLE child_process) {
+ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
+#if defined(OS_WIN)
   PlatformChannelPair token_channel;
-  new ParentTokenSerializer(child_process, token_channel.PassServerHandle());
-  return token_channel.PassClientHandle().release().handle;
-}
-
-void ChildProcessLaunched(HANDLE child_process, HANDLE server_pipe) {
-  new ParentTokenSerializer(
-      child_process, ScopedPlatformHandle(PlatformHandle(server_pipe)));
-}
-
-void SetParentPipeHandle(HANDLE pipe) {
-  ScopedPlatformHandle handle;
-  handle.reset(PlatformHandle(pipe));
-  ChildTokenSerializer::GetInstance()->
-      SetParentTokenSerializerHandle(handle.Pass());
-}
+  new ChildBrokerHost(child_process, token_channel.PassServerHandle());
+  return token_channel.PassClientHandle();
+#else
+  // TODO(jam): create this for POSIX. Need to implement channel reading first
+  // so we don't leak handles.
+  return ScopedPlatformHandle();
 #endif
+}
+
+void ChildProcessLaunched(base::ProcessHandle child_process,
+                          ScopedPlatformHandle server_pipe) {
+  new ChildBrokerHost(child_process, server_pipe.Pass());
+}
+
+void SetParentPipeHandle(ScopedPlatformHandle pipe) {
+  ChildBroker::GetInstance()->SetChildBrokerHostHandle(pipe.Pass());
+}
 
 void Init() {
-#if defined(OS_WIN)
-  if (!internal::g_token_serializer)
-    internal::g_token_serializer = new SimpleTokenSerializer;
-#endif
+  if (!internal::g_broker)
+    internal::g_broker = new SimpleBroker;
 
   DCHECK(!internal::g_platform_support);
   internal::g_platform_support = new SimplePlatformSupport();

@@ -2,33 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/simple_token_serializer_win.h"
-
-#include <windows.h>
+#include "mojo/edk/system/simple_broker.h"
 
 #include "base/process/process.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace mojo {
 namespace edk {
 
-SimpleTokenSerializer::SimpleTokenSerializer() {
+SimpleBroker::SimpleBroker() {
 }
 
-SimpleTokenSerializer::~SimpleTokenSerializer() {
+SimpleBroker::~SimpleBroker() {
 }
 
-void SimpleTokenSerializer::CreatePlatformChannelPair(
+#if defined(OS_WIN)
+void SimpleBroker::CreatePlatformChannelPair(
     ScopedPlatformHandle* server, ScopedPlatformHandle* client) {
   PlatformChannelPair channel_pair;
   *server = channel_pair.PassServerHandle();
   *client = channel_pair.PassClientHandle();
 }
 
-void SimpleTokenSerializer::HandleToToken(
-    const PlatformHandle* platform_handles,
-    size_t count,
-    uint64_t* tokens) {
+void SimpleBroker::HandleToToken(const PlatformHandle* platform_handles,
+                                 size_t count,
+                                 uint64_t* tokens) {
   // Since we're not sure which process might ultimately deserialize the message
   // we can't duplicate the handle now. Instead, write the process ID and handle
   // now and let the receiver duplicate it.
@@ -47,9 +49,9 @@ void SimpleTokenSerializer::HandleToToken(
   }
 }
 
-void SimpleTokenSerializer::TokenToHandle(const uint64_t* tokens,
-                                          size_t count,
-                                          PlatformHandle* handles) {
+void SimpleBroker::TokenToHandle(const uint64_t* tokens,
+                                 size_t count,
+                                 PlatformHandle* handles) {
   for (size_t i = 0; i < count; ++i) {
     DWORD pid = tokens[i] >> 32;
 #if defined(_WIN64)
@@ -73,6 +75,7 @@ void SimpleTokenSerializer::TokenToHandle(const uint64_t* tokens,
     }
   }
 }
+#endif
 
 }  // namespace edk
 }  // namespace mojo

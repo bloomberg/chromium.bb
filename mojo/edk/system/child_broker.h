@@ -2,30 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_CHILD_TOKEN_SERIALIZER_WIN_H_
-#define MOJO_EDK_SYSTEM_CHILD_TOKEN_SERIALIZER_WIN_H_
+#ifndef MOJO_EDK_SYSTEM_CHILD_BROKER_H_
+#define MOJO_EDK_SYSTEM_CHILD_BROKER_H_
 
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock_impl.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/edk/system/token_serializer_win.h"
 
 namespace mojo {
 namespace edk {
-struct TokenSerializerMessage;
+struct BrokerMessage;
 
-// An implementation of TokenSerializer used in (sandboxed) child processes. It
-// talks over sync IPCs to the (unsandboxed) parent process (specifically,
-// ParentTokenSerializer) to convert handles to tokens and vice versa.
-class MOJO_SYSTEM_IMPL_EXPORT ChildTokenSerializer : public TokenSerializer {
+// An implementation of Broker used in (sandboxed) child processes. It talks
+// over sync IPCs to the (unsandboxed) parent process (specifically,
+// ParentBroker) to convert handles to tokens and vice versa.
+class MOJO_SYSTEM_IMPL_EXPORT ChildBroker : public Broker {
  public:
-  static ChildTokenSerializer* GetInstance();
+  static ChildBroker* GetInstance();
 
-  // Passes the platform handle that is used to talk to ParentTokenSerializer.
-  void SetParentTokenSerializerHandle(ScopedPlatformHandle handle);
+  // Passes the platform handle that is used to talk to ChildBrokerHost.
+  void SetChildBrokerHostHandle(ScopedPlatformHandle handle);
 
-  // TokenSerializer implementation:
+  // Broker implementation:
+#if defined(OS_WIN)
   void CreatePlatformChannelPair(ScopedPlatformHandle* server,
                                  ScopedPlatformHandle* client) override;
   void HandleToToken(const PlatformHandle* platform_handles,
@@ -34,15 +35,16 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildTokenSerializer : public TokenSerializer {
   void TokenToHandle(const uint64_t* tokens,
                      size_t count,
                      PlatformHandle* handles) override;
+#endif
 
  private:
-  friend struct base::DefaultSingletonTraits<ChildTokenSerializer>;
+  friend struct base::DefaultSingletonTraits<ChildBroker>;
 
-  ChildTokenSerializer();
-  ~ChildTokenSerializer() override;
+  ChildBroker();
+  ~ChildBroker() override;
 
   // Helper method to write the given message and read back the result.
-  bool WriteAndReadResponse(TokenSerializerMessage* message,
+  bool WriteAndReadResponse(BrokerMessage* message,
                             void* response,
                             uint32_t response_size);
 
@@ -57,4 +59,4 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildTokenSerializer : public TokenSerializer {
 }  // namespace edk
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_CHILD_TOKEN_SERIALIZER_WIN_H_
+#endif  // MOJO_EDK_SYSTEM_CHILD_BROKER_H_

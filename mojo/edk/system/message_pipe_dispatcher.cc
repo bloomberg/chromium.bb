@@ -11,14 +11,11 @@
 #include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/platform_support.h"
+#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/edk/system/transport_data.h"
-
-#if defined(OS_WIN)
-#include "mojo/edk/system/token_serializer_win.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -182,8 +179,7 @@ ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
 
   const uint64_t* tokens =
       static_cast<const uint64_t*>(platform_handle_table);
-  internal::g_token_serializer->TokenToHandle(
-      tokens, num_platform_handles, &rv->at(0));
+  internal::g_broker->TokenToHandle(tokens, num_platform_handles, &rv->at(0));
   return rv.Pass();
 }
 #endif
@@ -441,7 +437,7 @@ void MessagePipeDispatcher::SerializeInternal() {
         uint64_t* tokens = reinterpret_cast<uint64_t*>(
             static_cast<char*>(message->transport_data()->buffer()) +
             message->transport_data()->platform_handle_table_offset());
-        internal::g_token_serializer->HandleToToken(
+        internal::g_broker->HandleToToken(
             &all_platform_handles->at(0), all_platform_handles->size(), tokens);
         for (size_t i = 0; i < all_platform_handles->size(); i++)
           all_platform_handles->at(i) = PlatformHandle();

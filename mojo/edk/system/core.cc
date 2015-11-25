@@ -13,6 +13,7 @@
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/async_waiter.h"
+#include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
@@ -24,10 +25,6 @@
 #include "mojo/edk/system/waiter.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/system/macros.h"
-
-#if defined(OS_WIN)
-#include "mojo/edk/system/token_serializer_win.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -211,8 +208,7 @@ MojoResult Core::CreateMessagePipe(
 
   ScopedPlatformHandle server_handle, client_handle;
 #if defined(OS_WIN)
-  internal::g_token_serializer->CreatePlatformChannelPair(
-      &server_handle, &client_handle);
+  internal::g_broker->CreatePlatformChannelPair(&server_handle, &client_handle);
 #else
   PlatformChannelPair channel_pair;
   server_handle = channel_pair.PassServerHandle();
@@ -379,8 +375,7 @@ MojoResult Core::CreateDataPipe(
 
   ScopedPlatformHandle server_handle, client_handle;
 #if defined(OS_WIN)
-  internal::g_token_serializer->CreatePlatformChannelPair(
-      &server_handle, &client_handle);
+  internal::g_broker->CreatePlatformChannelPair(&server_handle, &client_handle);
 #else
   PlatformChannelPair channel_pair;
   server_handle = channel_pair.PassServerHandle();

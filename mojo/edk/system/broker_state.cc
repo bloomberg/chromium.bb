@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/parent_token_serializer_state_win.h"
+#include "mojo/edk/system/broker_state.h"
 
 #include "base/rand_util.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -11,20 +11,20 @@
 namespace mojo {
 namespace edk {
 
-ParentTokenSerializerState* ParentTokenSerializerState::GetInstance() {
+BrokerState* BrokerState::GetInstance() {
   return base::Singleton<
-      ParentTokenSerializerState,
-      base::LeakySingletonTraits<ParentTokenSerializerState>>::get();
+      BrokerState, base::LeakySingletonTraits<BrokerState>>::get();
 }
 
-void ParentTokenSerializerState::CreatePlatformChannelPair(
+#if defined(OS_WIN)
+void BrokerState::CreatePlatformChannelPair(
     ScopedPlatformHandle* server, ScopedPlatformHandle* client) {
   PlatformChannelPair channel_pair;
   *server = channel_pair.PassServerHandle();
   *client = channel_pair.PassClientHandle();
 }
 
-void ParentTokenSerializerState::HandleToToken(
+void BrokerState::HandleToToken(
     const PlatformHandle* platform_handles,
     size_t count,
     uint64_t* tokens) {
@@ -38,16 +38,15 @@ void ParentTokenSerializerState::HandleToToken(
       tokens[i] = token;
       token_map_[tokens[i]] = platform_handles[i].handle;
     } else {
-      DLOG(WARNING) << "ParentTokenSerializerState got invalid handle.";
+      DLOG(WARNING) << "BrokerState got invalid handle.";
       tokens[i] = 0;
     }
   }
 }
 
-void ParentTokenSerializerState::TokenToHandle(
-    const uint64_t* tokens,
-    size_t count,
-    PlatformHandle* handles) {
+void BrokerState::TokenToHandle(const uint64_t* tokens,
+                                size_t count,
+                                PlatformHandle* handles) {
   base::AutoLock auto_locker(lock_);
   for (size_t i = 0; i < count; ++i) {
     auto it = token_map_.find(tokens[i]);
@@ -59,16 +58,16 @@ void ParentTokenSerializerState::TokenToHandle(
     }
   }
 }
+#endif
 
-ParentTokenSerializerState::ParentTokenSerializerState()
-    : token_serialize_thread_("Token Serializer Watcher") {
+BrokerState::BrokerState() : broker_thread_("Mojo Broker Thread") {
   base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-  token_serialize_thread_.StartWithOptions(options);
-  DCHECK(!internal::g_token_serializer);
-  internal::g_token_serializer = this;
+  broker_thread_.StartWithOptions(options);
+  DCHECK(!internal::g_broker);
+  internal::g_broker = this;
 }
 
-ParentTokenSerializerState::~ParentTokenSerializerState() {
+BrokerState::~BrokerState() {
 }
 
 }  // namespace edk

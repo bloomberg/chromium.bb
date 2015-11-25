@@ -2,31 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/child_token_serializer_win.h"
+#include "mojo/edk/system/child_broker.h"
 
 #include "base/logging.h"
 #include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/system/token_serializer_messages_win.h"
+#include "mojo/edk/system/broker_messages.h"
 
 namespace mojo {
 namespace edk {
 
-ChildTokenSerializer* ChildTokenSerializer::GetInstance() {
+ChildBroker* ChildBroker::GetInstance() {
   return base::Singleton<
-      ChildTokenSerializer,
-      base::LeakySingletonTraits<ChildTokenSerializer>>::get();
+      ChildBroker, base::LeakySingletonTraits<ChildBroker>>::get();
 }
 
-void ChildTokenSerializer::SetParentTokenSerializerHandle(
-    ScopedPlatformHandle handle)  {
+void ChildBroker::SetChildBrokerHostHandle(ScopedPlatformHandle handle)  {
   handle_ = handle.Pass();
   lock_.Unlock();
 }
 
-void ChildTokenSerializer::CreatePlatformChannelPair(
+#if defined(OS_WIN)
+void ChildBroker::CreatePlatformChannelPair(
     ScopedPlatformHandle* server, ScopedPlatformHandle* client) {
-  TokenSerializerMessage message;
-  message.size = kTokenSerializerMessageHeaderSize;
+  BrokerMessage message;
+  message.size = kBrokerMessageHeaderSize;
   message.id = CREATE_PLATFORM_CHANNEL_PAIR;
 
   uint32_t response_size = 2 * sizeof(HANDLE);
@@ -37,14 +36,13 @@ void ChildTokenSerializer::CreatePlatformChannelPair(
   }
 }
 
-void ChildTokenSerializer::HandleToToken(const PlatformHandle* platform_handles,
-                                         size_t count,
-                                         uint64_t* tokens) {
-  uint32_t size = kTokenSerializerMessageHeaderSize +
-                   static_cast<int>(count) * sizeof(HANDLE);
+void ChildBroker::HandleToToken(const PlatformHandle* platform_handles,
+                                size_t count,
+                                uint64_t* tokens) {
+  uint32_t size = kBrokerMessageHeaderSize +
+                  static_cast<int>(count) * sizeof(HANDLE);
   std::vector<char> message_buffer(size);
-  TokenSerializerMessage* message =
-      reinterpret_cast<TokenSerializerMessage*>(&message_buffer[0]);
+  BrokerMessage* message = reinterpret_cast<BrokerMessage*>(&message_buffer[0]);
   message->size = size;
   message->id = HANDLE_TO_TOKEN;
   for (size_t i = 0; i < count; ++i)
@@ -54,14 +52,14 @@ void ChildTokenSerializer::HandleToToken(const PlatformHandle* platform_handles,
   WriteAndReadResponse(message, tokens, response_size);
 }
 
-void ChildTokenSerializer::TokenToHandle(const uint64_t* tokens,
-                                         size_t count,
-                                         PlatformHandle* handles) {
-  uint32_t size = kTokenSerializerMessageHeaderSize +
+void ChildBroker::TokenToHandle(const uint64_t* tokens,
+                                size_t count,
+                                PlatformHandle* handles) {
+  uint32_t size = kBrokerMessageHeaderSize +
                   static_cast<int>(count) * sizeof(uint64_t);
   std::vector<char> message_buffer(size);
-  TokenSerializerMessage* message =
-      reinterpret_cast<TokenSerializerMessage*>(&message_buffer[0]);
+  BrokerMessage* message =
+      reinterpret_cast<BrokerMessage*>(&message_buffer[0]);
   message->size = size;
   message->id = TOKEN_TO_HANDLE;
   memcpy(&message->tokens[0], tokens, count * sizeof(uint64_t));
@@ -74,24 +72,26 @@ void ChildTokenSerializer::TokenToHandle(const uint64_t* tokens,
       handles[i].handle = handles_temp[i];
   }
 }
+#endif
 
-ChildTokenSerializer::ChildTokenSerializer() {
-  DCHECK(!internal::g_token_serializer);
-  internal::g_token_serializer = this;
+ChildBroker::ChildBroker() {
+  DCHECK(!internal::g_broker);
+  internal::g_broker = this;
   // Block any threads from calling this until we have a pipe to the parent.
   lock_.Lock();
 }
 
-ChildTokenSerializer::~ChildTokenSerializer() {
+ChildBroker::~ChildBroker() {
 }
 
-bool ChildTokenSerializer::WriteAndReadResponse(TokenSerializerMessage* message,
-                                                void* response,
-                                                uint32_t response_size) {
+bool ChildBroker::WriteAndReadResponse(BrokerMessage* message,
+                                       void* response,
+                                       uint32_t response_size) {
   lock_.Lock();
   CHECK(handle_.is_valid());
 
   bool result = true;
+#if defined(OS_WIN)
   DWORD bytes_written = 0;
   // This will always write in one chunk per
   // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365150.aspx.
@@ -114,6 +114,7 @@ bool ChildTokenSerializer::WriteAndReadResponse(TokenSerializerMessage* message,
       response = static_cast<char*>(response) + bytes_read;
     }
   }
+#endif
 
   lock_.Unlock();
 
