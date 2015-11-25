@@ -22,18 +22,23 @@ class EmbeddedTestServerAndroid {
   EmbeddedTestServerAndroid(JNIEnv* env, jobject obj);
   ~EmbeddedTestServerAndroid();
 
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean Start(JNIEnv* env, jobject jobj);
+  jboolean Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
-  jboolean ShutdownAndWaitUntilComplete(JNIEnv* env, jobject jobj);
+  jboolean ShutdownAndWaitUntilComplete(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj);
 
-  base::android::ScopedJavaLocalRef<jstring>
-  GetURL(JNIEnv* jenv, jobject jobj, jstring jrelative_url) const;
+  base::android::ScopedJavaLocalRef<jstring> GetURL(
+      JNIEnv* jenv,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jrelative_url) const;
 
-  void ServeFilesFromDirectory(JNIEnv* env,
-                               jobject jobj,
-                               jstring jdirectory_path);
+  void ServeFilesFromDirectory(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jdirectory_path);
 
   static bool RegisterEmbeddedTestServerAndroid(JNIEnv* env);
 

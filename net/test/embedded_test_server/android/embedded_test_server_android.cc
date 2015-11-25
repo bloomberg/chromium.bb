@@ -25,19 +25,21 @@ EmbeddedTestServerAndroid::~EmbeddedTestServerAndroid() {
   Java_EmbeddedTestServer_clearNativePtr(env, weak_java_server_.get(env).obj());
 }
 
-jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env, jobject jobj) {
+jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env,
+                                          const JavaParamRef<jobject>& jobj) {
   return test_server_.Start();
 }
 
-jboolean EmbeddedTestServerAndroid::ShutdownAndWaitUntilComplete(JNIEnv* env,
-                                                                 jobject jobj) {
+jboolean EmbeddedTestServerAndroid::ShutdownAndWaitUntilComplete(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj) {
   return test_server_.ShutdownAndWaitUntilComplete();
 }
 
 base::android::ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetURL(
     JNIEnv* env,
-    jobject jobj,
-    jstring jrelative_url) const {
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& jrelative_url) const {
   const GURL gurl(test_server_.GetURL(
       base::android::ConvertJavaStringToUTF8(env, jrelative_url)));
   return base::android::ConvertUTF8ToJavaString(env, gurl.spec());
@@ -45,14 +47,15 @@ base::android::ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetURL(
 
 void EmbeddedTestServerAndroid::ServeFilesFromDirectory(
     JNIEnv* env,
-    jobject jobj,
-    jstring jdirectory_path) {
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& jdirectory_path) {
   const base::FilePath directory(
       base::android::ConvertJavaStringToUTF8(env, jdirectory_path));
   test_server_.ServeFilesFromDirectory(directory);
 }
 
-void EmbeddedTestServerAndroid::Destroy(JNIEnv* env, jobject jobj) {
+void EmbeddedTestServerAndroid::Destroy(JNIEnv* env,
+                                        const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 

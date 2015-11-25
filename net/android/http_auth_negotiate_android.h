@@ -40,7 +40,10 @@ class NET_EXPORT_PRIVATE JavaNegotiateResultWrapper {
       const base::Callback<void(int, const std::string&)>&
           thread_safe_callback);
 
-  void SetResult(JNIEnv* env, jobject obj, int result, jstring token);
+  void SetResult(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 int result,
+                 const base::android::JavaParamRef<jstring>& token);
 
  private:
   // Class is only allowed to delete itself, nobody else is allowed to delete.

@@ -35,9 +35,9 @@ JavaNegotiateResultWrapper::~JavaNegotiateResultWrapper() {
 }
 
 void JavaNegotiateResultWrapper::SetResult(JNIEnv* env,
-                                           jobject obj,
+                                           const JavaParamRef<jobject>& obj,
                                            int result,
-                                           jstring token) {
+                                           const JavaParamRef<jstring>& token) {
   // This will be called on the UI thread, so we have to post a task back to the
   // correct thread to actually save the result
   std::string raw_token = ConvertJavaStringToUTF8(env, token);

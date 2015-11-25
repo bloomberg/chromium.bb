@@ -43,16 +43,19 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
     // are either a host/port pair or ("", 0) to indicate "no proxy".
     // The third argument indicates the PAC url.
     // The fourth argument is the proxy exclusion list.
-    virtual void ProxySettingsChangedTo(JNIEnv*,
-                                        jobject,
-                                        jstring,
-                                        jint,
-                                        jstring,
-                                        jobjectArray) = 0;
+    virtual void ProxySettingsChangedTo(
+        JNIEnv*,
+        const base::android::JavaParamRef<jobject>&,
+        const base::android::JavaParamRef<jstring>&,
+        jint,
+        const base::android::JavaParamRef<jstring>&,
+        const base::android::JavaParamRef<jobjectArray>&) = 0;
 
     // Called from Java (on JNI thread) to signal that the proxy settings have
     // changed. New proxy settings are fetched from the system property store.
-    virtual void ProxySettingsChanged(JNIEnv*, jobject) = 0;
+    virtual void ProxySettingsChanged(
+        JNIEnv*,
+        const base::android::JavaParamRef<jobject>&) = 0;
   };
 
   ProxyConfigServiceAndroid(

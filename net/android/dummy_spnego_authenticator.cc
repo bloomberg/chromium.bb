@@ -135,18 +135,19 @@ DummySpnegoAuthenticator::SecurityContextQuery::~SecurityContextQuery() {
 base::android::ScopedJavaLocalRef<jstring>
 DummySpnegoAuthenticator::SecurityContextQuery::GetTokenToReturn(
     JNIEnv* env,
-    jobject /*obj*/) {
+    const JavaParamRef<jobject>& /*obj*/) {
   return base::android::ConvertUTF8ToJavaString(env, output_token.c_str());
 }
-int DummySpnegoAuthenticator::SecurityContextQuery::GetResult(JNIEnv* /*env*/,
-                                                              jobject /*obj*/) {
+int DummySpnegoAuthenticator::SecurityContextQuery::GetResult(
+    JNIEnv* /*env*/,
+    const JavaParamRef<jobject>& /*obj*/) {
   return response_code;
 }
 
 void DummySpnegoAuthenticator::SecurityContextQuery::CheckGetTokenArguments(
     JNIEnv* env,
-    jobject /*obj*/,
-    jstring j_incoming_token) {
+    const JavaParamRef<jobject>& /*obj*/,
+    const JavaParamRef<jstring>& j_incoming_token) {
   std::string incoming_token =
       base::android::ConvertJavaStringToUTF8(env, j_incoming_token);
   EXPECT_EQ(expected_input_token, incoming_token);
@@ -188,8 +189,9 @@ bool DummySpnegoAuthenticator::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-long DummySpnegoAuthenticator::GetNextQuery(JNIEnv* /*env*/,
-                                            jobject /* obj */) {
+long DummySpnegoAuthenticator::GetNextQuery(
+    JNIEnv* /*env*/,
+    const JavaParamRef<jobject>& /* obj */) {
   CheckQueueNotEmpty();
   current_query_ = expected_security_queries_.front();
   expected_security_queries_.pop_front();
