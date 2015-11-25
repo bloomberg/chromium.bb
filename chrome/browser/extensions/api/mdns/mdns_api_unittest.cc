@@ -347,8 +347,8 @@ TEST_F(MDnsAPIMaxServicesTest, OnServiceListDoesNotExceedLimit) {
   EventRouterFactory::GetInstance()->SetTestingFactory(
       browser_context(), &MockEventRouterFactoryFunction);
 
-  // This check should change when the [value=64] changes in the IDL file.
-  EXPECT_EQ(64, api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT);
+  // This check should change when the [value=2048] changes in the IDL file.
+  EXPECT_EQ(2048, api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT);
 
   // Dispatch an mDNS event with more service instances than the max, and ensure
   // that the list is truncated by inspecting the argument to MockEventRouter's
@@ -357,8 +357,11 @@ TEST_F(MDnsAPIMaxServicesTest, OnServiceListDoesNotExceedLimit) {
   for (int i = 0; i < api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT + 10; ++i) {
     services.push_back(DnsSdService());
   }
-  EXPECT_CALL(*event_router(), BroadcastEventPtr(testing::Pointee(
-                                   EventServiceListSize(size_t(64))))).Times(1);
+  EXPECT_CALL(
+      *event_router(),
+      BroadcastEventPtr(testing::Pointee(EventServiceListSize(
+          static_cast<size_t>(api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT)))))
+      .Times(1);
   dns_sd_registry()->DispatchMDnsEvent("_testing._tcp.local", services);
 }
 
