@@ -22,6 +22,8 @@
 
 namespace mojo {
 
+CapabilityFilterPtr CreatePermissiveCapabilityFilter();
+
 // TODO(beng): This comment is hilariously out of date.
 // Utility class for communicating with the Shell, and providing Services
 // to clients.
@@ -131,6 +133,7 @@ class ApplicationImpl : public Application {
   template <typename Interface>
   void ConnectToService(const std::string& url, InterfacePtr<Interface>* ptr) {
     ConnectParams params(url);
+    params.set_filter(CreatePermissiveCapabilityFilter());
     return ConnectToService(&params, ptr);
   }
 

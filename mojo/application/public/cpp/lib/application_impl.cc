@@ -27,9 +27,11 @@ void DefaultTerminationClosure() {
 }  // namespace
 
 ApplicationImpl::ConnectParams::ConnectParams(const std::string& url)
-  : request_(URLRequest::From(url)) {}
+    : ConnectParams(URLRequest::From(url)) {}
 ApplicationImpl::ConnectParams::ConnectParams(URLRequestPtr request)
-    : request_(request.Pass()) {}
+    : request_(request.Pass()), filter_(CapabilityFilter::New()) {
+  filter_->filter.mark_non_null();
+}
 ApplicationImpl::ConnectParams::~ConnectParams() {}
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
@@ -55,6 +57,7 @@ ApplicationImpl::~ApplicationImpl() {
 scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
     const std::string& url) {
   ConnectParams params(url);
+  params.set_filter(CreatePermissiveCapabilityFilter());
   return ConnectToApplication(&params);
 }
 
@@ -165,6 +168,14 @@ void ApplicationImpl::UnbindConnections(
     ShellPtr* shell) {
   *application_request = binding_.Unbind();
   shell->Bind(shell_.PassInterface());
+}
+
+CapabilityFilterPtr CreatePermissiveCapabilityFilter() {
+  CapabilityFilterPtr filter(CapabilityFilter::New());
+  Array<String> all_interfaces;
+  all_interfaces.push_back("*");
+  filter->filter.insert("*", all_interfaces.Pass());
+  return filter.Pass();
 }
 
 }  // namespace mojo

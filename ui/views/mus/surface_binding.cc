@@ -19,6 +19,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -128,7 +129,8 @@ void SurfaceBinding::PerConnectionState::Init() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:mus");
   shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                               nullptr, nullptr,
+                               nullptr,
+                               mojo::CreatePermissiveCapabilityFilter(),
                                base::Bind(&OnGotContentHandlerID));
   ConnectToService(service_provider.get(), &gpu_);
 }

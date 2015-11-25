@@ -5386,8 +5386,12 @@ mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
+  mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+  mojo::Array<mojo::String> all_interfaces;
+  all_interfaces.push_back("*");
+  filter->filter.insert("*", all_interfaces.Pass());
   mojo_shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                    nullptr, nullptr,
+                                    nullptr, filter.Pass(),
                                     base::Bind(&OnGotContentHandlerID));
   return service_provider.Pass();
 }

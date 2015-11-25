@@ -56,9 +56,7 @@ interface Shell {
   //
   // |filter| is a whitelist of application URLs and services that the target
   // application is permitted to connect to. See documentation for
-  // CapabilityFilter above. Note also that this parameter may be NULL, which
-  // has the same meaning as allowing the target application to connect to
-  // any application and service.
+  // CapabilityFilter above.
   //
   // If the connection to |application_url| involves a content handler, then
   // |content_handler_id| is the id of the deepest content handler used to
@@ -68,7 +66,7 @@ interface Shell {
   ConnectToApplication(URLRequest application_url,
                        ServiceProvider&? services,
                        ServiceProvider? exposed_services,
-                       CapabilityFilter? filter) => (uint32 content_handler_id);
+                       CapabilityFilter filter) => (uint32 content_handler_id);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

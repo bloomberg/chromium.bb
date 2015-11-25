@@ -40,6 +40,7 @@ define('main', [
             domAutomationController.send(response.url == 'http://127.0.0.1/');
           });
         },
-        function (exposedServices) {});
+        function (exposedServices) {},
+        new shellMojom.CapabilityFilter({ filter: new Map([["*", ["*"]]]) }));
   };
 });
