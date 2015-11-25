@@ -313,15 +313,6 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
     if (firstPaintInvalidationTrackingEnabled())
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
-#ifndef NDEBUG
-    if (contentsOpaque() && s_drawDebugRedFill) {
-        FloatRect rect(FloatPoint(), size());
-        if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
-            DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
-            context.fillRect(rect, SK_ColorRED);
-        }
-    }
-#endif
 
     IntRect newInterestRect;
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
@@ -334,6 +325,16 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
             return;
         }
     }
+
+#ifndef NDEBUG
+    if (contentsOpaque() && s_drawDebugRedFill) {
+        FloatRect rect(FloatPoint(), size());
+        if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
+            DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
+            context.fillRect(rect, SK_ColorRED);
+        }
+    }
+#endif
 
     m_previousInterestRect = *interestRect;
     m_client->paintContents(this, context, m_paintingPhase, *interestRect);
