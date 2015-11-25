@@ -353,11 +353,6 @@ bool ResizeReservedAddressSpace(void* addr,
 // shall register its methods. Note that lazy native method resolution
 // will _not_ work after this, because Dalvik uses the system's dlsym()
 // which won't see the new library, so explicit registration is mandatory.
-// Load a library with the chromium linker. This will also call its
-// JNI_OnLoad() method, which shall register its methods. Note that
-// lazy native method resolution will _not_ work after this, because
-// Dalvik uses the system's dlsym() which won't see the new library,
-// so explicit registration is mandatory.
 //
 // |env| is the current JNI environment handle.
 // |clazz| is the static class handle for org.chromium.base.Linker,
@@ -436,20 +431,17 @@ jboolean LoadLibrary(JNIEnv* env,
     return false;
   }
 
-  // Locate and then call the loaded library's JNI_OnLoad() function. Check
-  // that it returns a usable JNI version.
+  // Locate and if found then call the loaded library's JNI_OnLoad() function.
   using JNI_OnLoadFunctionPtr = int (*)(void* vm, void* reserved);
   auto jni_onload =
       reinterpret_cast<JNI_OnLoadFunctionPtr>(dlsym(handle, "JNI_OnLoad"));
-  if (jni_onload == nullptr) {
-    LOG_ERROR("dlsym: JNI_OnLoad: %s", dlerror());
-    return false;
-  }
-
-  int jni_version = (*jni_onload)(s_java_vm, nullptr);
-  if (jni_version < JNI_VERSION_1_4) {
-    LOG_ERROR("JNI version is invalid: %d", jni_version);
-    return false;
+  if (jni_onload != nullptr) {
+    // Check that JNI_OnLoad returns a usable JNI version.
+    int jni_version = (*jni_onload)(s_java_vm, nullptr);
+    if (jni_version < JNI_VERSION_1_4) {
+      LOG_ERROR("JNI version is invalid: %d", jni_version);
+      return false;
+    }
   }
 
   // Release mapping before returning so that we do not unmap reserved space.
