@@ -169,7 +169,7 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
         if (typeof status === "string")
             caption = status;
         else
-            caption = status.textContent;
+            caption = status.deepTextContent();
         if (callFrames)
             step1();
     }
