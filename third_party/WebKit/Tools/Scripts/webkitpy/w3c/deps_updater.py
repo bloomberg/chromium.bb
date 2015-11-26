@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Pull latest revisions of the W3C test repos and update our DEPS entries."""
+"""Pull latest revisions of a W3C test repo and make a local commit."""
 
 import argparse
 import re
@@ -30,17 +30,21 @@ class DepsUpdater(object):
         self.print_('## noting the current Blink commitish')
         blink_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
 
-        wpt_import_text = self.update('web-platform-tests',
-                                      'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
+        wpt_import_text = ''
+        if self.target == 'wpt':
+            wpt_import_text = self.update('web-platform-tests',
+                                          'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
 
-        for resource in ['testharnessreport.js', 'vendor-prefix.js']:
-            source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
-            destination = self.path_from_webkit_base('LayoutTests', 'imported', 'web-platform-tests', 'resources', resource)
-            self.copyfile(source, destination)
-            self.run(['git', 'add', destination])
+            for resource in ['testharnessreport.js', 'vendor-prefix.js']:
+                source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
+                destination = self.path_from_webkit_base('LayoutTests', 'imported', 'web-platform-tests', 'resources', resource)
+                self.copyfile(source, destination)
+                self.run(['git', 'add', destination])
 
-        css_import_text = self.update('csswg-test',
-                                      'https://chromium.googlesource.com/external/w3c/csswg-test.git')
+        css_import_text = ''
+        if self.target == 'css':
+            css_import_text = self.update('csswg-test',
+                                          'https://chromium.googlesource.com/external/w3c/csswg-test.git')
 
         self.commit_changes_if_needed(blink_commitish, css_import_text, wpt_import_text)
 
@@ -55,11 +59,14 @@ class DepsUpdater(object):
                             help='allow script to run even if we have local blink commits')
         parser.add_argument('--keep-w3c-repos-around', action='store_true',
                             help='leave the w3c repos around that were imported previously.')
+        parser.add_argument('target', choices=['css', 'wpt'],
+                            help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
 
         args = parser.parse_args(argv)
         self.allow_local_blink_commits = args.allow_local_blink_commits
         self.keep_w3c_repos_around = args.keep_w3c_repos_around
         self.verbose = args.verbose
+        self.target = args.target
 
     def checkout_is_okay(self):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
