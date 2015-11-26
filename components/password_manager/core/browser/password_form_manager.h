@@ -182,6 +182,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   bool password_overridden() const { return password_overridden_; }
 
+  bool retry_password_form_password_update() const {
+    return retry_password_form_password_update_;
+  }
+
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable() { generation_available_ = true; }
 
@@ -411,6 +415,15 @@ class PasswordFormManager : public PasswordStoreConsumer {
   autofill::PasswordForm* FindBestMatchForUpdatePassword(
       const base::string16& password) const;
 
+  // Try to find best matched to |form| from |best_matches_| by the rules:
+  // 1. If there is an element in |best_matches_| with the same username then
+  // return it;
+  // 2. If |form| has no username and there is an element from |best_matches_|
+  // with the same password as in |form| then return it;
+  // 3. Otherwise return nullptr.
+  autofill::PasswordForm* FindBestSavedMatch(
+      const autofill::PasswordForm* form) const;
+
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
@@ -453,6 +466,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Whether the saved password was overridden.
   bool password_overridden_;
+
+  // A form is considered to be "retry" password if it has only one field which
+  // is a current password field.
+  // This variable is true if the password passed through ProvisionallySave() is
+  // a password that is not equal to any password from stored for this origin
+  // credentials and it was entered on a retry password form.
+  bool retry_password_form_password_update_;
 
   // Whether the user can choose to generate a password for this form.
   bool generation_available_;

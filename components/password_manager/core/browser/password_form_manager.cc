@@ -105,6 +105,7 @@ PasswordFormManager::PasswordFormManager(
       is_new_login_(true),
       has_generated_password_(false),
       password_overridden_(false),
+      retry_password_form_password_update_(false),
       generation_available_(false),
       password_manager_(password_manager),
       preferred_match_(nullptr),
@@ -975,11 +976,11 @@ void PasswordFormManager::CreatePendingCredentials() {
   // autofilled ones, as they may have changed if the user experienced a login
   // failure.
   // Look for these credentials in the list containing auto-fill entries.
-  PasswordFormMap::const_iterator it =
-      best_matches_.find(provisionally_saved_form_->username_value);
-  if (it != best_matches_.end()) {
+  PasswordForm* saved_form =
+      FindBestSavedMatch(provisionally_saved_form_.get());
+  if (saved_form != nullptr) {
     // The user signed in with a login we autofilled.
-    pending_credentials_ = *it->second;
+    pending_credentials_ = *saved_form;
     password_overridden_ =
         pending_credentials_.password_value != password_to_save;
     if (IsPendingCredentialsPublicSuffixMatch() ||
@@ -1053,10 +1054,15 @@ void PasswordFormManager::CreatePendingCredentials() {
     selected_username_ = provisionally_saved_form_->username_value;
     is_new_login_ = false;
   } else if (client_->IsUpdatePasswordUIEnabled() && !best_matches_.empty() &&
-             provisionally_saved_form_
-                 ->IsPossibleChangePasswordFormWithoutUsername()) {
+             (provisionally_saved_form_
+                  ->IsPossibleChangePasswordFormWithoutUsername() ||
+              provisionally_saved_form_->username_element.empty())) {
     PasswordForm* best_update_match = FindBestMatchForUpdatePassword(
         provisionally_saved_form_->password_value);
+
+    retry_password_form_password_update_ =
+        provisionally_saved_form_->username_element.empty() &&
+        provisionally_saved_form_->new_password_element.empty();
 
     if (best_update_match)
       pending_credentials_ = *best_update_match;
@@ -1250,6 +1256,21 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
   return best_password_match_it == best_matches_.end()
              ? nullptr
              : best_password_match_it->second;
+}
+
+PasswordForm* PasswordFormManager::FindBestSavedMatch(
+    const PasswordForm* form) const {
+  PasswordFormMap::const_iterator it =
+      best_matches_.find(provisionally_saved_form_->username_value);
+  if (it != best_matches_.end())
+    return it->second;
+  if (!form->username_value.empty())
+    return nullptr;
+  for (const auto& stored_match : best_matches_) {
+    if (stored_match.second->password_value == form->password_value)
+      return stored_match.second;
+  }
+  return nullptr;
 }
 
 void PasswordFormManager::OnNopeUpdateClicked() {

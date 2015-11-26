@@ -559,6 +559,7 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
          (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_
               ->is_possible_change_password_form_without_username() ||
+          provisional_save_manager_->retry_password_form_password_update() ||
           (provisional_save_manager_->password_overridden() &&
            client_->IsUpdatePasswordUIEnabled())) &&
          !provisional_save_manager_->has_generated_password() &&
@@ -697,7 +698,8 @@ void PasswordManager::OnLoginSuccessful() {
         (!provisional_save_manager_->best_matches().empty() &&
          provisional_save_manager_
              ->is_possible_change_password_form_without_username()) ||
-        provisional_save_manager_->password_overridden();
+        provisional_save_manager_->password_overridden() ||
+        provisional_save_manager_->retry_password_form_password_update();
     if (client_->PromptUserToSaveOrUpdatePassword(
             provisional_save_manager_.Pass(),
             CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER,

@@ -127,10 +127,6 @@ class ObservingAutofillClient : public autofill::TestAutofillClient {
   DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
 
-// TODO(dvadym): This is for avoiding unused function compilation error. Remove
-// it when http://crbug.com/359315 is implemented for Mac.
-#if !defined(OS_MACOSX)
-// For simplicity we assume that password store contains only 1 credentials.
 void CheckThatCredentialsStored(
     password_manager::TestPasswordStore* password_store,
     const base::string16& username,
@@ -143,7 +139,6 @@ void CheckThatCredentialsStored(
   EXPECT_EQ(username, form.username_value);
   EXPECT_EQ(password, form.password_value);
 }
-#endif
 
 void TestPromptNotShown(const char* failure_message,
                         content::WebContents* web_contents,
@@ -2762,5 +2757,114 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage) {
       &browser_logs_found));
   EXPECT_TRUE(browser_logs_found);
 }
+
+// Tests that submitted credentials are saved on a password form without
+// username element when there are no stored credentials.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PasswordRetryFormSaveNoUsernameCredentials) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  // Check that password save bubble is shown.
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('retry_password_field').value = 'pw';"
+      "document.getElementById('retry_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+  // Spin the message loop to make sure the password store had a chance to
+  // update the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  CheckThatCredentialsStored(password_store.get(), base::string16(),
+                             base::ASCIIToUTF16("pw"));
+}
+
+// Tests that no bubble shown when a password form without username submitted
+// and there is stored credentials with the same password.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PasswordRetryFormNoBubbleWhenPasswordTheSame) {
+  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("pw");
+  password_store->AddLogin(signin_form);
+  signin_form.username_value = base::ASCIIToUTF16("temp1");
+  signin_form.password_value = base::ASCIIToUTF16("pw1");
+  password_store->AddLogin(signin_form);
+
+  // Check that no password bubble is shown when the submitted password is the
+  // same in one of the stored credentials.
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('retry_password_field').value = 'pw';"
+      "document.getElementById('retry_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+}
+
+// TODO(dvadym): Turn on this test when Change password UI will be implemented
+// for Mac. http://crbug.com/359315
+#if !defined(OS_MACOSX)
+// Tests that the update bubble shown when a password form without username is
+// submitted and there are stored credentials but with different password.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PasswordRetryFormUpdateBubbleShown) {
+  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("pw");
+  password_store->AddLogin(signin_form);
+
+  // Check that password update bubble is shown.
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('retry_password_field').value = 'new_pw';"
+      "document.getElementById('retry_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  // The new password "new_pw" is used, so update prompt is expected.
+  EXPECT_TRUE(prompt_observer->IsShowingUpdatePrompt());
+
+  const autofill::PasswordForm stored_form =
+      password_store->stored_passwords().begin()->second[0];
+  prompt_observer->AcceptUpdatePrompt(stored_form);
+  // Spin the message loop to make sure the password store had a chance to
+  // update the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
+                             base::ASCIIToUTF16("new_pw"));
+}
+#endif
 
 }  // namespace password_manager
