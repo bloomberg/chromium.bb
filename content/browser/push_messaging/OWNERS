@@ -1,8 +1,12 @@
 # Push Messaging OWNERS
 #
 # This file also covers ownership of the following directories:
+#   //chrome/browser/push_messaging/
+#   //components/gcm_driver/
 #   //content/child/push_messaging/
 #   //content/renderer/push_messaging/
+#   //third_party/WebKit/Source/modules/push_messaging/
+#   //third_party/WebKit/public/platform/modules/push_messaging/
 
 johnme@chromium.org
 mvanouwerkerk@chromium.org
