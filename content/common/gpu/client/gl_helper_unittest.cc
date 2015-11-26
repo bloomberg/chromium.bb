@@ -1790,7 +1790,8 @@ TEST_F(GLHelperPixelTest, YUVReadbackOptTest) {
   }
 }
 
-TEST_F(GLHelperPixelTest, YUVReadbackTest) {
+// Flaky. http://crbug.com/562114
+TEST_F(GLHelperPixelTest, DISABLED_YUVReadbackTest) {
   int sizes[] = {2, 4, 14};
   for (int flip = 0; flip <= 1; flip++) {
     for (int use_mrt = 0; use_mrt <= 1; use_mrt++) {
