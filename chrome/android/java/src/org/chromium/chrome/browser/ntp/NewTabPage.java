@@ -110,6 +110,9 @@ public class NewTabPage
 
     private boolean mIsLoaded;
 
+    // Whether the NTP has loaded once and is in the foreground.
+    private boolean mIsVisible;
+
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
 
@@ -407,6 +410,7 @@ public class NewTabPage
             RecordHistogram.recordTimesHistogram(
                     "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
             mIsLoaded = true;
+            mIsVisible = true;
             StartupMetrics.getInstance().recordOpenedNTP();
 
             if (mIsDestroyed) return;
@@ -451,6 +455,13 @@ public class NewTabPage
             public void onShown(Tab tab) {
                 // Showing the NTP is only meaningful when the page has been loaded already.
                 if (mIsLoaded) recordNTPShown();
+                mIsVisible = true;
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                recordNTPInteractionTime();
+                mIsVisible = false;
             }
         };
         mTab.addObserver(mTabObserver);
@@ -574,6 +585,11 @@ public class NewTabPage
         RecordUserAction.record("MobileNTPShown");
     }
 
+    private void recordNTPInteractionTime() {
+        RecordHistogram.recordMediumTimesHistogram(
+                "NewTabPage.TimeSpent", System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
+    }
+
     /**
      * @return Whether the NTP has finished loaded.
      */
@@ -595,6 +611,7 @@ public class NewTabPage
     public void destroy() {
         assert !mIsDestroyed;
         assert getView().getParent() == null : "Destroy called before removed from window";
+        if (mIsVisible) recordNTPInteractionTime();
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
             mFaviconHelper = null;

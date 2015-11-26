@@ -29416,7 +29416,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time from the New Tab page being shown until the user to clicked on a
     most visited tile. Only recorded if the user clicked on a tile, as opposed
-    to e.g. searching via the omnibox.
+    to e.g. searching via the omnibox. Only measured on Android.
   </summary>
 </histogram>
 
@@ -29680,7 +29680,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The visual type of each most visited tile displayed on the new tab page,
     e.g. actual thumbnail or placeholder thumbnail. This is recorded for each
-    most visited item when the NTP is opened.
+    most visited item when the NTP is opened. Only measured on Android.
   </summary>
 </histogram>
 
@@ -29688,7 +29688,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>newt@chromium.org</owner>
   <summary>
     The visual type of the most visited item that the user clicked on, e.g.
-    actual thumbnail or placeholder thumbnail.
+    actual thumbnail or placeholder thumbnail. Only measured on Android.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TimeSpent" units="milliseconds">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    The time spent on the new tab page as measured from when it was loaded or
+    last brought to the foreground until it was navigated away from or hidden.
+    Only measured on Android.
   </summary>
 </histogram>
 
