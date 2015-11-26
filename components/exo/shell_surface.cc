@@ -112,6 +112,8 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 void ShellSurface::OnSurfaceCommit() {
   if (widget_ || show_state_ == ui::SHOW_STATE_END) {
     surface_->CommitSurfaceHierarchy();
+    if (widget_)
+      widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
     return;
   }
 
