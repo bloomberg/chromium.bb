@@ -72,7 +72,7 @@ bool ControlMessageHandler::RunOrClosePipe(Message* message) {
   params->DecodePointersAndHandles(message->mutable_handles());
 
   RunOrClosePipeMessageParamsPtr params_ptr;
-  Deserialize_(params, &params_ptr);
+  Deserialize_(params, &params_ptr, nullptr);
 
   return interface_version_ >= params_ptr->require_version->version;
 }

@@ -320,7 +320,8 @@ class InterfacePtrState<Interface, true> {
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
         make_scoped_ptr(new typename Interface::ResponseValidator_())));
-    proxy_.reset(new Proxy(endpoint_client_.get(), endpoint_client_->router()));
+    proxy_.reset(new Proxy(endpoint_client_.get()));
+    proxy_->serialization_context()->router = endpoint_client_->router();
 
     waiter_ = nullptr;
   }

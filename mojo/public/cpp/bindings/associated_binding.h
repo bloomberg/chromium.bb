@@ -79,9 +79,10 @@ class AssociatedBinding {
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         handle.Pass(), &stub_,
         make_scoped_ptr(new typename Interface::RequestValidator_())));
-
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
+
+    stub_.serialization_context()->router = endpoint_client_->router();
   }
 
   // Closes the associated interface. Puts this object into a state where it can

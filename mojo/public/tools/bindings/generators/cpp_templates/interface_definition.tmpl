@@ -6,11 +6,11 @@
 {%- set proxy_name = interface.name ~ "Proxy" %}
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
-{%- macro alloc_params(struct) %}
+{%- macro alloc_params(struct, serialization_context) %}
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
   {{param.field.kind|cpp_result_type}} p_{{param.field.name}}{};
 {%-   endfor %}
-  {{struct_macros.deserialize(struct, "params", "p_%s")}}
+  {{struct_macros.deserialize(struct, "params", "p_%s", serialization_context)}}
 {%- endmacro %}
 
 {%- macro pass_params(parameters) %}
@@ -54,12 +54,14 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
     : public mojo::MessageReceiver {
  public:
   {{class_name}}_{{method.name}}_ForwardToCallback(
-      const {{class_name}}::{{method.name}}Callback& callback)
-      : callback_(callback) {
+      const {{class_name}}::{{method.name}}Callback& callback,
+      scoped_refptr<mojo::internal::MultiplexRouter> router)
+      : callback_(callback), serialization_context_(router.Pass()) {
   }
   bool Accept(mojo::Message* message) override;
  private:
   {{class_name}}::{{method.name}}Callback callback_;
+  mojo::internal::SerializationContext serialization_context_;
   MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
 };
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
@@ -69,7 +71,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
           message->mutable_payload());
 
   params->DecodePointersAndHandles(message->mutable_handles());
-  {{alloc_params(method.response_param_struct)}}
+  {{alloc_params(method.response_param_struct, "&serialization_context_")}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
@@ -102,7 +104,7 @@ void {{proxy_name}}::{{method.name}}(
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
-      new {{class_name}}_{{method.name}}_ForwardToCallback(callback);
+      new {{class_name}}_{{method.name}}_ForwardToCallback(callback, serialization_context_.router);
   if (!receiver_->AcceptWithResponder(builder.message(), responder))
     delete responder;
 {%- else %}
@@ -191,7 +193,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
               message->mutable_payload());
 
       params->DecodePointersAndHandles(message->mutable_handles());
-      {{alloc_params(method.param_struct)|indent(4)}}
+      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
@@ -226,7 +228,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
       {{class_name}}::{{method.name}}Callback callback(runnable);
-      {{alloc_params(method.param_struct)|indent(4)}}
+      {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");

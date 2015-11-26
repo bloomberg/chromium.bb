@@ -163,13 +163,14 @@ template <typename MapKey,
           typename DataKey,
           typename DataValue>
 inline void Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
-                         Map<MapKey, MapValue>* output) {
+                         Map<MapKey, MapValue>* output,
+                         internal::SerializationContext* context) {
   if (input) {
     Array<MapKey> keys;
     Array<MapValue> values;
 
-    Deserialize_(input->keys.ptr, &keys);
-    Deserialize_(input->values.ptr, &values);
+    Deserialize_(input->keys.ptr, &keys, context);
+    Deserialize_(input->values.ptr, &values, context);
 
     *output = Map<MapKey, MapValue>(keys.Pass(), values.Pass());
   } else {

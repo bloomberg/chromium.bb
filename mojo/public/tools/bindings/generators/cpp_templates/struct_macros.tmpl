@@ -90,7 +90,12 @@
       "invalid {{name}} in {{struct_display_name}}");
 {%-     endif %}
 {%-   elif kind|is_associated_kind %}
-  // TODO(yzshen): add serialization logic for associated kinds. 
+  // TODO(yzshen): add some DCHECKs for non-nullable, is_local, correct router, etc.
+{%-     if kind|is_associated_interface_kind %}
+  mojo::internal::AssociatedInterfacePtrInfoToData({{input_field}}.Pass(), &{{output}}->{{name}});
+{%-     else %}
+  {{output}}->{{name}} = mojo::internal::AssociatedInterfaceRequestHelper::PassHandle(&{{input_field}}).release();
+{%-     endif %}
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}
@@ -108,7 +113,8 @@
       struct wrapper class.
     - method parameters/response parameters: the output is a list of
       arguments. #}
-{%- macro deserialize(struct, input, output_field_pattern) -%}
+    |context| is the name of the serialization context.
+{%- macro deserialize(struct, input, output_field_pattern, context) -%}
   do {
     // NOTE: The memory backing |{{input}}| may has be smaller than
     // |sizeof(*{{input}})| if the message comes from an older version.
@@ -128,9 +134,9 @@
 {%-     endif %}
 {%-     if kind|is_object_kind %}
 {%-       if kind|is_union_kind %}
-    Deserialize_(&{{input}}->{{name}}, &{{output_field}});
+    Deserialize_(&{{input}}->{{name}}, &{{output_field}}, {{context}});
 {%-       else %}
-    Deserialize_({{input}}->{{name}}.ptr, &{{output_field}});
+    Deserialize_({{input}}->{{name}}.ptr, &{{output_field}}, {{context}});
 {%-       endif %}
 {%-     elif kind|is_interface_kind %}
     mojo::internal::InterfaceDataToPointer(&{{input}}->{{name}}, &{{output_field}});
@@ -138,8 +144,12 @@
     {{output_field}}.Bind(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
 {%-     elif kind|is_any_handle_kind %}
     {{output_field}}.reset(mojo::internal::FetchAndReset(&{{input}}->{{name}}));
-{%-   elif kind|is_associated_kind %}
-    // TODO(yzshen): add deserialization logic for associated kinds.
+{%-   elif kind|is_associated_interface_kind %}
+    mojo::internal::AssociatedInterfaceDataToPtrInfo(&{{input}}->{{name}}, &{{output_field}}, ({{context}})->router.get());
+{%-   elif kind|is_associated_interface_request_kind %}
+    mojo::internal::AssociatedInterfaceRequestHelper::SetHandle(
+        &{{output_field}},
+        ({{context}})->router->CreateLocalEndpointHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
 {%-     elif kind|is_enum_kind %}
     {{output_field}} = static_cast<{{kind|cpp_wrapper_type}}>({{input}}->{{name}});
 {%-     else %}

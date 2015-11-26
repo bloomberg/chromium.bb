@@ -54,7 +54,7 @@ bool PipeControlMessageHandler::RunOrClosePipe(Message* message) {
   params->DecodePointersAndHandles(message->mutable_handles());
 
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr;
-  Deserialize_(params, &params_ptr);
+  Deserialize_(params, &params_ptr, nullptr);
 
   if (params_ptr->input->is_peer_associated_endpoint_closed_event()) {
     return delegate_->OnPeerAssociatedEndpointClosed(

@@ -4,6 +4,9 @@ class {{interface.name}}Stub : public mojo::MessageReceiverWithResponderStatus {
   ~{{interface.name}}Stub() override;
   void set_sink({{interface.name}}* sink) { sink_ = sink; }
   {{interface.name}}* sink() { return sink_; }
+  mojo::internal::SerializationContext* serialization_context() {
+    return &serialization_context_;
+  }
 
   bool Accept(mojo::Message* message) override;
   bool AcceptWithResponder(mojo::Message* message,
@@ -11,5 +14,6 @@ class {{interface.name}}Stub : public mojo::MessageReceiverWithResponderStatus {
 
  private:
   {{interface.name}}* sink_;
+  mojo::internal::SerializationContext serialization_context_;
   mojo::internal::ControlMessageHandler control_message_handler_;
 };

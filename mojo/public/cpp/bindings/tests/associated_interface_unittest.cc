@@ -56,6 +56,33 @@ class IntegerSenderImpl : public IntegerSender {
   base::Callback<void(int32_t)> notify_send_method_called_;
 };
 
+class IntegerSenderConnectionImpl : public IntegerSenderConnection {
+ public:
+  explicit IntegerSenderConnectionImpl(
+      InterfaceRequest<IntegerSenderConnection> request)
+      : binding_(this, request.Pass()) {}
+
+  ~IntegerSenderConnectionImpl() override {}
+
+  void GetSender(AssociatedInterfaceRequest<IntegerSender> sender) override {
+    IntegerSenderImpl* sender_impl = new IntegerSenderImpl(sender.Pass());
+    sender_impl->set_connection_error_handler(
+        [sender_impl]() { delete sender_impl; });
+  }
+
+  void AsyncGetSender(const AsyncGetSenderCallback& callback) override {
+    AssociatedInterfaceRequest<IntegerSender> request;
+    AssociatedInterfacePtrInfo<IntegerSender> ptr_info;
+    binding_.associated_group()->CreateAssociatedInterface(
+        AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+    GetSender(request.Pass());
+    callback.Run(ptr_info.Pass());
+  }
+
+ private:
+  Binding<IntegerSenderConnection> binding_;
+};
+
 class AssociatedInterfaceTest : public testing::Test {
  public:
   AssociatedInterfaceTest() : loop_(common::MessagePumpMojo::Create()) {}
@@ -444,6 +471,32 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
     for (size_t j = 1; j < receivers[i].values().size(); ++j)
       EXPECT_LT(receivers[i].values()[j - 1], receivers[i].values()[j]);
   }
+}
+
+TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
+  IntegerSenderConnectionPtr connection_ptr;
+  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+
+  AssociatedInterfacePtr<IntegerSender> sender0;
+  connection_ptr->GetSender(
+      GetProxy(&sender0, connection_ptr.associated_group()));
+
+  int32_t echoed_value = 0;
+  sender0->Echo(123, [&echoed_value](int32_t value) { echoed_value = value; });
+  PumpMessages();
+  EXPECT_EQ(123, echoed_value);
+
+  AssociatedInterfacePtr<IntegerSender> sender1;
+  connection_ptr->AsyncGetSender(
+      [&sender1](AssociatedInterfacePtrInfo<IntegerSender> ptr_info) {
+        sender1.Bind(ptr_info.Pass());
+      });
+  PumpMessages();
+  EXPECT_TRUE(sender1);
+
+  sender1->Echo(456, [&echoed_value](int32_t value) { echoed_value = value; });
+  PumpMessages();
+  EXPECT_EQ(456, echoed_value);
 }
 
 }  // namespace

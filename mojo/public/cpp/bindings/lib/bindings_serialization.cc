@@ -86,5 +86,13 @@ void DecodeHandle(MojoHandle* handle, std::vector<Handle>* handles) {
   DecodeHandle(reinterpret_cast<Handle*>(handle), handles);
 }
 
+SerializationContext::SerializationContext() {}
+
+SerializationContext::SerializationContext(
+    scoped_refptr<MultiplexRouter> in_router)
+    : router(in_router.Pass()) {}
+
+SerializationContext::~SerializationContext() {}
+
 }  // namespace internal
 }  // namespace mojo

@@ -279,7 +279,7 @@ TEST_F(MapTest, ArrayOfMap) {
     SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
     Array<Map<int32_t, int8_t>> deserialized_array;
-    Deserialize_(data, &deserialized_array);
+    Deserialize_(data, &deserialized_array, nullptr);
 
     ASSERT_EQ(1u, deserialized_array.size());
     ASSERT_EQ(1u, deserialized_array[0].size());
@@ -302,7 +302,7 @@ TEST_F(MapTest, ArrayOfMap) {
     SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
     Array<Map<String, Array<bool>>> deserialized_array;
-    Deserialize_(data, &deserialized_array);
+    Deserialize_(data, &deserialized_array, nullptr);
 
     ASSERT_EQ(1u, deserialized_array.size());
     ASSERT_EQ(1u, deserialized_array[0].size());

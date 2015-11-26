@@ -80,6 +80,7 @@ class AssociatedInterfacePtrState {
         AssociatedInterfacePtrInfoHelper::PassHandle(&info), nullptr,
         make_scoped_ptr(new typename Interface::ResponseValidator_())));
     proxy_.reset(new Proxy(endpoint_client_.get()));
+    proxy_->serialization_context()->router = endpoint_client_->router();
   }
 
   // After this method is called, the object is in an invalid state and

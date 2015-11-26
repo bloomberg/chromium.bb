@@ -10,4 +10,11 @@ class {{interface.name}}Proxy
       {{interface_macros.declare_request_params("", method)}}
   ) override;
 {%- endfor %}
+
+  mojo::internal::SerializationContext* serialization_context() {
+    return &serialization_context_;
+  }
+
+ private:
+  mojo::internal::SerializationContext serialization_context_;
 };

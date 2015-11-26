@@ -34,7 +34,7 @@ bool RunResponseForwardToCallback::Accept(Message* message) {
   params->DecodePointersAndHandles(message->mutable_handles());
 
   RunResponseMessageParamsPtr params_ptr;
-  Deserialize_(params, &params_ptr);
+  Deserialize_(params, &params_ptr, nullptr);
 
   callback_.Run(params_ptr->query_version_result.Pass());
   return true;

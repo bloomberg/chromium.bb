@@ -156,7 +156,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<int32_t> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(4U, array2.size());
   for (size_t i = 0; i < array2.size(); ++i)
@@ -174,7 +174,7 @@ TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<int32_t> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
   EXPECT_EQ(0U, array2.size());
 }
 
@@ -197,7 +197,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<Array<int32_t>> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(2U, array2.size());
   for (size_t j = 0; j < array2.size(); ++j) {
@@ -222,7 +222,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfBool) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<bool> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(10U, array2.size());
   for (size_t i = 0; i < array2.size(); ++i)
@@ -250,7 +250,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<String> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(10U, array2.size());
   for (size_t i = 0; i < array2.size(); ++i) {

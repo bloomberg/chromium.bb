@@ -67,7 +67,7 @@ U SerializeAndDeserialize(T input) {
   output_data->DecodePointersAndHandles(&handles);
 
   U output;
-  Deserialize_(output_data, &output);
+  Deserialize_(output_data, &output, nullptr);
   return output.Pass();
 }
 
@@ -139,7 +139,7 @@ TEST_F(StructTest, Serialization_Basic) {
   Serialize_(rect.Pass(), &buf, &data);
 
   RectPtr rect2;
-  Deserialize_(data, &rect2);
+  Deserialize_(data, &rect2, nullptr);
 
   CheckRect(*rect2);
 }
@@ -172,7 +172,7 @@ TEST_F(StructTest, Serialization_StructPointers) {
   Serialize_(pair.Pass(), &buf, &data);
 
   RectPairPtr pair2;
-  Deserialize_(data, &pair2);
+  Deserialize_(data, &pair2, nullptr);
 
   CheckRect(*pair2->first);
   CheckRect(*pair2->second);
@@ -203,7 +203,7 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
   Serialize_(region.Pass(), &buf, &data);
 
   NamedRegionPtr region2;
-  Deserialize_(data, &region2);
+  Deserialize_(data, &region2, nullptr);
 
   EXPECT_EQ(String("region"), region2->name);
 
@@ -229,7 +229,7 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
   Serialize_(region.Pass(), &buf, &data);
 
   NamedRegionPtr region2;
-  Deserialize_(data, &region2);
+  Deserialize_(data, &region2, nullptr);
 
   EXPECT_TRUE(region2->name.is_null());
   EXPECT_TRUE(region2->rects.is_null());

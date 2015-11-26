@@ -94,7 +94,8 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
 }
 
 void Deserialize_(internal::{{union.name}}_Data* input,
-                  {{union.name}}Ptr* output) {
+                  {{union.name}}Ptr* output,
+                  mojo::internal::SerializationContext* context) {
   if (input && !input->is_null()) {
     {{union.name}}Ptr result({{union.name}}::New());
     mojo::internal::UnionAccessor<{{union.name}}> result_acc(result.get());
@@ -103,7 +104,7 @@ void Deserialize_(internal::{{union.name}}_Data* input,
       case {{union.name}}::Tag::{{field.name|upper}}: {
 {%    if field.kind|is_object_kind %}
         result_acc.SwitchActive({{union.name}}::Tag::{{field.name|upper}});
-        Deserialize_(input->data.f_{{field.name}}.ptr, result_acc.data()->{{field.name}});
+        Deserialize_(input->data.f_{{field.name}}.ptr, result_acc.data()->{{field.name}}, context);
 {%    elif field.kind|is_any_handle_kind %}
         {{field.kind|cpp_wrapper_type}}* {{field.name}} =
             reinterpret_cast<{{field.kind|cpp_wrapper_type}}*>(&input->data.f_{{field.name}});

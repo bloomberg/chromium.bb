@@ -126,7 +126,7 @@ TEST(UnionTest, PodSerialization) {
   SerializeUnion_(pod1.Pass(), &buf, &data, false);
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2);
+  Deserialize_(data, &pod2, nullptr);
 
   EXPECT_EQ(10, pod2->get_f_int8());
   EXPECT_TRUE(pod2->is_f_int8());
@@ -145,7 +145,7 @@ TEST(UnionTest, EnumSerialization) {
   SerializeUnion_(pod1.Pass(), &buf, &data, false);
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2);
+  Deserialize_(data, &pod2, nullptr);
 
   EXPECT_EQ(AN_ENUM_SECOND, pod2->get_f_enum());
   EXPECT_TRUE(pod2->is_f_enum());
@@ -200,7 +200,7 @@ TEST(UnionTest, SerializeIsNullInlined) {
   EXPECT_TRUE(data->is_null());
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2);
+  Deserialize_(data, &pod2, nullptr);
   EXPECT_TRUE(pod2.is_null());
 }
 
@@ -309,7 +309,7 @@ TEST(UnionTest, StringSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   ObjectUnionPtr pod2;
-  Deserialize_(data, &pod2);
+  Deserialize_(data, &pod2, nullptr);
   EXPECT_EQ(hello, pod2->get_f_string());
   EXPECT_TRUE(pod2->is_f_string());
   EXPECT_EQ(pod2->which(), ObjectUnion::Tag::F_STRING);
@@ -395,7 +395,7 @@ TEST(UnionTest, PodUnionInArraySerialization) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<PodUnionPtr> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(2U, array2.size());
 
@@ -419,7 +419,7 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<PodUnionPtr> array2;
-  Deserialize_(data, &array2);
+  Deserialize_(data, &array2, nullptr);
 
   EXPECT_EQ(2U, array2.size());
 
@@ -451,7 +451,7 @@ TEST(UnionTest, Serialization_UnionOfPods) {
   Serialize_(small_struct.Pass(), &buf, &data);
 
   SmallStructPtr deserialized;
-  Deserialize_(data, &deserialized);
+  Deserialize_(data, &deserialized, nullptr);
 
   EXPECT_EQ(10, deserialized->pod_union->get_f_int32());
 }
@@ -474,7 +474,7 @@ TEST(UnionTest, Serialization_UnionOfObjects) {
   data->DecodePointersAndHandles(&handles);
 
   SmallObjStructPtr deserialized;
-  Deserialize_(data, &deserialized);
+  Deserialize_(data, &deserialized, nullptr);
 
   EXPECT_EQ(hello, deserialized->obj_union->get_f_string());
 }
@@ -599,7 +599,7 @@ TEST(UnionTest, PodUnionInMapSerialization) {
   SerializeMap_(map.Pass(), &buf, &data, &validate_params);
 
   Map<String, PodUnionPtr> map2;
-  Deserialize_(data, &map2);
+  Deserialize_(data, &map2, nullptr);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());
   EXPECT_EQ(16, map2["two"]->get_f_int16());
@@ -622,7 +622,7 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   SerializeMap_(map.Pass(), &buf, &data, &validate_params);
 
   Map<String, PodUnionPtr> map2;
-  Deserialize_(data, &map2);
+  Deserialize_(data, &map2, nullptr);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());
   EXPECT_TRUE(map2["two"].is_null());
@@ -657,7 +657,7 @@ TEST(UnionTest, StructInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2);
+  Deserialize_(data, &obj2, nullptr);
   EXPECT_EQ(8, obj2->get_f_dummy()->f_int8);
 }
 
@@ -766,7 +766,7 @@ TEST(UnionTest, ArrayInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2);
+  Deserialize_(data, &obj2, nullptr);
 
   EXPECT_EQ(8, obj2->get_f_array_int8()[0]);
   EXPECT_EQ(9, obj2->get_f_array_int8()[1]);
@@ -829,7 +829,7 @@ TEST(UnionTest, MapInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2);
+  Deserialize_(data, &obj2, nullptr);
 
   EXPECT_EQ(1, obj2->get_f_map_int8()["one"]);
   EXPECT_EQ(2, obj2->get_f_map_int8()["two"]);
@@ -892,7 +892,7 @@ TEST(UnionTest, UnionInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2);
+  Deserialize_(data, &obj2, nullptr);
   EXPECT_EQ(10, obj2->get_f_pod_union()->get_f_int8());
 }
 
@@ -984,7 +984,7 @@ TEST(UnionTest, HandleInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   HandleUnionPtr handle2(HandleUnion::New());
-  Deserialize_(data, &handle2);
+  Deserialize_(data, &handle2, nullptr);
 
   std::string golden("hello world");
   WriteTextMessage(pipe0.get(), golden);
@@ -1095,7 +1095,7 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   data->DecodePointersAndHandles(&handles);
 
   HandleUnionPtr handle2(HandleUnion::New());
-  Deserialize_(data, &handle2);
+  Deserialize_(data, &handle2, nullptr);
 
   handle2->get_f_small_cache()->SetIntValue(10);
   run_loop.RunUntilIdle();

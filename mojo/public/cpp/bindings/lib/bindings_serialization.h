@@ -7,12 +7,16 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace internal {
+
+class MultiplexRouter;
 
 // Please note that this is a different value than |mojo::kInvalidHandleValue|,
 // which is the "decoded" invalid handle.
@@ -84,6 +88,37 @@ inline void InterfaceDataToPointer(Interface_Data* input,
   output->Bind(InterfacePtrInfo<T>(
       MakeScopedHandle(FetchAndReset(&input->handle)), input->version));
 }
+
+template <typename T>
+inline void AssociatedInterfacePtrInfoToData(
+    AssociatedInterfacePtrInfo<T> input,
+    AssociatedInterface_Data* output) {
+  output->version = input.version();
+  output->interface_id =
+      AssociatedInterfacePtrInfoHelper::PassHandle(&input).release();
+}
+
+template <typename T>
+inline void AssociatedInterfaceDataToPtrInfo(
+    AssociatedInterface_Data* input,
+    AssociatedInterfacePtrInfo<T>* output,
+    MultiplexRouter* router) {
+  AssociatedInterfacePtrInfoHelper::SetHandle(
+      output,
+      router->CreateLocalEndpointHandle(FetchAndReset(&input->interface_id)));
+  output->set_version(input->version);
+}
+
+// Context information for serialization/deserialization routines.
+struct SerializationContext {
+  SerializationContext();
+  explicit SerializationContext(scoped_refptr<MultiplexRouter> in_router);
+
+  ~SerializationContext();
+
+  // Used to serialize/deserialize associated interface pointers and requests.
+  scoped_refptr<MultiplexRouter> router;
+};
 
 }  // namespace internal
 }  // namespace mojo

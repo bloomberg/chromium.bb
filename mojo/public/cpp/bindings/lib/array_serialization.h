@@ -29,7 +29,9 @@ inline void SerializeArray_(
     const internal::ArrayValidateParams* validate_params);
 
 template <typename E, typename F>
-inline void Deserialize_(internal::Array_Data<F>* data, Array<E>* output);
+inline void Deserialize_(internal::Array_Data<F>* data,
+                         Array<E>* output,
+                         internal::SerializationContext* context);
 
 namespace internal {
 
@@ -59,7 +61,9 @@ struct ArraySerializer<E, F, false> {
     if (input.size())
       memcpy(output->storage(), &input.storage()[0], input.size() * sizeof(E));
   }
-  static void DeserializeElements(Array_Data<F>* input, Array<E>* output) {
+  static void DeserializeElements(Array_Data<F>* input,
+                                  Array<E>* output,
+                                  SerializationContext* context) {
     std::vector<E> result(input->size());
     if (input->size())
       memcpy(&result[0], input->storage(), input->size() * sizeof(E));
@@ -88,7 +92,8 @@ struct ArraySerializer<bool, bool, false> {
       output->at(i) = input[i];
   }
   static void DeserializeElements(Array_Data<bool>* input,
-                                  Array<bool>* output) {
+                                  Array<bool>* output,
+                                  SerializationContext* context) {
     Array<bool> result(input->size());
     // TODO(darin): Can this be a memcpy somehow instead of a bit-by-bit copy?
     for (size_t i = 0; i < input->size(); ++i)
@@ -122,7 +127,8 @@ struct ArraySerializer<ScopedHandleBase<H>, H, false> {
     }
   }
   static void DeserializeElements(Array_Data<H>* input,
-                                  Array<ScopedHandleBase<H>>* output) {
+                                  Array<ScopedHandleBase<H>>* output,
+                                  SerializationContext* context) {
     Array<ScopedHandleBase<H>> result(input->size());
     for (size_t i = 0; i < input->size(); ++i)
       result.at(i) = MakeScopedHandle(FetchAndReset(&input->at(i)));
@@ -165,10 +171,11 @@ struct ArraySerializer<
     }
   }
   static void DeserializeElements(Array_Data<S_Data*>* input,
-                                  Array<S>* output) {
+                                  Array<S>* output,
+                                  SerializationContext* context) {
     Array<S> result(input->size());
     for (size_t i = 0; i < input->size(); ++i) {
-      Deserialize_(input->at(i), &result[i]);
+      Deserialize_(input->at(i), &result[i], context);
     }
     output->Swap(&result);
   }
@@ -236,10 +243,12 @@ struct ArraySerializer<U, U_Data, true> {
     }
   }
 
-  static void DeserializeElements(Array_Data<U_Data>* input, Array<U>* output) {
+  static void DeserializeElements(Array_Data<U_Data>* input,
+                                  Array<U>* output,
+                                  SerializationContext* context) {
     Array<U> result(input->size());
     for (size_t i = 0; i < input->size(); ++i) {
-      Deserialize_(&input->at(i), &result[i]);
+      Deserialize_(&input->at(i), &result[i], context);
     }
     output->Swap(&result);
   }
@@ -279,10 +288,11 @@ struct ArraySerializer<String, String_Data*> {
     }
   }
   static void DeserializeElements(Array_Data<String_Data*>* input,
-                                  Array<String>* output) {
+                                  Array<String>* output,
+                                  SerializationContext* context) {
     Array<String> result(input->size());
     for (size_t i = 0; i < input->size(); ++i)
-      Deserialize_(input->at(i), &result[i]);
+      Deserialize_(input->at(i), &result[i], context);
     output->Swap(&result);
   }
 };
@@ -325,9 +335,12 @@ inline void SerializeArray_(
 }
 
 template <typename E, typename F>
-inline void Deserialize_(internal::Array_Data<F>* input, Array<E>* output) {
+inline void Deserialize_(internal::Array_Data<F>* input,
+                         Array<E>* output,
+                         internal::SerializationContext* context) {
   if (input) {
-    internal::ArraySerializer<E, F>::DeserializeElements(input, output);
+    internal::ArraySerializer<E, F>::DeserializeElements(input, output,
+                                                         context);
   } else {
     output->reset();
   }

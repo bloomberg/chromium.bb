@@ -28,7 +28,9 @@ void Serialize_(const String& input,
   }
 }
 
-void Deserialize_(internal::String_Data* input, String* output) {
+void Deserialize_(internal::String_Data* input,
+                  String* output,
+                  internal::SerializationContext* context) {
   if (input) {
     String result(input->storage(), input->size());
     result.Swap(output);

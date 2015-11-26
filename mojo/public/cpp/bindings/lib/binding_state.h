@@ -139,6 +139,8 @@ class BindingState<Interface, true> {
     DCHECK(!router_);
 
     router_ = new internal::MultiplexRouter(false, handle.Pass(), waiter);
+    stub_.serialization_context()->router = router_;
+
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(internal::kMasterInterfaceId),
         &stub_, make_scoped_ptr(new typename Interface::RequestValidator_())));
