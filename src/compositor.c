@@ -3883,7 +3883,7 @@ bind_output(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_output_interface,
-				      MIN(version, 2), id);
+				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -4369,7 +4369,7 @@ bind_scaler(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_scaler_interface,
-				      MIN(version, 2), id);
+				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -4444,7 +4444,7 @@ bind_presentation(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &presentation_interface,
-				      MIN(version, 1), id);
+				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -4463,7 +4463,7 @@ compositor_bind(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_compositor_interface,
-				      MIN(version, 3), id);
+				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;

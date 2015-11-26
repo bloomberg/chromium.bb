@@ -2142,7 +2142,7 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	enum wl_seat_capability caps = 0;
 
 	resource = wl_resource_create(client,
-				      &wl_seat_interface, MIN(version, 4), id);
+				      &wl_seat_interface, version, id);
 	wl_list_insert(&seat->base_resource_list, wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, &seat_interface, data,
 				       unbind_resource);
