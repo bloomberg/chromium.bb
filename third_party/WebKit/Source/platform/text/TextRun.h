@@ -215,11 +215,7 @@ public:
     void disableSpacing() { m_disableSpacing = true; }
     void setDirection(TextDirection direction) { m_direction = direction; }
     void setDirectionalOverride(bool override) { m_directionalOverride = override; }
-#if ENABLE(ASSERT)
-    void setCodePath(TextCodePath);
-#else
     void setCodePath(TextCodePath codePath) { m_codePath = codePath; }
-#endif // ENABLE(ASSERT)
 
     void setTextJustify(TextJustify textJustify) { m_textJustify = static_cast<unsigned>(textJustify); }
     TextJustify textJustify() const { return static_cast<TextJustify>(m_textJustify); }
