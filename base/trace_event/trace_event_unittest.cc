@@ -459,6 +459,11 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                    "a", 30000,
                    "b", 1415);
 
+    TRACE_COUNTER_WITH_TIMESTAMP1("all", "TRACE_COUNTER_WITH_TIMESTAMP1 call",
+                                  42, 31415);
+    TRACE_COUNTER_WITH_TIMESTAMP2("all", "TRACE_COUNTER_WITH_TIMESTAMP2 call",
+                                  42, "a", 30000, "b", 1415);
+
     TRACE_COUNTER_ID1("all", "TRACE_COUNTER_ID1 call", 0x319009, 31415);
     TRACE_COUNTER_ID2("all", "TRACE_COUNTER_ID2 call", 0x319009,
                       "a", 30000, "b", 1415);
@@ -653,6 +658,39 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
 
     EXPECT_TRUE((item && item->GetInteger("args.b", &value)));
     EXPECT_EQ(1415, value);
+  }
+
+  EXPECT_FIND_("TRACE_COUNTER_WITH_TIMESTAMP1 call");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("C", ph);
+
+    int value;
+    EXPECT_TRUE((item && item->GetInteger("args.value", &value)));
+    EXPECT_EQ(31415, value);
+
+    int ts;
+    EXPECT_TRUE((item && item->GetInteger("ts", &ts)));
+    EXPECT_EQ(42, ts);
+  }
+
+  EXPECT_FIND_("TRACE_COUNTER_WITH_TIMESTAMP2 call");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("C", ph);
+
+    int value;
+    EXPECT_TRUE((item && item->GetInteger("args.a", &value)));
+    EXPECT_EQ(30000, value);
+
+    EXPECT_TRUE((item && item->GetInteger("args.b", &value)));
+    EXPECT_EQ(1415, value);
+
+    int ts;
+    EXPECT_TRUE((item && item->GetInteger("ts", &ts)));
+    EXPECT_EQ(42, ts);
   }
 
   EXPECT_FIND_("TRACE_COUNTER_ID1 call");

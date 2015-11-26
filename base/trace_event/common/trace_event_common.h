@@ -484,6 +484,20 @@
                            static_cast<int>(value1_val), value2_name,       \
                            static_cast<int>(value2_val))
 
+// Similar to TRACE_COUNTERx, but with a custom |timestamp| provided.
+#define TRACE_COUNTER_WITH_TIMESTAMP1(category_group, name, timestamp, value) \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                    \
+      TRACE_EVENT_PHASE_COUNTER, category_group, name, timestamp,             \
+      TRACE_EVENT_FLAG_NONE, "value", static_cast<int>(value))
+
+#define TRACE_COUNTER_WITH_TIMESTAMP2(category_group, name, timestamp,      \
+                                      value1_name, value1_val, value2_name, \
+                                      value2_val)                           \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                  \
+      TRACE_EVENT_PHASE_COUNTER, category_group, name, timestamp,           \
+      TRACE_EVENT_FLAG_NONE, value1_name, static_cast<int>(value1_val),     \
+      value2_name, static_cast<int>(value2_val))
+
 // Records the value of a counter called "name" immediately. Value
 // must be representable as a 32 bit integer.
 // - category and name strings must have application lifetime (statics or
