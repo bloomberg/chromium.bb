@@ -155,10 +155,10 @@ private:
     void prepareOrderIteratorAndMargins();
     LayoutUnit adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
-    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
+    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 
-    bool resolveFlexibleLengths(FlexSign, const OrderedFlexItemList&, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize&, Vector<LayoutUnit, 16>& childSizes);
-    void freezeViolations(const Vector<Violation>&, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize&);
+    bool resolveFlexibleLengths(FlexSign, const OrderedFlexItemList&, LayoutUnit availableFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, InflexibleFlexItemSize&, Vector<LayoutUnit, 16>& childSizes);
+    void freezeViolations(const Vector<Violation>&, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, InflexibleFlexItemSize&);
 
     void resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
     void setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize);

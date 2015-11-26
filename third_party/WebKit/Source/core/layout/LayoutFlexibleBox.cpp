@@ -691,6 +691,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
     OrderedFlexItemList orderedChildren;
     LayoutUnit sumFlexBaseSize;
     double totalFlexGrow;
+    double totalFlexShrink;
     double totalWeightedFlexShrink;
     LayoutUnit sumHypotheticalMainSize;
 
@@ -698,18 +699,22 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
 
     m_orderIterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
-    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, relayoutChildren)) {
+    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink, sumHypotheticalMainSize, relayoutChildren)) {
         LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumHypotheticalMainSize);
+        // availableFreeSpace is the initial amount of free space in this flexbox.
+        // remainingFreeSpace starts out at the same value but as we place and lay out
+        // flex items we subtract from it. Note that both values can be negative.
         LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
+        LayoutUnit remainingFreeSpace = availableFreeSpace;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
         childSizes.reserveCapacity(orderedChildren.size());
-        while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, childSizes)) {
+        while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink, inflexibleItems, childSizes)) {
             ASSERT(totalFlexGrow >= 0 && totalWeightedFlexShrink >= 0);
             ASSERT(inflexibleItems.size() > 0);
         }
 
-        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, layoutScope, lineContexts);
+        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, remainingFreeSpace, relayoutChildren, layoutScope, lineContexts);
     }
     if (hasLineIfEmpty()) {
         // Even if computeNextFlexLine returns true, the flexbox might not have
@@ -927,11 +932,11 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
     return std::max(childSize, minExtent);
 }
 
-bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren)
+bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren)
 {
     orderedChildren.clear();
     sumFlexBaseSize = 0;
-    totalFlexGrow = totalWeightedFlexShrink = 0;
+    totalFlexGrow = totalFlexShrink = totalWeightedFlexShrink = 0;
     sumHypotheticalMainSize = 0;
 
     if (!m_orderIterator.currentChild())
@@ -971,19 +976,21 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         lineHasInFlowItem  = true;
         sumFlexBaseSize += childOuterFlexBaseSize;
         totalFlexGrow += child->style()->flexGrow();
+        totalFlexShrink += child->style()->flexShrink();
         totalWeightedFlexShrink += child->style()->flexShrink() * childInnerFlexBaseSize;
         sumHypotheticalMainSize += childHypotheticalMainSize;
     }
     return true;
 }
 
-void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems)
+void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems)
 {
     for (size_t i = 0; i < violations.size(); ++i) {
         LayoutBox* child = violations[i].child;
         LayoutUnit childSize = violations[i].childSize;
         availableFreeSpace -= childSize - violations[i].childInnerFlexBaseSize;
         totalFlexGrow -= child->style()->flexGrow();
+        totalFlexShrink -= child->style()->flexShrink();
         totalWeightedFlexShrink -= child->style()->flexShrink() * violations[i].childInnerFlexBaseSize;
         // totalWeightedFlexShrink can be negative when we exceed the precision of a double when we initially
         // calcuate totalWeightedFlexShrink. We then subtract each child's weighted flex shrink with full precision,
@@ -994,13 +1001,21 @@ void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, La
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.
-bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, Vector<LayoutUnit, 16>& childSizes)
+bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit availableFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, Vector<LayoutUnit, 16>& childSizes)
 {
     childSizes.resize(0);
     LayoutUnit totalViolation = 0;
     LayoutUnit usedFreeSpace = 0;
     Vector<Violation> minViolations;
     Vector<Violation> maxViolations;
+
+    double sumFlexFactors = (flexSign == PositiveFlexibility) ? totalFlexGrow : totalFlexShrink;
+    if (sumFlexFactors > 0 && sumFlexFactors < 1) {
+        LayoutUnit fractional = availableFreeSpace * sumFlexFactors;
+        if (fractional.abs() < remainingFreeSpace.abs())
+            remainingFreeSpace = fractional;
+    }
+
     for (size_t i = 0; i < children.size(); ++i) {
         LayoutBox* child = children[i];
         if (child->isOutOfFlowPositioned()) {
@@ -1014,13 +1029,10 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
             LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child);
             LayoutUnit childSize = childInnerFlexBaseSize;
             double extraSpace = 0;
-            if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
-                if (totalFlexGrow < 1)
-                    extraSpace = availableFreeSpace * child->style()->flexGrow();
-                else
-                    extraSpace = availableFreeSpace * child->style()->flexGrow() / totalFlexGrow;
-            } else if (availableFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink) && child->style()->flexShrink()) {
-                extraSpace = availableFreeSpace * child->style()->flexShrink() * childInnerFlexBaseSize / totalWeightedFlexShrink;
+            if (remainingFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
+                extraSpace = remainingFreeSpace * child->style()->flexGrow() / totalFlexGrow;
+            } else if (remainingFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink) && child->style()->flexShrink()) {
+                extraSpace = remainingFreeSpace * child->style()->flexShrink() * childInnerFlexBaseSize / totalWeightedFlexShrink;
             }
             if (std::isfinite(extraSpace))
                 childSize += LayoutUnit::fromFloatRound(extraSpace);
@@ -1040,9 +1052,9 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
     }
 
     if (totalViolation)
-        freezeViolations(totalViolation < 0 ? maxViolations : minViolations, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems);
+        freezeViolations(totalViolation < 0 ? maxViolations : minViolations, remainingFreeSpace, totalFlexGrow, totalFlexShrink, totalWeightedFlexShrink, inflexibleItems);
     else
-        availableFreeSpace -= usedFreeSpace;
+        remainingFreeSpace -= usedFreeSpace;
 
     return !totalViolation;
 }
