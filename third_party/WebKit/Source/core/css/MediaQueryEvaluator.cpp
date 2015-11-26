@@ -40,7 +40,6 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaValuesDynamic.h"
-#include "core/css/PointerProperties.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
@@ -53,6 +52,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
+#include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "wtf/HashMap.h"
 

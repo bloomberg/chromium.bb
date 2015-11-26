@@ -5,8 +5,8 @@
 #ifndef DevToolsEmulator_h
 #define DevToolsEmulator_h
 
-#include "core/css/PointerProperties.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/PointerProperties.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 

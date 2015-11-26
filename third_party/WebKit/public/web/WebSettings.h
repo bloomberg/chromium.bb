@@ -31,6 +31,7 @@
 #ifndef WebSettings_h
 #define WebSettings_h
 
+#include "../platform/PointerProperties.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebSize.h"
 #include <unicode/uscript.h>
@@ -62,27 +63,6 @@ public:
         V8CacheOptionsNone,
         V8CacheOptionsParse,
         V8CacheOptionsCode,
-    };
-
-    // Bit field values indicating available pointer types. Identical to
-    // blink::PointerType enums, enforced by compile-time assertions in
-    // AssertMatchingEnums.cpp.
-    // TODO(mustaq): Move this into public/platform, like WebBlendMode.
-    enum PointerType {
-        PointerTypeNone = 1 << 0,
-        PointerTypeCoarse = 1 << 1,
-        PointerTypeFine = 1 << 2
-    };
-
-    // Bit field values indicating available hover types. Identical to
-    // blink::HoverType enums, enforced by compile-time assertions in
-    // AssertMatchingEnums.cpp.
-    enum HoverType {
-        HoverTypeNone = 1 << 0,
-        // Indicates that the primary pointing system can hover, but it requires
-        // a significant action on the user's part. e.g. hover on "long press".
-        HoverTypeOnDemand = 1 << 1,
-        HoverTypeHover = 1 << 2
     };
 
     // Selection strategy defines how the selection granularity changes when the

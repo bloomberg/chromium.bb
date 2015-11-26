@@ -1023,10 +1023,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMaxTouchPoints(prefs.pointer_events_max_touch_points);
   settings->setAvailablePointerTypes(prefs.available_pointer_types);
   settings->setPrimaryPointerType(
-      static_cast<WebSettings::PointerType>(prefs.primary_pointer_type));
+      static_cast<blink::PointerType>(prefs.primary_pointer_type));
   settings->setAvailableHoverTypes(prefs.available_hover_types);
   settings->setPrimaryHoverType(
-      static_cast<WebSettings::HoverType>(prefs.primary_hover_type));
+      static_cast<blink::HoverType>(prefs.primary_hover_type));
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);

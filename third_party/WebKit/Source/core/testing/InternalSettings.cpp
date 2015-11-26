@@ -28,7 +28,6 @@
 #include "core/testing/InternalSettings.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/css/PointerProperties.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"

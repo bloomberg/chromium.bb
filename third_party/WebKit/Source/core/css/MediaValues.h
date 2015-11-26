@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/PointerProperties.h"
+#include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

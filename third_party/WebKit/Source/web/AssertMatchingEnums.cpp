@@ -707,13 +707,6 @@ STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone)
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
 
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeNone, PointerTypeNone);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeCoarse, PointerTypeCoarse);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeFine, PointerTypeFine);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::HoverTypeNone, HoverTypeNone);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::HoverTypeOnDemand, HoverTypeOnDemand);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::HoverTypeHover, HoverTypeHover);
-
 STATIC_ASSERT_MATCHING_ENUM(WebSecurityPolicy::PolicyAreaNone, SchemeRegistry::PolicyAreaNone);
 STATIC_ASSERT_MATCHING_ENUM(WebSecurityPolicy::PolicyAreaImage, SchemeRegistry::PolicyAreaImage);
 STATIC_ASSERT_MATCHING_ENUM(WebSecurityPolicy::PolicyAreaStyle, SchemeRegistry::PolicyAreaStyle);

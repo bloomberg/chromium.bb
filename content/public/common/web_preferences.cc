@@ -50,18 +50,18 @@ STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
                              WebSettings::ImageAnimationPolicyNoAnimation);
 
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
-                             WebSettings::PointerTypeNone);
+                             blink::PointerTypeNone);
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
-                             WebSettings::PointerTypeCoarse);
+                             blink::PointerTypeCoarse);
 STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_FINE,
-                             WebSettings::PointerTypeFine);
+                             blink::PointerTypeFine);
 
 STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_NONE,
-                             WebSettings::HoverTypeNone);
+                             blink::HoverTypeNone);
 STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_ON_DEMAND,
-                             WebSettings::HoverTypeOnDemand);
+                             blink::HoverTypeOnDemand);
 STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_HOVER,
-                             WebSettings::HoverTypeHover);
+                             blink::HoverTypeHover);
 
 WebPreferences::WebPreferences()
     : default_font_size(16),
