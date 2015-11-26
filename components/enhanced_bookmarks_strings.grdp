@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <message name="IDS_FLAGS_ENHANCED_BOOKMARKS_NAME" desc="Name of about:flags option to enable Enhanced Bookmarks extension.">
+    Enhanced Bookmarks
+  </message>
+  <message name="IDS_FLAGS_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
+    Provides an off switch for enhanced bookmarks experiment
+  </message>
+</grit-part>
