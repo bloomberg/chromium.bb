@@ -26,7 +26,7 @@ enum MessageId {
 
 // Definitions of the raw bytes sent in messages.
 
-struct ALIGNAS(4) BrokerMessage {
+struct BrokerMessage {
   uint32_t size;
   MessageId id;
   // Data, if any, follows.
