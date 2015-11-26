@@ -645,4 +645,20 @@ void SafeBrowsingService::RefreshState() {
 #endif
 }
 
+void SafeBrowsingService::SendDownloadRecoveryReport(
+    const std::string& report) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SafeBrowsingService::OnSendDownloadRecoveryReport, this,
+                 report));
+}
+
+void SafeBrowsingService::OnSendDownloadRecoveryReport(
+    const std::string& report) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (ping_manager())
+    ping_manager()->ReportThreatDetails(report);
+}
+
 }  // namespace safe_browsing

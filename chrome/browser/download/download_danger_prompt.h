@@ -7,6 +7,8 @@
 
 #include "base/callback_forward.h"
 
+class GURL;
+
 namespace content {
 class DownloadItem;
 class WebContents;
@@ -37,15 +39,23 @@ class DownloadDangerPrompt {
   // caller does not own the object and receive no guarantees about lifetime.
   // If |show_context|, then the prompt message will contain some information
   // about the download and its danger; otherwise it won't.
-  static DownloadDangerPrompt* Create(
-      content::DownloadItem* item,
-      content::WebContents* web_contents,
-      bool show_context,
-      const OnDone& done);
+  static DownloadDangerPrompt* Create(content::DownloadItem* item,
+                                      content::WebContents* web_contents,
+                                      bool show_context,
+                                      const OnDone& done);
 
   // Only to be used by tests. Subclasses must override to manually call the
   // respective button click handler.
   virtual void InvokeActionForTesting(Action action) = 0;
+
+ protected:
+  // Sends download recovery report to safe browsing backend.
+  // Since it only records download url (DownloadItem::GetURL()) and user's
+  // action (click through or not), it isn't gated by user's extended reporting
+  // preference (i.e. prefs::kSafeBrowsingExtendedReportingEnabled). We
+  // should not put any extra information in this report.
+  static void SendSafeBrowsingDownloadRecoveryReport(bool did_proceed,
+                                                     const GURL& url);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DANGER_PROMPT_H_

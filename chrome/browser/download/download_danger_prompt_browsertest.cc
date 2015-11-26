@@ -6,10 +6,13 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/mock_download_item.h"
@@ -23,16 +26,70 @@ using ::testing::Eq;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
+using safe_browsing::ClientSafeBrowsingReportRequest;
+using safe_browsing::SafeBrowsingService;
+
+const char kTestDownloadUrl[] = "http://evildownload.com";
+
+class FakeSafeBrowsingService : public SafeBrowsingService {
+ public:
+  FakeSafeBrowsingService() {}
+
+  void SendDownloadRecoveryReport(const std::string& report) override {
+    report_ = report;
+  }
+
+  std::string GetDownloadRecoveryReport() const { return report_; }
+
+ protected:
+  ~FakeSafeBrowsingService() override {}
+
+ private:
+  std::string report_;
+};
+
+// Factory that creates FakeSafeBrowsingService instances.
+class TestSafeBrowsingServiceFactory
+    : public safe_browsing::SafeBrowsingServiceFactory {
+ public:
+  TestSafeBrowsingServiceFactory() : fake_safe_browsing_service_(nullptr) {}
+  ~TestSafeBrowsingServiceFactory() override {}
+
+  SafeBrowsingService* CreateSafeBrowsingService() override {
+    if (!fake_safe_browsing_service_) {
+      fake_safe_browsing_service_ = new FakeSafeBrowsingService();
+    }
+    return fake_safe_browsing_service_.get();
+  }
+
+  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service() {
+    return fake_safe_browsing_service_;
+  }
+
+ private:
+  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service_;
+};
 
 class DownloadDangerPromptTest : public InProcessBrowserTest {
  public:
   DownloadDangerPromptTest()
-    : prompt_(NULL),
-      expected_action_(DownloadDangerPrompt::CANCEL),
-      did_receive_callback_(false) {
-  }
+      : prompt_(nullptr),
+        expected_action_(DownloadDangerPrompt::CANCEL),
+        did_receive_callback_(false),
+        test_safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
+        report_sent_(false) {}
 
   ~DownloadDangerPromptTest() override {}
+
+  void SetUp() override {
+    SafeBrowsingService::RegisterFactory(test_safe_browsing_factory_.get());
+    InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    SafeBrowsingService::RegisterFactory(nullptr);
+    InProcessBrowserTest::TearDown();
+  }
 
   // Opens a new tab and waits for navigations to finish. If there are pending
   // navigations, the constrained prompt might be dismissed when the navigation
@@ -49,7 +106,10 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     did_receive_callback_ = false;
     expected_action_ = expected_action;
     SetUpDownloadItemExpectations();
+    SetUpSafeBrowsingReportExpectations(expected_action ==
+                                        DownloadDangerPrompt::ACCEPT);
     CreatePrompt();
+    report_sent_ = false;
   }
 
   void VerifyExpectations() {
@@ -59,10 +119,16 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     EXPECT_TRUE(did_receive_callback_);
     EXPECT_FALSE(prompt_);
     testing::Mock::VerifyAndClearExpectations(&download_);
+    if (report_sent_) {
+      EXPECT_EQ(expected_serialized_report_,
+                test_safe_browsing_factory_->fake_safe_browsing_service()
+                    ->GetDownloadRecoveryReport());
+    }
   }
 
   void SimulatePromptAction(DownloadDangerPrompt::Action action) {
     prompt_->InvokeActionForTesting(action);
+    report_sent_ = true;
   }
 
   content::MockDownloadItem& download() { return download_; }
@@ -75,6 +141,15 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("evil.exe"))));
     EXPECT_CALL(download_, GetDangerType())
         .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
+  }
+
+  void SetUpSafeBrowsingReportExpectations(bool did_proceed) {
+    ClientSafeBrowsingReportRequest expected_report;
+    expected_report.set_url(GURL(kTestDownloadUrl).spec());
+    expected_report.set_type(
+        ClientSafeBrowsingReportRequest::MALICIOUS_DOWNLOAD_RECOVERY);
+    expected_report.set_did_proceed(did_proceed);
+    expected_report.SerializeToString(&expected_serialized_report_);
   }
 
   void CreatePrompt() {
@@ -90,13 +165,16 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     EXPECT_FALSE(did_receive_callback_);
     EXPECT_EQ(expected_action_, action);
     did_receive_callback_ = true;
-    prompt_ = NULL;
+    prompt_ = nullptr;
   }
 
   content::MockDownloadItem download_;
   DownloadDangerPrompt* prompt_;
   DownloadDangerPrompt::Action expected_action_;
   bool did_receive_callback_;
+  scoped_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
+  std::string expected_serialized_report_;
+  bool report_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptTest);
 };
@@ -109,7 +187,8 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, MAYBE_TestAll) {
   // ExperienceSampling: Set default actions for DownloadItem methods we need.
-  ON_CALL(download(), GetURL()).WillByDefault(ReturnRef(GURL::EmptyGURL()));
+  GURL download_url(kTestDownloadUrl);
+  ON_CALL(download(), GetURL()).WillByDefault(ReturnRef(download_url));
   ON_CALL(download(), GetReferrerUrl())
       .WillByDefault(ReturnRef(GURL::EmptyGURL()));
   ON_CALL(download(), GetBrowserContext())
