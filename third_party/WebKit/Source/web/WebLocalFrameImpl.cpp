@@ -1648,7 +1648,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
 
 WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> webFrame = adoptRef(new WebLocalFrameImpl(oldWebFrame, client));
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> webFrame = adoptRefWillBeNoop(new WebLocalFrameImpl(oldWebFrame, client));
     Frame* oldFrame = oldWebFrame->toImplBase()->frame();
     webFrame->setParent(oldWebFrame->parent());
     webFrame->setOpener(oldWebFrame->opener());
