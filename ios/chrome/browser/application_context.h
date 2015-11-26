@@ -41,6 +41,10 @@ namespace variations {
 class VariationsService;
 }
 
+namespace web_resource {
+class PromoResourceService;
+}
+
 class ApplicationContext;
 class IOSChromeIOThread;
 class PrefService;
@@ -98,6 +102,9 @@ class ApplicationContext {
 
   // Gets the GCMDriver.
   virtual gcm::GCMDriver* GetGCMDriver() = 0;
+
+  // Gets the PromoResourceService.
+  virtual web_resource::PromoResourceService* GetPromoResourceService() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

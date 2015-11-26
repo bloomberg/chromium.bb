@@ -120,3 +120,9 @@ gcm::GCMDriver* TestingApplicationContext::GetGCMDriver() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
+
+web_resource::PromoResourceService*
+TestingApplicationContext::GetPromoResourceService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}

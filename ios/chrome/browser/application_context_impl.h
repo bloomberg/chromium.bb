@@ -59,6 +59,7 @@ class ApplicationContextImpl : public ApplicationContext {
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;
   gcm::GCMDriver* GetGCMDriver() override;
+  web_resource::PromoResourceService* GetPromoResourceService() override;
 
  private:
   // Sets the locale used by the application.
@@ -76,6 +77,7 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   scoped_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
+  scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

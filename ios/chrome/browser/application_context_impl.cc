@@ -26,13 +26,16 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/service/variations_service.h"
+#include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#include "ios/chrome/browser/web_resource/web_resource_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -40,6 +43,14 @@
 #include "ios/web/public/web_thread.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
+
+namespace {
+
+// Dummy flag because iOS does not support disabling background networking.
+extern const char kDummyDisableBackgroundNetworking[] =
+    "dummy-disable-background-networking";
+
+}
 
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
@@ -81,10 +92,24 @@ void ApplicationContextImpl::PreCreateThreads() {
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kDisableIOSWebResources)) {
+    DCHECK(!promo_resource_service_.get());
+    promo_resource_service_.reset(new web_resource::PromoResourceService(
+        GetLocalState(), ::GetChannel(), GetApplicationLocale(),
+        GetSystemURLRequestContext(), kDummyDisableBackgroundNetworking,
+        web_resource::GetIOSChromeParseJSONCallback()));
+    promo_resource_service_->StartAfterDelay();
+  }
 }
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // PromoResourceService must be destroyed after the keyed services and before
+  // the IO thread.
+  promo_resource_service_.reset();
+
   // The |gcm_driver_| must shut down while the IO thread is still alive.
   if (gcm_driver_)
     gcm_driver_->Shutdown();
@@ -227,6 +252,12 @@ gcm::GCMDriver* ApplicationContextImpl::GetGCMDriver() {
     CreateGCMDriver();
   DCHECK(gcm_driver_);
   return gcm_driver_.get();
+}
+
+web_resource::PromoResourceService*
+ApplicationContextImpl::GetPromoResourceService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return promo_resource_service_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
