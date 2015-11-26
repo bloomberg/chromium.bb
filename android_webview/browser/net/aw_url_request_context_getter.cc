@@ -16,6 +16,7 @@
 #include "android_webview/common/aw_content_client.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
@@ -31,8 +32,11 @@
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_auth_filter.h"
+#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_stream_factory.h"
+#include "net/http/url_security_manager.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
@@ -51,20 +55,16 @@ namespace android_webview {
 
 namespace {
 
-void ApplyCmdlineOverridesToURLRequestContextBuilder(
-    net::URLRequestContextBuilder* builder) {
+void ApplyCmdlineOverridesToHostResolver(
+    net::MappedHostResolver* host_resolver) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kHostResolverRules)) {
     // If hostname remappings were specified on the command-line, layer these
     // rules on top of the real host resolver. This allows forwarding all
     // requests through a designated test server.
-    scoped_ptr<net::MappedHostResolver> host_resolver(
-        new net::MappedHostResolver(
-            net::HostResolver::CreateDefaultResolver(NULL)));
     host_resolver->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-    builder->set_host_resolver(host_resolver.Pass());
   }
 }
 
@@ -159,13 +159,19 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
-    const base::FilePath& cache_path, net::CookieStore* cookie_store,
-    scoped_ptr<net::ProxyConfigService> config_service)
+    const base::FilePath& cache_path,
+    net::CookieStore* cookie_store,
+    scoped_ptr<net::ProxyConfigService> config_service,
+    PrefService* user_pref_service)
     : cache_path_(cache_path),
       net_log_(new net::NetLog()),
       proxy_config_service_(config_service.Pass()),
       cookie_store_(cookie_store),
-      http_user_agent_settings_(new AwHttpUserAgentSettings()) {
+      http_user_agent_settings_(new AwHttpUserAgentSettings()),
+      auth_android_negotiate_account_type_(user_pref_service->GetString(
+          prefs::kAuthAndroidNegotiateAccountType)),
+      auth_server_whitelist_(
+          user_pref_service->GetString(prefs::kAuthServerWhitelist)) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -215,7 +221,15 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
   builder.SetSpdyAndQuicEnabled(true, true);
-  ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
+
+  scoped_ptr<net::MappedHostResolver> host_resolver(new net::MappedHostResolver(
+      net::HostResolver::CreateDefaultResolver(nullptr)));
+  ApplyCmdlineOverridesToHostResolver(host_resolver.get());
+  builder.add_http_auth_handler_factory(
+      "negotiate",
+      CreateNegotiateAuthHandlerFactory(host_resolver.get()).release());
+  builder.set_host_resolver(host_resolver.Pass());
+
   url_request_context_ = builder.Build().Pass();
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
@@ -256,6 +270,34 @@ void AwURLRequestContextGetter::SetKeyOnIO(const std::string& key) {
   DCHECK(AwBrowserContext::GetDefault()->GetDataReductionProxyIOData());
   AwBrowserContext::GetDefault()->GetDataReductionProxyIOData()->
       request_options()->SetKeyOnIO(key);
+}
+
+scoped_ptr<net::HttpAuthHandlerFactory>
+AwURLRequestContextGetter::CreateNegotiateAuthHandlerFactory(
+    net::HostResolver* resolver) {
+  DCHECK(resolver);
+
+  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = nullptr;
+  if (!auth_server_whitelist_.empty()) {
+    auth_filter_default_credentials =
+        new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
+  }
+
+  url_security_manager_.reset(net::URLSecurityManager::Create(
+      auth_filter_default_credentials, nullptr /*auth_filter_delegate*/));
+
+  std::vector<std::string> supported_schemes = {"negotiate"};
+  scoped_ptr<net::HttpAuthHandlerFactory> negotiate_factory(
+      net::HttpAuthHandlerRegistryFactory::Create(
+          supported_schemes,
+          url_security_manager_.get(),
+          resolver,
+          std::string() /* gssapi_library_name - not used on android */,
+          auth_android_negotiate_account_type_ ,
+          false /* negotiate_disable_cname_lookup - unsupported policy */,
+          false /* negotiate_enable_port - unsupported policy */));
+
+  return negotiate_factory;
 }
 
 }  // namespace android_webview

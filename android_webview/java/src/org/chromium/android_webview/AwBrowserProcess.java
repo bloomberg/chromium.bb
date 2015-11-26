@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import android.content.Context;
 
+import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
@@ -13,6 +14,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.policy.CombinedPolicyProvider;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
@@ -54,6 +56,11 @@ public abstract class AwBrowserProcess {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                // The policies are used by browser startup, so we need to register the policy
+                // providers before starting the browser process. This only registers java objects
+                // and doesn't need the native library.
+                CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(context));
+
                 try {
                     BrowserStartupController.get(context, LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!CommandLine.getInstance().hasSwitch(

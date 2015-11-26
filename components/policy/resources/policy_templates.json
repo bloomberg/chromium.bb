@@ -1854,7 +1854,7 @@
           'name': 'AuthServerWhitelist',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-','android:46-'],
+          'supported_on': ['chrome.*:9-','android:46-','webview_android:49-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -1909,7 +1909,7 @@
           'name': 'AuthAndroidNegotiateAccountType',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['android:46-'],
+          'supported_on': ['android:46-','webview_android:49-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,

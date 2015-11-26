@@ -47,6 +47,18 @@ using content::BrowserThread;
 
 namespace android_webview {
 
+namespace prefs {
+
+// String that specifies the Android account type to use for Negotiate
+// authentication.
+const char kAuthAndroidNegotiateAccountType[] =
+    "auth.android_negotiate_account_type";
+
+// Whitelist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerWhitelist[] = "auth.server_whitelist";
+
+}  // namespace prefs
+
 namespace {
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
@@ -181,8 +193,14 @@ void AwBrowserContext::PreMainMessageLoopRun() {
     LOG(WARNING) << "Failed to get cache directory for Android WebView. "
                  << "Using app data directory as a fallback.";
   }
+
+  browser_policy_connector_.reset(new AwBrowserPolicyConnector());
+
+  InitUserPrefService();
+
   url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, cookie_store_.get(), CreateProxyConfigService());
+      cache_path, cookie_store_.get(), CreateProxyConfigService(),
+      user_pref_service_.get());
 
   data_reduction_proxy_io_data_.reset(
       new data_reduction_proxy::DataReductionProxyIOData(
@@ -219,10 +237,6 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   form_database_service_.reset(
       new AwFormDatabaseService(context_storage_path_));
-
-  browser_policy_connector_.reset(new AwBrowserPolicyConnector());
-
-  InitUserPrefService();
 
   // Ensure the storage partition is initialized in time for DataReductionProxy.
   EnsureResourceContextInitialized(this);
@@ -298,7 +312,7 @@ AwMessagePortService* AwBrowserContext::GetMessagePortService() {
   return message_port_service_.get();
 }
 
-// Create user pref service for autofill functionality.
+// Create user pref service
 void AwBrowserContext::InitUserPrefService() {
   user_prefs::PrefRegistrySyncable* pref_registry =
       new user_prefs::PrefRegistrySyncable();
@@ -313,6 +327,10 @@ void AwBrowserContext::InitUserPrefService() {
       autofill::prefs::kAutofillNegativeUploadRate, 0.0);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);
+
+  pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                                    std::string());
 
   base::PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(make_scoped_refptr(new AwPrefStore()));

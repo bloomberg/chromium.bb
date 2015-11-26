@@ -13,13 +13,18 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
+class PrefService;
+
 namespace net {
 class CookieStore;
+class HostResolver;
+class HttpAuthHandlerFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
 class URLRequestJobFactory;
+class URLSecurityManager;
 }
 
 namespace android_webview {
@@ -31,7 +36,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
       net::CookieStore* cookie_store,
-      scoped_ptr<net::ProxyConfigService> config_service);
+      scoped_ptr<net::ProxyConfigService> config_service,
+      PrefService* pref_service);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;
@@ -62,6 +68,11 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   void InitializeURLRequestContext();
 
+  // This is called to create a HttpAuthHandlerFactory that will handle
+  // negotiate challenges for the new URLRequestContext
+  scoped_ptr<net::HttpAuthHandlerFactory>
+  CreateNegotiateAuthHandlerFactory(net::HostResolver* resolver);
+
   const base::FilePath cache_path_;
 
   scoped_ptr<net::NetLog> net_log_;
@@ -70,6 +81,14 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
+
+  // URLSecurityManager associated with the negotiate auth handler. It is
+  // configured to follow the auth_server_whitelist_
+  scoped_ptr<net::URLSecurityManager> url_security_manager_;
+
+  // Store HTTP Auth-related policies in this thread.
+  std::string auth_android_negotiate_account_type_;
+  std::string auth_server_whitelist_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.

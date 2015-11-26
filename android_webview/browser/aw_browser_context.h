@@ -57,6 +57,14 @@ class AwQuotaManagerBridge;
 class AwURLRequestContextGetter;
 class JniDependencyFactory;
 
+namespace prefs {
+
+// Used for Kerberos authentication.
+extern const char kAuthAndroidNegotiateAccountType[];
+extern const char kAuthServerWhitelist[];
+
+}  // namespace prefs
+
 class AwBrowserContext : public content::BrowserContext,
                          public visitedlink::VisitedLinkDelegate {
  public:
