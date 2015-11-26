@@ -73,6 +73,7 @@ const struct {
     {kOsCrOS, "Chrome OS"},
     {kOsAndroid, "Android"},
     {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
+    {kOsIos, "iOS"},
 };
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
@@ -427,6 +428,10 @@ void FlagsState::GetFlagFeatureEntries(
       supported = true;
     }
 #endif
+#if defined(OS_IOS)
+    if (access == kAppleReviewAccessToFlags)
+      supported = ((entry.supported_platforms & kOsIosAppleReview) != 0);
+#endif
     if (supported)
       supported_entries->Append(data);
     else
@@ -436,7 +441,9 @@ void FlagsState::GetFlagFeatureEntries(
 
 // static
 int FlagsState::GetCurrentPlatform() {
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)  // Needs to be before the OS_MACOSX check.
+  return kOsIos;
+#elif defined(OS_MACOSX)
   return kOsMac;
 #elif defined(OS_WIN)
   return kOsWin;
