@@ -132,3 +132,9 @@ TestingApplicationContext::GetPromoResourceService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
+
+component_updater::ComponentUpdateService*
+TestingApplicationContext::GetComponentUpdateService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}

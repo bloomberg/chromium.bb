@@ -9,6 +9,10 @@
 
 #include "base/macros.h"
 
+namespace component_updater {
+class ComponentUpdateService;
+}
+
 namespace gcm {
 class GCMDriver;
 }
@@ -114,6 +118,10 @@ class ApplicationContext {
 
   // Gets the PromoResourceService.
   virtual web_resource::PromoResourceService* GetPromoResourceService() = 0;
+
+  // Gets the ComponentUpdateService.
+  virtual component_updater::ComponentUpdateService*
+  GetComponentUpdateService() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

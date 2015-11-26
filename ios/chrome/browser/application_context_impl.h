@@ -62,6 +62,8 @@ class ApplicationContextImpl : public ApplicationContext {
   IOSChromeIOThread* GetIOSChromeIOThread() override;
   gcm::GCMDriver* GetGCMDriver() override;
   web_resource::PromoResourceService* GetPromoResourceService() override;
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override;
 
  private:
   // Sets the locale used by the application.
@@ -82,6 +84,7 @@ class ApplicationContextImpl : public ApplicationContext {
       metrics_services_manager_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
+  scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

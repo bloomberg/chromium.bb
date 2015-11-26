@@ -15,6 +15,8 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/default_tick_clock.h"
+#include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -26,17 +28,21 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/update_client/configurator.h"
+#include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/browser/web_resource/web_resource_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
@@ -45,6 +51,7 @@
 #include "ios/web/public/web_thread.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -69,6 +76,9 @@ ApplicationContextImpl::ApplicationContextImpl(
       command_line.GetCommandLineString(), GetChannelString()));
 
   SetApplicationLocale(locale);
+
+  update_client::UpdateQueryParams::SetDelegate(
+      IOSChromeUpdateQueryParamsDelegate::GetInstance());
 }
 
 ApplicationContextImpl::~ApplicationContextImpl() {
@@ -283,6 +293,20 @@ web_resource::PromoResourceService*
 ApplicationContextImpl::GetPromoResourceService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return promo_resource_service_.get();
+}
+
+component_updater::ComponentUpdateService*
+ApplicationContextImpl::GetComponentUpdateService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!component_updater_) {
+    // Creating the component updater does not do anything, components need to
+    // be registered and Start() needs to be called.
+    component_updater_ = component_updater::ComponentUpdateServiceFactory(
+        component_updater::MakeIOSComponentUpdaterConfigurator(
+            base::CommandLine::ForCurrentProcess(),
+            GetSystemURLRequestContext()));
+  }
+  return component_updater_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {

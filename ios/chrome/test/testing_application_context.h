@@ -46,6 +46,8 @@ class TestingApplicationContext : public ApplicationContext {
   IOSChromeIOThread* GetIOSChromeIOThread() override;
   gcm::GCMDriver* GetGCMDriver() override;
   web_resource::PromoResourceService* GetPromoResourceService() override;
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override;
 
  private:
   base::ThreadChecker thread_checker_;
