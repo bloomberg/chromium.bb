@@ -102,7 +102,6 @@
             'chrome_watcher',
             'chrome_watcher_client',
             '../components/components.gyp:browser_watcher_client',
-            '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler_lib',
           ],
           'conditions': [
             ['kasko==1', {
@@ -430,6 +429,8 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
+            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client.h',
             'app/chrome_exe.rc',
             'common/crash_keys.cc',
             'common/crash_keys.h',

@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/crash_upload_list_crashpad.h"
+#include "chrome/browser/crash_upload_list_mac.h"
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/app/crashpad_mac.h"
 
-CrashUploadListCrashpad::CrashUploadListCrashpad(
+CrashUploadListMac::CrashUploadListMac(
     Delegate* delegate,
     const base::FilePath& upload_log_path,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
-    : CrashUploadList(delegate, upload_log_path, worker_pool) {}
+    : CrashUploadList(delegate, upload_log_path, worker_pool) {
+}
 
-CrashUploadListCrashpad::~CrashUploadListCrashpad() {}
+CrashUploadListMac::~CrashUploadListMac() {
+}
 
-void CrashUploadListCrashpad::LoadUploadList() {
+void CrashUploadListMac::LoadUploadList() {
   std::vector<crash_reporter::UploadedReport> uploaded_reports;
   crash_reporter::GetUploadedReports(&uploaded_reports);
 
@@ -26,6 +28,7 @@ void CrashUploadListCrashpad::LoadUploadList() {
     AppendUploadInfo(
         UploadInfo(uploaded_report.remote_id,
                    base::Time::FromTimeT(uploaded_report.creation_time),
-                   uploaded_report.local_id, base::Time()));
+                   uploaded_report.local_id,
+                   base::Time()));
   }
 }

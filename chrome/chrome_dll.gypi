@@ -123,9 +123,7 @@
           ],
           'dependencies': [
             '<@(chromium_browser_dependencies)',
-            '../components/components.gyp:crash_component',
             '../content/content.gyp:content_app_browser',
-            '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -165,8 +163,6 @@
               ],
               'sources': [
                 'app/chrome_dll.rc',
-                'app/chrome_crash_reporter_client.cc',
-                'app/chrome_crash_reporter_client.h',
 
                 # ETW Manifest.
                 '<(SHARED_INTERMEDIATE_DIR)/base/trace_event/etw_manifest/chrome_events_win.rc',
@@ -354,8 +350,6 @@
           },
           'dependencies': [
             '<@(chromium_child_dependencies)',
-            '../components/components.gyp:browser_watcher_client',
-            '../components/components.gyp:crash_component',
             '../content/content.gyp:content_app_child',
             'chrome_version_resources',
             'policy_path_parser',
@@ -365,8 +359,6 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
-            'app/chrome_crash_reporter_client.cc',
-            'app/chrome_crash_reporter_client.h',
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
@@ -399,11 +391,6 @@
                   },
                 }],
               ]
-            }],
-            ['OS=="win" and configuration_policy==1', {
-              'dependencies': [
-                '<(DEPTH)/components/components.gyp:policy',
-              ],
             }],
             ['enable_plugins==1', {
               'dependencies': [

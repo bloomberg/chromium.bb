@@ -11,8 +11,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#include "chrome/browser/crash_upload_list_crashpad.h"
+#if defined(OS_WIN)
+#include "chrome/browser/crash_upload_list_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/crash_upload_list_mac.h"
 #endif
 
 scoped_refptr<CrashUploadList> CreateCrashUploadList(
@@ -21,9 +23,12 @@ scoped_refptr<CrashUploadList> CreateCrashUploadList(
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  return new CrashUploadListCrashpad(delegate, upload_log_path,
-                                     content::BrowserThread::GetBlockingPool());
+#if defined(OS_WIN)
+  return new CrashUploadListWin(delegate, upload_log_path,
+                                content::BrowserThread::GetBlockingPool());
+#elif defined(OS_MACOSX)
+  return new CrashUploadListMac(delegate, upload_log_path,
+                                content::BrowserThread::GetBlockingPool());
 #else
   return new CrashUploadList(delegate, upload_log_path,
                              content::BrowserThread::GetBlockingPool());

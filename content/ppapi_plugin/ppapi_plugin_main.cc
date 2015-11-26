@@ -4,7 +4,6 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
