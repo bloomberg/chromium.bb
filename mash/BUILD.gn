@@ -11,6 +11,7 @@ group("all") {
   deps = [
     ":mash_unittests",
     "//mash/example",
+    "//mash/wm:tests",
   ]
 }
 

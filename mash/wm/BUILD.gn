@@ -7,15 +7,14 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-group("wm") {
+group("tests") {
   testonly = true
   deps = [
     ":apptests",
-    ":example_wm",
   ]
 }
 
-source_set("example_wm_lib") {
+source_set("lib") {
   sources = [
     "background_layout.cc",
     "background_layout.h",
@@ -75,13 +74,15 @@ source_set("example_wm_lib") {
   ]
 }
 
-mojo_native_application("example_wm") {
+mojo_native_application("wm") {
+  output_name = "mash_wm"
+
   sources = [
     "main.cc",
   ]
 
   deps = [
-    ":example_wm_lib",
+    ":lib",
     ":resources",
     "//mojo/application/public/cpp",
   ]
@@ -112,7 +113,7 @@ repack("resources") {
 }
 
 mojo_native_application("apptests") {
-  output_name = "mus_example_wm_apptests"
+  output_name = "mash_wm_apptests"
   testonly = true
 
   sources = [
@@ -134,7 +135,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
-    ":example_wm",
+    ":wm",
   ]
 }
 
@@ -146,7 +147,7 @@ source_set("unittests") {
   ]
 
   deps = [
-    ":example_wm_lib",
+    ":lib",
     "//base",
     "//base/test:test_config",
     "//components/mus/public/cpp",
