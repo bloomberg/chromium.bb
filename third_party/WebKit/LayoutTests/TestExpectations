@@ -234,15 +234,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
-crbug.com/555326 fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/color/color-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/555326 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ NeedsRebaseline ]
-crbug.com/555326 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
