@@ -717,8 +717,7 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
 
 // Tests against race conditions that might arise when disabling tracing in the
 // middle of a global memory dump.
-// TODO(ssid): Enable this test once crbug.com/555584 is fixed.
-TEST_F(MemoryDumpManagerTest, DISABLED_DisableTracingWhileDumping) {
+TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
   base::WaitableEvent tracing_disabled_event(false, false);
   InitializeMemoryDumpManager(false /* is_coordinator */);
 
