@@ -107,6 +107,12 @@ void MatchedPropertiesCache::add(const ComputedStyle& style, const ComputedStyle
 
 void MatchedPropertiesCache::clear()
 {
+    // MatchedPropertiesCache must be cleared promptly because some
+    // destructors in the properties (e.g., ~FontFallbackList) expect that
+    // the destructors are called promptly without relying on a GC timing.
+    for (auto& cacheEntry : m_cache) {
+        cacheEntry.value->clear();
+    }
     m_cache.clear();
 }
 

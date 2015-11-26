@@ -429,6 +429,7 @@ void StyleEngine::clearResolver()
 
     if (m_resolver) {
         TRACE_EVENT1("blink", "StyleEngine::clearResolver", "frame", document().frame());
+        m_resolver->dispose();
         m_resolver.clear();
     }
 }

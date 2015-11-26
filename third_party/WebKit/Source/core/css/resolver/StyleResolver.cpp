@@ -165,6 +165,11 @@ StyleResolver::~StyleResolver()
 {
 }
 
+void StyleResolver::dispose()
+{
+    m_matchedPropertiesCache.clear();
+}
+
 void StyleResolver::initWatchedSelectorRules()
 {
     CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*m_document);

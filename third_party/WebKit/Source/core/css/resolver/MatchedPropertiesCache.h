@@ -94,6 +94,10 @@ class MatchedPropertiesCache {
     WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
 public:
     MatchedPropertiesCache();
+    ~MatchedPropertiesCache()
+    {
+        ASSERT(m_cache.isEmpty());
+    }
 
     const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchedPropertiesVector&);
     void add(const ComputedStyle&, const ComputedStyle& parentStyle, unsigned hash, const MatchedPropertiesVector&);

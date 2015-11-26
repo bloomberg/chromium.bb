@@ -86,6 +86,7 @@ public:
         return adoptPtrWillBeNoop(new StyleResolver(document));
     }
     ~StyleResolver();
+    void dispose();
 
     // FIXME: StyleResolver should not be keeping tree-walk state.
     // These should move to some global tree-walk state, or should be contained in a
