@@ -501,6 +501,12 @@ imported/csswg-test/css-writing-modes-3/line-box-direction-057.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-058.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-059.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-060.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-slr-009.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-slr-011.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-slr-013.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-srl-008.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-srl-010.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-baseline-srl-012.xht [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
 imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
