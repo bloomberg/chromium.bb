@@ -483,6 +483,9 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
                 "new_session", buildSessionMessage(), clientId, INVALID_SEQUENCE_NUMBER));
+
+        if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
+
         return true;
     }
 
