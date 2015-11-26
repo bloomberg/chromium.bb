@@ -1055,6 +1055,11 @@ void MetricsService::RegisterSyntheticFieldTrial(
   NotifySyntheticTrialObservers();
 }
 
+void MetricsService::GetCurrentSyntheticFieldTrialsForTesting(
+    std::vector<variations::ActiveGroupId>* synthetic_trials) {
+  GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(), synthetic_trials);
+}
+
 void MetricsService::RegisterMetricsProvider(
     scoped_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
@@ -1071,13 +1076,13 @@ void MetricsService::NotifySyntheticTrialObservers() {
                     OnSyntheticTrialsChanged(synthetic_trial_groups_));
 }
 
-void MetricsService::GetCurrentSyntheticFieldTrials(
+void MetricsService::GetSyntheticFieldTrialsOlderThan(
+    base::TimeTicks time,
     std::vector<variations::ActiveGroupId>* synthetic_trials) {
   DCHECK(synthetic_trials);
   synthetic_trials->clear();
-  const MetricsLog* current_log = log_manager_.current_log();
   for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
-    if (synthetic_trial_groups_[i].start_time <= current_log->creation_time())
+    if (synthetic_trial_groups_[i].start_time <= time)
       synthetic_trials->push_back(synthetic_trial_groups_[i].id);
   }
 }
@@ -1092,7 +1097,7 @@ scoped_ptr<MetricsLog> MetricsService::CreateLog(MetricsLog::LogType log_type) {
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   std::vector<variations::ActiveGroupId> synthetic_trials;
-  GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  GetSyntheticFieldTrialsOlderThan(log->creation_time(), &synthetic_trials);
   log->RecordEnvironment(metrics_providers_.get(), synthetic_trials,
                          GetInstallDate(), GetMetricsReportingEnabledDate());
 }

@@ -4,18 +4,24 @@
 
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 
@@ -67,6 +73,15 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
     policy->GrantOrigin(process_id,
                         url::Origin(GURL(chrome::kChromeUIExtensionIconURL)));
   }
+}
+
+void ChromeExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  ExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(
+      render_frame_host, url, transition_type);
+  SetExtensionIsolationTrial(render_frame_host);
 }
 
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(
@@ -134,6 +149,63 @@ void ChromeExtensionWebContentsObserver::ReloadIfTerminated(
   if (registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
     ExtensionSystem::Get(browser_context())->
         extension_service()->ReloadExtension(extension_id);
+  }
+}
+
+void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
+    content::RenderFrameHost* render_frame_host) {
+  content::RenderFrameHost* parent = render_frame_host->GetParent();
+  if (!parent)
+    return;
+
+  GURL frame_url = render_frame_host->GetLastCommittedURL();
+  GURL parent_url = parent->GetLastCommittedURL();
+
+  content::BrowserContext* browser_context =
+      render_frame_host->GetSiteInstance()->GetBrowserContext();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context);
+
+  bool frame_is_extension = false;
+  if (frame_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* frame_extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(frame_url);
+    if (frame_extension && !frame_extension->is_hosted_app())
+      frame_is_extension = true;
+  }
+
+  bool parent_is_extension = false;
+  if (parent_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* parent_extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(parent_url);
+    if (parent_extension && !parent_extension->is_hosted_app())
+      parent_is_extension = true;
+  }
+
+  // If this is a case where an out-of-process iframe would be possible, then
+  // create a synthetic field trial for this client. The trial will indicate
+  // whether the client is manually using a flag to create OOPIFs
+  // (--site-per-process or --isolate-extensions), whether a field trial made
+  // OOPIFs possible, or whether they are in default mode and will not have an
+  // OOPIF.
+  if (parent_is_extension != frame_is_extension) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
+      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+          "SiteIsolationExtensionsActive", "SitePerProcessFlag");
+    } else if (extensions::IsIsolateExtensionsEnabled()) {
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kIsolateExtensions)) {
+        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+            "SiteIsolationExtensionsActive", "IsolateExtensionsFlag");
+      } else {
+        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+            "SiteIsolationExtensionsActive", "FieldTrial");
+      }
+    } else {
+      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+          "SiteIsolationExtensionsActive", "Default");
+    }
   }
 }
 

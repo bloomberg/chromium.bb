@@ -36,6 +36,10 @@ class ChromeExtensionWebContentsObserver
 
   // content::WebContentsObserver overrides.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
 
   // Silence a warning about hiding a virtual function.
   bool OnMessageReceived(const IPC::Message& message,
@@ -51,6 +55,10 @@ class ChromeExtensionWebContentsObserver
 
   // Reloads an extension if it is on the terminated list.
   void ReloadIfTerminated(content::RenderViewHost* render_view_host);
+
+  // Determines which bucket of a synthetic field trial this client belongs
+  // to and sets it.
+  void SetExtensionIsolationTrial(content::RenderFrameHost* render_frame_host);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionWebContentsObserver);
 };

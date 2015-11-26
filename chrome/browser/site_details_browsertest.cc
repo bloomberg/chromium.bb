@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
@@ -20,8 +21,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/metrics_service.h"
+#include "components/variations/metrics_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/value_builder.h"
@@ -190,6 +194,40 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
       count++;
     }
     return count;
+  }
+
+  // Checks whether the test run is part of a field trial with |trial_name|.
+  bool IsInTrial(const std::string& trial_name) {
+    uint32_t trial = metrics::HashName(trial_name);
+
+    std::vector<variations::ActiveGroupId> synthetic_trials;
+    g_browser_process->metrics_service()
+        ->GetCurrentSyntheticFieldTrialsForTesting(&synthetic_trials);
+
+    for (const auto& entry : synthetic_trials) {
+      if (trial == entry.name)
+        return true;
+    }
+
+    return false;
+  }
+
+  // Similar to IsInTrial but checks that the correct group is present as well.
+  bool IsInTrialGroup(const std::string& trial_name,
+                      const std::string& group_name) {
+    uint32_t trial = metrics::HashName(trial_name);
+    uint32_t group = metrics::HashName(group_name);
+
+    std::vector<variations::ActiveGroupId> synthetic_trials;
+    g_browser_process->metrics_service()
+        ->GetCurrentSyntheticFieldTrialsForTesting(&synthetic_trials);
+
+    for (const auto& entry : synthetic_trials) {
+      if (trial == entry.name && group == entry.group)
+        return true;
+    }
+
+    return false;
   }
 
  private:
@@ -485,6 +523,10 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
               EqualsIfExtensionsIsolated(0));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               EqualsIfSitePerProcess(21));
+
+  // This test doesn't navigate to any extensions URLs, so it should not be
+  // in any of the field trial groups.
+  EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
@@ -770,6 +812,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               EqualsIfExtensionsIsolated(2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(), EqualsIfSitePerProcess(2));
+
+  EXPECT_TRUE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 // Exercises accounting in the case where an extension has two different-site
@@ -808,6 +852,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               EqualsIfExtensionsIsolated(2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(), EqualsIfSitePerProcess(2));
+
+  EXPECT_TRUE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 // Verifies that --isolate-extensions doesn't isolate hosted apps.
@@ -954,4 +1000,38 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               EqualsIfExtensionsIsolated(0));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(), EqualsIfSitePerProcess(1));
+
+  // Since hosted apps are excluded from isolation, this test should not be
+  // in any of the field trial groups.
+  EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
+}
+
+// Verifies that the client is put in the appropriate field trial group.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
+  const Extension* extension = CreateExtension("Extension", false);
+  GURL tab1_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)");
+  ui_test_utils::NavigateToURL(browser(), tab1_url);
+  WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  // Tab navigates its second iframe to a page of the extension.
+  content::NavigateIframeToURL(tab, "child-1",
+                               extension->GetResourceURL("/blank_iframe.html"));
+
+  std::string group;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    group = "SitePerProcessFlag";
+  } else if (extensions::IsIsolateExtensionsEnabled()) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIsolateExtensions)) {
+      group = "IsolateExtensionsFlag";
+    } else {
+      group = "FieldTrial";
+    }
+  } else {
+    group = "Default";
+  }
+
+  EXPECT_TRUE(IsInTrialGroup("SiteIsolationExtensionsActive", group));
 }

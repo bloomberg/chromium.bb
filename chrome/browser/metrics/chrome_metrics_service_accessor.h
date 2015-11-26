@@ -31,6 +31,7 @@ class DomainReliabilityServiceFactory;
 }
 
 namespace extensions {
+class ChromeExtensionWebContentsObserver;
 class FileManagerPrivateIsUMAEnabledFunction;
 class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
@@ -69,8 +70,9 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
-  friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
+  friend class extensions::ChromeExtensionWebContentsObserver;
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
+  friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
   friend void InitiateMetricsReportingChange(
       bool, const OnMetricsReportingCallbackType&);
   friend class options::BrowserOptionsHandler;

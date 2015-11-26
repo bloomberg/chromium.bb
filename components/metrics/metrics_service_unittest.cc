@@ -335,7 +335,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   const base::TimeTicks begin_log_time = base::TimeTicks::Now();
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
+                                           &synthetic_trials);
   EXPECT_EQ(2U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group1"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
@@ -346,14 +347,14 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   // Change the group for the first trial after the log started.
   SyntheticTrialGroup trial3(HashName("TestTrial1"), HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial3);
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
   // Add a new trial after the log started and confirm that it doesn't show up.
   SyntheticTrialGroup trial4(HashName("TestTrial3"), HashName("Group3"));
   service.RegisterSyntheticFieldTrial(trial4);
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
@@ -365,7 +366,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   service.log_manager_.BeginLoggingWithLog(
       scoped_ptr<MetricsLog>(new MetricsLog(
           "clientID", 1, MetricsLog::ONGOING_LOG, &client, GetLocalState())));
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  service.GetSyntheticFieldTrialsOlderThan(
+      service.log_manager_.current_log()->creation_time(), &synthetic_trials);
   EXPECT_EQ(3U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));

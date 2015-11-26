@@ -226,6 +226,11 @@ class MetricsService : public base::HistogramFlattener {
   // To use this method, SyntheticTrialGroup should friend your class.
   void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
 
+  // Public accessor that returns the list of synthetic field trials. It must
+  // only be used for testing.
+  void GetCurrentSyntheticFieldTrialsForTesting(
+      std::vector<variations::ActiveGroupId>* synthetic_trials);
+
   // Adds an observer to be notified when the synthetic trials list changes.
   void AddSyntheticTrialObserver(SyntheticTrialObserver* observer);
 
@@ -393,9 +398,9 @@ class MetricsService : public base::HistogramFlattener {
   // Notifies observers on a synthetic trial list change.
   void NotifySyntheticTrialObservers();
 
-  // Returns a list of synthetic field trials that were active for the entire
-  // duration of the current log.
-  void GetCurrentSyntheticFieldTrials(
+  // Returns a list of synthetic field trials that are older than |time|.
+  void GetSyntheticFieldTrialsOlderThan(
+      base::TimeTicks time,
       std::vector<variations::ActiveGroupId>* synthetic_trials);
 
   // Creates a new MetricsLog instance with the given |log_type|.
