@@ -94,12 +94,6 @@
           # if packaging for a linux distro)
           'use_sysroot%': 1,
 
-          # Set this to true when building with Clang.
-          # See http://code.google.com/p/chromium/wiki/Clang for details.
-          # If this is set, clang is used as both host and target compiler in
-          # cross-compile builds.
-          'clang%': 0,
-
           # Override buildtype to select the desired build flavor.
           # Dev - everyday build for development/testing
           # Official - release build (generally implies additional processing)
@@ -159,7 +153,6 @@
         # Copy conditionally-set variables out one scope.
         'chromeos%': '<(chromeos)',
         'chromecast%': '<(chromecast)',
-        'clang%': '<(clang)',
         'desktop_linux%': '<(desktop_linux)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
@@ -306,7 +299,7 @@
           # Not used when chromecast=1 since ozone_platform_gbm doesn't
           # currently build against the linux sysroot
           # TODO(sbc): http://crbug.com/559708
-          ['OS=="linux" and chromeos==0 and chromecast==0 and clang==1 and use_sysroot==1', {
+          ['OS=="linux" and chromeos==0 and chromecast==0 and use_sysroot==1', {
             # sysroot needs to be an absolute path otherwise it generates
             # incorrect results when passed to pkg-config
             'conditions': [
@@ -332,7 +325,6 @@
       # Copy conditionally-set variables out one scope.
       'chromeos%': '<(chromeos)',
       'chromecast%': '<(chromecast)',
-      'clang%': '<(clang)',
       'host_arch%': '<(host_arch)',
       'target_arch%': '<(target_arch)',
       'target_subarch%': '<(target_subarch)',
@@ -630,6 +622,11 @@
 
       # Clang stuff.
       'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
+      # Set this to true when building with Clang.
+      # See http://code.google.com/p/chromium/wiki/Clang for details.
+      # If this is set, clang is used as both host and target compiler in
+      # cross-compile builds.
+      'clang%': 0,
 
       # Use experimental lld linker instead of the platform's default linker.
       'use_lld%': 0,
