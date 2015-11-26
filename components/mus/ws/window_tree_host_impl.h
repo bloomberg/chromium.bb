@@ -99,6 +99,11 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void AddActivationParent(uint32_t window_id) override;
   void RemoveActivationParent(uint32_t window_id) override;
   void ActivateNextWindow() override;
+  void SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      Id window_id,
+      int32_t x_offset,
+      int32_t y_offset,
+      mojo::InsetsPtr hit_area) override;
 
  private:
   void OnClientClosed();

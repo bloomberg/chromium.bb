@@ -153,6 +153,21 @@ void WindowTreeHostImpl::ActivateNextWindow() {
   focus_controller_->ActivateNextWindow();
 }
 
+void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
+    Id window_id,
+    int32_t x_offset,
+    int32_t y_offset,
+    mojo::InsetsPtr hit_area) {
+  ServerWindow* window =
+      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+  if (!window)
+    return;
+
+  window->SetUnderlayOffset(gfx::Vector2d(x_offset, y_offset));
+
+  // TODO(sky): support hit area.
+}
+
 void WindowTreeHostImpl::OnClientClosed() {
   // |display_manager_.reset()| destroys the display-manager first, and then
   // sets |display_manager_| to nullptr. However, destroying |display_manager_|

@@ -44,6 +44,8 @@ enum ErrorCode {
 // embedded apps representation.
 enum SurfaceType {
   // Only the owner of a window may obtain this surface.
+  // The window manager can change the offset of this by way of
+  // SetUnderlaySurfaceOffsetAndExtendedHitArea().
   UNDERLAY,
 
   // Only the embedded app may obtain this surface. If an app is not embedded

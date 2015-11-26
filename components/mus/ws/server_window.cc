@@ -331,6 +331,14 @@ ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {
   return surface_manager_.get();
 }
 
+void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
+  if (offset == underlay_offset_)
+    return;
+
+  underlay_offset_ = offset;
+  delegate_->OnScheduleWindowPaint(this);
+}
+
 #if !defined(NDEBUG)
 std::string ServerWindow::GetDebugWindowHierarchy() const {
   std::string result;

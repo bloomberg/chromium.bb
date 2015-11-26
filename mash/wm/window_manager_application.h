@@ -57,6 +57,10 @@ class WindowManagerApplication
 
   mojo::ApplicationImpl* app() { return app_; }
 
+  mus::mojom::WindowTreeHost* window_tree_host() {
+    return window_tree_host_.get();
+  }
+
  private:
   void AddAccelerators();
 
@@ -91,7 +95,7 @@ class WindowManagerApplication
 
   mojo::TracingImpl tracing_;
 
-  mus::mojom::WindowTreeHostPtr host_;
+  mus::mojom::WindowTreeHostPtr window_tree_host_;
   mojo::Binding<mus::mojom::WindowTreeHostClient> host_client_binding_;
 
   scoped_ptr<ui::mojo::UIInit> ui_init_;

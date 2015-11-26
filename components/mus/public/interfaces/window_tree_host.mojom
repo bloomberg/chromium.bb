@@ -33,6 +33,17 @@ interface WindowTreeHost {
   RemoveActivationParent(uint32 window_id);
 
   ActivateNextWindow();
+
+  // Sets the underlay surface offset for the specified window and additional
+  // hit area. The underlay surface is drawn at the bounds of the window minus
+  // the offset. The hit area is extended from the bounds of the window by
+  // |hit_area|.
+  // TODO(sky): pull this into the WindowTree API exposed for the
+  // windowmanager.
+  SetUnderlaySurfaceOffsetAndExtendedHitArea(uint32 window_id,
+                                             int32 x_offset,
+                                             int32 y_offset,
+                                             mojo.Insets hit_area);
 };
 
 interface WindowTreeHostClient {

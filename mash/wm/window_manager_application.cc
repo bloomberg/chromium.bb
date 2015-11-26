@@ -45,7 +45,7 @@ mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
 }
 
 void WindowManagerApplication::AddAccelerators() {
-  host_->AddAccelerator(
+  window_tree_host_->AddAccelerator(
       kWindowSwitchCmd,
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_TAB,
                             mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
@@ -61,8 +61,9 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
       mojo::GetProxy(&window_manager)));
   mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateSingleWindowTreeHost(app, host_client.Pass(), this, &host_,
-                                  window_manager.Pass(), window_manager_.get());
+  mus::CreateSingleWindowTreeHost(app, host_client.Pass(), this,
+                                  &window_tree_host_, window_manager.Pass(),
+                                  window_manager_.get());
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
@@ -75,7 +76,7 @@ void WindowManagerApplication::OnAccelerator(uint32_t id,
                                              mus::mojom::EventPtr event) {
   switch (id) {
     case kWindowSwitchCmd:
-      host_->ActivateNextWindow();
+      window_tree_host_->ActivateNextWindow();
       break;
     default:
       NOTREACHED() << "Unknown accelerator command: " << id;
@@ -94,7 +95,7 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   mus::Window* window = GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
   window_layout_.reset(
       new WindowLayout(GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS)));
-  host_->AddActivationParent(window->id());
+  window_tree_host_->AddActivationParent(window->id());
 
   AddAccelerators();
 

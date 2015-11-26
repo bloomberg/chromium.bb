@@ -5,15 +5,83 @@
 #include "mash/wm/non_client_frame_controller.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/frame/non_client_frame_view_mash.h"
 #include "mash/wm/property_util.h"
+#include "mash/wm/shadow.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/aura/layout_manager.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
 
 namespace mash {
 namespace wm {
-
 namespace {
+
+enum class ShadowStyle {
+  NORMAL,
+  SMALL,
+};
+
+// LayoutManager associated with the window created by WindowTreeHost. Resizes
+// all children of the parent to match the bounds of the parent. Additionally
+// handles sizing of a Shadow.
+class ContentWindowLayoutManager : public aura::LayoutManager {
+ public:
+  explicit ContentWindowLayoutManager(aura::Window* window,
+                                      ShadowStyle style,
+                                      Shadow* shadow)
+      : window_(window), style_(style), shadow_(shadow) {
+    OnWindowResized();
+  }
+  ~ContentWindowLayoutManager() override {}
+
+  void SetShadow(Shadow* shadow) {
+    shadow_ = shadow;
+    if (shadow_)
+      shadow_->SetContentBounds(child_bounds());
+  }
+
+ private:
+  // Bounds for child windows.
+  gfx::Rect child_bounds() const {
+    return gfx::Rect(0, 0, window_->bounds().size().width(),
+                     window_->bounds().size().height());
+  }
+
+  void UpdateChildBounds(aura::Window* child) {
+    child->SetBounds(child_bounds());
+  }
+
+  // aura::LayoutManager:
+  void OnWindowResized() override {
+    for (aura::Window* child : window_->children())
+      UpdateChildBounds(child);
+    // Shadow takes care of resizing the layer appropriately.
+    if (shadow_)
+      shadow_->SetContentBounds(child_bounds());
+  }
+  void OnWindowAddedToLayout(aura::Window* child) override {
+    UpdateChildBounds(child);
+  }
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  aura::Window* window_;
+  const ShadowStyle style_;
+  Shadow* shadow_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
+};
 
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
@@ -34,6 +102,21 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         new NonClientFrameViewMash(widget, window());
     return frame_view;
   }
+  void InitNativeWidget(const views::Widget::InitParams& params) override {
+    views::NativeWidgetMus::InitNativeWidget(params);
+    aura::WindowTreeHost* window_tree_host = GetNativeView()->GetHost();
+    // TODO(sky): shadow should be determined by window type.
+    shadow_.reset(new Shadow);
+    shadow_->Init(Shadow::STYLE_ACTIVE);
+    ContentWindowLayoutManager* layout_manager = new ContentWindowLayoutManager(
+        window_tree_host->window(), ShadowStyle::NORMAL, shadow_.get());
+    window_tree_host->window()->SetLayoutManager(layout_manager);
+    const int inset = Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
+    window_tree_host->SetOutputSurfacePadding(
+        gfx::Insets(inset, inset, inset, inset));
+    window_tree_host->window()->layer()->Add(shadow_->layer());
+    shadow_->layer()->parent()->StackAtBottom(shadow_->layer());
+  }
   void CenterWindow(const gfx::Size& size) override {
     // Do nothing. The client controls the size, not us.
   }
@@ -43,14 +126,21 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   }
 
  private:
+  // The shadow, may be null.
+  scoped_ptr<Shadow> shadow_;
+
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
 
 }  // namespace
 
-NonClientFrameController::NonClientFrameController(mojo::Shell* shell,
-                                                   mus::Window* window)
-    : widget_(new views::Widget), window_(window) {
+NonClientFrameController::NonClientFrameController(
+    mojo::Shell* shell,
+    mus::Window* window,
+    mus::mojom::WindowTreeHost* window_tree_host)
+    : widget_(new views::Widget),
+      window_(window),
+      mus_window_tree_host_(window_tree_host) {
   window_->AddObserver(this);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -58,6 +148,12 @@ NonClientFrameController::NonClientFrameController(mojo::Shell* shell,
   params.native_widget = new WmNativeWidgetMus(widget_, shell, window);
   widget_->Init(params);
   widget_->Show();
+
+  const int shadow_inset =
+      Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
+  mus_window_tree_host_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      window->id(), shadow_inset, shadow_inset,
+      mojo::Insets::From(gfx::Insets()));
 }
 
 // static

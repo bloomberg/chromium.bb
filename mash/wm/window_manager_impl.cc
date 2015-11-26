@@ -79,8 +79,9 @@ void WindowManagerImpl::OpenWindow(
   GetContainerForChild(child_window)->AddChild(child_window);
   child_window->Embed(client.Pass());
 
-  // NonClientFrameController deletes itself when the window is destroyed.
-  new NonClientFrameController(state_->app()->shell(), child_window);
+  // NonClientFrameController deletes itself when |child_window| is destroyed.
+  new NonClientFrameController(state_->app()->shell(), child_window,
+                               state_->window_tree_host());
 
   state_->IncrementWindowCount();
 }

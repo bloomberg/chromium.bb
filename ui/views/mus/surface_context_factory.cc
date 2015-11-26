@@ -23,7 +23,8 @@ class FakeReflector : public ui::Reflector {
   void AddMirroringLayer(ui::Layer* layer) override {}
   void RemoveMirroringLayer(ui::Layer* layer) override {}
 };
-}
+
+}  // namespace
 
 SurfaceContextFactory::SurfaceContextFactory(
     mojo::Shell* shell,

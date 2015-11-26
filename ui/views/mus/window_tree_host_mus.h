@@ -46,7 +46,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   PlatformWindowMus* platform_window();
   bitmap_uploader::BitmapUploader* bitmap_uploader() {
     return bitmap_uploader_.get();
-  };
+  }
   ui::PlatformWindowState show_state() const { return show_state_; }
 
  private:

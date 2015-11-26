@@ -13,6 +13,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_source.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -78,8 +79,19 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual void SetRootTransform(const gfx::Transform& transform);
   virtual gfx::Transform GetInverseRootTransform() const;
 
+  // Sets padding applied to the output surface. The output surface is sized to
+  // to the size of the host plus output surface padding. |window()| is offset
+  // by |padding|, that is, |window|'s origin is set to padding.left(),
+  // padding.top().
+  // This does not impact the bounds as returned from GetBounds(), only the
+  // output surface size and location of window(). Additionally window() is
+  // sized to the size set by bounds (more specifically the size passed to
+  // OnHostResized()), but the location of window() is set to that of
+  // |padding|.
+  void SetOutputSurfacePadding(const gfx::Insets& padding);
+
   // Updates the root window's size using |host_size|, current
-  // transform and insets.
+  // transform and outsets.
   virtual void UpdateRootWindowSize(const gfx::Size& host_size);
 
   // Converts |point| from the root window's coordinate system to native
@@ -236,6 +248,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Whether the InputMethod instance is owned by this WindowTreeHost.
   bool owned_input_method_;
+
+  gfx::Insets output_surface_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

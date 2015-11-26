@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
 
@@ -138,6 +139,10 @@ class ServerWindow {
     return surface_manager_.get();
   }
 
+  // Offset of the underlay from the the window bounds (used for shadows).
+  const gfx::Vector2d& underlay_offset() const { return underlay_offset_; }
+  void SetUnderlayOffset(const gfx::Vector2d& offset);
+
   ServerWindowDelegate* delegate() { return delegate_; }
 
 #if !defined(NDEBUG)
@@ -182,6 +187,8 @@ class ServerWindow {
   ui::TextInputState text_input_state_;
 
   Properties properties_;
+
+  gfx::Vector2d underlay_offset_;
 
   base::ObserverList<ServerWindowObserver> observers_;
 

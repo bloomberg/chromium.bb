@@ -39,6 +39,10 @@ class ServerWindowSurface : public mojom::Surface,
 
   ~ServerWindowSurface() override;
 
+  const gfx::Size& last_submitted_frame_size() const {
+    return last_submitted_frame_size_;
+  }
+
   // mojom::Surface:
   void SubmitCompositorFrame(
       mojom::CompositorFramePtr frame,
